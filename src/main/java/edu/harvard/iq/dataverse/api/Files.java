@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccessValidator;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -34,11 +33,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftFileMetadataIfAvailableCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RedetectFileTypeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
@@ -941,44 +936,19 @@ public class Files extends AbstractApiBean {
 
     /**
      * @param fileIdOrPersistentId Database ID or PID of the data file.
-     * @param dsVersionString The version of the dataset, such as 1.0, :draft,
+     * @param versionNumber The version of the dataset, such as 1.0, :draft,
      * :latest-published, etc.
+     * @param includeDeaccessioned Defaults to false.
      */
     @GET
     @AuthRequired
     @Path("{id}/versions/{dsVersionString}/citation")
-    public Response getFileCitationByVersion(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("dsVersionString") String dsVersionString) {
+    public Response getFileCitationByVersion(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("dsVersionString") String versionNumber, @QueryParam("includeDeaccessioned") boolean includeDeaccessioned) {
         try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
             Dataset ds = df.getOwner();
-            // Adapted from getDatasetVersionOrDie
-            DatasetVersion dsv = execCommand(handleVersion(dsVersionString, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
-
-                boolean includeDeaccessioned = true;
-                boolean checkPermsWhenDeaccessioned = true;
-
-                @Override
-                public Command<DatasetVersion> handleLatest() {
-                    return new GetLatestAccessibleDatasetVersionCommand(req, ds);
-                }
-
-                @Override
-                public Command<DatasetVersion> handleDraft() {
-                    return new GetDraftDatasetVersionCommand(req, ds);
-                }
-
-                @Override
-                public Command<DatasetVersion> handleSpecific(long major, long minor) {
-                    return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor, includeDeaccessioned, checkPermsWhenDeaccessioned);
-                }
-
-                @Override
-                public Command<DatasetVersion> handleLatestPublished() {
-                    return new GetLatestPublishedDatasetVersionCommand(req, ds);
-                }
-            }));
-
+            DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, true);
             if (dsv == null) {
                 return unauthorized(BundleUtil.getStringFromBundle("files.api.no.draftOrUnauth"));
             }

@@ -3475,9 +3475,17 @@ public class UtilIT {
     }
 
     static Response getFileCitation(Integer fileId, String datasetVersion, String apiToken) {
+        Boolean includeDeaccessioned = null;
+        return getFileCitation(fileId, datasetVersion, includeDeaccessioned, apiToken);
+    }
+
+    static Response getFileCitation(Integer fileId, String datasetVersion, Boolean includeDeaccessioned, String apiToken) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
             requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (includeDeaccessioned != null) {
+            requestSpecification.queryParam("includeDeaccessioned", includeDeaccessioned);
         }
         return requestSpecification.get("/api/files/" + fileId + "/versions/" + datasetVersion + "/citation");
     }

@@ -2698,9 +2698,14 @@ public class FilesIT {
         deaccessionDataset.prettyPrint();
         deaccessionDataset.then().assertThat().statusCode(OK.getStatusCode());
 
-        Response getFileCitationV1PostDeaccessionAuthor = UtilIT.getFileCitation(fileId, "1.0", apiToken);
-        getFileCitationV1PostDeaccessionAuthor.prettyPrint();
-        getFileCitationV1PostDeaccessionAuthor.then().assertThat()
+        Response getFileCitationV1PostDeaccessionAuthorDefault = UtilIT.getFileCitation(fileId, "1.0", apiToken);
+        getFileCitationV1PostDeaccessionAuthorDefault.prettyPrint();
+        getFileCitationV1PostDeaccessionAuthorDefault.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        
+        Response getFileCitationV1PostDeaccessionAuthorIncludeDeaccessioned = UtilIT.getFileCitation(fileId, "1.0", true, apiToken);
+        getFileCitationV1PostDeaccessionAuthorIncludeDeaccessioned.prettyPrint();
+        getFileCitationV1PostDeaccessionAuthorIncludeDeaccessioned.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, V1, DEACCESSIONED VERSION; coffeeshop.png [fileName]"));
 

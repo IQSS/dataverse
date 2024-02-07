@@ -3529,7 +3529,11 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/files/42/versions/:latest-published/citation"
 
-When the dataset version is a draft or deaccessioned, authentication is required:
+When the dataset version is a draft or deaccessioned, authentication is required.
+
+By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "unauthorized" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
+
+If you want to include deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
 
 .. code-block:: bash
 
@@ -3537,14 +3541,15 @@ When the dataset version is a draft or deaccessioned, authentication is required
   export SERVER_URL=https://demo.dataverse.org
   export FILE_ID=42
   export DATASET_VERSION=:draft
+  export INCLUDE_DEACCESSIONED=true
 
-  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/files/$FILE_ID/versions/$DATASET_VERSION/citation"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/files/$FILE_ID/versions/$DATASET_VERSION/citation?includeDeaccessioned=$INCLUDE_DEACCESSIONED"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/files/42/versions/:draft/citation
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/files/42/versions/:draft/citation?includeDeaccessioned=true"
 
 If your file has a persistent identifier (PID, such as a DOI), you can pass it using the technique described under :ref:`get-json-rep-of-file`.
 
