@@ -44,6 +44,11 @@ Start below this comment section.
 **Any related open or closed issues to this bug report?**
 
 
+**Will you be able to contribute a Pull Request for this issue?**
+
+
+**Help is always welcome, is this issue something you or your organization plan to solve ?**
+
 
 **Screenshots:**
 
