@@ -1182,8 +1182,8 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders, false);
     }
 
-    /*
-    RateLimitUtil will parse the json to create a List<RateLimitSetting>
+    /**
+     * RateLimitUtil will parse the json to create a List<RateLimitSetting>
      */
     public String getRateLimitsJson() {
         return settingsService.getValueForKey(SettingsServiceBean.Key.RateLimitingCapacityByTierAndAction, "");
