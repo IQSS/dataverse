@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.cache;
+package edu.harvard.iq.dataverse.util.cache;
 
 import com.hazelcast.cluster.Address;
 import com.hazelcast.config.Config;
