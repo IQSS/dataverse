@@ -1036,7 +1036,7 @@ public class FilesIT {
 
     }
     
-        @Test
+    @Test
     public void testRestrictAddedFile() {
         msgt("testRestrictAddedFile");
         
@@ -1141,9 +1141,6 @@ public class FilesIT {
         UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "false");
 
     }
-    
-
-    
 
     @Test
     public void test_AddFileBadUploadFormat() {
@@ -1398,14 +1395,13 @@ public class FilesIT {
         assertEquals(magicControlString, JsonPath.from(datasetDownloadSizeResponse.body().asString()).getString("data.message"));
         
     }
-    
+
     @Test
     public void testGetFileInfo() {
-
         Response createUser = UtilIT.createRandomUser();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        UtilIT.makeSuperUser(username);
         String dataverseAlias = createDataverseGetAlias(apiToken);
         Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
 
@@ -1416,29 +1412,23 @@ public class FilesIT {
         String pathToFile = "scripts/search/data/binary/trees.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
+        // The following tests cover cases where no version ID is specified in the endpoint
+        // Superuser should get to see draft file data
         String dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
-        msgt("datafile id: " + dataFileId);
-
-        addResponse.prettyPrint();
-
         Response getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
-
-        getFileDataResponse.prettyPrint();
         getFileDataResponse.then().assertThat()
                 .body("data.label", equalTo("trees.png"))
                 .body("data.dataFile.filename", equalTo("trees.png"))
                 .body("data.dataFile.contentType", equalTo("image/png"))
                 .body("data.dataFile.filesize", equalTo(8361))
                 .statusCode(OK.getStatusCode());
-        
+
+        // Regular user should not get to see draft file data
         getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular);
         getFileDataResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
 
-        // -------------------------
         // Publish dataverse and dataset
-        // -------------------------
-        msg("Publish dataverse and dataset");
         Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         publishDataversetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -1446,12 +1436,17 @@ public class FilesIT {
         Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDatasetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        //regular user should get to see file data
+
+        // Regular user should get to see published file data
         getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular);
         getFileDataResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        //cleanup
+        // The following tests cover cases where a version ID is specified in the endpoint
+
+        // TODO
+
+        // Cleanup
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         assertEquals(200, destroyDatasetResponse.getStatusCode());
 
