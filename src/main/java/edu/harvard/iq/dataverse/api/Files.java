@@ -2,20 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccessValidator;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -541,7 +528,7 @@ public class Files extends AbstractApiBean {
         }));
 
         if (fileMetadata == null) {
-            throw new WrappedResponse(notFound("FileMetadata for DataFile with id " + fileIdOrPersistentId + " in dataset version " + datasetVersionId + " not found"));
+            throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("files.api.notFoundInVersion", Arrays.asList(fileIdOrPersistentId, datasetVersionId))));
         }
 
         if (fileMetadata.getDatasetVersion().isReleased()) {
