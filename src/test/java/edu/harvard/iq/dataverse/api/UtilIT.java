@@ -1084,11 +1084,17 @@ public class UtilIT {
                 .urlEncodingEnabled(false)
                 .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + optionalQueryParam);
     }
-    
-    static Response getFileData(String fileId, String apiToken) {       
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId );
+
+    static Response getFileData(String fileId, String apiToken) {
+        return getFileData(fileId, apiToken, null);
+    }
+
+    static Response getFileData(String fileId, String apiToken, String datasetVersionId) {
+        RequestSpecification requestSpec = given().header(API_TOKEN_HTTP_HEADER, apiToken);
+        if (datasetVersionId != null) {
+            requestSpec.queryParam("datasetVersionId", datasetVersionId);
+        }
+        return requestSpec.get("/api/files/" + fileId);
     }
 
     static Response testIngest(String fileName, String fileType) {
