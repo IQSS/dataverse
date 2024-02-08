@@ -305,43 +305,43 @@ public class JsonPrinter {
         return jsonArrayOfContacts;
     }
     
-    public static JsonArrayBuilder getBreadcrumbsFromDvObject(DvObject dvObject) {
+    public static JsonArrayBuilder getOwnersFromDvObject(DvObject dvObject) {
         
         List <DvObject> ownerList = new ArrayList();
-        
+        dvObject = dvObject.getOwner(); // We're going to ignore the object itself
         while (dvObject != null) {
             ownerList.add(dvObject);
             dvObject = dvObject.getOwner();
         } 
         
-        JsonArrayBuilder jsonArrayOfBreadcrumbs = Json.createArrayBuilder();
+        JsonArrayBuilder jsonArrayOfOwners = Json.createArrayBuilder();
         
         for (DvObject dvo : ownerList){
-                JsonObjectBuilder breadcrumbObject = jsonObjectBuilder();
+                JsonObjectBuilder ownerObject = jsonObjectBuilder();
                 if (dvo.isInstanceofDataverse()){
-                    breadcrumbObject.add("type", "DATAVERSE");
+                    ownerObject.add("type", "DATAVERSE");
                 }
                 if (dvo.isInstanceofDataset()){
-                    breadcrumbObject.add("type", "DATASET");
+                    ownerObject.add("type", "DATASET");
                 }
                  if (dvo.isInstanceofDataFile()){
-                    breadcrumbObject.add("type", "DATAFILE");
+                    ownerObject.add("type", "DATAFILE");
                 }
                 if (dvo.isInstanceofDataverse()){
                     Dataverse in = (Dataverse) dvo;
-                    breadcrumbObject.add("identifier", in.getAlias());
+                    ownerObject.add("identifier", in.getAlias());
                 }
                 if (dvo.isInstanceofDataset() || dvo.isInstanceofDataFile() ){
                     if (dvo.getIdentifier() != null){
-                        breadcrumbObject.add("identifier", dvo.getIdentifier());
+                        ownerObject.add("identifier", dvo.getIdentifier());
                     } else {
-                        breadcrumbObject.add("identifier", dvo.getId());
+                        ownerObject.add("identifier", dvo.getId());
                     }
                 }
-                breadcrumbObject.add("displayName", dvo.getDisplayName());
-            jsonArrayOfBreadcrumbs.add(breadcrumbObject);
+                ownerObject.add("displayName", dvo.getDisplayName());
+            jsonArrayOfOwners.add(ownerObject);
         }
-        return jsonArrayOfBreadcrumbs;
+        return jsonArrayOfOwners;
     }
 
     public static JsonObjectBuilder json( DataverseTheme theme ) {
@@ -371,7 +371,7 @@ public class JsonPrinter {
        return json(ds, false);
     }
 
-    public static JsonObjectBuilder json(Dataset ds, Boolean includeBreadcrumbs) {
+    public static JsonObjectBuilder json(Dataset ds, Boolean includeOwners) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", ds.getId())
                 .add("identifier", ds.getIdentifier())
@@ -384,8 +384,8 @@ public class JsonPrinter {
         if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
             bld.add("metadataLanguage", ds.getMetadataLanguage());
         }
-        if (includeBreadcrumbs){
-            bld.add("ownerArray", getBreadcrumbsFromDvObject(ds));
+        if (includeOwners){
+            bld.add("ownerArray", getOwnersFromDvObject(ds));
         }
         return bld;
     }

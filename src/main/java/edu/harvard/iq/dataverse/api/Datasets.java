@@ -186,12 +186,12 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}")
-    public Response getDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,  @QueryParam("breadcrumbs") Boolean breadcrumbs) {
+    public Response getDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,  @QueryParam("returnOwners") Boolean returnOwners) {
         return response( req -> {
             final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(id)));
             final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
-            Boolean includeBreadcrumbs = breadcrumbs == null ? false : breadcrumbs;
-            final JsonObjectBuilder jsonbuilder = json(retrieved, includeBreadcrumbs);
+            Boolean includeOwners = returnOwners == null ? false : returnOwners;
+            final JsonObjectBuilder jsonbuilder = json(retrieved, includeOwners);
             //Report MDC if this is a released version (could be draft if user has access, or user may not have access at all and is not getting metadata beyond the minimum)
             if((latest != null) && latest.isReleased()) {
                 MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, retrieved);
