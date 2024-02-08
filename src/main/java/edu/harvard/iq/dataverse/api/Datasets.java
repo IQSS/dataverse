@@ -2731,7 +2731,7 @@ public class Datasets extends AbstractApiBean {
 
             @Override
             public Command<DatasetVersion> handleLatest() {
-                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned);
+                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
             }
 
             @Override
