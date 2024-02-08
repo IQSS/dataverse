@@ -25,15 +25,11 @@ import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetDraftFileMetadataIfAvailableCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RedetectFileTypeCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.ExportService;
 import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
@@ -49,7 +45,8 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
-import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
+import static edu.harvard.iq.dataverse.api.ApiConstants.*;
+import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -503,70 +500,58 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}")
     public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, null);
+        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, uriInfo, headers, DS_VERSION_LATEST), getRequestUser(crc));
     }
 
     @GET
     @AuthRequired
     @Path("{id}/versions/{datasetVersionId}")
     public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("datasetVersionId") String datasetVersionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, datasetVersionId);
+        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, uriInfo, headers, datasetVersionId), getRequestUser(crc));
     }
 
-    private Response getFileDataResponse(User user, String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, String datasetVersionId){
-        
-        DataverseRequest req;
+    private Response getFileDataResponse(final DataverseRequest req, String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, String datasetVersionId) throws WrappedResponse {
+        final DataFile dataFile;
         try {
-            req = createDataverseRequest(user);
-        } catch (Exception e) {
-            return error(BAD_REQUEST, "Error attempting to request information. Maybe a bad API token?");
-        }
-        final DataFile df;
-        try {
-            df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
         } catch (Exception e) {
             return error(BAD_REQUEST, "Error attempting get the requested data file.");
         }
 
-        FileMetadata fm;
-
-        if (datasetVersionId != null && datasetVersionId.equals(DS_VERSION_DRAFT)) {
-            try {
-                fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, df));
-            } catch (WrappedResponse w) {
-                return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset.");
-            }
-            if (null == fm) {
-                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.no.draft"));
-            }
-        } else {
-            //first get latest published
-            //if not available get draft if permissible
-
-            try {
-                fm = df.getLatestPublishedFileMetadata();
-
-            } catch (UnsupportedOperationException e) {
-                try {
-                    fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, df));
-                } catch (WrappedResponse w) {
-                    return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset.");
-                }
-                if (null == fm) {
-                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.no.draft"));
-                }
+        FileMetadata fileMetadata = execCommand(handleVersion(datasetVersionId, new Datasets.DsVersionHandler<>() {
+            @Override
+            public Command<FileMetadata> handleLatest() {
+                return new GetLatestAccessibleFileMetadataCommand(req, dataFile);
             }
 
+            @Override
+            public Command<FileMetadata> handleDraft() {
+                return new GetDraftFileMetadataIfAvailableCommand(req, dataFile);
+            }
+
+            @Override
+            public Command<FileMetadata> handleSpecific(long major, long minor) {
+                return new GetSpecificPublishedFileMetadataByDatasetVersionCommand(req, dataFile, major, minor);
+            }
+
+            @Override
+            public Command<FileMetadata> handleLatestPublished() {
+                return new GetLatestPublishedFileMetadataCommand(req, dataFile);
+            }
+        }));
+
+        if (fileMetadata == null) {
+            throw new WrappedResponse(notFound("FileMetadata for DataFile with id " + fileIdOrPersistentId + " in dataset version " + datasetVersionId + " not found"));
         }
 
-        if (fm.getDatasetVersion().isReleased()) {
-            MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
+        if (fileMetadata.getDatasetVersion().isReleased()) {
+            MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, dataFile);
             mdcLogService.logEntry(entry);
         }
 
         return Response.ok(Json.createObjectBuilder()
-                .add("status", ApiConstants.STATUS_OK)
-                .add("data", json(fm)).build())
+                        .add("status", ApiConstants.STATUS_OK)
+                        .add("data", json(fileMetadata)).build())
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }
