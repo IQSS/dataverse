@@ -498,13 +498,7 @@ public class Files extends AbstractApiBean {
     }
 
     private Response getFileDataResponse(final DataverseRequest req, String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, String datasetVersionId) throws WrappedResponse {
-        final DataFile dataFile;
-        try {
-            dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
-        } catch (Exception e) {
-            return error(BAD_REQUEST, "Error attempting get the requested data file.");
-        }
-
+        final DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
         FileMetadata fileMetadata = execCommand(handleVersion(datasetVersionId, new Datasets.DsVersionHandler<>() {
             @Override
             public Command<FileMetadata> handleLatest() {

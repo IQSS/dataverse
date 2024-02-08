@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeAll;
 import io.restassured.path.json.JsonPath;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_LATEST_PUBLISHED;
 import static io.restassured.path.json.JsonPath.with;
 import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -1400,22 +1401,22 @@ public class FilesIT {
     public void testGetFileInfo() {
         Response createUser = UtilIT.createRandomUser();
         String username = UtilIT.getUsernameFromResponse(createUser);
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String superUserApiToken = UtilIT.getApiTokenFromResponse(createUser);
         UtilIT.makeSuperUser(username);
-        String dataverseAlias = createDataverseGetAlias(apiToken);
-        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+        String dataverseAlias = createDataverseGetAlias(superUserApiToken);
+        Integer datasetId = createDatasetGetId(dataverseAlias, superUserApiToken);
 
         createUser = UtilIT.createRandomUser();
         String apiTokenRegular = UtilIT.getApiTokenFromResponse(createUser);
 
         msg("Add a non-tabular file");
         String pathToFile = "scripts/search/data/binary/trees.png";
-        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, superUserApiToken);
 
         // The following tests cover cases where no version ID is specified in the endpoint
         // Superuser should get to see draft file data
         String dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
-        Response getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
+        Response getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken);
         getFileDataResponse.then().assertThat()
                 .body("data.label", equalTo("trees.png"))
                 .body("data.dataFile.filename", equalTo("trees.png"))
@@ -1426,14 +1427,14 @@ public class FilesIT {
         // Regular user should not get to see draft file data
         getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular);
         getFileDataResponse.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode());
+                .statusCode(UNAUTHORIZED.getStatusCode());
 
         // Publish dataverse and dataset
-        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
-        publishDataversetResp.then().assertThat()
+        Response publishDataverseResp = UtilIT.publishDataverseViaSword(dataverseAlias, superUserApiToken);
+        publishDataverseResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken);
         publishDatasetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
@@ -1443,14 +1444,45 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
 
         // The following tests cover cases where a version ID is specified in the endpoint
+        // Superuser should not get to see draft file data when no draft version exists
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, DS_VERSION_DRAFT);
+        getFileDataResponse.then().assertThat()
+                .statusCode(NOT_FOUND.getStatusCode());
 
+        // Update the file metadata
+        String newFileName = "trees_2.png";
+        JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
+                .add("label", newFileName);
+        Response updateFileMetadataResponse = UtilIT.updateFileMetadata(dataFileId, updateFileMetadata.build().toString(), superUserApiToken);
+        updateFileMetadataResponse.then().statusCode(OK.getStatusCode());
+
+        // Superuser should get to see draft file data
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, DS_VERSION_DRAFT);
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Regular user should not get to see draft file data
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular, DS_VERSION_DRAFT);
+        getFileDataResponse.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
+        // Publish dataset once again
+        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken);
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Regular user should get to see latest published file data
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular, DS_VERSION_LATEST_PUBLISHED);
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.label", equalTo(newFileName));
         // TODO
 
         // Cleanup
-        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, superUserApiToken);
         assertEquals(200, destroyDatasetResponse.getStatusCode());
 
-        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, superUserApiToken);
         assertEquals(200, deleteDataverseResponse.getStatusCode());
 
         Response deleteUserResponse = UtilIT.deleteUser(username);
