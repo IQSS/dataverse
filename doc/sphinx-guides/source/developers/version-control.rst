@@ -34,6 +34,8 @@ The "master" Branch
 
 The "`master <https://github.com/IQSS/dataverse/tree/master>`_" branch represents released versions of the Dataverse Software. As mentioned in the :doc:`making-releases` section, at release time we update the master branch to include all the code for that release. Commits are never made directly to master. Rather, master is updated only when we merge code into it from the "develop" branch.
 
+.. _develop-branch:
+
 The "develop" Branch
 ********************
 

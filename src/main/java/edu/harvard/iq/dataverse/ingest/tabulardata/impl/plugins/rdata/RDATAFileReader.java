@@ -473,7 +473,7 @@ public class RDATAFileReader extends TabularDataFileReader {
    * @throws java.io.IOException if a reading error occurs.
    */
     @Override
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
+    public TabularDataIngest read(BufferedInputStream stream, boolean saveWithVariableHeader, File dataFile) throws IOException {
 
         init();
 
@@ -509,7 +509,7 @@ public class RDATAFileReader extends TabularDataFileReader {
             File tabFileDestination = File.createTempFile("data-", ".tab");
             PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath(), "UTF-8");
         
-            int lineCount = csvFileReader.read(localBufferedReader, dataTable, tabFileWriter);
+            int lineCount = csvFileReader.read(localBufferedReader, dataTable, saveWithVariableHeader, tabFileWriter);
 
             LOG.fine("RDATAFileReader: successfully read "+lineCount+" lines of tab-delimited data.");
         
