@@ -55,6 +55,7 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import java.math.BigDecimal;
 
 /**
  * Convert objects to Json.
@@ -303,6 +304,45 @@ public class JsonPrinter {
         }
         return jsonArrayOfContacts;
     }
+    
+    public static JsonArrayBuilder getBreadcrumbsFromDvObject(DvObject dvObject) {
+        
+        List <DvObject> ownerList = new ArrayList();
+        
+        while (dvObject != null) {
+            ownerList.add(dvObject);
+            dvObject = dvObject.getOwner();
+        } 
+        
+        JsonArrayBuilder jsonArrayOfBreadcrumbs = Json.createArrayBuilder();
+        
+        for (DvObject dvo : ownerList){
+                JsonObjectBuilder breadcrumbObject = jsonObjectBuilder();
+                if (dvo.isInstanceofDataverse()){
+                    Dataverse in = (Dataverse) dvo;
+                    breadcrumbObject.add("identifier", in.getAlias());
+                }
+                if (dvo.isInstanceofDataset() || dvo.isInstanceofDataFile() ){
+                    if (dvo.getIdentifier() != null){
+                        breadcrumbObject.add("identifier", dvo.getIdentifier());
+                    } else {
+                        breadcrumbObject.add("identifier", dvo.getId());
+                    }
+                }
+                if (dvo.isInstanceofDataverse()){
+                    breadcrumbObject.add("type", "DATAVERSE");
+                }
+                if (dvo.isInstanceofDataset()){
+                    breadcrumbObject.add("type", "DATASET");
+                }
+                 if (dvo.isInstanceofDataFile()){
+                    breadcrumbObject.add("type", "DATAFILE");
+                }
+                breadcrumbObject.add("displayName", dvo.getDisplayName());
+            jsonArrayOfBreadcrumbs.add(breadcrumbObject);
+        }
+        return jsonArrayOfBreadcrumbs;
+    }
 
     public static JsonObjectBuilder json( DataverseTheme theme ) {
         final NullSafeJsonBuilder baseObject = jsonObjectBuilder()
@@ -326,8 +366,12 @@ public class JsonPrinter {
                 .add("id", user.getId())
                 .add("userName", user.getUserName());
     }
+    
+    public static JsonObjectBuilder json(Dataset ds){
+       return json(ds, false);
+    }
 
-    public static JsonObjectBuilder json(Dataset ds) {
+    public static JsonObjectBuilder json(Dataset ds, Boolean includeBreadcrumbs) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", ds.getId())
                 .add("identifier", ds.getIdentifier())
@@ -339,6 +383,9 @@ public class JsonPrinter {
                 .add("storageIdentifier", ds.getStorageIdentifier());
         if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
             bld.add("metadataLanguage", ds.getMetadataLanguage());
+        }
+        if (includeBreadcrumbs){
+            bld.add("ownerArray", getBreadcrumbsFromDvObject(ds));
         }
         return bld;
     }
