@@ -319,6 +319,15 @@ public class JsonPrinter {
         for (DvObject dvo : ownerList){
                 JsonObjectBuilder breadcrumbObject = jsonObjectBuilder();
                 if (dvo.isInstanceofDataverse()){
+                    breadcrumbObject.add("type", "DATAVERSE");
+                }
+                if (dvo.isInstanceofDataset()){
+                    breadcrumbObject.add("type", "DATASET");
+                }
+                 if (dvo.isInstanceofDataFile()){
+                    breadcrumbObject.add("type", "DATAFILE");
+                }
+                if (dvo.isInstanceofDataverse()){
                     Dataverse in = (Dataverse) dvo;
                     breadcrumbObject.add("identifier", in.getAlias());
                 }
@@ -328,15 +337,6 @@ public class JsonPrinter {
                     } else {
                         breadcrumbObject.add("identifier", dvo.getId());
                     }
-                }
-                if (dvo.isInstanceofDataverse()){
-                    breadcrumbObject.add("type", "DATAVERSE");
-                }
-                if (dvo.isInstanceofDataset()){
-                    breadcrumbObject.add("type", "DATASET");
-                }
-                 if (dvo.isInstanceofDataFile()){
-                    breadcrumbObject.add("type", "DATAFILE");
                 }
                 breadcrumbObject.add("displayName", dvo.getDisplayName());
             jsonArrayOfBreadcrumbs.add(breadcrumbObject);
