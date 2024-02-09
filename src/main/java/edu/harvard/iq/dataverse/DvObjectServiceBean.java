@@ -395,12 +395,13 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return (String) query.getOutputParameterValue(1);
     }
     
-    /** Backward-compatibility method to get the effective pid generator for a DvObjectContainer.
+    /** @deprecated Backward-compatibility method to get the effective pid generator for a DvObjectContainer.
      * If the dvObjectContainer method fails, this method will check for the old global default settings.
-     * 
-     * If/when those are no longer supported, this method can be removed.
+     * If/when those are no longer supported, this method can be removed and replaced with calls directly 
+     * to dvObjectContainer.getEffectivePidGenerator();
      * 
      */
+    @Deprecated(forRemoval = true, since = "2024-02-09")
     public PidProvider getEffectivePidGenerator(DvObjectContainer dvObjectContainer) {
         PidProvider pidGenerator = dvObjectContainer.getEffectivePidGenerator();
         if (pidGenerator == null) {
