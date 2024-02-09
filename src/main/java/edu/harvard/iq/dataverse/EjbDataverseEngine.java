@@ -18,11 +18,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
-import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteDOIProvider;
-import edu.harvard.iq.dataverse.pidproviders.doi.ezid.EZIdDOIProvider;
-import edu.harvard.iq.dataverse.pidproviders.doi.fake.FakeDOIProvider;
-import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
-import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -53,7 +48,6 @@ import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
 import static jakarta.ejb.TransactionAttributeType.SUPPORTS;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
 /**
