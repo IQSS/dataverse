@@ -533,6 +533,11 @@
           <version>1.1</version>
         </dependency>
         <dependency>
+            <groupId>com.github.dfabulich</groupId>
+            <artifactId>sitemapgen4j</artifactId>
+            <version>1.1.2</version>
+        </dependency>
+        <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>cdm-core</artifactId>
             <version>${netcdf.version}</version>

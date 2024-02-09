@@ -1745,6 +1745,8 @@ https://demo.dataverse.org/sitemap.xml is the sitemap URL for the Dataverse Proj
 
 Once the sitemap has been generated and placed in the domain docroot directory, it will become available to the outside callers at <YOUR_SITE_URL>/sitemap/sitemap.xml; it will also be accessible at <YOUR_SITE_URL>/sitemap.xml (via a *pretty-faces* rewrite rule). Some search engines will be able to find it at this default location. Some, **including Google**, need to be **specifically instructed** to retrieve it.
 
+On Dataverse installation with more than 50000 Dataverse collections or datasets, sitemap file name is ``sitemap_index.html``, not ``sitemap.xml``. Be aware in previous steps to use the correct file name corresponding to your installation.
+
 One way to submit your sitemap URL to Google is by using their "Search Console" (https://search.google.com/search-console). In order to use the console, you will need to authenticate yourself as the owner of your Dataverse site. Various authentication methods are provided; but if you are already using Google Analytics, the easiest way is to use that account. Make sure you are logged in on Google with the account that has the edit permission on your Google Analytics property; go to the search console and enter the root URL of your Dataverse installation, then choose Google Analytics as the authentication method. Once logged in, click on "Sitemaps" in the menu on the left. (todo: add a screenshot?) Consult `Google's "submit a sitemap" instructions`_ for more information; and/or similar instructions for other search engines.
 
 .. _Google's "submit a sitemap" instructions: https://support.google.com/webmasters/answer/183668
