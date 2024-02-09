@@ -155,7 +155,7 @@ RUN <<EOF
     ${ASADMIN} create-jvm-options "-XX\:MaxHeapFreeRatio=\${ENV=MEM_MAX_HEAP_FREE_RATIO}"
     ${ASADMIN} create-jvm-options "-XX\:HeapDumpPath=\${ENV=DUMPS_DIR}"
     # Set logging to console only for containers
-    ${ASADMIN} set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false \
+    ${ASADMIN} set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false
 
     ### PRODUCTION READINESS
     ${ASADMIN} create-jvm-options '-XX\:+UseG1GC'
@@ -188,7 +188,7 @@ RUN <<EOF
     # Misc settings
     ${ASADMIN} create-system-properties fish.payara.classloading.delegate="false"
     ${ASADMIN} create-system-properties jersey.config.client.readTimeout="300000"
-    ${ASADMIN} create-system-properties jersey.config.client.connectTimeout="300000" \
+    ${ASADMIN} create-system-properties jersey.config.client.connectTimeout="300000"
 
     ### DATAVERSE APPLICATION SPECIFICS
     # Configure the MicroProfile directory config source to point to /secrets
@@ -203,7 +203,7 @@ RUN <<EOF
     ${ASADMIN} set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled=true
     ${ASADMIN} create-system-properties javax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl
     # Always disable phoning home...
-    ${ASADMIN} disable-phone-home \
+    ${ASADMIN} disable-phone-home
 
     ### CLEANUP
     # Stop domain
