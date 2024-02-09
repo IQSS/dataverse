@@ -84,8 +84,11 @@ RUN <<EOF
     adduser --system --uid ${UID} --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara
     echo payara:payara | chpasswd
     # Set permissions
-    chown -R payara: "${HOME_DIR}"
-    chown -R payara: "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
+    # Note: Following OpenShift best practices for arbitrary user id support:
+    #       https://docs.openshift.com/container-platform/4.14/openshift_images/create-images.html#use-uid_create-images
+    chown -R payara:0 "${HOME_DIR}" "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
+    chmod -R g=u "${HOME_DIR}" "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
+
 EOF
 
 ARG JATTACH_VERSION="v2.1"
@@ -217,6 +220,13 @@ RUN <<EOF
         "${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/osgi-cache" \
         "${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/logs"
 EOF
+
+USER root
+# Prepare domaindir to be writeable when running on OpenShift (arbitrary UIDs)
+# https://docs.openshift.com/container-platform/4.14/openshift_images/create-images.html#use-uid_create-images
+RUN true && \
+    chgrp -R 0 "${DOMAIN_DIR}" && \
+    chmod -R g=u "${DOMAIN_DIR}"
 
 # Set the entrypoint to tini (as a process supervisor)
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
