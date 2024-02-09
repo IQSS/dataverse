@@ -16,7 +16,7 @@ ENABLE_JMX=${ENABLE_JMX:-0}
 ENABLE_JDWP=${ENABLE_JDWP:-0}
 ENABLE_RELOAD=${ENABLE_RELOAD:-0}
 
-DV_PREBOOT=${PAYARA_DIR}/dataverse_preboot
+DV_PREBOOT=${CONFIG_DIR}/dataverse_preboot
 echo "# Dataverse preboot configuration for Payara" > "${DV_PREBOOT}"
 
 # 1. Configure JMX (enabled by default on port 8686, but requires SSL)
