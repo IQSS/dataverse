@@ -639,8 +639,12 @@ public class JsonPrinter {
 
         return fieldsBld;
     }
+    
+    public static JsonObjectBuilder json(FileMetadata fmd){
+        return json(fmd, false);
+    }
 
-    public static JsonObjectBuilder json(FileMetadata fmd) {
+    public static JsonObjectBuilder json(FileMetadata fmd, Boolean includeOwners) {
         return jsonObjectBuilder()
                 // deprecated: .add("category", fmd.getCategory())
                 // TODO: uh, figure out what to do here... it's deprecated 
@@ -655,7 +659,7 @@ public class JsonPrinter {
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
                 .add("categories", getFileCategories(fmd))
-                .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd, false));
+                .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd, false, includeOwners));
     }
 
       public static JsonObjectBuilder json(AuxiliaryFile auxFile) {
@@ -674,7 +678,11 @@ public class JsonPrinter {
         return JsonPrinter.json(df, null, false);
     }
     
-    public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata, boolean forExportDataProvider) {
+    public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata, boolean forExportDataProvider){
+        return json(df, fileMetadata, forExportDataProvider, false);
+    }
+    
+    public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata, boolean forExportDataProvider, Boolean includeOwners) {
         // File names are no longer stored in the DataFile entity; 
         // (they are instead in the FileMetadata (as "labels") - this way 
         // the filename can change between versions... 
@@ -749,6 +757,9 @@ public class JsonPrinter {
             .add("varGroups", fileMetadata.getVarGroups().isEmpty()
                     ? JsonPrinter.jsonVarGroup(fileMetadata.getVarGroups())
                     : null);
+        }
+        if (includeOwners){
+            builder.add("ownerArray", getOwnersFromDvObject(df));
         }
         return builder;
     }

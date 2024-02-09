@@ -504,18 +504,21 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/draft")
-    public Response getFileDataDraft(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse, Exception {
-        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, true);
+    public Response getFileDataDraft(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, @QueryParam("returnOwners") Boolean returnOwners) throws WrappedResponse, Exception {
+        Boolean includeOwners = returnOwners == null ? false : returnOwners;
+        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, true, includeOwners);
     }
     
     @GET
     @AuthRequired
     @Path("{id}")
-    public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WrappedResponse, Exception {
-          return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, false);
+    public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, @QueryParam("returnOwners") Boolean returnOwners) throws WrappedResponse, Exception {
+        Boolean includeOwners = returnOwners == null ? false : returnOwners;  
+        System.out.print("includeOwners: " + includeOwners);
+        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, false, includeOwners);
     }
     
-    private Response getFileDataResponse(User user, String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response, boolean draft ){
+    private Response getFileDataResponse(User user, String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response, boolean draft, boolean includeOwners ){
         
         DataverseRequest req;
         try {
@@ -565,10 +568,10 @@ public class Files extends AbstractApiBean {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
             mdcLogService.logEntry(entry);
         } 
-        
+                    
         return Response.ok(Json.createObjectBuilder()
                 .add("status", ApiConstants.STATUS_OK)
-                .add("data", json(fm)).build())
+                .add("data", json(fm, includeOwners)).build())
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }
