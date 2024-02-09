@@ -75,9 +75,9 @@ public class PidProviderFactoryBean {
         List<URL> jarUrls = new ArrayList<>();
         Optional<String> providerPathSetting = JvmSettings.PROVIDERS_DIRECTORY.lookupOptional(String.class);
         if (providerPathSetting.isPresent()) {
-            Path exporterDir = Paths.get(providerPathSetting.get());
+            Path providersDir = Paths.get(providerPathSetting.get());
             // Get all JAR files from the configured directory
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(exporterDir, "*.jar")) {
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(providersDir, "*.jar")) {
                 // Using the foreach loop here to enable catching the URI/URL exceptions
                 for (Path path : stream) {
                     logger.log(Level.FINE, "Adding {0}", path.toUri().toURL());
@@ -86,7 +86,7 @@ public class PidProviderFactoryBean {
                     jarUrls.add(new URL("jar:" + path.toUri().toURL() + "!/"));
                 }
             } catch (IOException e) {
-                logger.warning("Problem accessing external Exporters: " + e.getLocalizedMessage());
+                logger.warning("Problem accessing external Providers: " + e.getLocalizedMessage());
             }
         }
         URLClassLoader cl = URLClassLoader.newInstance(jarUrls.toArray(new URL[0]), this.getClass().getClassLoader());
@@ -106,7 +106,7 @@ public class PidProviderFactoryBean {
         loader.forEach(providerFactory -> {
             String type = providerFactory.getType();
             logger.fine("Loaded PidProviderFactory of type: " + type);
-            // If no entry for this providerName yet or if it is an external exporter
+            // If no entry for this providerName yet or if it is an external provider
             if (!pidProviderFactoryMap.containsKey(type) || providerFactory.getClass().getClassLoader().equals(cl)) {
                 logger.fine("Adding PidProviderFactory of type: " + type + " to the map");
                 pidProviderFactoryMap.put(type, providerFactory);
