@@ -958,7 +958,7 @@ public class Files extends AbstractApiBean {
             if (fm == null) {
                 return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
             }
-            boolean direct = false;
+            boolean direct = df.isIdentifierRegistered();
             DataCitation citation = new DataCitation(fm, direct);
             return ok(citation.toString(true));
         } catch (WrappedResponse ex) {
