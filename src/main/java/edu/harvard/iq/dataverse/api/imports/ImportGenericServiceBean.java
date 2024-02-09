@@ -15,9 +15,9 @@ import edu.harvard.iq.dataverse.api.dto.*;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.DOIProvider;
-import edu.harvard.iq.dataverse.pidproviders.HandlePidProvider;
-import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
+import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -352,7 +352,7 @@ public class ImportGenericServiceBean {
         if (!otherIds.isEmpty()) {
             // We prefer doi or hdl identifiers like "doi:10.7910/DVN/1HE30F"
             for (String otherId : otherIds) {
-                if (otherId.startsWith(DOIProvider.DOI_PROTOCOL) || otherId.startsWith(HandlePidProvider.HDL_PROTOCOL) || otherId.startsWith(DOIProvider.DOI_RESOLVER_URL) || otherId.startsWith(HandlePidProvider.HDL_RESOLVER_URL) || otherId.startsWith(DOIProvider.HTTP_DOI_RESOLVER_URL) || otherId.startsWith(HandlePidProvider.HTTP_HDL_RESOLVER_URL) || otherId.startsWith(DOIProvider.DXDOI_RESOLVER_URL) || otherId.startsWith(DOIProvider.HTTP_DXDOI_RESOLVER_URL)) {
+                if (otherId.startsWith(AbstractDOIProvider.DOI_PROTOCOL) || otherId.startsWith(HandlePidProvider.HDL_PROTOCOL) || otherId.startsWith(AbstractDOIProvider.DOI_RESOLVER_URL) || otherId.startsWith(HandlePidProvider.HDL_RESOLVER_URL) || otherId.startsWith(AbstractDOIProvider.HTTP_DOI_RESOLVER_URL) || otherId.startsWith(HandlePidProvider.HTTP_HDL_RESOLVER_URL) || otherId.startsWith(AbstractDOIProvider.DXDOI_RESOLVER_URL) || otherId.startsWith(AbstractDOIProvider.HTTP_DXDOI_RESOLVER_URL)) {
                     return otherId;
                 }
             }
@@ -388,7 +388,7 @@ public class ImportGenericServiceBean {
        
         String protocol = identifierString.substring(0, index1);
         
-        if (DOIProvider.DOI_PROTOCOL.equals(protocol) || HandlePidProvider.HDL_PROTOCOL.equals(protocol) || PermaLinkPidProvider.PERMA_PROTOCOL.equals(protocol)) {
+        if (AbstractDOIProvider.DOI_PROTOCOL.equals(protocol) || HandlePidProvider.HDL_PROTOCOL.equals(protocol) || PermaLinkPidProvider.PERMA_PROTOCOL.equals(protocol)) {
             logger.fine("Processing hdl:- or doi:- or perma:-style identifier : "+identifierString);        
         
         } else if ("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol)) {
@@ -401,12 +401,12 @@ public class ImportGenericServiceBean {
                 protocol = HandlePidProvider.HDL_PROTOCOL;
                 index1 = (identifierString.startsWith(HandlePidProvider.HDL_RESOLVER_URL)) ? HandlePidProvider.HDL_RESOLVER_URL.length() - 1 : HandlePidProvider.HTTP_HDL_RESOLVER_URL.length() - 1;
                 index2 = identifierString.indexOf("/", index1 + 1);
-            } else if (identifierString.startsWith(DOIProvider.DOI_RESOLVER_URL) || identifierString.startsWith(DOIProvider.HTTP_DOI_RESOLVER_URL) || identifierString.startsWith(DOIProvider.DXDOI_RESOLVER_URL) || identifierString.startsWith(DOIProvider.HTTP_DXDOI_RESOLVER_URL)) {
+            } else if (identifierString.startsWith(AbstractDOIProvider.DOI_RESOLVER_URL) || identifierString.startsWith(AbstractDOIProvider.HTTP_DOI_RESOLVER_URL) || identifierString.startsWith(AbstractDOIProvider.DXDOI_RESOLVER_URL) || identifierString.startsWith(AbstractDOIProvider.HTTP_DXDOI_RESOLVER_URL)) {
                 logger.fine("Processing DOI identifier formatted as a resolver URL: "+identifierString);
-                protocol = DOIProvider.DOI_PROTOCOL;
-                identifierString = identifierString.replace(DOIProvider.DXDOI_RESOLVER_URL, DOIProvider.DOI_RESOLVER_URL);
-                identifierString = identifierString.replace(DOIProvider.HTTP_DXDOI_RESOLVER_URL, DOIProvider.HTTP_DOI_RESOLVER_URL);
-                index1 = (identifierString.startsWith(DOIProvider.DOI_RESOLVER_URL)) ? DOIProvider.DOI_RESOLVER_URL.length() - 1 : DOIProvider.HTTP_DOI_RESOLVER_URL.length() - 1;
+                protocol = AbstractDOIProvider.DOI_PROTOCOL;
+                identifierString = identifierString.replace(AbstractDOIProvider.DXDOI_RESOLVER_URL, AbstractDOIProvider.DOI_RESOLVER_URL);
+                identifierString = identifierString.replace(AbstractDOIProvider.HTTP_DXDOI_RESOLVER_URL, AbstractDOIProvider.HTTP_DOI_RESOLVER_URL);
+                index1 = (identifierString.startsWith(AbstractDOIProvider.DOI_RESOLVER_URL)) ? AbstractDOIProvider.DOI_RESOLVER_URL.length() - 1 : AbstractDOIProvider.HTTP_DOI_RESOLVER_URL.length() - 1;
                 index2 = identifierString.indexOf("/", index1 + 1);
             } else if (identifierString.startsWith(PermaLinkPidProvider.PERMA_RESOLVER_URL + Dataset.TARGET_URL)) {
                 protocol = PermaLinkPidProvider.PERMA_PROTOCOL;

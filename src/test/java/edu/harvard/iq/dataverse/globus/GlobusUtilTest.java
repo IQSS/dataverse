@@ -20,7 +20,7 @@ import edu.harvard.iq.dataverse.dataaccess.AbstractRemoteOverlayAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
-import edu.harvard.iq.dataverse.pidproviders.DOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonObject;
 
@@ -52,8 +52,8 @@ public class GlobusUtilTest {
                 "d7c42580-6538-4605-9ad8-116a61982644/hdc1");
 
         dataset = MocksFactory.makeDataset();
-        dataset.setGlobalId(new GlobalId(DOIProvider.DOI_PROTOCOL, authority, identifier, "/",
-                DOIProvider.DOI_RESOLVER_URL, null));
+        dataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, authority, identifier, "/",
+                AbstractDOIProvider.DOI_RESOLVER_URL, null));
         mDatafile = MocksFactory.makeDataFile();
         mDatafile.setOwner(dataset);
         mDatafile.setStorageIdentifier("globusm://" + baseStoreId1);

@@ -1,9 +1,10 @@
-package edu.harvard.iq.dataverse.pidproviders;
+package edu.harvard.iq.dataverse.pidproviders.doi.ezid;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
@@ -17,7 +18,7 @@ import jakarta.ejb.Stateless;
  *
  * @author skraffmiller
  */
-public class EZIdDOIProvider extends DOIProvider {
+public class EZIdDOIProvider extends AbstractDOIProvider {
     
 
 

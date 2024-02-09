@@ -32,7 +32,7 @@ public abstract class AbstractPidProvider implements PidProvider {
     public static String UNAVAILABLE = ":unav";
     public static final String SEPARATOR = "/";
 
-    PidProviderFactoryBean pidProviderService;
+    protected PidProviderFactoryBean pidProviderService;
 
     private String protocol;
 
@@ -51,7 +51,7 @@ public abstract class AbstractPidProvider implements PidProvider {
     private String id;
     private String label;
 
-    AbstractPidProvider(String id, String label, String protocol) {
+    protected AbstractPidProvider(String id, String label, String protocol) {
         this.id = id;
         this.label = label;
         this.protocol = protocol;
@@ -59,7 +59,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.excludedSet = new HashSet<String>();
     }
 
-    AbstractPidProvider(String id, String label, String protocol, String authority, String shoulder,
+    protected AbstractPidProvider(String id, String label, String protocol, String authority, String shoulder,
             String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList) {
         this.id = id;
         this.label = label;

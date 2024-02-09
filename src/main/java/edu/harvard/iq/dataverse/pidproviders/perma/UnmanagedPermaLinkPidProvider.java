@@ -1,7 +1,8 @@
-package edu.harvard.iq.dataverse.pidproviders;
+package edu.harvard.iq.dataverse.pidproviders.perma;
 
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.util.*;
@@ -17,7 +18,7 @@ import org.apache.commons.lang3.NotImplementedException;
 public class UnmanagedPermaLinkPidProvider extends AbstractPidProvider {
 
     private static final Logger logger = Logger.getLogger(UnmanagedPermaLinkPidProvider.class.getCanonicalName());
-    static final String ID = "UnmanagedPermaLinkProvider";
+    public static final String ID = "UnmanagedPermaLinkProvider";
     
     public UnmanagedPermaLinkPidProvider() {
         // Also using ID as label

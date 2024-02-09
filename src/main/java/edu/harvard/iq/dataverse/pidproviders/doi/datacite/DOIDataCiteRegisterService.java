@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse.pidproviders.datacite;
+package edu.harvard.iq.dataverse.pidproviders.doi.datacite;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
-import edu.harvard.iq.dataverse.pidproviders.DataCiteDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider.GlobalIdMetadataTemplate;
 
 import java.io.ByteArrayOutputStream;

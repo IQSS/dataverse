@@ -1,15 +1,16 @@
-package edu.harvard.iq.dataverse.pidproviders;
+package edu.harvard.iq.dataverse.pidproviders.doi.fake;
 
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FakeDOIProvider extends DOIProvider {
+public class FakeDOIProvider extends AbstractDOIProvider {
 
-    static final String TYPE = "FAKE";
+    public static final String TYPE = "FAKE";
 
     public FakeDOIProvider(String id, String label, String providerAuthority, String providerShoulder, String identifierGenerationStyle,
             String datafilePidFormat, String managedList, String excludedList) {

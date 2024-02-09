@@ -1,7 +1,8 @@
-package edu.harvard.iq.dataverse.pidproviders;
+package edu.harvard.iq.dataverse.pidproviders.handle;
 
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -19,7 +20,7 @@ import org.apache.commons.lang3.NotImplementedException;
 public class UnmanagedHandlePidProvider extends AbstractPidProvider {
 
     private static final Logger logger = Logger.getLogger(UnmanagedHandlePidProvider.class.getCanonicalName());
-    static final String ID = "UnmanagedHandleProvider";
+    public static final String ID = "UnmanagedHandleProvider";
 
     public UnmanagedHandlePidProvider() {
         // Also using ID as label

@@ -18,11 +18,13 @@
    Version 3.0.
 */
 
-package edu.harvard.iq.dataverse.pidproviders;
+package edu.harvard.iq.dataverse.pidproviders.handle;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
@@ -75,7 +77,7 @@ public class HandlePidProvider extends AbstractPidProvider {
     private String keyPath;
     private String keyPassphrase;
     
-    HandlePidProvider(String id, String label, String authority, String shoulder, String identifierGenerationStyle,
+    public HandlePidProvider(String id, String label, String authority, String shoulder, String identifierGenerationStyle,
             String datafilePidFormat, String managedList, String excludedList, int index, boolean isIndependentService, String authHandle, String path, String passphrase) {
         super(id, label, HDL_PROTOCOL, authority, shoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
         this.handlenetIndex = index;

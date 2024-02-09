@@ -1,9 +1,11 @@
-package edu.harvard.iq.dataverse.pidproviders;
+package edu.harvard.iq.dataverse.pidproviders.doi;
 
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 
 
-public abstract class DOIProvider extends AbstractPidProvider {
+public abstract class AbstractDOIProvider extends AbstractPidProvider {
 
     public static final String DOI_PROTOCOL = "doi";
     public static final String DOI_RESOLVER_URL = "https://doi.org/";
@@ -11,12 +13,12 @@ public abstract class DOIProvider extends AbstractPidProvider {
     public static final String DXDOI_RESOLVER_URL = "https://dx.doi.org/";
     public static final String HTTP_DXDOI_RESOLVER_URL = "http://dx.doi.org/";
 
-    public DOIProvider(String id, String label, String providerAuthority, String providerShoulder, String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList) {
+    public AbstractDOIProvider(String id, String label, String providerAuthority, String providerShoulder, String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList) {
         super(id, label, DOI_PROTOCOL, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
     }
 
     //For Unmanged provider
-    public DOIProvider(String name, String label) {
+    public AbstractDOIProvider(String name, String label) {
         super(name, label, DOI_PROTOCOL);
     }
 

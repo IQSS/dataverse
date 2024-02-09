@@ -3,9 +3,9 @@ package edu.harvard.iq.dataverse;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import edu.harvard.iq.dataverse.pidproviders.DOIProvider;
-import edu.harvard.iq.dataverse.pidproviders.HandlePidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -21,7 +21,7 @@ public class GlobalIdTest {
     @Test
     public void testValidDOI() {
         System.out.println("testValidDOI");
-        GlobalId instance = new GlobalId(DOIProvider.DOI_PROTOCOL,"10.5072","FK2/BYM3IW", "/", DOIProvider.DOI_RESOLVER_URL, null);
+        GlobalId instance = new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.5072","FK2/BYM3IW", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null);
 
         assertEquals("doi", instance.getProtocol());
         assertEquals("10.5072", instance.getAuthority());

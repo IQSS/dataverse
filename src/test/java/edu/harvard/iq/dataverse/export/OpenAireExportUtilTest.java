@@ -11,8 +11,8 @@ import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
-import edu.harvard.iq.dataverse.pidproviders.DOIProvider;
-import edu.harvard.iq.dataverse.pidproviders.HandlePidProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -57,7 +57,7 @@ public class OpenAireExportUtilTest {
         String persistentAgency = "doi";
         String persistentAuthority = "10.123";
         String persistentId = "123";
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, DOIProvider.DOI_RESOLVER_URL, null);
+        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, AbstractDOIProvider.DOI_RESOLVER_URL, null);
 
         // when
         OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.asURL(), null);

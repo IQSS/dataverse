@@ -3,6 +3,20 @@ package edu.harvard.iq.dataverse.pidproviders;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.UnmanagedDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteProviderFactory;
+import edu.harvard.iq.dataverse.pidproviders.doi.ezid.EZIdDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.ezid.EZIdProviderFactory;
+import edu.harvard.iq.dataverse.pidproviders.doi.fake.FakeDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.fake.FakeProviderFactory;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandleProviderFactory;
+import edu.harvard.iq.dataverse.pidproviders.handle.UnmanagedHandlePidProvider;
+import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkProviderFactory;
+import edu.harvard.iq.dataverse.pidproviders.perma.UnmanagedPermaLinkPidProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -156,7 +170,7 @@ public class PidUtilTest {
         String username = System.getenv("DataCiteUsername");
         String password = System.getenv("DataCitePassword");
         String baseUrl = "https://api.test.datacite.org";
-        GlobalId pid = new GlobalId(DOIProvider.DOI_PROTOCOL,"10.70122","QE5A-XN55", "/", DOIProvider.DOI_RESOLVER_URL, null);
+        GlobalId pid = new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.70122","QE5A-XN55", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null);
         try {
             JsonObjectBuilder result = PidUtil.queryDoi(pid, baseUrl, username, password);
             String out = JsonUtil.prettyPrint(result.build());
@@ -218,7 +232,7 @@ public class PidUtilTest {
         assertEquals("dc1", pid2.getProviderId());
         assertEquals("https://doi.org/" + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(),pid2.asURL());
         assertEquals("10.5073", pid2.getAuthority());
-        assertEquals(DOIProvider.DOI_PROTOCOL, pid2.getProtocol());
+        assertEquals(AbstractDOIProvider.DOI_PROTOCOL, pid2.getProtocol());
         GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
         assertEquals(pid1String, pid3.asString());
         assertEquals("dc1", pid3.getProviderId());
@@ -294,7 +308,7 @@ public class PidUtilTest {
         assertEquals(UnmanagedDOIProvider.ID, pid2.getProviderId());
         assertEquals("https://doi.org/" + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(),pid2.asURL());
         assertEquals("10.5073", pid2.getAuthority());
-        assertEquals(DOIProvider.DOI_PROTOCOL, pid2.getProtocol());
+        assertEquals(AbstractDOIProvider.DOI_PROTOCOL, pid2.getProtocol());
         GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
         assertEquals(pid1String, pid3.asString());
         assertEquals(UnmanagedDOIProvider.ID, pid3.getProviderId());
@@ -326,7 +340,7 @@ public class PidUtilTest {
         assertEquals("fake1", pid2.getProviderId());
         assertEquals("https://doi.org/" + pid2.getAuthority() + PidUtil.getPidProvider(pid2.getProviderId()).getSeparator() + pid2.getIdentifier(),pid2.asURL());
         assertEquals("10.5073", pid2.getAuthority());
-        assertEquals(DOIProvider.DOI_PROTOCOL, pid2.getProtocol());
+        assertEquals(AbstractDOIProvider.DOI_PROTOCOL, pid2.getProtocol());
         GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
         assertEquals(pid1String, pid3.asString());
         assertEquals("fake1", pid3.getProviderId());
@@ -351,7 +365,7 @@ public class PidUtilTest {
         Dataset dataset1 = new Dataset();
         Dataverse dataverse1 = new Dataverse();
         dataset1.setOwner(dataverse1);
-        String pidGeneratorSpecs = Json.createObjectBuilder().add("protocol", DOIProvider.DOI_PROTOCOL).add("authority","10.5072").add("shoulder", "FK2").build().toString();
+        String pidGeneratorSpecs = Json.createObjectBuilder().add("protocol", AbstractDOIProvider.DOI_PROTOCOL).add("authority","10.5072").add("shoulder", "FK2").build().toString();
         //Set a PID generator on the parent
         dataverse1.setPidGeneratorSpecs(pidGeneratorSpecs);
         assertEquals(pidGeneratorSpecs, dataverse1.getPidGeneratorSpecs());
@@ -360,7 +374,7 @@ public class PidUtilTest {
         assertEquals("ez1", dataset1.getEffectivePidGenerator().getId());
         //Change dataset to have a provider and verify that it is used instead of any effective one
         dataset1.setAuthority("10.5073");
-        dataset1.setProtocol(DOIProvider.DOI_PROTOCOL);
+        dataset1.setProtocol(AbstractDOIProvider.DOI_PROTOCOL);
         dataset1.setIdentifier("FK2ABCDEF");
         //Reset to get rid of cached @transient value
         dataset1.setPidGenerator(null);

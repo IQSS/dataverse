@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.InputStream;
@@ -111,7 +113,7 @@ public class PidUtil {
      * @return DOI in the form 10.7910/DVN/TJCLKP (no "doi:")
      */
     private static String acceptOnlyDoi(GlobalId globalId) {
-        if (!DOIProvider.DOI_PROTOCOL.equals(globalId.getProtocol())) {
+        if (!AbstractDOIProvider.DOI_PROTOCOL.equals(globalId.getProtocol())) {
             throw new IllegalArgumentException(BundleUtil.getStringFromBundle("pids.datacite.errors.DoiOnly"));
         }
         return globalId.getAuthority() + "/" + globalId.getIdentifier();
@@ -187,7 +189,7 @@ public class PidUtil {
      * This method should be deprecated/removed when further refactoring to support
      * multiple PID providers is done. At that point, when the providers aren't
      * beans, this code can be moved into other classes that go in the providerMap.
-     * If this method is not kept in sync with the DOIProvider and HandlePidProvider
+     * If this method is not kept in sync with the AbstractDOIProvider and HandlePidProvider
      * implementations, the tests using it won't be valid tests of the production
      * code.
      */
@@ -199,11 +201,11 @@ public class PidUtil {
         }
         String urlPrefix = null;
         switch (protocol) {
-        case DOIProvider.DOI_PROTOCOL:
+        case AbstractDOIProvider.DOI_PROTOCOL:
             if (!PidProvider.checkDOIAuthority(authority)) {
                 return null;
             }
-            urlPrefix = DOIProvider.DOI_RESOLVER_URL;
+            urlPrefix = AbstractDOIProvider.DOI_RESOLVER_URL;
             break;
         case HandlePidProvider.HDL_PROTOCOL:
             urlPrefix = HandlePidProvider.HDL_RESOLVER_URL;

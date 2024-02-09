@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.pidproviders;
+package edu.harvard.iq.dataverse.pidproviders.doi.datacite;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -15,7 +15,7 @@ import jakarta.ejb.Stateless;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.pidproviders.datacite.DOIDataCiteRegisterService;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
@@ -24,7 +24,7 @@ import org.apache.commons.httpclient.HttpStatus;
  *
  * @author luopc
  */
-public class DataCiteDOIProvider extends DOIProvider {
+public class DataCiteDOIProvider extends AbstractDOIProvider {
 
     private static final Logger logger = Logger.getLogger(DataCiteDOIProvider.class.getCanonicalName());
 

@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.pidproviders;
+package edu.harvard.iq.dataverse.pidproviders.doi;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,9 +14,9 @@ import edu.harvard.iq.dataverse.GlobalId;
  * 
  */
 
-public class UnmanagedDOIProvider extends DOIProvider {
+public class UnmanagedDOIProvider extends AbstractDOIProvider {
 
-    static final String ID = "UnmanagedDOIProvider";
+    public static final String ID = "UnmanagedDOIProvider";
 
     public UnmanagedDOIProvider() {
         //Also using ID as label
@@ -74,6 +74,6 @@ public class UnmanagedDOIProvider extends DOIProvider {
     }
 
     // PID recognition
-    // Done by DOIProvider
+    // Done by AbstractDOIProvider
 
 }

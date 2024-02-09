@@ -29,6 +29,14 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.doi.UnmanagedDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.ezid.EZIdDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.fake.FakeDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.UnmanagedHandlePidProvider;
+import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.perma.UnmanagedPermaLinkPidProvider;
 
 /**
  * This Bean loads all of the PidProviderFactory types available (e.g. EZID,
@@ -203,7 +211,7 @@ public class PidProviderFactoryBean {
         return dataverseService.getRootDataverseName();
     }
 
-    boolean isGlobalIdLocallyUnique(GlobalId globalId) {
+    public boolean isGlobalIdLocallyUnique(GlobalId globalId) {
         return dvObjectService.isGlobalIdLocallyUnique(globalId);
     }
 
