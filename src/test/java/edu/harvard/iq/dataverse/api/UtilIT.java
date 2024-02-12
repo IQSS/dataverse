@@ -1476,6 +1476,15 @@ public class UtilIT {
                         + persistentId
                         + (excludeFiles ? "&excludeFiles=true" : ""));
     }
+    
+    static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/"
+                        + "?persistentId="
+                        + persistentId
+                        + (returnOwners ? "&returnOwners=true" : ""));
+    }
 
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
         return given()
