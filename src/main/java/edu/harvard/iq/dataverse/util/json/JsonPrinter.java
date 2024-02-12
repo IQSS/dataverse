@@ -258,11 +258,11 @@ public class JsonPrinter {
     }
     
     public static JsonObjectBuilder json(Dataverse dv) {
-        return json(dv, false);
+        return json(dv, false, false);
     }
 
     //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
-    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail) {
+    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean includeOwners) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
@@ -271,7 +271,9 @@ public class JsonPrinter {
         if(!hideEmail) { 
             bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
         }
-        
+        if (includeOwners){
+            bld.add("ownerArray", getOwnersFromDvObject(dv));
+        }       
         bld.add("permissionRoot", dv.isPermissionRoot())
                 .add("description", dv.getDescription())
                 .add("dataverseType", dv.getDataverseType().name());

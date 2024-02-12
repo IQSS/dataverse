@@ -610,10 +610,12 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}")
-    public Response viewDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf) {
+    public Response viewDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf, @QueryParam("returnOwners") Boolean returnOwners) {
+        Boolean includeOwners = returnOwners == null ? false : returnOwners;
         return response(req -> ok(
             json(execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf))),
-                settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false)
+                settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false),
+                includeOwners
             )), getRequestUser(crc));
     }
 
