@@ -475,6 +475,112 @@ public class FilePage implements java.io.Serializable {
         return returnToDraftVersion();
     }
     
+    public String ingestFile() throws CommandException{
+        
+        User u = session.getUser();
+        if(!u.isAuthenticated() ||  !(permissionService.permissionsFor(u, file).contains(Permission.PublishDataset))) {
+            //Shouldn't happen (choice not displayed for users who don't have the right permission), but check anyway
+            logger.warning("User: " + u.getIdentifier() + " tried to ingest a file");
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantIngestFileWarning"));
+            return null;
+        }
+
+        DataFile dataFile = fileMetadata.getDataFile();
+        editDataset = dataFile.getOwner();
+        
+        if (dataFile.isTabularData()) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.alreadyIngestedWarning"));
+            return null;
+        }
+        
+        boolean ingestLock = dataset.isLockedFor(DatasetLock.Reason.Ingest);
+        
+        if (ingestLock) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.ingestInProgressWarning"));
+            return null;
+        }
+        
+        if (!FileUtil.canIngestAsTabular(dataFile)) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantIngestFileWarning"));
+            return null;
+            
+        }
+        
+        dataFile.SetIngestScheduled();
+                
+        if (dataFile.getIngestRequest() == null) {
+            dataFile.setIngestRequest(new IngestRequest(dataFile));
+        }
+
+        dataFile.getIngestRequest().setForceTypeCheck(true);
+        
+        // update the datafile, to save the newIngest request in the database:
+        save();
+
+        // queue the data ingest job for asynchronous execution: 
+        String status = ingestService.startIngestJobs(editDataset.getId(), new ArrayList<>(Arrays.asList(dataFile)), (AuthenticatedUser) session.getUser());
+        
+        if (!StringUtil.isEmpty(status)) {
+            // This most likely indicates some sort of a problem (for example, 
+            // the ingest job was not put on the JMS queue because of the size
+            // of the file). But we are still returning the OK status - because
+            // from the point of view of the API, it's a success - we have 
+            // successfully gone through the process of trying to schedule the 
+            // ingest job...
+            
+            logger.warning("Ingest Status for file: " + dataFile.getId() + " : " + status);
+        }
+        logger.info("File: " + dataFile.getId() + " ingest queued");
+
+        init();
+        JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("file.ingest.ingestQueued"));
+        return returnToDraftVersion();
+    }
+
+    public String uningestFile() throws CommandException {
+        
+        if (!file.isTabularData()) {
+            if(file.isIngestProblem()) {
+                User u = session.getUser();
+                if(!u.isAuthenticated() ||  !(permissionService.permissionsFor(u, file).contains(Permission.PublishDataset))) {
+                    logger.warning("User: " + u.getIdentifier() + " tried to uningest a file");
+                    //Shouldn't happen (choice not displayed for users who don't have the right permission), but check anyway
+                    JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+                    return null;
+                }
+              file.setIngestDone();
+              file.setIngestReport(null);
+            } else {
+              JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+              return null;
+            }
+        } else {
+            commandEngine.submit(new UningestFileCommand(dvRequestService.getDataverseRequest(), file));
+            Long dataFileId = file.getId();
+            file = datafileService.find(dataFileId);
+        }
+        editDataset = file.getOwner();
+        if (editDataset.isReleased()) {
+            try {
+                ExportService instance = ExportService.getInstance();
+                instance.exportAllFormats(editDataset);
+
+            } catch (ExportException ex) {
+                // Something went wrong!
+                // Just like with indexing, a failure to export is not a fatal
+                // condition. We'll just log the error as a warning and keep
+                // going:
+                logger.log(Level.WARNING, "Uningest: Exception while exporting:{0}", ex.getMessage());
+            }
+        }
+        save();
+        //Refresh filemetadata with file title, etc.
+        init();
+        JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("file.uningest.complete"));
+        return returnToDraftVersion();
+    }
+    
+    
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
     public String deleteFile() {
@@ -946,6 +1052,12 @@ public class FilePage implements java.io.Serializable {
 
     public boolean isPubliclyDownloadable() {
         return FileUtil.isPubliclyDownloadable(fileMetadata);
+    }
+
+    public boolean isIngestable() {
+        DataFile f = fileMetadata.getDataFile();
+        //Datafile is an ingestable type and hasn't been ingested yet or had an ingest fail
+        return (FileUtil.canIngestAsTabular(f)&&!(f.isTabularData() || f.isIngestProblem()));
     }
 
     private Boolean lockedFromEditsVar;
