@@ -20,6 +20,8 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
+
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -310,13 +312,19 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
-    private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten, Long fileMetadataId) {
-        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten, fileMetadataId);
-        logger.fine("Redirecting to file download url: " + fileDownloadUrl);
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
+    private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten,
+            Long fileMetadataId) {
+        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten,
+                fileMetadataId);
+        if ("GlobusTransfer".equals(downloadType)) {
+            PrimeFaces.current().executeScript(URLTokenUtil.getScriptForUrl(fileDownloadUrl));
+        } else {
+            logger.fine("Redirecting to file download url: " + fileDownloadUrl);
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+            } catch (IOException ex) {
+                logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
+            }
         }
     }
     
