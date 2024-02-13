@@ -73,7 +73,7 @@ public class PidProviderFactoryBean {
          * Step 1 - find the PROVIDERS dir and add all jar files there to a class loader
          */
         List<URL> jarUrls = new ArrayList<>();
-        Optional<String> providerPathSetting = JvmSettings.PROVIDERS_DIRECTORY.lookupOptional(String.class);
+        Optional<String> providerPathSetting = JvmSettings.PIDPROVIDERS_DIRECTORY.lookupOptional(String.class);
         if (providerPathSetting.isPresent()) {
             Path providersDir = Paths.get(providerPathSetting.get());
             // Get all JAR files from the configured directory

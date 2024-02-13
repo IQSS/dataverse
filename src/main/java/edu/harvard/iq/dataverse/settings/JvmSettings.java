@@ -93,7 +93,6 @@ public enum JvmSettings {
     SCOPE_PID(PREFIX, "pid"),
     PID_PROVIDERS(SCOPE_PID, "providers"),
     PID_DEFAULT_PROVIDER(SCOPE_PID, "default-provider"),
-    PROVIDERS_DIRECTORY(SCOPE_PID, "provider-implementations-directory"),
     SCOPE_PID_PROVIDER(SCOPE_PID),
     PID_PROVIDER_TYPE(SCOPE_PID_PROVIDER, "type"),
     PID_PROVIDER_LABEL(SCOPE_PID_PROVIDER, "label"),
@@ -185,6 +184,8 @@ public enum JvmSettings {
     SCOPE_SPI(PREFIX, "spi"),
     SCOPE_EXPORTERS(SCOPE_SPI, "exporters"),
     EXPORTERS_DIRECTORY(SCOPE_EXPORTERS, "directory"),
+    SCOPE_PIDPROVIDERS(SCOPE_SPI, "pidproviders"),
+    PIDPROVIDERS_DIRECTORY(SCOPE_PIDPROVIDERS, "directory"),
     
     // MAIL SETTINGS
     SCOPE_MAIL(PREFIX, "mail"),
