@@ -5,13 +5,13 @@ the combination where the account can mint new PIDs). It also adds the ability f
 DataCite, EZId, Handle, and PermaLink providers to be dynamically added as separate jar files.
 
 These changes require per-provider settings rather than the global PID settings previously supported. While backward compatibility 
-for installations using a single PID Provider account is provided, updating to use the new microprofile settings is highly recommended.
+for installations using a single PID Provider account is provided, updating to use the new microprofile settings is highly recommended
+and will be required in a future version.
 
 New microprofile settings (where * indicates a provider id indicating which provider the setting is for):
 
 dataverse.pid.providers
 dataverse.pid.default-provider
-dataverse.pid.provider-implementations-directory
 dataverse.pid.*.type
 dataverse.pid.*.label
 dataverse.pid.*.authority
@@ -34,4 +34,4 @@ dataverse.pid.*.handlenet.independent-service
 dataverse.pid.*.handlenet.auth-handle
 dataverse.pid.*.handlenet.key.path
 dataverse.pid.*.handlenet.key.passphrase
-
+dataverse.spi.pidproviders.directory
