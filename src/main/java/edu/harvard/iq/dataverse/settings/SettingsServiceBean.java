@@ -461,18 +461,6 @@ public class SettingsServiceBean {
          */
         ExportInstallationAsDistributorOnlyWhenNotSet,
 
-        /**
-         * Basic Globus Token for Globus Application
-         */
-        GlobusBasicToken,
-        /**
-         * GlobusEndpoint is Globus endpoint for Globus application
-         */
-        GlobusEndpoint,
-        /** 
-         * Comma separated list of Globus enabled stores
-         */
-        GlobusStores,
         /** Globus App URL
          * 
          */
@@ -605,7 +593,17 @@ public class SettingsServiceBean {
         /*
          * True/false(default) option deciding whether file PIDs can be enabled per collection - using the Dataverse/collection set attribute API call.
          */
-        AllowEnablingFilePIDsPerCollection
+        AllowEnablingFilePIDsPerCollection,
+        /**
+         * Allows an instance admin to disable Solr search facets on the collection
+         * and dataset pages instantly
+         */
+        DisableSolrFacets,
+        /**
+         * When ingesting tabular data files, store the generated tab-delimited 
+         * files *with* the variable names line up top. 
+         */
+        StoreIngestedTabularFilesWithVarHeaders
         ;
 
         @Override

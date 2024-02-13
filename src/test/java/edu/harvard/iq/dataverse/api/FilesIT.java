@@ -16,6 +16,7 @@ import static io.restassured.path.json.JsonPath.with;
 import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +34,8 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
@@ -2362,4 +2365,250 @@ public class FilesIT {
         fileHasBeenDeleted = JsonPath.from(getHasBeenDeletedResponse.body().asString()).getBoolean("data");
         assertTrue(fileHasBeenDeleted);
     }
+    
+    @Test
+    public void testCollectionStorageQuotas() {
+        // A minimal storage quota functionality test: 
+        // - We create a collection and define a storage quota
+        // - We configure Dataverse to enforce it 
+        // - We confirm that we can upload a file with the size under the quota
+        // - We confirm that we cannot upload a file once the quota is reached
+        // - We disable the quota on the collection via the API
+        
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        
+        System.out.println("dataset id: "+datasetId);
+        
+        Response checkQuotaResponse = UtilIT.checkCollectionQuota(dataverseAlias, apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // This brand new collection shouldn't have any quota defined yet: 
+        assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.notdefined"), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+        
+        // Set quota to 1K:
+        Response setQuotaResponse = UtilIT.setCollectionQuota(dataverseAlias, 1024, apiToken);
+        setQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.updated"), JsonPath.from(setQuotaResponse.body().asString()).getString("data.message"));
+        
+        // Check again:
+        checkQuotaResponse = UtilIT.checkCollectionQuota(dataverseAlias, apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation", Arrays.asList("1,024"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+
+        System.out.println(expectedApiMessage);
+        
+        UtilIT.enableSetting(SettingsServiceBean.Key.UseStorageQuotas);
+                
+        String pathToFile306bytes = "src/test/resources/FileRecordJobIT.properties"; 
+        String pathToFile1787bytes = "src/test/resources/datacite.xml";
+
+        // Upload a small file: 
+        
+        Response uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile306bytes, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        
+        // Check the recorded storage use: 
+        
+        Response checkStorageUseResponse = UtilIT.checkCollectionStorageUse(dataverseAlias, apiToken);
+        checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.use", Arrays.asList("306"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkStorageUseResponse.body().asString()).getString("data.message"));
+
+        System.out.println(expectedApiMessage);
+        
+        // Attempt to upload the second file - this should get us over the quota, 
+        // so it should be rejected:
+        
+        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, Json.createObjectBuilder().build(), apiToken);
+        uploadResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        // We should get this error message made up from 2 Bundle strings:
+        expectedApiMessage = BundleUtil.getStringFromBundle("file.addreplace.error.ingest_create_file_err");
+        expectedApiMessage = expectedApiMessage + " " + BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded", Arrays.asList("1.7 KB", "718 B"));
+        assertEquals(expectedApiMessage, JsonPath.from(uploadResponse.body().asString()).getString("message"));
+        
+        System.out.println(expectedApiMessage);
+        
+        // Check Storage Use again - should be unchanged: 
+        
+        checkStorageUseResponse = UtilIT.checkCollectionStorageUse(dataverseAlias, apiToken);
+        checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.use", Arrays.asList("306"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkStorageUseResponse.body().asString()).getString("data.message"));
+
+        // Disable the quota on the collection; try again:
+        
+        Response disableQuotaResponse = UtilIT.disableCollectionQuota(dataverseAlias, apiToken);
+        disableQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.quota.deleted");
+        assertEquals(expectedApiMessage, JsonPath.from(disableQuotaResponse.body().asString()).getString("data.message"));
+
+        // Check again: 
+        
+        checkQuotaResponse = UtilIT.checkCollectionQuota(dataverseAlias, apiToken);
+        checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // ... should say "no quota", again: 
+        assertEquals(BundleUtil.getStringFromBundle("dataverse.storage.quota.notdefined"), JsonPath.from(checkQuotaResponse.body().asString()).getString("data.message"));
+        
+        // And try to upload the larger file again:
+        
+        uploadResponse = UtilIT.uploadFileViaNative(Integer.toString(datasetId), pathToFile1787bytes, Json.createObjectBuilder().build(), apiToken);
+        // ... should work this time around:
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+            
+        // Let's confirm that the total storage use has been properly implemented:
+
+        //try {sleep(1000);}catch(InterruptedException ie){}
+        
+        checkStorageUseResponse = UtilIT.checkCollectionStorageUse(dataverseAlias, apiToken);
+        checkStorageUseResponse.then().assertThat().statusCode(OK.getStatusCode());
+        expectedApiMessage = BundleUtil.getStringFromBundle("dataverse.storage.use", Arrays.asList("2,093"));
+        assertEquals(expectedApiMessage, JsonPath.from(checkStorageUseResponse.body().asString()).getString("data.message"));
+
+        System.out.println(expectedApiMessage);
+        
+        // @todo: a test for the storage use hierarchy? - create a couple of 
+        // sub-collections, upload a file into a dataset in the farthest branch 
+        // collection, make sure the usage has been incremented all the way up 
+        // to the root? 
+        
+        UtilIT.deleteSetting(SettingsServiceBean.Key.UseStorageQuotas);
+    }
+    
+    @Test
+    public void testIngestWithAndWithoutVariableHeader() throws NoSuchAlgorithmException {
+        msgt("testIngestWithAndWithoutVariableHeader");
+        
+        // The compact Stata file we'll be using for this test: 
+        // (this file is provided by Stata inc. - it's genuine quality)
+        String pathToFile = "scripts/search/data/tabular/stata13-auto.dta";
+        // The pre-calculated MD5 signature of the *complete* tab-delimited 
+        // file as seen by the final Access API user (i.e., with the variable 
+        // header line in it):
+        String tabularFileMD5 = "f298c2567cc8eb544e36ad83edf6f595";
+        // Expected byte sizes of the generated tab-delimited file as stored, 
+        // with and without the header:
+        int tabularFileSizeWoutHeader = 4026; 
+        int tabularFileSizeWithHeader = 4113; 
+
+        String apiToken = createUserGetToken();
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+        Integer datasetIdA = createDatasetGetId(dataverseAlias, apiToken);
+        
+        // Before we do anything else, make sure that the instance is configured 
+        // the "old" way, i.e., to store ingested files without the headers:
+        UtilIT.deleteSetting(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders);
+        
+        Response addResponse = UtilIT.uploadFileViaNative(datasetIdA.toString(), pathToFile, apiToken);
+        addResponse.prettyPrint();
+
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("application/x-stata-13"))
+                .body("data.files[0].label", equalTo("stata13-auto.dta"))
+                .statusCode(OK.getStatusCode());
+
+        Long fileIdA = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        assertNotNull(fileIdA);
+
+        // Give file time to ingest
+        assertTrue(UtilIT.sleepForLock(datasetIdA.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile + "(A)");
+
+        // Check the metadata to confirm that the file has ingested: 
+
+        Response fileDataResponse = UtilIT.getFileData(fileIdA.toString(), apiToken);
+        fileDataResponse.prettyPrint();
+        fileDataResponse.then().assertThat()
+                .body("data.dataFile.filename", equalTo("stata13-auto.tab"))
+                .body("data.dataFile.contentType", equalTo("text/tab-separated-values"))
+                .body("data.dataFile.filesize", equalTo(tabularFileSizeWoutHeader))
+                .statusCode(OK.getStatusCode());
+        
+
+        // Download the file, verify the checksum: 
+
+        Response fileDownloadResponse = UtilIT.downloadFile(fileIdA.intValue(), apiToken);
+        fileDownloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode()); 
+        
+        byte[] fileDownloadBytes = fileDownloadResponse.body().asByteArray(); 
+        MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+        messageDigest.update(fileDownloadBytes);
+        byte[] rawDigestBytes = messageDigest.digest();
+        String tabularFileMD5calculated = FileUtil.checksumDigestToString(rawDigestBytes);
+        
+        msgt("md5 of the downloaded file (saved without the variable name header): "+tabularFileMD5calculated);
+        
+        assertEquals(tabularFileMD5, tabularFileMD5calculated);
+
+        // Repeat the whole thing, in another dataset (because we will be uploading 
+        // an identical file), but with the "store with the header setting enabled): 
+        
+        UtilIT.enableSetting(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders);
+        
+        Integer datasetIdB = createDatasetGetId(dataverseAlias, apiToken);
+        
+        addResponse = UtilIT.uploadFileViaNative(datasetIdB.toString(), pathToFile, apiToken);
+        addResponse.prettyPrint();
+
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("application/x-stata-13"))
+                .body("data.files[0].label", equalTo("stata13-auto.dta"))
+                .statusCode(OK.getStatusCode());
+
+        Long fileIdB = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        assertNotNull(fileIdB);
+
+        // Give file time to ingest
+        assertTrue(UtilIT.sleepForLock(datasetIdB.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile + "(B)");
+        
+        // Check the metadata to confirm that the file has ingested: 
+
+        fileDataResponse = UtilIT.getFileData(fileIdB.toString(), apiToken);
+        fileDataResponse.prettyPrint();
+        fileDataResponse.then().assertThat()
+                .body("data.dataFile.filename", equalTo("stata13-auto.tab"))
+                .body("data.dataFile.contentType", equalTo("text/tab-separated-values"))
+                .body("data.dataFile.filesize", equalTo(tabularFileSizeWithHeader))
+                .statusCode(OK.getStatusCode());
+        
+
+        // Download the file, verify the checksum, again
+
+        fileDownloadResponse = UtilIT.downloadFile(fileIdB.intValue(), apiToken);
+        fileDownloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode()); 
+        
+        fileDownloadBytes = fileDownloadResponse.body().asByteArray(); 
+        messageDigest.reset();
+        messageDigest.update(fileDownloadBytes);
+        rawDigestBytes = messageDigest.digest();
+        tabularFileMD5calculated = FileUtil.checksumDigestToString(rawDigestBytes);
+        
+        msgt("md5 of the downloaded file (saved with the variable name header): "+tabularFileMD5calculated);
+        
+        assertEquals(tabularFileMD5, tabularFileMD5calculated);
+
+        // In other words, whether the file was saved with, or without the header, 
+        // as downloaded by the user, the end result must be the same in both cases!
+        // In other words, whether that first line with the variable names is already
+        // in the physical file, or added by Dataverse on the fly, the downloaded
+        // content must be identical. 
+        
+        UtilIT.deleteSetting(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders);
+        
+        // @todo: cleanup? 
+    }
+    
 }

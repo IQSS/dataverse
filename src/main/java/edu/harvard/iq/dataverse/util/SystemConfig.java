@@ -941,16 +941,11 @@ public class SystemConfig {
     }
 
     public boolean isGlobusDownload() {
-        return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), false);
+        return getMethodAvailable(FileDownloadMethods.GLOBUS.toString(), false);
     }
     
     public boolean isGlobusFileDownload() {
         return (isGlobusDownload() && settingsService.isTrueForKey(SettingsServiceBean.Key.GlobusSingleFileTransfer, false));
-    }
-
-    public List<String> getGlobusStoresList() {
-    String globusStores = settingsService.getValueForKey(SettingsServiceBean.Key.GlobusStores, "");
-    return Arrays.asList(globusStores.split("\\s*,\\s*"));
     }
 
     private Boolean getMethodAvailable(String method, boolean upload) {
@@ -1177,5 +1172,13 @@ public class SystemConfig {
      */
     public Long getTestStorageQuotaLimit() {
         return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.StorageQuotaSizeInBytes);
+    }
+    /**
+     * Should we store tab-delimited files produced during ingest *with* the 
+     * variable name header line included? 
+     * @return boolean - defaults to false.
+     */
+    public boolean isStoringIngestedFilesWithHeaders() {
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders, false);
     }
 }

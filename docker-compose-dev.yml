@@ -9,17 +9,45 @@ services:
     restart: on-failure
     user: payara
     environment:
-      - DATAVERSE_DB_HOST=postgres
-      - DATAVERSE_DB_PASSWORD=secret
-      - DATAVERSE_DB_USER=${DATAVERSE_DB_USER}
-      - ENABLE_JDWP=1
-      - ENABLE_RELOAD=1
-      - SKIP_DEPLOY=${SKIP_DEPLOY}
-      - DATAVERSE_FEATURE_API_BEARER_AUTH=1
-      - DATAVERSE_AUTH_OIDC_ENABLED=1
-      - DATAVERSE_AUTH_OIDC_CLIENT_ID=test
-      - DATAVERSE_AUTH_OIDC_CLIENT_SECRET=94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8
-      - DATAVERSE_AUTH_OIDC_AUTH_SERVER_URL=http://keycloak.mydomain.com:8090/realms/test
+      DATAVERSE_DB_HOST: postgres
+      DATAVERSE_DB_PASSWORD: secret
+      DATAVERSE_DB_USER: ${DATAVERSE_DB_USER}
+      ENABLE_JDWP: "1"
+      ENABLE_RELOAD: "1"
+      SKIP_DEPLOY: "${SKIP_DEPLOY}"
+      DATAVERSE_JSF_REFRESH_PERIOD: "1"
+      DATAVERSE_FEATURE_API_BEARER_AUTH: "1"
+      DATAVERSE_AUTH_OIDC_ENABLED: "1"
+      DATAVERSE_AUTH_OIDC_CLIENT_ID: test
+      DATAVERSE_AUTH_OIDC_CLIENT_SECRET: 94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8
+      DATAVERSE_AUTH_OIDC_AUTH_SERVER_URL: http://keycloak.mydomain.com:8090/realms/test
+      # These two oai settings are here to get HarvestingServerIT to pass
+      dataverse_oai_server_maxidentifiers: "2"
+      dataverse_oai_server_maxrecords: "2"
+      JVM_ARGS: -Ddataverse.files.storage-driver-id=file1
+        -Ddataverse.files.file1.type=file
+        -Ddataverse.files.file1.label=Filesystem
+        -Ddataverse.files.file1.directory=${STORAGE_DIR}/store
+        -Ddataverse.files.localstack1.type=s3
+        -Ddataverse.files.localstack1.label=LocalStack
+        -Ddataverse.files.localstack1.custom-endpoint-url=http://localstack:4566
+        -Ddataverse.files.localstack1.custom-endpoint-region=us-east-2
+        -Ddataverse.files.localstack1.bucket-name=mybucket
+        -Ddataverse.files.localstack1.path-style-access=true
+        -Ddataverse.files.localstack1.upload-redirect=true
+        -Ddataverse.files.localstack1.download-redirect=true
+        -Ddataverse.files.localstack1.access-key=default
+        -Ddataverse.files.localstack1.secret-key=default
+        -Ddataverse.files.minio1.type=s3
+        -Ddataverse.files.minio1.label=MinIO
+        -Ddataverse.files.minio1.custom-endpoint-url=http://minio:9000
+        -Ddataverse.files.minio1.custom-endpoint-region=us-east-1
+        -Ddataverse.files.minio1.bucket-name=mybucket
+        -Ddataverse.files.minio1.path-style-access=true
+        -Ddataverse.files.minio1.upload-redirect=false
+        -Ddataverse.files.minio1.download-redirect=false
+        -Ddataverse.files.minio1.access-key=4cc355_k3y
+        -Ddataverse.files.minio1.secret-key=s3cr3t_4cc355_k3y
     ports:
       - "8080:8080" # HTTP (Dataverse Application)
       - "4949:4848" # HTTPS (Payara Admin Console)
@@ -163,6 +191,41 @@ services:
       - dev_dataverse
     networks:
       - dataverse
+
+  dev_localstack:
+    container_name: "dev_localstack"
+    hostname: "localstack"
+    image: localstack/localstack:2.3.2
+    restart: on-failure
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      - DEBUG=${DEBUG-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOSTNAME_EXTERNAL=localstack
+    networks:
+      - dataverse
+    volumes:
+      - ./conf/localstack:/etc/localstack/init/ready.d
+    tmpfs:
+      - /localstack:mode=770,size=128M,uid=1000,gid=1000
+
+  dev_minio:
+    container_name: "dev_minio"
+    hostname: "minio"
+    image: minio/minio
+    restart: on-failure
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - dataverse
+    volumes:
+      - ./docker-dev-volumes/minio_storage:/data
+    environment:
+      MINIO_ROOT_USER: 4cc355_k3y
+      MINIO_ROOT_PASSWORD: s3cr3t_4cc355_k3y
+    command: server /data
 
 networks:
   dataverse:

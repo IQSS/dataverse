@@ -49,6 +49,8 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -814,19 +816,17 @@ public class Files extends AbstractApiBean {
             return error(BAD_REQUEST, "External tool does not have file scope.");
         }
         ApiToken apiToken = null;
-        User u = getRequestUser(crc);
-        if (u instanceof AuthenticatedUser) {
-            apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) u);
-        }
+        User user = getRequestUser(crc);
+        apiToken = authSvc.getValidApiTokenForUser(user);
         FileMetadata target = fileSvc.findFileMetadata(fmid);
         if (target == null) {
             return error(BAD_REQUEST, "FileMetadata not found.");
         }
 
-        ExternalToolHandler eth = null;
+        URLTokenUtil eth = null;
 
         eth = new ExternalToolHandler(externalTool, target.getDataFile(), apiToken, target, locale);
-        return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters()))));
+        return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters())), JsonUtil.getJsonArray(externalTool.getAllowedApiCalls())));
     }
     
     @GET
