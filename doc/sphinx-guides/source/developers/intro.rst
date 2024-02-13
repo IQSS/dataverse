@@ -37,6 +37,8 @@ Roadmap
 
 For the Dataverse Software development roadmap, please see https://www.iq.harvard.edu/roadmap-dataverse-project
 
+.. _kanban-board:
+
 Kanban Board
 ------------
 
