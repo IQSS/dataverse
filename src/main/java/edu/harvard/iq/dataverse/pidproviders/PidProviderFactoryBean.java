@@ -119,27 +119,27 @@ public class PidProviderFactoryBean {
     }
 
     private void loadProviders() {
-            Optional<String[]> providers = JvmSettings.PID_PROVIDERS.lookupOptional(String[].class);
-            if (!providers.isPresent()) {
-                logger.warning(
-                        "No PidProviders configured via dataverse.pid.providers. Please consider updating as older PIDProvider configuration mechanisms will be removed in a future version of Dataverse.");
-                return;
-            } else {
-                for (String id : providers.get()) {
-                    Optional<String> type = JvmSettings.PID_PROVIDER_TYPE.lookupOptional(id);
-                    if (!type.isPresent()) {
-                        logger.warning("PidProvider " + id
-                                + " listed in dataverse.pid.providers is not properly configured and will not be used.");
-                    } else {
-                        String typeString = type.get();
-                        if (pidProviderFactoryMap.containsKey(typeString)) {
-                            PidProvider provider = pidProviderFactoryMap.get(typeString).createPidProvider(id);
-                            provider.setPidProviderServiceBean(this);
-                            PidUtil.addToProviderList(provider);
-                        }
+        Optional<String[]> providers = JvmSettings.PID_PROVIDERS.lookupOptional(String[].class);
+        if (!providers.isPresent()) {
+            logger.warning(
+                    "No PidProviders configured via dataverse.pid.providers. Please consider updating as older PIDProvider configuration mechanisms will be removed in a future version of Dataverse.");
+            return;
+        } else {
+            for (String id : providers.get()) {
+                Optional<String> type = JvmSettings.PID_PROVIDER_TYPE.lookupOptional(id);
+                if (!type.isPresent()) {
+                    logger.warning("PidProvider " + id
+                            + " listed in dataverse.pid.providers is not properly configured and will not be used.");
+                } else {
+                    String typeString = type.get();
+                    if (pidProviderFactoryMap.containsKey(typeString)) {
+                        PidProvider provider = pidProviderFactoryMap.get(typeString).createPidProvider(id);
+                        provider.setPidProviderServiceBean(this);
+                        PidUtil.addToProviderList(provider);
                     }
                 }
             }
+        }
         String protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol);
         String authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority);
         String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder);
@@ -148,7 +148,10 @@ public class PidProviderFactoryBean {
         if (protocol != null && authority != null && shoulder != null && provider != null) {
             logger.warning("Found legacy settings: " + protocol + " " + authority + " " + shoulder + " " + provider
                     + "Please consider updating as this PIDProvider configuration mechanism will be removed in a future version of Dataverse");
-            if (PidUtil.getPidProvider(protocol, authority, shoulder) == null) {
+            if (PidUtil.getPidProvider(protocol, authority, shoulder) != null) {
+                logger.warning(
+                        "Legacy PID provider settings found - ignored since a provider for the same protocol, authority, shoulder has been registered");
+            } else {
                 PidProvider legacy = null;
                 // Try to add a legacy provider
                 String identifierGenerationStyle = settingsService
@@ -193,22 +196,21 @@ public class PidProviderFactoryBean {
                     boolean independentHandleService = settingsService
                             .isTrueForKey(SettingsServiceBean.Key.IndependentHandleService, false);
                     String handleAuthHandle = settingsService.getValueForKey(SettingsServiceBean.Key.HandleAuthHandle);
-                            
+
                     legacy = new HandlePidProvider("legacy", "legacy", authority, shoulder, identifierGenerationStyle,
                             dataFilePidFormat, "", "", index, independentHandleService, handleAuthHandle, path,
                             passphrase);
                     break;
                 case "perma":
                     String baseUrl = JvmSettings.LEGACY_PERMALINK_BASEURL.lookup();
-                    legacy = new PermaLinkPidProvider("legacy", "legacy", authority, shoulder, identifierGenerationStyle,
-                            dataFilePidFormat, "", "", baseUrl, PermaLinkPidProvider.SEPARATOR);
+                    legacy = new PermaLinkPidProvider("legacy", "legacy", authority, shoulder,
+                            identifierGenerationStyle, dataFilePidFormat, "", "", baseUrl,
+                            PermaLinkPidProvider.SEPARATOR);
                 }
                 if (legacy != null) {
                     legacy.setPidProviderServiceBean(this);
                     PidUtil.addToProviderList(legacy);
                 }
-            } else {
-                logger.warning("Legacy PID provider settings found - ignored since a provider for the same protocol, authority, shoulder has been registered");
             }
             logger.info("Have " + PidUtil.getManagedProviderIds().size() + " managed PID providers");
         }
@@ -230,7 +232,7 @@ public class PidProviderFactoryBean {
 
     public PidProvider getDefaultPidGenerator() {
         Optional<String> pidProviderDefaultId = JvmSettings.PID_DEFAULT_PROVIDER.lookupOptional(String.class);
-        if(pidProviderDefaultId.isPresent()) {
+        if (pidProviderDefaultId.isPresent()) {
             return PidUtil.getPidProvider(pidProviderDefaultId.get());
         } else {
             String nonNullDefaultIfKeyNotFound = "";
