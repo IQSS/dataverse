@@ -119,26 +119,35 @@ public class PidProviderFactoryBean {
     }
 
     private void loadProviders() {
-        try {
-            String[] providers = JvmSettings.PID_PROVIDERS.lookup(String[].class);
-            for (String name : providers) {
-                String type = JvmSettings.PID_PROVIDER_TYPE.lookup(name);
-                if (pidProviderFactoryMap.containsKey(type)) {
-                    PidProvider provider = pidProviderFactoryMap.get(type).createPidProvider(name);
-                    provider.setPidProviderServiceBean(this);
-                    PidUtil.addToProviderList(provider);
+            Optional<String[]> providers = JvmSettings.PID_PROVIDERS.lookupOptional(String[].class);
+            if (!providers.isPresent()) {
+                logger.warning(
+                        "No PidProviders configured via dataverse.pid.providers. Please consider updating as older PIDProvider configuration mechanisms will be removed in a future version of Dataverse.");
+                return;
+            } else {
+                for (String id : providers.get()) {
+                    Optional<String> type = JvmSettings.PID_PROVIDER_TYPE.lookupOptional(id);
+                    if (!type.isPresent()) {
+                        logger.warning("PidProvider " + id
+                                + " listed in dataverse.pid.providers is not properly configured and will not be used.");
+                    } else {
+                        String typeString = type.get();
+                        if (pidProviderFactoryMap.containsKey(typeString)) {
+                            PidProvider provider = pidProviderFactoryMap.get(typeString).createPidProvider(id);
+                            provider.setPidProviderServiceBean(this);
+                            PidUtil.addToProviderList(provider);
+                        }
+                    }
                 }
             }
-        } catch (NoSuchElementException e) {
-            logger.warning("No PidProviders configured");
-        }
         String protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol);
         String authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority);
         String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder);
         String provider = settingsService.getValueForKey(SettingsServiceBean.Key.DoiProvider);
 
         if (protocol != null && authority != null && shoulder != null && provider != null) {
-            logger.warning("Found legacy settings: " + protocol + " " + authority + " " + shoulder + " " + provider);
+            logger.warning("Found legacy settings: " + protocol + " " + authority + " " + shoulder + " " + provider
+                    + "Please consider updating as this PIDProvider configuration mechanism will be removed in a future version of Dataverse");
             if (PidUtil.getPidProvider(protocol, authority, shoulder) == null) {
                 PidProvider legacy = null;
                 // Try to add a legacy provider
