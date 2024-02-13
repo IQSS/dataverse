@@ -104,30 +104,7 @@ public enum JvmSettings {
     PID_PROVIDER_MANAGED_LIST(SCOPE_PID_PROVIDER, "managed-list"),
     PID_PROVIDER_EXCLUDED_LIST(SCOPE_PID_PROVIDER, "excluded-list"),
 
-    // PROVIDER DATACITE (legacy - single provider setting)
-    SCOPE_LEGACY_PID_DATACITE(SCOPE_PID, "datacite"),
-    LEGACY_DATACITE_MDS_API_URL(SCOPE_LEGACY_PID_DATACITE, "mds-api-url", "doi.baseurlstring"),
-    LEGACY_DATACITE_REST_API_URL(SCOPE_LEGACY_PID_DATACITE, "rest-api-url", "doi.dataciterestapiurlstring", "doi.mdcbaseurlstring"),
-    LEGACY_DATACITE_USERNAME(SCOPE_LEGACY_PID_DATACITE, "username", "doi.username"),
-    LEGACY_DATACITE_PASSWORD(SCOPE_LEGACY_PID_DATACITE, "password", "doi.password"),
-    
-    // PROVIDER EZID (legacy - single provider setting)
-    SCOPE_LEGACY_PID_EZID(SCOPE_PID, "ezid"),
-    LEGACY_EZID_API_URL(SCOPE_LEGACY_PID_EZID, "api-url"),
-    LEGACY_EZID_USERNAME(SCOPE_LEGACY_PID_EZID, "username"),
-    LEGACY_EZID_PASSWORD(SCOPE_LEGACY_PID_EZID, "password"),
-    
-    // PROVIDER PERMALINK (legacy - single provider setting)
-    SCOPE_LEGACY_PID_PERMALINK(SCOPE_PID, "permalink"),
-    LEGACY_PERMALINK_BASEURL(SCOPE_LEGACY_PID_PERMALINK, "base-url", "perma.baseurlstring"),
-
-    // PROVIDER HANDLE (legacy - single provider setting)
-    SCOPE_LEGACY_PID_HANDLENET(SCOPE_PID, "handlenet"),
-    LEGACY_HANDLENET_INDEX(SCOPE_LEGACY_PID_HANDLENET, "index", "dataverse.handlenet.index"),
-    SCOPE_LEGACY_PID_HANDLENET_KEY(SCOPE_LEGACY_PID_HANDLENET, "key"),
-    LEGACY_HANDLENET_KEY_PATH(SCOPE_LEGACY_PID_HANDLENET_KEY, "path", "dataverse.handlenet.admcredfile"),
-    LEGACY_HANDLENET_KEY_PASSPHRASE(SCOPE_LEGACY_PID_HANDLENET_KEY, "passphrase", "dataverse.handlenet.admprivphrase"),
-    
+        
     // PROVIDER EZID - these settings were formerly kept together with DataCite ones
     SCOPE_PID_EZID(SCOPE_PID_PROVIDER, "ezid"),
     EZID_API_URL(SCOPE_PID_EZID, "api-url"),
@@ -154,6 +131,55 @@ public enum JvmSettings {
     SCOPE_PID_HANDLENET_KEY(SCOPE_PID_HANDLENET, "key"),
     HANDLENET_KEY_PATH(SCOPE_PID_HANDLENET_KEY, "path"),
     HANDLENET_KEY_PASSPHRASE(SCOPE_PID_HANDLENET_KEY, "passphrase"),
+
+    /*
+     * The deprecated legacy settings below are from when you could only have a
+     * single PIDProvider. They mirror the settings above, but are global,not within
+     * the SCOPE_PID_PROVIDER of an individual provider.
+     */
+    /**
+     * DEPRECATED PROVIDER DATACITE
+     * 
+     * @deprecated - legacy single provider setting providing backward compatibility
+     */
+    @Deprecated(forRemoval = true, since = "2024-02-13")
+    SCOPE_LEGACY_PID_DATACITE(SCOPE_PID, "datacite"),
+    LEGACY_DATACITE_MDS_API_URL(SCOPE_LEGACY_PID_DATACITE, "mds-api-url", "doi.baseurlstring"),
+    LEGACY_DATACITE_REST_API_URL(SCOPE_LEGACY_PID_DATACITE, "rest-api-url", "doi.dataciterestapiurlstring",
+            "doi.mdcbaseurlstring"),
+    LEGACY_DATACITE_USERNAME(SCOPE_LEGACY_PID_DATACITE, "username", "doi.username"),
+    LEGACY_DATACITE_PASSWORD(SCOPE_LEGACY_PID_DATACITE, "password", "doi.password"),
+
+    /**
+     * DEPRECATED PROVIDER EZID
+     * 
+     * @deprecated - legacy single provider setting providing backward compatibility
+     */
+    @Deprecated(forRemoval = true, since = "2024-02-13")
+    SCOPE_LEGACY_PID_EZID(SCOPE_PID, "ezid"), LEGACY_EZID_API_URL(SCOPE_LEGACY_PID_EZID, "api-url"),
+    LEGACY_EZID_USERNAME(SCOPE_LEGACY_PID_EZID, "username"), LEGACY_EZID_PASSWORD(SCOPE_LEGACY_PID_EZID, "password"),
+
+    /**
+     * DEPRECATED PROVIDER PERMALINK
+     * 
+     * @deprecated - legacy single provider setting providing backward compatibility
+     */
+    @Deprecated(forRemoval = true, since = "2024-02-13")
+    SCOPE_LEGACY_PID_PERMALINK(SCOPE_PID, "permalink"),
+    LEGACY_PERMALINK_BASEURL(SCOPE_LEGACY_PID_PERMALINK, "base-url", "perma.baseurlstring"),
+
+    /**
+     * DEPRECATED PROVIDER HANDLE
+     * 
+     * @deprecated - legacy single provider setting providing backward compatibility
+     */
+    @Deprecated(forRemoval = true, since = "2024-02-13")
+    SCOPE_LEGACY_PID_HANDLENET(SCOPE_PID, "handlenet"),
+    LEGACY_HANDLENET_INDEX(SCOPE_LEGACY_PID_HANDLENET, "index", "dataverse.handlenet.index"),
+    @Deprecated(forRemoval = true, since = "2024-02-13")
+    SCOPE_LEGACY_PID_HANDLENET_KEY(SCOPE_LEGACY_PID_HANDLENET, "key"),
+    LEGACY_HANDLENET_KEY_PATH(SCOPE_LEGACY_PID_HANDLENET_KEY, "path", "dataverse.handlenet.admcredfile"),
+    LEGACY_HANDLENET_KEY_PASSPHRASE(SCOPE_LEGACY_PID_HANDLENET_KEY, "passphrase", "dataverse.handlenet.admprivphrase"),
 
     // SPI SETTINGS
     SCOPE_SPI(PREFIX, "spi"),
