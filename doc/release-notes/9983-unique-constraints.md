@@ -11,4 +11,4 @@ and then removing any duplicate rows (where count>1).
 
 
 
-TODO: Add note about reloading metadata blocks after upgrade.
+TODO: Whoever puts the release notes together should make sure there is the standard note about reloading metadata blocks for the citation, astrophysics, and biomedical blocks (plus any others from other PRs) after upgrading.
