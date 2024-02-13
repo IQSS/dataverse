@@ -16,6 +16,7 @@ import static io.restassured.path.json.JsonPath.with;
 import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +34,8 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
@@ -2483,4 +2486,129 @@ public class FilesIT {
         
         UtilIT.deleteSetting(SettingsServiceBean.Key.UseStorageQuotas);
     }
+    
+    @Test
+    public void testIngestWithAndWithoutVariableHeader() throws NoSuchAlgorithmException {
+        msgt("testIngestWithAndWithoutVariableHeader");
+        
+        // The compact Stata file we'll be using for this test: 
+        // (this file is provided by Stata inc. - it's genuine quality)
+        String pathToFile = "scripts/search/data/tabular/stata13-auto.dta";
+        // The pre-calculated MD5 signature of the *complete* tab-delimited 
+        // file as seen by the final Access API user (i.e., with the variable 
+        // header line in it):
+        String tabularFileMD5 = "f298c2567cc8eb544e36ad83edf6f595";
+        // Expected byte sizes of the generated tab-delimited file as stored, 
+        // with and without the header:
+        int tabularFileSizeWoutHeader = 4026; 
+        int tabularFileSizeWithHeader = 4113; 
+
+        String apiToken = createUserGetToken();
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+        Integer datasetIdA = createDatasetGetId(dataverseAlias, apiToken);
+        
+        // Before we do anything else, make sure that the instance is configured 
+        // the "old" way, i.e., to store ingested files without the headers:
+        UtilIT.deleteSetting(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders);
+        
+        Response addResponse = UtilIT.uploadFileViaNative(datasetIdA.toString(), pathToFile, apiToken);
+        addResponse.prettyPrint();
+
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("application/x-stata-13"))
+                .body("data.files[0].label", equalTo("stata13-auto.dta"))
+                .statusCode(OK.getStatusCode());
+
+        Long fileIdA = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        assertNotNull(fileIdA);
+
+        // Give file time to ingest
+        assertTrue(UtilIT.sleepForLock(datasetIdA.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile + "(A)");
+
+        // Check the metadata to confirm that the file has ingested: 
+
+        Response fileDataResponse = UtilIT.getFileData(fileIdA.toString(), apiToken);
+        fileDataResponse.prettyPrint();
+        fileDataResponse.then().assertThat()
+                .body("data.dataFile.filename", equalTo("stata13-auto.tab"))
+                .body("data.dataFile.contentType", equalTo("text/tab-separated-values"))
+                .body("data.dataFile.filesize", equalTo(tabularFileSizeWoutHeader))
+                .statusCode(OK.getStatusCode());
+        
+
+        // Download the file, verify the checksum: 
+
+        Response fileDownloadResponse = UtilIT.downloadFile(fileIdA.intValue(), apiToken);
+        fileDownloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode()); 
+        
+        byte[] fileDownloadBytes = fileDownloadResponse.body().asByteArray(); 
+        MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+        messageDigest.update(fileDownloadBytes);
+        byte[] rawDigestBytes = messageDigest.digest();
+        String tabularFileMD5calculated = FileUtil.checksumDigestToString(rawDigestBytes);
+        
+        msgt("md5 of the downloaded file (saved without the variable name header): "+tabularFileMD5calculated);
+        
+        assertEquals(tabularFileMD5, tabularFileMD5calculated);
+
+        // Repeat the whole thing, in another dataset (because we will be uploading 
+        // an identical file), but with the "store with the header setting enabled): 
+        
+        UtilIT.enableSetting(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders);
+        
+        Integer datasetIdB = createDatasetGetId(dataverseAlias, apiToken);
+        
+        addResponse = UtilIT.uploadFileViaNative(datasetIdB.toString(), pathToFile, apiToken);
+        addResponse.prettyPrint();
+
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("application/x-stata-13"))
+                .body("data.files[0].label", equalTo("stata13-auto.dta"))
+                .statusCode(OK.getStatusCode());
+
+        Long fileIdB = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        assertNotNull(fileIdB);
+
+        // Give file time to ingest
+        assertTrue(UtilIT.sleepForLock(datasetIdB.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile + "(B)");
+        
+        // Check the metadata to confirm that the file has ingested: 
+
+        fileDataResponse = UtilIT.getFileData(fileIdB.toString(), apiToken);
+        fileDataResponse.prettyPrint();
+        fileDataResponse.then().assertThat()
+                .body("data.dataFile.filename", equalTo("stata13-auto.tab"))
+                .body("data.dataFile.contentType", equalTo("text/tab-separated-values"))
+                .body("data.dataFile.filesize", equalTo(tabularFileSizeWithHeader))
+                .statusCode(OK.getStatusCode());
+        
+
+        // Download the file, verify the checksum, again
+
+        fileDownloadResponse = UtilIT.downloadFile(fileIdB.intValue(), apiToken);
+        fileDownloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode()); 
+        
+        fileDownloadBytes = fileDownloadResponse.body().asByteArray(); 
+        messageDigest.reset();
+        messageDigest.update(fileDownloadBytes);
+        rawDigestBytes = messageDigest.digest();
+        tabularFileMD5calculated = FileUtil.checksumDigestToString(rawDigestBytes);
+        
+        msgt("md5 of the downloaded file (saved with the variable name header): "+tabularFileMD5calculated);
+        
+        assertEquals(tabularFileMD5, tabularFileMD5calculated);
+
+        // In other words, whether the file was saved with, or without the header, 
+        // as downloaded by the user, the end result must be the same in both cases!
+        // In other words, whether that first line with the variable names is already
+        // in the physical file, or added by Dataverse on the fly, the downloaded
+        // content must be identical. 
+        
+        UtilIT.deleteSetting(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders);
+        
+        // @todo: cleanup? 
+    }
+    
 }

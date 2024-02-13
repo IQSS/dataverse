@@ -142,7 +142,8 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                         && dataFile.getContentType().equals("text/tab-separated-values")
                         && dataFile.isTabularData()
                         && dataFile.getDataTable() != null
-                        && (!this.noVarHeader())) {
+                        && (!this.noVarHeader())
+                        && (!dataFile.getDataTable().isStoredWithVariableHeader())) {
 
                     List<DataVariable> datavariables = dataFile.getDataTable().getDataVariables();
                     String varHeaderLine = generateVariableHeader(datavariables);

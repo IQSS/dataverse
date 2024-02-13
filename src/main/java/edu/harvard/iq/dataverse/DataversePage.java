@@ -370,7 +370,7 @@ public class DataversePage implements java.io.Serializable {
         List<Dataverse> featuredSource = new ArrayList<>();
         List<Dataverse> featuredTarget = new ArrayList<>();
         featuredSource.addAll(dataverseService.findAllPublishedByOwnerId(dataverse.getId()));
-        featuredSource.addAll(linkingService.findLinkingDataverses(dataverse.getId()));
+        featuredSource.addAll(linkingService.findLinkedDataverses(dataverse.getId()));
         List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
         for (DataverseFeaturedDataverse dfd : featuredList) {
             Dataverse fd = dfd.getFeaturedDataverse();

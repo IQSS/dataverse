@@ -1145,4 +1145,12 @@ public class SystemConfig {
     public Long getTestStorageQuotaLimit() {
         return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.StorageQuotaSizeInBytes);
     }
+    /**
+     * Should we store tab-delimited files produced during ingest *with* the 
+     * variable name header line included? 
+     * @return boolean - defaults to false.
+     */
+    public boolean isStoringIngestedFilesWithHeaders() {
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders, false);
+    }
 }

@@ -646,7 +646,12 @@ public class SettingsServiceBean {
          * Allows an instance admin to disable Solr search facets on the collection
          * and dataset pages instantly
          */
-        DisableSolrFacets
+        DisableSolrFacets,
+        /**
+         * When ingesting tabular data files, store the generated tab-delimited 
+         * files *with* the variable names line up top. 
+         */
+        StoreIngestedTabularFilesWithVarHeaders
         ;
 
         @Override

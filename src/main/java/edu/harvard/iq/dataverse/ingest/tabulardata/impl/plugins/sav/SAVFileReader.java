@@ -338,7 +338,7 @@ public class SAVFileReader  extends TabularDataFileReader{
         }
     }
 
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException{
+    public TabularDataIngest read(BufferedInputStream stream, boolean storeWithVariableHeader, File dataFile) throws IOException{
         dbgLog.info("SAVFileReader: read() start");
         
         if (dataFile != null) {
@@ -422,7 +422,7 @@ public class SAVFileReader  extends TabularDataFileReader{
 
 	    methodCurrentlyExecuted = "decodeRecordTypeData";
 	    dbgLog.fine("***** SAVFileReader: executing method decodeRecordTypeData");
-	    decodeRecordTypeData(stream); 
+	    decodeRecordTypeData(stream, storeWithVariableHeader); 
 
 		
 	} catch (IllegalArgumentException e) {
@@ -2308,7 +2308,7 @@ public class SAVFileReader  extends TabularDataFileReader{
     
     
 
-    void decodeRecordTypeData(BufferedInputStream stream) throws IOException {
+    void decodeRecordTypeData(BufferedInputStream stream, boolean storeWithVariableHeader) throws IOException {
         dbgLog.fine("decodeRecordTypeData(): start");
 
 	///String fileUnfValue = null;
@@ -2320,9 +2320,9 @@ public class SAVFileReader  extends TabularDataFileReader{
             throw new IllegalArgumentException("stream == null!");
         }
         if (isDataSectionCompressed){
-            decodeRecordTypeDataCompressed(stream);
+            decodeRecordTypeDataCompressed(stream, storeWithVariableHeader);
         } else {
-            decodeRecordTypeDataUnCompressed(stream);
+            decodeRecordTypeDataUnCompressed(stream, storeWithVariableHeader);
         }
             
         /* UNF calculation was here... */
@@ -2362,7 +2362,7 @@ public class SAVFileReader  extends TabularDataFileReader{
 
     }
 
-    void decodeRecordTypeDataCompressed(BufferedInputStream stream) throws IOException {
+    void decodeRecordTypeDataCompressed(BufferedInputStream stream, boolean storeWithVariableHeader) throws IOException {
 
         dbgLog.fine("***** decodeRecordTypeDataCompressed(): start *****");
 
@@ -2395,7 +2395,10 @@ public class SAVFileReader  extends TabularDataFileReader{
         dbgLog.fine("printFormatTable:\n" + printFormatTable);
         variableFormatTypeList = new String[varQnty];
 
-
+        // write the variable header out, if instructed to do so
+        if (storeWithVariableHeader) {
+            pwout.println(generateVariableHeader(dataTable.getDataVariables()));
+        }
 
         for (int i = 0; i < varQnty; i++) {
             variableFormatTypeList[i] = SPSSConstants.FORMAT_CATEGORY_TABLE.get(
@@ -2947,7 +2950,7 @@ public class SAVFileReader  extends TabularDataFileReader{
     }
 
 
-    void decodeRecordTypeDataUnCompressed(BufferedInputStream stream) throws IOException {
+    void decodeRecordTypeDataUnCompressed(BufferedInputStream stream, boolean storeWithVariableHeader) throws IOException {
         dbgLog.fine("***** decodeRecordTypeDataUnCompressed(): start *****");
 
         if (stream ==null){
@@ -3013,6 +3016,11 @@ public class SAVFileReader  extends TabularDataFileReader{
         ///dataTable2 = new Object[varQnty][caseQnty];
 	// storage of date formats to pass to UNF	
         ///dateFormats = new String[varQnty][caseQnty];
+        
+        // write the variable header out, if instructed to do so
+        if (storeWithVariableHeader) {
+            pwout.println(generateVariableHeader(dataTable.getDataVariables()));
+        }
 
         try {
             for (int i = 0; ; i++){  // case-wise loop
