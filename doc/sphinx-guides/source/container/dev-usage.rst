@@ -154,24 +154,29 @@ IDE-triggered re-deployments
 
 You have at least two options:
 
-1. Use plugins for different IDEs by Payara to ease the burden of redeploying an application during development to a running Payara application server.
+1. Use builtin features of IDEs or plugins for different IDEs by Payara to ease the burden of redeploying an application during development to a running Payara application server.
    Their guides contain `documentation on Payara IDE plugins <https://docs.payara.fish/community/docs/documentation/ecosystem/ecosystem.html>`_.
 2. Use a paid product like `JRebel <https://www.jrebel.com/>`_.
 
 The main difference between the first and the second option is support for hot deploys of non-class files plus limitations in what the JVM HotswapAgent can do for you.
 Find more `details in a blog article by JRebel <https://www.jrebel.com/blog/java-hotswap-guide>`_.
 
-When opting for Payara tools, please follow these steps:
+When opting for builtin features or Payara tools, please follow these steps:
 
 1. | Download the Payara appserver to your machine, unzip and note the location for later.
-   | - See this guide for which version, in doubt lookup using
+   | - See :ref:`payara` for which version or run the following command
    | ``mvn help:evaluate -Dexpression=payara.version -q -DforceStdout``
-   | - Can be downloaded from `Maven Central <https://mvnrepository.com/artifact/fish.payara.distributions/payara>`_.
+   | - To download, see :ref:`payara` or try `Maven Central <https://mvnrepository.com/artifact/fish.payara.distributions/payara>`_.
 
 2. Install Payara tools plugin in your IDE:
 
    .. tabs::
+     .. group-tab:: Netbeans
+
+       This step is not necessary for Netbeans. The feature is builtin.
+
      .. group-tab:: IntelliJ
+
        **Requires IntelliJ Ultimate!**
        (Note that `free educational licenses <https://www.jetbrains.com/community/education/>`_ are available)
 
@@ -180,6 +185,28 @@ When opting for Payara tools, please follow these steps:
 3. Configure a connection to the application server:
 
    .. tabs::
+     .. group-tab:: Netbeans
+
+        Unzip Payara to ``/usr/local/payara6`` as explained in :ref:`install-payara-dev`.
+
+        Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Payara Server" and set the installation location to ``/usr/local/payara6``. Use the settings in the screenshot below. Most of the defaults are fine.
+
+        Under "Common", the password should be "admin". Make sure "Enable Hot Deploy" is checked.
+
+        .. image:: img/netbeans-servers-common.png
+
+        Under "Java", change the debug port to 9009.
+
+        .. image:: img/netbeans-servers-java.png
+
+        Open the project properties (under "File"), navigate to "Compile" and make sure "Compile on Save" is checked.
+
+        .. image:: img/netbeans-compile.png
+
+        Under "Run", select "Payara Server" under "Server" and make sure "Deploy on Save" is checked.
+
+        .. image:: img/netbeans-run.png
+
      .. group-tab:: IntelliJ
         Create a new running configuration with a "Remote Payara".
         (Open dialog by clicking "Run", then "Edit Configurations")
@@ -212,13 +239,32 @@ When opting for Payara tools, please follow these steps:
         .. image:: img/intellij-payara-config-server-behaviour.png
 
 4. | Start all the containers. Follow the cheat sheet above, but take care to skip application deployment:
-   | - When using the Maven commands, append ``-Dapp.deploy.skip``.
-   | - When using Docker Compose, prepend the command with ``SKIP_DEPLOY=1``.
+   | - When using the Maven commands, append ``-Dapp.deploy.skip``. For example:
+   |   ``mvn -Pct docker:run -Dapp.deploy.skip``
+   | - When using Docker Compose, prepend the command with ``SKIP_DEPLOY=1``. For example:
+   |   ``SKIP_DEPLOY=1 docker compose -f docker-compose-dev.yml up``
    | - Note: the Admin Console can be reached at http://localhost:4848 or https://localhost:4949
 5. To deploy the application to the running server, use the configured tools to deploy.
    Using the "Run" configuration only deploys and enables redeploys, while running "Debug" enables hot swapping of classes via JDWP.
 
    .. tabs::
+     .. group-tab:: Netbeans
+
+        Click "Debug" then "Debug Project". After some time, Dataverse will be deployed.
+
+        Try making a code change, perhaps to ``Info.java``.
+
+        Click "Debug" and then "Apply Code Changes". If the change was correctly applied, you should see output similar to this:
+
+        .. code-block::
+
+          Classes to reload:
+          edu.harvard.iq.dataverse.api.Info
+
+          Code updated
+
+        Check to make sure the change is live by visiting, for example, http://localhost:8080/api/info/version
+
      .. group-tab:: IntelliJ
         Choose "Run" or "Debug" in the toolbar.
 

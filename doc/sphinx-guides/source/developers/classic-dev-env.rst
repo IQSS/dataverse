@@ -88,6 +88,8 @@ On Mac, run this command:
 
 On Linux, install ``jq`` from your package manager or download a binary from https://stedolan.github.io/jq/
 
+.. _install-payara-dev:
+
 Install Payara
 ~~~~~~~~~~~~~~
 
