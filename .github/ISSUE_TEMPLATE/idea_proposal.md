@@ -36,10 +36,5 @@ Start below this comment section.
 **Any open or closed issues related to this feature request?**
 
 
-**Which version of Dataverse are you using?**
-
-
-**Will you be able to contribute a Pull Request for this issue?**
-
-
-**Help is always welcome, is this issue something you or your organization plan to solve ?**
+**Will you be able to contribute a Pull Request for this issue?**  
+Help is always welcome, is this issue something you or your organization plan to solve ?
