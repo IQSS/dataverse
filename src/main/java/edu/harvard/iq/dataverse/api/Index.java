@@ -215,7 +215,7 @@ public class Index extends AbstractApiBean {
             return error(Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
         }
     }
-
+    
     @GET
     @Path("{type}/{id}")
     public Response indexTypeById(@PathParam("type") String type, @PathParam("id") Long id) {
@@ -325,6 +325,29 @@ public class Index extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
         }
     }
+
+    /**
+     * Clears the entry for a dataset from Solr
+     * 
+     * @param id numer id of the dataset
+     * @return response; 
+     * will return 404 if no such dataset in the database; but will attempt to 
+     * clear the entry from Solr regardless.
+     */
+    @DELETE
+    @Path("datasets/{id}")
+    public Response clearDatasetFromIndex(@PathParam("id") Long id) {
+        Dataset dataset = datasetService.find(id);
+        // We'll attempt to delete the Solr document regardless of whether the 
+        // dataset exists in the database: 
+        String response = indexService.removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierDataset + id);
+        if (dataset != null) {
+            return ok("Sent request to clear Solr document for dataset " + id + ": " + response);
+        } else {
+            return notFound("Could not find dataset " + id + " in the database. Requested to clear from Solr anyway: " + response);
+        }
+    }
+
 
     /**
      * This is just a demo of the modular math logic we use for indexAll.

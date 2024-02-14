@@ -26,8 +26,8 @@ Remove all Solr documents that are orphaned (i.e. not associated with objects in
 
 ``curl http://localhost:8080/api/admin/index/clear-orphans``
 
-Clearing Data from Solr
-~~~~~~~~~~~~~~~~~~~~~~~
+Clearing ALL Data from Solr
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Please note that the moment you issue this command, it will appear to end users looking at the root Dataverse installation page that all data is gone! This is because the root Dataverse installation page is powered by the search index.
 
@@ -85,6 +85,16 @@ Datasets may be referenced by persistent ID or by database object ID. To re-inde
 To re-index a dataset by its database ID:
 
 ``curl http://localhost:8080/api/admin/index/datasets/7504557``
+
+Clearing a Dataset from Solr
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API will clear the Solr entry for the dataset specified. It can be useful if you have reasons to want to hide a published dataset from showing in search results and/or on Collection pages, but don't want to destroy and purge it from the database just yet. 
+
+``curl -X DELETE http://localhost:8080/api/admin/index/datasets/<DATABASE_ID>``
+
+This can be reversed of course by re-indexing the dataset with the API above. 
+
 
 Manually Querying Solr
 ----------------------

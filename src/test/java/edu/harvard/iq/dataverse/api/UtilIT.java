@@ -1494,6 +1494,11 @@ public class UtilIT {
         return response;
     }
     
+    static Response indexClearDataset(Integer datasetId) {
+        return given()
+                .delete("/api/admin/index/datasets/"+datasetId);
+    }
+    
     static Response reindexDataverse(String dvId) {
         Response response = given()
                 .get("/api/admin/index/dataverses/" + dvId);
@@ -2066,7 +2071,7 @@ public class UtilIT {
         return given()
                 .get("/api/admin/index/clear");
     }
-
+    
     static Response index() {
         return given()
                 .get("/api/admin/index");
@@ -2338,6 +2343,21 @@ public class UtilIT {
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
         return requestSpecification.get("/api/admin/test/datasets/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
+    }
+    
+    static Response getExternalToolForDatasetById(String idOrPersistentIdOfDataset, String type, String apiToken, String toolId) {
+        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/admin/test/datasets/" + idInPath + "/externalTool/" + toolId + "?type=" + type + optionalQueryParam);
     }
 
     static Response getExternalToolsForFile(String idOrPersistentIdOfFile, String type, String apiToken) {
