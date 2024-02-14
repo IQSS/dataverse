@@ -549,57 +549,51 @@ public class DataFile extends DvObject implements Comparable {
     public FileMetadata getFileMetadata() {
         return getLatestFileMetadata();
     }
-    
-    public FileMetadata getLatestFileMetadata() {
-        FileMetadata fmd = null;
 
-        // for newly added or harvested, just return the one fmd
+    public FileMetadata getLatestFileMetadata() {
+        FileMetadata resultFileMetadata = null;
+
         if (fileMetadatas.size() == 1) {
             return fileMetadatas.get(0);
         }
-        
+
         for (FileMetadata fileMetadata : fileMetadatas) {
-            // if it finds a draft, return it
             if (fileMetadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT)) {
                 return fileMetadata;
-            }            
-            
-            // otherwise return the one with the latest version number
-            // duplicate logic in getLatestPublishedFileMetadata()
-            if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
-                fmd = fileMetadata;
-            } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
-                   ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   ) {
-                fmd = fileMetadata;
             }
+            resultFileMetadata = getTheNewerFileMetadata(resultFileMetadata, fileMetadata);
         }
-        return fmd;
+
+        return resultFileMetadata;
     }
-    
-//    //Returns null if no published version
+
     public FileMetadata getLatestPublishedFileMetadata() throws UnsupportedOperationException {
-        FileMetadata fmd = null;
-        
-        for (FileMetadata fileMetadata : fileMetadatas) {
-            // if it finds a draft, skip
-            if (fileMetadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT)) {
-                continue;
-            }            
-            
-            // otherwise return the one with the latest version number
-            // duplicate logic in getLatestFileMetadata()
-            if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
-                fmd = fileMetadata;
-            } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
-                   ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   ) {
-                fmd = fileMetadata;
-            }
-        }
-        if(fmd == null) {
+        FileMetadata resultFileMetadata = fileMetadatas.stream()
+                .filter(metadata -> !metadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT))
+                .reduce(null, this::getTheNewerFileMetadata);
+
+        if (resultFileMetadata == null) {
             throw new UnsupportedOperationException("No published metadata version for DataFile " + this.getId());
         }
 
-        return fmd;
+        return resultFileMetadata;
+    }
+
+    private FileMetadata getTheNewerFileMetadata(FileMetadata currentFileMetadata, FileMetadata newFileMetadata) {
+        if (currentFileMetadata == null) {
+            return newFileMetadata;
+        }
+
+        DatasetVersion currentVersion = currentFileMetadata.getDatasetVersion();
+        DatasetVersion newVersion = newFileMetadata.getDatasetVersion();
+
+        if (newVersion.getVersionNumber().compareTo(currentVersion.getVersionNumber()) > 0 ||
+                (newVersion.getVersionNumber().compareTo(currentVersion.getVersionNumber()) == 0 &&
+                        newVersion.getMinorVersionNumber().compareTo(currentVersion.getMinorVersionNumber()) > 0)) {
+            return newFileMetadata;
+        }
+
+        return currentFileMetadata;
     }
 
     /**
@@ -610,7 +604,7 @@ public class DataFile extends DvObject implements Comparable {
         if (this.filesize == null) {
             // -1 means "unknown"
             return -1;
-        } 
+        }
         return this.filesize;
     }
 
