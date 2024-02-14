@@ -1521,7 +1521,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
 
         //cleanup
-        /*
+
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         assertEquals(200, destroyDatasetResponse.getStatusCode());
 
@@ -1530,7 +1530,7 @@ public class FilesIT {
 
         Response deleteUserResponse = UtilIT.deleteUser(username);
         assertEquals(200, deleteUserResponse.getStatusCode());
-        */
+
         
     }
     
