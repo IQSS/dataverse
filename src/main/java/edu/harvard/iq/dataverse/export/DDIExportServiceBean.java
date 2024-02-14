@@ -545,6 +545,16 @@ public class DDIExportServiceBean {
             List<DataVariable> vars = variableService.findByDataTableId(dt.getId());
             if (checkField("catgry", excludedFieldSet, includedFieldSet)) {
                 if (checkIsWithoutFrequencies(vars)) {
+                    // @todo: the method called here to calculate frequencies 
+                    // when they are missing from the database (for whatever
+                    // reasons) subsets the physical tab-delimited file and 
+                    // calculates them in real time. this is very expensive operation
+                    // potentially. let's make sure that, when we do this, we 
+                    // save the resulting frequencies in the database, so that 
+                    // we don't have to do this again. Also, let's double check 
+                    // whether the "checkIsWithoutFrequencies()" method is doing
+                    // the right thing - as it appears to return true when there 
+                    // are no categorical variables in the DataTable (?)
                     calculateFrequencies(df, vars);
                 }
             }
@@ -580,6 +590,7 @@ public class DDIExportServiceBean {
 
     private void calculateFrequencies(DataFile df, List<DataVariable> vars)
     {
+        // @todo: see the comment in the part of the code that calls this method
         try {
             DataConverter dc = new DataConverter();
             File tabFile = dc.downloadFromStorageIO(df.getStorageIO());

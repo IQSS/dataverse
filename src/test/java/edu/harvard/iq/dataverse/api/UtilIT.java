@@ -1466,7 +1466,7 @@ public class UtilIT {
         return getDatasetVersion(persistentId, versionNumber, apiToken, false, false);
     }
 
-    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean skipFiles, boolean includeDeaccessioned) {
+    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken, boolean excludeFiles, boolean includeDeaccessioned) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .queryParam("includeDeaccessioned", includeDeaccessioned)
@@ -1474,7 +1474,7 @@ public class UtilIT {
                         + versionNumber
                         + "?persistentId="
                         + persistentId
-                        + (skipFiles ? "&includeFiles=false" : ""));
+                        + (excludeFiles ? "&excludeFiles=true" : ""));
     }
 
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
@@ -1492,6 +1492,11 @@ public class UtilIT {
         Response response = given()
                 .get("/api/admin/index/dataset?persistentId=" + persistentId);
         return response;
+    }
+    
+    static Response indexClearDataset(Integer datasetId) {
+        return given()
+                .delete("/api/admin/index/datasets/"+datasetId);
     }
     
     static Response reindexDataverse(String dvId) {
@@ -1839,15 +1844,15 @@ public class UtilIT {
         return getDatasetVersions(idOrPersistentId, apiToken, false);
     }
 
-    static Response getDatasetVersions(String idOrPersistentId, String apiToken, boolean skipFiles) {
-        return getDatasetVersions(idOrPersistentId, apiToken, null, null, skipFiles);
+    static Response getDatasetVersions(String idOrPersistentId, String apiToken, boolean excludeFiles) {
+        return getDatasetVersions(idOrPersistentId, apiToken, null, null, excludeFiles);
     }
 
     static Response getDatasetVersions(String idOrPersistentId, String apiToken, Integer offset, Integer limit) {
         return getDatasetVersions(idOrPersistentId, apiToken, offset, limit, false);
     }
 
-    static Response getDatasetVersions(String idOrPersistentId, String apiToken, Integer offset, Integer limit, boolean skipFiles) {
+    static Response getDatasetVersions(String idOrPersistentId, String apiToken, Integer offset, Integer limit, boolean excludeFiles) {
         logger.info("Getting Dataset Versions");
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
@@ -1855,11 +1860,11 @@ public class UtilIT {
             idInPath = ":persistentId";
             optionalQueryParam = "?persistentId=" + idOrPersistentId;
         }
-        if (skipFiles) {
+        if (excludeFiles) {
             if ("".equals(optionalQueryParam)) {
-                optionalQueryParam = "?includeFiles=false";
+                optionalQueryParam = "?excludeFiles=true";
             } else {
-                optionalQueryParam = optionalQueryParam.concat("&includeFiles=false");
+                optionalQueryParam = optionalQueryParam.concat("&excludeFiles=true");
             }
         }
         if (offset != null) {
@@ -1881,6 +1886,7 @@ public class UtilIT {
             requestSpecification = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
+        
         return requestSpecification.get("/api/datasets/" + idInPath + "/versions" + optionalQueryParam);
     }
 
@@ -2065,7 +2071,7 @@ public class UtilIT {
         return given()
                 .get("/api/admin/index/clear");
     }
-
+    
     static Response index() {
         return given()
                 .get("/api/admin/index");
@@ -2352,6 +2358,21 @@ public class UtilIT {
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
         return requestSpecification.get("/api/admin/test/files/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
+    }
+    
+    static Response getExternalToolForFileById(String idOrPersistentIdOfFile, String type, String apiToken, String toolId) {
+        String idInPath = idOrPersistentIdOfFile; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfFile)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfFile;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/admin/test/files/" + idInPath + "/externalTool/" + toolId + "?type=" + type + optionalQueryParam);
     }
 
     static Response submitFeedback(JsonObjectBuilder job) {
@@ -3750,6 +3771,14 @@ public class UtilIT {
                 .body(body)
                 .contentType("application/json")
                 .post("/api/datasets/" + datasetId + "/requestGlobusDownload");
+    }
+
+    static Response requestGlobusUploadPaths(Integer datasetId, JsonObject body, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(body.toString())
+                .contentType("application/json")
+                .post("/api/datasets/" + datasetId + "/requestGlobusUploadPaths");
     }
 
 }
