@@ -514,7 +514,6 @@ public class Files extends AbstractApiBean {
     @Path("{id}")
     public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, @QueryParam("returnOwners") Boolean returnOwners) throws WrappedResponse, Exception {
         Boolean includeOwners = returnOwners == null ? false : returnOwners;  
-        System.out.print("includeOwners: " + includeOwners);
         return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, false, includeOwners);
     }
     

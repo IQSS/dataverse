@@ -1485,6 +1485,22 @@ public class UtilIT {
                         + persistentId
                         + (returnOwners ? "&returnOwners=true" : ""));
     }
+    
+    static Response getFileWithOwners(String datafileId,  String apiToken, boolean returnOwners) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/"
+                        + datafileId
+                        + (returnOwners ? "/?returnOwners=true" : ""));
+    }
+    
+    static Response getDataverseWithOwners(String alias,  String apiToken, boolean returnOwners) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"
+                        + alias
+                        + (returnOwners ? "/?returnOwners=true" : ""));
+    }
 
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
         return given()

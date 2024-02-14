@@ -335,7 +335,8 @@ public class JsonPrinter {
                 }
                 if (dvo.isInstanceofDataset() || dvo.isInstanceofDataFile() ){
                     if (dvo.getIdentifier() != null){
-                        ownerObject.add("identifier", dvo.getIdentifier());
+                        Dataset ds = (Dataset) dvo;
+                        ownerObject.add("identifier", ds.getGlobalId().asString());
                     } else {
                         ownerObject.add("identifier", dvo.getId());
                     }
