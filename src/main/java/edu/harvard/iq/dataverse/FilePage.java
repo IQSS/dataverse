@@ -484,7 +484,7 @@ public class FilePage implements java.io.Serializable {
     public String ingestFile() throws CommandException{
         
         User u = session.getUser();
-        if(!u.isAuthenticated() ||  !(permissionService.permissionsFor(u, file).contains(Permission.PublishDataset))) {
+        if(!u.isAuthenticated() ||  !u.isSuperuser()) {
             //Shouldn't happen (choice not displayed for users who don't have the right permission), but check anyway
             logger.warning("User: " + u.getIdentifier() + " tried to ingest a file");
             JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantIngestFileWarning"));
@@ -544,23 +544,29 @@ public class FilePage implements java.io.Serializable {
     }
 
     public String uningestFile() throws CommandException {
-        
+
         if (!file.isTabularData()) {
-            if(file.isIngestProblem()) {
-                User u = session.getUser();
-                if(!u.isAuthenticated() ||  !(permissionService.permissionsFor(u, file).contains(Permission.PublishDataset))) {
-                    logger.warning("User: " + u.getIdentifier() + " tried to uningest a file");
-                    //Shouldn't happen (choice not displayed for users who don't have the right permission), but check anyway
-                    JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
-                    return null;
-                }
-              file.setIngestDone();
-              file.setIngestReport(null);
+            //Ingest never succeeded, either there was a failure or this is not a tabular data file
+            User u = session.getUser();
+            if (!u.isAuthenticated() || !u.isSuperuser()) {
+                logger.warning("User: " + u.getIdentifier() + " tried to uningest a file");
+                // Shouldn't happen (choice not displayed for users who don't have the right
+                // permission), but check anyway
+                JH.addMessage(FacesMessage.SEVERITY_WARN,
+                        BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+                return null;
+            }
+            if (file.isIngestProblem()) {
+                file.setIngestDone();
+                file.setIngestReport(null);
             } else {
-              JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
-              return null;
+                //Shouldn't happen - got called when there is no tabular data or an ingest problem
+                JH.addMessage(FacesMessage.SEVERITY_WARN,
+                        BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+                return null;
             }
         } else {
+            //Uningest command does it's own check for isSuperuser
             commandEngine.submit(new UningestFileCommand(dvRequestService.getDataverseRequest(), file));
             Long dataFileId = file.getId();
             file = datafileService.find(dataFileId);
@@ -580,12 +586,11 @@ public class FilePage implements java.io.Serializable {
             }
         }
         save();
-        //Refresh filemetadata with file title, etc.
+        // Refresh filemetadata with file title, etc.
         init();
         JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("file.uningest.complete"));
         return returnToDraftVersion();
-    }
-    
+    }    
     
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
