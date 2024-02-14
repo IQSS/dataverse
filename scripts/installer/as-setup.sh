@@ -106,9 +106,15 @@ function preliminary_setup()
   # (we can no longer offer EZID with their shared test account)
   # jvm-options use colons as separators, escape as literal
   DOI_BASEURL_ESC=`echo $DOI_BASEURL | sed -e 's/:/\\\:/'`
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.datacite.username=${DOI_USERNAME}"
-  ./asadmin $ASADMIN_OPTS create-jvm-options '\-Ddataverse.pid.datacite.password=${ALIAS=doi_password_alias}'
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.datacite.mds-api-url=$DOI_BASEURL_ESC"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.providers=testDC"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.testDC.type=datacite"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.testDC.label=TestDataCite"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.testDC.authority=10.5072"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.testDC.shoulder=FK2/"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.testDC.datacite.username=${DOI_USERNAME}"
+  ./asadmin $ASADMIN_OPTS create-jvm-options '\-Ddataverse.pid.testDC.datacite.password=${ALIAS=doi_password_alias}'
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.testDC.datacite.mds-api-url=$DOI_BASEURL_ESC"
+ 
 
   # jvm-options use colons as separators, escape as literal
   DOI_DATACITERESTAPIURL_ESC=`echo $DOI_DATACITERESTAPIURL | sed -e 's/:/\\\:/'`
