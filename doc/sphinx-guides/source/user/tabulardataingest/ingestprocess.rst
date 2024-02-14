@@ -61,13 +61,13 @@ Uningest and Reingest
 =====================
 
 Ingest will only work for files whose content can be interpreted as a table.
-Multi-sheets spreadsheets and CSV files with different number of entries per row are two examples where ingest will fail.
+Multi-sheet spreadsheets and CSV files with a different number of entries per row are two examples where ingest will fail.
 This is non-fatal. The Dataverse software will not produce a .tab version of the file and will show a warning to users
 who can see the draft version of the dataset containing the file that will indicate why ingest failed. When the file is published as 
 part of the dataset, there will be no indication that ingest was attempted and failed.
 
 If the warning message is a concern, the Dataverse software includes both an API call (see :ref:`file-uningest` in the :doc:`/api/native-api` guide) 
-and an Edit/Uningest menu option displayed on the file page, that allow a file to be Uningested. These are only available to superusers.
+and an Edit/Uningest menu option displayed on the file page, that allow a file to be uningested. These are only available to superusers.
 Uningest will remove the warning. Uningest can also be done for a file that was successfully ingested.
 This will remove the .tab version of the file that was generated.
 
