@@ -1382,6 +1382,126 @@ For Google Analytics, the example script at :download:`analytics-code.html </_st
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
 
+Adding cookie consent
++++++++++++++++++++++
+
+Cookie consent maybe required on websites that use analytics tracking codes to comply with privacy regulations, such as the GDPR, which mandate informing users about the collection and use of their data, thereby giving them the option to accept or reject cookies for enhanced privacy and control over their personal information.
+
+For this receipt we use the CookieConsent https://cookieconsent.orestbida.com/ JavaScript library.
+
+To allow users to opt out of the use Google Analytics tracking you can do the following:
+
+1. Assuming you already have ``analytics-code.html`` added and configured, update the Google Analytics scripts by adding  ``type``, ``data-category`` and ``data-service`` arguments like this:
+
+.. code-block:: html
+
+    <!-- Global Site Tag (gtag.js) - Google Analytics -->
+    <script
+        async="async"
+        src="https://www.googletagmanager.com/gtag/js?id=YOUR-ACCOUNT-CODE"
+        type="text/plain"
+        data-category="analytics"
+        data-service="Google Analytics"></script>
+    <script
+        type="text/plain"
+        data-category="analytics"
+        data-service="Google Analytics">
+        //<![CDATA[
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+
+	gtag('config', 'YOUR-ACCOUNT-CODE');
+        //]]>
+    </script>
+
+2. Add to ``analytics-code.html``:
+
+``<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@v3.0.0/dist/cookieconsent.css">``
+
+3. Go to https://playground.cookieconsent.orestbida.com/ to configure, download and copy contents of ``cookieconsent-config.js`` to ``analytics-code.html``. It should look something like this:
+
+.. code-block:: html
+
+    <script type="module">
+      import 'https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@v3.0.0/dist/cookieconsent.umd.js';
+
+      CookieConsent.run({
+        guiOptions: {
+          consentModal: {
+            layout: "box",
+            position: "middle center",
+            equalWeightButtons: false,
+            flipButtons: false
+          },
+          preferencesModal: {
+            layout: "box",
+            position: "right",
+            equalWeightButtons: true,
+            flipButtons: false
+          }
+        },
+        categories: {
+          necessary: {
+            readOnly: true
+          },
+          analytics: {},
+        },
+        language: {
+          default: "en",
+          autoDetect: "browser",
+          translations: {
+            en: {
+              consentModal: {
+                title: "Hello traveller, it's cookie time!",
+                description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip.",
+                acceptAllBtn: "Accept all",
+                acceptNecessaryBtn: "Reject all",
+                showPreferencesBtn: "Manage preferences",
+                footer: "<a href=\"#link\">Privacy Policy</a>\n<a href=\"#link\">Terms and conditions</a>"
+              },
+              preferencesModal: {
+                title: "Consent Preferences Center",
+                acceptAllBtn: "Accept all",
+                acceptNecessaryBtn: "Reject all",
+                savePreferencesBtn: "Save preferences",
+                closeIconLabel: "Close modal",
+                serviceCounterLabel: "Service|Services",
+                sections: [
+                  {
+                    title: "Cookie Usage",
+                    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+                  },
+                  {
+                    title: "Strictly Necessary Cookies <span class=\"pm__badge\">Always Enabled</span>",
+                    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                    linkedCategory: "necessary"
+                  },
+                  {
+                    title: "Analytics Cookies",
+                    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                    linkedCategory: "analytics"
+                  },
+                  {
+                    title: "More information",
+                    description: "For any query in relation to my policy on cookies and your choices, please <a class=\"cc__link\" href=\"#yourdomain.com\">contact me</a>."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        disablePageInteraction: true
+      });
+    </script>
+
+After restarting or reloading Dataverse the cookie consent popup should appear.
+
+.. |cokkieconsent| image:: ./img/cookie-consent-example.png
+   :class: img-responsive
+
+If you change the cookie consent config in ``CookieConsent.run()`` and want to test you changes, you should remove the cookie called ``cc_cooke`` in your browser and reload the Dataverse page to have the popup appear again. To remove cookies use Application > Cookies in the Chrome/Edge dev tool, and Storage > Cookies in Firefox and Safari.
+
 .. _license-config:
 
 Configuring Licenses
