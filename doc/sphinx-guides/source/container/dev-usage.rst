@@ -154,21 +154,21 @@ IDE-triggered re-deployments
 
 You have at least two options:
 
-1. Use builtin features of IDEs or plugins for different IDEs by Payara to ease the burden of redeploying an application during development to a running Payara application server.
+#. Use builtin features of IDEs or plugins for different IDEs by Payara to ease the burden of redeploying an application during development to a running Payara application server.
    Their guides contain `documentation on Payara IDE plugins <https://docs.payara.fish/community/docs/documentation/ecosystem/ecosystem.html>`_.
-2. Use a paid product like `JRebel <https://www.jrebel.com/>`_.
+#. Use a paid product like `JRebel <https://www.jrebel.com/>`_.
 
 The main difference between the first and the second option is support for hot deploys of non-class files plus limitations in what the JVM HotswapAgent can do for you.
 Find more `details in a blog article by JRebel <https://www.jrebel.com/blog/java-hotswap-guide>`_.
 
 When opting for builtin features or Payara tools, please follow these steps:
 
-1. | Download the Payara appserver to your machine, unzip and note the location for later.
+#. | Download the Payara appserver to your machine, unzip and note the location for later.
    | - See :ref:`payara` for which version or run the following command
    | ``mvn help:evaluate -Dexpression=payara.version -q -DforceStdout``
    | - To download, see :ref:`payara` or try `Maven Central <https://mvnrepository.com/artifact/fish.payara.distributions/payara>`_.
 
-2. Install Payara tools plugin in your IDE:
+#. Install Payara tools plugin in your IDE:
 
    .. tabs::
      .. group-tab:: Netbeans
@@ -182,7 +182,7 @@ When opting for builtin features or Payara tools, please follow these steps:
 
        .. image:: img/intellij-payara-plugin-install.png
 
-3. Configure a connection to the application server:
+#. Configure a connection to the application server:
 
    .. tabs::
      .. group-tab:: Netbeans
@@ -238,13 +238,13 @@ When opting for builtin features or Payara tools, please follow these steps:
 
         .. image:: img/intellij-payara-config-server-behaviour.png
 
-4. | Start all the containers. Follow the cheat sheet above, but take care to skip application deployment:
+#. | Start all the containers. Follow the cheat sheet above, but take care to skip application deployment:
    | - When using the Maven commands, append ``-Dapp.deploy.skip``. For example:
    |   ``mvn -Pct docker:run -Dapp.deploy.skip``
    | - When using Docker Compose, prepend the command with ``SKIP_DEPLOY=1``. For example:
    |   ``SKIP_DEPLOY=1 docker compose -f docker-compose-dev.yml up``
    | - Note: the Admin Console can be reached at http://localhost:4848 or https://localhost:4949
-5. To deploy the application to the running server, use the configured tools to deploy.
+#. To deploy the application to the running server, use the configured tools to deploy.
    Using the "Run" configuration only deploys and enables redeploys, while running "Debug" enables hot swapping of classes via JDWP.
 
    .. tabs::
