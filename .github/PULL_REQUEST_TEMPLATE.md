@@ -12,4 +12,7 @@ Closes #
 
 **Is there a release notes update needed for this change?**:
 
+**Will you be able to contribute a Pull Request for this issue?**  
+Help is always welcome, is this feature something you or your organization plan to implement ?
+
 **Additional documentation**:
