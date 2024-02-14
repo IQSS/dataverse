@@ -579,21 +579,19 @@ public class DataFile extends DvObject implements Comparable {
         return resultFileMetadata;
     }
 
-    private FileMetadata getTheNewerFileMetadata(FileMetadata currentFileMetadata, FileMetadata newFileMetadata) {
-        if (currentFileMetadata == null) {
-            return newFileMetadata;
+    private FileMetadata getTheNewerFileMetadata(FileMetadata current, FileMetadata candidate) {
+        if (current == null) {
+            return candidate;
         }
 
-        DatasetVersion currentVersion = currentFileMetadata.getDatasetVersion();
-        DatasetVersion newVersion = newFileMetadata.getDatasetVersion();
+        DatasetVersion currentVersion = current.getDatasetVersion();
+        DatasetVersion candidateVersion = candidate.getDatasetVersion();
 
-        if (newVersion.getVersionNumber().compareTo(currentVersion.getVersionNumber()) > 0 ||
-                (newVersion.getVersionNumber().compareTo(currentVersion.getVersionNumber()) == 0 &&
-                        newVersion.getMinorVersionNumber().compareTo(currentVersion.getMinorVersionNumber()) > 0)) {
-            return newFileMetadata;
+        if (DatasetVersion.compareByVersion.compare(candidateVersion, currentVersion) > 0) {
+            return candidate;
         }
 
-        return currentFileMetadata;
+        return current;
     }
 
     /**
