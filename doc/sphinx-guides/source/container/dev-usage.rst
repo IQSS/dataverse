@@ -231,7 +231,7 @@ When opting for builtin features or Payara tools, please follow these steps:
 
         .. image:: img/intellij-payara-config-startup.png
 
-        You might want to tweak the hot deploy behaviour in the "Server" tab now.
+        You might want to tweak the hot deploy behavior in the "Server" tab now.
         "Update action" can be found in the run window (see below).
         "Frame deactivation" means switching from IntelliJ window to something else, e.g. your browser.
         *Note: static resources like properties, XHTML etc will only update when redeploying!*
@@ -271,7 +271,7 @@ When opting for builtin features or Payara tools, please follow these steps:
         .. image:: img/intellij-payara-run-toolbar.png
 
         Watch the WAR build and the deployment unfold.
-        Note the "Update" action button (see config to change its behaviour).
+        Note the "Update" action button (see config to change its behavior).
 
         .. image:: img/intellij-payara-run-output.png
 
