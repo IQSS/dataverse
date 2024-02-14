@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -19,13 +20,17 @@ public class GetLatestAccessibleFileMetadataCommand extends AbstractCommand<File
 
     @Override
     public FileMetadata execute(CommandContext ctxt) throws CommandException {
-        FileMetadata fileMetadata = ctxt.engine().submit(
-                new GetLatestPublishedFileMetadataCommand(getRequest(), dataFile)
-        );
+        FileMetadata fileMetadata = null;
+
+        if (ctxt.permissions().requestOn(getRequest(), dataFile.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+            fileMetadata = ctxt.engine().submit(
+                    new GetDraftFileMetadataIfAvailableCommand(getRequest(), dataFile)
+            );
+        }
 
         if (fileMetadata == null) {
             fileMetadata = ctxt.engine().submit(
-                    new GetDraftFileMetadataIfAvailableCommand(getRequest(), dataFile)
+                    new GetLatestPublishedFileMetadataCommand(getRequest(), dataFile)
             );
         }
 
