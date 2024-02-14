@@ -655,6 +655,7 @@ public class Files extends AbstractApiBean {
                 }
                 dataFile.setIngestDone();
                 dataFile.setIngestReport(null);
+                fileService.save(dataFile);
                 return ok("Datafile " + dataFile.getId() + " uningested.");
             } else {
                 return error(Response.Status.BAD_REQUEST,
