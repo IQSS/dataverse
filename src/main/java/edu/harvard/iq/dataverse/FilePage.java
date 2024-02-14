@@ -547,16 +547,17 @@ public class FilePage implements java.io.Serializable {
 
         if (!file.isTabularData()) {
             //Ingest never succeeded, either there was a failure or this is not a tabular data file
-            User u = session.getUser();
-            if (!u.isAuthenticated() || !u.isSuperuser()) {
-                logger.warning("User: " + u.getIdentifier() + " tried to uningest a file");
-                // Shouldn't happen (choice not displayed for users who don't have the right
-                // permission), but check anyway
-                JH.addMessage(FacesMessage.SEVERITY_WARN,
-                        BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
-                return null;
-            }
             if (file.isIngestProblem()) {
+                //We allow anyone who can publish to uningest in order to clear a problem
+                User u = session.getUser();
+                if (!u.isAuthenticated() || !(permissionService.permissionsFor(u, file).contains(Permission.PublishDataset))) {
+                    logger.warning("User: " + u.getIdentifier() + " tried to uningest a file");
+                    // Shouldn't happen (choice not displayed for users who don't have the right
+                    // permission), but check anyway
+                    JH.addMessage(FacesMessage.SEVERITY_WARN,
+                            BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+                    return null;
+                }
                 file.setIngestDone();
                 file.setIngestReport(null);
             } else {
@@ -566,6 +567,7 @@ public class FilePage implements java.io.Serializable {
                 return null;
             }
         } else {
+            //Superuser required to uningest after a success
             //Uningest command does it's own check for isSuperuser
             commandEngine.submit(new UningestFileCommand(dvRequestService.getDataverseRequest(), file));
             Long dataFileId = file.getId();
