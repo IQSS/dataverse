@@ -655,27 +655,24 @@ public class Files extends AbstractApiBean {
                 }
                 dataFile.setIngestDone();
                 dataFile.setIngestReport(null);
+                return ok("Datafile " + dataFile.getId() + " uningested.");
             } else {
                 return error(Response.Status.BAD_REQUEST,
-                        BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+                        BundleUtil.getStringFromBundle("Cannot uningest non-tabular file."));
+            }
+        } else {
+            try {
+                DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+                execCommand(new UningestFileCommand(req, dataFile));
+                Long dataFileId = dataFile.getId();
+                dataFile = fileService.find(dataFileId);
+                Dataset theDataset = dataFile.getOwner();
+                exportDatasetMetadata(settingsService, theDataset);
+                return ok("Datafile " + dataFileId + " uningested.");
+            } catch (WrappedResponse wr) {
+                return wr.getResponse();
             }
         }
-        if (!dataFile.isTabularData()) {
-            return error(Response.Status.BAD_REQUEST, "Cannot uningest non-tabular file.");
-        }
-
-        try {
-            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            execCommand(new UningestFileCommand(req, dataFile));
-            Long dataFileId = dataFile.getId();
-            dataFile = fileService.find(dataFileId);
-            Dataset theDataset = dataFile.getOwner();
-            exportDatasetMetadata(settingsService, theDataset);
-            return ok("Datafile " + dataFileId + " uningested.");
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-
     }
 
     // reingest attempts to queue an *existing* DataFile 
