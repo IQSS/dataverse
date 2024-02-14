@@ -51,6 +51,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -65,6 +66,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
 import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -637,7 +639,27 @@ public class Files extends AbstractApiBean {
         if (dataFile == null) {
             return error(Response.Status.NOT_FOUND, "File not found for given id.");
         }
-
+        if (!dataFile.isTabularData()) {
+            // Ingest never succeeded, either there was a failure or this is not a tabular
+            // data file
+            // We allow anyone who can publish to uningest in order to clear a problem
+            if (dataFile.isIngestProblem()) {
+                try {
+                    AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
+                    if (!(permissionSvc.permissionsFor(au, dataFile).contains(Permission.PublishDataset))) {
+                        return forbidden(
+                                "Uningesting to remove an ingest problem can only be done by those who can publish the dataset");
+                    }
+                } catch (WrappedResponse wr) {
+                    return wr.getResponse();
+                }
+                dataFile.setIngestDone();
+                dataFile.setIngestReport(null);
+            } else {
+                return error(Response.Status.BAD_REQUEST,
+                        BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+            }
+        }
         if (!dataFile.isTabularData()) {
             return error(Response.Status.BAD_REQUEST, "Cannot uningest non-tabular file.");
         }
