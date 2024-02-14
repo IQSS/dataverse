@@ -486,23 +486,37 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}")
-    public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, uriInfo, headers, DS_VERSION_LATEST), getRequestUser(crc));
+    public Response getFileData(@Context ContainerRequestContext crc,
+                                @PathParam("id") String fileIdOrPersistentId,
+                                @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                @Context UriInfo uriInfo,
+                                @Context HttpHeaders headers) {
+        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, DS_VERSION_LATEST, includeDeaccessioned, uriInfo, headers), getRequestUser(crc));
     }
 
     @GET
     @AuthRequired
     @Path("{id}/versions/{datasetVersionId}")
-    public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("datasetVersionId") String datasetVersionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, uriInfo, headers, datasetVersionId), getRequestUser(crc));
+    public Response getFileData(@Context ContainerRequestContext crc,
+                                @PathParam("id") String fileIdOrPersistentId,
+                                @PathParam("datasetVersionId") String datasetVersionId,
+                                @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                @Context UriInfo uriInfo,
+                                @Context HttpHeaders headers) {
+        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, datasetVersionId, includeDeaccessioned, uriInfo, headers), getRequestUser(crc));
     }
 
-    private Response getFileDataResponse(final DataverseRequest req, String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, String datasetVersionId) throws WrappedResponse {
+    private Response getFileDataResponse(final DataverseRequest req,
+                                         String fileIdOrPersistentId,
+                                         String datasetVersionId,
+                                         boolean includeDeaccessioned,
+                                         UriInfo uriInfo,
+                                         HttpHeaders headers) throws WrappedResponse {
         final DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
         FileMetadata fileMetadata = execCommand(handleVersion(datasetVersionId, new Datasets.DsVersionHandler<>() {
             @Override
             public Command<FileMetadata> handleLatest() {
-                return new GetLatestAccessibleFileMetadataCommand(req, dataFile);
+                return new GetLatestAccessibleFileMetadataCommand(req, dataFile, includeDeaccessioned);
             }
 
             @Override
@@ -512,12 +526,12 @@ public class Files extends AbstractApiBean {
 
             @Override
             public Command<FileMetadata> handleSpecific(long major, long minor) {
-                return new GetSpecificPublishedFileMetadataByDatasetVersionCommand(req, dataFile, major, minor);
+                return new GetSpecificPublishedFileMetadataByDatasetVersionCommand(req, dataFile, major, minor, includeDeaccessioned);
             }
 
             @Override
             public Command<FileMetadata> handleLatestPublished() {
-                return new GetLatestPublishedFileMetadataCommand(req, dataFile);
+                return new GetLatestPublishedFileMetadataCommand(req, dataFile, includeDeaccessioned);
             }
         }));
 
