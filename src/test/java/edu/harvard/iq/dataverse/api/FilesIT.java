@@ -11,8 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import io.restassured.path.json.JsonPath;
 
-import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
-import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_LATEST_PUBLISHED;
+import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static io.restassured.path.json.JsonPath.with;
 import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -1450,9 +1449,9 @@ public class FilesIT {
                 .statusCode(NOT_FOUND.getStatusCode());
 
         // Update the file metadata
-        String newFileName = "trees_2.png";
+        String newFileNameFirstUpdate = "trees_2.png";
         JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
-                .add("label", newFileName);
+                .add("label", newFileNameFirstUpdate);
         Response updateFileMetadataResponse = UtilIT.updateFileMetadata(dataFileId, updateFileMetadata.build().toString(), superUserApiToken);
         updateFileMetadataResponse.then().statusCode(OK.getStatusCode());
 
@@ -1471,12 +1470,46 @@ public class FilesIT {
         publishDatasetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        // Update the file metadata once again
+        String newFileNameSecondUpdate = "trees_3.png";
+        updateFileMetadata = Json.createObjectBuilder()
+                .add("label", newFileNameSecondUpdate);
+        updateFileMetadataResponse = UtilIT.updateFileMetadata(dataFileId, updateFileMetadata.build().toString(), superUserApiToken);
+        updateFileMetadataResponse.then().statusCode(OK.getStatusCode());
+
         // Regular user should get to see latest published file data
         getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular, DS_VERSION_LATEST_PUBLISHED);
         getFileDataResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.label", equalTo(newFileName));
-        // TODO
+                .body("data.label", equalTo(newFileNameFirstUpdate));
+
+        // Regular user should get to see latest published file data if latest is requested
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular, DS_VERSION_LATEST);
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.label", equalTo(newFileNameFirstUpdate));
+
+        // Superuser should get to see draft file data if latest is requested
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, DS_VERSION_LATEST);
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.label", equalTo(newFileNameSecondUpdate));
+
+        // Publish dataset once again
+        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken);
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Regular user should get to see file data by specific version number
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular, "2.0");
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.label", equalTo(newFileNameFirstUpdate));
+
+        getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular, "3.0");
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.label", equalTo(newFileNameSecondUpdate));
 
         // Cleanup
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, superUserApiToken);
