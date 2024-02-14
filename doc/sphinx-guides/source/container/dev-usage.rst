@@ -144,29 +144,30 @@ Alternatives:
 Redeploying
 -----------
 
-Rebuild and Running Images
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Rebuilding and Running Images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The safest way to redeploy code is to stop the running containers (with Ctrl-c if you started them in the foreground) and then build and run them again with ``mvn -Pct clean package docker:run``.
+The safest and most reliable way to redeploy code is to stop the running containers (with Ctrl-c if you started them in the foreground) and then build and run them again with ``mvn -Pct clean package docker:run``.
 
-IDE-triggered re-deployments
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IDE-Triggered Redeployments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Triggering redeployment using an IDE can greatly improve your feedback look when changing code.
 
 You have at least two options:
 
-#. Use builtin features of IDEs or plugins for different IDEs by Payara to ease the burden of redeploying an application during development to a running Payara application server.
-   Their guides contain `documentation on Payara IDE plugins <https://docs.payara.fish/community/docs/documentation/ecosystem/ecosystem.html>`_.
+#. Use builtin features of IDEs or `IDE plugins from Payara <https://docs.payara.fish/community/docs/documentation/ecosystem/ecosystem.html>`_.
 #. Use a paid product like `JRebel <https://www.jrebel.com/>`_.
 
-The main difference between the first and the second option is support for hot deploys of non-class files plus limitations in what the JVM HotswapAgent can do for you.
-Find more `details in a blog article by JRebel <https://www.jrebel.com/blog/java-hotswap-guide>`_.
+The main differences between the first and the second options are support for hot deploys of non-class files and limitations in what the JVM HotswapAgent can do for you.
+Find more details in a `blog article by JRebel <https://www.jrebel.com/blog/java-hotswap-guide>`_.
 
-When opting for builtin features or Payara tools, please follow these steps:
+To make use of builtin features or Payara tools (option 1), please follow these steps:
 
-#. | Download the Payara appserver to your machine, unzip and note the location for later.
-   | - See :ref:`payara` for which version or run the following command
-   | ``mvn help:evaluate -Dexpression=payara.version -q -DforceStdout``
-   | - To download, see :ref:`payara` or try `Maven Central <https://mvnrepository.com/artifact/fish.payara.distributions/payara>`_.
+#. | Download the version of Payara shown in :ref:`install-payara-dev` and unzip it to a reasonable location such as ``/usr/local/payara6``.
+   | - Note that Payara can also be downloaded from `Maven Central <https://mvnrepository.com/artifact/fish.payara.distributions/payara>`_.
+   | - Note that another way to check the expected version of Payara is to run this command:
+   |   ``mvn help:evaluate -Dexpression=payara.version -q -DforceStdout``
 
 #. Install Payara tools plugin in your IDE:
 
@@ -182,16 +183,14 @@ When opting for builtin features or Payara tools, please follow these steps:
 
        .. image:: img/intellij-payara-plugin-install.png
 
-#. Configure a connection to the application server:
+#. Configure a connection to Payara:
 
    .. tabs::
      .. group-tab:: Netbeans
 
-        Unzip Payara to ``/usr/local/payara6`` as explained in :ref:`install-payara-dev`.
+        Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Payara Server" and set the installation location to ``/usr/local/payara6`` (or wherever you unzipped Payara). Choose "Remote Domain". Use the settings in the screenshot below. Most of the defaults are fine.
 
-        Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Payara Server" and set the installation location to ``/usr/local/payara6``. Use the settings in the screenshot below. Most of the defaults are fine.
-
-        Under "Common", the password should be "admin". Make sure "Enable Hot Deploy" is checked.
+        Under "Common", the username and password should be "admin". Make sure "Enable Hot Deploy" is checked.
 
         .. image:: img/netbeans-servers-common.png
 
@@ -203,7 +202,7 @@ When opting for builtin features or Payara tools, please follow these steps:
 
         .. image:: img/netbeans-compile.png
 
-        Under "Run", select "Payara Server" under "Server" and make sure "Deploy on Save" is checked.
+        Under "Run", under "Server", select "Payara Server". Make sure "Deploy on Save" is checked.
 
         .. image:: img/netbeans-run.png
 
@@ -264,6 +263,12 @@ When opting for builtin features or Payara tools, please follow these steps:
           Code updated
 
         Check to make sure the change is live by visiting, for example, http://localhost:8080/api/info/version
+
+        See below for a `video <https://www.youtube.com/watch?v=yo3aKOg96f0>`_ demonstrating the steps above but please note that the ports used have changed and now that we have the concept of "skip deploy" the undeployment step shown is no longer necessary.
+
+        .. raw:: html
+
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/yo3aKOg96f0?si=2OCDj-_fmQFBMOLc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
      .. group-tab:: IntelliJ
         Choose "Run" or "Debug" in the toolbar.
