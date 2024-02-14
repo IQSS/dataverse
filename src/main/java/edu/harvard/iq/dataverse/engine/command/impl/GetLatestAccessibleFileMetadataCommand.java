@@ -12,10 +12,12 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 @RequiredPermissions({})
 public class GetLatestAccessibleFileMetadataCommand extends AbstractCommand<FileMetadata> {
     private final DataFile dataFile;
+    private final boolean includeDeaccessioned;
 
-    public GetLatestAccessibleFileMetadataCommand(DataverseRequest aRequest, DataFile dataFile) {
+    public GetLatestAccessibleFileMetadataCommand(DataverseRequest aRequest, DataFile dataFile, boolean includeDeaccessioned) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
+        this.includeDeaccessioned = includeDeaccessioned;
     }
 
     @Override
@@ -30,7 +32,7 @@ public class GetLatestAccessibleFileMetadataCommand extends AbstractCommand<File
 
         if (fileMetadata == null) {
             fileMetadata = ctxt.engine().submit(
-                    new GetLatestPublishedFileMetadataCommand(getRequest(), dataFile)
+                    new GetLatestPublishedFileMetadataCommand(getRequest(), dataFile, includeDeaccessioned)
             );
         }
 

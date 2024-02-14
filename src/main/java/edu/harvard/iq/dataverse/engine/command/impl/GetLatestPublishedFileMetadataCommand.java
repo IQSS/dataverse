@@ -11,10 +11,12 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 @RequiredPermissions({})
 public class GetLatestPublishedFileMetadataCommand extends AbstractCommand<FileMetadata> {
     private final DataFile dataFile;
+    private final boolean includeDeaccessioned;
 
-    public GetLatestPublishedFileMetadataCommand(DataverseRequest aRequest, DataFile dataFile) {
+    public GetLatestPublishedFileMetadataCommand(DataverseRequest aRequest, DataFile dataFile, boolean includeDeaccessioned) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
+        this.includeDeaccessioned = includeDeaccessioned;
     }
 
     @Override
