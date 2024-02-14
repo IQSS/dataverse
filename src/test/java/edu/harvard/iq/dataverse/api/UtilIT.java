@@ -1519,6 +1519,11 @@ public class UtilIT {
         return response;
     }
     
+    static Response indexClearDataset(Integer datasetId) {
+        return given()
+                .delete("/api/admin/index/datasets/"+datasetId);
+    }
+    
     static Response reindexDataverse(String dvId) {
         Response response = given()
                 .get("/api/admin/index/dataverses/" + dvId);
@@ -2091,7 +2096,7 @@ public class UtilIT {
         return given()
                 .get("/api/admin/index/clear");
     }
-
+    
     static Response index() {
         return given()
                 .get("/api/admin/index");
