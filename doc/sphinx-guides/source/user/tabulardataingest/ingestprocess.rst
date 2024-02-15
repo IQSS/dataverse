@@ -67,7 +67,7 @@ who can see the draft version of the dataset containing the file that will indic
 part of the dataset, there will be no indication that ingest was attempted and failed.
 
 If the warning message is a concern, the Dataverse software includes both an API call (see :ref:`file-uningest` in the :doc:`/api/native-api` guide) 
-and an Edit/Uningest menu option displayed on the file page, that allow a file to be uningested by anone who can publish the dataset.
+and an Edit/Uningest menu option displayed on the file page, that allow a file to be uningested by anyone who can publish the dataset.
 
 Uningest will remove the warning. Uningest can also be done for a file that was successfully ingested.  This is only available to superusers.
 This will remove the variable-level metadata and the .tab version of the file that was generated.
