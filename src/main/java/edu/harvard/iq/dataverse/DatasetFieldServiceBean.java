@@ -502,7 +502,14 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     HttpGet httpGet = new HttpGet(retrievalUri);
                     //application/json+ld is for backward compatibility
                     httpGet.addHeader("Accept", "application/ld+json, application/json+ld, application/json");
-
+                    //Adding others custom HTTP request headers if exists
+                    final JsonObject headers = cvocEntry.getJsonObject("headers");
+                    if (headers != null) {
+                        final Set<String> headerKeys = headers.keySet();
+                        for (final String hKey: headerKeys) {
+                            httpGet.addHeader(hKey, headers.getString(hKey));
+                        }
+                    }
                     HttpResponse response = httpClient.execute(httpGet);
                     String data = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                     int statusCode = response.getStatusLine().getStatusCode();
