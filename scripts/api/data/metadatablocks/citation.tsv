@@ -220,7 +220,7 @@
 	language	Khmer		79	khm	km
 	language	Kikuyu, Gikuyu		80	kik	ki
 	language	Kinyarwanda		81	kin	rw
-	language	Kirghiz, Kyrgyz		82	kir	ky									
+	language	Kyrgyz		82	kir	ky	Kirghiz
 	language	Komi		83	kom	kv
 	language	Kongo		84	kon	kg
 	language	Korean		85	kor	ko
@@ -284,7 +284,7 @@
 	language	Shona		143	sna	sn
 	language	Sinhala, Sinhalese		144	sin	si
 	language	Slovak		145	slk	slo	sk
-	language	Slovenian		146	slv	sl
+	language	Slovene		146	slv	sl	Slovenian
 	language	Somali		147	som	so
 	language	Southern Sotho		148	sot	st
 	language	Spanish, Castilian		149	spa	es
