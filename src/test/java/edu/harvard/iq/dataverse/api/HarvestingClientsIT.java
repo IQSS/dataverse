@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.api;
 
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import io.restassured.RestAssured;
@@ -37,8 +39,8 @@ public class HarvestingClientsIT {
     private static final String ARCHIVE_URL = "https://demo.dataverse.org";
     private static final String HARVEST_METADATA_FORMAT = "oai_dc";
     private static final String ARCHIVE_DESCRIPTION = "RestAssured harvesting client test";
-    private static final String CONTROL_OAI_SET = "controlTestSet";
-    private static final int DATASETS_IN_CONTROL_SET = 7;
+    private static final String CONTROL_OAI_SET = "controlTestSet2";
+    private static final int DATASETS_IN_CONTROL_SET = 8;
     private static String normalUserAPIKey;
     private static String adminUserAPIKey;
     private static String harvestCollectionAlias; 
@@ -53,6 +55,10 @@ public class HarvestingClientsIT {
         // Create a collection that we will use to harvest remote content into: 
         setupCollection();
         
+    }
+    @AfterEach
+    public void cleanup() {
+        UtilIT.deleteSetting(SettingsServiceBean.Key.AllowHarvestingMissingCVV);
     }
 
     private static void setupUsers() {
@@ -157,9 +163,24 @@ public class HarvestingClientsIT {
         logger.info("rDelete.getStatusCode(): " + rDelete.getStatusCode());
         assertEquals(OK.getStatusCode(), rDelete.getStatusCode());
     }
-    
+
     @Test
-    public void testHarvestingClientRun()  throws InterruptedException {
+    public void testHarvestingClientRun_AllowHarvestingMissingCVV_True()  throws InterruptedException {
+        harvestingClientRun(true);
+    }
+    @Test
+    public void testHarvestingClientRun_AllowHarvestingMissingCVV_False()  throws InterruptedException {
+        harvestingClientRun(false);
+    }
+
+    private void harvestingClientRun(boolean allowHarvestingMissingCVV)  throws InterruptedException {
+        int expectedNumberOfSetsHarvested = allowHarvestingMissingCVV ? DATASETS_IN_CONTROL_SET : DATASETS_IN_CONTROL_SET - 1;
+        if (allowHarvestingMissingCVV) {
+            UtilIT.enableSetting(SettingsServiceBean.Key.AllowHarvestingMissingCVV);
+        } else {
+            UtilIT.deleteSetting(SettingsServiceBean.Key.AllowHarvestingMissingCVV);
+        }
+
         // This test will create a client and attempt to perform an actual 
         // harvest and validate the resulting harvested content. 
         
@@ -242,7 +263,7 @@ public class HarvestingClientsIT {
                 assertEquals(harvestTimeStamp, responseJsonPath.getString("data.lastNonEmpty"));
                 
                 // d) Confirm that the correct number of datasets have been harvested:
-                assertEquals(DATASETS_IN_CONTROL_SET, responseJsonPath.getInt("data.lastDatasetsHarvested"));
+                assertEquals(expectedNumberOfSetsHarvested, responseJsonPath.getInt("data.lastDatasetsHarvested"));
                 
                 // ok, it looks like the harvest has completed successfully.
                 break;

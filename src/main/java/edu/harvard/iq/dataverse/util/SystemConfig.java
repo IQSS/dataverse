@@ -1181,4 +1181,11 @@ public class SystemConfig {
     public boolean isStoringIngestedFilesWithHeaders() {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders, false);
     }
+
+    /**
+     * Should we ignore missing controlled vocabulary values when harvesting
+     */
+    public boolean allowHarvestingMissingCVV() {
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.AllowHarvestingMissingCVV, false);
+    }
 }

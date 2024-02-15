@@ -603,7 +603,12 @@ public class SettingsServiceBean {
          * When ingesting tabular data files, store the generated tab-delimited 
          * files *with* the variable names line up top. 
          */
-        StoreIngestedTabularFilesWithVarHeaders
+        StoreIngestedTabularFilesWithVarHeaders,
+
+        /**
+         * Should we ignore missing controlled vocabulary values when harvesting
+         */
+        AllowHarvestingMissingCVV
         ;
 
         @Override
