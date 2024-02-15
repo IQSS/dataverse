@@ -3519,7 +3519,7 @@ When the dataset version is published, authentication is not required:
 
   export SERVER_URL=https://demo.dataverse.org
   export FILE_ID=42
-  export DATASET_VERSION=":latest-published"
+  export DATASET_VERSION=:latest-published
 
   curl "$SERVER_URL/api/files/$FILE_ID/versions/$DATASET_VERSION/citation"
 
