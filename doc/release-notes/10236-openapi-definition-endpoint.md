@@ -5,4 +5,4 @@ On Dataverse 6.0 Payara was updated and this caused the url `/openapi/` to stop 
 
 We incorporated the SmallRye OpenAPI plugin  (https://github.com/smallrye/smallrye-open-api/tree/main/tools/maven-plugin) which will generate files for YAML and JSON formats and deposit them on `edu/harvard/iq/dataverse/openapi/`. These files will be provided by this endpoint depending on the format requested.
 
-The API endpoint was added `/api/info/openapi/{format}` accepting the "json" and "yaml" as formats.
+The API endpoint `/api/info/openapi/{format}` was added, accepting "json" and "yaml" as formats.
