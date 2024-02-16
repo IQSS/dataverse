@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetAuthor;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 
 public class XmlMetadataTemplate {
 
