@@ -35,11 +35,11 @@ class MailServiceBeanTest {
          * We need to reset the BrandingUtil mocks for every test, as we rely on them being set to default.
          */
         @BeforeEach
-        private void setup() {
+        void setup() {
             BrandingUtilTest.setupMocks();
         }
         @AfterAll
-        private static void tearDown() {
+        static void tearDown() {
             BrandingUtilTest.tearDownMocks();
         }
         

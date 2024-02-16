@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
@@ -10,14 +11,12 @@ import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import edu.harvard.iq.dataverse.util.testing.Tags;
 import io.restassured.RestAssured;
 import jakarta.mail.Session;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.containers.GenericContainer;
@@ -30,6 +29,9 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -43,6 +45,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag(Tags.USES_TESTCONTAINERS)
 @Testcontainers(disabledWithoutDocker = true)
 @ExtendWith(MockitoExtension.class)
+@LocalJvmSettings
+@JvmSetting(key = JvmSettings.SYSTEM_EMAIL, value = "test@test.com")
 class MailSessionProducerIT {
     
     private static final Integer PORT_SMTP = 1025;
@@ -51,15 +55,21 @@ class MailSessionProducerIT {
     static SettingsServiceBean settingsServiceBean = Mockito.mock(SettingsServiceBean.class);;
     static DataverseServiceBean dataverseServiceBean = Mockito.mock(DataverseServiceBean.class);;
     
+    /**
+     * We need to reset the BrandingUtil mocks for every test, as we rely on them being set to default.
+     */
     @BeforeAll
     static void setUp() {
         // Setup mocks behavior, inject as deps
         BrandingUtil.injectServices(dataverseServiceBean, settingsServiceBean);
     }
+    @AfterAll
+    static void tearDown() {
+        BrandingUtilTest.tearDownMocks();
+    }
     
     @Nested
     @LocalJvmSettings
-    @JvmSetting(key = JvmSettings.SYSTEM_EMAIL, value = "test@test.com")
     @JvmSetting(key = JvmSettings.MAIL_MTA_HOST, method = "tcSmtpHost")
     @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpPort", varArgs = "port")
     class WithoutAuthentication {
@@ -113,7 +123,6 @@ class MailSessionProducerIT {
     
     @Nested
     @LocalJvmSettings
-    @JvmSetting(key = JvmSettings.SYSTEM_EMAIL, value = "test@test.com")
     @JvmSetting(key = JvmSettings.MAIL_MTA_HOST, method = "tcSmtpHost")
     @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpPort", varArgs = "port")
     @JvmSetting(key = JvmSettings.MAIL_MTA_AUTH, value = "yes")
@@ -169,4 +178,33 @@ class MailSessionProducerIT {
         
     }
     
+    @Nested
+    @LocalJvmSettings
+    class InvalidConfiguration {
+        @Test
+        @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, value = "1234", varArgs = "invalid")
+        void invalidConfigItemsAreIgnoredOnSessionBuild() {
+            assertDoesNotThrow(() -> new MailSessionProducer().getSession());
+            
+            Session mailSession = new MailSessionProducer().getSession();
+            MailServiceBean mailer = new MailServiceBean(mailSession, settingsServiceBean);
+            assertFalse(mailer.sendSystemEmail("test@example.org", "Test", "Test", false));
+        }
+        
+        @Test
+        @JvmSetting(key = JvmSettings.MAIL_MTA_HOST, value = "foobar")
+        void invalidHostnameIsFailingWhenSending() {
+            assertDoesNotThrow(() -> new MailSessionProducer().getSession());
+            
+            Session mailSession = new MailSessionProducer().getSession();
+            MailServiceBean mailer = new MailServiceBean(mailSession, settingsServiceBean);
+            assertFalse(mailer.sendSystemEmail("test@example.org", "Test", "Test", false));
+        }
+        
+        @Test
+        @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, varArgs = "port" , value = "foobar")
+        void invalidPortWithLetters() {
+            assertThrows(IllegalArgumentException.class, () -> new MailSessionProducer().getSession());
+        }
+    }
 }
