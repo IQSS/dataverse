@@ -40,8 +40,8 @@
             </dependency>
             <dependency>
                 <groupId>com.google.cloud</groupId>
-                <artifactId>google-cloud-bom</artifactId>
-                <version>${google.cloud.version}</version>
+                <artifactId>libraries-bom</artifactId>
+                <version>${google.library.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -152,7 +152,7 @@
         <postgresql.version>42.6.0</postgresql.version>
         <solr.version>9.3.0</solr.version>
         <aws.version>1.12.290</aws.version>
-        <google.cloud.version>0.177.0</google.cloud.version>
+        <google.library.version>26.30.0</google.library.version>
     
         <!-- Basic libs, logging -->
         <jakartaee-api.version>8.0.0</jakartaee-api.version>

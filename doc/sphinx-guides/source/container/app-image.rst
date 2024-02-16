@@ -22,20 +22,20 @@ IQSS will not offer you support how to deploy or run it, please reach out to the
 You might be interested in taking a look at :doc:`../developers/containers`, linking you to some (community-based)
 efforts.
 
-
+.. _supported-image-tags-app:
 
 Supported Image Tags
 ++++++++++++++++++++
 
 This image is sourced from the main upstream code `repository of the Dataverse software <https://github.com/IQSS/dataverse>`_.
-Development and maintenance of the `image's code <https://github.com/IQSS/dataverse/tree/develop>`_ happens there
-(again, by the community).
+Development and maintenance of the `image's code <https://github.com/IQSS/dataverse/tree/develop/src/main/docker>`_
+happens there (again, by the community). Community-supported image tags are based on the two most important
+upstream branches:
 
-.. note::
-    Please note that this image is not (yet) available from Docker Hub. You need to build local to use
-    (see below). Follow https://github.com/IQSS/dataverse/issues/9444 for new developments.
-
-
+- The ``unstable`` tag corresponds to the ``develop`` branch, where pull requests are merged.
+  (`Dockerfile <https://github.com/IQSS/dataverse/blob/develop/src/main/docker/Dockerfile>`__)
+- The ``alpha`` tag corresponds to the ``master`` branch, where releases are cut from.
+  (`Dockerfile <https://github.com/IQSS/dataverse/blob/master/src/main/docker/Dockerfile>`__)
 
 Image Contents
 ++++++++++++++
