@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataFileTag;
@@ -27,6 +28,7 @@ import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -931,4 +933,37 @@ public class Files extends AbstractApiBean {
             return ok(dataFileServiceBean.hasBeenDeleted(dataFile));
         }, getRequestUser(crc));
     }
+
+    /**
+     * @param fileIdOrPersistentId Database ID or PID of the data file.
+     * @param versionNumber The version of the dataset, such as 1.0, :draft,
+     * :latest-published, etc.
+     * @param includeDeaccessioned Defaults to false.
+     */
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{dsVersionString}/citation")
+    public Response getFileCitationByVersion(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("dsVersionString") String versionNumber, @QueryParam("includeDeaccessioned") boolean includeDeaccessioned) {
+        try {
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            Dataset ds = df.getOwner();
+            DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, true);
+            if (dsv == null) {
+                return unauthorized(BundleUtil.getStringFromBundle("files.api.no.draftOrUnauth"));
+            }
+
+            Long getDatasetVersionID = dsv.getId();
+            FileMetadata fm = dataFileServiceBean.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, df.getId());
+            if (fm == null) {
+                return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
+            }
+            boolean direct = df.isIdentifierRegistered();
+            DataCitation citation = new DataCitation(fm, direct);
+            return ok(citation.toString(true));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
 }
