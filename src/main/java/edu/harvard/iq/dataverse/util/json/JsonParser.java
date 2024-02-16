@@ -946,14 +946,9 @@ public class JsonParser {
                     if (cvv == null && !allowHarvestingMissingCVV) {
                         throw new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
                     }
-                    if (cvv != null) {
-                        // Only add value to the list if it is not a duplicate
-                        if (strValue.equals("Other")) {
-                            System.out.println("vals = " + vals + ", contains: " + vals.contains(cvv));
-                        }
-                        if (!vals.contains(cvv)) {
-                            vals.add(cvv);
-                        }
+                    // Only add value to the list if it is not a duplicate
+                    if (cvv != null && !vals.contains(cvv)) {
+                        vals.add(cvv);
                     }
                 }
             } else {

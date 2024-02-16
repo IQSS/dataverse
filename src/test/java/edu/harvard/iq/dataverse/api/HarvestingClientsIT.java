@@ -43,7 +43,8 @@ public class HarvestingClientsIT {
     private static final int DATASETS_IN_CONTROL_SET = 8;
     private static String normalUserAPIKey;
     private static String adminUserAPIKey;
-    private static String harvestCollectionAlias; 
+    private static String harvestCollectionAlias;
+    String clientApiPath = null;
     
     @BeforeAll
     public static void setUpClass() {
@@ -59,6 +60,15 @@ public class HarvestingClientsIT {
     @AfterEach
     public void cleanup() {
         UtilIT.deleteSetting(SettingsServiceBean.Key.AllowHarvestingMissingCVV);
+        // Cleanup: delete the client
+        if (clientApiPath != null) {
+            Response deleteResponse = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
+                    .delete(clientApiPath);
+            System.out.println("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
+            assertEquals(OK.getStatusCode(), deleteResponse.getStatusCode());
+            clientApiPath = null;
+        }
     }
 
     private static void setupUsers() {
@@ -191,7 +201,7 @@ public class HarvestingClientsIT {
         
         String nickName = "h" + UtilIT.getRandomString(6);
 
-        String clientApiPath = String.format(HARVEST_CLIENTS_API+"%s", nickName);
+        clientApiPath = String.format(HARVEST_CLIENTS_API+"%s", nickName);
         String clientJson = String.format("{\"dataverseAlias\":\"%s\","
                 + "\"type\":\"oai\","
                 + "\"harvestUrl\":\"%s\","
@@ -279,15 +289,6 @@ public class HarvestingClientsIT {
         // datasets have been harvested. This may or may not be necessary, seeing 
         // how we have already confirmed the number of successfully harvested 
         // datasets from the control set; somewhat hard to imagine a practical 
-        // situation where that would not be enough (?).  
-        
-        // Cleanup: delete the client 
-        
-        Response deleteResponse = given()
-                .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
-                .delete(clientApiPath);
-        System.out.println("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
-        assertEquals(OK.getStatusCode(), deleteResponse.getStatusCode());
-        
+        // situation where that would not be enough (?).
     }
 }
