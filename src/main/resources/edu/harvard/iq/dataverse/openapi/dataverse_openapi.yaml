@@ -4,7 +4,7 @@ info:
   title: Dataverse API
   version: "1.0"
 paths:
-  /access/datafile/bundle/{fileId}:
+  /api/v1/access/datafile/bundle/{fileId}:
     get:
       parameters:
       - name: fileId
@@ -28,7 +28,7 @@ paths:
             application/zip:
               schema:
                 $ref: '#/components/schemas/BundleDownloadInstance'
-  /access/datafile/{fileId}:
+  /api/v1/access/datafile/{fileId}:
     get:
       parameters:
       - name: fileId
@@ -44,7 +44,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/datafile/{fileId}/auxiliary:
+  /api/v1/access/datafile/{fileId}/auxiliary:
     get:
       parameters:
       - name: fileId
@@ -55,7 +55,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}:
+  /api/v1/access/datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}:
     get:
       parameters:
       - name: fileId
@@ -127,7 +127,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/datafile/{fileId}/auxiliary/{origin}:
+  /api/v1/access/datafile/{fileId}/auxiliary/{origin}:
     get:
       parameters:
       - name: fileId
@@ -143,7 +143,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/datafile/{fileId}/metadata:
+  /api/v1/access/datafile/{fileId}/metadata:
     get:
       parameters:
       - name: fileId
@@ -171,7 +171,7 @@ paths:
             text/xml:
               schema:
                 type: string
-  /access/datafile/{fileId}/metadata/ddi:
+  /api/v1/access/datafile/{fileId}/metadata/ddi:
     get:
       parameters:
       - name: fileId
@@ -199,7 +199,7 @@ paths:
             text/xml:
               schema:
                 type: string
-  /access/datafile/{id}/grantAccess/{identifier}:
+  /api/v1/access/datafile/{id}/grantAccess/{identifier}:
     put:
       parameters:
       - name: id
@@ -215,7 +215,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/datafile/{id}/listRequests:
+  /api/v1/access/datafile/{id}/listRequests:
     get:
       parameters:
       - name: id
@@ -226,7 +226,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/datafile/{id}/rejectAccess/{identifier}:
+  /api/v1/access/datafile/{id}/rejectAccess/{identifier}:
     put:
       parameters:
       - name: id
@@ -242,7 +242,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/datafile/{id}/requestAccess:
+  /api/v1/access/datafile/{id}/requestAccess:
     put:
       parameters:
       - name: id
@@ -253,7 +253,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/datafile/{id}/revokeAccess/{identifier}:
+  /api/v1/access/datafile/{id}/revokeAccess/{identifier}:
     delete:
       parameters:
       - name: id
@@ -269,7 +269,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/datafile/{id}/userFileAccessRequested:
+  /api/v1/access/datafile/{id}/userFileAccessRequested:
     get:
       parameters:
       - name: id
@@ -280,7 +280,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/datafile/{id}/userPermissions:
+  /api/v1/access/datafile/{id}/userPermissions:
     get:
       parameters:
       - name: id
@@ -291,7 +291,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/datafiles:
+  /api/v1/access/datafiles:
     post:
       parameters:
       - name: gbrecs
@@ -306,7 +306,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/datafiles/{fileIds}:
+  /api/v1/access/datafiles/{fileIds}:
     get:
       parameters:
       - name: fileIds
@@ -321,7 +321,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/dataset/{id}:
+  /api/v1/access/dataset/{id}:
     get:
       parameters:
       - name: id
@@ -336,7 +336,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/dataset/{id}/versions/{versionId}:
+  /api/v1/access/dataset/{id}/versions/{versionId}:
     get:
       parameters:
       - name: id
@@ -360,7 +360,7 @@ paths:
       responses:
         "200":
           description: OK
-  /access/dsCardImage/{versionId}:
+  /api/v1/access/dsCardImage/{versionId}:
     get:
       parameters:
       - name: versionId
@@ -377,7 +377,7 @@ paths:
               schema:
                 format: binary
                 type: string
-  /access/dvCardImage/{dataverseId}:
+  /api/v1/access/dvCardImage/{dataverseId}:
     get:
       parameters:
       - name: dataverseId
@@ -394,7 +394,7 @@ paths:
               schema:
                 format: binary
                 type: string
-  /access/fileCardImage/{fileId}:
+  /api/v1/access/fileCardImage/{fileId}:
     get:
       parameters:
       - name: fileId
@@ -411,7 +411,7 @@ paths:
               schema:
                 format: binary
                 type: string
-  /access/{id}/allowAccessRequest:
+  /api/v1/access/{id}/allowAccessRequest:
     put:
       parameters:
       - name: id
@@ -422,7 +422,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/archiveAllUnarchivedDatasetVersions:
+  /api/v1/admin/archiveAllUnarchivedDatasetVersions:
     post:
       parameters:
       - name: latestonly
@@ -441,7 +441,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/assignee/{idtf}:
+  /api/v1/admin/assignee/{idtf}:
     get:
       parameters:
       - name: idtf
@@ -452,7 +452,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/assignments/assignees/{raIdtf}:
+  /api/v1/admin/assignments/assignees/{raIdtf}:
     get:
       parameters:
       - name: raIdtf
@@ -464,7 +464,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/authenticatedUsers:
+  /api/v1/admin/authenticatedUsers:
     get:
       responses:
         "200":
@@ -474,17 +474,17 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/authenticatedUsers/convert/builtin2oauth:
+  /api/v1/admin/authenticatedUsers/convert/builtin2oauth:
     put:
       responses:
         "200":
           description: OK
-  /admin/authenticatedUsers/convert/builtin2shib:
+  /api/v1/admin/authenticatedUsers/convert/builtin2shib:
     put:
       responses:
         "200":
           description: OK
-  /admin/authenticatedUsers/id/{id}:
+  /api/v1/admin/authenticatedUsers/id/{id}:
     delete:
       parameters:
       - name: id
@@ -496,7 +496,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/authenticatedUsers/id/{id}/convertRemoteToBuiltIn:
+  /api/v1/admin/authenticatedUsers/id/{id}/convertRemoteToBuiltIn:
     put:
       parameters:
       - name: id
@@ -508,7 +508,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/authenticatedUsers/id/{id}/convertShibToBuiltIn:
+  /api/v1/admin/authenticatedUsers/id/{id}/convertShibToBuiltIn:
     put:
       parameters:
       - name: id
@@ -521,7 +521,7 @@ paths:
         "200":
           description: OK
       deprecated: true
-  /admin/authenticatedUsers/id/{id}/deactivate:
+  /api/v1/admin/authenticatedUsers/id/{id}/deactivate:
     post:
       parameters:
       - name: id
@@ -533,7 +533,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/authenticatedUsers/{identifier}:
+  /api/v1/admin/authenticatedUsers/{identifier}:
     get:
       parameters:
       - name: identifier
@@ -554,7 +554,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/authenticatedUsers/{identifier}/deactivate:
+  /api/v1/admin/authenticatedUsers/{identifier}/deactivate:
     post:
       parameters:
       - name: identifier
@@ -565,12 +565,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/authenticationProviderFactories:
+  /api/v1/admin/authenticationProviderFactories:
     get:
       responses:
         "200":
           description: OK
-  /admin/authenticationProviders:
+  /api/v1/admin/authenticationProviders:
     get:
       responses:
         "200":
@@ -579,7 +579,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/authenticationProviders/{id}:
+  /api/v1/admin/authenticationProviders/{id}:
     get:
       parameters:
       - name: id
@@ -600,7 +600,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/authenticationProviders/{id}/:enabled:
+  /api/v1/admin/authenticationProviders/{id}/:enabled:
     post:
       parameters:
       - name: id
@@ -611,7 +611,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/authenticationProviders/{id}/enabled:
+  /api/v1/admin/authenticationProviders/{id}/enabled:
     get:
       parameters:
       - name: id
@@ -632,7 +632,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/bannerMessage:
+  /api/v1/admin/bannerMessage:
     get:
       responses:
         "200":
@@ -641,7 +641,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/bannerMessage/{id}:
+  /api/v1/admin/bannerMessage/{id}:
     delete:
       parameters:
       - name: id
@@ -653,7 +653,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/bannerMessage/{id}/deactivate:
+  /api/v1/admin/bannerMessage/{id}/deactivate:
     put:
       parameters:
       - name: id
@@ -665,12 +665,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/batch/jobs:
+  /api/v1/admin/batch/jobs:
     get:
       responses:
         "200":
           description: OK
-  /admin/batch/jobs/name/{jobName}:
+  /api/v1/admin/batch/jobs/name/{jobName}:
     get:
       parameters:
       - name: jobName
@@ -681,7 +681,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/batch/jobs/{jobId}:
+  /api/v1/admin/batch/jobs/{jobId}:
     get:
       parameters:
       - name: jobId
@@ -692,12 +692,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/clearMetricsCache:
+  /api/v1/admin/clearMetricsCache:
     delete:
       responses:
         "200":
           description: OK
-  /admin/clearMetricsCache/{name}:
+  /api/v1/admin/clearMetricsCache/{name}:
     delete:
       parameters:
       - name: name
@@ -708,12 +708,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/clearThumbnailFailureFlag:
+  /api/v1/admin/clearThumbnailFailureFlag:
     delete:
       responses:
         "200":
           description: OK
-  /admin/clearThumbnailFailureFlag/{id}:
+  /api/v1/admin/clearThumbnailFailureFlag/{id}:
     delete:
       parameters:
       - name: id
@@ -724,7 +724,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/computeDataFileHashValue/{fileId}/algorithm/{alg}:
+  /api/v1/admin/computeDataFileHashValue/{fileId}/algorithm/{alg}:
     post:
       parameters:
       - name: alg
@@ -740,7 +740,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/confirmEmail/{userId}:
+  /api/v1/admin/confirmEmail/{userId}:
     get:
       parameters:
       - name: userId
@@ -763,12 +763,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/convertUserFromBcryptToSha1:
+  /api/v1/admin/convertUserFromBcryptToSha1:
     post:
       responses:
         "200":
           description: OK
-  /admin/datafiles/integrity/fixmissingoriginalsizes:
+  /api/v1/admin/datafiles/integrity/fixmissingoriginalsizes:
     get:
       parameters:
       - name: limit
@@ -779,22 +779,22 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/datafiles/integrity/fixmissingoriginaltypes:
+  /api/v1/admin/datafiles/integrity/fixmissingoriginaltypes:
     get:
       responses:
         "200":
           description: OK
-  /admin/datasetfield:
+  /api/v1/admin/datasetfield:
     get:
       responses:
         "200":
           description: OK
-  /admin/datasetfield/controlledVocabulary/subject:
+  /api/v1/admin/datasetfield/controlledVocabulary/subject:
     get:
       responses:
         "200":
           description: OK
-  /admin/datasetfield/load:
+  /api/v1/admin/datasetfield/load:
     post:
       requestBody:
         content:
@@ -805,12 +805,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/datasetfield/loadNAControlledVocabularyValue:
+  /api/v1/admin/datasetfield/loadNAControlledVocabularyValue:
     get:
       responses:
         "200":
           description: OK
-  /admin/datasetfield/loadpropertyfiles:
+  /api/v1/admin/datasetfield/loadpropertyfiles:
     post:
       requestBody:
         content:
@@ -821,7 +821,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/datasetfield/{name}:
+  /api/v1/admin/datasetfield/{name}:
     get:
       parameters:
       - name: name
@@ -832,7 +832,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/datasets/integrity/{datasetVersionId}/fixmissingunf:
+  /api/v1/admin/datasets/integrity/{datasetVersionId}/fixmissingunf:
     post:
       parameters:
       - name: datasetVersionId
@@ -847,7 +847,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/datasets/thumbnailMetadata/{id}:
+  /api/v1/admin/datasets/thumbnailMetadata/{id}:
     get:
       parameters:
       - name: id
@@ -859,17 +859,17 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/dataverse/curationLabelSets:
+  /api/v1/admin/dataverse/curationLabelSets:
     get:
       responses:
         "200":
           description: OK
-  /admin/dataverse/storageDrivers:
+  /api/v1/admin/dataverse/storageDrivers:
     get:
       responses:
         "200":
           description: OK
-  /admin/dataverse/{alias}/addRoleAssignmentsToChildren:
+  /api/v1/admin/dataverse/{alias}/addRoleAssignmentsToChildren:
     get:
       parameters:
       - name: alias
@@ -880,7 +880,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/dataverse/{alias}/curationLabelSet:
+  /api/v1/admin/dataverse/{alias}/curationLabelSet:
     get:
       parameters:
       - name: alias
@@ -915,7 +915,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/dataverse/{alias}/storageDriver:
+  /api/v1/admin/dataverse/{alias}/storageDriver:
     get:
       parameters:
       - name: alias
@@ -946,7 +946,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/downloadTmpFile:
+  /api/v1/admin/downloadTmpFile:
     get:
       parameters:
       - name: fullyQualifiedPathToFile
@@ -956,7 +956,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/externalTools:
+  /api/v1/admin/externalTools:
     get:
       responses:
         "200":
@@ -965,7 +965,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/externalTools/{id}:
+  /api/v1/admin/externalTools/{id}:
     get:
       parameters:
       - name: id
@@ -988,12 +988,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/feedback:
+  /api/v1/admin/feedback:
     post:
       responses:
         "200":
           description: OK
-  /admin/groups/domain:
+  /api/v1/admin/groups/domain:
     get:
       responses:
         "200":
@@ -1002,7 +1002,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/groups/domain/{groupAlias}:
+  /api/v1/admin/groups/domain/{groupAlias}:
     get:
       parameters:
       - name: groupAlias
@@ -1033,7 +1033,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/groups/ip:
+  /api/v1/admin/groups/ip:
     get:
       responses:
         "200":
@@ -1042,7 +1042,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/groups/ip/{groupIdtf}:
+  /api/v1/admin/groups/ip/{groupIdtf}:
     get:
       parameters:
       - name: groupIdtf
@@ -1063,7 +1063,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/groups/ip/{groupName}:
+  /api/v1/admin/groups/ip/{groupName}:
     put:
       parameters:
       - name: groupName
@@ -1074,7 +1074,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/groups/shib:
+  /api/v1/admin/groups/shib:
     get:
       responses:
         "200":
@@ -1083,7 +1083,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/groups/shib/{primaryKey}:
+  /api/v1/admin/groups/shib/{primaryKey}:
     delete:
       parameters:
       - name: primaryKey
@@ -1094,7 +1094,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/index:
+  /api/v1/admin/index:
     get:
       parameters:
       - name: numPartitions
@@ -1114,12 +1114,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/index/clear:
+  /api/v1/admin/index/clear:
     get:
       responses:
         "200":
           description: OK
-  /admin/index/clear-orphans:
+  /api/v1/admin/index/clear-orphans:
     get:
       parameters:
       - name: sync
@@ -1129,7 +1129,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/index/continue:
+  /api/v1/admin/index/continue:
     get:
       parameters:
       - name: numPartitions
@@ -1149,7 +1149,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/index/dataset:
+  /api/v1/admin/index/dataset:
     get:
       parameters:
       - name: persistentId
@@ -1159,7 +1159,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/index/datasets/{id}:
+  /api/v1/admin/index/datasets/{id}:
     delete:
       parameters:
       - name: id
@@ -1171,7 +1171,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/index/filemetadata/{dataset_id}:
+  /api/v1/admin/index/filemetadata/{dataset_id}:
     get:
       parameters:
       - name: dataset_id
@@ -1196,7 +1196,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/index/filesearch:
+  /api/v1/admin/index/filesearch:
     get:
       parameters:
       - name: persistentId
@@ -1214,7 +1214,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/index/mod:
+  /api/v1/admin/index/mod:
     get:
       parameters:
       - name: partitions
@@ -1230,12 +1230,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/index/perms:
+  /api/v1/admin/index/perms:
     get:
       responses:
         "200":
           description: OK
-  /admin/index/perms/{id}:
+  /api/v1/admin/index/perms/{id}:
     get:
       parameters:
       - name: id
@@ -1247,7 +1247,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/index/permsDebug:
+  /api/v1/admin/index/permsDebug:
     get:
       parameters:
       - name: id
@@ -1262,7 +1262,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/index/solr/schema:
+  /api/v1/admin/index/solr/schema:
     get:
       responses:
         "200":
@@ -1271,7 +1271,7 @@ paths:
             '*/*':
               schema:
                 type: string
-  /admin/index/status:
+  /api/v1/admin/index/status:
     get:
       parameters:
       - name: sync
@@ -1281,7 +1281,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/index/test:
+  /api/v1/admin/index/test:
     get:
       parameters:
       - name: fq
@@ -1301,12 +1301,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/index/timestamps:
+  /api/v1/admin/index/timestamps:
     delete:
       responses:
         "200":
           description: OK
-  /admin/index/timestamps/{dvObjectId}:
+  /api/v1/admin/index/timestamps/{dvObjectId}:
     delete:
       parameters:
       - name: dvObjectId
@@ -1318,7 +1318,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/index/{type}/{id}:
+  /api/v1/admin/index/{type}/{id}:
     get:
       parameters:
       - name: id
@@ -1335,12 +1335,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/isOrcid:
+  /api/v1/admin/isOrcid:
     get:
       responses:
         "200":
           description: OK
-  /admin/list-users:
+  /api/v1/admin/list-users:
     get:
       parameters:
       - name: itemsPerPage
@@ -1364,7 +1364,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/makeDataCount/addUsageMetricsFromSushiReport:
+  /api/v1/admin/makeDataCount/addUsageMetricsFromSushiReport:
     post:
       parameters:
       - name: reportOnDisk
@@ -1374,12 +1374,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/makeDataCount/sendToHub:
+  /api/v1/admin/makeDataCount/sendToHub:
     post:
       responses:
         "200":
           description: OK
-  /admin/makeDataCount/{id}/addUsageMetricsFromSushiReport:
+  /api/v1/admin/makeDataCount/{id}/addUsageMetricsFromSushiReport:
     post:
       parameters:
       - name: id
@@ -1394,7 +1394,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/makeDataCount/{id}/updateCitationsForDataset:
+  /api/v1/admin/makeDataCount/{id}/updateCitationsForDataset:
     post:
       parameters:
       - name: id
@@ -1405,17 +1405,17 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/metadata/clearExportTimestamps:
+  /api/v1/admin/metadata/clearExportTimestamps:
     get:
       responses:
         "200":
           description: OK
-  /admin/metadata/exportAll:
+  /api/v1/admin/metadata/exportAll:
     get:
       responses:
         "200":
           description: OK
-  /admin/metadata/exportOAI/{specname}:
+  /api/v1/admin/metadata/exportOAI/{specname}:
     put:
       parameters:
       - name: specname
@@ -1426,12 +1426,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/metadata/reExportAll:
+  /api/v1/admin/metadata/reExportAll:
     get:
       responses:
         "200":
           description: OK
-  /admin/metadata/{id}/reExportDataset:
+  /api/v1/admin/metadata/{id}/reExportDataset:
     get:
       parameters:
       - name: id
@@ -1442,7 +1442,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/permissions/{dvo}:
+  /api/v1/admin/permissions/{dvo}:
     get:
       parameters:
       - name: dvo
@@ -1453,7 +1453,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/publishDataverseAsCreator/{id}:
+  /api/v1/admin/publishDataverseAsCreator/{id}:
     post:
       parameters:
       - name: id
@@ -1465,12 +1465,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/registerDataFileAll:
+  /api/v1/admin/registerDataFileAll:
     get:
       responses:
         "200":
           description: OK
-  /admin/registerDataFiles/{alias}:
+  /api/v1/admin/registerDataFiles/{alias}:
     get:
       parameters:
       - name: alias
@@ -1486,7 +1486,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/requestSignedUrl:
+  /api/v1/admin/requestSignedUrl:
     post:
       requestBody:
         content:
@@ -1496,7 +1496,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/roles:
+  /api/v1/admin/roles:
     get:
       responses:
         "200":
@@ -1505,7 +1505,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/roles/{id}:
+  /api/v1/admin/roles/{id}:
     delete:
       parameters:
       - name: id
@@ -1516,7 +1516,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/savedsearches:
+  /api/v1/admin/savedsearches:
     get:
       responses:
         "200":
@@ -1525,12 +1525,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/savedsearches/list:
+  /api/v1/admin/savedsearches/list:
     get:
       responses:
         "200":
           description: OK
-  /admin/savedsearches/makelinks/all:
+  /api/v1/admin/savedsearches/makelinks/all:
     put:
       parameters:
       - name: debug
@@ -1540,7 +1540,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/savedsearches/makelinks/{id}:
+  /api/v1/admin/savedsearches/makelinks/{id}:
     put:
       parameters:
       - name: id
@@ -1556,7 +1556,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/savedsearches/{id}:
+  /api/v1/admin/savedsearches/{id}:
     get:
       parameters:
       - name: id
@@ -1579,12 +1579,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/settings:
+  /api/v1/admin/settings:
     get:
       responses:
         "200":
           description: OK
-  /admin/settings/{name}:
+  /api/v1/admin/settings/{name}:
     get:
       parameters:
       - name: name
@@ -1615,7 +1615,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/settings/{name}/lang/{lang}:
+  /api/v1/admin/settings/{name}/lang/{lang}:
     put:
       parameters:
       - name: lang
@@ -1646,12 +1646,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/sitemap:
+  /api/v1/admin/sitemap:
     post:
       responses:
         "200":
           description: OK
-  /admin/storageSites:
+  /api/v1/admin/storageSites:
     get:
       responses:
         "200":
@@ -1660,7 +1660,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/storageSites/{id}:
+  /api/v1/admin/storageSites/{id}:
     get:
       parameters:
       - name: id
@@ -1683,7 +1683,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/storageSites/{id}/primaryStorage:
+  /api/v1/admin/storageSites/{id}/primaryStorage:
     put:
       parameters:
       - name: id
@@ -1695,7 +1695,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/submitDatasetVersionToArchive/{id}/{version}:
+  /api/v1/admin/submitDatasetVersionToArchive/{id}/{version}:
     post:
       parameters:
       - name: id
@@ -1711,7 +1711,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/superuser/{identifier}:
+  /api/v1/admin/superuser/{identifier}:
     post:
       parameters:
       - name: identifier
@@ -1722,7 +1722,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/template/{id}:
+  /api/v1/admin/template/{id}:
     delete:
       parameters:
       - name: id
@@ -1734,12 +1734,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/templates:
+  /api/v1/admin/templates:
     get:
       responses:
         "200":
           description: OK
-  /admin/templates/{alias}:
+  /api/v1/admin/templates/{alias}:
     get:
       parameters:
       - name: alias
@@ -1750,7 +1750,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/test/datasets/{id}/externalTools:
+  /api/v1/admin/test/datasets/{id}/externalTools:
     get:
       parameters:
       - name: id
@@ -1765,7 +1765,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/test/files/{id}/externalTool/{toolId}:
+  /api/v1/admin/test/files/{id}/externalTool/{toolId}:
     get:
       parameters:
       - name: id
@@ -1785,7 +1785,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/test/files/{id}/externalTools:
+  /api/v1/admin/test/files/{id}/externalTools:
     get:
       parameters:
       - name: id
@@ -1800,7 +1800,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/updateHashValues/{alg}:
+  /api/v1/admin/updateHashValues/{alg}:
     get:
       parameters:
       - name: alg
@@ -1816,7 +1816,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/validate/dataset/files/{id}:
+  /api/v1/admin/validate/dataset/files/{id}:
     get:
       parameters:
       - name: id
@@ -1827,7 +1827,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/validate/dataset/{id}:
+  /api/v1/admin/validate/dataset/{id}:
     get:
       parameters:
       - name: id
@@ -1842,7 +1842,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/validate/datasets:
+  /api/v1/admin/validate/datasets:
     get:
       parameters:
       - name: variables
@@ -1852,7 +1852,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/validateDataFileHashValue/{fileId}:
+  /api/v1/admin/validateDataFileHashValue/{fileId}:
     post:
       parameters:
       - name: fileId
@@ -1863,12 +1863,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/validatePassword:
+  /api/v1/admin/validatePassword:
     post:
       responses:
         "200":
           description: OK
-  /admin/workflows:
+  /api/v1/admin/workflows:
     get:
       responses:
         "200":
@@ -1877,12 +1877,12 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/workflows/default:
+  /api/v1/admin/workflows/default:
     get:
       responses:
         "200":
           description: OK
-  /admin/workflows/default/{triggerType}:
+  /api/v1/admin/workflows/default/{triggerType}:
     get:
       parameters:
       - name: triggerType
@@ -1913,7 +1913,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/workflows/ip-whitelist:
+  /api/v1/admin/workflows/ip-whitelist:
     get:
       responses:
         "200":
@@ -1926,7 +1926,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/workflows/{identifier}:
+  /api/v1/admin/workflows/{identifier}:
     get:
       parameters:
       - name: identifier
@@ -1937,7 +1937,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/workflows/{id}:
+  /api/v1/admin/workflows/{id}:
     delete:
       parameters:
       - name: id
@@ -1948,7 +1948,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/{id}/registerDataFile:
+  /api/v1/admin/{id}/registerDataFile:
     get:
       parameters:
       - name: id
@@ -1959,7 +1959,7 @@ paths:
       responses:
         "200":
           description: OK
-  /admin/{id}/reregisterHDLToPID:
+  /api/v1/admin/{id}/reregisterHDLToPID:
     post:
       parameters:
       - name: id
@@ -1970,12 +1970,12 @@ paths:
       responses:
         "200":
           description: OK
-  /application.wadl:
+  /api/v1/application.wadl:
     get:
       responses:
         "200":
           description: OK
-  /application.wadl/{path}:
+  /api/v1/application.wadl/{path}:
     get:
       parameters:
       - name: path
@@ -1986,7 +1986,7 @@ paths:
       responses:
         "200":
           description: OK
-  /batch/harvest:
+  /api/v1/batch/harvest:
     get:
       parameters:
       - name: createDV
@@ -2008,7 +2008,7 @@ paths:
       responses:
         "200":
           description: OK
-  /batch/import:
+  /api/v1/batch/import:
     get:
       parameters:
       - name: createDV
@@ -2043,7 +2043,7 @@ paths:
       responses:
         "200":
           description: OK
-  /batch/jobs/import/datasets/files/{identifier}:
+  /api/v1/batch/jobs/import/datasets/files/{identifier}:
     post:
       parameters:
       - name: identifier
@@ -2068,7 +2068,7 @@ paths:
       responses:
         "200":
           description: OK
-  /builtin-users:
+  /api/v1/builtin-users:
     post:
       parameters:
       - name: key
@@ -2086,7 +2086,7 @@ paths:
       responses:
         "200":
           description: OK
-  /builtin-users/{password}/{key}:
+  /api/v1/builtin-users/{password}/{key}:
     post:
       parameters:
       - name: key
@@ -2102,7 +2102,7 @@ paths:
       responses:
         "200":
           description: OK
-  /builtin-users/{password}/{key}/{sendEmailNotification}:
+  /api/v1/builtin-users/{password}/{key}/{sendEmailNotification}:
     post:
       parameters:
       - name: key
@@ -2123,7 +2123,7 @@ paths:
       responses:
         "200":
           description: OK
-  /builtin-users/{username}/api-token:
+  /api/v1/builtin-users/{username}/api-token:
     get:
       parameters:
       - name: username
@@ -2138,7 +2138,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/export:
+  /api/v1/datasets/export:
     get:
       parameters:
       - name: exporter
@@ -2152,12 +2152,12 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/listCurationStates:
+  /api/v1/datasets/listCurationStates:
     get:
       responses:
         "200":
           description: OK
-  /datasets/locks:
+  /api/v1/datasets/locks:
     get:
       parameters:
       - name: type
@@ -2171,17 +2171,17 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/modifyRegistrationAll:
+  /api/v1/datasets/modifyRegistrationAll:
     post:
       responses:
         "200":
           description: OK
-  /datasets/modifyRegistrationPIDMetadataAll:
+  /api/v1/datasets/modifyRegistrationPIDMetadataAll:
     get:
       responses:
         "200":
           description: OK
-  /datasets/mpupload:
+  /api/v1/datasets/mpupload:
     put:
       parameters:
       - name: globalid
@@ -2216,7 +2216,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/privateUrlDatasetVersion/{privateUrlToken}:
+  /api/v1/datasets/privateUrlDatasetVersion/{privateUrlToken}:
     get:
       parameters:
       - name: privateUrlToken
@@ -2227,7 +2227,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/privateUrlDatasetVersion/{privateUrlToken}/citation:
+  /api/v1/datasets/privateUrlDatasetVersion/{privateUrlToken}/citation:
     get:
       parameters:
       - name: privateUrlToken
@@ -2238,12 +2238,12 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/summaryFieldNames:
+  /api/v1/datasets/summaryFieldNames:
     get:
       responses:
         "200":
           description: OK
-  /datasets/{datasetId}/deleteLink/{linkedDataverseId}:
+  /api/v1/datasets/{datasetId}/deleteLink/{linkedDataverseId}:
     delete:
       parameters:
       - name: datasetId
@@ -2259,7 +2259,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{identifier}/allowedCurationLabels:
+  /api/v1/datasets/{identifier}/allowedCurationLabels:
     get:
       parameters:
       - name: identifier
@@ -2270,7 +2270,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{identifier}/assignments:
+  /api/v1/datasets/{identifier}/assignments:
     get:
       parameters:
       - name: identifier
@@ -2295,7 +2295,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{identifier}/assignments/{id}:
+  /api/v1/datasets/{identifier}/assignments/{id}:
     delete:
       parameters:
       - name: id
@@ -2312,7 +2312,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{identifier}/curationLabelSet:
+  /api/v1/datasets/{identifier}/curationLabelSet:
     get:
       parameters:
       - name: identifier
@@ -2347,7 +2347,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{identifier}/dataCaptureModule/checksumValidation:
+  /api/v1/datasets/{identifier}/dataCaptureModule/checksumValidation:
     post:
       parameters:
       - name: identifier
@@ -2358,7 +2358,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{identifier}/dataCaptureModule/rsync:
+  /api/v1/datasets/{identifier}/dataCaptureModule/rsync:
     get:
       parameters:
       - name: identifier
@@ -2369,7 +2369,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{identifier}/guestbookEntryAtRequest:
+  /api/v1/datasets/{identifier}/guestbookEntryAtRequest:
     get:
       parameters:
       - name: identifier
@@ -2400,7 +2400,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{identifier}/lock/{type}:
+  /api/v1/datasets/{identifier}/lock/{type}:
     post:
       parameters:
       - name: identifier
@@ -2416,7 +2416,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{identifier}/locks:
+  /api/v1/datasets/{identifier}/locks:
     get:
       parameters:
       - name: identifier
@@ -2445,7 +2445,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{identifier}/storageDriver:
+  /api/v1/datasets/{identifier}/storageDriver:
     get:
       parameters:
       - name: identifier
@@ -2476,7 +2476,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{identifier}/storagesize:
+  /api/v1/datasets/{identifier}/storagesize:
     get:
       parameters:
       - name: identifier
@@ -2491,7 +2491,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{identifier}/timestamps:
+  /api/v1/datasets/{identifier}/timestamps:
     get:
       parameters:
       - name: identifier
@@ -2502,7 +2502,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{identifier}/versions/{versionId}/downloadsize:
+  /api/v1/datasets/{identifier}/versions/{versionId}/downloadsize:
     get:
       parameters:
       - name: identifier
@@ -2546,7 +2546,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}:
+  /api/v1/datasets/{id}:
     get:
       parameters:
       - name: id
@@ -2567,7 +2567,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/actions/:publish:
+  /api/v1/datasets/{id}/actions/:publish:
     get:
       parameters:
       - name: id
@@ -2601,7 +2601,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/actions/:releasemigrated:
+  /api/v1/datasets/{id}/actions/:releasemigrated:
     post:
       parameters:
       - name: id
@@ -2625,7 +2625,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/add:
+  /api/v1/datasets/{id}/add:
     post:
       parameters:
       - name: id
@@ -2641,7 +2641,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/addFiles:
+  /api/v1/datasets/{id}/addFiles:
     post:
       parameters:
       - name: id
@@ -2657,7 +2657,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/addGlobusFiles:
+  /api/v1/datasets/{id}/addGlobusFiles:
     post:
       parameters:
       - name: id
@@ -2673,7 +2673,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/citationdate:
+  /api/v1/datasets/{id}/citationdate:
     put:
       parameters:
       - name: id
@@ -2694,7 +2694,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/cleanStorage:
+  /api/v1/datasets/{id}/cleanStorage:
     get:
       parameters:
       - name: id
@@ -2709,7 +2709,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/curationStatus:
+  /api/v1/datasets/{id}/curationStatus:
     get:
       parameters:
       - name: id
@@ -2744,7 +2744,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/deleteMetadata:
+  /api/v1/datasets/{id}/deleteMetadata:
     put:
       parameters:
       - name: id
@@ -2755,7 +2755,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/destroy:
+  /api/v1/datasets/{id}/destroy:
     delete:
       parameters:
       - name: id
@@ -2766,7 +2766,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/dirindex:
+  /api/v1/datasets/{id}/dirindex:
     get:
       parameters:
       - name: id
@@ -2789,7 +2789,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/editMetadata:
+  /api/v1/datasets/{id}/editMetadata:
     put:
       parameters:
       - name: id
@@ -2804,7 +2804,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/files/actions/:set-embargo:
+  /api/v1/datasets/{id}/files/actions/:set-embargo:
     post:
       parameters:
       - name: id
@@ -2815,7 +2815,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/files/actions/:unset-embargo:
+  /api/v1/datasets/{id}/files/actions/:unset-embargo:
     post:
       parameters:
       - name: id
@@ -2826,7 +2826,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/globusDownloadParameters:
+  /api/v1/datasets/{id}/globusDownloadParameters:
     get:
       parameters:
       - name: id
@@ -2845,7 +2845,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/globusUploadParameters:
+  /api/v1/datasets/{id}/globusUploadParameters:
     get:
       parameters:
       - name: id
@@ -2860,7 +2860,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/links:
+  /api/v1/datasets/{id}/links:
     get:
       parameters:
       - name: id
@@ -2871,7 +2871,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/logo:
+  /api/v1/datasets/{id}/logo:
     get:
       parameters:
       - name: id
@@ -2882,7 +2882,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/makeDataCount/citations:
+  /api/v1/datasets/{id}/makeDataCount/citations:
     get:
       parameters:
       - name: id
@@ -2893,7 +2893,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/makeDataCount/{metric}:
+  /api/v1/datasets/{id}/makeDataCount/{metric}:
     get:
       parameters:
       - name: id
@@ -2913,7 +2913,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/makeDataCount/{metric}/{yyyymm}:
+  /api/v1/datasets/{id}/makeDataCount/{metric}/{yyyymm}:
     get:
       parameters:
       - name: id
@@ -2938,7 +2938,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/metadata:
+  /api/v1/datasets/{id}/metadata:
     get:
       parameters:
       - name: id
@@ -2972,7 +2972,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/metadata/delete:
+  /api/v1/datasets/{id}/metadata/delete:
     put:
       parameters:
       - name: id
@@ -2991,7 +2991,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/modifyRegistration:
+  /api/v1/datasets/{id}/modifyRegistration:
     get:
       parameters:
       - name: id
@@ -3002,7 +3002,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/modifyRegistrationMetadata:
+  /api/v1/datasets/{id}/modifyRegistrationMetadata:
     post:
       parameters:
       - name: id
@@ -3013,7 +3013,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/monitorGlobusDownload:
+  /api/v1/datasets/{id}/monitorGlobusDownload:
     post:
       parameters:
       - name: id
@@ -3029,7 +3029,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/move/{targetDataverseAlias}:
+  /api/v1/datasets/{id}/move/{targetDataverseAlias}:
     post:
       parameters:
       - name: id
@@ -3049,7 +3049,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/privateUrl:
+  /api/v1/datasets/{id}/privateUrl:
     get:
       parameters:
       - name: id
@@ -3085,7 +3085,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/replaceFiles:
+  /api/v1/datasets/{id}/replaceFiles:
     post:
       parameters:
       - name: id
@@ -3101,7 +3101,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/requestGlobusDownload:
+  /api/v1/datasets/{id}/requestGlobusDownload:
     post:
       parameters:
       - name: id
@@ -3121,7 +3121,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/requestGlobusUploadPaths:
+  /api/v1/datasets/{id}/requestGlobusUploadPaths:
     post:
       parameters:
       - name: id
@@ -3137,7 +3137,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/returnToAuthor:
+  /api/v1/datasets/{id}/returnToAuthor:
     post:
       parameters:
       - name: id
@@ -3148,7 +3148,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/submitForReview:
+  /api/v1/datasets/{id}/submitForReview:
     post:
       parameters:
       - name: id
@@ -3159,7 +3159,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/thumbnail:
+  /api/v1/datasets/{id}/thumbnail:
     get:
       parameters:
       - name: id
@@ -3196,7 +3196,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/thumbnail/candidates:
+  /api/v1/datasets/{id}/thumbnail/candidates:
     get:
       parameters:
       - name: id
@@ -3207,7 +3207,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/thumbnail/{dataFileId}:
+  /api/v1/datasets/{id}/thumbnail/{dataFileId}:
     post:
       parameters:
       - name: dataFileId
@@ -3224,7 +3224,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/uploadsid:
+  /api/v1/datasets/{id}/uploadsid:
     get:
       parameters:
       - name: id
@@ -3236,7 +3236,7 @@ paths:
         "200":
           description: OK
       deprecated: true
-  /datasets/{id}/uploadurls:
+  /api/v1/datasets/{id}/uploadurls:
     get:
       parameters:
       - name: id
@@ -3252,7 +3252,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/userPermissions:
+  /api/v1/datasets/{id}/userPermissions:
     get:
       parameters:
       - name: id
@@ -3263,7 +3263,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/versions:
+  /api/v1/datasets/{id}/versions:
     get:
       parameters:
       - name: id
@@ -3288,7 +3288,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/versions/{versionId}:
+  /api/v1/datasets/{id}/versions/{versionId}:
     get:
       parameters:
       - name: id
@@ -3347,7 +3347,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/versions/{versionId}/canDownloadAtLeastOneFile:
+  /api/v1/datasets/{id}/versions/{versionId}/canDownloadAtLeastOneFile:
     get:
       parameters:
       - name: id
@@ -3367,7 +3367,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/versions/{versionId}/citation:
+  /api/v1/datasets/{id}/versions/{versionId}/citation:
     get:
       parameters:
       - name: id
@@ -3387,7 +3387,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/versions/{versionId}/customlicense:
+  /api/v1/datasets/{id}/versions/{versionId}/customlicense:
     get:
       parameters:
       - name: id
@@ -3403,7 +3403,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/versions/{versionId}/deaccession:
+  /api/v1/datasets/{id}/versions/{versionId}/deaccession:
     post:
       parameters:
       - name: id
@@ -3419,7 +3419,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/versions/{versionId}/files:
+  /api/v1/datasets/{id}/versions/{versionId}/files:
     get:
       parameters:
       - name: id
@@ -3473,7 +3473,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/versions/{versionId}/files/counts:
+  /api/v1/datasets/{id}/versions/{versionId}/files/counts:
     get:
       parameters:
       - name: id
@@ -3513,7 +3513,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/versions/{versionId}/linkset:
+  /api/v1/datasets/{id}/versions/{versionId}/linkset:
     get:
       parameters:
       - name: id
@@ -3529,7 +3529,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/versions/{versionId}/metadata:
+  /api/v1/datasets/{id}/versions/{versionId}/metadata:
     get:
       parameters:
       - name: id
@@ -3545,7 +3545,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/versions/{versionNumber}/metadata/{block}:
+  /api/v1/datasets/{id}/versions/{versionNumber}/metadata/{block}:
     get:
       parameters:
       - name: block
@@ -3566,7 +3566,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/versions/{version}/toolparams/{tid}:
+  /api/v1/datasets/{id}/versions/{version}/toolparams/{tid}:
     get:
       parameters:
       - name: id
@@ -3592,7 +3592,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{id}/{version}/archivalStatus:
+  /api/v1/datasets/{id}/{version}/archivalStatus:
     get:
       parameters:
       - name: id
@@ -3643,7 +3643,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datasets/{linkedDatasetId}/link/{linkingDataverseAlias}:
+  /api/v1/datasets/{linkedDatasetId}/link/{linkingDataverseAlias}:
     put:
       parameters:
       - name: linkedDatasetId
@@ -3659,7 +3659,7 @@ paths:
       responses:
         "200":
           description: OK
-  /datatags/receiveTags/{uniqueCacheId}:
+  /api/v1/datatags/receiveTags/{uniqueCacheId}:
     post:
       parameters:
       - name: uniqueCacheId
@@ -3670,12 +3670,12 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses:
+  /api/v1/dataverses:
     post:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}:
+  /api/v1/dataverses/{identifier}:
     get:
       parameters:
       - name: identifier
@@ -3706,7 +3706,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/actions/:publish:
+  /api/v1/dataverses/{identifier}/actions/:publish:
     post:
       parameters:
       - name: identifier
@@ -3717,7 +3717,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/assignments:
+  /api/v1/dataverses/{identifier}/assignments:
     get:
       parameters:
       - name: identifier
@@ -3742,7 +3742,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/assignments/{id}:
+  /api/v1/dataverses/{identifier}/assignments/{id}:
     delete:
       parameters:
       - name: id
@@ -3759,7 +3759,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/attribute/{attribute}:
+  /api/v1/dataverses/{identifier}/attribute/{attribute}:
     put:
       parameters:
       - name: attribute
@@ -3779,7 +3779,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/contents:
+  /api/v1/dataverses/{identifier}/contents:
     get:
       parameters:
       - name: identifier
@@ -3790,7 +3790,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/datasetSchema:
+  /api/v1/dataverses/{identifier}/datasetSchema:
     get:
       parameters:
       - name: identifier
@@ -3801,7 +3801,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/datasets:
+  /api/v1/dataverses/{identifier}/datasets:
     post:
       parameters:
       - name: identifier
@@ -3827,7 +3827,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/datasets/:import:
+  /api/v1/dataverses/{identifier}/datasets/:import:
     post:
       parameters:
       - name: identifier
@@ -3846,7 +3846,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/datasets/:importddi:
+  /api/v1/dataverses/{identifier}/datasets/:importddi:
     post:
       parameters:
       - name: identifier
@@ -3865,7 +3865,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/datasets/:startmigration:
+  /api/v1/dataverses/{identifier}/datasets/:startmigration:
     post:
       parameters:
       - name: identifier
@@ -3884,7 +3884,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/defaultContributorRole/{roleAlias}:
+  /api/v1/dataverses/{identifier}/defaultContributorRole/{roleAlias}:
     put:
       parameters:
       - name: identifier
@@ -3900,7 +3900,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/facets:
+  /api/v1/dataverses/{identifier}/facets:
     get:
       parameters:
       - name: identifier
@@ -3921,7 +3921,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/groups:
+  /api/v1/dataverses/{identifier}/groups:
     get:
       parameters:
       - name: identifier
@@ -3946,7 +3946,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/groups/{aliasInOwner}:
+  /api/v1/dataverses/{identifier}/groups/{aliasInOwner}:
     get:
       parameters:
       - name: aliasInOwner
@@ -3992,7 +3992,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/groups/{aliasInOwner}/roleAssignees:
+  /api/v1/dataverses/{identifier}/groups/{aliasInOwner}/roleAssignees:
     post:
       parameters:
       - name: aliasInOwner
@@ -4015,7 +4015,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier}:
+  /api/v1/dataverses/{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier}:
     put:
       parameters:
       - name: aliasInOwner
@@ -4058,7 +4058,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/guestbookResponses:
+  /api/v1/dataverses/{identifier}/guestbookResponses:
     get:
       parameters:
       - name: identifier
@@ -4074,7 +4074,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/links:
+  /api/v1/dataverses/{identifier}/links:
     get:
       parameters:
       - name: identifier
@@ -4085,7 +4085,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/metadatablockfacets:
+  /api/v1/dataverses/{identifier}/metadatablockfacets:
     get:
       parameters:
       - name: identifier
@@ -4113,7 +4113,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/metadatablockfacets/isRoot:
+  /api/v1/dataverses/{identifier}/metadatablockfacets/isRoot:
     post:
       parameters:
       - name: identifier
@@ -4129,7 +4129,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/metadatablocks:
+  /api/v1/dataverses/{identifier}/metadatablocks:
     get:
       parameters:
       - name: identifier
@@ -4150,7 +4150,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/metadatablocks/:isRoot:
+  /api/v1/dataverses/{identifier}/metadatablocks/:isRoot:
     get:
       parameters:
       - name: identifier
@@ -4176,7 +4176,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/metadatablocks/isRoot:
+  /api/v1/dataverses/{identifier}/metadatablocks/isRoot:
     get:
       parameters:
       - name: identifier
@@ -4202,7 +4202,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/roles:
+  /api/v1/dataverses/{identifier}/roles:
     get:
       parameters:
       - name: identifier
@@ -4223,7 +4223,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/storage/quota:
+  /api/v1/dataverses/{identifier}/storage/quota:
     get:
       parameters:
       - name: identifier
@@ -4244,7 +4244,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/storage/quota/{bytesAllocated}:
+  /api/v1/dataverses/{identifier}/storage/quota/{bytesAllocated}:
     post:
       parameters:
       - name: bytesAllocated
@@ -4261,7 +4261,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/storage/use:
+  /api/v1/dataverses/{identifier}/storage/use:
     get:
       parameters:
       - name: identifier
@@ -4272,7 +4272,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/storagesize:
+  /api/v1/dataverses/{identifier}/storagesize:
     get:
       parameters:
       - name: identifier
@@ -4287,7 +4287,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{identifier}/validateDatasetJson:
+  /api/v1/dataverses/{identifier}/validateDatasetJson:
     post:
       parameters:
       - name: identifier
@@ -4303,7 +4303,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{id}/move/{targetDataverseAlias}:
+  /api/v1/dataverses/{id}/move/{targetDataverseAlias}:
     post:
       parameters:
       - name: id
@@ -4323,7 +4323,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{linkedDataverseAlias}/link/{linkingDataverseAlias}:
+  /api/v1/dataverses/{linkedDataverseAlias}/link/{linkingDataverseAlias}:
     put:
       parameters:
       - name: linkedDataverseAlias
@@ -4339,7 +4339,7 @@ paths:
       responses:
         "200":
           description: OK
-  /dataverses/{linkingDataverseId}/deleteLink/{linkedDataverseId}:
+  /api/v1/dataverses/{linkingDataverseId}/deleteLink/{linkedDataverseId}:
     delete:
       parameters:
       - name: linkedDataverseId
@@ -4355,7 +4355,7 @@ paths:
       responses:
         "200":
           description: OK
-  /edit/{fileId}:
+  /api/v1/edit/{fileId}:
     put:
       parameters:
       - name: fileId
@@ -4372,12 +4372,12 @@ paths:
       responses:
         "200":
           description: OK
-  /files/fixityAlgorithm:
+  /api/v1/files/fixityAlgorithm:
     get:
       responses:
         "200":
           description: OK
-  /files/{id}:
+  /api/v1/files/{id}:
     get:
       parameters:
       - name: id
@@ -4398,7 +4398,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/dataTables:
+  /api/v1/files/{id}/dataTables:
     get:
       parameters:
       - name: id
@@ -4409,7 +4409,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/downloadCount:
+  /api/v1/files/{id}/downloadCount:
     get:
       parameters:
       - name: id
@@ -4420,7 +4420,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/draft:
+  /api/v1/files/{id}/draft:
     get:
       parameters:
       - name: id
@@ -4431,7 +4431,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/extractNcml:
+  /api/v1/files/{id}/extractNcml:
     post:
       parameters:
       - name: id
@@ -4442,7 +4442,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/hasBeenDeleted:
+  /api/v1/files/{id}/hasBeenDeleted:
     get:
       parameters:
       - name: id
@@ -4453,7 +4453,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/metadata:
+  /api/v1/files/{id}/metadata:
     get:
       parameters:
       - name: id
@@ -4474,7 +4474,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/metadata/categories:
+  /api/v1/files/{id}/metadata/categories:
     post:
       parameters:
       - name: id
@@ -4485,7 +4485,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/metadata/draft:
+  /api/v1/files/{id}/metadata/draft:
     get:
       parameters:
       - name: id
@@ -4496,7 +4496,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/metadata/tabularTags:
+  /api/v1/files/{id}/metadata/tabularTags:
     post:
       parameters:
       - name: id
@@ -4507,7 +4507,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/metadata/{fmid}/toolparams/{tid}:
+  /api/v1/files/{id}/metadata/{fmid}/toolparams/{tid}:
     get:
       parameters:
       - name: fmid
@@ -4534,7 +4534,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/prov-freeform:
+  /api/v1/files/{id}/prov-freeform:
     get:
       parameters:
       - name: id
@@ -4560,7 +4560,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/prov-json:
+  /api/v1/files/{id}/prov-json:
     get:
       parameters:
       - name: id
@@ -4600,7 +4600,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/redetect:
+  /api/v1/files/{id}/redetect:
     post:
       parameters:
       - name: id
@@ -4615,7 +4615,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/reingest:
+  /api/v1/files/{id}/reingest:
     post:
       parameters:
       - name: id
@@ -4626,7 +4626,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/replace:
+  /api/v1/files/{id}/replace:
     post:
       parameters:
       - name: id
@@ -4642,7 +4642,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/restrict:
+  /api/v1/files/{id}/restrict:
     put:
       parameters:
       - name: id
@@ -4653,7 +4653,7 @@ paths:
       responses:
         "200":
           description: OK
-  /files/{id}/uningest:
+  /api/v1/files/{id}/uningest:
     post:
       parameters:
       - name: id
@@ -4664,7 +4664,7 @@ paths:
       responses:
         "200":
           description: OK
-  /harvest/clients:
+  /api/v1/harvest/clients:
     get:
       parameters:
       - name: key
@@ -4674,7 +4674,7 @@ paths:
       responses:
         "200":
           description: OK
-  /harvest/clients/{nickName}:
+  /api/v1/harvest/clients/{nickName}:
     get:
       parameters:
       - name: nickName
@@ -4727,7 +4727,7 @@ paths:
       responses:
         "200":
           description: OK
-  /harvest/clients/{nickName}/run:
+  /api/v1/harvest/clients/{nickName}/run:
     post:
       parameters:
       - name: nickName
@@ -4742,7 +4742,7 @@ paths:
       responses:
         "200":
           description: OK
-  /harvest/server/oaisets:
+  /api/v1/harvest/server/oaisets:
     get:
       parameters:
       - name: key
@@ -4752,7 +4752,7 @@ paths:
       responses:
         "200":
           description: OK
-  /harvest/server/oaisets/add:
+  /api/v1/harvest/server/oaisets/add:
     post:
       parameters:
       - name: key
@@ -4762,7 +4762,7 @@ paths:
       responses:
         "200":
           description: OK
-  /harvest/server/oaisets/{specname}:
+  /api/v1/harvest/server/oaisets/{specname}:
     get:
       parameters:
       - name: specname
@@ -4805,7 +4805,7 @@ paths:
       responses:
         "200":
           description: OK
-  /harvest/server/oaisets/{specname}/datasets:
+  /api/v1/harvest/server/oaisets/{specname}/datasets:
     get:
       parameters:
       - name: specname
@@ -4820,7 +4820,7 @@ paths:
       responses:
         "200":
           description: OK
-  /inbox:
+  /api/v1/inbox:
     post:
       requestBody:
         content:
@@ -4833,26 +4833,12 @@ paths:
       responses:
         "200":
           description: OK
-  /info/apiTermsOfUse:
+  /api/v1/info/apiTermsOfUse:
     get:
       responses:
         "200":
           description: OK
-  /info/metrics/datasets:
-    get:
-      parameters:
-      - name: dataLocation
-        in: query
-        schema:
-          type: string
-      - name: parentAlias
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-  /info/metrics/datasets/bySubject:
+  /api/v1/info/metrics/datasets:
     get:
       parameters:
       - name: dataLocation
@@ -4866,7 +4852,21 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/datasets/bySubject/toMonth/{yyyymm}:
+  /api/v1/info/metrics/datasets/bySubject:
+    get:
+      parameters:
+      - name: dataLocation
+        in: query
+        schema:
+          type: string
+      - name: parentAlias
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/info/metrics/datasets/bySubject/toMonth/{yyyymm}:
     get:
       parameters:
       - name: yyyymm
@@ -4885,7 +4885,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/datasets/monthly:
+  /api/v1/info/metrics/datasets/monthly:
     get:
       parameters:
       - name: dataLocation
@@ -4899,7 +4899,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/datasets/pastDays/{days}:
+  /api/v1/info/metrics/datasets/pastDays/{days}:
     get:
       parameters:
       - name: days
@@ -4919,7 +4919,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/datasets/toMonth/{yyyymm}:
+  /api/v1/info/metrics/datasets/toMonth/{yyyymm}:
     get:
       parameters:
       - name: yyyymm
@@ -4938,7 +4938,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/dataverses:
+  /api/v1/info/metrics/dataverses:
     get:
       parameters:
       - name: parentAlias
@@ -4948,7 +4948,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/dataverses/byCategory:
+  /api/v1/info/metrics/dataverses/byCategory:
     get:
       parameters:
       - name: parentAlias
@@ -4958,7 +4958,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/dataverses/bySubject:
+  /api/v1/info/metrics/dataverses/bySubject:
     get:
       parameters:
       - name: parentAlias
@@ -4968,7 +4968,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/dataverses/monthly:
+  /api/v1/info/metrics/dataverses/monthly:
     get:
       parameters:
       - name: parentAlias
@@ -4978,58 +4978,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/dataverses/pastDays/{days}:
-    get:
-      parameters:
-      - name: days
-        in: path
-        required: true
-        schema:
-          format: int32
-          type: integer
-      - name: parentAlias
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-  /info/metrics/dataverses/toMonth/{yyyymm}:
-    get:
-      parameters:
-      - name: yyyymm
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: parentAlias
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-  /info/metrics/downloads:
-    get:
-      parameters:
-      - name: parentAlias
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-  /info/metrics/downloads/monthly:
-    get:
-      parameters:
-      - name: parentAlias
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-  /info/metrics/downloads/pastDays/{days}:
+  /api/v1/info/metrics/dataverses/pastDays/{days}:
     get:
       parameters:
       - name: days
@@ -5045,7 +4994,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/downloads/toMonth/{yyyymm}:
+  /api/v1/info/metrics/dataverses/toMonth/{yyyymm}:
     get:
       parameters:
       - name: yyyymm
@@ -5060,7 +5009,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/filedownloads:
+  /api/v1/info/metrics/downloads:
     get:
       parameters:
       - name: parentAlias
@@ -5070,7 +5019,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/filedownloads/monthly:
+  /api/v1/info/metrics/downloads/monthly:
     get:
       parameters:
       - name: parentAlias
@@ -5080,62 +5029,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/filedownloads/toMonth/{yyyymm}:
-    get:
-      parameters:
-      - name: yyyymm
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: parentAlias
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-  /info/metrics/files:
-    get:
-      parameters:
-      - name: parentAlias
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-  /info/metrics/files/byType:
-    get:
-      parameters:
-      - name: parentAlias
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-  /info/metrics/files/byType/monthly:
-    get:
-      parameters:
-      - name: parentAlias
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-  /info/metrics/files/monthly:
-    get:
-      parameters:
-      - name: parentAlias
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-  /info/metrics/files/pastDays/{days}:
+  /api/v1/info/metrics/downloads/pastDays/{days}:
     get:
       parameters:
       - name: days
@@ -5151,7 +5045,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/files/toMonth/{yyyymm}:
+  /api/v1/info/metrics/downloads/toMonth/{yyyymm}:
     get:
       parameters:
       - name: yyyymm
@@ -5166,7 +5060,113 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/makeDataCount/{metric}:
+  /api/v1/info/metrics/filedownloads:
+    get:
+      parameters:
+      - name: parentAlias
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/info/metrics/filedownloads/monthly:
+    get:
+      parameters:
+      - name: parentAlias
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/info/metrics/filedownloads/toMonth/{yyyymm}:
+    get:
+      parameters:
+      - name: yyyymm
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: parentAlias
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/info/metrics/files:
+    get:
+      parameters:
+      - name: parentAlias
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/info/metrics/files/byType:
+    get:
+      parameters:
+      - name: parentAlias
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/info/metrics/files/byType/monthly:
+    get:
+      parameters:
+      - name: parentAlias
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/info/metrics/files/monthly:
+    get:
+      parameters:
+      - name: parentAlias
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/info/metrics/files/pastDays/{days}:
+    get:
+      parameters:
+      - name: days
+        in: path
+        required: true
+        schema:
+          format: int32
+          type: integer
+      - name: parentAlias
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/info/metrics/files/toMonth/{yyyymm}:
+    get:
+      parameters:
+      - name: yyyymm
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: parentAlias
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/info/metrics/makeDataCount/{metric}:
     get:
       parameters:
       - name: metric
@@ -5185,7 +5185,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/makeDataCount/{metric}/monthly:
+  /api/v1/info/metrics/makeDataCount/{metric}/monthly:
     get:
       parameters:
       - name: metric
@@ -5204,7 +5204,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/makeDataCount/{metric}/toMonth/{yyyymm}:
+  /api/v1/info/metrics/makeDataCount/{metric}/toMonth/{yyyymm}:
     get:
       parameters:
       - name: metric
@@ -5228,7 +5228,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/tree:
+  /api/v1/info/metrics/tree:
     get:
       parameters:
       - name: parentAlias
@@ -5238,42 +5238,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/tree/toMonth/{yyyymm}:
-    get:
-      parameters:
-      - name: yyyymm
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: parentAlias
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-  /info/metrics/uniquedownloads:
-    get:
-      parameters:
-      - name: parentAlias
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-  /info/metrics/uniquedownloads/monthly:
-    get:
-      parameters:
-      - name: parentAlias
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-  /info/metrics/uniquedownloads/toMonth/{yyyymm}:
+  /api/v1/info/metrics/tree/toMonth/{yyyymm}:
     get:
       parameters:
       - name: yyyymm
@@ -5288,7 +5253,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/uniquefiledownloads:
+  /api/v1/info/metrics/uniquedownloads:
     get:
       parameters:
       - name: parentAlias
@@ -5298,7 +5263,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/uniquefiledownloads/monthly:
+  /api/v1/info/metrics/uniquedownloads/monthly:
     get:
       parameters:
       - name: parentAlias
@@ -5308,7 +5273,7 @@ paths:
       responses:
         "200":
           description: OK
-  /info/metrics/uniquefiledownloads/toMonth/{yyyymm}:
+  /api/v1/info/metrics/uniquedownloads/toMonth/{yyyymm}:
     get:
       parameters:
       - name: yyyymm
@@ -5323,7 +5288,42 @@ paths:
       responses:
         "200":
           description: OK
-  /info/openapi/{format}:
+  /api/v1/info/metrics/uniquefiledownloads:
+    get:
+      parameters:
+      - name: parentAlias
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/info/metrics/uniquefiledownloads/monthly:
+    get:
+      parameters:
+      - name: parentAlias
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/info/metrics/uniquefiledownloads/toMonth/{yyyymm}:
+    get:
+      parameters:
+      - name: yyyymm
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: parentAlias
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/v1/info/openapi/{format}:
     get:
       parameters:
       - name: format
@@ -5334,37 +5334,37 @@ paths:
       responses:
         "200":
           description: OK
-  /info/server:
+  /api/v1/info/server:
     get:
       responses:
         "200":
           description: OK
-  /info/settings/:DatasetPublishPopupCustomText:
+  /api/v1/info/settings/:DatasetPublishPopupCustomText:
     get:
       responses:
         "200":
           description: OK
-  /info/settings/:MaxEmbargoDurationInMonths:
+  /api/v1/info/settings/:MaxEmbargoDurationInMonths:
     get:
       responses:
         "200":
           description: OK
-  /info/settings/incompleteMetadataViaApi:
+  /api/v1/info/settings/incompleteMetadataViaApi:
     get:
       responses:
         "200":
           description: OK
-  /info/version:
+  /api/v1/info/version:
     get:
       responses:
         "200":
           description: OK
-  /info/zipDownloadLimit:
+  /api/v1/info/zipDownloadLimit:
     get:
       responses:
         "200":
           description: OK
-  /ingest/test/file:
+  /api/v1/ingest/test/file:
     get:
       parameters:
       - name: fileName
@@ -5382,7 +5382,7 @@ paths:
             text/plain:
               schema:
                 type: string
-  /licenses:
+  /api/v1/licenses:
     get:
       responses:
         "200":
@@ -5391,12 +5391,12 @@ paths:
       responses:
         "200":
           description: OK
-  /licenses/default:
+  /api/v1/licenses/default:
     get:
       responses:
         "200":
           description: OK
-  /licenses/default/{id}:
+  /api/v1/licenses/default/{id}:
     put:
       parameters:
       - name: id
@@ -5408,7 +5408,7 @@ paths:
       responses:
         "200":
           description: OK
-  /licenses/{id}:
+  /api/v1/licenses/{id}:
     get:
       parameters:
       - name: id
@@ -5431,7 +5431,7 @@ paths:
       responses:
         "200":
           description: OK
-  /licenses/{id}/:active/{activeState}:
+  /api/v1/licenses/{id}/:active/{activeState}:
     put:
       parameters:
       - name: activeState
@@ -5448,7 +5448,7 @@ paths:
       responses:
         "200":
           description: OK
-  /licenses/{id}/:sortOrder/{sortOrder}:
+  /api/v1/licenses/{id}/:sortOrder/{sortOrder}:
     put:
       parameters:
       - name: id
@@ -5466,17 +5466,17 @@ paths:
       responses:
         "200":
           description: OK
-  /logout:
+  /api/v1/logout:
     post:
       responses:
         "200":
           description: OK
-  /mail/notifications:
+  /api/v1/mail/notifications:
     get:
       responses:
         "200":
           description: OK
-  /meta/datafile/{fileId}:
+  /api/v1/meta/datafile/{fileId}:
     get:
       parameters:
       - name: fileId
@@ -5506,7 +5506,7 @@ paths:
               schema:
                 type: string
       deprecated: true
-  /meta/dataset/{datasetId}:
+  /api/v1/meta/dataset/{datasetId}:
     get:
       parameters:
       - name: datasetId
@@ -5531,12 +5531,12 @@ paths:
               schema:
                 type: string
       deprecated: true
-  /metadatablocks:
+  /api/v1/metadatablocks:
     get:
       responses:
         "200":
           description: OK
-  /metadatablocks/{identifier}:
+  /api/v1/metadatablocks/{identifier}:
     get:
       parameters:
       - name: identifier
@@ -5547,7 +5547,7 @@ paths:
       responses:
         "200":
           description: OK
-  /mydata/retrieve:
+  /api/v1/mydata/retrieve:
     get:
       parameters:
       - name: dataset_valid
@@ -5599,17 +5599,17 @@ paths:
             application/json:
               schema:
                 type: string
-  /notifications/all:
+  /api/v1/notifications/all:
     get:
       responses:
         "200":
           description: OK
-  /notifications/mutedEmails:
+  /api/v1/notifications/mutedEmails:
     get:
       responses:
         "200":
           description: OK
-  /notifications/mutedEmails/{typeName}:
+  /api/v1/notifications/mutedEmails/{typeName}:
     put:
       parameters:
       - name: typeName
@@ -5630,12 +5630,12 @@ paths:
       responses:
         "200":
           description: OK
-  /notifications/mutedNotifications:
+  /api/v1/notifications/mutedNotifications:
     get:
       responses:
         "200":
           description: OK
-  /notifications/mutedNotifications/{typeName}:
+  /api/v1/notifications/mutedNotifications/{typeName}:
     put:
       parameters:
       - name: typeName
@@ -5656,7 +5656,7 @@ paths:
       responses:
         "200":
           description: OK
-  /notifications/{id}:
+  /api/v1/notifications/{id}:
     delete:
       parameters:
       - name: id
@@ -5668,7 +5668,7 @@ paths:
       responses:
         "200":
           description: OK
-  /pids:
+  /api/v1/pids:
     get:
       parameters:
       - name: persistentId
@@ -5678,7 +5678,7 @@ paths:
       responses:
         "200":
           description: OK
-  /pids/unreserved:
+  /api/v1/pids/unreserved:
     get:
       parameters:
       - name: persistentId
@@ -5688,7 +5688,7 @@ paths:
       responses:
         "200":
           description: OK
-  /pids/{id}/delete:
+  /api/v1/pids/{id}/delete:
     delete:
       parameters:
       - name: id
@@ -5699,7 +5699,7 @@ paths:
       responses:
         "200":
           description: OK
-  /pids/{id}/reserve:
+  /api/v1/pids/{id}/reserve:
     post:
       parameters:
       - name: id
@@ -5710,7 +5710,7 @@ paths:
       responses:
         "200":
           description: OK
-  /roles:
+  /api/v1/roles:
     post:
       parameters:
       - name: dvo
@@ -5720,7 +5720,7 @@ paths:
       responses:
         "200":
           description: OK
-  /roles/{id}:
+  /api/v1/roles/{id}:
     get:
       parameters:
       - name: id
@@ -5741,7 +5741,7 @@ paths:
       responses:
         "200":
           description: OK
-  /search:
+  /api/v1/search:
     get:
       parameters:
       - name: fq
@@ -5825,12 +5825,12 @@ paths:
       responses:
         "200":
           description: OK
-  /users/:me:
+  /api/v1/users/:me:
     get:
       responses:
         "200":
           description: OK
-  /users/token:
+  /api/v1/users/token:
     get:
       responses:
         "200":
@@ -5839,12 +5839,12 @@ paths:
       responses:
         "200":
           description: OK
-  /users/token/recreate:
+  /api/v1/users/token/recreate:
     post:
       responses:
         "200":
           description: OK
-  /users/{consumedIdentifier}/mergeIntoUser/{baseIdentifier}:
+  /api/v1/users/{consumedIdentifier}/mergeIntoUser/{baseIdentifier}:
     post:
       parameters:
       - name: baseIdentifier
@@ -5860,7 +5860,7 @@ paths:
       responses:
         "200":
           description: OK
-  /users/{identifier}/changeIdentifier/{newIdentifier}:
+  /api/v1/users/{identifier}/changeIdentifier/{newIdentifier}:
     post:
       parameters:
       - name: identifier
@@ -5876,7 +5876,7 @@ paths:
       responses:
         "200":
           description: OK
-  /users/{identifier}/removeRoles:
+  /api/v1/users/{identifier}/removeRoles:
     post:
       parameters:
       - name: identifier
@@ -5887,7 +5887,7 @@ paths:
       responses:
         "200":
           description: OK
-  /users/{identifier}/traces:
+  /api/v1/users/{identifier}/traces:
     get:
       parameters:
       - name: identifier
@@ -5898,7 +5898,7 @@ paths:
       responses:
         "200":
           description: OK
-  /users/{identifier}/traces/{element}:
+  /api/v1/users/{identifier}/traces/{element}:
     get:
       parameters:
       - name: element
@@ -5914,7 +5914,7 @@ paths:
       responses:
         "200":
           description: OK
-  /workflows/{invocationId}:
+  /api/v1/workflows/{invocationId}:
     post:
       parameters:
       - name: invocationId
