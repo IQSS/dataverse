@@ -10,13 +10,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 
@@ -28,20 +28,20 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
 
     private static final Logger logger = Logger.getLogger(DataCiteDOIProvider.class.getCanonicalName());
 
-    private static final String PUBLIC = "public";
-    private static final String FINDABLE = "findable";
-    private static final String RESERVED = "reserved";
-    private static final String DRAFT = "draft";
+    static final String FINDABLE = "findable";     //public - published dataset versions
+    static final String DRAFT = "draft";           //reserved but not findable yet - draft/unpublished datasets
+    static final String REGISTERED = "registered"; //was findable once, not anymore - deaccessioned datasets
+    static final String NONE = "none";             //no record - draft/unpublished datasets where the initial request to reserve has failed
 
     public static final String TYPE = "datacite";
 
-    @EJB
-    DOIDataCiteRegisterService doiDataCiteRegisterService;
 
     private String mdsUrl;
     private String apiUrl;
     private String username;
     private String password;
+    
+    private DOIDataCiteRegisterService doiDataCiteRegisterService;
 
     public DataCiteDOIProvider(String id, String label, String providerAuthority, String providerShoulder,
             String identifierGenerationStyle, String datafilePidFormat, String managedList, String excludedList,
@@ -52,6 +52,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         this.apiUrl = apiUrl;
         this.username = username;
         this.password = password;
+        doiDataCiteRegisterService = new DOIDataCiteRegisterService(mdsUrl, username, password);
     }
 
     @Override
@@ -103,6 +104,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         Map<String, String> metadata = new HashMap<>();
         try {
             metadata = doiDataCiteRegisterService.getMetadata(identifier);
+            metadata.put("_status", getPidStatus(dvObject));
         } catch (Exception e) {
             logger.log(Level.WARNING, "getIdentifierMetadata failed", e);
         }
@@ -121,7 +123,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         logger.log(Level.FINE, "modifyIdentifier");
         String identifier = getIdentifier(dvObject);
         try {
-            HashMap<String, String> metadata = doiDataCiteRegisterService.getMetadata(identifier);
+            Map<String, String> metadata = getIdentifierMetadata(dvObject);
             doiDataCiteRegisterService.modifyIdentifier(identifier, metadata, dvObject);
         } catch (Exception e) {
             logger.log(Level.WARNING, "modifyMetadata failed", e);
@@ -130,74 +132,32 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         return identifier;
     }
 
-    public void deleteRecordFromCache(Dataset datasetIn) {
-        logger.log(Level.FINE, "deleteRecordFromCache");
-        String identifier = getIdentifier(datasetIn);
-        HashMap doiMetadata = new HashMap();
-        try {
-            doiMetadata = doiDataCiteRegisterService.getMetadata(identifier);
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "get matadata failed cannot delete");
-            logger.log(Level.WARNING, "String {0}", e.toString());
-            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
-        }
-
-        String idStatus = (String) doiMetadata.get("_status");
-
-        if (idStatus == null || idStatus.equals("reserved")) {
-            logger.log(Level.WARNING, "Delete status is reserved..");
-            try {
-                doiDataCiteRegisterService.deleteIdentifier(identifier);
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "delete failed");
-                logger.log(Level.WARNING, "String {0}", e.toString());
-                logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-                logger.log(Level.WARNING, "cause", e.getCause());
-                logger.log(Level.WARNING, "message {0}", e.getMessage());
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
     /*
-     * Deletes a DOI if it is in DRAFT/RESERVED state or removes metadata and
+     * Deletes a DOI if it is in DRAFT/DRAFT state or removes metadata and
      * changes it from PUBLIC/FINDABLE to REGISTERED.
      */
     @Override
     public void deleteIdentifier(DvObject dvObject) throws IOException, HttpException {
         logger.log(Level.FINE, "deleteIdentifier");
         String identifier = getIdentifier(dvObject);
-        // ToDo - PidUtils currently has a DataCite API call that would get the status
-        // at DataCite for this identifier - that could be more accurate than assuming
-        // based on whether the dvObject has been published
-        String idStatus = DRAFT;
-        if (dvObject.isReleased()) {
-            idStatus = PUBLIC;
-        }
-        if (idStatus != null) {
-            switch (idStatus) {
-            case RESERVED:
-            case DRAFT:
-                logger.log(Level.INFO, "Delete status is reserved..");
-                // service only removes the identifier from the cache (since it was written
-                // before DOIs could be registered in draft state)
-                doiDataCiteRegisterService.deleteIdentifier(identifier);
-                // So we call the deleteDraftIdentifier method below until things are refactored
-                deleteDraftIdentifier(dvObject);
-                break;
+        String idStatus = getPidStatus(dvObject);
+        switch (idStatus) {
+        case DRAFT:
+            logger.log(Level.FINE, "Delete status is reserved..");
+            deleteDraftIdentifier(dvObject);
+            break;
+        case FINDABLE:
+            // if public then it has been released set to REGISTERED/unavailable and reset
+            // target to n2t url
+            Map<String, String> metadata = addDOIMetadataForDestroyedDataset(dvObject);
+            metadata.put("_status", "registered");
+            metadata.put("_target", getTargetUrl(dvObject));
+            doiDataCiteRegisterService.deactivateIdentifier(identifier, metadata, dvObject);
+            break;
 
-            case PUBLIC:
-            case FINDABLE:
-                // if public then it has been released set to unavailable and reset target to
-                // n2t url
-                Map<String, String> metadata = addDOIMetadataForDestroyedDataset(dvObject);
-                metadata.put("_status", "registered");
-                metadata.put("_target", getTargetUrl(dvObject));
-                doiDataCiteRegisterService.deactivateIdentifier(identifier, metadata, dvObject);
-                break;
-            }
+        case REGISTERED:
+        case NONE:
+            // Nothing to do
         }
     }
 
@@ -207,10 +167,6 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
      */
     private void deleteDraftIdentifier(DvObject dvObject) throws IOException {
 
-        // ToDo - incorporate into DataCiteRESTfulClient
-        String baseUrl = JvmSettings.DATACITE_REST_API_URL.lookup("datacite");
-        String username = JvmSettings.DATACITE_USERNAME.lookup("datacite");
-        String password = JvmSettings.DATACITE_PASSWORD.lookup("datacite");
         GlobalId doi = dvObject.getGlobalId();
         /**
          * Deletes the DOI from DataCite if it can. Returns 204 if PID was deleted (only
@@ -219,11 +175,11 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
          * found, and possibly other status codes such as 500 if DataCite is down.
          */
 
-        URL url = new URL(baseUrl + "/dois/" + doi.getAuthority() + "/" + doi.getIdentifier());
+        URL url = new URL(getApiUrl() + "/dois/" + doi.getAuthority() + "/" + doi.getIdentifier());
         HttpURLConnection connection = null;
         connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("DELETE");
-        String userpass = username + ":" + password;
+        String userpass = getUsername() + ":" + getPassword();
         String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
         connection.setRequestProperty("Authorization", basicAuth);
         int status = connection.getResponseCode();
@@ -243,7 +199,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         }
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = getUpdateMetadata(dvObject);
-        metadata.put("_status", PUBLIC);
+        metadata.put("_status", FINDABLE);
         metadata.put("datacite.publicationyear", generateYear(dvObject));
         metadata.put("_target", getTargetUrl(dvObject));
         try {
@@ -286,5 +242,78 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
     public String getPassword() {
         return password;
     }
+
+    /**
+     * Method to determine the status of a dvObject's PID. It replaces keeping a
+     * separate DOIDataCiteRegisterCache. We could also try to get this info from
+     * DataCite directly, but it appears to not be in the xml metadata return, so it
+     * would require another/different api call (possible ToDo).
+     * 
+     * @param dvObject - Dataset or DataFile
+     * @return PID status - NONE, DRAFT, FINDABLE, or REGISTERED
+     */
+    private String getPidStatus(DvObject dvObject) {
+        String status = NONE;
+        if (dvObject instanceof Dataset) {
+            Dataset dataset = (Dataset) dvObject;
+            // return true, if all published versions were deaccessioned
+            boolean hasDeaccessionedVersions = false;
+            for (DatasetVersion testDsv : dataset.getVersions()) {
+                if (testDsv.isReleased()) {
+                    // With any released version, we're done
+                    return FINDABLE;
+                }
+                // Also check for draft version
+                if (testDsv.isDraft()) {
+                    if (dataset.isIdentifierRegistered()) {
+                        status = DRAFT;
+                        // Keep interating to see if there's a released version
+                    }
+                }
+                if (testDsv.isDeaccessioned()) {
+                    hasDeaccessionedVersions = true;
+                    // Keep interating to see if there's a released version
+                }
+            }
+            if (hasDeaccessionedVersions) {
+                if (dataset.isIdentifierRegistered()) {
+                    return REGISTERED;
+                }
+            }
+            return status;
+        } else if (dvObject instanceof DataFile) {
+            DataFile df = (DataFile) dvObject;
+            // return true, if all published versions were deaccessioned
+            boolean isInDeaccessionedVersions = false;
+            for (FileMetadata fmd : df.getFileMetadatas()) {
+                DatasetVersion testDsv = fmd.getDatasetVersion();
+                if (testDsv.isReleased()) {
+                    // With any released version, we're done
+                    return FINDABLE;
+                }
+                // Also check for draft version
+                if (testDsv.isDraft()) {
+                    if (df.isIdentifierRegistered()) {
+                        status = DRAFT;
+                        // Keep interating to see if there's a released/deaccessioned version
+                    }
+                }
+                if (testDsv.isDeaccessioned()) {
+                    isInDeaccessionedVersions = true;
+                    // Keep interating to see if there's a released version
+                }
+            }
+            if (isInDeaccessionedVersions) {
+                if (df.isIdentifierRegistered()) {
+                    return REGISTERED;
+                }
+            }
+
+        }
+        return status;
+    }
+    
+
+    
 
 }
