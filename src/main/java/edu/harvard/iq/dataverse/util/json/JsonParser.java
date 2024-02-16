@@ -38,6 +38,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,7 +70,6 @@ public class JsonParser {
     SettingsServiceBean settingsService;
     LicenseServiceBean licenseService;
     HarvestingClient harvestingClient = null;
-    boolean allowHarvestingMissingCVV = false;
     
     /**
      * if lenient, we will accept alternate spellings for controlled vocabulary values
@@ -93,7 +93,6 @@ public class JsonParser {
         this.settingsService = settingsService;
         this.licenseService = licenseService;
         this.harvestingClient = harvestingClient;
-        this.allowHarvestingMissingCVV = (harvestingClient != null && settingsService.isTrueForKey(SettingsServiceBean.Key.AllowHarvestingMissingCVV, false));
     }
 
     public JsonParser() {
@@ -738,7 +737,14 @@ public class JsonParser {
        
         
         ret.setDatasetFieldType(type);
-               
+
+        // If Harvesting, CVV values may differ between the Dataverse installations, so we won't enforce them
+        if (harvestingClient != null && type.isControlledVocabulary() &&
+                settingsService.isTrueForKey(SettingsServiceBean.Key.AllowHarvestingMissingCVV, false)) {
+            type.setAllowControlledVocabulary(false);
+            logger.warning("Harvesting: Skipping Controlled Vocabulary. Treating values as primitives");
+        }
+
         if (type.isCompound()) {
             List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json, testType);
             for (DatasetFieldCompoundValue dsfcv : vals) {
@@ -930,9 +936,8 @@ public class JsonParser {
             default: return jv.toString();
         }
     }
-    
+
     public List<ControlledVocabularyValue> parseControlledVocabularyValue(DatasetFieldType cvvType, JsonObject json) throws JsonParseException {
-        List<ControlledVocabularyValue> vals = new LinkedList<>();
         try {
             if (cvvType.isAllowMultiples()) {
                 try {
@@ -940,17 +945,20 @@ public class JsonParser {
                 } catch (ClassCastException cce) {
                     throw new JsonParseException("Invalid values submitted for " + cvvType.getName() + ". It should be an array of values.");
                 }
+                List<ControlledVocabularyValue> vals = new LinkedList<>();
                 for (JsonString strVal : json.getJsonArray("value").getValuesAs(JsonString.class)) {
                     String strValue = strVal.getString();
                     ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue, lenient);
-                    if (cvv == null && !allowHarvestingMissingCVV) {
+                    if (cvv == null) {
                         throw new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
                     }
                     // Only add value to the list if it is not a duplicate
-                    if (cvv != null && !vals.contains(cvv)) {
+                    if (!vals.contains(cvv)) {
                         vals.add(cvv);
                     }
                 }
+                return vals;
+
             } else {
                 try {
                     json.getString("value");
@@ -959,14 +967,11 @@ public class JsonParser {
                 }
                 String strValue = json.getString("value", "");
                 ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue, lenient);
-                if (cvv == null && !allowHarvestingMissingCVV) {
+                if (cvv == null) {
                     throw new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
                 }
-                if (cvv != null) {
-                    vals.add(cvv);
-                }
+                return Collections.singletonList(cvv);
             }
-            return vals;
         } catch (ClassCastException cce) {
             throw new JsonParseException("Invalid values submitted for " + cvvType.getName());
         }
