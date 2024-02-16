@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.pidproviders;
+package edu.harvard.iq.dataverse.pidproviders.doi;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;

@@ -21,7 +21,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
-import edu.harvard.iq.dataverse.pidproviders.XmlMetadataTemplate;
+import edu.harvard.iq.dataverse.pidproviders.doi.XmlMetadataTemplate;
 
 /**
  *

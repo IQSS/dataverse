@@ -276,7 +276,7 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
      * @return A HashMap with the same values as {@code map}
      */
     private <T> HashMap<T,T> asHashMap(Map<T,T> map) {
-        return (map instanceof HashMap) ? (HashMap)map : new HashMap<>(map);
+        return (map instanceof HashMap) ? (HashMap<T, T>)map : new HashMap<>(map);
     }
 
     @Override

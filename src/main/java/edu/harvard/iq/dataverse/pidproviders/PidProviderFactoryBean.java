@@ -220,7 +220,7 @@ public class PidProviderFactoryBean {
                 new UnmanagedHandlePidProvider(), new UnmanagedPermaLinkPidProvider()));
     }
 
-    String getProducer() {
+    public String getProducer() {
         return dataverseService.getRootDataverseName();
     }
 
