@@ -12,6 +12,8 @@ v6.2
 
 - **/api/datasets/{id}/versions/{versionId}**: The includeFiles parameter has been renamed to excludeFiles. The default behavior remains the same, which is to include files. However, when excludeFiles is set to true, the files will be excluded. A bug that caused the API to only return a deaccessioned dataset if the user had edit privileges has been fixed.
 - **/api/datasets/{id}/versions**: The includeFiles parameter has been renamed to excludeFiles. The default behavior remains the same, which is to include files. However, when excludeFiles is set to true, the files will be excluded.
+- **/api/info/openapi/{format}** This new endpoint will provide the OpenAPI specification for the specified format "json" or "yaml". 
+
 
 v6.1
 ----
