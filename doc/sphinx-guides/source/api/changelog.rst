@@ -12,8 +12,6 @@ v6.2
 
 - **/api/datasets/{id}/versions/{versionId}**: The includeFiles parameter has been renamed to excludeFiles. The default behavior remains the same, which is to include files. However, when excludeFiles is set to true, the files will be excluded. A bug that caused the API to only return a deaccessioned dataset if the user had edit privileges has been fixed.
 - **/api/datasets/{id}/versions**: The includeFiles parameter has been renamed to excludeFiles. The default behavior remains the same, which is to include files. However, when excludeFiles is set to true, the files will be excluded.
-- **/api/info/openapi/{format}** This new endpoint will provide the OpenAPI specification for the specified format "json" or "yaml". 
-
 
 v6.1
 ----
@@ -24,3 +22,4 @@ v6.0
 ----
 
 - **/api/access/datafile**: When a null or invalid API token is provided to download a public (non-restricted) file with this API call, it will result on a ``401`` error response. Previously, the download was allowed (``200`` response). Please note that we noticed this change sometime between 5.9 and 6.0. If you can help us pinpoint the exact version (or commit!), please get in touch. See :doc:`dataaccess`.
+- **/openapi/**: This endpoint is currently broken.
