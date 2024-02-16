@@ -32,6 +32,10 @@
         <poi.version>5.2.1</poi.version>
         <tika.version>2.4.1</tika.version>
         <netcdf.version>5.5.3</netcdf.version>
+
+        <smallrye.schemaFilename>dataverse_openapi</smallrye.schemaFilename>
+        <smallrye.infoTitle>Dataverse API</smallrye.infoTitle>
+        <smallrye.outputDirectory>src/main/resources/edu/harvard/iq/dataverse/openapi</smallrye.outputDirectory>
     </properties>
     
     <!-- Versions of dependencies used both directly and transitive are managed here.
@@ -682,6 +686,7 @@
                     <include>**/firstNames/*.*</include>
                     <include>**/*.xsl</include>
                     <include>**/services/*</include>
+                    <include>**/openapi/*</include>
                 </includes>
             </resource>
             <resource>
@@ -705,9 +710,9 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <schemaFilename>dataverse_openapi</schemaFilename>
-                    <infoTitle>Dataverse API</infoTitle>
-                    <outputDirectory>${project.build.directory}/resources/dev</outputDirectory>
+                    <schemaFilename>${smallrye.schemaFilename}</schemaFilename>
+                    <infoTitle>${smallrye.infoTitle}</infoTitle>
+                    <outputDirectory>${smallrye.outputDirectory}</outputDirectory>
                 </configuration>
             </plugin>
             <plugin>
