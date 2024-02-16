@@ -289,4 +289,8 @@ GitHub documents how to make changes to a fork at https://help.github.com/articl
 
 ----
 
+Develop branch and pull request 
+-------------------------------------------- 
+Please do not use your forked develop branch to push a PR and follow the `1st scenario: preparing the first pull request of Version Control Guide <#summary-of-git-commands>`_.
+
 Previous: :doc:`troubleshooting` | Next: :doc:`sql-upgrade-scripts`
