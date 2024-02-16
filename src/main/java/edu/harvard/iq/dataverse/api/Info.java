@@ -107,7 +107,7 @@ public class Info extends AbstractApiBean {
                         .type(mediaType).build();
         } catch (Exception ex) {
             //If a supported file is not found we will return a 400 Bad Request with an exception.
-            logger.log(Level.SEVERE, "OpenApi Definition format not found " + format + ":" + ex.getMessage(), ex);
+            logger.log(Level.SEVERE, "OpenAPI Definition format not found " + format + ":" + ex.getMessage(), ex);
             List<String> args = Arrays.asList(format);
             String bundleResponse = BundleUtil.getStringFromBundle("info.api.exception", args);
             return error(Response.Status.BAD_REQUEST, bundleResponse);  
