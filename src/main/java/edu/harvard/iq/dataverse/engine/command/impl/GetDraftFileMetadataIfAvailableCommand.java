@@ -16,8 +16,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 public class GetDraftFileMetadataIfAvailableCommand extends AbstractCommand<FileMetadata> {
     private final DataFile dataFile;
 
-    public GetDraftFileMetadataIfAvailableCommand(DataverseRequest aRequest, DataFile dataFile) {
-        super(aRequest, dataFile);
+    public GetDraftFileMetadataIfAvailableCommand(DataverseRequest request, DataFile dataFile) {
+        super(request, dataFile);
         this.dataFile = dataFile;
     }
 

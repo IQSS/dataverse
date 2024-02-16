@@ -133,7 +133,7 @@ public class MakeDataCountLoggingServiceBean {
         //Exception thrown if no published metadata exists for DataFile
         //This is passed a DataFile to log the file downloaded. uriInfo and headers are passed in lieu of FacesContext
         public MakeDataCountEntry(UriInfo uriInfo, HttpHeaders headers, DataverseRequestServiceBean dvRequestService, DataFile df) throws UnsupportedOperationException{
-            this(null, dvRequestService, df.getLatestPublishedFileMetadata().getDatasetVersion());
+            this(null, dvRequestService, df.getLatestPublishedFileMetadata(false).getDatasetVersion());
             
             if(uriInfo != null) {
                 setRequestUrl(uriInfo.getRequestUri().toString());

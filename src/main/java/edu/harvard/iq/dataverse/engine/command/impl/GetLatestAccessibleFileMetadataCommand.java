@@ -14,8 +14,8 @@ public class GetLatestAccessibleFileMetadataCommand extends AbstractCommand<File
     private final DataFile dataFile;
     private final boolean includeDeaccessioned;
 
-    public GetLatestAccessibleFileMetadataCommand(DataverseRequest aRequest, DataFile dataFile, boolean includeDeaccessioned) {
-        super(aRequest, dataFile);
+    public GetLatestAccessibleFileMetadataCommand(DataverseRequest request, DataFile dataFile, boolean includeDeaccessioned) {
+        super(request, dataFile);
         this.dataFile = dataFile;
         this.includeDeaccessioned = includeDeaccessioned;
     }
