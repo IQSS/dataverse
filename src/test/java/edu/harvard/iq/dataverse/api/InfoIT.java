@@ -3,15 +3,19 @@ package edu.harvard.iq.dataverse.api;
 import static io.restassured.RestAssured.given;
 
 import io.restassured.response.Response;
+import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+
+import java.io.InputStream;
 
 public class InfoIT {
 
@@ -80,6 +84,25 @@ public class InfoIT {
         response.prettyPrint();
         response.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data", notNullValue());
+    }
+
+    @Test
+    public void testOpenApiDefinition(){
+        Response response = given()
+                .get("/api/info/openapi/jasonInvalid");
+        response.prettyPrint();
+        response.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+ 
+        String jsonDefinitionFileContent = UtilIT.getDatasetJson("src/main/resources/edu/harvard/iq/dataverse/openapi/dataverse_openapi.json");
+        response = given().get("/api/info/openapi/json");
+        response.then().assertThat().statusCode(OK.getStatusCode())
+                .body(equalTo(jsonDefinitionFileContent));
+       
+        String yamlFileContent = UtilIT.getDatasetJson("src/main/resources/edu/harvard/iq/dataverse/openapi/dataverse_openapi.yaml");
+        response = given().get("/api/info/openapi/yaml");
+        response.then().assertThat().statusCode(OK.getStatusCode())
+                .body(equalTo(yamlFileContent));
+        
     }
 
     private void testSettingEndpoint(SettingsServiceBean.Key settingKey, String testSettingValue) {
