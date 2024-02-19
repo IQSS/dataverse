@@ -580,7 +580,7 @@ public class Files extends AbstractApiBean {
                     return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.no.draft"));
                 }
             } else {
-                fm = df.getLatestPublishedFileMetadata(false);
+                fm = df.getLatestPublishedFileMetadata();
                 MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
                 mdcLogService.logEntry(entry);
             }

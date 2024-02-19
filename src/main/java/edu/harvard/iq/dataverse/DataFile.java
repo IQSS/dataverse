@@ -567,14 +567,10 @@ public class DataFile extends DvObject implements Comparable {
         return resultFileMetadata;
     }
 
-    public FileMetadata getLatestPublishedFileMetadata(boolean includeDeaccessioned) throws UnsupportedOperationException {
+    public FileMetadata getLatestPublishedFileMetadata() throws UnsupportedOperationException {
         FileMetadata resultFileMetadata = fileMetadatas.stream()
-                .filter(metadata -> {
-                    VersionState versionState = metadata.getDatasetVersion().getVersionState();
-                    return (!versionState.equals(VersionState.DRAFT) &&
-                            !(versionState.equals(VersionState.DEACCESSIONED) && !includeDeaccessioned));
-                })
-                .reduce(null, this::getTheNewerFileMetadata);
+                .filter(metadata -> !metadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT))
+                .reduce(null, DataFile::getTheNewerFileMetadata);
 
         if (resultFileMetadata == null) {
             throw new UnsupportedOperationException("No published metadata version for DataFile " + this.getId());
@@ -583,7 +579,7 @@ public class DataFile extends DvObject implements Comparable {
         return resultFileMetadata;
     }
 
-    private FileMetadata getTheNewerFileMetadata(FileMetadata current, FileMetadata candidate) {
+    public static FileMetadata getTheNewerFileMetadata(FileMetadata current, FileMetadata candidate) {
         if (current == null) {
             return candidate;
         }

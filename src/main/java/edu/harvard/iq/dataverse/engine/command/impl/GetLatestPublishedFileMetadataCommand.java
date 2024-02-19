@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -14,14 +15,11 @@ public class GetLatestPublishedFileMetadataCommand extends AbstractGetPublishedF
 
     @Override
     public FileMetadata execute(CommandContext ctxt) throws CommandException {
-        try {
-            FileMetadata fileMetadata = dataFile.getLatestPublishedFileMetadata(includeDeaccessioned);
-            if (isDatasetVersionAccessible(fileMetadata.getDatasetVersion(), dataFile.getOwner(), ctxt)) {
-                return fileMetadata;
-            }
-            return null;
-        } catch (UnsupportedOperationException e) {
-            return null;
-        }
+        return dataFile.getFileMetadatas().stream().filter(fileMetadata -> {
+            DatasetVersion.VersionState versionState = fileMetadata.getDatasetVersion().getVersionState();
+            return (!versionState.equals(DatasetVersion.VersionState.DRAFT)
+                    && !(versionState.equals(DatasetVersion.VersionState.DEACCESSIONED) && !includeDeaccessioned)
+                    && isDatasetVersionAccessible(fileMetadata.getDatasetVersion(), dataFile.getOwner(), ctxt));
+        }).reduce(null, DataFile::getTheNewerFileMetadata);
     }
 }

@@ -124,7 +124,7 @@ public class EditDDI  extends AbstractApiBean {
         if (!latestVersion.isWorkingCopy()) {
             //for new draft version
 
-            FileMetadata latestFml = dataFile.getLatestPublishedFileMetadata(true);
+            FileMetadata latestFml = dataFile.getLatestPublishedFileMetadata();
 
             boolean groupUpdate = newGroups(varGroupMap, latestFml);
             boolean varUpdate = varUpdates(mapVarToVarMet, latestFml, neededToUpdateVM, true);

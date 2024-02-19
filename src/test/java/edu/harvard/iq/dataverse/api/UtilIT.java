@@ -1092,8 +1092,13 @@ public class UtilIT {
     }
 
     static Response getFileData(String fileId, String apiToken, String datasetVersionId) {
+        return getFileData(fileId, apiToken, datasetVersionId, false);
+    }
+
+    static Response getFileData(String fileId, String apiToken, String datasetVersionId, boolean includeDeaccessioned) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("includeDeaccessioned", includeDeaccessioned)
                 .get("/api/files/" + fileId + "/versions/" + datasetVersionId);
     }
 
