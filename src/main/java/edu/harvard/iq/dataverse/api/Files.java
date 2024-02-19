@@ -909,4 +909,37 @@ public class Files extends AbstractApiBean {
             return ok(dataFileServiceBean.hasBeenDeleted(dataFile));
         }, getRequestUser(crc));
     }
+
+    /**
+     * @param fileIdOrPersistentId Database ID or PID of the data file.
+     * @param versionNumber The version of the dataset, such as 1.0, :draft,
+     * :latest-published, etc.
+     * @param includeDeaccessioned Defaults to false.
+     */
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{dsVersionString}/citation")
+    public Response getFileCitationByVersion(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @PathParam("dsVersionString") String versionNumber, @QueryParam("includeDeaccessioned") boolean includeDeaccessioned) {
+        try {
+            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+            final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+            Dataset ds = df.getOwner();
+            DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, true);
+            if (dsv == null) {
+                return unauthorized(BundleUtil.getStringFromBundle("files.api.no.draftOrUnauth"));
+            }
+
+            Long getDatasetVersionID = dsv.getId();
+            FileMetadata fm = dataFileServiceBean.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, df.getId());
+            if (fm == null) {
+                return notFound(BundleUtil.getStringFromBundle("files.api.fileNotFound"));
+            }
+            boolean direct = df.isIdentifierRegistered();
+            DataCitation citation = new DataCitation(fm, direct);
+            return ok(citation.toString(true));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
 }
