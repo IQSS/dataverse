@@ -49,10 +49,7 @@ import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonString;
-import jakarta.json.JsonValue;
+import jakarta.json.*;
 import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.*;
@@ -489,9 +486,10 @@ public class Files extends AbstractApiBean {
     public Response getFileData(@Context ContainerRequestContext crc,
                                 @PathParam("id") String fileIdOrPersistentId,
                                 @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                @QueryParam("returnDatasetVersion") boolean returnDatasetVersion,
                                 @Context UriInfo uriInfo,
                                 @Context HttpHeaders headers) {
-        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, DS_VERSION_LATEST, includeDeaccessioned, uriInfo, headers), getRequestUser(crc));
+        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, DS_VERSION_LATEST, includeDeaccessioned, returnDatasetVersion, uriInfo, headers), getRequestUser(crc));
     }
 
     @GET
@@ -501,15 +499,17 @@ public class Files extends AbstractApiBean {
                                 @PathParam("id") String fileIdOrPersistentId,
                                 @PathParam("datasetVersionId") String datasetVersionId,
                                 @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                @QueryParam("returnDatasetVersion") boolean returnDatasetVersion,
                                 @Context UriInfo uriInfo,
                                 @Context HttpHeaders headers) {
-        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, datasetVersionId, includeDeaccessioned, uriInfo, headers), getRequestUser(crc));
+        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, datasetVersionId, includeDeaccessioned, returnDatasetVersion, uriInfo, headers), getRequestUser(crc));
     }
 
     private Response getFileDataResponse(final DataverseRequest req,
                                          String fileIdOrPersistentId,
                                          String datasetVersionId,
                                          boolean includeDeaccessioned,
+                                         boolean returnDatasetVersion,
                                          UriInfo uriInfo,
                                          HttpHeaders headers) throws WrappedResponse {
         final DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
@@ -546,7 +546,7 @@ public class Files extends AbstractApiBean {
 
         return Response.ok(Json.createObjectBuilder()
                         .add("status", ApiConstants.STATUS_OK)
-                        .add("data", json(fileMetadata)).build())
+                        .add("data", json(fileMetadata, returnDatasetVersion)).build())
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }
