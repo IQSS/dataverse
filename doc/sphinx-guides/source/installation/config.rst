@@ -190,9 +190,11 @@ along with an optional list of individual PIDs (with different authority/shoulde
 Testing PID Providers
 +++++++++++++++++++++
 
-By default, the installer configures the DataCite test service as the registration provider. DataCite requires that you
-register for a test account, configured with your own prefix (please contact support@datacite.org for a test account. Alternately,
-you may wish to `contact the GDCC <https://www.gdcc.io/about.html>`_ - GDCC is able to provide DataCite accounts with a group discount and can also provide test accounts.).
+By default, the installer configures the Fake DOI provider as the registration provider. Unlike other DOI Providers, the Fake Provider does not involve any
+external resolution service and is not appropriate for use beyond development and testing. You may wish instead to test with 
+PermaLinks or with a DataCite test account (which uses DataCite's test infrastructure and will help assure your Dataverse instance can make network connections to DataCite.
+DataCite requires that you register for a test account, which will have a username, password and your own prefix (please contact support@datacite.org for a test account.
+You may wish to `contact the GDCC <https://www.gdcc.io/about.html>`_ instead - GDCC is able to provide DataCite accounts with a group discount and can also provide test accounts.).
 
 Once you receive the login name, password, and prefix for the account,
 configure the credentials as described below. 
@@ -201,24 +203,27 @@ Alternately, you may wish to configure other providers for testing:
 
   - EZID is available to University of California scholars and researchers. Testing can be done using the authority 10.5072 and shoulder FK2 with the "apitest" account (contact EZID for credentials) or an institutional account. Configuration in Dataverse is then analogous to using DataCite.
    
-  - The PermaLink and FAKE DOI providers do not involve an external account. The FAKE provider should only be used for testing, since it creates identifiers that look like DOIs but will not resolve. In contrast, the PermaLink provider creates PIDs that begin with "perma:", making it clearer that they are not DOIs, while they do resolve to the local dataset/file page in Dataverse. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
+  - The PermaLink provider, like the FAKE DOI provider, does not involve an external account.
+  Unlike the Fake DOI provider, the PermaLink provider creates PIDs that begin with "perma:", making it clearer that they are not DOIs, 
+  and that do resolve to the local dataset/file page in Dataverse, making them useful for some production use cases. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
 
 Provider-specific configuration is described below.
 
-Once all is configured, you will be able to publish datasets and files, but **the persistent identifiers will not be citable**,
-e.g. they will only resolve from the DataCite test environment (and then only if the Dataverse installation from which
-you published them is accessible - DOIs minted from your laptop will not resolve). Note that any datasets or files
-created using the test configuration cannot be directly migrated and would need to be created again once a valid DOI
-namespace is configured.
+Once all is configured, you will be able to publish datasets and files, but **the persistent identifiers will not be citable**
+as they, with the exception of PermaLinks, will not redirect to your dataset page in Dataverse.
+
+Note that any datasets or files created using a test configuration cannot be directly migrated to a production PID provider 
+and would need to be created again once a valid PID Provider(s) are configured.
 
 One you are done testing, to properly configure persistent identifiers for a production installation, an account and associated namespace (e.g. authority/shoulder) must be
-acquired for a fee from a DOI or HDL provider. **DataCite** (https://www.datacite.org) is the recommended DOI provider
+acquired for a fee from a DOI or HDL provider. (As noted above, PermaLinks May be appropriate for intranet and catalog uses cases.)
+**DataCite** (https://www.datacite.org) is the recommended DOI provider
 (see https://dataversecommunity.global for more on joining DataCite through the Global Dataverse Community Consortium) but **EZID**
 (http://ezid.cdlib.org) is an option for the University of California according to
 https://www.cdlib.org/cdlinfo/2017/08/04/ezid-doi-service-is-evolving/ .
 **Handle.Net** (https://www.handle.net) is the HDL provider.
 
-Once you have your DOI or Handle account credentials and a namespace, configure your Dataverse installation
+Once you have your DOI or Handle account credentials and a prefix, configure your Dataverse installation
 using the settings below.
 
  
