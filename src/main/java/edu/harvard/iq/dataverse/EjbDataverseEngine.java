@@ -220,7 +220,7 @@ public class EjbDataverseEngine {
         try {
             logRec.setUserIdentifier( aCommand.getRequest().getUser().getIdentifier() );
             // Check for rate limit exceeded. Must be done before anything else to prevent unnecessary processing.
-            if (!cacheFactory.checkRate(aCommand.getRequest().getUser(), aCommand.getClass().getSimpleName())) {
+            if (!cacheFactory.checkRate(aCommand.getRequest().getUser(), aCommand)) {
                 throw new RateLimitCommandException(BundleUtil.getStringFromBundle("command.exception.user.ratelimited", Arrays.asList(aCommand.getClass().getSimpleName())), aCommand);
             }
 

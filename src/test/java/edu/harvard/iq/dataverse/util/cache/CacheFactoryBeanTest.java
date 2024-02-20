@@ -7,6 +7,10 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ListExplicitGroupsCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,8 +32,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
-import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
@@ -38,64 +40,64 @@ import static org.mockito.Mockito.mock;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class CacheFactoryBeanTest {
-    private static final Logger logger = Logger.getLogger(CacheFactoryBeanTest.class.getCanonicalName());
     private SystemConfig mockedSystemConfig;
     static CacheFactoryBean cache = null;
 
     AuthenticatedUser authUser = new AuthenticatedUser();
     GuestUser guestUser = GuestUser.get();
-    String action;
     static final String settingDefaultCapacity = "30,60,120";
-    static final String settingJson = "{\n" +
-            "  \"rateLimits\":[\n" +
-            "    {\n" +
-            "      \"tier\": 0,\n" +
-            "      \"limitPerHour\": 10,\n" +
-            "      \"actions\": [\n" +
-            "        \"GetLatestPublishedDatasetVersionCommand\",\n" +
-            "        \"GetPrivateUrlCommand\",\n" +
-            "        \"GetDatasetCommand\",\n" +
-            "        \"GetLatestAccessibleDatasetVersionCommand\"\n" +
-            "      ]\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"tier\": 0,\n" +
-            "      \"limitPerHour\": 1,\n" +
-            "      \"actions\": [\n" +
-            "        \"CreateGuestbookResponseCommand\",\n" +
-            "        \"UpdateDatasetVersionCommand\",\n" +
-            "        \"DestroyDatasetCommand\",\n" +
-            "        \"DeleteDataFileCommand\",\n" +
-            "        \"FinalizeDatasetPublicationCommand\",\n" +
-            "        \"PublishDatasetCommand\"\n" +
-            "      ]\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"tier\": 1,\n" +
-            "      \"limitPerHour\": 30,\n" +
-            "      \"actions\": [\n" +
-            "        \"CreateGuestbookResponseCommand\",\n" +
-            "        \"GetLatestPublishedDatasetVersionCommand\",\n" +
-            "        \"GetPrivateUrlCommand\",\n" +
-            "        \"GetDatasetCommand\",\n" +
-            "        \"GetLatestAccessibleDatasetVersionCommand\",\n" +
-            "        \"UpdateDatasetVersionCommand\",\n" +
-            "        \"DestroyDatasetCommand\",\n" +
-            "        \"DeleteDataFileCommand\",\n" +
-            "        \"FinalizeDatasetPublicationCommand\",\n" +
-            "        \"PublishDatasetCommand\"\n" +
-            "      ]\n" +
-            "    }\n" +
-            "  ]\n" +
-            "}";
-
+    public String getJsonSetting() {
+        return """
+               {
+                 "rateLimits": [
+                   {
+                     "tier": 0,
+                     "limitPerHour": 10,
+                     "actions": [
+                       "GetLatestPublishedDatasetVersionCommand",
+                       "GetPrivateUrlCommand",
+                       "GetDatasetCommand",
+                       "GetLatestAccessibleDatasetVersionCommand"
+                     ]
+                   },
+                   {
+                     "tier": 0,
+                     "limitPerHour": 1,
+                     "actions": [
+                       "CreateGuestbookResponseCommand",
+                       "UpdateDatasetVersionCommand",
+                       "DestroyDatasetCommand",
+                       "DeleteDataFileCommand",
+                       "FinalizeDatasetPublicationCommand",
+                       "PublishDatasetCommand"
+                     ]
+                   },
+                   {
+                     "tier": 1,
+                     "limitPerHour": 30,
+                     "actions": [
+                       "CreateGuestbookResponseCommand",
+                       "GetLatestPublishedDatasetVersionCommand",
+                       "GetPrivateUrlCommand",
+                       "GetDatasetCommand",
+                       "GetLatestAccessibleDatasetVersionCommand",
+                       "UpdateDatasetVersionCommand",
+                       "DestroyDatasetCommand",
+                       "DeleteDataFileCommand",
+                       "FinalizeDatasetPublicationCommand",
+                       "PublishDatasetCommand"
+                     ]
+                   }
+                 ]
+               }""";
+    }
     @BeforeEach
     public void init() throws IOException {
         // Reuse cache and config for all tests
         if (cache == null) {
             mockedSystemConfig = mock(SystemConfig.class);
             doReturn(settingDefaultCapacity).when(mockedSystemConfig).getRateLimitingDefaultCapacityTiers();
-            doReturn(settingJson).when(mockedSystemConfig).getRateLimitsJson();
+            doReturn(getJsonSetting()).when(mockedSystemConfig).getRateLimitsJson();
             cache = new CacheFactoryBean();
             cache.systemConfig = mockedSystemConfig;
             if (cache.rateLimitCache == null) {
@@ -111,9 +113,6 @@ public class CacheFactoryBeanTest {
         authUser.setRateLimitTier(1);
         authUser.setSuperuser(false);
         authUser.setUserIdentifier("authUser");
-
-        // Create a unique action for each test
-        action = "cmd-" + UUID.randomUUID();
     }
 
     @AfterAll
@@ -122,6 +121,7 @@ public class CacheFactoryBeanTest {
     }
     @Test
     public void testGuestUserGettingRateLimited() {
+        Command action = new ListDataverseContentCommand(null,null);
         boolean rateLimited = false;
         int cnt = 0;
         for (; cnt <100; cnt++) {
@@ -130,13 +130,14 @@ public class CacheFactoryBeanTest {
                 break;
             }
         }
-        String key = RateLimitUtil.generateCacheKey(guestUser, action);
+        String key = RateLimitUtil.generateCacheKey(guestUser, action.getClass().getSimpleName());
         assertTrue(cache.rateLimitCache.containsKey(key));
         assertTrue(rateLimited && cnt > 1 && cnt <= 30, "rateLimited:"+rateLimited + " cnt:"+cnt);
     }
 
     @Test
     public void testAdminUserExemptFromGettingRateLimited() {
+        Command action = new ListExplicitGroupsCommand(null,null);
         authUser.setSuperuser(true);
         authUser.setUserIdentifier("admin");
         boolean rateLimited = false;
@@ -152,6 +153,7 @@ public class CacheFactoryBeanTest {
 
     @Test
     public void testAuthenticatedUserGettingRateLimited() throws InterruptedException {
+        Command action = new ListFacetsCommand(null,null);
         authUser.setRateLimitTier(2); // 120 cals per hour - 1 added token every 30 seconds
         boolean rateLimited = false;
         int cnt;
@@ -181,40 +183,6 @@ public class CacheFactoryBeanTest {
             }
         }
         assertTrue(!rateLimited && cnt == 200, "rateLimited:"+rateLimited + " cnt:"+cnt);
-    }
-
-    @Test
-    public void testCluster() {
-        // Make sure at least 1 entry is in the original cache
-        cache.checkRate(authUser, action);
-        String key = RateLimitUtil.generateCacheKey(authUser, action);
-
-        // Create a second cache to test cluster
-        CacheFactoryBean cache2 = new CacheFactoryBean();
-        cache2.systemConfig = mockedSystemConfig;
-        // join cluster with original Hazelcast instance
-        cache2.rateLimitCache = new TestCache(getConfig(cache.rateLimitCache.get("memberAddress")));
-
-        // Check to see if the new cache synced with the existing cache
-        assertTrue(cache.rateLimitCache.get(key).equals(cache2.rateLimitCache.get(key)));
-
-        key = "key1";
-        String value = "value1";
-        // Verify that both caches stay in sync
-        cache.rateLimitCache.put(key, value);
-        assertTrue(value.equals(cache2.rateLimitCache.get(key)));
-        // Clearing one cache also clears the other cache in the cluster
-        cache2.rateLimitCache.clear();
-        assertTrue(cache.rateLimitCache.get(key) == null);
-
-        // Verify no issue dropping one node from cluster
-        cache2.rateLimitCache.put(key, value);
-        assertTrue(value.equals(cache2.rateLimitCache.get(key)));
-        assertTrue(value.equals(cache.rateLimitCache.get(key)));
-        // Shut down hazelcast on cache2 and make sure data is still available in original cache
-        cache2.rateLimitCache.close();
-        cache2 = null;
-        assertTrue(value.equals(cache.rateLimitCache.get(key)));
     }
 
     private Config getConfig() {

@@ -1071,7 +1071,7 @@ Note: If either of these settings exist in the database rate limiting will be en
 
 - RateLimitingCapacityByTierAndAction is a Json object specifying the rate by tier and a list of actions (commands). This allows for more control over the rate limit of individual API command calls.
   In the following example, calls made by a guest user (tier 0) for API GetLatestPublishedDatasetVersionCommand is further limited to only 10 calls per hour, while an authenticated user (tier 1) will be able to make 30 calls per hour to the same API.
-
+  :download:`rate-limit-actions.json </_static/installation/files/examples/rate-limit-actions-setting.json>`
 .. code-block:: bash
 
   curl http://localhost:8080/api/admin/settings/:RateLimitingCapacityByTierAndAction -X PUT -d '{"rateLimits":[{"tier": 0, "limitPerHour": 10, "actions": ["GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand"]}, {"tier": 0, "limitPerHour": 1, "actions": ["CreateGuestbookResponseCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}, {"tier": 1, "limitPerHour": 30, "actions": ["CreateGuestbookResponseCommand", "GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}]}'
@@ -4198,3 +4198,17 @@ tab. files saved with these headers on S3 - since they no longer have
 to be generated and added to the streamed file on the fly.
 
 The setting is ``false`` by default, preserving the legacy behavior. 
+
+:RateLimitingDefaultCapacityTiers
++++++++++++++++++++++++++++++++++
+Number of calls allowed per hour if the specific command is not configured. The values represent the number of calls per hour per user for tiers 0,1,...
+A value of -1 can be used to signify no rate limit. Also, by default, a tier not defined would receive a default of no limit.
+
+:RateLimitingCapacityByTierAndAction
+++++++++++++++++++++++++++++++++++++
+Json object specifying the rate by tier and a list of actions (commands). This allows for more control over the rate limit of individual API command calls.
+In the following example, calls made by a guest user (tier 0) for API GetLatestPublishedDatasetVersionCommand is further limited to only 10 calls per hour, while an authenticated user (tier 1) will be able to make 30 calls per hour to the same API.
+{"rateLimits":[
+{"tier": 0, "limitPerHour": 10, "actions": ["GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand"]},
+{"tier": 0, "limitPerHour": 1, "actions": ["CreateGuestbookResponseCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]},
+{"tier": 1, "limitPerHour": 30, "actions": ["CreateGuestbookResponseCommand", "GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}]}

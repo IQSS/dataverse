@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util.cache;
 
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
@@ -40,10 +41,11 @@ public class CacheFactoryBean implements java.io.Serializable {
     /**
      * Check if user can make this call or if they are rate limited
      * @param user
-     * @param action
+     * @param command
      * @return true if user is superuser or rate not limited
      */
-    public boolean checkRate(User user, String action) {
+    public boolean checkRate(User user, Command command) {
+        final String action = command.getClass().getSimpleName();
         int capacity = RateLimitUtil.getCapacity(systemConfig, user, action);
         if (capacity == RateLimitUtil.NO_LIMIT) {
             return true;
