@@ -12,8 +12,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListExplicitGroupsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.testing.Tags;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -33,12 +35,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
 public class CacheFactoryBeanTest {
     private SystemConfig mockedSystemConfig;
     static CacheFactoryBean cache = null;
@@ -163,7 +166,8 @@ public class CacheFactoryBeanTest {
                 break;
             }
         }
-        assertTrue(rateLimited && cnt == 120, "rateLimited:"+rateLimited + " cnt:"+cnt);
+        assertTrue(rateLimited);
+        assertEquals(120, cnt);
 
         for (cnt = 0; cnt <60; cnt++) {
             Thread.sleep(1000);// Wait for bucket to be replenished (check each second for 1 minute max)
@@ -172,7 +176,7 @@ public class CacheFactoryBeanTest {
                 break;
             }
         }
-        assertTrue(!rateLimited, "rateLimited:"+rateLimited + " cnt:"+cnt);
+        assertFalse(rateLimited, "rateLimited:"+rateLimited + " cnt:"+cnt);
 
         // Now change the user's tier, so it is no longer limited
         authUser.setRateLimitTier(3); // tier 3 = no limit

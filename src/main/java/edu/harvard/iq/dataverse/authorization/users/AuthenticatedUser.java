@@ -148,20 +148,18 @@ public class AuthenticatedUser implements User, Serializable {
     @Transient
     private Set<Type> mutedNotificationsSet = new HashSet<>();
 
-    private int rateLimitTier;
+    private int rateLimitTier = 1;
 
     @PrePersist
     void prePersist() {
         mutedNotifications = Type.toStringValue(mutedNotificationsSet);
         mutedEmails = Type.toStringValue(mutedEmailsSet);
-        rateLimitTier = max(1,rateLimitTier); // db column defaults to 1 (minimum value for a tier).
     }
     
     @PostLoad
     public void initialize() {
         mutedNotificationsSet = Type.tokenizeToSet(mutedNotifications);
         mutedEmailsSet = Type.tokenizeToSet(mutedEmails);
-        rateLimitTier = max(1,rateLimitTier); // db column defaults to 1 (minimum value for a tier).
     }
 
     /**
@@ -407,7 +405,7 @@ public class AuthenticatedUser implements User, Serializable {
         return rateLimitTier;
     }
     public void setRateLimitTier(int rateLimitTier) {
-        this.rateLimitTier = rateLimitTier;
+        this.rateLimitTier = max(1,rateLimitTier);
     }
 
     @OneToOne(mappedBy = "authenticatedUser")
