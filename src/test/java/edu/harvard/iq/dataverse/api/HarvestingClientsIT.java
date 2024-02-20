@@ -3,12 +3,14 @@ package edu.harvard.iq.dataverse.api;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import org.junit.jupiter.api.*;
 
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
@@ -27,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * /api/harvest/clients/ api to run an actual harvest of a control set and
  * then validate the resulting harvested content. 
  */
-@TestMethodOrder(MethodOrderer.MethodName.class)
 public class HarvestingClientsIT {
 
     private static final Logger logger = Logger.getLogger(HarvestingClientsIT.class.getCanonicalName());

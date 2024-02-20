@@ -741,12 +741,6 @@ public class JsonParser {
         
         ret.setDatasetFieldType(type);
 
-        // If Harvesting, CVV values may differ between the Dataverse installations, so we won't enforce them
-        if (allowHarvestingMissingCVV && type.isControlledVocabulary()) {
-            type.setAllowControlledVocabulary(false);
-            logger.info("Harvesting: Skipping Controlled Vocabulary. Treating values as primitives");
-        }
-
         if (type.isCompound()) {
             List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json, testType);
             for (DatasetFieldCompoundValue dsfcv : vals) {
@@ -754,7 +748,7 @@ public class JsonParser {
             }
             ret.setDatasetFieldCompoundValues(vals);
 
-        } else if (type.isControlledVocabulary()) {
+        } else if (type.isControlledVocabulary() && !allowHarvestingMissingCVV) { // if allowing missing CVV then fall through to 'primitive'
             List<ControlledVocabularyValue> vals = parseControlledVocabularyValue(type, json);
             for (ControlledVocabularyValue cvv : vals) {
                 cvv.setDatasetFieldType(type);
