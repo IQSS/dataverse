@@ -204,8 +204,8 @@ Alternately, you may wish to configure other providers for testing:
   - EZID is available to University of California scholars and researchers. Testing can be done using the authority 10.5072 and shoulder FK2 with the "apitest" account (contact EZID for credentials) or an institutional account. Configuration in Dataverse is then analogous to using DataCite.
    
   - The PermaLink provider, like the FAKE DOI provider, does not involve an external account.
-  Unlike the Fake DOI provider, the PermaLink provider creates PIDs that begin with "perma:", making it clearer that they are not DOIs, 
-  and that do resolve to the local dataset/file page in Dataverse, making them useful for some production use cases. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
+    Unlike the Fake DOI provider, the PermaLink provider creates PIDs that begin with "perma:", making it clearer that they are not DOIs, 
+    and that do resolve to the local dataset/file page in Dataverse, making them useful for some production use cases. See :ref:`permalinks` and (for the FAKE DOI provider) the :doc:`/developers/dev-environment` section of the Developer Guide.
 
 Provider-specific configuration is described below.
 
