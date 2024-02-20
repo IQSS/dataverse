@@ -1,14 +1,12 @@
 package edu.harvard.iq.dataverse.util.cache;
 
-import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
+import jakarta.json.*;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbException;
 
 import javax.cache.Cache;
 import java.io.StringReader;
@@ -27,7 +25,6 @@ public class RateLimitUtil {
     private static final Logger logger = Logger.getLogger(RateLimitUtil.class.getCanonicalName());
     static final List<RateLimitSetting> rateLimits = new CopyOnWriteArrayList<>();
     static final Map<String, Integer> rateLimitMap = new ConcurrentHashMap<>();
-    private static final Gson gson = new Gson();
     public static final int NO_LIMIT = -1;
 
     static String generateCacheKey(final User user, final String action) {
@@ -114,9 +111,9 @@ public class RateLimitUtil {
                 JsonReader jr = Json.createReader(new StringReader(setting));
                 JsonObject obj= jr.readObject();
                 JsonArray lst = obj.getJsonArray("rateLimits");
-                rateLimits.addAll(gson.fromJson(String.valueOf(lst),
+                rateLimits.addAll(JsonbBuilder.create().fromJson(String.valueOf(lst),
                         new ArrayList<RateLimitSetting>() {}.getClass().getGenericSuperclass()));
-            } catch (Exception e) {
+            } catch (JsonException | JsonbException e) {
                 logger.warning("Unable to parse Rate Limit Json: " + e.getLocalizedMessage() + "   Json:(" + setting + ")");
                 rateLimits.add(new RateLimitSetting()); // add a default entry to prevent re-initialization
             }
