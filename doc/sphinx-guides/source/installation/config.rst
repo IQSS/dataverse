@@ -2520,13 +2520,37 @@ See :ref:`discovery-sign-posting` for details.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_ITEM_LIMIT``.
 
+.. _systemEmail:
+.. _dataverse.mail.system-email:
+
+dataverse.mail.system-email
++++++++++++++++++++++++++++
+
+This is the email address that "system" emails are sent from such as password reset links, notifications, etc.
+It replaces the database setting :ref:`legacySystemEmail` since Dataverse 6.2.
+
+**WARNING**: Your Dataverse installation will not send mail without this setting in place.
+
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
+If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
+In case you want your system email address to of no-reply style, have a look at :ref:`dataverse.mail.support-email` setting, too.
+
+Please note that if you're having any trouble sending email, you can refer to "Troubleshooting" under :doc:`installation-main`.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SYSTEM_EMAIL``.
+
+.. _dataverse.mail.support-email:
+
 dataverse.mail.support-email
 ++++++++++++++++++++++++++++
 
-This provides an email address distinct from the :ref:`systemEmail` that will be used as the email address for Contact Forms and Feedback API. This address is used as the To address when the Contact form is launched from the Support entry in the top navigation bar and, if configured via :ref:`dataverse.mail.cc-support-on-contact-email`, as a CC address when the form is launched from a Dataverse/Dataset Contact button.
-This allows configuration of a no-reply email address for :ref:`systemEmail` while allowing feedback to go to/be cc'd to the support email address, which would normally accept replies. If not set, the :ref:`systemEmail` is used for the feedback API/contact form email.
+This provides an email address distinct from the :ref:`systemEmail` that will be used as the email address for Contact Forms and Feedback API.
+This address is used as the To address when the Contact form is launched from the Support entry in the top navigation bar and, if configured via :ref:`dataverse.mail.cc-support-on-contact-email`, as a CC address when the form is launched from a Dataverse/Dataset Contact button.
+This allows configuration of a no-reply email address for :ref:`systemEmail` while allowing feedback to go to/be cc'd to the support email address, which would normally accept replies.
+If not set, the :ref:`systemEmail` is used for the feedback API/contact form email.
 
-Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
+If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SUPPORT_EMAIL``.
 
@@ -2535,11 +2559,122 @@ Can also be set via any `supported MicroProfile Config API source`_, e.g. the en
 dataverse.mail.cc-support-on-contact-email
 ++++++++++++++++++++++++++++++++++++++++++
 
-If this setting is true, the contact forms and feedback API will cc the system (:SupportEmail if set, :SystemEmail if not) when sending email to the collection, dataset, or datafile contacts.
+If this boolean setting is true, the contact forms and feedback API will cc the system (``dataverse.mail.support-mail`` if set, ``dataverse.mail.system-email`` if not) when sending email to the collection, dataset, or datafile contacts.
 A CC line is added to the contact form when this setting is true so that users are aware that the cc will occur.
 The default is false.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_CC_SUPPORT_ON_CONTACT_EMAIL``.
+
+dataverse.mail.debug
+++++++++++++++++++++
+
+When this boolean setting is true, sending an email will generate more verbose logging, enabling you to analyze mail delivery malfunctions.
+Defaults to ``false``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_DEBUG``.
+
+.. _dataverse.mail.mta:
+
+dataverse.mail.mta.*
+++++++++++++++++++++
+
+The following options allow you to configure a target Mail Transfer Agent (MTA) to be used for sending emails to users.
+Be advised: as the mail server connection (session) is cached once created, you need to restart Payara when applying configuration changes.
+
+All can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_MTA_HOST``.
+(For environment variables: simply replace "." and "-" with "_" and write as all caps.)
+
+The following table describes the most important settings commonly used.
+
+.. list-table::
+    :widths: 15 60 25
+    :header-rows: 1
+    :align: left
+
+    * - Setting Key
+      - Description
+      - Default Value
+    * - ``dataverse.mail.mta.host``
+      - The SMTP server to connect to.
+      - | *No default*
+        | (``smtp`` in our :ref:`Dataverse container <app-tunables>`)
+    * - ``dataverse.mail.mta.port``
+      - The SMTP server port to connect to.
+      - ``25``
+    * - ``dataverse.mail.mta.auth``
+      - If ``true``, attempt to authenticate the user using the AUTH command.
+      - ``false``
+    * - ``dataverse.mail.mta.user``
+      - The username to use in an AUTH command.
+      - *No default*
+    * - ``dataverse.mail.mta.password``
+      - The password to use in an AUTH command. (Might be a token when using XOAUTH2 mechanism)
+      - *No default*
+    * - ``dataverse.mail.mta.allow-utf8-addresses``
+      - If set to ``true``, UTF-8 strings are allowed in message headers, e.g., in addresses.
+        This should only be set if the mail server also supports UTF-8.
+        (Quoted from `Jakarta Mail Javadoc <https://jakarta.ee/specifications/mail/2.1/apidocs/jakarta.mail/jakarta/mail/internet/package-summary>`_)
+        Setting to ``false`` will also make mail address validation in UI/API fail on UTF-8 chars.
+      - ``true``
+
+**WARNING**:
+*For security of your password use only safe ways to store and access it.*
+*See* :ref:`secure-password-storage` *to learn about your options.*
+
+Find below a list of even more options you can use to configure sending mails.
+Detailed description for every setting can be found in the table included within the `Jakarta Mail Documentation <https://eclipse-ee4j.github.io/angus-mail/docs/api/org.eclipse.angus.mail/org/eclipse/angus/mail/smtp/package-summary.html>`_.
+(Simply replace ``dataverse.mail.mta.`` with ``mail.smtp.``.)
+
+* Timeouts:
+    ``dataverse.mail.mta.connectiontimeout``,
+    ``dataverse.mail.mta.timeout``,
+    ``dataverse.mail.mta.writetimeout``
+* SSL/TLS:
+    ``dataverse.mail.mta.starttls.enable``,
+    ``dataverse.mail.mta.starttls.required``,
+    ``dataverse.mail.mta.ssl.enable``,
+    ``dataverse.mail.mta.ssl.checkserveridentity``,
+    ``dataverse.mail.mta.ssl.trust``,
+    ``dataverse.mail.mta.ssl.protocols``,
+    ``dataverse.mail.mta.ssl.ciphersuites``
+* Proxy Connection:
+    ``dataverse.mail.mta.proxy.host``,
+    ``dataverse.mail.mta.proxy.port``,
+    ``dataverse.mail.mta.proxy.user``,
+    ``dataverse.mail.mta.proxy.password``,
+    ``dataverse.mail.mta.socks.host``,
+    ``dataverse.mail.mta.socks.port``
+* SMTP EHLO command details:
+    ``dataverse.mail.mta.ehlo``,
+    ``dataverse.mail.mta.localhost``,
+    ``dataverse.mail.mta.localaddress``,
+    ``dataverse.mail.mta.localport``
+* Authentication details:
+    ``dataverse.mail.mta.auth.mechanisms``,
+    ``dataverse.mail.mta.auth.login.disable``,
+    ``dataverse.mail.mta.auth.plain.disable``,
+    ``dataverse.mail.mta.auth.digest-md5.disable``,
+    ``dataverse.mail.mta.auth.ntlm.disable``,
+    ``dataverse.mail.mta.auth.xoauth2.disable``,
+    ``dataverse.mail.mta.auth.ntlm.domain``,
+    ``dataverse.mail.mta.auth.ntlm.flag``,
+    ``dataverse.mail.mta.sasl.enable``,
+    ``dataverse.mail.mta.sasl.usecanonicalhostname``,
+    ``dataverse.mail.mta.sasl.mechanisms``,
+    ``dataverse.mail.mta.sasl.authorizationid``,
+    ``dataverse.mail.mta.sasl.realm``
+* Miscellaneous:
+    ``dataverse.mail.mta.allow8bitmime``,
+    ``dataverse.mail.mta.submitter``,
+    ``dataverse.mail.mta.dsn.notify``,
+    ``dataverse.mail.mta.dsn.ret``,
+    ``dataverse.mail.mta.sendpartial``,
+    ``dataverse.mail.mta.quitwait``,
+    ``dataverse.mail.mta.quitonsessionreject``,
+    ``dataverse.mail.mta.userset``,
+    ``dataverse.mail.mta.noop.strict``,
+    ``dataverse.mail.mta.mailextension``
+
 
 dataverse.ui.allow-review-for-incomplete
 ++++++++++++++++++++++++++++++++++++++++
@@ -2763,18 +2898,13 @@ In Dataverse Software 4.7 and lower, the :doc:`/api/search` required an API toke
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SearchApiRequiresToken``
 
-.. _systemEmail:
+.. _legacySystemEmail:
 
 :SystemEmail
 ++++++++++++
 
-This is the email address that "system" emails are sent from such as password reset links. Your Dataverse installation will not send mail without this setting in place.
-
-``curl -X PUT -d 'LibraScholar SWAT Team <support@librascholar.edu>' http://localhost:8080/api/admin/settings/:SystemEmail``
-
-Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
-
-Please note that if you're having any trouble sending email, you can refer to "Troubleshooting" under :doc:`installation-main`.
+Please note that this setting is deprecated since Dataverse 6.2.
+It will be picked up for backward compatibility, but please migrate to usage of :ref:`dataverse.mail.system-email`.
 
 :HomePageCustomizationFile
 ++++++++++++++++++++++++++
