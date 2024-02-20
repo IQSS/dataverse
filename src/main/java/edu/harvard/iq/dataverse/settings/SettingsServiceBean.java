@@ -232,7 +232,7 @@ public class SettingsServiceBean {
          * @deprecated Please replace usages with {@link edu.harvard.iq.dataverse.MailServiceBean#getSystemAddress},
          *             which is backward compatible with this setting.
          */
-        @Deprecated(since = "6.1", forRemoval = true)
+        @Deprecated(since = "6.2", forRemoval = true)
         SystemEmail, 
         /* size limit for Tabular data file ingests */
         /* (can be set separately for specific ingestable formats; in which 

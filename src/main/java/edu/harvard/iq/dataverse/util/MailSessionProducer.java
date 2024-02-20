@@ -49,7 +49,7 @@ public class MailSessionProducer {
      * No direct JNDI lookup on the field to avoid deployment failures when not present.
      * @deprecated This should be removed with the next major release of Dataverse, as it would be a breaking change.
      */
-    @Deprecated(forRemoval = true, since = "6.1")
+    @Deprecated(forRemoval = true, since = "6.2")
     Session appserverProvidedSession;
     
     public MailSessionProducer() {
@@ -124,7 +124,7 @@ public class MailSessionProducer {
      * @return True if injected as resource from app server, false otherwise
      * @deprecated This is supposed to be removed when {@link #appserverProvidedSession} is removed.
      */
-    @Deprecated(forRemoval = true, since = "6.1")
+    @Deprecated(forRemoval = true, since = "6.2")
     public boolean hasSessionFromAppServer() {
         return this.appserverProvidedSession != null;
     }
