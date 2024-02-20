@@ -86,7 +86,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         }
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = getMetadataForCreateIndicator(dvObject);
-        metadata.put("_status", "reserved");
+        metadata.put("_status", DRAFT);
         try {
             String retString = doiDataCiteRegisterService.reserveIdentifier(identifier, metadata, dvObject);
             logger.log(Level.FINE, "create DOI identifier retString : " + retString);
@@ -252,7 +252,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
      * @param dvObject - Dataset or DataFile
      * @return PID status - NONE, DRAFT, FINDABLE, or REGISTERED
      */
-    private String getPidStatus(DvObject dvObject) {
+    String getPidStatus(DvObject dvObject) {
         String status = NONE;
         if (dvObject instanceof Dataset) {
             Dataset dataset = (Dataset) dvObject;
