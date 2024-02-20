@@ -157,49 +157,30 @@ If your mail host requires a username/password for access, continue to the next 
 Mail Host Configuration & Authentication
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you need to alter your mail host address, user, or provide a password to connect with, these settings are easily changed in the Payara admin console or via command line. 
+If you need to alter your mail host address, user, or provide a password to connect with, these settings are easily changed using JVM options group :ref:`dataverse.mail.mta`.
 
-For the Payara console, load a browser with your domain online, navigate to http://localhost:4848 and on the side panel find JavaMail Sessions. By default, the Dataverse Software uses a session named mail/notifyMailSession for routing outgoing emails. Click this mail session in the window to modify it.
+To enable authentication with your mail server, simply configure the following options:
 
-When fine tuning your JavaMail Session, there are a number of fields you can edit. The most important are:
+- ``dataverse.mail.mta.auth = true``
+- ``dataverse.mail.mta.username = <your username>``
+- ``dataverse.mail.mta.password``
 
-+ **Mail Host:** Desired mail host’s DNS address (e.g. smtp.gmail.com)
-+ **Default User:** Username mail host will recognize (e.g. user\@gmail.com)
-+ **Default Sender Address:** Email address that your Dataverse installation will send mail from
+**WARNING**:
+We strongly recommend not using plaintext storage or environment variables, but relying on :ref:`secure-password-storage`.
 
-Depending on the SMTP server you're using, you may need to add additional properties at the bottom of the page (below "Advanced").
+**WARNING**:
+It’s recommended to use an *app password* (for smtp.gmail.com users) or utilize a dedicated/non-personal user account with SMTP server auths so that you do not risk compromising your password.
 
-From the "Add Properties" utility at the bottom, use the “Add Property” button for each entry you need, and include the name / corresponding value as needed. Descriptions are optional, but can be used for your own organizational needs. 
+If your installation’s mail host uses SSL (like smtp.gmail.com) you’ll need to configure these options:
 
-**Note:** These properties are just an example. You may need different/more/fewer properties all depending on the SMTP server you’re using.
+- ``dataverse.mail.mta.ssl.enable = true``
+- ``dataverse.mail.mta.port = 587``
 
-==============================	==============================
-			Name 							Value
-==============================	==============================
-mail.smtp.auth					true
-mail.smtp.password				[Default User password*]
-mail.smtp.port					[Port number to route through]
-==============================	==============================
+**NOTE**: Some mail providers might still support using port 465, which formerly was assigned to be SMTP over SSL (SMTPS).
+However, this is no longer standardized and the port has been reassigned by the IANA to a different service.
+If your provider supports using port 587, be advised to migrate your configuration.
 
-**\*WARNING**: Entering a password here will *not* conceal it on-screen. It’s recommended to use an *app password* (for smtp.gmail.com users) or utilize a dedicated/non-personal user account with SMTP server auths so that you do not risk compromising your password.
-
-If your installation’s mail host uses SSL (like smtp.gmail.com) you’ll need these name/value pair properties in place:
-
-======================================	==============================
-				Name 								Value
-======================================	==============================
-mail.smtp.socketFactory.port			465
-mail.smtp.port							465
-mail.smtp.socketFactory.fallback		false
-mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
-======================================	==============================
-
-The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. See the below example:
-
-- Delete: ``./asadmin delete-javamail-resource mail/notifyMailSession``
-- Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
-
-Be sure you save the changes made here and then restart your Payara server to test it out.
+As the mail server connection (session) is cached once created, you need to restart Payara when applying configuration changes.
 
 UnknownHostException While Deploying
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
