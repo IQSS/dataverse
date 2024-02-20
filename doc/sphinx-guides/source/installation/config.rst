@@ -88,6 +88,51 @@ See the :ref:`payara` section of :doc:`prerequisites` for details and init scrip
 
 Related to this is that you should remove ``/root/.payara/pass`` to ensure that Payara isn't ever accidentally started as root. Without the password, Payara won't be able to start as root, which is a good thing.
 
+.. _secure-password-storage:
+
+Secure Password Storage
+^^^^^^^^^^^^^^^^^^^^^^^
+
+In development or demo scenarios, we suggest not to store passwords in files permanently.
+We recommend the use of at least environment variables or production-grade mechanisms to supply passwords.
+
+In a production setup, permanently storing passwords as plaintext should be avoided at all cost.
+Environment variables are dangerous in shared environments and containers, as they may be easily exploited; we suggest not to use them.
+Depending on your deployment model and environment, you can make use of the following techniques to securely store and access passwords.
+
+**Password Aliases**
+
+A `password alias`_ allows you to have a plaintext reference to an encrypted password stored on the server, with the alias being used wherever the password is needed.
+This method is especially useful in a classic deployment, as it does not require any external secrets management.
+
+Password aliases are consumable as a MicroProfile Config source and can be referrenced by their name in a `property expression`_.
+You may also reference them within a `variable substitution`_, e.g. in your ``domain.xml``.
+
+Creation example for an alias named *my.alias.name*:
+
+.. code-block:: shell
+
+  echo "AS_ADMIN_ALIASPASSWORD=changeme" > /tmp/p.txt
+  asadmin create-password-alias --passwordfile "/tmp/p.txt" "my.alias.name"
+  rm /tmp/p.txt
+
+Note: omitting the ``--passwordfile`` parameter allows creating the alias in an interactive fashion with a prompt.
+
+**Secrets Files**
+
+Payara has a builtin MicroProfile Config source to consume values from files in a directory on your filesystem.
+This `directory config source`_ is most useful and secure with external secrets management in place, temporarily mounting cleartext passwords as files.
+Examples are Kubernetes / OpenShift `Secrets <https://kubernetes.io/docs/concepts/configuration/secret/>`_ or tools like `Vault Agent <https://developer.hashicorp.com/vault/docs/agent-and-proxy/agent>`_.
+
+Please follow the `directory config source`_ documentation to learn about its usage.
+
+**Cloud Providers**
+
+Running Dataverse on a cloud platform or running an external secret management system like `Vault <https://developer.hashicorp.com/vault>`_ enables accessing secrets without any intermediate storage of cleartext.
+Obviously this is the most secure option for any deployment model, but it may require more resources to set up and maintain - your mileage may vary.
+
+Take a look at `cloud sources`_ shipped with Payara to learn about their usage.
+
 Enforce Strong Passwords for User Accounts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -365,16 +410,8 @@ Basic Database Settings
 1. Any of these settings can be set via system properties (see :ref:`jvm-options` starting at :ref:`dataverse.db.name`), environment variables or other
    MicroProfile Config mechanisms supported by the app server.
    `See Payara docs for supported sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html#config-sources>`_.
-2. Remember to protect your secrets. For passwords, use an environment variable (bare minimum), a password alias named the same
-   as the key (OK) or use the "dir config source" of Payara (best).
-
-   Alias creation example:
-
-   .. code-block:: shell
-
-      echo "AS_ADMIN_ALIASPASSWORD=changeme" > /tmp/p.txt
-      asadmin create-password-alias --passwordfile /tmp/p.txt dataverse.db.password
-      rm /tmp/p.txt
+2. Remember to protect your secrets.
+   See :ref:`secure-password-storage` for more information.
 
 3. Environment variables follow the key, replacing any dot, colon, dash, etc. into an underscore "_" and all uppercase
    letters. Example: ``dataverse.db.host`` -> ``DATAVERSE_DB_HOST``
@@ -602,6 +639,8 @@ Then create a password alias by running (without changes):
     ./asadmin $ASADMIN_OPTS create-password-alias swiftpassword-alias
 
 The second command will trigger an interactive prompt asking you to input your Swift password.
+
+Note: you may choose a different way to secure this password, depending on your use case. See :ref:`secure-password-storage` for more options.
 
 Second, update the JVM option ``dataverse.files.storage-driver-id`` by running the delete command:
 
@@ -872,9 +911,8 @@ Optionally, you may provide static credentials for each S3 storage using MicroPr
 You may provide the values for these via any `supported MicroProfile Config API source`_.
 
 **WARNING:**
-
 *For security, do not use the sources "environment variable" or "system property" (JVM option) in a production context!*
-*Rely on password alias, secrets directory or cloud based sources instead!*
+*Rely on password alias, secrets directory or cloud based sources as described at* :ref:`secure-password-storage` *instead!*
 
 **NOTE:**
 
@@ -1946,15 +1984,9 @@ dataverse.db.password
 
 The PostgreSQL users password to connect with.
 
-Preferrably use a JVM alias, as passwords in environment variables aren't safe.
+See :ref:`secure-password-storage` to learn about options to securely store this password.
 
-.. code-block:: shell
-
-  echo "AS_ADMIN_ALIASPASSWORD=change-me-super-secret" > /tmp/password.txt
-  asadmin create-password-alias --passwordfile /tmp/password.txt dataverse.db.password
-  rm /tmp/password.txt
-
-Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PASSWORD``.
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PASSWORD`` (although you shouldn't use environment variables for passwords).
 
 dataverse.db.host
 +++++++++++++++++
@@ -2201,14 +2233,7 @@ Once you have a username from DataCite, you can enter it like this:
 dataverse.pid.datacite.password
 +++++++++++++++++++++++++++++++
 
-Once you have a password from your provider, you should create a password alias.
-This avoids storing it in clear text, although you could use a JVM option `to reference
-a different place <https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Server%20Configuration%20And%20Management/Configuration%20Options/Variable%20Substitution/Types%20of%20Variables.html>`__.
-
-``./asadmin create-password-alias dataverse.pid.datacite.password``
-
-It will allow you to enter the password while not echoing the characters.
-To manage these, read up on `Payara docs about password aliases <https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Server%20Configuration%20And%20Management/Configuration%20Options/Password%20Aliases.html#asadmin-commands-password-aliases>`__.
+Once you have a password from your provider, you should create a password alias called *dataverse.pid.datacite.password* or use another method described at :ref:`secure-password-storage` to safeguard it.
 
 **Notes:**
 
@@ -2219,7 +2244,7 @@ To manage these, read up on `Payara docs about password aliases <https://docs.pa
   environment variables for passwords).
 - This setting was formerly known as ``doi.password`` and has been renamed.
   You should delete the old JVM option and the wrapped password alias, then recreate
-  with new alias name as above.
+  as described above.
 
 
 
@@ -2253,6 +2278,7 @@ dataverse.pid.handlenet.key.passphrase
 Related to :ref:`Handle.Net PID provider usage <pids-handle-configuration>`.
 
 Provide a passphrase to decrypt the :ref:`private key file <dataverse.pid.handlenet.key.path>`.
+See :ref:`secure-password-storage` for ways to do this securely.
 
 The key file may (and should) be encrypted with a passphrase (used for
 encryption with AES-128). See also chapter 1.4 "Authentication" of the
@@ -2260,10 +2286,10 @@ encryption with AES-128). See also chapter 1.4 "Authentication" of the
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment
 variable ``DATAVERSE_PID_HANDLENET_KEY_PASSPHRASE`` (although you shouldn't use
-environment variables for passwords). This setting was formerly known as
-``dataverse.handlenet.admprivphrase`` and has been renamed. You should delete
-the old JVM option and the wrapped password alias, then recreate as shown for
-:ref:`dataverse.pid.datacite.password` but with this option as alias name.
+environment variables for passwords).
+
+This setting was formerly known as ``dataverse.handlenet.admprivphrase`` and has been renamed.
+You should delete the old JVM option and the wrapped password alias, then recreate as shown for :ref:`dataverse.pid.datacite.password` but with this option as alias name.
 
 
 .. _dataverse.pid.handlenet.index:
@@ -2457,20 +2483,11 @@ The key used to sign a URL is created from the API token of the creating user pl
 signature-secret makes it impossible for someone who knows an API token from forging signed URLs and provides extra security by 
 making the overall signing key longer.
 
-Since the signature-secret is sensitive, you should treat it like a password. Here is an example how to set your shared secret 
-with the secure method "password alias":
+**WARNING**:
+*Since the signature-secret is sensitive, you should treat it like a password.*
+*See* :ref:`secure-password-storage` *to learn about ways to safeguard it.*
 
-.. code-block:: shell
-
-  echo "AS_ADMIN_ALIASPASSWORD=change-me-super-secret" > /tmp/password.txt
-  asadmin create-password-alias --passwordfile /tmp/password.txt dataverse.api.signature-secret
-  rm /tmp/password.txt
-
-Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
-``DATAVERSE_API_SIGNATURE_SECRET``.
-
-**WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
-production context! Rely on password alias, secrets directory or cloud based sources instead!
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNATURE_SECRET`` (although you shouldn't use environment variables for passwords) .
 
 .. _dataverse.api.allow-incomplete-metadata:
 
@@ -4147,10 +4164,7 @@ A true(default)/false option determining whether datafiles listed on the dataset
 :AllowUserManagementOfOrder
 +++++++++++++++++++++++++++
 
-A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategoryOrder) on and off dynamically. 
-
-.. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
-
+A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategoryOrder) on and off dynamically.
 
 .. _:UseStorageQuotas:
 
@@ -4173,3 +4187,10 @@ tab. files saved with these headers on S3 - since they no longer have
 to be generated and added to the streamed file on the fly.
 
 The setting is ``false`` by default, preserving the legacy behavior. 
+
+.. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
+.. _password alias: https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Server%20Configuration%20And%20Management/Configuration%20Options/Password%20Aliases.html
+.. _variable substitution: https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Server%20Configuration%20And%20Management/Configuration%20Options/Variable%20Substitution/Usage%20of%20Variables.html
+.. _property expression: https://download.eclipse.org/microprofile/microprofile-config-3.1/microprofile-config-spec-3.1.html#property-expressions
+.. _directory config source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Directory.html
+.. _cloud sources: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Cloud/Overview.html
