@@ -70,6 +70,7 @@ public class JsonParser {
     SettingsServiceBean settingsService;
     LicenseServiceBean licenseService;
     HarvestingClient harvestingClient = null;
+    boolean allowHarvestingMissingCVV = false;
     
     /**
      * if lenient, we will accept alternate spellings for controlled vocabulary values
@@ -93,6 +94,8 @@ public class JsonParser {
         this.settingsService = settingsService;
         this.licenseService = licenseService;
         this.harvestingClient = harvestingClient;
+        this.allowHarvestingMissingCVV = harvestingClient != null &&
+                settingsService.isTrueForKey(SettingsServiceBean.Key.AllowHarvestingMissingCVV, false);
     }
 
     public JsonParser() {
@@ -739,10 +742,9 @@ public class JsonParser {
         ret.setDatasetFieldType(type);
 
         // If Harvesting, CVV values may differ between the Dataverse installations, so we won't enforce them
-        if (harvestingClient != null && type.isControlledVocabulary() &&
-                settingsService.isTrueForKey(SettingsServiceBean.Key.AllowHarvestingMissingCVV, false)) {
+        if (allowHarvestingMissingCVV && type.isControlledVocabulary()) {
             type.setAllowControlledVocabulary(false);
-            logger.warning("Harvesting: Skipping Controlled Vocabulary. Treating values as primitives");
+            logger.info("Harvesting: Skipping Controlled Vocabulary. Treating values as primitives");
         }
 
         if (type.isCompound()) {

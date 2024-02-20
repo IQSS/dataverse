@@ -3,8 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
@@ -19,7 +18,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.BeforeAll;
 
 /**
  * This class tests Harvesting Client functionality. 
@@ -29,6 +27,7 @@ import org.junit.jupiter.api.BeforeAll;
  * /api/harvest/clients/ api to run an actual harvest of a control set and
  * then validate the resulting harvested content. 
  */
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class HarvestingClientsIT {
 
     private static final Logger logger = Logger.getLogger(HarvestingClientsIT.class.getCanonicalName());
@@ -178,7 +177,7 @@ public class HarvestingClientsIT {
     }
     @Test
     public void testHarvestingClientRun_AllowHarvestingMissingCVV_True()  throws InterruptedException {
-        harvestingClientRun(false);
+        harvestingClientRun(true);
     }
 
     private void harvestingClientRun(boolean allowHarvestingMissingCVV)  throws InterruptedException {
