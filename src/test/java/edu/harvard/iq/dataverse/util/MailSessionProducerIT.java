@@ -23,6 +23,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.MountableFile;
 
 import java.util.Map;
 
@@ -76,6 +77,65 @@ class MailSessionProducerIT {
         @Container
         static GenericContainer<?> maildev = new GenericContainer<>("maildev/maildev:2.1.0")
             .withExposedPorts(PORT_HTTP, PORT_SMTP)
+            .waitingFor(Wait.forHttp("/"));
+        
+        static String tcSmtpHost() {
+            return maildev.getHost();
+        }
+        
+        static String tcSmtpPort() {
+            return maildev.getMappedPort(PORT_SMTP).toString();
+        }
+        
+        @BeforeAll
+        static void setup() {
+            RestAssured.baseURI = "http://" + tcSmtpHost();
+            RestAssured.port = maildev.getMappedPort(PORT_HTTP);
+        }
+        
+        @Test
+        void createSession() {
+            given().when().get("/email")
+                .then()
+                .statusCode(200)
+                .body("size()", is(0));
+            
+            // given
+            Session session = new MailSessionProducer().getSession();
+            MailServiceBean mailer = new MailServiceBean(session, settingsServiceBean);
+            
+            // when
+            boolean sent = mailer.sendSystemEmail("test@example.org", "Test", "Test", false);
+            
+            // then
+            assertTrue(sent);
+            //RestAssured.get("/email").body().prettyPrint();
+            given().when().get("/email")
+                .then()
+                .statusCode(200)
+                .body("size()", is(1))
+                .body("[0].subject", equalTo("Test"));
+        }
+        
+    }
+    
+    @Nested
+    @LocalJvmSettings
+    @JvmSetting(key = JvmSettings.MAIL_MTA_HOST, method = "tcSmtpHost")
+    @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpPort", varArgs = "port")
+    @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, varArgs = "ssl.enable", value = "true")
+    @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, varArgs = "ssl.trust", value = "*")
+    class WithSSLWithoutAuthentication {
+        @Container
+        static GenericContainer<?> maildev = new GenericContainer<>("maildev/maildev:2.1.0")
+            .withCopyFileToContainer(MountableFile.forClasspathResource("mail/cert.pem"), "/cert.pem")
+            .withCopyFileToContainer(MountableFile.forClasspathResource("mail/key.pem"), "/key.pem")
+            .withExposedPorts(PORT_HTTP, PORT_SMTP)
+            .withEnv(Map.of(
+                "MAILDEV_INCOMING_SECURE", "true",
+                "MAILDEV_INCOMING_CERT", "/cert.pem",
+                "MAILDEV_INCOMING_KEY", "/key.pem"
+            ))
             .waitingFor(Wait.forHttp("/"));
         
         static String tcSmtpHost() {
