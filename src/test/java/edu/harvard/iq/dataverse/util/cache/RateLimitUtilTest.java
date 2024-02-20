@@ -4,10 +4,12 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.cache.RateLimitUtil;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -19,81 +21,99 @@ import static org.mockito.Mockito.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class RateLimitUtilTest {
 
-    private SystemConfig mockedSystemConfig;
+    static SystemConfig mockedSystemConfig = mock(SystemConfig.class);
+    static SystemConfig mockedSystemConfigBad = mock(SystemConfig.class);
 
-    static final String settingJson = "{\n" +
-            "  \"rateLimits\":[\n" +
-            "    {\n" +
-            "      \"tier\": 0,\n" +
-            "      \"limitPerHour\": 10,\n" +
-            "      \"actions\": [\n" +
-            "        \"GetLatestPublishedDatasetVersionCommand\",\n" +
-            "        \"GetPrivateUrlCommand\",\n" +
-            "        \"GetDatasetCommand\",\n" +
-            "        \"GetLatestAccessibleDatasetVersionCommand\"\n" +
-            "      ]\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"tier\": 0,\n" +
-            "      \"limitPerHour\": 1,\n" +
-            "      \"actions\": [\n" +
-            "        \"CreateGuestbookResponseCommand\",\n" +
-            "        \"UpdateDatasetVersionCommand\",\n" +
-            "        \"DestroyDatasetCommand\",\n" +
-            "        \"DeleteDataFileCommand\",\n" +
-            "        \"FinalizeDatasetPublicationCommand\",\n" +
-            "        \"PublishDatasetCommand\"\n" +
-            "      ]\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"tier\": 1,\n" +
-            "      \"limitPerHour\": 30,\n" +
-            "      \"actions\": [\n" +
-            "        \"CreateGuestbookResponseCommand\",\n" +
-            "        \"GetLatestPublishedDatasetVersionCommand\",\n" +
-            "        \"GetPrivateUrlCommand\",\n" +
-            "        \"GetDatasetCommand\",\n" +
-            "        \"GetLatestAccessibleDatasetVersionCommand\",\n" +
-            "        \"UpdateDatasetVersionCommand\",\n" +
-            "        \"DestroyDatasetCommand\",\n" +
-            "        \"DeleteDataFileCommand\",\n" +
-            "        \"FinalizeDatasetPublicationCommand\",\n" +
-            "        \"PublishDatasetCommand\"\n" +
-            "      ]\n" +
-            "    }\n" +
-            "  ]\n" +
-            "}";
+    static String getJsonSetting() {
+        return """
+               {
+                 "rateLimits": [
+                   {
+                     "tier": 0,
+                     "limitPerHour": 10,
+                     "actions": [
+                       "GetLatestPublishedDatasetVersionCommand",
+                       "GetPrivateUrlCommand",
+                       "GetDatasetCommand",
+                       "GetLatestAccessibleDatasetVersionCommand"
+                     ]
+                   },
+                   {
+                     "tier": 0,
+                     "limitPerHour": 1,
+                     "actions": [
+                       "CreateGuestbookResponseCommand",
+                       "UpdateDatasetVersionCommand",
+                       "DestroyDatasetCommand",
+                       "DeleteDataFileCommand",
+                       "FinalizeDatasetPublicationCommand",
+                       "PublishDatasetCommand"
+                     ]
+                   },
+                   {
+                     "tier": 1,
+                     "limitPerHour": 30,
+                     "actions": [
+                       "CreateGuestbookResponseCommand",
+                       "GetLatestPublishedDatasetVersionCommand",
+                       "GetPrivateUrlCommand",
+                       "GetDatasetCommand",
+                       "GetLatestAccessibleDatasetVersionCommand",
+                       "UpdateDatasetVersionCommand",
+                       "DestroyDatasetCommand",
+                       "DeleteDataFileCommand",
+                       "FinalizeDatasetPublicationCommand",
+                       "PublishDatasetCommand"
+                     ]
+                   }
+                 ]
+               }""";
+    }
     static final String settingJsonBad = "{\n";
 
+    @BeforeAll
+    public static void setUp() {
+        doReturn(settingJsonBad).when(mockedSystemConfigBad).getRateLimitsJson();
+        doReturn("100,200").when(mockedSystemConfigBad).getRateLimitingDefaultCapacityTiers();
+    }
     @BeforeEach
-    public void setup() {
-        mockedSystemConfig = mock(SystemConfig.class);
+    public void resetSettings() {
+        doReturn(getJsonSetting()).when(mockedSystemConfig).getRateLimitsJson();
         doReturn("100,200").when(mockedSystemConfig).getRateLimitingDefaultCapacityTiers();
-        // clear the static data so it can be reloaded with the new mocked data
         RateLimitUtil.rateLimitMap.clear();
         RateLimitUtil.rateLimits.clear();
     }
-    @Test
-    public void testConfig() {
-        doReturn(settingJson).when(mockedSystemConfig).getRateLimitsJson();
-        assertEquals(100, RateLimitUtil.getCapacityByTier(mockedSystemConfig, 0));
-        assertEquals(200, RateLimitUtil.getCapacityByTier(mockedSystemConfig, 1));
-        assertEquals(1, RateLimitUtil.getCapacityByTierAndAction(mockedSystemConfig, 0, "DestroyDatasetCommand"));
-        assertEquals(100, RateLimitUtil.getCapacityByTierAndAction(mockedSystemConfig, 0, "Default Limit"));
-
-        assertEquals(30, RateLimitUtil.getCapacityByTierAndAction(mockedSystemConfig, 1, "GetLatestAccessibleDatasetVersionCommand"));
-        assertEquals(200, RateLimitUtil.getCapacityByTierAndAction(mockedSystemConfig, 1, "Default Limit"));
-
-        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacityByTierAndAction(mockedSystemConfig, 2, "Default No Limit"));
+    @ParameterizedTest
+    @CsvSource(value = {
+            "100,0,",
+            "200,1,",
+            "1,0,DestroyDatasetCommand",
+            "100,0,Default Limit",
+            "30,1,DestroyDatasetCommand",
+            "200,1,Default Limit",
+            "-1,2,Default No Limit"
+    })
+    void testConfig(int exp, int tier, String action) {
+        if (action == null) {
+            assertEquals(exp, RateLimitUtil.getCapacityByTier(mockedSystemConfig, tier));
+        } else {
+            assertEquals(exp, RateLimitUtil.getCapacityByTierAndAction(mockedSystemConfig, tier, action));
+        }
     }
-    @Test
-    public void testBadJson() {
-        doReturn(settingJsonBad).when(mockedSystemConfig).getRateLimitsJson();
-        assertEquals(100, RateLimitUtil.getCapacityByTier(mockedSystemConfig, 0));
-        assertEquals(200, RateLimitUtil.getCapacityByTier(mockedSystemConfig, 1));
-        assertEquals(100, RateLimitUtil.getCapacityByTierAndAction(mockedSystemConfig, 0, "GetLatestAccessibleDatasetVersionCommand"));
-        assertEquals(200, RateLimitUtil.getCapacityByTierAndAction(mockedSystemConfig, 1, "GetLatestAccessibleDatasetVersionCommand"));
-        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacityByTierAndAction(mockedSystemConfig, 2, "GetLatestAccessibleDatasetVersionCommand"));
+    @ParameterizedTest
+    @CsvSource(value = {
+            "100,0,",
+            "200,1,",
+            "100,0,GetLatestAccessibleDatasetVersionCommand",
+            "200,1,GetLatestAccessibleDatasetVersionCommand",
+            "-1,2,GetLatestAccessibleDatasetVersionCommand"
+    })
+    void testBadJson(int exp, int tier, String action) {
+        if (action == null) {
+            assertEquals(exp, RateLimitUtil.getCapacityByTier(mockedSystemConfigBad, tier));
+        } else {
+            assertEquals(exp, RateLimitUtil.getCapacityByTierAndAction(mockedSystemConfigBad, tier, action));
+        }
     }
 
     @Test
@@ -103,7 +123,6 @@ public class RateLimitUtilTest {
     }
     @Test
     public void testGetCapacity() {
-        doReturn(settingJson).when(mockedSystemConfig).getRateLimitsJson();
         GuestUser guestUser = GuestUser.get();
         assertEquals(10, RateLimitUtil.getCapacity(mockedSystemConfig, guestUser, "GetPrivateUrlCommand"));
 
