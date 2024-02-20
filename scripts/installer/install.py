@@ -568,14 +568,6 @@ try:
 except:
    sys.exit("Failure to execute setup-all.sh! aborting.")
 
-# 7b. configure admin email in the application settings
-print("configuring system email address...")
-returnCode = subprocess.call(["curl", "-X", "PUT", "-d", adminEmail, apiUrl+"/admin/settings/:SystemEmail"])
-if returnCode != 0:
-   print("\nWARNING: failed to configure the admin email in the Dataverse settings!")
-else:
-   print("\ndone.")
-
 # 8c. configure remote Solr location, if specified
 if solrLocation != "LOCAL":
    print("configuring remote Solr location... ("+solrLocation+")")

@@ -146,12 +146,10 @@ function final_setup(){
 	# delete any existing mail/notifyMailSession; configure port, if provided:
 
 	./asadmin delete-javamail-resource mail/notifyMailSession
-
-	if [ $SMTP_SERVER_PORT"x" != "x" ]
-	then
-            ./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost "$SMTP_SERVER" --mailuser "dataversenotify" --fromaddress "do-not-reply@${HOST_ADDRESS}" --property mail.smtp.port="${SMTP_SERVER_PORT}" mail/notifyMailSession
-	else
-	    ./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost "$SMTP_SERVER" --mailuser "dataversenotify" --fromaddress "do-not-reply@${HOST_ADDRESS}" mail/notifyMailSession
+	./asadmin $ASADMIN_OPTS create-system-properties "dataverse.mail.system-email='${ADMIN_EMAIL}'"
+  ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.mail.mta.host='${SMTP_SERVER}'"
+	if [ "x${SMTP_SERVER_PORT}" != "x" ]; then
+    ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.mail.mta.port='${SMTP_SERVER_PORT}'"
 	fi
 
 }
@@ -277,6 +275,12 @@ if [ ! -d "$DOMAIN_DIR" ]
   then
     echo Domain directory '$DOMAIN_DIR' does not exist
     exit 2
+fi
+
+if [ -z "$ADMIN_EMAIL" ]
+ then
+  echo "You must specify the system admin email address (ADMIN_EMAIL)."
+  exit 1
 fi
 
 echo "Setting up your app. server (Payara) to support Dataverse"
