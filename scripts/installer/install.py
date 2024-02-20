@@ -595,7 +595,7 @@ print("  http://" + hostName + ":8080\n\n")
 
 print("\nYour Dataverse has been configured to use a Fake DOI Provider, registering (non-resolvable) DOI global identifiers in the ")
 print("test name space \"10.5072\" with the \"shoulder\" \"FK2\"")
-print("You can reconfigure to use additional/alternative providers."
+print("You can reconfigure to use additional/alternative providers.")
 print("If you intend to use DOIs, you should contact DataCite (support\@datacite.org) or GDCC (see https://www.gdcc.io/about.html) and request a test account.")
 print("Once you receive the account information (name, password, authority, shoulder), add them to your configuration ")
 print("as described in the Dataverse Guides (see https://guides.dataverse.org/en/latest/installation/config.html#persistent-identifiers-and-publishing-datasets),")
