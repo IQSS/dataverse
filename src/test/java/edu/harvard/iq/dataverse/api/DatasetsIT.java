@@ -1889,7 +1889,7 @@ public class DatasetsIT {
     }
     
     @Test
-    public void testGetIncludeOwnerArray() {
+    public void testGetDatasetOwners() {
 
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat()
@@ -1913,7 +1913,7 @@ public class DatasetsIT {
 
         Response getDatasetWithOwners = UtilIT.getDatasetWithOwners(persistentId, apiToken, true);
         getDatasetWithOwners.prettyPrint();
-        getDatasetWithOwners.then().assertThat().body("data.ownerArray[0].identifier", equalTo(dataverseAlias));       
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(dataverseAlias));       
         
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         assertEquals(200, destroyDatasetResponse.getStatusCode());
@@ -1922,12 +1922,8 @@ public class DatasetsIT {
         assertEquals(200, deleteDataverseResponse.getStatusCode());
 
         Response deleteUserResponse = UtilIT.deleteUser(username);
-        assertEquals(200, deleteUserResponse.getStatusCode());
-        
+        assertEquals(200, deleteUserResponse.getStatusCode());        
     }
-    
-    
-    
 
     /**
      * In order for this test to pass you must have the Data Capture Module (

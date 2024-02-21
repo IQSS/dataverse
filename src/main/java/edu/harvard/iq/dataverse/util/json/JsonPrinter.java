@@ -272,7 +272,7 @@ public class JsonPrinter {
             bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
         }
         if (includeOwners){
-            bld.add("ownerArray", getOwnersFromDvObject(dv));
+            bld.add("isPartOf", getOwnersFromDvObject(dv));
         }       
         bld.add("permissionRoot", dv.isPermissionRoot())
                 .add("description", dv.getDescription())
@@ -307,46 +307,58 @@ public class JsonPrinter {
         return jsonArrayOfContacts;
     }
     
-    public static JsonArrayBuilder getOwnersFromDvObject(DvObject dvObject) {
-        
+    public static JsonObjectBuilder getOwnersFromDvObject(DvObject dvObject){
+        return getOwnersFromDvObject(dvObject, null);
+    }
+    
+    public static JsonObjectBuilder getOwnersFromDvObject(DvObject dvObject, DatasetVersion dsv) {
         List <DvObject> ownerList = new ArrayList();
         dvObject = dvObject.getOwner(); // We're going to ignore the object itself
+        //Get "root" to top of list
         while (dvObject != null) {
-            ownerList.add(dvObject);
+            ownerList.add(0, dvObject);
             dvObject = dvObject.getOwner();
         } 
-        
-        JsonArrayBuilder jsonArrayOfOwners = Json.createArrayBuilder();
-        
-        for (DvObject dvo : ownerList){
-                JsonObjectBuilder ownerObject = jsonObjectBuilder();
-                if (dvo.isInstanceofDataverse()){
-                    ownerObject.add("type", "DATAVERSE");
-                }
-                if (dvo.isInstanceofDataset()){
-                    ownerObject.add("type", "DATASET");
-                }
-                 if (dvo.isInstanceofDataFile()){
-                    ownerObject.add("type", "DATAFILE");
-                }
-                if (dvo.isInstanceofDataverse()){
-                    Dataverse in = (Dataverse) dvo;
-                    ownerObject.add("identifier", in.getAlias());
-                }
-                if (dvo.isInstanceofDataset() || dvo.isInstanceofDataFile() ){
-                    if (dvo.getIdentifier() != null){
-                        Dataset ds = (Dataset) dvo;
-                        ownerObject.add("identifier", ds.getGlobalId().asString());
-                    } else {
-                        ownerObject.add("identifier", dvo.getId());
-                    }
-                }
-                ownerObject.add("displayName", dvo.getDisplayName());
-            jsonArrayOfOwners.add(ownerObject);
+        //then work "inside out"
+        JsonObjectBuilder saved = null;
+        for (DvObject dvo : ownerList) {
+            saved = addEmbeddedOwnerObject(dvo, saved, dsv);
         }
-        return jsonArrayOfOwners;
+        return saved;
     }
+    
+    private static JsonObjectBuilder addEmbeddedOwnerObject(DvObject dvo, JsonObjectBuilder isPartOf, DatasetVersion dsv ) {
+        JsonObjectBuilder ownerObject = jsonObjectBuilder();
 
+        if (dvo.isInstanceofDataverse()) {
+            ownerObject.add("type", "DATAVERSE");
+            Dataverse in = (Dataverse) dvo;
+            ownerObject.add("identifier", in.getAlias());
+        }
+
+        if (dvo.isInstanceofDataset()) {
+            ownerObject.add("type", "DATASET");
+            String versionString = "";
+            if (dsv != null){
+               versionString = dsv == null ? "" : "&version=" + dsv.getFriendlyVersionNumber();
+            }
+            if (dvo.getGlobalId() != null) {
+                ownerObject.add("identifier", dvo.getGlobalId().asString() + versionString);
+            } else {
+                ownerObject.add("identifier", dvo.getId() );
+            }
+            
+        }
+        
+        ownerObject.add("displayName", dvo.getDisplayName());
+        
+        if (isPartOf != null) {
+            ownerObject.add("isPartOf", isPartOf);
+        }
+        
+        return ownerObject;
+    }
+    
     public static JsonObjectBuilder json( DataverseTheme theme ) {
         final NullSafeJsonBuilder baseObject = jsonObjectBuilder()
                 .add("id", theme.getId() )
@@ -388,7 +400,7 @@ public class JsonPrinter {
             bld.add("metadataLanguage", ds.getMetadataLanguage());
         }
         if (includeOwners){
-            bld.add("ownerArray", getOwnersFromDvObject(ds));
+            bld.add("isPartOf", getOwnersFromDvObject(ds));
         }
         return bld;
     }
@@ -402,10 +414,10 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles) {
-        return json(dsv, null, includeFiles);
+        return json(dsv, null, includeFiles, false);
     }
 
-    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList, boolean includeFiles) {
+    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList, boolean includeFiles, boolean includeOwners) {
     /*    return json(dsv, null, includeFiles, null);
     }
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList, boolean includeFiles, Long numberOfFiles) {*/
@@ -452,7 +464,10 @@ public class JsonPrinter {
         bld.add("metadataBlocks", (anonymizedFieldTypeNamesList != null) ?
                 jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList)
                 : jsonByBlocks(dsv.getDatasetFields())
-        );
+        );       
+        if(includeOwners){
+            bld.add("isPartOf", getOwnersFromDvObject(dataset));
+        }
         if (includeFiles) {
             bld.add("files", jsonFileMetadatas(dsv.getFileMetadatas()));
         }
@@ -762,7 +777,7 @@ public class JsonPrinter {
                     : null);
         }
         if (includeOwners){
-            builder.add("ownerArray", getOwnersFromDvObject(df));
+            builder.add("isPartOf", getOwnersFromDvObject(df, fileMetadata.getDatasetVersion()));
         }
         return builder;
     }

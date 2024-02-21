@@ -170,7 +170,7 @@ public class DataversesIT {
         Response getWithOwners = UtilIT.getDataverseWithOwners(level1a, apiToken, true);
         getWithOwners.prettyPrint();
         
-        getWithOwners.then().assertThat().body("data.ownerArray[0].identifier", equalTo(first));
+        getWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(first));
         
     }
 

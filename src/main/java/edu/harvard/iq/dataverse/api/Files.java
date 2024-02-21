@@ -506,17 +506,15 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/draft")
-    public Response getFileDataDraft(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, @QueryParam("returnOwners") Boolean returnOwners) throws WrappedResponse, Exception {
-        Boolean includeOwners = returnOwners == null ? false : returnOwners;
-        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, true, includeOwners);
+    public Response getFileDataDraft(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, @QueryParam("returnOwners") boolean returnOwners) throws WrappedResponse, Exception {
+        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, true, returnOwners);
     }
     
     @GET
     @AuthRequired
     @Path("{id}")
-    public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, @QueryParam("returnOwners") Boolean returnOwners) throws WrappedResponse, Exception {
-        Boolean includeOwners = returnOwners == null ? false : returnOwners;  
-        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, false, includeOwners);
+    public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, @QueryParam("returnOwners") boolean returnOwners) throws WrappedResponse, Exception {  
+        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, false, returnOwners);
     }
     
     private Response getFileDataResponse(User user, String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response, boolean draft, boolean includeOwners ){
