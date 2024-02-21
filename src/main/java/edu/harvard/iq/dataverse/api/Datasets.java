@@ -2727,28 +2727,7 @@ public class Datasets extends AbstractApiBean {
      * Will allow to define when the permissions should be checked when a deaccesioned dataset is requested. If the user doesn't have edit permissions will result in an error.
      */
     private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
-        DatasetVersion dsv = execCommand(handleVersion(versionNumber, new DsVersionHandler<Command<DatasetVersion>>() {
-
-            @Override
-            public Command<DatasetVersion> handleLatest() {
-                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
-            }
-
-            @Override
-            public Command<DatasetVersion> handleDraft() {
-                return new GetDraftDatasetVersionCommand(req, ds);
-            }
-
-            @Override
-            public Command<DatasetVersion> handleSpecific(long major, long minor) {
-                return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor, includeDeaccessioned, checkPermsWhenDeaccessioned);
-            }
-
-            @Override
-            public Command<DatasetVersion> handleLatestPublished() {
-                return new GetLatestPublishedDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
-            }
-        }));
+        DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
         if (dsv == null || dsv.getId() == null) {
             throw new WrappedResponse(notFound("Dataset version " + versionNumber + " of dataset " + ds.getId() + " not found"));
         }

@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.File;
 import java.io.IOException;
 
@@ -36,6 +37,7 @@ import jakarta.json.JsonObjectBuilder;
 import static jakarta.ws.rs.core.Response.Status.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Year;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
@@ -2611,4 +2613,114 @@ public class FilesIT {
         // @todo: cleanup? 
     }
     
+
+    @Test
+    public void testFileCitationByVersion() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPid = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadFile.then().assertThat().statusCode(OK.getStatusCode());
+
+        Integer fileId = JsonPath.from(uploadFile.body().asString()).getInt("data.files[0].dataFile.id");
+
+        String pidAsUrl = "https://doi.org/" + datasetPid.split("doi:")[1];
+        int currentYear = Year.now().getValue();
+
+        Response draftUnauthNoApitoken = UtilIT.getFileCitation(fileId, DS_VERSION_DRAFT, null);
+        draftUnauthNoApitoken.prettyPrint();
+        draftUnauthNoApitoken.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        Response createNoPermsUser = UtilIT.createRandomUser();
+        createNoPermsUser.then().assertThat().statusCode(OK.getStatusCode());
+        String noPermsApiToken = UtilIT.getApiTokenFromResponse(createNoPermsUser);
+
+        Response draftUnauthNoPermsApiToken = UtilIT.getFileCitation(fileId, DS_VERSION_DRAFT, noPermsApiToken);
+        draftUnauthNoPermsApiToken.prettyPrint();
+        draftUnauthNoPermsApiToken.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        Response getFileCitationDraft = UtilIT.getFileCitation(fileId, DS_VERSION_DRAFT, apiToken);
+        getFileCitationDraft.prettyPrint();
+        getFileCitationDraft.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, DRAFT VERSION; coffeeshop.png [fileName]"));
+
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishedNoApiTokenNeeded = UtilIT.getFileCitation(fileId, "1.0", null);
+        publishedNoApiTokenNeeded.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishedNoPermsApiTokenAllowed = UtilIT.getFileCitation(fileId, "1.0", noPermsApiToken);
+        publishedNoPermsApiTokenAllowed.then().assertThat().statusCode(OK.getStatusCode());
+
+        String updateJsonString = """
+{
+    "label": "foo.png"
+}
+""";
+
+        Response updateMetadataResponse = UtilIT.updateFileMetadata(fileId.toString(), updateJsonString, apiToken);
+        updateMetadataResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());
+
+        Response getFileCitationPostV1Draft = UtilIT.getFileCitation(fileId, DS_VERSION_DRAFT, apiToken);
+        getFileCitationPostV1Draft.prettyPrint();
+        getFileCitationPostV1Draft.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, DRAFT VERSION; foo.png [fileName]"));
+
+        Response getFileCitationV1OldFilename = UtilIT.getFileCitation(fileId, "1.0", apiToken);
+        getFileCitationV1OldFilename.prettyPrint();
+        getFileCitationV1OldFilename.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, V1; coffeeshop.png [fileName]"));
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        Response deaccessionDataset = UtilIT.deaccessionDataset(datasetId, "1.0", "just because", "http://example.com", apiToken);
+        deaccessionDataset.prettyPrint();
+        deaccessionDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getFileCitationV1PostDeaccessionAuthorDefault = UtilIT.getFileCitation(fileId, "1.0", apiToken);
+        getFileCitationV1PostDeaccessionAuthorDefault.prettyPrint();
+        getFileCitationV1PostDeaccessionAuthorDefault.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        
+        Response getFileCitationV1PostDeaccessionAuthorIncludeDeaccessioned = UtilIT.getFileCitation(fileId, "1.0", true, apiToken);
+        getFileCitationV1PostDeaccessionAuthorIncludeDeaccessioned.prettyPrint();
+        getFileCitationV1PostDeaccessionAuthorIncludeDeaccessioned.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, V1, DEACCESSIONED VERSION; coffeeshop.png [fileName]"));
+
+        Response getFileCitationV1PostDeaccessionNoApiToken = UtilIT.getFileCitation(fileId, "1.0", null);
+        getFileCitationV1PostDeaccessionNoApiToken.prettyPrint();
+        getFileCitationV1PostDeaccessionNoApiToken.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode())
+                .body("message", equalTo("Dataset version cannot be found or unauthorized."));
+
+        Response getFileCitationV1PostDeaccessionNoPermsUser = UtilIT.getFileCitation(fileId, "1.0", noPermsApiToken);
+        getFileCitationV1PostDeaccessionNoPermsUser.prettyPrint();
+        getFileCitationV1PostDeaccessionNoPermsUser.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode())
+                .body("message", equalTo("Dataset version cannot be found or unauthorized."));
+
+    }
+
 }
