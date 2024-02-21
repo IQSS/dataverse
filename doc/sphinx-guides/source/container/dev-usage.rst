@@ -147,11 +147,7 @@ Redeploying
 The safest and most reliable way to redeploy code is to stop the running containers (with Ctrl-c if you started them in the foreground) and then build and run them again with ``mvn -Pct clean package docker:run``.
 Safe, but also slowing down the development cycle a lot.
 
-Hot Re-Deployments
-^^^^^^^^^^^^^^^^^^
-
 Triggering redeployment of changes using an IDE can greatly improve your feedback loop when changing code.
-
 You have at least two options:
 
 #. Use builtin features of IDEs or `IDE plugins from Payara <https://docs.payara.fish/community/docs/documentation/ecosystem/ecosystem.html>`_.
@@ -160,7 +156,13 @@ You have at least two options:
 The main differences between the first and the second options are support for hot deploys of non-class files and limitations in what the JVM HotswapAgent can do for you.
 Find more details in a `blog article by JRebel <https://www.jrebel.com/blog/java-hotswap-guide>`_.
 
-To make use of builtin features or Payara IDE Tools (option 1), please follow these steps:
+IDE Triggered Code Re-Deployments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To make use of builtin features or Payara IDE Tools (option 1), please follow steps below.
+Note that using this method, you may redeploy a complete WAR or single methods.
+Redeploying WARs supports swapping and adding classes and non-code materials, but is slower (still faster than rebuilding containers).
+Hotswapping methods requires using JDWP (Debug Mode), but does not allow switching non-code material or adding classes.
 
 #. | Download the version of Payara shown in :ref:`install-payara-dev` and unzip it to a reasonable location such as ``/usr/local/payara6``.
    | - Note that Payara can also be downloaded from `Maven Central <https://mvnrepository.com/artifact/fish.payara.distributions/payara>`_.
@@ -311,6 +313,17 @@ To make use of builtin features or Payara IDE Tools (option 1), please follow th
 
 Note: in the background, the bootstrap job will wait for Dataverse to be deployed and responsive.
 When your IDE automatically opens the URL a newly deployed, not bootstrapped Dataverse application, it might take some more time and page refreshes until the job finishes.
+
+IDE Triggered Non-Code Re-Deployments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Either redeploy the WAR (see above), use JRebel or look into copying files into the exploded WAR within the running container.
+The steps below describe options to enable the later in different IDEs.
+
+.. tabs::
+  .. group-tab:: IntelliJ
+    TODO
+
 
 Using a Debugger
 ----------------
