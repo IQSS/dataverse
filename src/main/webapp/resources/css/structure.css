@@ -1088,7 +1088,7 @@ padding-right:0px;
 .ui-datepicker {
   z-index: 100001!important;
 }
-.embargoright {
+.embargoright, .retentionright {
   margin-left:10px;
 }
 .embargocheckbox {

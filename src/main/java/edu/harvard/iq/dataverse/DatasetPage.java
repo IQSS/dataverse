@@ -6278,6 +6278,10 @@ public class DatasetPage implements java.io.Serializable {
         return true;
     }
 
+    public boolean isActivelyRetended(List<FileMetadata> fmdList) {
+        return FileUtil.isActivelyRetended(fmdList);
+    }
+
     public String getIngestMessage() {
         return BundleUtil.getStringFromBundle("file.ingestFailed.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()));
     }
