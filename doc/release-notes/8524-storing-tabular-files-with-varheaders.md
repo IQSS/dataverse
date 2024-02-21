@@ -1,0 +1,6 @@
+Tabular Data Ingest can now save the generated archival files with the list of variable names added as the first tab-delimited line. As the most significant effect of this feature,
+Access API will be able to take advantage of Direct Download for tab. files saved with these headers on S3 - since they no longer have to be generated and added to the streamed content on the fly.
+
+This behavior is controlled by the new setting `:StoreIngestedTabularFilesWithVarHeaders`. It is false by default, preserving the legacy behavior. When enabled, Dataverse will be able to handle both the newly ingested files, and any already-existing legacy files stored without these headers transparently to the user. E.g. the access API will continue delivering tab-delimited files **with** this header line, whether it needs to add it dynamically for the legacy files, or reading complete files directly from storage for the ones stored with it.
+
+An API for converting existing legacy tabular files will be added separately. [this line will need to be changed if we have time to add said API before 6.2 is released].

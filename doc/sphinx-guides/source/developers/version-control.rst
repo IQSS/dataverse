@@ -34,6 +34,8 @@ The "master" Branch
 
 The "`master <https://github.com/IQSS/dataverse/tree/master>`_" branch represents released versions of the Dataverse Software. As mentioned in the :doc:`making-releases` section, at release time we update the master branch to include all the code for that release. Commits are never made directly to master. Rather, master is updated only when we merge code into it from the "develop" branch.
 
+.. _develop-branch:
+
 The "develop" Branch
 ********************
 
@@ -142,7 +144,7 @@ Feedback on the pull request template we use is welcome! Here's an example of a 
 Make Sure Your Pull Request Has Been Advanced to Code Review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now that you've made your pull request, your goal is to make sure it appears in the "Code Review" column at https://github.com/orgs/IQSS/projects/2. 
+Now that you've made your pull request, your goal is to make sure it appears in the "Code Review" column at https://github.com/orgs/IQSS/projects/34.
 
 Look at https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for various ways to reach out to developers who have enough access to the GitHub repo to move your issue and pull request to the "Code Review" column.
 

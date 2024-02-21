@@ -16,7 +16,9 @@ import static io.restassured.path.json.JsonPath.with;
 import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.File;
 import java.io.IOException;
 
@@ -33,6 +35,9 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Year;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
@@ -2483,4 +2488,239 @@ public class FilesIT {
         
         UtilIT.deleteSetting(SettingsServiceBean.Key.UseStorageQuotas);
     }
+    
+    @Test
+    public void testIngestWithAndWithoutVariableHeader() throws NoSuchAlgorithmException {
+        msgt("testIngestWithAndWithoutVariableHeader");
+        
+        // The compact Stata file we'll be using for this test: 
+        // (this file is provided by Stata inc. - it's genuine quality)
+        String pathToFile = "scripts/search/data/tabular/stata13-auto.dta";
+        // The pre-calculated MD5 signature of the *complete* tab-delimited 
+        // file as seen by the final Access API user (i.e., with the variable 
+        // header line in it):
+        String tabularFileMD5 = "f298c2567cc8eb544e36ad83edf6f595";
+        // Expected byte sizes of the generated tab-delimited file as stored, 
+        // with and without the header:
+        int tabularFileSizeWoutHeader = 4026; 
+        int tabularFileSizeWithHeader = 4113; 
+
+        String apiToken = createUserGetToken();
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+        Integer datasetIdA = createDatasetGetId(dataverseAlias, apiToken);
+        
+        // Before we do anything else, make sure that the instance is configured 
+        // the "old" way, i.e., to store ingested files without the headers:
+        UtilIT.deleteSetting(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders);
+        
+        Response addResponse = UtilIT.uploadFileViaNative(datasetIdA.toString(), pathToFile, apiToken);
+        addResponse.prettyPrint();
+
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("application/x-stata-13"))
+                .body("data.files[0].label", equalTo("stata13-auto.dta"))
+                .statusCode(OK.getStatusCode());
+
+        Long fileIdA = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        assertNotNull(fileIdA);
+
+        // Give file time to ingest
+        assertTrue(UtilIT.sleepForLock(datasetIdA.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile + "(A)");
+
+        // Check the metadata to confirm that the file has ingested: 
+
+        Response fileDataResponse = UtilIT.getFileData(fileIdA.toString(), apiToken);
+        fileDataResponse.prettyPrint();
+        fileDataResponse.then().assertThat()
+                .body("data.dataFile.filename", equalTo("stata13-auto.tab"))
+                .body("data.dataFile.contentType", equalTo("text/tab-separated-values"))
+                .body("data.dataFile.filesize", equalTo(tabularFileSizeWoutHeader))
+                .statusCode(OK.getStatusCode());
+        
+
+        // Download the file, verify the checksum: 
+
+        Response fileDownloadResponse = UtilIT.downloadFile(fileIdA.intValue(), apiToken);
+        fileDownloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode()); 
+        
+        byte[] fileDownloadBytes = fileDownloadResponse.body().asByteArray(); 
+        MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+        messageDigest.update(fileDownloadBytes);
+        byte[] rawDigestBytes = messageDigest.digest();
+        String tabularFileMD5calculated = FileUtil.checksumDigestToString(rawDigestBytes);
+        
+        msgt("md5 of the downloaded file (saved without the variable name header): "+tabularFileMD5calculated);
+        
+        assertEquals(tabularFileMD5, tabularFileMD5calculated);
+
+        // Repeat the whole thing, in another dataset (because we will be uploading 
+        // an identical file), but with the "store with the header setting enabled): 
+        
+        UtilIT.enableSetting(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders);
+        
+        Integer datasetIdB = createDatasetGetId(dataverseAlias, apiToken);
+        
+        addResponse = UtilIT.uploadFileViaNative(datasetIdB.toString(), pathToFile, apiToken);
+        addResponse.prettyPrint();
+
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("application/x-stata-13"))
+                .body("data.files[0].label", equalTo("stata13-auto.dta"))
+                .statusCode(OK.getStatusCode());
+
+        Long fileIdB = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        assertNotNull(fileIdB);
+
+        // Give file time to ingest
+        assertTrue(UtilIT.sleepForLock(datasetIdB.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFile + "(B)");
+        
+        // Check the metadata to confirm that the file has ingested: 
+
+        fileDataResponse = UtilIT.getFileData(fileIdB.toString(), apiToken);
+        fileDataResponse.prettyPrint();
+        fileDataResponse.then().assertThat()
+                .body("data.dataFile.filename", equalTo("stata13-auto.tab"))
+                .body("data.dataFile.contentType", equalTo("text/tab-separated-values"))
+                .body("data.dataFile.filesize", equalTo(tabularFileSizeWithHeader))
+                .statusCode(OK.getStatusCode());
+        
+
+        // Download the file, verify the checksum, again
+
+        fileDownloadResponse = UtilIT.downloadFile(fileIdB.intValue(), apiToken);
+        fileDownloadResponse.then().assertThat()
+                .statusCode(OK.getStatusCode()); 
+        
+        fileDownloadBytes = fileDownloadResponse.body().asByteArray(); 
+        messageDigest.reset();
+        messageDigest.update(fileDownloadBytes);
+        rawDigestBytes = messageDigest.digest();
+        tabularFileMD5calculated = FileUtil.checksumDigestToString(rawDigestBytes);
+        
+        msgt("md5 of the downloaded file (saved with the variable name header): "+tabularFileMD5calculated);
+        
+        assertEquals(tabularFileMD5, tabularFileMD5calculated);
+
+        // In other words, whether the file was saved with, or without the header, 
+        // as downloaded by the user, the end result must be the same in both cases!
+        // In other words, whether that first line with the variable names is already
+        // in the physical file, or added by Dataverse on the fly, the downloaded
+        // content must be identical. 
+        
+        UtilIT.deleteSetting(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders);
+        
+        // @todo: cleanup? 
+    }
+    
+
+    @Test
+    public void testFileCitationByVersion() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String datasetPid = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+
+        String pathToTestFile = "src/test/resources/images/coffeeshop.png";
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToTestFile, Json.createObjectBuilder().build(), apiToken);
+        uploadFile.then().assertThat().statusCode(OK.getStatusCode());
+
+        Integer fileId = JsonPath.from(uploadFile.body().asString()).getInt("data.files[0].dataFile.id");
+
+        String pidAsUrl = "https://doi.org/" + datasetPid.split("doi:")[1];
+        int currentYear = Year.now().getValue();
+
+        Response draftUnauthNoApitoken = UtilIT.getFileCitation(fileId, DS_VERSION_DRAFT, null);
+        draftUnauthNoApitoken.prettyPrint();
+        draftUnauthNoApitoken.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        Response createNoPermsUser = UtilIT.createRandomUser();
+        createNoPermsUser.then().assertThat().statusCode(OK.getStatusCode());
+        String noPermsApiToken = UtilIT.getApiTokenFromResponse(createNoPermsUser);
+
+        Response draftUnauthNoPermsApiToken = UtilIT.getFileCitation(fileId, DS_VERSION_DRAFT, noPermsApiToken);
+        draftUnauthNoPermsApiToken.prettyPrint();
+        draftUnauthNoPermsApiToken.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+
+        Response getFileCitationDraft = UtilIT.getFileCitation(fileId, DS_VERSION_DRAFT, apiToken);
+        getFileCitationDraft.prettyPrint();
+        getFileCitationDraft.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, DRAFT VERSION; coffeeshop.png [fileName]"));
+
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishedNoApiTokenNeeded = UtilIT.getFileCitation(fileId, "1.0", null);
+        publishedNoApiTokenNeeded.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishedNoPermsApiTokenAllowed = UtilIT.getFileCitation(fileId, "1.0", noPermsApiToken);
+        publishedNoPermsApiTokenAllowed.then().assertThat().statusCode(OK.getStatusCode());
+
+        String updateJsonString = """
+{
+    "label": "foo.png"
+}
+""";
+
+        Response updateMetadataResponse = UtilIT.updateFileMetadata(fileId.toString(), updateJsonString, apiToken);
+        updateMetadataResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());
+
+        Response getFileCitationPostV1Draft = UtilIT.getFileCitation(fileId, DS_VERSION_DRAFT, apiToken);
+        getFileCitationPostV1Draft.prettyPrint();
+        getFileCitationPostV1Draft.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, DRAFT VERSION; foo.png [fileName]"));
+
+        Response getFileCitationV1OldFilename = UtilIT.getFileCitation(fileId, "1.0", apiToken);
+        getFileCitationV1OldFilename.prettyPrint();
+        getFileCitationV1OldFilename.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, V1; coffeeshop.png [fileName]"));
+
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        Response deaccessionDataset = UtilIT.deaccessionDataset(datasetId, "1.0", "just because", "http://example.com", apiToken);
+        deaccessionDataset.prettyPrint();
+        deaccessionDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getFileCitationV1PostDeaccessionAuthorDefault = UtilIT.getFileCitation(fileId, "1.0", apiToken);
+        getFileCitationV1PostDeaccessionAuthorDefault.prettyPrint();
+        getFileCitationV1PostDeaccessionAuthorDefault.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        
+        Response getFileCitationV1PostDeaccessionAuthorIncludeDeaccessioned = UtilIT.getFileCitation(fileId, "1.0", true, apiToken);
+        getFileCitationV1PostDeaccessionAuthorIncludeDeaccessioned.prettyPrint();
+        getFileCitationV1PostDeaccessionAuthorIncludeDeaccessioned.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", <a href=\"" + pidAsUrl + "\" target=\"_blank\">" + pidAsUrl + "</a>, Root, V1, DEACCESSIONED VERSION; coffeeshop.png [fileName]"));
+
+        Response getFileCitationV1PostDeaccessionNoApiToken = UtilIT.getFileCitation(fileId, "1.0", null);
+        getFileCitationV1PostDeaccessionNoApiToken.prettyPrint();
+        getFileCitationV1PostDeaccessionNoApiToken.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode())
+                .body("message", equalTo("Dataset version cannot be found or unauthorized."));
+
+        Response getFileCitationV1PostDeaccessionNoPermsUser = UtilIT.getFileCitation(fileId, "1.0", noPermsApiToken);
+        getFileCitationV1PostDeaccessionNoPermsUser.prettyPrint();
+        getFileCitationV1PostDeaccessionNoPermsUser.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode())
+                .body("message", equalTo("Dataset version cannot be found or unauthorized."));
+
+    }
+
 }

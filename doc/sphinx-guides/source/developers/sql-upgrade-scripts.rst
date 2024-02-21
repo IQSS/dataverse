@@ -21,6 +21,8 @@ If you are creating a new database table (which maps to an ``@Entity`` in JPA), 
 
 If you are doing anything other than creating a new database table such as adding a column to an existing table, you must create or update a SQL upgrade script.
 
+.. _create-sql-script:
+
 How to Create a SQL Upgrade Script
 ----------------------------------
 

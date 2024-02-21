@@ -845,7 +845,12 @@ Datasets
 
 **Note** Creation of new datasets is done with a ``POST`` onto a Dataverse collection. See the Dataverse Collections section above.
 
-**Note** In all commands below, dataset versions can be referred to as:
+.. _dataset-version-specifiers:
+
+Dataset Version Specifiers
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In all commands below, dataset versions can be referred to as:
 
 * ``:draft``  the draft version, if any
 * ``:latest`` either a draft (if exists) or the latest published version.
@@ -1572,8 +1577,8 @@ The fully expanded example above (without environment variables) looks like this
 Set Citation Date Field Type for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the dataset citation date field type for a given dataset. ``:publicationDate`` is the default.
-Note that the dataset citation date field type must be a date field.
+Sets the dataset citation date field type for a given dataset. ``:publicationDate`` is the default. 
+Note that the dataset citation date field type must be a date field. This change applies to all versions of the dataset that have an entry for the new date field. It also applies to all file citations in the dataset. 
 
 .. code-block:: bash
 
@@ -2712,6 +2717,8 @@ The fully expanded example above (without environment variables) looks like this
 Files
 -----
 
+.. _get-json-rep-of-file:
+
 Get JSON Representation of a File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3498,6 +3505,55 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/edit/24" --upload-file dct.xml
 
 You can download :download:`dct.xml <../../../../src/test/resources/xml/dct.xml>` from the example above to see what the XML looks like.
+
+Get File Citation as JSON
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This API is for getting the file citation as it appears on the file landing page. It is formatted in HTML and encoded in JSON.
+
+To specify the version, you can use ``:latest-published`` or ``:draft`` or ``1.0`` or any other style listed under :ref:`dataset-version-specifiers`.
+
+When the dataset version is published, authentication is not required:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID=42
+  export DATASET_VERSION=:latest-published
+
+  curl "$SERVER_URL/api/files/$FILE_ID/versions/$DATASET_VERSION/citation"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/files/42/versions/:latest-published/citation"
+
+When the dataset version is a draft or deaccessioned, authentication is required.
+
+By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "unauthorized" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
+
+If you want to include deaccessioned dataset versions, you must set ``includeDeaccessioned`` query parameter to ``true``.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID=42
+  export DATASET_VERSION=:draft
+  export INCLUDE_DEACCESSIONED=true
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/files/$FILE_ID/versions/$DATASET_VERSION/citation?includeDeaccessioned=$INCLUDE_DEACCESSIONED"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/files/42/versions/:draft/citation?includeDeaccessioned=true"
+
+If your file has a persistent identifier (PID, such as a DOI), you can pass it using the technique described under :ref:`get-json-rep-of-file`.
+
+This API is not for downloading various citation formats such as EndNote XML, RIS, or BibTeX. This functionality has been requested in https://github.com/IQSS/dataverse/issues/3140 and https://github.com/IQSS/dataverse/issues/9994.
 
 Provenance
 ~~~~~~~~~~

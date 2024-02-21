@@ -565,11 +565,14 @@ public class JsonPrinter {
         fieldsBld.add("displayName", fld.getDisplayName());
         fieldsBld.add("title", fld.getTitle());
         fieldsBld.add("type", fld.getFieldType().toString());
+        fieldsBld.add("typeClass", typeClassString(fld));
         fieldsBld.add("watermark", fld.getWatermark());
         fieldsBld.add("description", fld.getDescription());
         fieldsBld.add("multiple", fld.isAllowMultiples());
         fieldsBld.add("isControlledVocabulary", fld.isControlledVocabulary());
         fieldsBld.add("displayFormat", fld.getDisplayFormat());
+        fieldsBld.add("isRequired", fld.isRequired());
+        fieldsBld.add("displayOrder", fld.getDisplayOrder());
         if (fld.isControlledVocabulary()) {
             // If the field has a controlled vocabulary,
             // add all values to the resulting JSON
