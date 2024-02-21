@@ -1,13 +1,16 @@
 package edu.harvard.iq.dataverse.util.cache;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import jakarta.json.*;
-import jakarta.json.bind.JsonbBuilder;
-import jakarta.json.bind.JsonbException;
-
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import javax.cache.Cache;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -111,9 +114,10 @@ public class RateLimitUtil {
                 JsonReader jr = Json.createReader(new StringReader(setting));
                 JsonObject obj= jr.readObject();
                 JsonArray lst = obj.getJsonArray("rateLimits");
-                rateLimits.addAll(JsonbBuilder.create().fromJson(String.valueOf(lst),
+                Gson gson = new Gson();
+                rateLimits.addAll(gson.fromJson(String.valueOf(lst),
                         new ArrayList<RateLimitSetting>() {}.getClass().getGenericSuperclass()));
-            } catch (JsonException | JsonbException e) {
+            } catch (JsonException | JsonParseException e) {
                 logger.warning("Unable to parse Rate Limit Json: " + e.getLocalizedMessage() + "   Json:(" + setting + ")");
                 rateLimits.add(new RateLimitSetting()); // add a default entry to prevent re-initialization
             }
