@@ -151,7 +151,8 @@ public class CacheFactoryBeanTest {
                 break;
             }
         }
-        assertTrue(!rateLimited && cnt >= 99, "rateLimited:"+rateLimited + " cnt:"+cnt);
+        assertFalse(rateLimited);
+        assertTrue(cnt >= 99, "cnt:"+cnt);
     }
 
     @Test
@@ -186,7 +187,8 @@ public class CacheFactoryBeanTest {
                 break;
             }
         }
-        assertTrue(!rateLimited && cnt == 200, "rateLimited:"+rateLimited + " cnt:"+cnt);
+        assertFalse(rateLimited);
+        assertEquals(200, cnt);
     }
 
     private Config getConfig() {
