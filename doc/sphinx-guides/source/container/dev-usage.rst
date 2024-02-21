@@ -144,15 +144,13 @@ Alternatives:
 Redeploying
 -----------
 
-Rebuilding and Running Images
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 The safest and most reliable way to redeploy code is to stop the running containers (with Ctrl-c if you started them in the foreground) and then build and run them again with ``mvn -Pct clean package docker:run``.
+Safe, but also slowing down the development cycle a lot.
 
-IDE-Triggered Redeployments
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Hot Re-Deployments
+^^^^^^^^^^^^^^^^^^
 
-Triggering redeployment using an IDE can greatly improve your feedback look when changing code.
+Triggering redeployment of changes using an IDE can greatly improve your feedback loop when changing code.
 
 You have at least two options:
 
@@ -237,12 +235,39 @@ To make use of builtin features or Payara tools (option 1), please follow these 
 
         .. image:: img/intellij-payara-config-server-behaviour.png
 
-#. | Start all the containers. Follow the cheat sheet above, but take care to skip application deployment:
-   | - When using the Maven commands, append ``-Dapp.deploy.skip``. For example:
-   |   ``mvn -Pct docker:run -Dapp.deploy.skip``
-   | - When using Docker Compose, prepend the command with ``SKIP_DEPLOY=1``. For example:
-   |   ``SKIP_DEPLOY=1 docker compose -f docker-compose-dev.yml up``
-   | - Note: the Admin Console can be reached at http://localhost:4848 or https://localhost:4949
+#. Start all the containers, but take care to skip application deployment.
+
+   .. tabs::
+     .. group-tab:: Maven
+        ``mvn -Pct docker:run -Dapp.skipDeploy``
+
+        Run above command in your terminal to start containers in foreground and skip deployment.
+        See cheat sheet above for more options.
+        Note that this command either assumes you built the :doc:`app-image` first or will download it from Docker Hub.
+     .. group-tab:: Compose
+        ``SKIP_DEPLOY=1 docker compose -f docker-compose-dev.yml up``
+
+        Run above command in your terminal to start containers in foreground and skip deployment.
+        See cheat sheet above for more options.
+        Note that this command either assumes you built the :doc:`app-image` first or will download it from Docker Hub.
+     .. group-tab:: IntelliJ
+        You can create a service configuration to automatically start services for you.
+
+        **NOTE**: You might need to change the Docker Compose executable in your IDE settings to ``docker`` if you have no ``docker-compose`` bin.
+
+        .. image:: img/intellij-compose-add-new-config.png
+
+        Give your configuration a meaningful name, select the compose file to use (in this case the default one), add the environment variable ``SKIP_DEPLOY=1``, and optionally select the services to start.
+
+        .. image:: img/intellij-compose-setup.png
+
+        Now add this as dependent run configuration in your Payara Run Configuration you created before, in correct order:
+
+        .. image:: img/intellij-compose-add-run-payara.png
+        .. image:: img/intellij-compose-sort-run-payara.png
+
+   Note: the Admin Console can be reached at http://localhost:4848 or https://localhost:4949
+
 #. To deploy the application to the running server, use the configured tools to deploy.
    Using the "Run" configuration only deploys and enables redeploys, while running "Debug" enables hot swapping of classes via JDWP.
 
