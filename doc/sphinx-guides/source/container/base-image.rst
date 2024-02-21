@@ -361,6 +361,8 @@ Other Hints
 
 By default, ``domain1`` is enabled to use the ``G1GC`` garbage collector.
 
+To access the Payara Admin Console or use the ``asadmin`` command, use username ``admin`` and password ``admin``.
+
 For running a Java application within a Linux based container, the support for CGroups is essential. It has been
 included and activated by default since Java 8u192, Java 11 LTS and later. If you are interested in more details,
 you can read about those in a few places like https://developers.redhat.com/articles/2022/04/19/java-17-whats-new-openjdks-container-awareness,
