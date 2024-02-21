@@ -528,6 +528,12 @@ public class SettingsServiceBean {
          * n: embargo enabled with n months the maximum allowed duration
          */
         MaxEmbargoDurationInMonths,
+        /** This setting enables Retention capabilities in Dataverse and sets the minimum Retention duration allowed.
+         * 0 or not set: new retentions disabled
+         * -1: retention enabled, no time limit
+         * n: retention enabled with n months the minimum allowed duration
+         */
+        MinRetentionDurationInMonths,
         /*
          * Include "Custom Terms" as an item in the license drop-down or not.
          */

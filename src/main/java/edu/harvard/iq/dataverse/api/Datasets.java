@@ -151,6 +151,9 @@ public class Datasets extends AbstractApiBean {
     @EJB
     EmbargoServiceBean embargoService;
 
+    @EJB
+    RetentionServiceBean retentionService;
+
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
     
@@ -1675,6 +1678,260 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+    @POST
+    @AuthRequired
+    @Path("{id}/files/actions/:set-retention")
+    public Response createFileRetention(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
+
+        // user is authenticated
+        AuthenticatedUser authenticatedUser = null;
+        try {
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Status.UNAUTHORIZED, "Authentication is required.");
+        }
+
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(id);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+
+        boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(dataset.getLatestVersion().getTermsOfUseAndAccess(), null);
+
+        if (!hasValidTerms){
+            return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+        }
+
+        // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
+        // check if files are unreleased(DRAFT?)
+        if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
+            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or user does not have EditDataset permissions");
+        }
+
+        // check if retentions are allowed(:MinRetentionDurationInMonths), gets the :MinRetentionDurationInMonths setting variable, if 0 or not set(null) return 400
+        long minRetentionDurationInMonths = 0;
+        try {
+            minRetentionDurationInMonths  = Long.parseLong(settingsService.get(SettingsServiceBean.Key.MinRetentionDurationInMonths.toString()));
+        } catch (NumberFormatException nfe){
+            if (nfe.getMessage().contains("null")) {
+                return error(Status.BAD_REQUEST, "No Retentions allowed");
+            }
+        }
+        if (minRetentionDurationInMonths == 0){
+            return error(Status.BAD_REQUEST, "No Retentions allowed");
+        }
+
+        JsonObject json = JsonUtil.getJsonObject(jsonBody);
+
+        Retention retention = new Retention();
+
+
+        LocalDate currentDateTime = LocalDate.now();
+        LocalDate dateUnavailable = LocalDate.parse(json.getString("dateUnavailable"));
+        // TODO - check if dateUnavailable is specified and a valid date
+
+        // check :MinRetentionDurationInMonths if -1
+        LocalDate minRetentionDateTime = minRetentionDurationInMonths != -1 ? LocalDate.now().plusMonths(minRetentionDurationInMonths) : null;
+        // dateUnavailable is not in the past
+        if (dateUnavailable.isAfter(currentDateTime)){
+            retention.setDateUnavailable(dateUnavailable);
+        } else {
+            return error(Status.BAD_REQUEST, "Date unavailable can not be in the past");
+        }
+
+        // dateAvailable is within limits
+        if (minRetentionDateTime != null){
+            if (dateUnavailable.isBefore(minRetentionDateTime)){
+                return error(Status.BAD_REQUEST, "Date unavailable can not be earlier than MinRetentionDurationInMonths: "+minRetentionDurationInMonths + " from now");
+            }
+        }
+
+        retention.setReason(json.getString("reason"));
+
+        List<DataFile> datasetFiles = dataset.getFiles();
+        List<DataFile> filesToRetention = new LinkedList<>();
+
+        // extract fileIds from json, find datafiles and add to list
+        if (json.containsKey("fileIds")){
+            JsonArray fileIds = json.getJsonArray("fileIds");
+            for (JsonValue jsv : fileIds) {
+                try {
+                    DataFile dataFile = findDataFileOrDie(jsv.toString());
+                    filesToRetention.add(dataFile);
+                } catch (WrappedResponse ex) {
+                    return ex.getResponse();
+                }
+            }
+        }
+
+        List<Retention> orphanedRetentions = new ArrayList<Retention>();
+        // check if files belong to dataset
+        if (datasetFiles.containsAll(filesToRetention)) {
+            JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
+            boolean badFiles = false;
+            for (DataFile datafile : filesToRetention) {
+                // superuser can overrule an existing retention, even on released files
+                if (datafile.isReleased() && !authenticatedUser.isSuperuser()) {
+                    restrictedFiles.add(datafile.getId());
+                    badFiles = true;
+                }
+            }
+            if (badFiles) {
+                return Response.status(Status.FORBIDDEN)
+                        .entity(NullSafeJsonBuilder.jsonObjectBuilder().add("status", ApiConstants.STATUS_ERROR)
+                                .add("message", "You do not have permission to retention the following files")
+                                .add("files", restrictedFiles).build())
+                        .type(MediaType.APPLICATION_JSON_TYPE).build();
+            }
+            retention=retentionService.merge(retention);
+            // Good request, so add the retention. Track any existing retentions so we can
+            // delete them if there are no files left that reference them.
+            for (DataFile datafile : filesToRetention) {
+                Retention ret = datafile.getRetention();
+                if (ret != null) {
+                    ret.getDataFiles().remove(datafile);
+                    if (ret.getDataFiles().isEmpty()) {
+                        orphanedRetentions.add(ret);
+                    }
+                }
+                // Save merges the datafile with an retention into the context
+                datafile.setRetention(retention);
+                fileService.save(datafile);
+            }
+            //Call service to get action logged
+            long retentionId = retentionService.save(retention, authenticatedUser.getIdentifier());
+            if (orphanedRetentions.size() > 0) {
+                for (Retention ret : orphanedRetentions) {
+                    retentionService.delete(ret, authenticatedUser.getIdentifier());
+                }
+            }
+            //If superuser, report changes to any released files
+            if (authenticatedUser.isSuperuser()) {
+                String releasedFiles = filesToRetention.stream().filter(d -> d.isReleased())
+                        .map(d -> d.getId().toString()).collect(Collectors.joining(","));
+                if (!releasedFiles.isBlank()) {
+                    actionLogSvc
+                            .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "retentionAddedTo")
+                                    .setInfo("Retention id: " + retention.getId() + " added for released file(s), id(s) "
+                                            + releasedFiles + ".")
+                                    .setUserIdentifier(authenticatedUser.getIdentifier()));
+                }
+            }
+            return ok(Json.createObjectBuilder().add("message", "Files were retentioned"));
+        } else {
+            return error(BAD_REQUEST, "Not all files belong to dataset");
+        }
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{id}/files/actions/:unset-retention")
+    public Response removeFileRetention(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
+
+        // user is authenticated
+        AuthenticatedUser authenticatedUser = null;
+        try {
+            authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Status.UNAUTHORIZED, "Authentication is required.");
+        }
+
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(id);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+
+        // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
+        // check if files are unreleased(DRAFT?)
+        //ToDo - here and below - check the release status of files and not the dataset state (draft dataset version still can have released files)
+        if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
+            return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or user does not have EditDataset permissions");
+        }
+
+        // check if retentions are allowed(:MinRetentionDurationInMonths), gets the :MinRetentionDurationInMonths setting variable, if 0 or not set(null) return 400
+        int minRetentionDurationInMonths = 0;
+        try {
+            minRetentionDurationInMonths  = Integer.parseInt(settingsService.get(SettingsServiceBean.Key.MinRetentionDurationInMonths.toString()));
+        } catch (NumberFormatException nfe){
+            if (nfe.getMessage().contains("null")) {
+                return error(Status.BAD_REQUEST, "No Retentions allowed");
+            }
+        }
+        if (minRetentionDurationInMonths == 0){
+            return error(Status.BAD_REQUEST, "No Retentions allowed");
+        }
+
+        JsonObject json = JsonUtil.getJsonObject(jsonBody);
+
+        List<DataFile> datasetFiles = dataset.getFiles();
+        List<DataFile> retentionFilesToUnset = new LinkedList<>();
+
+        // extract fileIds from json, find datafiles and add to list
+        if (json.containsKey("fileIds")){
+            JsonArray fileIds = json.getJsonArray("fileIds");
+            for (JsonValue jsv : fileIds) {
+                try {
+                    DataFile dataFile = findDataFileOrDie(jsv.toString());
+                    retentionFilesToUnset.add(dataFile);
+                } catch (WrappedResponse ex) {
+                    return ex.getResponse();
+                }
+            }
+        }
+
+        List<Retention> orphanedRetentions = new ArrayList<Retention>();
+        // check if files belong to dataset
+        if (datasetFiles.containsAll(retentionFilesToUnset)) {
+            JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
+            boolean badFiles = false;
+            for (DataFile datafile : retentionFilesToUnset) {
+                // superuser can overrule an existing retention, even on released files
+                if (datafile.getRetention()==null || ((datafile.isReleased() && datafile.getRetention() != null) && !authenticatedUser.isSuperuser())) {
+                    restrictedFiles.add(datafile.getId());
+                    badFiles = true;
+                }
+            }
+            if (badFiles) {
+                return Response.status(Status.FORBIDDEN)
+                        .entity(NullSafeJsonBuilder.jsonObjectBuilder().add("status", ApiConstants.STATUS_ERROR)
+                                .add("message", "The following files do not have retentions or you do not have permission to remove their retentions")
+                                .add("files", restrictedFiles).build())
+                        .type(MediaType.APPLICATION_JSON_TYPE).build();
+            }
+            // Good request, so remove the retention from the files. Track any existing retentions so we can
+            // delete them if there are no files left that reference them.
+            for (DataFile datafile : retentionFilesToUnset) {
+                Retention ret = datafile.getRetention();
+                if (ret != null) {
+                    ret.getDataFiles().remove(datafile);
+                    if (ret.getDataFiles().isEmpty()) {
+                        orphanedRetentions.add(ret);
+                    }
+                }
+                // Save merges the datafile with an retention into the context
+                datafile.setRetention(null);
+                fileService.save(datafile);
+            }
+            if (orphanedRetentions.size() > 0) {
+                for (Retention ret : orphanedRetentions) {
+                    retentionService.delete(ret, authenticatedUser.getIdentifier());
+                }
+            }
+            String releasedFiles = retentionFilesToUnset.stream().filter(d -> d.isReleased()).map(d->d.getId().toString()).collect(Collectors.joining(","));
+            if(!releasedFiles.isBlank()) {
+                ActionLogRecord removeRecord = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "retentionRemovedFrom").setInfo("Retention removed from released file(s), id(s) " + releasedFiles + ".");
+                removeRecord.setUserIdentifier(authenticatedUser.getIdentifier());
+                actionLogSvc.log(removeRecord);
+            }
+            return ok(Json.createObjectBuilder().add("message", "Retention(s) were removed from files"));
+        } else {
+            return error(BAD_REQUEST, "Not all files belong to dataset");
+        }
+    }
 
     @PUT
     @AuthRequired
