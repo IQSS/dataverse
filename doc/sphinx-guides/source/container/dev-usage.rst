@@ -160,14 +160,14 @@ You have at least two options:
 The main differences between the first and the second options are support for hot deploys of non-class files and limitations in what the JVM HotswapAgent can do for you.
 Find more details in a `blog article by JRebel <https://www.jrebel.com/blog/java-hotswap-guide>`_.
 
-To make use of builtin features or Payara tools (option 1), please follow these steps:
+To make use of builtin features or Payara IDE Tools (option 1), please follow these steps:
 
 #. | Download the version of Payara shown in :ref:`install-payara-dev` and unzip it to a reasonable location such as ``/usr/local/payara6``.
    | - Note that Payara can also be downloaded from `Maven Central <https://mvnrepository.com/artifact/fish.payara.distributions/payara>`_.
    | - Note that another way to check the expected version of Payara is to run this command:
    |   ``mvn help:evaluate -Dexpression=payara.version -q -DforceStdout``
 
-#. Install Payara tools plugin in your IDE:
+#. Install Payara Tools plugin in your IDE:
 
    .. tabs::
      .. group-tab:: Netbeans
