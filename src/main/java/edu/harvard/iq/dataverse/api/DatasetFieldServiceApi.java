@@ -24,7 +24,6 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -244,7 +243,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             br = new BufferedReader(new FileReader("/" + file));
             while ((line = br.readLine()) != null) {
                 lineNumber++;
-                values = line.split(splitBy);
+                values = Arrays.stream(line.split(splitBy))
+                        .map(String::trim)
+                        .toArray(String[]::new);
                 if (values[0].startsWith("#")) { // Header row
                     switch (values[0]) {
                         case "#metadataBlock":
@@ -327,7 +328,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
      */
     public String getGeneralErrorMessage(HeaderType header, int lineNumber, String message) {
         List<String> arguments = new ArrayList<>();
-        arguments.add(header.name());
+        arguments.add(header != null ? header.name() : "unknown");
         arguments.add(String.valueOf(lineNumber));
         arguments.add(message);
         return BundleUtil.getStringFromBundle("api.admin.datasetfield.load.GeneralErrorMessage", arguments);
@@ -335,9 +336,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
 
     /**
      * Turn ArrayIndexOutOfBoundsException into an informative error message
-     * @param lineNumber
      * @param header
-     * @param e
+     * @param lineNumber
+     * @param wrongIndex
      * @return
      */
     public String getArrayIndexOutOfBoundMessage(HeaderType header,
