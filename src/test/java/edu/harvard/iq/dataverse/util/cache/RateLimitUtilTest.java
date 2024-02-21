@@ -73,13 +73,13 @@ public class RateLimitUtilTest {
 
     @BeforeAll
     public static void setUp() {
+        doReturn(getJsonSetting()).when(mockedSystemConfig).getRateLimitsJson();
+        doReturn("100,200").when(mockedSystemConfig).getRateLimitingDefaultCapacityTiers();
         doReturn(settingJsonBad).when(mockedSystemConfigBad).getRateLimitsJson();
         doReturn("100,200").when(mockedSystemConfigBad).getRateLimitingDefaultCapacityTiers();
     }
     @BeforeEach
-    public void resetSettings() {
-        doReturn(getJsonSetting()).when(mockedSystemConfig).getRateLimitsJson();
-        doReturn("100,200").when(mockedSystemConfig).getRateLimitingDefaultCapacityTiers();
+    public void resetRateLimitUtilSettings() {
         RateLimitUtil.rateLimitMap.clear();
         RateLimitUtil.rateLimits.clear();
     }
@@ -123,25 +123,32 @@ public class RateLimitUtilTest {
     }
     @Test
     public void testGetCapacity() {
+        SystemConfig config = mock(SystemConfig.class);
+        resetRateLimitUtil(config, true);
+
         GuestUser guestUser = GuestUser.get();
-        assertEquals(10, RateLimitUtil.getCapacity(mockedSystemConfig, guestUser, "GetPrivateUrlCommand"));
+        assertEquals(10, RateLimitUtil.getCapacity(config, guestUser, "GetPrivateUrlCommand"));
 
         AuthenticatedUser authUser = new AuthenticatedUser();
         authUser.setRateLimitTier(1);
-        assertEquals(30, RateLimitUtil.getCapacity(mockedSystemConfig, authUser, "GetPrivateUrlCommand"));
+        assertEquals(30, RateLimitUtil.getCapacity(config, authUser, "GetPrivateUrlCommand"));
         authUser.setSuperuser(true);
-        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(mockedSystemConfig, authUser, "GetPrivateUrlCommand"));
+        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(config, authUser, "GetPrivateUrlCommand"));
 
         // no setting means rate limiting is not on
-        doReturn("").when(mockedSystemConfig).getRateLimitsJson();
-        doReturn("").when(mockedSystemConfig).getRateLimitingDefaultCapacityTiers();
+        resetRateLimitUtil(config, false);
+
+        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(config, guestUser, "GetPrivateUrlCommand"));
+        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(config, guestUser, "xyz"));
+        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(config, authUser, "GetPrivateUrlCommand"));
+        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(config, authUser, "abc"));
+        authUser.setRateLimitTier(99);
+        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(config, authUser, "def"));
+    }
+    private void resetRateLimitUtil(SystemConfig config, boolean enable) {
+        doReturn(enable ? getJsonSetting() : "").when(config).getRateLimitsJson();
+        doReturn(enable ? "100,200" : "").when(config).getRateLimitingDefaultCapacityTiers();
         RateLimitUtil.rateLimitMap.clear();
         RateLimitUtil.rateLimits.clear();
-        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(mockedSystemConfig, guestUser, "GetPrivateUrlCommand"));
-        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(mockedSystemConfig, guestUser, "xyz"));
-        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(mockedSystemConfig, authUser, "GetPrivateUrlCommand"));
-        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(mockedSystemConfig, authUser, "abc"));
-        authUser.setRateLimitTier(99);
-        assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(mockedSystemConfig, authUser, "def"));
     }
 }
