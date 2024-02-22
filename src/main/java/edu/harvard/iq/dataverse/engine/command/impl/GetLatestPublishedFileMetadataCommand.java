@@ -18,7 +18,6 @@ public class GetLatestPublishedFileMetadataCommand extends AbstractGetPublishedF
         return dataFile.getFileMetadatas().stream().filter(fileMetadata -> {
             DatasetVersion.VersionState versionState = fileMetadata.getDatasetVersion().getVersionState();
             return (!versionState.equals(DatasetVersion.VersionState.DRAFT)
-                    && !(versionState.equals(DatasetVersion.VersionState.DEACCESSIONED) && !includeDeaccessioned)
                     && isDatasetVersionAccessible(fileMetadata.getDatasetVersion(), dataFile.getOwner(), ctxt));
         }).reduce(null, DataFile::getTheNewerFileMetadata);
     }
