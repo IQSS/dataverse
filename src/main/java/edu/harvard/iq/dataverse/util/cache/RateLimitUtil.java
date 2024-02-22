@@ -112,8 +112,7 @@ public class RateLimitUtil {
         if (!setting.isEmpty()) {
             try {
                 JsonReader jr = Json.createReader(new StringReader(setting));
-                JsonObject obj= jr.readObject();
-                JsonArray lst = obj.getJsonArray("rateLimits");
+                JsonArray lst = jr.readArray();
                 Gson gson = new Gson();
                 rateLimits.addAll(gson.fromJson(String.valueOf(lst),
                         new ArrayList<RateLimitSetting>() {}.getClass().getGenericSuperclass()));

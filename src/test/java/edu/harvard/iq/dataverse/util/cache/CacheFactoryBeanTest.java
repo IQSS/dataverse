@@ -41,7 +41,6 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-@Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
 public class CacheFactoryBeanTest {
     private SystemConfig mockedSystemConfig;
     static CacheFactoryBean cache = null;
@@ -51,48 +50,46 @@ public class CacheFactoryBeanTest {
     static final String settingDefaultCapacity = "30,60,120";
     public String getJsonSetting() {
         return """
+             [
                {
-                 "rateLimits": [
-                   {
-                     "tier": 0,
-                     "limitPerHour": 10,
-                     "actions": [
-                       "GetLatestPublishedDatasetVersionCommand",
-                       "GetPrivateUrlCommand",
-                       "GetDatasetCommand",
-                       "GetLatestAccessibleDatasetVersionCommand"
-                     ]
-                   },
-                   {
-                     "tier": 0,
-                     "limitPerHour": 1,
-                     "actions": [
-                       "CreateGuestbookResponseCommand",
-                       "UpdateDatasetVersionCommand",
-                       "DestroyDatasetCommand",
-                       "DeleteDataFileCommand",
-                       "FinalizeDatasetPublicationCommand",
-                       "PublishDatasetCommand"
-                     ]
-                   },
-                   {
-                     "tier": 1,
-                     "limitPerHour": 30,
-                     "actions": [
-                       "CreateGuestbookResponseCommand",
-                       "GetLatestPublishedDatasetVersionCommand",
-                       "GetPrivateUrlCommand",
-                       "GetDatasetCommand",
-                       "GetLatestAccessibleDatasetVersionCommand",
-                       "UpdateDatasetVersionCommand",
-                       "DestroyDatasetCommand",
-                       "DeleteDataFileCommand",
-                       "FinalizeDatasetPublicationCommand",
-                       "PublishDatasetCommand"
-                     ]
-                   }
+                 "tier": 0,
+                 "limitPerHour": 10,
+                 "actions": [
+                   "GetLatestPublishedDatasetVersionCommand",
+                   "GetPrivateUrlCommand",
+                   "GetDatasetCommand",
+                   "GetLatestAccessibleDatasetVersionCommand"
                  ]
-               }""";
+               },
+               {
+                 "tier": 0,
+                 "limitPerHour": 1,
+                 "actions": [
+                   "CreateGuestbookResponseCommand",
+                   "UpdateDatasetVersionCommand",
+                   "DestroyDatasetCommand",
+                   "DeleteDataFileCommand",
+                   "FinalizeDatasetPublicationCommand",
+                   "PublishDatasetCommand"
+                 ]
+               },
+               {
+                 "tier": 1,
+                 "limitPerHour": 30,
+                 "actions": [
+                   "CreateGuestbookResponseCommand",
+                   "GetLatestPublishedDatasetVersionCommand",
+                   "GetPrivateUrlCommand",
+                   "GetDatasetCommand",
+                   "GetLatestAccessibleDatasetVersionCommand",
+                   "UpdateDatasetVersionCommand",
+                   "DestroyDatasetCommand",
+                   "DeleteDataFileCommand",
+                   "FinalizeDatasetPublicationCommand",
+                   "PublishDatasetCommand"
+                 ]
+               }
+             ]""";
     }
     @BeforeEach
     public void init() throws IOException {
@@ -156,6 +153,7 @@ public class CacheFactoryBeanTest {
     }
 
     @Test
+    @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
     public void testAuthenticatedUserGettingRateLimited() throws InterruptedException {
         Command action = new ListFacetsCommand(null,null);
         authUser.setRateLimitTier(2); // 120 cals per hour - 1 added token every 30 seconds
