@@ -346,8 +346,7 @@ public class JsonPrinter {
                 ownerObject.add("identifier", dvo.getGlobalId().asString() + versionString);
             } else {
                 ownerObject.add("identifier", dvo.getId() );
-            }
-            
+            }  
         }
         
         ownerObject.add("displayName", dvo.getDisplayName());
