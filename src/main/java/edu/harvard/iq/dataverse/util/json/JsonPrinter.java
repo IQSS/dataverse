@@ -345,7 +345,7 @@ public class JsonPrinter {
             }
             String versionString = dsv == null ? "" : dsv.getFriendlyVersionNumber();
             if (!versionString.isEmpty()){
-               ownerObject.add("version", dvo.getId());
+               ownerObject.add("version", versionString);
             }
         }
         
