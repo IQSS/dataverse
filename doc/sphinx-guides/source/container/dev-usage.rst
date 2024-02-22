@@ -260,13 +260,13 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
         .. image:: img/intellij-compose-add-new-config.png
 
         Give your configuration a meaningful name, select the compose file to use (in this case the default one), add the environment variable ``SKIP_DEPLOY=1``, and optionally select the services to start.
+        You might also want to change other options like attaching to containers to view the logs within the "Services" tab.
 
         .. image:: img/intellij-compose-setup.png
 
-        Now add this as dependent run configuration in your Payara Run Configuration you created before, in correct order:
+        Now run the configuration to prepare for deployment.
 
-        .. image:: img/intellij-compose-add-run-payara.png
-        .. image:: img/intellij-compose-sort-run-payara.png
+        .. image:: img/intellij-compose-run.png
 
    Note: the Admin Console can be reached at http://localhost:4848 or https://localhost:4949
 
