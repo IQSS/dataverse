@@ -257,7 +257,9 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
      .. group-tab:: IntelliJ
         You can create a service configuration to automatically start services for you.
 
-        **NOTE**: You might need to change the Docker Compose executable in your IDE settings to ``docker`` if you have no ``docker-compose`` bin.
+        **IMPORTANT**: This requires installation of the `Docker plugin <https://plugins.jetbrains.com/plugin/7724-docker>`_.
+
+        **NOTE**: You might need to change the Docker Compose executable in your IDE settings to ``docker`` if you have no ``docker-compose`` bin (*File > Settings > Build > Docker > Tools*).
 
         .. image:: img/intellij-compose-add-new-config.png
 
@@ -266,9 +268,10 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
 
         .. image:: img/intellij-compose-setup.png
 
-        Now run the configuration to prepare for deployment.
+        Now run the configuration to prepare for deployment and watch it unfold in the "Services" tab.
 
         .. image:: img/intellij-compose-run.png
+        .. image:: img/intellij-compose-services.png
 
    Note: the Admin Console can be reached at http://localhost:4848 or https://localhost:4949
 
