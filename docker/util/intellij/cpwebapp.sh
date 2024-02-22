@@ -2,17 +2,6 @@
 #
 # cpwebapp <project dir> <file in webapp>
 #
-# Usage:
-#
-# Add a File watcher by importing watchers.xml into IntelliJ IDEA, and let it do the copying whenever you save a
-# file under webapp.
-#
-#     https://www.jetbrains.com/help/idea/settings-tools-file-watchers.html
-#
-# Alternatively, you can add an External tool and trigger via menu or shortcut to do the copying manually:
-#
-#     https://www.jetbrains.com/help/idea/configuring-third-party-tools.html
-#
 
 set -eu
 
