@@ -7,7 +7,7 @@ set -eu
 
 PROJECT_DIR="$1"
 FILE_TO_COPY="$2"
-RELATIVE_PATH="${FILE_TO_COPY#$PROJECT_DIR/}"
+RELATIVE_PATH="${FILE_TO_COPY#"${PROJECT_DIR}/"}"
 
 # Check if RELATIVE_PATH starts with 'src/main/webapp', otherwise ignore
 if [[ "$RELATIVE_PATH" == "src/main/webapp"* ]]; then
