@@ -156,6 +156,8 @@ You have at least two options:
 The main differences between the first and the second options are support for hot deploys of non-class files and limitations in what the JVM HotswapAgent can do for you.
 Find more details in a `blog article by JRebel <https://www.jrebel.com/blog/java-hotswap-guide>`_.
 
+.. _ide-trigger-code-deploy:
+
 IDE Triggered Code Re-Deployments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -322,8 +324,19 @@ The steps below describe options to enable the later in different IDEs.
 
 .. tabs::
   .. group-tab:: IntelliJ
-    TODO
 
+    This imitates the Netbeans builtin function to copy changes to files under ``src/main/webapp`` into a destination folder.
+    It is different in the way that it will copy the files into the running container deployment without using a bind mount.
+
+    1. Install the `File Watcher plugin <https://plugins.jetbrains.com/plugin/7177-file-watchers>`_
+    2. Import the :download:`watchers.xml <../../../../docker/util/intellij/watchers.xml>` file at *File > Settings > Tools > File Watchers*
+    3. Once you have the deployment running (see above), editing files under ``src/main/webapp`` will be copied into the container after saving the edited file.
+       Note: by default, IDE auto-saves will not trigger the copy.
+    4. Changes are visible once you reload the browser window.
+
+    **IMPORTANT**: This tool assumes you are using the :ref:`ide-trigger-code-deploy` method to run Dataverse.
+
+    **IMPORTANT**: This tool uses a Bash shell script and is thus limited to Mac and Linux OS.
 
 Using a Debugger
 ----------------
