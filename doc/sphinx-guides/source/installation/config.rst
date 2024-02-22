@@ -271,10 +271,10 @@ dataverse.pid.default-provider
 
 The ID of the default PID provider to use.
 
-.. _dataverse.pid.provider-implementations-directory:
+.. _dataverse.spi.pidproviders.directory:
 
-dataverse.pid.provider-implementations-directory
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+dataverse.spi.pidproviders.directory
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The path to the directory where JAR files containing additional types of PID Providers can be added.
 Dataverse includes providers that support DOIs (DataCite, EZId, or FAKE), Handles, and PermaLinks.
