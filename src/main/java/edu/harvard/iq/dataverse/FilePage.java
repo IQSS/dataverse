@@ -144,6 +144,9 @@ public class FilePage implements java.io.Serializable {
     @Inject
     EmbargoServiceBean embargoService;
 
+    @Inject
+    RetentionServiceBean retentionService;
+
     private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
 
     private boolean fileDeleteInProgress = false;
@@ -1247,7 +1250,129 @@ public class FilePage implements java.io.Serializable {
             return BundleUtil.getStringFromBundle("embargoed.willbeuntil");
         }
     }
-    
+
+    public boolean isValidRetentionSelection() {
+        if (!fileMetadata.getDataFile().isReleased()) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isExistingRetention() {
+        if (!fileMetadata.getDataFile().isReleased() && (fileMetadata.getDataFile().getRetention() != null)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isRetentionForWholeSelection() {
+        return isValidRetentionSelection();
+    }
+
+    public Retention getSelectionRetention() {
+        return selectionRetention;
+    }
+
+    public void setSelectionRetention(Retention selectionRetention) {
+        this.selectionRetention = selectionRetention;
+    }
+
+    private Retention selectionRetention = new Retention();
+
+    private boolean removeRetention=false;
+
+    public boolean isRemoveRetention() {
+        return removeRetention;
+    }
+
+    public void setRemoveRetention(boolean removeRetention) {
+        boolean existing = this.removeRetention;
+        this.removeRetention = removeRetention;
+        if (existing != this.removeRetention) {
+            logger.info("State flip");
+            selectionRetention = new Retention();
+            if (removeRetention) {
+                selectionRetention = new Retention(null, null);
+            }
+        }
+        PrimeFaces.current().resetInputs("fileForm:retentionInputs");
+    }
+
+    public String saveRetention() {
+
+        if(isRemoveRetention() || (selectionRetention.getDateUnavailable()==null && selectionRetention.getReason()==null)) {
+            selectionRetention=null;
+        }
+
+        Retention ret = null;
+        // Note: this.fileMetadata.getDataFile() is not the same object as this.file.
+        // (Not sure there's a good reason for this other than that's the way it is.)
+        // So changes to this.fileMetadata.getDataFile() will not be saved with
+        // editDataset = this.file.getOwner() set as it is below.
+        if (!file.isReleased()) {
+            ret = file.getRetention();
+            if (ret != null) {
+                logger.fine("Before: " + ret.getDataFiles().size());
+                ret.getDataFiles().remove(fileMetadata.getDataFile());
+                logger.fine("After: " + ret.getDataFiles().size());
+            }
+            if (selectionRetention != null) {
+                retentionService.merge(selectionRetention);
+            }
+            file.setRetention(selectionRetention);
+            if (ret != null && !ret.getDataFiles().isEmpty()) {
+                ret = null;
+            }
+        }
+        if(selectionRetention!=null) {
+            retentionService.save(selectionRetention, ((AuthenticatedUser)session.getUser()).getIdentifier());
+        }
+        // success message:
+        String successMessage = BundleUtil.getStringFromBundle("file.assignedRetention.success");
+        logger.fine(successMessage);
+        successMessage = successMessage.replace("{0}", "Selected Files");
+        JsfHelper.addFlashMessage(successMessage);
+        selectionRetention = new Retention();
+
+        //Caller has to set editDataset before calling save()
+        editDataset = this.file.getOwner();
+
+        save();
+        init();
+        if(ret!=null) {
+            retentionService.delete(ret,((AuthenticatedUser)session.getUser()).getIdentifier());
+        }
+        return returnToDraftVersion();
+    }
+
+    public void clearRetentionPopup() {
+        setRemoveRetention(false);
+        selectionRetention = new Retention();
+        PrimeFaces.current().resetInputs("fileForm:retentionInputs");
+    }
+
+    public void clearSelectionRetention() {
+        selectionRetention = new Retention();
+        PrimeFaces.current().resetInputs("fileForm:retentionInputs");
+    }
+
+    public boolean isCantRequestDueToRetention() {
+        return FileUtil.isActivelyRetended(fileMetadata);
+    }
+
+    public String getRetentionPhrase() {
+        //Should only be getting called when there is a retention
+        if(file.isReleased()) {
+            if(FileUtil.isActivelyRetended(file)) {
+                return BundleUtil.getStringFromBundle("retention.after");
+            } else {
+                return BundleUtil.getStringFromBundle("retention.isfrom");
+            }
+        } else {
+            return BundleUtil.getStringFromBundle("retention.willbeafter");
+        }
+    }
+
     public String getToolTabTitle(){
         if (getAllAvailableTools().size() > 1) {
             return BundleUtil.getStringFromBundle("file.toolTab.header");

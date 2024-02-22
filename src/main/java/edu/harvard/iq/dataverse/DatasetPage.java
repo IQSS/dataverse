@@ -261,6 +261,8 @@ public class DatasetPage implements java.io.Serializable {
     @Inject
     EmbargoServiceBean embargoService;
     @Inject
+    RetentionServiceBean retentionService;
+    @Inject
     LicenseServiceBean licenseServiceBean;
     @Inject
     DataFileCategoryServiceBean dataFileCategoryService;
@@ -6278,8 +6280,193 @@ public class DatasetPage implements java.io.Serializable {
         return true;
     }
 
+    public Retention getSelectionRetention() {
+        return selectionRetention;
+    }
+
+    public void setSelectionRetention(Retention selectionRetention) {
+        this.selectionRetention = selectionRetention;
+    }
+
+
+    private Retention selectionRetention = new Retention();
+
+    public boolean isValidRetentionSelection() {
+        //If fileMetadataForAction is set, someone is using the kebab/single file menu
+        if (fileMetadataForAction != null) {
+            if (!fileMetadataForAction.getDataFile().isReleased()) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        //Otherwise we check the selected files
+        for (FileMetadata fmd : selectedFiles) {
+            if (!fmd.getDataFile().isReleased()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /*
+     * This method checks to see if the selected file/files have a retention that could be removed. It doesn't return true of a released file has a retention.
+     */
+    public boolean isExistingRetention() {
+        if (fileMetadataForAction != null) {
+            if (!fileMetadataForAction.getDataFile().isReleased()
+                    && (fileMetadataForAction.getDataFile().getRetention() != null)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        for (FileMetadata fmd : selectedFiles) {
+            if (!fmd.getDataFile().isReleased() && (fmd.getDataFile().getRetention() != null)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public boolean isActivelyRetended(List<FileMetadata> fmdList) {
         return FileUtil.isActivelyRetended(fmdList);
+    }
+
+    public boolean isRetentionForWholeSelection() {
+        for (FileMetadata fmd : selectedFiles) {
+            if (fmd.getDataFile().isReleased()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean removeRetention=false;
+
+    public boolean isRemoveRetention() {
+        return removeRetention;
+    }
+
+    public void setRemoveRetention(boolean removeRetention) {
+        boolean existing = this.removeRetention;
+        this.removeRetention = removeRetention;
+        //If we flipped the state, update the selectedRetention. Otherwise (e.g. when save is hit) don't make changes
+        if(existing != this.removeRetention) {
+            logger.fine("State flip");
+            selectionRetention= new Retention();
+            if(removeRetention) {
+                logger.fine("Setting empty retention");
+                selectionRetention= new Retention(null, null);
+            }
+            PrimeFaces.current().resetInputs("datasetForm:retentionInputs");
+        }
+    }
+
+    public String saveRetention() {
+        if (workingVersion.isReleased()) {
+            refreshSelectedFiles(selectedFiles);
+        }
+
+        if(isRemoveRetention() || (selectionRetention.getDateUnavailable()==null && selectionRetention.getReason()==null)) {
+            selectionRetention=null;
+        }
+
+        if(!(selectionRetention==null || (selectionRetention!=null && settingsWrapper.isValidRetentionDate(selectionRetention)))) {
+            logger.fine("Validation error: " + selectionRetention.getFormattedDateUnavailable());
+            FacesContext.getCurrentInstance().validationFailed();
+            return "";
+        }
+        List<Retention> orphanedRetentions = new ArrayList<Retention>();
+        List<FileMetadata> retentionFMs = null;
+        if (fileMetadataForAction != null) {
+            retentionFMs = new ArrayList<FileMetadata>();
+            retentionFMs.add(fileMetadataForAction);
+        } else if (selectedFiles != null && selectedFiles.size() > 0) {
+            retentionFMs = selectedFiles;
+        }
+
+        if(retentionFMs!=null && !retentionFMs.isEmpty()) {
+            if(selectionRetention!=null) {
+                selectionRetention = retentionService.merge(selectionRetention);
+            }
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+                for (FileMetadata fm : retentionFMs) {
+                    if (fm.getDataFile().equals(fmd.getDataFile()) && (isSuperUser()||!fmd.getDataFile().isReleased())) {
+                        Retention ret = fmd.getDataFile().getRetention();
+                        if (ret != null) {
+                            logger.fine("Before: " + ret.getDataFiles().size());
+                            ret.getDataFiles().remove(fmd.getDataFile());
+                            if (ret.getDataFiles().isEmpty()) {
+                                orphanedRetentions.add(ret);
+                            }
+                            logger.fine("After: " + ret.getDataFiles().size());
+                        }
+                        fmd.getDataFile().setRetention(selectionRetention);
+                    }
+                }
+            }
+        }
+        if (selectionRetention != null) {
+            retentionService.save(selectionRetention, ((AuthenticatedUser) session.getUser()).getIdentifier());
+        }
+        // success message:
+        String successMessage = BundleUtil.getStringFromBundle("file.assignedRetention.success");
+        logger.fine(successMessage);
+        successMessage = successMessage.replace("{0}", "Selected Files");
+        JsfHelper.addFlashMessage(successMessage);
+        selectionRetention = new Retention();
+
+        save();
+        for(Retention ret: orphanedRetentions) {
+            retentionService.delete(ret, ((AuthenticatedUser)session.getUser()).getUserIdentifier());
+        }
+        return returnToDraftVersion();
+    }
+
+    public void clearRetentionPopup() {
+        logger.fine("clearRetentionPopup called");
+        selectionRetention= new Retention();
+        setRemoveRetention(false);
+        PrimeFaces.current().resetInputs("datasetForm:retentionInputs");
+    }
+
+    public void clearSelectionRetention() {
+        logger.fine("clearSelectionRetention called");
+        selectionRetention= new Retention();
+        PrimeFaces.current().resetInputs("datasetForm:retentionInputs");
+    }
+
+    public boolean isCantDownloadDueToRetention() {
+        if (getSelectedNonDownloadableFiles() != null) {
+            for (FileMetadata fmd : getSelectedNonDownloadableFiles()) {
+                if (FileUtil.isActivelyRetended(fmd)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isCantRequestDueToRetention() {
+        if (fileDownloadHelper.getFilesForRequestAccess() != null) {
+            for (DataFile df : fileDownloadHelper.getFilesForRequestAccess()) {
+                if (FileUtil.isActivelyRetended(df)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean containsOnlyActivelyRetendedFiles(List<FileMetadata> selectedFiles) {
+        for (FileMetadata fmd : selectedFiles) {
+            if (!FileUtil.isActivelyRetended(fmd)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public String getIngestMessage() {

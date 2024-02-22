@@ -35,7 +35,7 @@ public class Retention {
 
     // persistency demands default constructor!
     public Retention(){
-        dateUnavailable = LocalDate.now().plusYears(1000);
+        dateUnavailable = LocalDate.now().plusDays(1); // LocalDate.now().plusYears(1000);
     }
 
     public Retention(LocalDate dateUnavailable, String reason) {
