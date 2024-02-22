@@ -589,18 +589,6 @@ public class JsonPrinter {
         return fieldsBld;
     }
 
-    /*
-
-    versionId: number
-displayName: string
-versionNumber: {majorNumber?: number, minorNumber?: number}
-publishingStatus: string
-citation: string
-isLatest: boolean
-isInReview: boolean
-latestVersionPublishingStatus: string
-     */
-
     public static JsonObjectBuilder json(FileMetadata fmd) {
         return json(fmd, false);
     }
