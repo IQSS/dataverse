@@ -406,7 +406,9 @@ public class AuthenticatedUser implements User, Serializable {
     public int getRateLimitTier() {
         return rateLimitTier;
     }
-    public void setRateLimitTier(int rateLimitTier) { this.rateLimitTier = rateLimitTier; }
+    public void setRateLimitTier(int rateLimitTier) {
+        this.rateLimitTier = rateLimitTier;
+    }
 
     @OneToOne(mappedBy = "authenticatedUser")
     private AuthenticatedUserLookup authenticatedUserLookup;
