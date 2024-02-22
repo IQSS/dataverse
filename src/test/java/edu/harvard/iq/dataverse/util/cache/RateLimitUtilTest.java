@@ -26,48 +26,46 @@ public class RateLimitUtilTest {
 
     static String getJsonSetting() {
         return """
+             [
                {
-                 "rateLimits": [
-                   {
-                     "tier": 0,
-                     "limitPerHour": 10,
-                     "actions": [
-                       "GetLatestPublishedDatasetVersionCommand",
-                       "GetPrivateUrlCommand",
-                       "GetDatasetCommand",
-                       "GetLatestAccessibleDatasetVersionCommand"
-                     ]
-                   },
-                   {
-                     "tier": 0,
-                     "limitPerHour": 1,
-                     "actions": [
-                       "CreateGuestbookResponseCommand",
-                       "UpdateDatasetVersionCommand",
-                       "DestroyDatasetCommand",
-                       "DeleteDataFileCommand",
-                       "FinalizeDatasetPublicationCommand",
-                       "PublishDatasetCommand"
-                     ]
-                   },
-                   {
-                     "tier": 1,
-                     "limitPerHour": 30,
-                     "actions": [
-                       "CreateGuestbookResponseCommand",
-                       "GetLatestPublishedDatasetVersionCommand",
-                       "GetPrivateUrlCommand",
-                       "GetDatasetCommand",
-                       "GetLatestAccessibleDatasetVersionCommand",
-                       "UpdateDatasetVersionCommand",
-                       "DestroyDatasetCommand",
-                       "DeleteDataFileCommand",
-                       "FinalizeDatasetPublicationCommand",
-                       "PublishDatasetCommand"
-                     ]
-                   }
+                 "tier": 0,
+                 "limitPerHour": 10,
+                 "actions": [
+                   "GetLatestPublishedDatasetVersionCommand",
+                   "GetPrivateUrlCommand",
+                   "GetDatasetCommand",
+                   "GetLatestAccessibleDatasetVersionCommand"
                  ]
-               }""";
+               },
+               {
+                 "tier": 0,
+                 "limitPerHour": 1,
+                 "actions": [
+                   "CreateGuestbookResponseCommand",
+                   "UpdateDatasetVersionCommand",
+                   "DestroyDatasetCommand",
+                   "DeleteDataFileCommand",
+                   "FinalizeDatasetPublicationCommand",
+                   "PublishDatasetCommand"
+                 ]
+               },
+               {
+                 "tier": 1,
+                 "limitPerHour": 30,
+                 "actions": [
+                   "CreateGuestbookResponseCommand",
+                   "GetLatestPublishedDatasetVersionCommand",
+                   "GetPrivateUrlCommand",
+                   "GetDatasetCommand",
+                   "GetLatestAccessibleDatasetVersionCommand",
+                   "UpdateDatasetVersionCommand",
+                   "DestroyDatasetCommand",
+                   "DeleteDataFileCommand",
+                   "FinalizeDatasetPublicationCommand",
+                   "PublishDatasetCommand"
+                 ]
+               }
+             ]""";
     }
     static final String settingJsonBad = "{\n";
 
