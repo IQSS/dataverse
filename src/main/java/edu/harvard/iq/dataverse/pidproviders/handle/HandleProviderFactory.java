@@ -27,7 +27,7 @@ public class HandleProviderFactory implements PidProviderFactory {
         String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookupOptional(providerId).orElse("");
         String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookupOptional(providerId).orElse("");
 
-        int index = JvmSettings.HANDLENET_INDEX.lookup(Integer.class, providerId);
+        int index = JvmSettings.HANDLENET_INDEX.lookupOptional(Integer.class, providerId).orElse(300);
         boolean independentHandleService = JvmSettings.HANDLENET_INDEPENDENT_SERVICE
                 .lookupOptional(Boolean.class, providerId).orElse(false);
         String handleAuthHandle = JvmSettings.HANDLENET_AUTH_HANDLE.lookup(providerId);

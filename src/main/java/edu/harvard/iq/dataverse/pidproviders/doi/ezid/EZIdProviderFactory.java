@@ -27,7 +27,7 @@ public class EZIdProviderFactory implements PidProviderFactory {
         String managedList = JvmSettings.PID_PROVIDER_MANAGED_LIST.lookupOptional(providerId).orElse("");
         String excludedList = JvmSettings.PID_PROVIDER_EXCLUDED_LIST.lookupOptional(providerId).orElse("");
 
-        String baseUrl = JvmSettings.EZID_API_URL.lookup(providerId);
+        String baseUrl = JvmSettings.EZID_API_URL.lookupOptional(providerId).orElse("https://ezid.cdlib.org");
         String username = JvmSettings.EZID_USERNAME.lookup(providerId);
         String password = JvmSettings.EZID_PASSWORD.lookup(providerId);
 
