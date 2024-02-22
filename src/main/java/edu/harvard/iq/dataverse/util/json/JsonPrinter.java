@@ -338,15 +338,15 @@ public class JsonPrinter {
 
         if (dvo.isInstanceofDataset()) {
             ownerObject.add("type", "DATASET");
-            String versionString = "";
-            if (dsv != null){
-               versionString = dsv == null ? "" : "&version=" + dsv.getFriendlyVersionNumber();
-            }
             if (dvo.getGlobalId() != null) {
-                ownerObject.add("identifier", dvo.getGlobalId().asString() + versionString);
+                ownerObject.add("identifier", dvo.getGlobalId().asString());
             } else {
-                ownerObject.add("identifier", dvo.getId() );
-            }  
+                ownerObject.add("identifier", dvo.getId());
+            }
+            String versionString = dsv == null ? "" : dsv.getFriendlyVersionNumber();
+            if (!versionString.isEmpty()){
+               ownerObject.add("version", dvo.getId());
+            }
         }
         
         ownerObject.add("displayName", dvo.getDisplayName());
