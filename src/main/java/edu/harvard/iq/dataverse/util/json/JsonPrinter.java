@@ -657,25 +657,26 @@ public class JsonPrinter {
     }
     
     public static JsonObjectBuilder json(FileMetadata fmd){
-        return json(fmd, false);
+        return json(fmd, false, false);
     }
 
-    public static JsonObjectBuilder json(FileMetadata fmd, Boolean includeOwners) {
-        return jsonObjectBuilder()
+    public static JsonObjectBuilder json(FileMetadata fmd, boolean includeOwners, boolean printDatasetVersion) {
+        JsonObjectBuilder builder = jsonObjectBuilder();
+
                 // deprecated: .add("category", fmd.getCategory())
                 // TODO: uh, figure out what to do here... it's deprecated
                 // in a sense that there's no longer the category field in the
                 // fileMetadata object; but there are now multiple, oneToMany file
                 // categories - and we probably need to export them too!) -- L.A. 4.5
                 // DONE: catgegories by name
-                .add("description", fmd.getDescription())
+                builder.add("description", fmd.getDescription())
                 .add("label", fmd.getLabel()) // "label" is the filename
                 .add("restricted", fmd.isRestricted())
                 .add("directoryLabel", fmd.getDirectoryLabel())
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
                 .add("categories", getFileCategories(fmd))
-                .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd, false));
+                .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd, false, includeOwners));
 
         if (printDatasetVersion) {
             builder.add("datasetVersion", json(fmd.getDatasetVersion(), false));
