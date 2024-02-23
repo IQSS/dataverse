@@ -331,7 +331,7 @@ The steps below describe options to enable the later in different IDEs.
     This imitates the Netbeans builtin function to copy changes to files under ``src/main/webapp`` into a destination folder.
     It is different in the way that it will copy the files into the running container deployment without using a bind mount.
 
-    1. Install the `File Watcher plugin <https://plugins.jetbrains.com/plugin/7177-file-watchers>`_
+    1. Install the `File Watchers plugin <https://plugins.jetbrains.com/plugin/7177-file-watchers>`_
     2. Import the :download:`watchers.xml <../../../../docker/util/intellij/watchers.xml>` file at *File > Settings > Tools > File Watchers*
     3. Once you have the deployment running (see above), editing files under ``src/main/webapp`` will be copied into the container after saving the edited file.
        Note: by default, IDE auto-saves will not trigger the copy.
