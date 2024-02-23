@@ -11,7 +11,7 @@
     <url>https://dataverse.org</url>
     
     <modules>
-        <module>../../pom.xml</module>
+        <module>../..</module> <!-- Main Webapp Module. Suffix "/pom.xml" breaks Quarkus build, do not add -->
         <module>../../scripts/zipdownload</module>
         <module>../container-base</module>
         <module>../dataverse-spi</module>
