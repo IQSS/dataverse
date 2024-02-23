@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+    <groupId>edu.harvard.iq</groupId>
+    <artifactId>dataverse-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../dataverse-parent</relativePath>
+  </parent>
+  
+  <groupId>io.gdcc</groupId>
+  <artifactId>dvopa</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>Kubernetes Dataverse Operator</name>
+  <description>This module provides resources to run Dataverse on Kubernetes</description>
+  
+  <developers>
+    <developer>
+      <id>poikilotherm</id>
+      <name>Oliver Bertuch</name>
+      <email>github@bertuch.eu</email>
+      <roles>
+        <role>maintainer</role>
+      </roles>
+      <timezone>Europe/Berlin</timezone>
+    </developer>
+  </developers>
+  
+  <properties>
+    <awaitility.version>4.2.0</awaitility.version>
+    <qosdk.version>6.6.3</qosdk.version>
+    <target.java.version>17</target.java.version>
+  </properties>
+  
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.quarkiverse.operatorsdk</groupId>
+        <artifactId>quarkus-operator-sdk-bom</artifactId>
+        <version>${qosdk.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
+    <!-- Used to make Quarkus build images using JIB -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-container-image-jib</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>io.quarkiverse.operatorsdk</groupId>
+      <artifactId>quarkus-operator-sdk</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkiverse.operatorsdk</groupId>
+      <artifactId>quarkus-operator-sdk-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkiverse.operatorsdk</groupId>
+      <artifactId>quarkus-operator-sdk-bundle-generator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkiverse.operatorsdk</groupId>
+      <artifactId>quarkus-operator-sdk-bundle-generator-deployment</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    
+    <!-- TESTING DEPENDENCIES -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5-mockito</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <version>${awaitility.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <release>${target.java.version}</release>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <rerunFailingTestsCount>0</rerunFailingTestsCount>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-maven-plugin</artifactId>
+        <version>3.7.4</version>
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <goals>
+              <goal>build</goal>
+              <goal>generate-code</goal>
+              <goal>generate-code-tests</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.eclipse.jkube</groupId>
+        <artifactId>kubernetes-maven-plugin</artifactId>
+        <version>1.16.0</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <configLocation>checkstyle.xml</configLocation>
+          <consoleOutput>true</consoleOutput>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
