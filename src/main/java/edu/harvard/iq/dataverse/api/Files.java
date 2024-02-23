@@ -2,23 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import edu.harvard.iq.dataverse.DataCitation;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataFileTag;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.FileDownloadServiceBean;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccessValidator;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -32,12 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetDraftFileMetadataIfAvailableCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RedetectFileTypeCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.ExportService;
 import io.gdcc.spi.export.ExportException;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
@@ -53,6 +32,8 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
+import static edu.harvard.iq.dataverse.api.ApiConstants.*;
+import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -68,10 +49,7 @@ import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonString;
-import jakarta.json.JsonValue;
+import jakarta.json.*;
 import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.*;
@@ -83,7 +61,6 @@ import jakarta.ws.rs.core.Response;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonDT;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
-import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 
 import jakarta.ws.rs.core.UriInfo;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -502,69 +479,68 @@ public class Files extends AbstractApiBean {
                 .type(MediaType.TEXT_PLAIN) //Our plain text string is already json
                 .build();
     }
-    
-    @GET
-    @AuthRequired
-    @Path("{id}/draft")
-    public Response getFileDataDraft(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, @QueryParam("returnOwners") boolean returnOwners) throws WrappedResponse, Exception {
-        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, true, returnOwners);
-    }
-    
+
     @GET
     @AuthRequired
     @Path("{id}")
-    public Response getFileData(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, @QueryParam("returnOwners") boolean returnOwners) throws WrappedResponse, Exception {  
-        return getFileDataResponse(getRequestUser(crc), fileIdOrPersistentId, uriInfo, headers, response, false, returnOwners);
+    public Response getFileData(@Context ContainerRequestContext crc,
+                                @PathParam("id") String fileIdOrPersistentId,
+                                @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                @QueryParam("returnDatasetVersion") boolean returnDatasetVersion,
+                                @Context UriInfo uriInfo,
+                                @Context HttpHeaders headers) {
+        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, DS_VERSION_LATEST, includeDeaccessioned, returnDatasetVersion, uriInfo, headers), getRequestUser(crc));
     }
-    
-    private Response getFileDataResponse(User user, String fileIdOrPersistentId, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response, boolean draft, boolean includeOwners ){
-        
-        DataverseRequest req;
-        try {
-            req = createDataverseRequest(user);
-        } catch (Exception e) {
-            return error(BAD_REQUEST, "Error attempting to request information. Maybe a bad API token?");
-        }
-        final DataFile df;
-        try {
-            df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
-        } catch (Exception e) {
-            return error(BAD_REQUEST, "Error attempting get the requested data file.");
-        }
 
-        FileMetadata fm;
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{datasetVersionId}")
+    public Response getFileData(@Context ContainerRequestContext crc,
+                                @PathParam("id") String fileIdOrPersistentId,
+                                @PathParam("datasetVersionId") String datasetVersionId,
+                                @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                @QueryParam("returnDatasetVersion") boolean returnDatasetVersion,
+                                @Context UriInfo uriInfo,
+                                @Context HttpHeaders headers) {
+        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, datasetVersionId, includeDeaccessioned, returnDatasetVersion, uriInfo, headers), getRequestUser(crc));
+    }
 
-        if (draft) {
-            try {
-                fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, df));
-            } catch (WrappedResponse w) {
-                return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset.");
-            }
-            if (null == fm) {
-                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.no.draft"));
-            }
-        } else {
-            //first get latest published
-            //if not available get draft if permissible
-
-            try {
-                fm = df.getLatestPublishedFileMetadata();
-                
-            } catch (UnsupportedOperationException e) {
-                try {
-                    fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, df));
-                } catch (WrappedResponse w) {
-                    return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset.");
-                }
-                if (null == fm) {
-                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.no.draft"));
-                }
+    private Response getFileDataResponse(final DataverseRequest req,
+                                         String fileIdOrPersistentId,
+                                         String datasetVersionId,
+                                         boolean includeDeaccessioned,
+                                         boolean returnDatasetVersion,
+                                         UriInfo uriInfo,
+                                         HttpHeaders headers) throws WrappedResponse {
+        final DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
+        FileMetadata fileMetadata = execCommand(handleVersion(datasetVersionId, new Datasets.DsVersionHandler<>() {
+            @Override
+            public Command<FileMetadata> handleLatest() {
+                return new GetLatestAccessibleFileMetadataCommand(req, dataFile, includeDeaccessioned);
             }
 
+            @Override
+            public Command<FileMetadata> handleDraft() {
+                return new GetDraftFileMetadataIfAvailableCommand(req, dataFile);
+            }
+
+            @Override
+            public Command<FileMetadata> handleSpecific(long major, long minor) {
+                return new GetSpecificPublishedFileMetadataByDatasetVersionCommand(req, dataFile, major, minor, includeDeaccessioned);
+            }
+
+            @Override
+            public Command<FileMetadata> handleLatestPublished() {
+                return new GetLatestPublishedFileMetadataCommand(req, dataFile, includeDeaccessioned);
+            }
+        }));
+
+        if (fileMetadata == null) {
+            throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("files.api.notFoundInVersion", Arrays.asList(fileIdOrPersistentId, datasetVersionId))));
         }
-        
-        if (fm.getDatasetVersion().isReleased()) {
-            MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
+
+        if (fileMetadata.getDatasetVersion().isReleased()) {
+            MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, dataFile);
             mdcLogService.logEntry(entry);
         } 
                     
@@ -574,7 +550,7 @@ public class Files extends AbstractApiBean {
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }
-    
+
     @GET
     @AuthRequired
     @Path("{id}/metadata")

@@ -146,8 +146,3 @@ To Update Datafile Location to your-s3-bucket, Assuming no ``file://`` Prefix
 	  WHERE id IN (SELECT o.id FROM dvobject o, dataset s WHERE o.dtype = 'DataFile'
 	  AND s.id = o.owner_id AND s.harvestingclient_id IS null
 	  AND o.storageidentifier NOT LIKE '%://%');
-
-
-----
-
-Previous: :doc:`coding-style` | Next: :doc:`containers`

@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import io.restassured.path.json.JsonPath;
 
-import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
+import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static io.restassured.path.json.JsonPath.with;
 import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -1041,7 +1041,7 @@ public class FilesIT {
 
     }
     
-        @Test
+    @Test
     public void testRestrictAddedFile() {
         msgt("testRestrictAddedFile");
         
@@ -1146,9 +1146,6 @@ public class FilesIT {
         UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "false");
 
     }
-    
-
-    
 
     @Test
     public void test_AddFileBadUploadFormat() {
@@ -1403,68 +1400,271 @@ public class FilesIT {
         assertEquals(magicControlString, JsonPath.from(datasetDownloadSizeResponse.body().asString()).getString("data.message"));
         
     }
-    
+
     @Test
     public void testGetFileInfo() {
-
         Response createUser = UtilIT.createRandomUser();
-        String username = UtilIT.getUsernameFromResponse(createUser);
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        Response makeSuperUser = UtilIT.makeSuperUser(username);
-        String dataverseAlias = createDataverseGetAlias(apiToken);
-        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+        String superUserUsername = UtilIT.getUsernameFromResponse(createUser);
+        String superUserApiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.makeSuperUser(superUserUsername);
+        String dataverseAlias = createDataverseGetAlias(superUserApiToken);
+        Integer datasetId = createDatasetGetId(dataverseAlias, superUserApiToken);
 
         createUser = UtilIT.createRandomUser();
-        String apiTokenRegular = UtilIT.getApiTokenFromResponse(createUser);
+        String regularUsername = UtilIT.getUsernameFromResponse(createUser);
+        String regularApiToken = UtilIT.getApiTokenFromResponse(createUser);
 
         msg("Add a non-tabular file");
         String pathToFile = "scripts/search/data/binary/trees.png";
-        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, superUserApiToken);
 
+        // The following tests cover cases where no version ID is specified in the endpoint
+        // Superuser should get to see draft file data
         String dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
-        msgt("datafile id: " + dataFileId);
-
-        addResponse.prettyPrint();
-
-        Response getFileDataResponse = UtilIT.getFileData(dataFileId, apiToken);
-
-        getFileDataResponse.prettyPrint();
+        Response getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken);
+        String newFileName = "trees.png";
         getFileDataResponse.then().assertThat()
-                .body("data.label", equalTo("trees.png"))
-                .body("data.dataFile.filename", equalTo("trees.png"))
+                .body("data.label", equalTo(newFileName))
+                .body("data.dataFile.filename", equalTo(newFileName))
                 .body("data.dataFile.contentType", equalTo("image/png"))
                 .body("data.dataFile.filesize", equalTo(8361))
                 .statusCode(OK.getStatusCode());
-        
-        getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular);
-        getFileDataResponse.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode());
 
-        // -------------------------
+        // Regular user should not get to see draft file data
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken);
+        getFileDataResponse.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
         // Publish dataverse and dataset
-        // -------------------------
-        msg("Publish dataverse and dataset");
-        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
-        publishDataversetResp.then().assertThat()
+        Response publishDataverseResp = UtilIT.publishDataverseViaSword(dataverseAlias, superUserApiToken);
+        publishDataverseResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken);
         publishDatasetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        //regular user should get to see file data
-        getFileDataResponse = UtilIT.getFileData(dataFileId, apiTokenRegular);
+
+        // Regular user should get to see published file data
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken);
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.label", equalTo(newFileName));
+
+        // The following tests cover cases where a version ID is specified in the endpoint
+        // Superuser should not get to see draft file data when no draft version exists
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, DS_VERSION_DRAFT);
+        getFileDataResponse.then().assertThat()
+                .statusCode(NOT_FOUND.getStatusCode());
+
+        // Regular user should get to see file data from specific version filtering by tag
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, "1.0");
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.label", equalTo(newFileName));
+
+        // Update the file metadata
+        String newFileNameFirstUpdate = "trees_2.png";
+        JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
+                .add("label", newFileNameFirstUpdate);
+        Response updateFileMetadataResponse = UtilIT.updateFileMetadata(dataFileId, updateFileMetadata.build().toString(), superUserApiToken);
+        updateFileMetadataResponse.then().statusCode(OK.getStatusCode());
+
+        // Superuser should get to see draft file data
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, DS_VERSION_DRAFT);
         getFileDataResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        //cleanup
-        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
-        assertEquals(200, destroyDatasetResponse.getStatusCode());
+        // Regular user should not get to see draft file data
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, DS_VERSION_DRAFT);
+        getFileDataResponse.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
 
-        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
-        assertEquals(200, deleteDataverseResponse.getStatusCode());
+        // Publish dataset once again
+        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken);
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
 
-        Response deleteUserResponse = UtilIT.deleteUser(username);
-        assertEquals(200, deleteUserResponse.getStatusCode());
+        // Update the file metadata once again
+        String newFileNameSecondUpdate = "trees_3.png";
+        updateFileMetadata = Json.createObjectBuilder()
+                .add("label", newFileNameSecondUpdate);
+        updateFileMetadataResponse = UtilIT.updateFileMetadata(dataFileId, updateFileMetadata.build().toString(), superUserApiToken);
+        updateFileMetadataResponse.then().statusCode(OK.getStatusCode());
+
+        // Regular user should get to see latest published file data
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, DS_VERSION_LATEST_PUBLISHED);
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.label", equalTo(newFileNameFirstUpdate));
+
+        // Regular user should get to see latest published file data if latest is requested
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, DS_VERSION_LATEST);
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.label", equalTo(newFileNameFirstUpdate));
+
+        // Superuser should get to see draft file data if latest is requested
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, DS_VERSION_LATEST);
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.label", equalTo(newFileNameSecondUpdate));
+
+        // Publish dataset once again
+        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken);
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Regular user should get to see file data by specific version number
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, "2.0");
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.label", equalTo(newFileNameFirstUpdate));
+
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, "3.0");
+        getFileDataResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.label", equalTo(newFileNameSecondUpdate));
+
+        // The following tests cover cases where the dataset version is deaccessioned
+        Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, "3.0", "Test reason", null, superUserApiToken);
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Superuser should get to see file data if the latest version is deaccessioned filtering by latest and includeDeaccessioned is true
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, DS_VERSION_LATEST, true, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo(newFileNameSecondUpdate))
+                .statusCode(OK.getStatusCode());
+
+        // Superuser should get to see file data if the latest version is deaccessioned filtering by latest published and includeDeaccessioned is true
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, DS_VERSION_LATEST_PUBLISHED, true, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo(newFileNameSecondUpdate))
+                .statusCode(OK.getStatusCode());
+
+        // Superuser should get to see version 2.0 file data if the latest version is deaccessioned filtering by latest and includeDeaccessioned is false
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, DS_VERSION_LATEST, false, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo(newFileNameFirstUpdate))
+                .statusCode(OK.getStatusCode());
+
+        // Superuser should get to see version 2.0 file data if the latest version is deaccessioned filtering by latest published and includeDeaccessioned is false
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, DS_VERSION_LATEST_PUBLISHED, false, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo(newFileNameFirstUpdate))
+                .statusCode(OK.getStatusCode());
+
+        // Superuser should get to see file data from specific deaccessioned version filtering by tag and includeDeaccessioned is true
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, "3.0", true, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo(newFileNameSecondUpdate))
+                .statusCode(OK.getStatusCode());
+
+        // Superuser should not get to see file data from specific deaccessioned version filtering by tag and includeDeaccessioned is false
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, "3.0", false, false);
+        getFileDataResponse.then().assertThat()
+                .statusCode(NOT_FOUND.getStatusCode());
+
+        // Regular user should get to see version 2.0 file data if the latest version is deaccessioned filtering by latest and includeDeaccessioned is true
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, DS_VERSION_LATEST, true, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo(newFileNameFirstUpdate))
+                .statusCode(OK.getStatusCode());
+
+        // Regular user should get to see version 2.0 file data if the latest version is deaccessioned filtering by latest published and includeDeaccessioned is true
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, DS_VERSION_LATEST_PUBLISHED, true, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo(newFileNameFirstUpdate))
+                .statusCode(OK.getStatusCode());
+
+        // Regular user should get to see version 2.0 file data if the latest version is deaccessioned filtering by latest published and includeDeaccessioned is false
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, DS_VERSION_LATEST_PUBLISHED, false, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo(newFileNameFirstUpdate))
+                .statusCode(OK.getStatusCode());
+
+        // Regular user should not get to see file data from specific deaccessioned version filtering by tag and includeDeaccessioned is true
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, "3.0", true, false);
+        getFileDataResponse.then().assertThat()
+                .statusCode(NOT_FOUND.getStatusCode());
+
+        // Regular user should not get to see file data from specific deaccessioned version filtering by tag and includeDeaccessioned is false
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, "3.0", false, false);
+        getFileDataResponse.then().assertThat()
+                .statusCode(NOT_FOUND.getStatusCode());
+
+        // Update the file metadata
+        String newFileNameThirdUpdate = "trees_4.png";
+        updateFileMetadata = Json.createObjectBuilder()
+                .add("label", newFileNameThirdUpdate);
+        updateFileMetadataResponse = UtilIT.updateFileMetadata(dataFileId, updateFileMetadata.build().toString(), superUserApiToken);
+        updateFileMetadataResponse.then().statusCode(OK.getStatusCode());
+
+        // Superuser should get to see draft file data if draft exists filtering by latest and includeDeaccessioned is true
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, DS_VERSION_LATEST, true, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo(newFileNameThirdUpdate))
+                .statusCode(OK.getStatusCode());
+
+        // Superuser should get to see latest published file data if draft exists filtering by latest published and includeDeaccessioned is true
+        getFileDataResponse = UtilIT.getFileData(dataFileId, superUserApiToken, DS_VERSION_LATEST_PUBLISHED, true, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo(newFileNameSecondUpdate))
+                .statusCode(OK.getStatusCode());
+
+        // Regular user should get to see version 2.0 file data if the latest version is deaccessioned and draft exists filtering by latest and includeDeaccessioned is true
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, DS_VERSION_LATEST, true, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo(newFileNameFirstUpdate))
+                .statusCode(OK.getStatusCode());
+
+        // Regular user should get to see version 2.0 file data if the latest version is deaccessioned and draft exists filtering by latest published and includeDeaccessioned is true
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, DS_VERSION_LATEST_PUBLISHED, true, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo(newFileNameFirstUpdate))
+                .statusCode(OK.getStatusCode());
+
+        // Publish dataset once again
+        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", superUserApiToken);
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Regular user should get to see file data if the latest version is not deaccessioned filtering by latest and includeDeaccessioned is true
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, DS_VERSION_LATEST, true, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo(newFileNameThirdUpdate))
+                .statusCode(OK.getStatusCode());
+
+        // Regular user should get to see file data if the latest version is not deaccessioned filtering by latest published and includeDeaccessioned is true
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, DS_VERSION_LATEST_PUBLISHED, true, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.label", equalTo(newFileNameThirdUpdate))
+                .statusCode(OK.getStatusCode());
+
+        // The following tests cover cases where the user requests to include the dataset version information in the response
+        // User should get to see dataset version info in the response if returnDatasetVersion is true
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, "1.0", false, true);
+        getFileDataResponse.then().assertThat()
+                .body("data.datasetVersion.versionState", equalTo("RELEASED"))
+                .statusCode(OK.getStatusCode());
+
+        // User should not get to see dataset version info in the response if returnDatasetVersion is false
+        getFileDataResponse = UtilIT.getFileData(dataFileId, regularApiToken, "1.0", false, false);
+        getFileDataResponse.then().assertThat()
+                .body("data.datasetVersion", equalTo(null))
+                .statusCode(OK.getStatusCode());
+
+        // Cleanup
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, superUserApiToken);
+        destroyDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, superUserApiToken);
+        deleteDataverseResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(superUserUsername);
+        deleteUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        deleteUserResponse = UtilIT.deleteUser(regularUsername);
+        deleteUserResponse.then().assertThat().statusCode(OK.getStatusCode());
     }
     
     @Test 

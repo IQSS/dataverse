@@ -435,8 +435,7 @@ public class JsonPrinter {
                 .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD());
-                //.add("numberOfFiles", numberOfFiles);
-        
+
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
             bld.add("license", jsonLicense(dsv));
@@ -664,26 +663,32 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(FileMetadata fmd, Boolean includeOwners) {
         return jsonObjectBuilder()
                 // deprecated: .add("category", fmd.getCategory())
-                // TODO: uh, figure out what to do here... it's deprecated 
-                // in a sense that there's no longer the category field in the 
-                // fileMetadata object; but there are now multiple, oneToMany file 
+                // TODO: uh, figure out what to do here... it's deprecated
+                // in a sense that there's no longer the category field in the
+                // fileMetadata object; but there are now multiple, oneToMany file
                 // categories - and we probably need to export them too!) -- L.A. 4.5
-                // DONE: catgegories by name 
+                // DONE: catgegories by name
                 .add("description", fmd.getDescription())
                 .add("label", fmd.getLabel()) // "label" is the filename
-                .add("restricted", fmd.isRestricted()) 
+                .add("restricted", fmd.isRestricted())
                 .add("directoryLabel", fmd.getDirectoryLabel())
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
                 .add("categories", getFileCategories(fmd))
-                .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd, false, includeOwners));
+                .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd, false));
+
+        if (printDatasetVersion) {
+            builder.add("datasetVersion", json(fmd.getDatasetVersion(), false));
+        }
+
+        return builder;
     }
 
-      public static JsonObjectBuilder json(AuxiliaryFile auxFile) {
+    public static JsonObjectBuilder json(AuxiliaryFile auxFile) {
         return jsonObjectBuilder()
                .add("formatTag", auxFile.getFormatTag())
                 .add("formatVersion", auxFile.getFormatVersion()) // "label" is the filename
-                .add("origin", auxFile.getOrigin()) 
+                .add("origin", auxFile.getOrigin())
                 .add("isPublic", auxFile.getIsPublic())
                 .add("type", auxFile.getType())
                 .add("contentType", auxFile.getContentType())
@@ -691,6 +696,7 @@ public class JsonPrinter {
                 .add("checksum", auxFile.getChecksum())
                 .add("dataFile", JsonPrinter.json(auxFile.getDataFile()));
     }
+
     public static JsonObjectBuilder json(DataFile df) {
         return JsonPrinter.json(df, null, false);
     }
