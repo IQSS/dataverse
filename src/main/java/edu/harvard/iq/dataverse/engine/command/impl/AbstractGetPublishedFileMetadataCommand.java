@@ -21,6 +21,14 @@ abstract class AbstractGetPublishedFileMetadataCommand extends AbstractCommand<F
         this.includeDeaccessioned = includeDeaccessioned;
     }
 
+    protected FileMetadata getLatestPublishedFileMetadata(CommandContext ctxt) {
+        return dataFile.getFileMetadatas().stream().filter(fileMetadata -> {
+            DatasetVersion.VersionState versionState = fileMetadata.getDatasetVersion().getVersionState();
+            return (!versionState.equals(DatasetVersion.VersionState.DRAFT)
+                    && isDatasetVersionAccessible(fileMetadata.getDatasetVersion(), dataFile.getOwner(), ctxt));
+        }).reduce(null, DataFile::getTheNewerFileMetadata);
+    }
+
     protected boolean isDatasetVersionAccessible(DatasetVersion datasetVersion, Dataset ownerDataset, CommandContext ctxt) {
         return datasetVersion.isReleased() || isDatasetVersionDeaccessionedAndAccessible(datasetVersion, ownerDataset, ctxt);
     }
