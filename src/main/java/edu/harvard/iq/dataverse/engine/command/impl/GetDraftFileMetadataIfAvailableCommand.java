@@ -23,10 +23,6 @@ public class GetDraftFileMetadataIfAvailableCommand extends AbstractCommand<File
 
     @Override
     public FileMetadata execute(CommandContext ctxt) throws CommandException {
-        FileMetadata latestFileMetadata = dataFile.getLatestFileMetadata();
-        if (latestFileMetadata.getDatasetVersion().isDraft()) {
-            return latestFileMetadata;
-        }
-        return null;
+        return dataFile.getDraftFileMetadata();
     }
 }

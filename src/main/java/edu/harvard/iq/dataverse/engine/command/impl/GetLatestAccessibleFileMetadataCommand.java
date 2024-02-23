@@ -25,9 +25,7 @@ public class GetLatestAccessibleFileMetadataCommand extends AbstractCommand<File
         FileMetadata fileMetadata = null;
 
         if (ctxt.permissions().requestOn(getRequest(), dataFile.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-            fileMetadata = ctxt.engine().submit(
-                    new GetDraftFileMetadataIfAvailableCommand(getRequest(), dataFile)
-            );
+            fileMetadata = dataFile.getDraftFileMetadata();
         }
 
         if (fileMetadata == null) {

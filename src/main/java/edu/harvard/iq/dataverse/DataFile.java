@@ -545,6 +545,14 @@ public class DataFile extends DvObject implements Comparable {
             fmd.setDescription(description);
         }
     }
+
+    public FileMetadata getDraftFileMetadata() {
+        FileMetadata latestFileMetadata = getLatestFileMetadata();
+        if (latestFileMetadata.getDatasetVersion().isDraft()) {
+            return latestFileMetadata;
+        }
+        return null;
+    }
     
     public FileMetadata getFileMetadata() {
         return getLatestFileMetadata();
