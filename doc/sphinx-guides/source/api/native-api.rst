@@ -2722,7 +2722,7 @@ Files
 Get JSON Representation of a File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. note:: Files can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+.. note:: When a file has been assigned a persistent identifier, it can be used in the API. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
 
 This endpoint returns the file metadata present in the latest dataset version.
 
@@ -2831,7 +2831,7 @@ The fully expanded example above (without environment variables) looks like this
 Get JSON Representation of a File given a Dataset Version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. note:: Files can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+.. note:: When a file has been assigned a persistent identifier, it can be used in the API. This is done by passing the constant ``:persistentId`` where the numeric id of the file is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
 
 This endpoint returns the file metadata present in the requested dataset version. To specify the dataset version, you can use ``:latest-published``, or ``:latest``, or ``:draft`` or ``1.0`` or any other style listed under :ref:`dataset-version-specifiers`.
 
