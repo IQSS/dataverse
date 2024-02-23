@@ -266,10 +266,3 @@ We can see that the first ``FGC`` resulted in reducing the ``"O"`` by almost 7GB
    etc. ...
 
 It is clearly growing - so now we can conclude that indeed something there is using memory in a way that's not recoverable, and this is a clear problem. 
-
-       
-
-
-----
-
-Previous: :doc:`making-releases` | Next: :doc:`unf/index`

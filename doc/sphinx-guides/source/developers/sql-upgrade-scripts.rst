@@ -43,7 +43,3 @@ Renaming SQL Upgrade Scripts
 Please note that if you need to rename your script (because a new version of the Dataverse Software was released, for example), you will see the error "FlywayException: Validate failed: Detected applied migration not resolved locally" when you attempt to deploy and deployment will fail.
 
 To resolve this problem, delete the old migration from the ``flyway_schema_history`` table and attempt to redeploy.
-
-----
-
-Previous: :doc:`version-control` | Next: :doc:`testing`

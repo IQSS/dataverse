@@ -110,7 +110,3 @@ If you are seeing ``Response code: 400, [url] domain of URL is not allowed`` it'
 ``./asadmin delete-jvm-options '-Ddataverse.siteUrl=http\://localhost\:8080'``
 
 ``./asadmin create-jvm-options '-Ddataverse.siteUrl=http\://demo.dataverse.org'``
-
-----
-
-Previous: :doc:`tips` | Next: :doc:`version-control`

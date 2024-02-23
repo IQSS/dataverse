@@ -131,7 +131,3 @@ Bike Shedding
 What color should the `bike shed <https://en.wiktionary.org/wiki/bikeshedding>`_ be? :)
 
 Come debate with us about coding style in this Google doc that has public comments enabled: https://docs.google.com/document/d/1KTd3FpM1BI3HlBofaZjMmBiQEJtFf11jiiGpQeJzy7A/edit?usp=sharing
-
-----
-
-Previous: :doc:`debugging` | Next: :doc:`deployment`
