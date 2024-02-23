@@ -57,7 +57,7 @@ Place curly braces according to the style below, which is an example you can see
 Format Code You Changed with Netbeans
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As you probably gathered from the :doc:`dev-environment` section, IQSS has standardized on Netbeans. It is much appreciated when you format your code (but only the code you touched!) using the out-of-the-box Netbeans configuration. If you have created an entirely new Java class, you can just click Source -> Format. If you are adjusting code in an existing class, highlight the code you changed and then click Source -> Format. Keeping the "diff" in your pull requests small makes them easier to code review.
+IQSS has standardized on Netbeans. It is much appreciated when you format your code (but only the code you touched!) using the out-of-the-box Netbeans configuration. If you have created an entirely new Java class, you can just click Source -> Format. If you are adjusting code in an existing class, highlight the code you changed and then click Source -> Format. Keeping the "diff" in your pull requests small makes them easier to code review.
 
 Checking Your Formatting With Checkstyle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
