@@ -56,6 +56,9 @@ fi
 if [ "${ENABLE_RELOAD}" = "1" ]; then
   echo "Enabling hot reload of deployments."
   echo "set configs.config.server-config.admin-service.das-config.dynamic-reload-enabled=true" >> "${DV_PREBOOT}"
+  echo "set configs.config.server-config.admin-service.das-config.autodeploy-enabled=true" >> "${DV_PREBOOT}"
+  export DATAVERSE_JSF_PROJECT_STAGE=${DATAVERSE_JSF_PROJECT_STAGE:-"Development"}
+  export DATAVERSE_JSF_REFRESH_PERIOD=${DATAVERSE_JSF_REFRESH_PERIOD:-"0"}
 fi
 
 # 4. Add the commands to the existing preboot file, but insert BEFORE deployment

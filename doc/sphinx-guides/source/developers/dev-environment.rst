@@ -71,10 +71,10 @@ After some time you should be able to log in:
 - username: dataverseAdmin
 - password: admin1
 
-More Information
-----------------
+Next Steps
+----------
 
-See also the :doc:`/container/dev-usage` section of the Container Guide.
+See the :doc:`/container/dev-usage` section of the Container Guide for tips on fast redeployment, viewing logs, and more.
 
 Getting Help
 ------------

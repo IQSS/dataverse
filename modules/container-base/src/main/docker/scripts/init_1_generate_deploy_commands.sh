@@ -31,6 +31,8 @@
 #
 ##########################################################################################################
 
+set -euo pipefail
+
 # Check required variables are set
 if [ -z "$DEPLOY_DIR" ]; then echo "Variable DEPLOY_DIR is not set."; exit 1; fi
 if [ -z "$PREBOOT_COMMANDS" ]; then echo "Variable PREBOOT_COMMANDS is not set."; exit 1; fi
@@ -51,8 +53,12 @@ deploy() {
   if grep -q "$1" "$POSTBOOT_COMMANDS"; then
     echo "post boot commands already deploys $1";
   else
-    echo "Adding deployment target $1 to post boot commands";
-    echo "$DEPLOY_STATEMENT" >> "$POSTBOOT_COMMANDS";
+    if [ -n "$SKIP_DEPLOY" ] && { [ "$SKIP_DEPLOY" = "1" ] || [ "$SKIP_DEPLOY" = "true" ]; }; then
+      echo "Skipping deployment of $1 as requested.";
+    else
+      echo "Adding deployment target $1 to post boot commands";
+      echo "$DEPLOY_STATEMENT" >> "$POSTBOOT_COMMANDS";
+    fi
   fi
 }
 
