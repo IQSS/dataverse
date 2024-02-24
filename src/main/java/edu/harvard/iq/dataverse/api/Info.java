@@ -1,23 +1,35 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.exposedsettings.SettingGroup;
+import edu.harvard.iq.dataverse.api.exposedsettings.SettingItem;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import jakarta.ejb.EJB;
 import jakarta.json.Json;
 import jakarta.json.JsonValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
+
+import java.util.List;
 
 @Path("info")
 public class Info extends AbstractApiBean {
 
     @EJB
     SettingsServiceBean settingsService;
-    
+
     @EJB
     SystemConfig systemConfig;
+
+    public enum ExposedSettingsLookupMode {
+        base, sub
+    }
 
     @GET
     @Path("settings/:DatasetPublishPopupCustomText")
@@ -35,7 +47,7 @@ public class Info extends AbstractApiBean {
     @Path("version")
     public Response getInfo() {
         String versionStr = systemConfig.getVersion(true);
-        String[] comps = versionStr.split("build",2);
+        String[] comps = versionStr.split("build", 2);
         String version = comps[0].trim();
         JsonValue build = comps.length > 1 ? Json.createArrayBuilder().add(comps[1].trim()).build().get(0) : JsonValue.NULL;
         return ok(Json.createObjectBuilder()
@@ -66,6 +78,33 @@ public class Info extends AbstractApiBean {
     public Response getZipDownloadLimit() {
         long zipDownloadLimit = SystemConfig.getLongLimitFromStringOrDefault(settingsSvc.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit), SystemConfig.defaultZipDownloadLimit);
         return ok(zipDownloadLimit);
+    }
+
+    @GET
+    @Path("exposedSettings")
+    public Response getExposedSettings(@QueryParam("lookupMode") String mode) {
+        return getExposedSettingsResponse(null, mode);
+    }
+
+    @GET
+    @Path("exposedSettings/{path:.*}")
+    public Response getExposedSettings(@PathParam("path") String path, @QueryParam("lookupMode") String mode) {
+        return getExposedSettingsResponse(path, mode);
+    }
+
+    private Response getExposedSettingsResponse(String path, String mode) {
+        ExposedSettingsLookupMode lookupMode;
+        try {
+            lookupMode = mode != null ? ExposedSettingsLookupMode.valueOf(mode) : ExposedSettingsLookupMode.base;
+        } catch (IllegalArgumentException e) {
+            return badRequest(BundleUtil.getStringFromBundle("info.api.exposedSettings.invalid.lookupMode", List.of(mode)));
+        }
+        SettingGroup dataverseSettingGroup = SettingGroup.getDataverseSettingGroup(systemConfig, settingsService);
+        SettingItem settingItem = ((path == null) ? dataverseSettingGroup : dataverseSettingGroup.getItem(path.split("/")));
+        if (settingItem == null) {
+            return notFound(BundleUtil.getStringFromBundle("info.api.exposedSettings.notFound"));
+        }
+        return ok(JsonPrinter.json(settingItem, lookupMode));
     }
 
     private Response getSettingResponseByKey(SettingsServiceBean.Key key) {

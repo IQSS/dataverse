@@ -1,6 +1,10 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.api.Info;
+import edu.harvard.iq.dataverse.api.exposedsettings.Setting;
+import edu.harvard.iq.dataverse.api.exposedsettings.SettingGroup;
+import edu.harvard.iq.dataverse.api.exposedsettings.SettingItem;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -38,9 +42,8 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
 import java.util.*;
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObjectBuilder;
+
+import jakarta.json.*;
 
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -53,8 +56,6 @@ import static java.util.stream.Collectors.toList;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
 
 /**
  * Convert objects to Json.
@@ -1238,5 +1239,62 @@ public class JsonPrinter {
             licenseJsonObjectBuilder.add("iconUri", licenseIconUri);
         }
         return licenseJsonObjectBuilder;
+    }
+
+    public static JsonObjectBuilder json(SettingItem settingItem, Info.ExposedSettingsLookupMode lookupMode) {
+        if (settingItem instanceof Setting) {
+            JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+            objectBuilder = addSettingToJson(objectBuilder, (Setting<?>) settingItem);
+            return objectBuilder;
+        } else {
+            return json(((SettingGroup) settingItem).getItemList(), lookupMode);
+        }
+    }
+
+    private static JsonObjectBuilder json(List<SettingItem> settingItems, Info.ExposedSettingsLookupMode lookupMode) {
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder subgroupsObjectBuilder = Json.createObjectBuilder();
+        JsonArrayBuilder subgroupsArrayBuilder = Json.createArrayBuilder();
+        for (SettingItem settingItem : settingItems) {
+            String settingName = settingItem.getName();
+            if (settingItem instanceof Setting) {
+                objectBuilder = addSettingToJson(objectBuilder, (Setting<?>) settingItem);
+            }
+            if (settingItem instanceof SettingGroup) {
+                if (lookupMode == Info.ExposedSettingsLookupMode.base) {
+                    subgroupsArrayBuilder.add(settingName);
+                } else if (lookupMode == Info.ExposedSettingsLookupMode.sub) {
+                    subgroupsObjectBuilder.add(settingName, json(((SettingGroup) settingItem).getItemList(), lookupMode));
+                }
+            }
+        }
+        String settingSubgroupsField = "settingSubgroups";
+        if (lookupMode == Info.ExposedSettingsLookupMode.base) {
+            JsonArray subgroupsJsonArray = subgroupsArrayBuilder.build();
+            if (!subgroupsJsonArray.isEmpty()) {
+                objectBuilder.add(settingSubgroupsField, subgroupsJsonArray);
+            }
+        } else if (lookupMode == Info.ExposedSettingsLookupMode.sub) {
+            JsonObject subgroupsJsonObject = subgroupsObjectBuilder.build();
+            if (!subgroupsJsonObject.isEmpty()){
+                objectBuilder.add(settingSubgroupsField, subgroupsJsonObject);
+            }
+        }
+        return objectBuilder;
+    }
+
+    private static JsonObjectBuilder addSettingToJson(JsonObjectBuilder objectBuilder, Setting<?> setting) {
+        String name = setting.getName();
+        Object value = setting.getValue();
+        if (value instanceof String) {
+            objectBuilder.add(name, (String) value);
+        } else if (value instanceof Long) {
+            objectBuilder.add(name, (Long) value);
+        } else if (value instanceof Boolean) {
+            objectBuilder.add(name, (Boolean) value);
+        } else if (value == null) {
+            objectBuilder.add(name, JsonValue.NULL);
+        }
+        return objectBuilder;
     }
 }
