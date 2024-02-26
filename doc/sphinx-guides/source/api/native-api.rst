@@ -88,6 +88,14 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/dataverses/root"
 
+If you want to include the Dataverse collections that this collection is part of, you must set ``returnOwners`` query parameter to ``true``.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/dataverses/root?returnOwners=true"
+
 To view an unpublished Dataverse collection:
 
 .. code-block:: bash
@@ -910,6 +918,14 @@ The fully expanded example above (without environment variables) looks like this
 
 The dataset id can be extracted from the response retrieved from the API which uses the persistent identifier (``/api/datasets/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER``).
 
+If you want to include the Dataverse collections that this dataset is part of, you must set ``returnOwners`` query parameter to ``true``.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24?returnOwners=true"
+
 List Versions of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1015,6 +1031,14 @@ Usage example:
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/api/datasets/24/versions/1.0?includeDeaccessioned=true"
+
+If you want to include the Dataverse collections that this dataset version is part of, you must set ``returnOwners`` query parameter to ``true``.
+
+Usage example:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24versions/1.0?returnOwners=true"
 
 .. _export-dataset-metadata-api:
 
@@ -2891,6 +2915,25 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/files/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB&returnDatasetVersion=true"
+
+If you want to include the dataset and collections that the is part of in the response, there is an optional parameter for this called ``returnOwners`` whose default value is ``false``.
+
+Usage example:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+  export DATASET_VERSION=:draft
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/files/:persistentId/versions/$DATASET_VERSION?persistentId=$PERSISTENT_IDENTIFIER&returnOwners=true"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/files/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB&returnOwners=true"
 
 Adding Files
 ~~~~~~~~~~~~
