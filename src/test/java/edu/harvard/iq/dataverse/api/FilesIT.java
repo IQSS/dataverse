@@ -1676,7 +1676,7 @@ public class FilesIT {
         String dataverseAlias = createDataverseGetAlias(apiToken);
        
         
-                Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         
@@ -1704,7 +1704,7 @@ public class FilesIT {
                 .body("data.dataFile.filesize", equalTo(8361))
                 .statusCode(OK.getStatusCode());
         
-                getFileDataResponse.then().assertThat().body("data.dataFile.isPartOf.identifier", equalTo(datasetPid));
+        getFileDataResponse.then().assertThat().body("data.dataFile.isPartOf.identifier", equalTo(datasetPid));
 
         // -------------------------
         // Publish dataverse and dataset

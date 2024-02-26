@@ -681,6 +681,10 @@ public class JsonPrinter {
         if (printDatasetVersion) {
             builder.add("datasetVersion", json(fmd.getDatasetVersion(), false));
         }
+        
+        if (includeOwners){
+            builder.add("isPartOf", getOwnersFromDvObject(fmd.getDataFile(), fmd.getDatasetVersion()));
+        }
 
         return builder;
     }
