@@ -2,8 +2,6 @@ package edu.harvard.iq.dataverse.api;
 
 import java.util.logging.Logger;
 
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
 import io.restassured.path.json.JsonPath;
@@ -59,7 +57,6 @@ public class HarvestingClientsIT {
     }
     @AfterEach
     public void cleanup() {
-        UtilIT.deleteSetting(SettingsServiceBean.Key.AllowHarvestingMissingCVV);
         if (clientApiPath != null) {
             Response deleteResponse = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
@@ -183,11 +180,6 @@ public class HarvestingClientsIT {
 
     private void harvestingClientRun(boolean allowHarvestingMissingCVV)  throws InterruptedException {
         int expectedNumberOfSetsHarvested = allowHarvestingMissingCVV ? DATASETS_IN_CONTROL_SET : DATASETS_IN_CONTROL_SET - 1;
-        if (allowHarvestingMissingCVV) {
-            UtilIT.enableSetting(SettingsServiceBean.Key.AllowHarvestingMissingCVV);
-        } else {
-            UtilIT.deleteSetting(SettingsServiceBean.Key.AllowHarvestingMissingCVV);
-        }
 
         // This test will create a client and attempt to perform an actual 
         // harvest and validate the resulting harvested content. 
@@ -205,8 +197,9 @@ public class HarvestingClientsIT {
                 + "\"harvestUrl\":\"%s\","
                 + "\"archiveUrl\":\"%s\","
                 + "\"set\":\"%s\","
+                + "\"allowHarvestingMissingCVV\":%s,"
                 + "\"metadataFormat\":\"%s\"}", 
-                harvestCollectionAlias, HARVEST_URL, ARCHIVE_URL, CONTROL_OAI_SET, HARVEST_METADATA_FORMAT);
+                harvestCollectionAlias, HARVEST_URL, ARCHIVE_URL, CONTROL_OAI_SET, allowHarvestingMissingCVV, HARVEST_METADATA_FORMAT);
         
         Response createResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)

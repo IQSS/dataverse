@@ -595,7 +595,8 @@ public class DatasetField implements Serializable {
                     return true;
                 }
             } else { // controlled vocab
-                if (this.getControlledVocabularyValues().isEmpty()) {
+                // during harvesting some CVV are put in getDatasetFieldValues. we don't want to remove those
+                if (this.getControlledVocabularyValues().isEmpty() && this.getDatasetFieldValues().isEmpty()) {
                     return true;
                 }                 
             }
