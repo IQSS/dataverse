@@ -440,7 +440,6 @@ public class Datasets extends AbstractApiBean {
             if (excludeFiles == null ? true : !excludeFiles) {
                 dsv = datasetversionService.findDeep(dsv.getId());
             }
-            System.out.print("returnOwners: " + includeOwners);
             return ok(json(dsv, null, excludeFiles == null ? true : !excludeFiles, includeOwners));
         }, getRequestUser(crc));
     }
