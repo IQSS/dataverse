@@ -245,7 +245,9 @@ public class HarvestingClient implements Serializable {
     }
 
     private boolean allowHarvestingMissingCVV;
-    public boolean getAllowHarvestingMissingCVV() { return allowHarvestingMissingCVV; }
+    public boolean getAllowHarvestingMissingCVV() {
+        return allowHarvestingMissingCVV;
+    }
     public void setAllowHarvestingMissingCVV(boolean allowHarvestingMissingCVV) {
         this.allowHarvestingMissingCVV = allowHarvestingMissingCVV;
     }
