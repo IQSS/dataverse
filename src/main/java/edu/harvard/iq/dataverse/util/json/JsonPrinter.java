@@ -339,10 +339,9 @@ public class JsonPrinter {
         if (dvo.isInstanceofDataset()) {
             ownerObject.add("type", "DATASET");
             if (dvo.getGlobalId() != null) {
-                ownerObject.add("identifier", dvo.getGlobalId().asString());
-            } else {
-                ownerObject.add("identifier", dvo.getId());
+                ownerObject.add("persistentIdentifier", dvo.getGlobalId().asString());
             }
+            ownerObject.add("identifier", dvo.getId());
             String versionString = dsv == null ? "" : dsv.getFriendlyVersionNumber();
             if (!versionString.isEmpty()){
                ownerObject.add("version", versionString);
@@ -420,7 +419,7 @@ public class JsonPrinter {
     /*    return json(dsv, null, includeFiles, null);
     }
     public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList, boolean includeFiles, Long numberOfFiles) {*/
-        Dataset dataset = dsv.getDataset();
+    Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
                 .add("datasetPersistentId", dataset.getGlobalId().asString())
@@ -680,10 +679,6 @@ public class JsonPrinter {
 
         if (printDatasetVersion) {
             builder.add("datasetVersion", json(fmd.getDatasetVersion(), false));
-        }
-        
-        if (includeOwners){
-            builder.add("isPartOf", getOwnersFromDvObject(fmd.getDataFile(), fmd.getDatasetVersion()));
         }
 
         return builder;

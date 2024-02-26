@@ -1704,7 +1704,7 @@ public class FilesIT {
                 .body("data.dataFile.filesize", equalTo(8361))
                 .statusCode(OK.getStatusCode());
         
-        getFileDataResponse.then().assertThat().body("data.dataFile.isPartOf.identifier", equalTo(datasetPid));
+        getFileDataResponse.then().assertThat().body("data.dataFile.isPartOf.identifier", equalTo(datasetId));
 
         // -------------------------
         // Publish dataverse and dataset
