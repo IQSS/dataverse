@@ -1000,6 +1000,7 @@
                         <ui:param name="saveEmbargoAction" value="saveEmbargo"/>
                         <ui:param name="saveRetentionAction" value="saveRetention"/>
                         <ui:param name="updateElements" value=":datasetForm:embargoInputs"/>
+                        <ui:param name="updateRetentionElements" value=":datasetForm:retentionInputs"/>
                     </ui:include>
                     <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                         <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>

@@ -199,8 +199,8 @@
                                           maxdate="#{settingsWrapper.maxRetentionDate}"
                                           disabled="#{bean.removeRetention}"
                                           validator="#{settingsWrapper.validateRetentionDate}" >
-                                <p:ajax process="#{updateElements}"
-                                        update="#{updateElements}"
+                                <p:ajax process="#{updateRetentionElements}"
+                                        update="#{updateRetentionElements}"
                                 />
                             </p:datePicker>
                             <div>
@@ -229,8 +229,8 @@
                         <p:selectBooleanCheckbox value="#{bean.removeRetention}" id="retentionCheckbox"
                                                  itemLabel="#{bundle['file.editRetentionDialog.remove']}"
                                                  disabled="#{facesContext.validationFailed}">
-                            <p:ajax process="#{updateElements}"
-                                    update="#{updateElements}"
+                            <p:ajax process="#{updateRetentionElements}"
+                                    update="#{updateRetentionElements}"
                             />
                         </p:selectBooleanCheckbox>
                     </div>
@@ -239,9 +239,9 @@
         </h:panelGroup>
         <div class="button-block">
             <p:commandButton rendered="#{bean.validRetentionSelection}" styleClass="btn btn-default" id="fileRetentionPopupSaveButton" value="#{bundle.saveChanges}"
-                             oncomplete="if (args &amp;&amp; !args.validationFailed) PF('fileRetentionPopup').hide();return false;" update="#{updateElements}" action="#{bean[saveRetentionAction]}"/>
+                             oncomplete="if (args &amp;&amp; !args.validationFailed) PF('fileRetentionPopup').hide();return false;" update="#{updateRetentionElements}" action="#{bean[saveRetentionAction]}"/>
             <p:commandButton styleClass="btn btn-link" id="fileRetentionPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileRetentionPopup').hide();
-                    PF('blockDatasetForm').hide();" action="#{bean.clearRetentionPopup()}" update="#{updateElements}" immediate="true"/>
+                    PF('blockDatasetForm').hide();" action="#{bean.clearRetentionPopup()}" update="#{updateRetentionElements}" immediate="true"/>
         </div>
     </p:dialog>
 

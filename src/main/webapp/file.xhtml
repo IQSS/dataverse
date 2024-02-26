@@ -567,6 +567,13 @@
                                                         <td>#{FilePage.file.embargo.reason}
                                                         </td>
                                                     </tr>
+                                                    <tr id="fileRPublicationDateBlock" jsf:rendered="#{FilePage.file.released or !(empty FilePage.file.retention)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
+                                                        </th>
+                                                        <td>#{!(empty FilePage.file.retention) ? FilePage.retentionPhrase: ''} #{!(empty FilePage.file.retention) ? FilePage.file.retention.dateUnavailable : FilePage.file.publicationDateFormattedYYYYMMDD}
+                                                        </td>
+                                                    </tr>
                                                     <tr id="fileRetentionBlock" jsf:rendered="#{!(empty FilePage.file.retention) and ! (empty FilePage.file.retention.reason)}">
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.retentionReason.label']}
@@ -633,6 +640,7 @@
                         <ui:param name="saveEmbargoAction" value="saveEmbargo"/>
                         <ui:param name="saveRetentionAction" value="saveRetention"/>
                         <ui:param name="updateElements" value=":fileForm:embargoInputs"/>
+                        <ui:param name="updateRetentionElements" value=":fileForm:retentionInputs"/>
 
                     </ui:include>
                     <p:dialog id="shareDialog" header="#{bundle['file.share.title']}" widgetVar="shareDialog" modal="true" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
