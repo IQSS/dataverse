@@ -421,7 +421,7 @@ public class Datasets extends AbstractApiBean {
                                @PathParam("versionId") String versionId,
                                @QueryParam("excludeFiles") Boolean excludeFiles,
                                @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
-                               @QueryParam("returnOwners") boolean includeOwners,
+                               @QueryParam("returnOwners") boolean returnOwners,
                                @Context UriInfo uriInfo,
                                @Context HttpHeaders headers) {
         return response( req -> {
@@ -440,7 +440,7 @@ public class Datasets extends AbstractApiBean {
             if (excludeFiles == null ? true : !excludeFiles) {
                 dsv = datasetversionService.findDeep(dsv.getId());
             }
-            return ok(json(dsv, null, excludeFiles == null ? true : !excludeFiles, includeOwners));
+            return ok(json(dsv, null, excludeFiles == null ? true : !excludeFiles, returnOwners));
         }, getRequestUser(crc));
     }
 

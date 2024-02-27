@@ -262,7 +262,7 @@ public class JsonPrinter {
     }
 
     //TODO: Once we upgrade to Java EE 8 we can remove objects from the builder, and this email removal can be done in a better place.
-    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean includeOwners) {
+    public static JsonObjectBuilder json(Dataverse dv, Boolean hideEmail, Boolean returnOwners) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dv.getId())
                 .add("alias", dv.getAlias())
@@ -271,7 +271,7 @@ public class JsonPrinter {
         if(!hideEmail) { 
             bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
         }
-        if (includeOwners){
+        if (returnOwners){
             bld.add("isPartOf", getOwnersFromDvObject(dv));
         }       
         bld.add("permissionRoot", dv.isPermissionRoot())
@@ -384,7 +384,7 @@ public class JsonPrinter {
        return json(ds, false);
     }
 
-    public static JsonObjectBuilder json(Dataset ds, Boolean includeOwners) {
+    public static JsonObjectBuilder json(Dataset ds, Boolean returnOwners) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", ds.getId())
                 .add("identifier", ds.getIdentifier())
@@ -397,7 +397,7 @@ public class JsonPrinter {
         if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
             bld.add("metadataLanguage", ds.getMetadataLanguage());
         }
-        if (includeOwners){
+        if (returnOwners){
             bld.add("isPartOf", getOwnersFromDvObject(ds));
         }
         return bld;
@@ -415,11 +415,8 @@ public class JsonPrinter {
         return json(dsv, null, includeFiles, false);
     }
 
-    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList, boolean includeFiles, boolean includeOwners) {
-    /*    return json(dsv, null, includeFiles, null);
-    }
-    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList, boolean includeFiles, Long numberOfFiles) {*/
-    Dataset dataset = dsv.getDataset();
+    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList, boolean includeFiles, boolean returnOwners) {
+        Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
                 .add("datasetPersistentId", dataset.getGlobalId().asString())
@@ -462,7 +459,7 @@ public class JsonPrinter {
                 jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList)
                 : jsonByBlocks(dsv.getDatasetFields())
         );       
-        if(includeOwners){
+        if(returnOwners){
             bld.add("isPartOf", getOwnersFromDvObject(dataset));
         }
         if (includeFiles) {
@@ -659,7 +656,7 @@ public class JsonPrinter {
         return json(fmd, false, false);
     }
 
-    public static JsonObjectBuilder json(FileMetadata fmd, boolean includeOwners, boolean printDatasetVersion) {
+    public static JsonObjectBuilder json(FileMetadata fmd, boolean returnOwners, boolean printDatasetVersion) {
         JsonObjectBuilder builder = jsonObjectBuilder();
 
                 // deprecated: .add("category", fmd.getCategory())
@@ -675,7 +672,7 @@ public class JsonPrinter {
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
                 .add("categories", getFileCategories(fmd))
-                .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd, false, includeOwners));
+                .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd, false, returnOwners));
 
         if (printDatasetVersion) {
             builder.add("datasetVersion", json(fmd.getDatasetVersion(), false));
@@ -705,7 +702,7 @@ public class JsonPrinter {
         return json(df, fileMetadata, forExportDataProvider, false);
     }
     
-    public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata, boolean forExportDataProvider, Boolean includeOwners) {
+    public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata, boolean forExportDataProvider, boolean returnOwners) {
         // File names are no longer stored in the DataFile entity; 
         // (they are instead in the FileMetadata (as "labels") - this way 
         // the filename can change between versions... 
@@ -781,7 +778,7 @@ public class JsonPrinter {
                     ? JsonPrinter.jsonVarGroup(fileMetadata.getVarGroups())
                     : null);
         }
-        if (includeOwners){
+        if (returnOwners){
             builder.add("isPartOf", getOwnersFromDvObject(df, fileMetadata.getDatasetVersion()));
         }
         return builder;
