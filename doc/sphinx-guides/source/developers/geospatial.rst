@@ -81,7 +81,3 @@ For two "final" shapefile sets, ``bicycles.zip`` and ``subway_line.zip``, a new 
 
 - Mimetype: ``application/zipped-shapefile``
 - Mimetype Label: "Shapefile as ZIP Archive"
-
-----
-
-Previous: :doc:`unf/index` | Next: :doc:`remote-users`

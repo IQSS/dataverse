@@ -12,7 +12,7 @@
       <array />
     </option>
     <option name="outputFromStdout" value="false" />
-    <option name="program" value="$ProjectFileDir$/scripts/intellij/cpwebapp.sh" />
+    <option name="program" value="$ProjectFileDir$/docker/util/intellij/cpwebapp.sh" />
     <option name="runOnExternalChanges" value="true" />
     <option name="scopeName" value="Current File" />
     <option name="trackOnlyRoot" value="false" />
