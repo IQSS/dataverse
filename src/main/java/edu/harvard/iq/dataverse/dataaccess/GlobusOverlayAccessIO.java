@@ -451,8 +451,12 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                     this.setSize(retrieveSizeFromMedia());
                 }
                 // Only applies for the S3 Connector case (where we could have run an ingest)
-                if (dataFile.getContentType() != null && dataFile.getContentType().equals("text/tab-separated-values")
-                        && dataFile.isTabularData() && dataFile.getDataTable() != null && (!this.noVarHeader())) {
+                if (dataFile.getContentType() != null 
+                        && dataFile.getContentType().equals("text/tab-separated-values")
+                        && dataFile.isTabularData() 
+                        && dataFile.getDataTable() != null 
+                        && (!this.noVarHeader())
+                        && (!dataFile.getDataTable().isStoredWithVariableHeader())) {
 
                     List<DataVariable> datavariables = dataFile.getDataTable().getDataVariables();
                     String varHeaderLine = generateVariableHeader(datavariables);

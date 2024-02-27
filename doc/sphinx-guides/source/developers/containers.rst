@@ -29,7 +29,3 @@ Using Containers for Reproducible Research
 ------------------------------------------
 
 Please see :ref:`research-code` in the User Guide for this related topic.
-
-----
-
-Previous: :doc:`deployment` | Next: :doc:`making-releases`

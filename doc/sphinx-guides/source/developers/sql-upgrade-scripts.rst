@@ -21,6 +21,8 @@ If you are creating a new database table (which maps to an ``@Entity`` in JPA), 
 
 If you are doing anything other than creating a new database table such as adding a column to an existing table, you must create or update a SQL upgrade script.
 
+.. _create-sql-script:
+
 How to Create a SQL Upgrade Script
 ----------------------------------
 
@@ -41,7 +43,3 @@ Renaming SQL Upgrade Scripts
 Please note that if you need to rename your script (because a new version of the Dataverse Software was released, for example), you will see the error "FlywayException: Validate failed: Detected applied migration not resolved locally" when you attempt to deploy and deployment will fail.
 
 To resolve this problem, delete the old migration from the ``flyway_schema_history`` table and attempt to redeploy.
-
-----
-
-Previous: :doc:`version-control` | Next: :doc:`testing`
