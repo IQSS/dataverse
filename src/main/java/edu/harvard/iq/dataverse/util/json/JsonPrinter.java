@@ -871,6 +871,7 @@ public class JsonPrinter {
                 add("schedule", harvestingClient.isScheduled() ? harvestingClient.getScheduleDescription() : "none").
                 add("status", harvestingClient.isHarvestingNow() ? "inProgress" : "inActive").
                 add("customHeaders", harvestingClient.getCustomHttpHeaders()).
+                add("allowHarvestingMissingCVV", harvestingClient.getAllowHarvestingMissingCVV()).
                 add("lastHarvest", harvestingClient.getLastHarvestTime() == null ? null : harvestingClient.getLastHarvestTime().toString()).
                 add("lastResult", harvestingClient.getLastResult()).
                 add("lastSuccessful", harvestingClient.getLastSuccessfulHarvestTime() == null ? null : harvestingClient.getLastSuccessfulHarvestTime().toString()).
