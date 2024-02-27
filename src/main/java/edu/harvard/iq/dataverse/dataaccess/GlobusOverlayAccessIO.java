@@ -171,12 +171,12 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     }
 
     protected void validatePath(String relPath) throws IOException {
-        if (isManaged()) {
-            if (!usesStandardNamePattern(relPath)) {
-                throw new IOException("Unacceptable identifier pattern in submitted identifier: " + relPath);
-            }
-        } else {
-            if (dvObject != null && dvObject.isInstanceofDataFile()) {
+        if (dvObject != null && dvObject.isInstanceofDataFile()) {
+            if (isManaged()) {
+                if (!usesStandardNamePattern(relPath)) {
+                    throw new IOException("Unacceptable identifier pattern in submitted identifier: " + relPath);
+                }
+            } else {
                 try {
                     String endpoint = findMatchingEndpoint(relPath, allowedEndpoints);
                     logger.fine(endpoint + "  " + relPath);
