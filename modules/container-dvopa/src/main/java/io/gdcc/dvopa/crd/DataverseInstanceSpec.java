@@ -4,16 +4,19 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.fabric8.generator.annotation.Default;
 import io.fabric8.generator.annotation.Max;
 import io.fabric8.generator.annotation.Min;
+import io.fabric8.generator.annotation.Pattern;
 import io.fabric8.generator.annotation.Required;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.SecurityContext;
+import io.gdcc.dvopa.Utils;
 
 import java.util.List;
 import java.util.Map;
 
 public record DataverseInstanceSpec(
     @Required
-    String version,
+    @Pattern(Utils.REGEXP_IMAGE_REFERENCE)
+    String image,
     
     @Min(1)
     @Max(10)

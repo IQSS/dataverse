@@ -28,7 +28,7 @@ public class InstanceDeployment extends CRUDKubernetesDependentResource<Deployme
         
         // Make it appear within the right namespace and copy version
         deployment.getMetadata().setNamespace(primaryResource.getMetadata().getNamespace());
-        deployment.getMetadata().getLabels().put(RECOMMENDED_LABEL_VERSION, primaryResource.getSpec().version());
+        deployment.getMetadata().getLabels().put(RECOMMENDED_LABEL_VERSION, Utils.getTagFromImage(primaryResource.getSpec().image()));
         
         // Add name of the instance as instance-name everywhere (remember: selector and template labels must match!)
         String deploymentName = Utils.deploymentName(primaryResource);
@@ -41,6 +41,9 @@ public class InstanceDeployment extends CRUDKubernetesDependentResource<Deployme
         deployment.getMetadata().getLabels().put(RECOMMENDED_LABEL_MANAGED_BY, DvOpa.NAME);
         deployment.getSpec().getSelector().getMatchLabels().put(RECOMMENDED_LABEL_MANAGED_BY, DvOpa.NAME);
         deployment.getSpec().getTemplate().getMetadata().getLabels().put(RECOMMENDED_LABEL_MANAGED_BY, DvOpa.NAME);
+        
+        // Add the image spec to the deployment
+        deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(primaryResource.getSpec().image());
         
         return deployment;
     }
