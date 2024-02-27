@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.dataaccess.AbstractRemoteOverlayAccessIO;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class ExternalToolServiceBeanTest {
     public void testfindAll() {
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
+        dataFile.setStorageIdentifier("test://18debaa2d7c-db98ef7d9a77");
         FileMetadata fmd = new FileMetadata();
         fmd.setId(2L);
         DatasetVersion dv = new DatasetVersion();
