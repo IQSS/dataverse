@@ -240,7 +240,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     public InputStream getInputStream() throws IOException {
         //Currently only supported when using an S3 store with the Globus S3Connector.
         //ToDo: Support when using a managed Globus endpoint that supports http access
-        if(!AbstractRemoteOverlayAccessIO.isNotDataverseAccessible(endpoint)) {
+        if(StorageIO.isDataverseAccessible(endpoint)) {
             return baseStore.getInputStream();
         } else {
             throw new IOException("Not implemented");

@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataaccess.AbstractRemoteOverlayAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -3362,7 +3361,7 @@ public class DatasetPage implements java.io.Serializable {
             if(globusDownloadEnabled) {
                 String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
                 globusTransferable = GlobusAccessibleStore.isGlobusAccessible(driverId);
-                downloadable = downloadable && !AbstractRemoteOverlayAccessIO.isNotDataverseAccessible(driverId); 
+                downloadable = downloadable && StorageIO.isDataverseAccessible(driverId); 
             }
             if(downloadable){
                 getSelectedDownloadableFiles().add(fmd);
