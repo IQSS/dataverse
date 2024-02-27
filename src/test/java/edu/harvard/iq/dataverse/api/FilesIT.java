@@ -1705,6 +1705,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         
         getFileDataResponse.then().assertThat().body("data.dataFile.isPartOf.identifier", equalTo(datasetId));
+        getFileDataResponse.then().assertThat().body("data.dataFile.isPartOf.persistentIdentifier", equalTo(datasetPid));
 
         // -------------------------
         // Publish dataverse and dataset
