@@ -1063,7 +1063,7 @@ Two database settings configure the rate limiting.
 Note: If either of these settings exist in the database rate limiting will be enabled. If neither setting exists rate limiting is disabled.
 
 - RateLimitingDefaultCapacityTiers is the number of calls allowed per hour if the specific command is not configured. The values represent the number of calls per hour per user for tiers 0,1,...
-  A value of -1 can be used to signify no rate limit. Also, by default, a tier not defined would receive a default of no limit.
+  A value of -1 can be used to signify no rate limit. Tiers not specified in this setting will default to `-1` (No Limit). I.e., -d "10000" is equivalent to -d "10000,-1,-1,..."
 
 .. code-block:: bash
 
