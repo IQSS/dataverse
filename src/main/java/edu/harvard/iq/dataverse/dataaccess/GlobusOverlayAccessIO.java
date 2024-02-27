@@ -176,19 +176,20 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                 throw new IOException("Unacceptable identifier pattern in submitted identifier: " + relPath);
             }
         } else {
-            try {
-                String endpoint = findMatchingEndpoint(relPath, allowedEndpoints);
-                logger.fine(endpoint + "  " + relPath);
+            if (dvObject != null && dvObject.isInstanceofDataFile()) {
+                try {
+                    String endpoint = findMatchingEndpoint(relPath, allowedEndpoints);
+                    logger.fine(endpoint + "  " + relPath);
 
-                if (endpoint == null || !Paths.get(endpoint, relPath).normalize().startsWith(endpoint)) {
-                    throw new IOException(
-                            "storageidentifier doesn't start with one of " + this.driverId + "'s allowed endpoints");
+                    if (endpoint == null || !Paths.get(endpoint, relPath).normalize().startsWith(endpoint)) {
+                        throw new IOException("storageidentifier doesn't start with one of " + this.driverId
+                                + "'s allowed endpoints");
+                    }
+                } catch (InvalidPathException e) {
+                    throw new IOException("Could not interpret storageidentifier in globus store " + this.driverId);
                 }
-            } catch (InvalidPathException e) {
-                throw new IOException("Could not interpret storageidentifier in globus store " + this.driverId);
             }
         }
-
     }
 
     // Call the Globus API to get the file size
