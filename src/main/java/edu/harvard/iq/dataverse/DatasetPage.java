@@ -3662,6 +3662,25 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
+        //Remove retentions that are no longer referenced
+        //Identify which ones are involved here
+        List<Retention> orphanedRetentions = new ArrayList<Retention>();
+        if (selectedFiles != null && selectedFiles.size() > 0) {
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+                for (FileMetadata fm : selectedFiles) {
+                    if (fm.getDataFile().equals(fmd.getDataFile()) && !fmd.getDataFile().isReleased()) {
+                        Retention ret = fmd.getDataFile().getRetention();
+                        if (ret != null) {
+                            ret.getDataFiles().remove(fmd.getDataFile());
+                            if (ret.getDataFiles().isEmpty()) {
+                                orphanedRetentions.add(ret);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         deleteFiles(filesToDelete);
         String retVal;
         
@@ -3671,11 +3690,13 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             retVal = save();
         }
-        
-        
-        //And delete them only after the dataset is updated
+
+        // And delete them only after the dataset is updated
         for(Embargo emb: orphanedEmbargoes) {
             embargoService.deleteById(emb.getId(), ((AuthenticatedUser)session.getUser()).getUserIdentifier());
+        }
+        for(Retention ret: orphanedRetentions) {
+            retentionService.delete(ret, ((AuthenticatedUser)session.getUser()).getUserIdentifier());
         }
         return retVal;
 
