@@ -46,6 +46,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.faces.application.FacesMessage;
@@ -238,12 +240,10 @@ public class FilePage implements java.io.Serializable {
             if (file.isTabularData()) {
                 contentType=DataFileServiceBean.MIME_TYPE_TSV_ALT;
             }
-            configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
-            exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
-            queryTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.QUERY, contentType);
-            Collections.sort(exploreTools, CompareExternalToolName);
-            toolsWithPreviews  = sortExternalTools();
-
+            loadExternalTools();
+            
+            
+            
             if (toolType != null) {
                 if (toolType.equals("PREVIEW")) {
                     if (!toolsWithPreviews.isEmpty()) {
@@ -276,6 +276,22 @@ public class FilePage implements java.io.Serializable {
         return null;
     }
     
+    private void loadExternalTools() {
+        String contentType= file.getContentType();
+        configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
+        exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
+        queryTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.QUERY, contentType);
+        Collections.sort(exploreTools, CompareExternalToolName);
+        toolsWithPreviews  = sortExternalTools();
+        //For inaccessible files, only show the tools that have access to aux files (which are currently always accessible)
+        if(!StorageIO.isDataverseAccessible(DataAccess.getStorageDriverFromIdentifier(file.getStorageIdentifier()))) {
+            configureTools = configureTools.stream().filter(tool ->tool.accessesAuxFiles()).collect(Collectors.toList());
+            exploreTools = exploreTools.stream().filter(tool ->tool.accessesAuxFiles()).collect(Collectors.toList());
+            queryTools = queryTools.stream().filter(tool ->tool.accessesAuxFiles()).collect(Collectors.toList());
+            toolsWithPreviews = toolsWithPreviews.stream().filter(tool ->tool.accessesAuxFiles()).collect(Collectors.toList());
+        }
+    }
+
     private void displayPublishMessage(){
         if (fileMetadata.getDatasetVersion().isDraft()  && canUpdateDataset()
                 &&   (canPublishDataset() || !fileMetadata.getDatasetVersion().getDataset().isLockedFor(DatasetLock.Reason.InReview))){

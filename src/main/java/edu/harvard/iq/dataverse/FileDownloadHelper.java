@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
