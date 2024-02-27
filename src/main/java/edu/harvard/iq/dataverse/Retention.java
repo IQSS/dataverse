@@ -33,9 +33,8 @@ public class Retention {
     @OneToMany(mappedBy="retention", cascade={ CascadeType.REMOVE, CascadeType.PERSIST})
     private List<DataFile> dataFiles;
 
-    // persistency demands default constructor!
     public Retention(){
-        dateUnavailable = LocalDate.now().plusDays(1); // LocalDate.now().plusYears(1000);
+        dateUnavailable = LocalDate.now().plusYears(1000); // Most likely valid with respect to configuration
     }
 
     public Retention(LocalDate dateUnavailable, String reason) {
