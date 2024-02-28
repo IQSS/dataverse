@@ -182,3 +182,11 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size: .5em; vertical-align: t
 pre {
     white-space: pre-wrap;
 }
+
+div.sphinx-tabs {
+    width: 100%;
+}
+
+li div.sphinx-tabs {
+    padding-left: 0;
+}

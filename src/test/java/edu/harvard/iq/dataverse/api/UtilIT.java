@@ -1084,11 +1084,23 @@ public class UtilIT {
                 .urlEncodingEnabled(false)
                 .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + optionalQueryParam);
     }
-    
-    static Response getFileData(String fileId, String apiToken) {       
+
+    static Response getFileData(String fileId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId );
+                .get("/api/files/" + fileId);
+    }
+
+    static Response getFileData(String fileId, String apiToken, String datasetVersionId) {
+        return getFileData(fileId, apiToken, datasetVersionId, false, false);
+    }
+
+    static Response getFileData(String fileId, String apiToken, String datasetVersionId, boolean includeDeaccessioned, boolean returnDatasetVersion) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("includeDeaccessioned", includeDeaccessioned)
+                .queryParam("returnDatasetVersion", returnDatasetVersion)
+                .get("/api/files/" + fileId + "/versions/" + datasetVersionId);
     }
 
     static Response testIngest(String fileName, String fileType) {
@@ -1475,6 +1487,31 @@ public class UtilIT {
                         + "?persistentId="
                         + persistentId
                         + (excludeFiles ? "&excludeFiles=true" : ""));
+    }
+    
+    static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/"
+                        + "?persistentId="
+                        + persistentId
+                        + (returnOwners ? "&returnOwners=true" : ""));
+    }
+    
+    static Response getFileWithOwners(String datafileId,  String apiToken, boolean returnOwners) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/"
+                        + datafileId
+                        + (returnOwners ? "/?returnOwners=true" : ""));
+    }
+    
+    static Response getDataverseWithOwners(String alias,  String apiToken, boolean returnOwners) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"
+                        + alias
+                        + (returnOwners ? "/?returnOwners=true" : ""));
     }
 
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
@@ -2343,6 +2380,21 @@ public class UtilIT {
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
         }
         return requestSpecification.get("/api/admin/test/datasets/" + idInPath + "/externalTools?type=" + type + optionalQueryParam);
+    }
+    
+    static Response getExternalToolForDatasetById(String idOrPersistentIdOfDataset, String type, String apiToken, String toolId) {
+        String idInPath = idOrPersistentIdOfDataset; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(idOrPersistentIdOfDataset)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "&persistentId=" + idOrPersistentIdOfDataset;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification.get("/api/admin/test/datasets/" + idInPath + "/externalTool/" + toolId + "?type=" + type + optionalQueryParam);
     }
 
     static Response getExternalToolsForFile(String idOrPersistentIdOfFile, String type, String apiToken) {
@@ -3477,6 +3529,22 @@ public class UtilIT {
                 .queryParam("includeDeaccessioned", includeDeaccessioned)
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/citation");
         return response;
+    }
+
+    static Response getFileCitation(Integer fileId, String datasetVersion, String apiToken) {
+        Boolean includeDeaccessioned = null;
+        return getFileCitation(fileId, datasetVersion, includeDeaccessioned, apiToken);
+    }
+
+    static Response getFileCitation(Integer fileId, String datasetVersion, Boolean includeDeaccessioned, String apiToken) {
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification.header(API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        if (includeDeaccessioned != null) {
+            requestSpecification.queryParam("includeDeaccessioned", includeDeaccessioned);
+        }
+        return requestSpecification.get("/api/files/" + fileId + "/versions/" + datasetVersion + "/citation");
     }
 
     static Response getVersionFiles(Integer datasetId,

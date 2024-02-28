@@ -721,6 +721,7 @@
                 <configuration>
                     <attachClasses>true</attachClasses>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <webappDirectory>${project.build.directory}/${project.artifactId}</webappDirectory>
                     <archive>
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
@@ -915,6 +916,7 @@
             
                 <app.image>gdcc/dataverse:${app.image.tag}</app.image>
                 <app.image.tag>unstable</app.image.tag>
+                <app.skipDeploy>false</app.skipDeploy>
                 <base.image>gdcc/base:${base.image.tag}</base.image>
                 <base.image.tag>unstable</base.image.tag>
                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
@@ -927,6 +929,7 @@
                 <POSTGRES_VERSION>${postgresql.server.version}</POSTGRES_VERSION>
                 <SOLR_VERSION>${solr.version}</SOLR_VERSION>
                 <DATAVERSE_DB_USER>dataverse</DATAVERSE_DB_USER>
+                <SKIP_DEPLOY>${app.skipDeploy}</SKIP_DEPLOY>
             </properties>
         
             <build>
@@ -1012,14 +1015,6 @@
                                         <skip>true</skip>
                                     </run>
                                 </image>
-
-                                <image>
-                                    <name>gdcc/dev_nginx:unstable</name>
-                                    <build>
-                                        <contextDir>${project.basedir}/modules/nginx</contextDir>
-                                    </build>
-                                </image>
-
                             </images>
                             <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
                         </configuration>
