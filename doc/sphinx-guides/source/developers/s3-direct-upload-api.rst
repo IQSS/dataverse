@@ -61,6 +61,8 @@ Multiple URLs: when the file must be uploaded in multiple parts. The part size i
     "storageIdentifier":"s3://demo-dataverse-bucket:177883b000e-49cedef268ac"
   }
 
+The call will return a 400 (BAD REQUEST) response if the file is larger than what is allowed by the :ref:`:MaxFileUploadSizeInBytes`) and/or a quota (see :doc:`/admin/collectionquotas`).
+
 In the example responses above, the URLs, which are very long, have been omitted. These URLs reference the S3 server and the specific object identifier that will be used, starting with, for example, https://demo-dataverse-bucket.s3.amazonaws.com/10.5072/FK2FOQPJS/177883b000e-49cedef268ac?...
 
 The client must then use the URL(s) to PUT the file, or if the file is larger than the specified partSize, parts of the file. 
