@@ -487,9 +487,10 @@ public class Files extends AbstractApiBean {
                                 @PathParam("id") String fileIdOrPersistentId,
                                 @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                 @QueryParam("returnDatasetVersion") boolean returnDatasetVersion,
+                                @QueryParam("returnOwners") boolean returnOwners,
                                 @Context UriInfo uriInfo,
                                 @Context HttpHeaders headers) {
-        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, DS_VERSION_LATEST, includeDeaccessioned, returnDatasetVersion, uriInfo, headers), getRequestUser(crc));
+        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, DS_VERSION_LATEST, includeDeaccessioned, returnDatasetVersion, returnOwners, uriInfo, headers), getRequestUser(crc));
     }
 
     @GET
@@ -500,9 +501,10 @@ public class Files extends AbstractApiBean {
                                 @PathParam("datasetVersionId") String datasetVersionId,
                                 @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                 @QueryParam("returnDatasetVersion") boolean returnDatasetVersion,
+                                @QueryParam("returnOwners") boolean returnOwners,
                                 @Context UriInfo uriInfo,
                                 @Context HttpHeaders headers) {
-        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, datasetVersionId, includeDeaccessioned, returnDatasetVersion, uriInfo, headers), getRequestUser(crc));
+        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, datasetVersionId, includeDeaccessioned, returnDatasetVersion, returnOwners, uriInfo, headers), getRequestUser(crc));
     }
 
     private Response getFileDataResponse(final DataverseRequest req,
@@ -510,6 +512,7 @@ public class Files extends AbstractApiBean {
                                          String datasetVersionId,
                                          boolean includeDeaccessioned,
                                          boolean returnDatasetVersion,
+                                         boolean returnOwners,
                                          UriInfo uriInfo,
                                          HttpHeaders headers) throws WrappedResponse {
         final DataFile dataFile = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
@@ -542,14 +545,15 @@ public class Files extends AbstractApiBean {
         if (fileMetadata.getDatasetVersion().isReleased()) {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, dataFile);
             mdcLogService.logEntry(entry);
-        }
-
+        } 
+                    
         return Response.ok(Json.createObjectBuilder()
-                        .add("status", ApiConstants.STATUS_OK)
-                        .add("data", json(fileMetadata, returnDatasetVersion)).build())
+                .add("status", ApiConstants.STATUS_OK)
+                .add("data", json(fileMetadata, returnOwners, returnDatasetVersion)).build())
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }
+    
 
     @GET
     @AuthRequired
