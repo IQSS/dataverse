@@ -78,6 +78,12 @@ public class SolrSearchResult {
 	private String dataverseAffiliation;
 	private String citation;
 	private String citationHtml;
+
+	/**
+	 * Only Dataset can have a file count
+	 */
+	private Long fileCount;
+
 	/**
 	 * Files and datasets might have a UNF. Dataverses don't.
 	 */
@@ -571,7 +577,7 @@ public class SolrSearchResult {
 					subjects.add(subject);
 				}
 				nullSafeJsonBuilder.add("subjects", subjects);
-				nullSafeJsonBuilder.add("fileCount", dv.getFileMetadatas().size());
+				nullSafeJsonBuilder.add("fileCount", this.fileCount);
 				nullSafeJsonBuilder.add("versionId", dv.getId());
 				nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
 				if (this.isPublishedState()) {
@@ -1268,4 +1274,12 @@ public class SolrSearchResult {
 	public boolean isValid() {
 		return datasetValid;
     }
+
+	public Long getFileCount() {
+		return fileCount;
+	}
+
+	public void setFileCount(Long fileCount) {
+		this.fileCount = fileCount;
+	}
 }
