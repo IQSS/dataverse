@@ -44,6 +44,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import edu.harvard.iq.dataverse.util.*;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.*;
@@ -3484,6 +3485,16 @@ public class Datasets extends AbstractApiBean {
             params.add(key, substitutedParams.get(key));
         });
         params.add("managed", Boolean.toString(managed));
+        if (managed) {
+            Long maxSize = systemConfig.getMaxFileUploadSizeForStore(storeId);
+            if (maxSize != null) {
+                params.add("fileSizeLimit", maxSize);
+            }
+            UploadSessionQuotaLimit limit = fileService.getUploadSessionQuotaLimit(dataset);
+            if (limit != null) {
+                params.add("remainingQuota", limit.getRemainingQuotaInBytes());
+            }
+        }
         if (transferEndpoint != null) {
             params.add("endpoint", transferEndpoint);
         } else {
