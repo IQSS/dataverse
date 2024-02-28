@@ -35,7 +35,7 @@ RVM is a good way to install a specific version of Ruby: https://rvm.io
 Install Dependencies and Font Custom Gem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The brew commands below assume you are on a Mac. See :doc:`dev-environment` for more on ``brew``.
+The brew commands below assume you are on a Mac.
 
 .. code-block:: bash
 
