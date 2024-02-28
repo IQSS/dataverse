@@ -37,6 +37,8 @@ The response will be of the form:
                   "dvLocale": "en",
                   "datasetPid": "doi:10.5072/FK2/ILLPXE",
                   "managed": "true",
+                  "fileSizeLimit": 100000000000,
+                  "remainingQuota": 1000000000000,
                   "endpoint": "d8c42580-6528-4605-9ad8-116a61982644"
               },
               "signedUrls": [
@@ -68,11 +70,16 @@ The response will be of the form:
           }
     }
 
-The response includes the id for the Globus endpoint to use along with several signed URLs.
+The response includes the id for the Globus endpoint to use along with several parameters and signed URLs. The parameters include whether the Globus endpoint is "managed" by Dataverse and,
+if so, if there is a "fileSizeLimit" (see :ref:`:MaxFileUploadSizeInBytes`) that will be enforced and/or, if there is a quota (see :doc:`/admin/collectionquotas`) on the overall size of data
+that can be upload, what the "remainingQuota" is. Both are in bytes.
+
+Note that while Dataverse will not add files that violate the size or quota rules, Globus itself doesn't enforce these during the transfer. API users should thus check the size of the files
+they intend to transfer before submitting a transfer request to Globus.
 
 The getDatasetMetadata and getFileListing URLs are just signed versions of the standard Dataset metadata and file listing API calls. The other two are Globus specific.
 
-If called for, a dataset using a store that is configured with a remote Globus endpoint(s), the return response is similar but the response includes a
+If called for a dataset using a store that is configured with a remote Globus endpoint(s), the return response is similar but the response includes a
 the "managed" parameter will be false, the "endpoint" parameter is replaced with a JSON array of "referenceEndpointsWithPaths" and the
 requestGlobusTransferPaths and addGlobusFiles URLs are replaced with ones for requestGlobusReferencePaths and addFiles. All of these calls are
 described further below.
