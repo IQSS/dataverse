@@ -555,7 +555,7 @@
                                                     </tr>
                                                     <tr id="fileEPublicationDateBlock" jsf:rendered="#{FilePage.file.released or !(empty FilePage.file.embargo)}">
                                                         <th scope="row">
-                                                            #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
+                                                            #{bundle['file.metadataTab.fileMetadata.embargoDate.label']}
                                                         </th>
                                                         <td>#{!(empty FilePage.file.embargo) ? FilePage.embargoPhrase: ''} #{!(empty FilePage.file.embargo) ? FilePage.file.embargo.dateAvailable : FilePage.file.publicationDateFormattedYYYYMMDD}
                                                         </td>
@@ -569,7 +569,7 @@
                                                     </tr>
                                                     <tr id="fileRPublicationDateBlock" jsf:rendered="#{FilePage.file.released or !(empty FilePage.file.retention)}">
                                                         <th scope="row">
-                                                            #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
+                                                            #{bundle['file.metadataTab.fileMetadata.retentionDate.label']}
                                                         </th>
                                                         <td>#{!(empty FilePage.file.retention) ? FilePage.retentionPhrase: ''} #{!(empty FilePage.file.retention) ? FilePage.file.retention.dateUnavailable : FilePage.file.publicationDateFormattedYYYYMMDD}
                                                         </td>

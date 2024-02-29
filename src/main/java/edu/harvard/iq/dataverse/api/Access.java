@@ -1405,6 +1405,10 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
         }
 
+        if (FileUtil.isActivelyRetended(dataFile)) {
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.retended"));
+        }
+
         if (!dataFile.getOwner().isFileAccessRequest()) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.requestsNotAccepted"));
         }
