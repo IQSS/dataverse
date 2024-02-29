@@ -521,8 +521,8 @@ public class FilePage implements java.io.Serializable {
         dataFile.getIngestRequest().setForceTypeCheck(true);
         
         // update the datafile, to save the newIngest request in the database:
-        save();
-
+        datafileService.save(file);
+        
         // queue the data ingest job for asynchronous execution: 
         String status = ingestService.startIngestJobs(editDataset.getId(), new ArrayList<>(Arrays.asList(dataFile)), (AuthenticatedUser) session.getUser());
         
@@ -587,7 +587,8 @@ public class FilePage implements java.io.Serializable {
                 logger.log(Level.WARNING, "Uningest: Exception while exporting:{0}", ex.getMessage());
             }
         }
-        save();
+        datafileService.save(file);
+
         // Refresh filemetadata with file title, etc.
         init();
         JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("file.uningest.complete"));
