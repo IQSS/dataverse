@@ -536,7 +536,7 @@ public class FilePage implements java.io.Serializable {
             
             logger.warning("Ingest Status for file: " + dataFile.getId() + " : " + status);
         }
-        logger.info("File: " + dataFile.getId() + " ingest queued");
+        logger.fine("File: " + dataFile.getId() + " ingest queued");
 
         init();
         JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("file.ingest.ingestQueued"));
