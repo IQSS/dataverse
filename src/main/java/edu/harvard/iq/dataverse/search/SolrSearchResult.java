@@ -123,6 +123,8 @@ public class SolrSearchResult {
 
 	private Long embargoEndDate;
 
+	private Long retentionStartDate;
+
 	private boolean datasetValid;
 
 	public String getDvTree() {
@@ -1259,6 +1261,14 @@ public class SolrSearchResult {
 
 	public void setEmbargoEndDate(Long embargoEndDate) {
 		this.embargoEndDate = embargoEndDate;
+	}
+
+	public Long getRetentionStartDate() {
+		return retentionStartDate;
+	}
+
+	public void setRetentionStartDate(Long retentionStartDate) {
+		this.retentionStartDate = retentionStartDate;
 	}
 
 	public void setDatasetValid(Boolean datasetValid) {

@@ -244,7 +244,9 @@ public class FileDownloadHelper implements java.io.Serializable {
            }
        }
 
-        if (!isRestrictedFile && !FileUtil.isActivelyEmbargoed(fileMetadata)){
+        if (!isRestrictedFile
+                && !FileUtil.isActivelyEmbargoed(fileMetadata)
+                && !FileUtil.isActivelyRetended(fileMetadata)) {
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
             return true;

@@ -466,7 +466,9 @@ public class Access extends AbstractApiBean {
         if (!dataFile.isTabularData()) { 
            throw new BadRequestException("tabular data required");
         }
-        
+        if (FileUtil.isActivelyRetended(dataFile)) {
+            throw new BadRequestException("unable to download retended file");
+        }
         if (dataFile.isRestricted() || FileUtil.isActivelyEmbargoed(dataFile)) {
             boolean hasPermissionToDownloadFile = false;
             DataverseRequest dataverseRequest;
@@ -921,14 +923,15 @@ public class Access extends AbstractApiBean {
                                     }
                                 } else { 
                                     boolean embargoed = FileUtil.isActivelyEmbargoed(file);
-                                    if (file.isRestricted() || embargoed) {
+                                    boolean retended = FileUtil.isActivelyRetended(file);
+                                    if (file.isRestricted() || embargoed || retended) {
                                         if (zipper == null) {
                                             fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS "
-                                                    + (embargoed ? "EMBARGOED" : "RESTRICTED")
+                                                    + (embargoed ? "EMBARGOED" : retended ? "RETENDED" : "RESTRICTED")
                                                     + " AND CANNOT BE DOWNLOADED\r\n";
                                         } else {
                                             zipper.addToManifest(file.getFileMetadata().getLabel() + " IS "
-                                                    + (embargoed ? "EMBARGOED" : "RESTRICTED")
+                                                    + (embargoed ? "EMBARGOED" : retended ? "RETENDED" : "RESTRICTED")
                                                     + " AND CANNOT BE DOWNLOADED\r\n");
                                         }
                                     } else {
@@ -1735,8 +1738,10 @@ public class Access extends AbstractApiBean {
         //True if there's an embargo that hasn't yet expired
         //In this state, we block access as though the file is restricted (even if it is not restricted)
         boolean embargoed = FileUtil.isActivelyEmbargoed(df);
-        
-        
+        // access is also blocked for retended files
+        boolean retended = FileUtil.isActivelyRetended(df);
+        // TODO maybe return false here immediately if retended
+
         /*
         SEK 7/26/2018 for 3661 relying on the version state of the dataset versions
             to which this file is attached check to see if at least one is  RELEASED
@@ -1801,7 +1806,7 @@ public class Access extends AbstractApiBean {
         
 
         //The one case where we don't need to check permissions
-        if (!restricted && !embargoed && published) {
+        if (!restricted && !embargoed && !retended && published) {
             // If they are not published, they can still be downloaded, if the user
             // has the permission to view unpublished versions! (this case will 
             // be handled below)

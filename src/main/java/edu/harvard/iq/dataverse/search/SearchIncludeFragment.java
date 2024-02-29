@@ -1474,7 +1474,16 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return false;
         }
     }
-    
+
+    public boolean isActivelyRetended(SolrSearchResult result) {
+        Long retentionStartDate = result.getRetentionStartDate();
+        if(retentionStartDate != null) {
+            return LocalDate.now().toEpochDay() > retentionStartDate;
+        } else {
+            return false;
+        }
+    }
+
     public boolean isValid(SolrSearchResult result) {
         return result.isValid();
     }

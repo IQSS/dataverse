@@ -61,10 +61,10 @@ services:
       - ./docker-dev-volumes/app/data:/dv
       - ./docker-dev-volumes/app/secrets:/secrets
       # Uncomment to map the glassfish applications folder so that we can update webapp resources using scripts/intellij/cpwebapp.sh
-      # - ./docker-dev-volumes/glassfish/applications:/opt/payara/appserver/glassfish/domains/domain1/applications
+      #- ./docker-dev-volumes/glassfish/applications:/opt/payara/appserver/glassfish/domains/domain1/applications
       # Uncomment for changes to xhtml to be deployed immediately (if supported your IDE or toolchain).
       # Replace 6.0 with the current version.
-      # - ./target/dataverse-6.0:/opt/payara/deployments/dataverse
+      #- ./target/dataverse-6.1:/opt/payara/deployments/dataverse
     tmpfs:
       - /dumps:mode=770,size=2052M,uid=1000,gid=1000
       - /tmp:mode=770,size=2052M,uid=1000,gid=1000

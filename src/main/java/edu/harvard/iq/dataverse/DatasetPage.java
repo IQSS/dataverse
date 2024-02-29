@@ -5364,7 +5364,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         for (FileMetadata fmd : this.selectedRestrictedFiles){
-            if (!this.fileDownloadHelper.canDownloadFile(fmd)&& !FileUtil.isActivelyEmbargoed(fmd)){
+            if (!this.fileDownloadHelper.canDownloadFile(fmd) && !FileUtil.isActivelyEmbargoed(fmd)){
                 return true;
             }
         }
@@ -5725,7 +5725,10 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isShowQueryButton(Long fileId) { 
         DataFile dataFile = datafileService.find(fileId);
 
-        if(dataFile.isRestricted() || !dataFile.isReleased()  || FileUtil.isActivelyEmbargoed(dataFile)){
+        if(dataFile.isRestricted()
+                || !dataFile.isReleased()
+                || FileUtil.isActivelyEmbargoed(dataFile)
+                || FileUtil.isActivelyRetended(dataFile)){
             return false;
         }
         
