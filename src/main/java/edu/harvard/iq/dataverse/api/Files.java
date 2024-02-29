@@ -61,6 +61,7 @@ import jakarta.ws.rs.core.Response;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonDT;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 
 import jakarta.ws.rs.core.UriInfo;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -209,10 +210,10 @@ public class Files extends AbstractApiBean {
                     //  - Will skip extra attributes which includes fileToReplaceId and forceReplace
                     optionalFileParams = new OptionalFileParams(jsonData);
                 } catch (DataFileTagException ex) {
-                    return error(Response.Status.BAD_REQUEST, ex.getMessage());
+                    return error(BAD_REQUEST, ex.getMessage());
                 }
             } catch (ClassCastException | com.google.gson.JsonParseException ex) {
-                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
             }
         }
 
@@ -301,7 +302,7 @@ public class Files extends AbstractApiBean {
                 //"Look at that!  You added a file! (hey hey, it may have worked)");
             } catch (NoFilesException ex) {
                 Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
-                return error(Response.Status.BAD_REQUEST, "NoFileException!  Serious Error! See administrator!");
+                return error(BAD_REQUEST, "NoFileException!  Serious Error! See administrator!");
 
             }
         }
@@ -391,7 +392,7 @@ public class Files extends AbstractApiBean {
                 //we get the data file to do a permissions check, if this fails it'll go to the WrappedResponse below for an ugly unpermitted error
                 execCommand(new GetDataFileCommand(req, findDataFileOrDie(result.get(0).toString())));
 
-                return error(Response.Status.BAD_REQUEST, "You cannot edit metadata on a dataFile that has been replaced. Please try again with the newest file id.");
+                return error(BAD_REQUEST, "You cannot edit metadata on a dataFile that has been replaced. Please try again with the newest file id.");
             }
 
             // (2) Check/Parse the JSON (if uploaded)  
@@ -413,10 +414,10 @@ public class Files extends AbstractApiBean {
                         //  - Will skip extra attributes which includes fileToReplaceId and forceReplace
                         optionalFileParams = new OptionalFileParams(jsonData);
                     } catch (DataFileTagException ex) {
-                        return error(Response.Status.BAD_REQUEST, ex.getMessage());
+                        return error(BAD_REQUEST, ex.getMessage());
                     }
                 } catch (ClassCastException | com.google.gson.JsonParseException ex) {
-                    return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
                 }
             }
 
@@ -437,7 +438,7 @@ public class Files extends AbstractApiBean {
                 }
                 
                 if (upFmd == null){
-                    return error(Response.Status.BAD_REQUEST, "An error has occurred attempting to update the requested DataFile. It is not part of the current version of the Dataset.");
+                    return error(BAD_REQUEST, "An error has occurred attempting to update the requested DataFile. It is not part of the current version of the Dataset.");
                 }
 
                 jakarta.json.JsonObject jsonObject = JsonUtil.getJsonObject(jsonData);
@@ -468,7 +469,7 @@ public class Files extends AbstractApiBean {
             }
 
         } catch (WrappedResponse wr) {
-            return error(Response.Status.BAD_REQUEST, "An error has occurred attempting to update the requested DataFile, likely related to permissions.");
+            return error(BAD_REQUEST, "An error has occurred attempting to update the requested DataFile, likely related to permissions.");
         }
 
         String jsonString = upFmd.asGsonObject(true).toString();
@@ -619,23 +620,41 @@ public class Files extends AbstractApiBean {
         if (dataFile == null) {
             return error(Response.Status.NOT_FOUND, "File not found for given id.");
         }
-
         if (!dataFile.isTabularData()) {
-            return error(Response.Status.BAD_REQUEST, "Cannot uningest non-tabular file.");
+            // Ingest never succeeded, either there was a failure or this is not a tabular
+            // data file
+            // We allow anyone who can publish to uningest in order to clear a problem
+            if (dataFile.isIngestProblem()) {
+                try {
+                    AuthenticatedUser au = getRequestAuthenticatedUserOrDie(crc);
+                    if (!(permissionSvc.permissionsFor(au, dataFile).contains(Permission.PublishDataset))) {
+                        return forbidden(
+                                "Uningesting to remove an ingest problem can only be done by those who can publish the dataset");
+                    }
+                } catch (WrappedResponse wr) {
+                    return wr.getResponse();
+                }
+                dataFile.setIngestDone();
+                dataFile.setIngestReport(null);
+                fileService.save(dataFile);
+                return ok("Datafile " + dataFile.getId() + " uningested.");
+            } else {
+                return error(BAD_REQUEST,
+                        BundleUtil.getStringFromBundle("Cannot uningest non-tabular file."));
+            }
+        } else {
+            try {
+                DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+                execCommand(new UningestFileCommand(req, dataFile));
+                Long dataFileId = dataFile.getId();
+                dataFile = fileService.find(dataFileId);
+                Dataset theDataset = dataFile.getOwner();
+                exportDatasetMetadata(settingsService, theDataset);
+                return ok("Datafile " + dataFileId + " uningested.");
+            } catch (WrappedResponse wr) {
+                return wr.getResponse();
+            }
         }
-
-        try {
-            DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            execCommand(new UningestFileCommand(req, dataFile));
-            Long dataFileId = dataFile.getId();
-            dataFile = fileService.find(dataFileId);
-            Dataset theDataset = dataFile.getOwner();
-            exportDatasetMetadata(settingsService, theDataset);
-            return ok("Datafile " + dataFileId + " uningested.");
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-
     }
 
     // reingest attempts to queue an *existing* DataFile 
@@ -654,7 +673,7 @@ public class Files extends AbstractApiBean {
         try {
             u = getRequestAuthenticatedUserOrDie(crc);
             if (!u.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "This API call can be used by superusers only");
+                return error(FORBIDDEN, "This API call can be used by superusers only");
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -670,21 +689,21 @@ public class Files extends AbstractApiBean {
         Dataset dataset = dataFile.getOwner();
         
         if (dataset == null) {
-            return error(Response.Status.BAD_REQUEST, "Failed to locate the parent dataset for the datafile.");
+            return error(BAD_REQUEST, "Failed to locate the parent dataset for the datafile.");
         }
         
         if (dataFile.isTabularData()) {
-            return error(Response.Status.BAD_REQUEST, "The datafile is already ingested as Tabular.");
+            return error(BAD_REQUEST, "The datafile is already ingested as Tabular.");
         }
         
         boolean ingestLock = dataset.isLockedFor(DatasetLock.Reason.Ingest);
         
         if (ingestLock) {
-            return error(Response.Status.FORBIDDEN, "Dataset already locked with an Ingest lock");
+            return error(FORBIDDEN, "Dataset already locked with an Ingest lock");
         }
         
         if (!FileUtil.canIngestAsTabular(dataFile)) {
-            return error(Response.Status.BAD_REQUEST, "Tabular ingest is not supported for this file type (id: "+id+", type: "+dataFile.getContentType()+")");
+            return error(BAD_REQUEST, "Tabular ingest is not supported for this file type (id: "+id+", type: "+dataFile.getContentType()+")");
         }
         
         dataFile.SetIngestScheduled();
@@ -724,7 +743,7 @@ public class Files extends AbstractApiBean {
             // Ingested Files have mimetype = text/tab-separated-values
             // No need to redetect
             if (dataFileIn.isTabularData()) {
-                return error(Response.Status.BAD_REQUEST, "The file is an ingested tabular file.");
+                return error(BAD_REQUEST, "The file is an ingested tabular file.");
             }
             String originalContentType = dataFileIn.getContentType();
             DataFile dataFileOut = execCommand(new RedetectFileTypeCommand(createDataverseRequest(getRequestUser(crc)), dataFileIn, dryRun));
@@ -747,7 +766,7 @@ public class Files extends AbstractApiBean {
             if (!au.isSuperuser()) {
                 // We can always make a command in the future if there's a need
                 // for non-superusers to call this API.
-                return error(Response.Status.FORBIDDEN, "This API call can be used by superusers only");
+                return error(FORBIDDEN, "This API call can be used by superusers only");
             }
             DataFile dataFileIn = findDataFileOrDie(id);
             java.nio.file.Path tempLocationPath = null;
