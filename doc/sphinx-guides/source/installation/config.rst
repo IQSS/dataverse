@@ -1052,7 +1052,7 @@ Before being moved there,
 
 .. _cache-rate-limiting:
 
-Configure Your Dataverse Installation to use JCache (with Hazelcast as provided by Payara) for Rate Limiting
+Configure Your Dataverse Installation to Use JCache (with Hazelcast as Provided by Payara) for Rate Limiting
 ------------------------------------------------------------------------------------------------------------
 
 Rate limiting has been added to prevent users from over taxing the system either deliberately or by runaway automated processes.
