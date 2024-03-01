@@ -238,14 +238,20 @@
                   "typeClass": "primitive",
                   "value": "Keyword Value 1"
                 },
+                "keywordTermURI": {
+                  "typeName": "keywordTermURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://keywordTermURI1.org"
+                },
                 "keywordVocabulary": {
                   "typeName": "keywordVocabulary",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "Keyword Vocabulary"
                 },
-                "keywordVocabularyURI": {
-                  "typeName": "keywordVocabularyURI",
+                "keywordVocabularyURL": {
+                  "typeName": "keywordVocabularyURL",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "http://www.keyword.com/one"
@@ -258,14 +264,20 @@
                   "typeClass": "primitive",
                   "value": "Keyword Value Two"
                 },
+                "keywordTermURI": {
+                  "typeName": "keywordTermURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://keywordTermURI1.org"
+                },
                 "keywordVocabulary": {
                   "typeName": "keywordVocabulary",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "Keyword Vocabulary"
                 },
-                "keywordVocabularyURI": {
-                  "typeName": "keywordVocabularyURI",
+                "keywordVocabularyURL": {
+                  "typeName": "keywordVocabularyURL",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "http://www.keyword.com/one"

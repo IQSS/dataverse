@@ -323,8 +323,9 @@
     <field name="journalVolumeIssue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="keyword" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="keywordValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="keywordTermURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="keywordVocabulary" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="keywordVocabularyURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="keywordVocabularyURL" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="kindOfData" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="language" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="northLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -562,8 +563,9 @@
     <copyField source="journalVolumeIssue" dest="_text_" maxChars="3000"/>
     <copyField source="keyword" dest="_text_" maxChars="3000"/>
     <copyField source="keywordValue" dest="_text_" maxChars="3000"/>
+    <copyField source="keywordTermURI" dest="_text_" maxChars="3000"/>
     <copyField source="keywordVocabulary" dest="_text_" maxChars="3000"/>
-    <copyField source="keywordVocabularyURI" dest="_text_" maxChars="3000"/>
+    <copyField source="keywordVocabularyURL" dest="_text_" maxChars="3000"/>
     <copyField source="kindOfData" dest="_text_" maxChars="3000"/>
     <copyField source="language" dest="_text_" maxChars="3000"/>
     <copyField source="northLongitude" dest="_text_" maxChars="3000"/>

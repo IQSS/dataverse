@@ -303,9 +303,9 @@ public class OpenAireExportUtilTest {
                 + "<subject>Business and Management</subject>"
                 + "<subject>Engineering</subject>"
                 + "<subject>Law</subject>"
-                + "<subject schemeURI=\"http://KeywordVocabularyURL1.org\" "
+                + "<subject schemeURI=\"http://keywordTermURI1.org\" "
                 + "subjectScheme=\"KeywordVocabulary1\">KeywordTerm1</subject>"
-                + "<subject schemeURI=\"http://KeywordVocabularyURL2.org\" "
+                + "<subject schemeURI=\"http://keywordTermURI2.org\" "
                 + "subjectScheme=\"KeywordVocabulary2\">KeywordTerm2</subject>"
                 + "</subjects>",
                 stringWriter.toString());

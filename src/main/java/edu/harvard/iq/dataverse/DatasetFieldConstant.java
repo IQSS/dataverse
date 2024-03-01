@@ -91,8 +91,9 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String datasetVersionValue="datasetVersionValue";
     public final static String versionDate="versionDate";
     public final static String keywordValue="keywordValue";
+    public final static String keywordTermURI="keywordTermURI";
     public final static String keywordVocab="keywordVocabulary"; //SEK 6/10/2016 to match what is in the db
-    public final static String keywordVocabURI="keywordVocabularyURI"; //SEK 6/10/2016 to match what is in the db
+    public final static String keywordVocabURL="keywordVocabularyURL"; //SEK 6/10/2016 to match what is in the db
     public final static String topicClassValue="topicClassValue";
     public final static String topicClassVocab="topicClassVocab";
     public final static String topicClassVocabURI="topicClassVocabURI";
@@ -310,8 +311,8 @@ public class DatasetFieldConstant implements java.io.Serializable  {
         return keywordVocab;
     }
     
-    public String getKeywordVocabURI() {
-        return keywordVocabURI;
+    public String getKeywordVocabURL() {
+        return keywordVocabURL;
     }
     
     public String getTopicClassValue() {

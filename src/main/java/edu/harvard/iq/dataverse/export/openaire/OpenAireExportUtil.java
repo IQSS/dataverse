@@ -446,7 +446,8 @@ public class OpenAireExportUtil {
                         for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
                             String subject = null;
                             String subjectScheme = null;
-                            String schemeURI = null;
+                            String keywordTermURI = null;
+                            String keywordVocabURL = null;
 
                             for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
@@ -454,18 +455,23 @@ public class OpenAireExportUtil {
                                     subject = next.getSinglePrimitive();
                                 }
 
+                                if (DatasetFieldConstant.keywordTermURI.equals(next.getTypeName())) {
+                                    keywordTermURI = next.getSinglePrimitive();
+                                }  
+
                                 if (DatasetFieldConstant.keywordVocab.equals(next.getTypeName())) {
                                     subjectScheme = next.getSinglePrimitive();
                                 }
-
-                                if (DatasetFieldConstant.keywordVocabURI.equals(next.getTypeName())) {
-                                    schemeURI = next.getSinglePrimitive();
+                                
+                                if (DatasetFieldConstant.keywordVocabURL.equals(next.getTypeName())) {
+                                    keywordVocabURL = next.getSinglePrimitive();
                                 }
                             }
 
                             if (StringUtils.isNotBlank(subject)) {
                                 subject_check = writeOpenTag(xmlw, "subjects", subject_check);
-                                writeSubjectElement(xmlw, subjectScheme, schemeURI, subject, language);
+                                // we prioritize the keywordTermURI metadata to populate schemeURI
+                                writeSubjectElement(xmlw, subjectScheme, StringUtils.isNotBlank(keywordTermURI) ? keywordTermURI : keywordVocabURL, subject, language);
                             }
                         }
                     }
