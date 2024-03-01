@@ -1,18 +1,14 @@
 package edu.harvard.iq.dataverse.util.cache;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonException;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbException;
+
 import javax.cache.Cache;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -106,19 +102,22 @@ public class RateLimitUtil {
             r.getActions().forEach(a -> rateLimitMap.put(getMapKey(r.getTier(), a), r.getLimitPerHour()));
         });
     }
+    
+    @SuppressWarnings("java:S2133") // <- To enable casting to generic in JSON-B we need a class instance, false positive
     static void getRateLimitsFromJson(SystemConfig systemConfig) {
         String setting = systemConfig.getRateLimitsJson();
         rateLimits.clear();
         if (!setting.isEmpty()) {
-            try {
-                JsonReader jr = Json.createReader(new StringReader(setting));
-                JsonArray lst = jr.readArray();
-                Gson gson = new Gson();
-                rateLimits.addAll(gson.fromJson(String.valueOf(lst),
+            try (Jsonb jsonb = JsonbBuilder.create()) {
+                rateLimits.addAll(jsonb.fromJson(setting,
                         new ArrayList<RateLimitSetting>() {}.getClass().getGenericSuperclass()));
-            } catch (JsonException | JsonParseException e) {
+            } catch (JsonbException e) {
                 logger.warning("Unable to parse Rate Limit Json: " + e.getLocalizedMessage() + "   Json:(" + setting + ")");
                 rateLimits.add(new RateLimitSetting()); // add a default entry to prevent re-initialization
+            // Note: Usually using Exception in a catch block is an antipattern and should be avoided.
+            //       As the JSON-B interface does not specify a non-generic type, we have to use this.
+            } catch (Exception e) {
+                logger.warning("Could not close JSON-B reader");
             }
         }
     }
