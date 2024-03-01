@@ -210,6 +210,18 @@
             <scope>provided</scope>
         </dependency>
         
+        <!-- JSON-B -->
+        <dependency>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
+        </dependency>
+        <!-- Rope in an implementation for unit tests - is provided at runtime by appserver -->
+        <dependency>
+            <groupId>org.eclipse</groupId>
+            <artifactId>yasson</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
         <!-- Jakarta Faces & related -->
         <dependency>
             <groupId>org.glassfish</groupId>

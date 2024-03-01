@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.util.cache;
 
-import jakarta.json.bind.annotation.JsonbProperty;
-
 import java.util.ArrayList;
 import java.util.List;
 

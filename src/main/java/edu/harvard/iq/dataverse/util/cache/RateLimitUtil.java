@@ -1,18 +1,14 @@
 package edu.harvard.iq.dataverse.util.cache;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonException;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbException;
+
 import javax.cache.Cache;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,23 +27,19 @@ public class RateLimitUtil {
     public static final int NO_LIMIT = -1;
 
     static String generateCacheKey(final User user, final String action) {
-        StringBuffer id = new StringBuffer();
-        id.append(user != null ? user.getIdentifier() : GuestUser.get().getIdentifier());
-        if (action != null) {
-            id.append(":").append(action);
-        }
-        return id.toString();
+        return (user != null ? user.getIdentifier() : GuestUser.get().getIdentifier()) +
+            (action != null ? ":" + action : "");
     }
     static int getCapacity(SystemConfig systemConfig, User user, String action) {
         if (user != null && user.isSuperuser()) {
             return NO_LIMIT;
-        };
+        }
         // get the capacity, i.e. calls per hour, from config
-        return (user instanceof AuthenticatedUser) ?
-                getCapacityByTierAndAction(systemConfig, ((AuthenticatedUser) user).getRateLimitTier(), action) :
+        return (user instanceof AuthenticatedUser authUser) ?
+                getCapacityByTierAndAction(systemConfig, authUser.getRateLimitTier(), action) :
                 getCapacityByTierAndAction(systemConfig, 0, action);
     }
-    static boolean rateLimited(final Cache rateLimitCache, final String key, int capacityPerHour) {
+    static boolean rateLimited(final Cache<String, String> rateLimitCache, final String key, int capacityPerHour) {
         if (capacityPerHour == NO_LIMIT) {
             return false;
         }
@@ -73,10 +65,14 @@ public class RateLimitUtil {
         if (rateLimits.isEmpty()) {
             init(systemConfig);
         }
-
-        return rateLimitMap.containsKey(getMapKey(tier,action)) ? rateLimitMap.get(getMapKey(tier,action)) :
-                rateLimitMap.containsKey(getMapKey(tier)) ? rateLimitMap.get(getMapKey(tier)) :
-                        getCapacityByTier(systemConfig, tier);
+        
+        if (rateLimitMap.containsKey(getMapKey(tier, action))) {
+            return rateLimitMap.get(getMapKey(tier,action));
+        } else if (rateLimitMap.containsKey(getMapKey(tier))) {
+            return rateLimitMap.get(getMapKey(tier));
+        } else {
+            return getCapacityByTier(systemConfig, tier);
+        }
     }
     static int getCapacityByTier(SystemConfig systemConfig, int tier) {
         int value = NO_LIMIT;
@@ -106,19 +102,22 @@ public class RateLimitUtil {
             r.getActions().forEach(a -> rateLimitMap.put(getMapKey(r.getTier(), a), r.getLimitPerHour()));
         });
     }
+    
+    @SuppressWarnings("java:S2133") // <- To enable casting to generic in JSON-B we need a class instance, false positive
     static void getRateLimitsFromJson(SystemConfig systemConfig) {
         String setting = systemConfig.getRateLimitsJson();
         rateLimits.clear();
         if (!setting.isEmpty()) {
-            try {
-                JsonReader jr = Json.createReader(new StringReader(setting));
-                JsonArray lst = jr.readArray();
-                Gson gson = new Gson();
-                rateLimits.addAll(gson.fromJson(String.valueOf(lst),
+            try (Jsonb jsonb = JsonbBuilder.create()) {
+                rateLimits.addAll(jsonb.fromJson(setting,
                         new ArrayList<RateLimitSetting>() {}.getClass().getGenericSuperclass()));
-            } catch (JsonException | JsonParseException e) {
+            } catch (JsonbException e) {
                 logger.warning("Unable to parse Rate Limit Json: " + e.getLocalizedMessage() + "   Json:(" + setting + ")");
                 rateLimits.add(new RateLimitSetting()); // add a default entry to prevent re-initialization
+            // Note: Usually using Exception in a catch block is an antipattern and should be avoided.
+            //       As the JSON-B interface does not specify a non-generic type, we have to use this.
+            } catch (Exception e) {
+                logger.warning("Could not close JSON-B reader");
             }
         }
     }
@@ -126,14 +125,9 @@ public class RateLimitUtil {
         return getMapKey(tier, null);
     }
     static String getMapKey(int tier, String action) {
-        StringBuffer key = new StringBuffer();
-        key.append(tier).append(":");
-        if (action != null) {
-            key.append(action);
-        }
-        return key.toString();
+        return tier + ":" + (action != null ? action : "");
     }
-    static long longFromKey(Cache cache, String key) {
+    static long longFromKey(Cache<String, String> cache, String key) {
         Object l = cache.get(key);
         return l != null ? Long.parseLong(String.valueOf(l)) : 0L;
     }
