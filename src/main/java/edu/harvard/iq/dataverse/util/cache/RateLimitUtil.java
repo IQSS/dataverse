@@ -27,23 +27,19 @@ public class RateLimitUtil {
     public static final int NO_LIMIT = -1;
 
     static String generateCacheKey(final User user, final String action) {
-        StringBuffer id = new StringBuffer();
-        id.append(user != null ? user.getIdentifier() : GuestUser.get().getIdentifier());
-        if (action != null) {
-            id.append(":").append(action);
-        }
-        return id.toString();
+        return (user != null ? user.getIdentifier() : GuestUser.get().getIdentifier()) +
+            (action != null ? ":" + action : "");
     }
     static int getCapacity(SystemConfig systemConfig, User user, String action) {
         if (user != null && user.isSuperuser()) {
             return NO_LIMIT;
-        };
+        }
         // get the capacity, i.e. calls per hour, from config
-        return (user instanceof AuthenticatedUser) ?
-                getCapacityByTierAndAction(systemConfig, ((AuthenticatedUser) user).getRateLimitTier(), action) :
+        return (user instanceof AuthenticatedUser authUser) ?
+                getCapacityByTierAndAction(systemConfig, authUser.getRateLimitTier(), action) :
                 getCapacityByTierAndAction(systemConfig, 0, action);
     }
-    static boolean rateLimited(final Cache rateLimitCache, final String key, int capacityPerHour) {
+    static boolean rateLimited(final Cache<String, String> rateLimitCache, final String key, int capacityPerHour) {
         if (capacityPerHour == NO_LIMIT) {
             return false;
         }
@@ -69,10 +65,14 @@ public class RateLimitUtil {
         if (rateLimits.isEmpty()) {
             init(systemConfig);
         }
-
-        return rateLimitMap.containsKey(getMapKey(tier,action)) ? rateLimitMap.get(getMapKey(tier,action)) :
-                rateLimitMap.containsKey(getMapKey(tier)) ? rateLimitMap.get(getMapKey(tier)) :
-                        getCapacityByTier(systemConfig, tier);
+        
+        if (rateLimitMap.containsKey(getMapKey(tier, action))) {
+            return rateLimitMap.get(getMapKey(tier,action));
+        } else if (rateLimitMap.containsKey(getMapKey(tier))) {
+            return rateLimitMap.get(getMapKey(tier));
+        } else {
+            return getCapacityByTier(systemConfig, tier);
+        }
     }
     static int getCapacityByTier(SystemConfig systemConfig, int tier) {
         int value = NO_LIMIT;
@@ -125,14 +125,9 @@ public class RateLimitUtil {
         return getMapKey(tier, null);
     }
     static String getMapKey(int tier, String action) {
-        StringBuffer key = new StringBuffer();
-        key.append(tier).append(":");
-        if (action != null) {
-            key.append(action);
-        }
-        return key.toString();
+        return tier + ":" + (action != null ? action : "");
     }
-    static long longFromKey(Cache cache, String key) {
+    static long longFromKey(Cache<String, String> cache, String key) {
         Object l = cache.get(key);
         return l != null ? Long.parseLong(String.valueOf(l)) : 0L;
     }
