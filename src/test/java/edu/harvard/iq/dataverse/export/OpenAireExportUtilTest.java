@@ -927,15 +927,15 @@ public class OpenAireExportUtilTest {
                 + "<geoLocationBox>"
                 + "<westBoundLongitude>10</westBoundLongitude>"
                 + "<eastBoundLongitude>20</eastBoundLongitude>"
-                + "<northBoundLatitude>30</northBoundLatitude>"
                 + "<southBoundLatitude>40</southBoundLatitude>"
+                + "<northBoundLatitude>30</northBoundLatitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation>"
                 + "<geoLocation>"
                 + "<geoLocationBox>"
+                + "<eastBoundLongitude>60</eastBoundLongitude>"
                 + "<southBoundLatitude>80</southBoundLatitude>"
                 + "<northBoundLatitude>70</northBoundLatitude>"
-                + "<eastBoundLongitude>60</eastBoundLongitude>"
                 + "<westBoundLongitude>50</westBoundLongitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation></geoLocations>",
@@ -966,8 +966,8 @@ public class OpenAireExportUtilTest {
                 + "<geoLocationBox>"
                 + "<eastBoundLongitude>23</eastBoundLongitude>"
                 + "<northBoundLatitude>786</northBoundLatitude>"
-                + "<westBoundLongitude>45</westBoundLongitude>"
                 + "<southBoundLatitude>34</southBoundLatitude>"
+                + "<westBoundLongitude>45</westBoundLongitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation></geoLocations>",
                 stringWriter.toString());

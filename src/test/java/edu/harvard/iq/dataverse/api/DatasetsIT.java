@@ -1670,6 +1670,26 @@ public class DatasetsIT {
         giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "fileDownloader", "@" + randomUsername, apiToken);
                 giveRandoPermission.prettyPrint();
         assertEquals(200, giveRandoPermission.getStatusCode());
+
+        // Create another random user to become curator:
+
+        Response createCuratorUser = UtilIT.createRandomUser();
+        createCuratorUser.prettyPrint();
+        String curatorUsername = UtilIT.getUsernameFromResponse(createCuratorUser);
+        String curatorUserApiToken = UtilIT.getApiTokenFromResponse(createCuratorUser);
+
+        Response giveCuratorPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "curator", "@" + curatorUsername, apiToken);
+        giveCuratorPermission.prettyPrint();
+        assertEquals(200, giveCuratorPermission.getStatusCode());
+
+        // Test if privilege escalation is possible: curator should not be able to assign admin rights
+        Response giveTooMuchPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "admin", "@" + curatorUsername, curatorUserApiToken);
+        giveTooMuchPermission.prettyPrint();
+        assertEquals(401, giveTooMuchPermission.getStatusCode());
+
+        giveTooMuchPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "admin", "@" + randomUsername, curatorUserApiToken);
+        giveTooMuchPermission.prettyPrint();
+        assertEquals(401, giveTooMuchPermission.getStatusCode());
         
         String idToDelete = JsonPath.from(giveRandoPermission.getBody().asString()).getString("data.id");                
 
@@ -1692,7 +1712,7 @@ public class DatasetsIT {
         deleteGrantedAccess.prettyPrint();
         assertEquals(200, deleteGrantedAccess.getStatusCode());
         
-       Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
         
@@ -1701,6 +1721,14 @@ public class DatasetsIT {
         assertEquals(200, deleteDataverseResponse.getStatusCode());
 
         Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+        deleteUserResponse = UtilIT.deleteUser(randomUsername);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+        deleteUserResponse = UtilIT.deleteUser(curatorUsername);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
         
@@ -1886,6 +1914,43 @@ public class DatasetsIT {
                 .body("message", equalTo("Dataset cannot be edited due to dataset lock."))
                 .statusCode(FORBIDDEN.getStatusCode());
 
+    }
+    
+    @Test
+    public void testGetDatasetOwners() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        logger.info("Dataset created with id " + datasetId + " and persistent id " + persistentId);
+
+        Response getDatasetWithOwners = UtilIT.getDatasetWithOwners(persistentId, apiToken, true);
+        getDatasetWithOwners.prettyPrint();
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(dataverseAlias));       
+        
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());        
     }
 
     /**
