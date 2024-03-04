@@ -532,10 +532,11 @@
           <artifactId>java-json-canonicalization</artifactId>
           <version>1.1</version>
         </dependency>
+        <!-- Sitemap generation -->
         <dependency>
-            <groupId>com.github.dfabulich</groupId>
+            <groupId>io.gdcc</groupId>
             <artifactId>sitemapgen4j</artifactId>
-            <version>1.1.2</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>edu.ucar</groupId>
