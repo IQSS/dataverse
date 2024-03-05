@@ -429,7 +429,7 @@ public class Datasets extends AbstractApiBean {
            
             //If excludeFiles is null the default is to provide the files and because of this we need to check permissions. 
             boolean checkFilePerms = excludeFiles == null ? true : !excludeFiles;
-            boolean deaccesionedLookup = true;
+            
 
             Dataset dst = findDatasetOrDie(datasetId);
             DatasetVersion requestedDatasetVersion 
@@ -437,14 +437,20 @@ public class Datasets extends AbstractApiBean {
                             checkFilePerms);
             
             DatasetVersion latestDatasetVersion = requestedDatasetVersion;
-            // if(versionId != DS_VERSION_LATEST){                
-            //     checkFilePerms = false;
-            //     latestDatasetVersion = getDatasetVersionOrDie(req, DS_VERSION_LATEST, dst, uriInfo, headers,
-            //             deaccesionedLookup,
-            //             checkFilePerms);
-            // } else {
-            //     latestDatasetVersion = requestedDatasetVersion;
-            // }
+
+            //We need to retrieve the latest version to check the status as request of the SPA, we have to set the 
+            //deaccesionedLookup to true to check to include deaccessioned datasets in the lookup
+            //checkFilePerms is set to false because we are not going to check the status of the latest version only
+            //if the user is requesting already the latest version don't need to check 
+            boolean deaccesionedLookup = true;
+            checkFilePerms = false;
+            if(versionId != DS_VERSION_LATEST){                
+                latestDatasetVersion = getDatasetVersionOrDie(req, DS_VERSION_LATEST, dst, uriInfo, headers,
+                        deaccesionedLookup,
+                        checkFilePerms);
+            } else {
+                latestDatasetVersion = requestedDatasetVersion;
+            }
   
             if (requestedDatasetVersion == null || requestedDatasetVersion.getId() == null) {
                 return notFound("Dataset version not found");

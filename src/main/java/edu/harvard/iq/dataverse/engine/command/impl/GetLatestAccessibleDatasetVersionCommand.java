@@ -45,15 +45,12 @@ public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<Da
 
         DatasetVersion latestAccessibleDatasetVersion = null;
 
-        if(ds.getLatestVersion().isDraft()){
-            if (ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)){
+        if(ds.getLatestVersion().isDraft() && ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)){
                 latestAccessibleDatasetVersion = ctxt.engine().submit(new GetDraftDatasetVersionCommand(getRequest(), ds));
-            }
         } else {
             latestAccessibleDatasetVersion = ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(
                     getRequest(), ds, includeDeaccessioned, checkFilePerms));
         }
-
         return latestAccessibleDatasetVersion;
     }
 }
