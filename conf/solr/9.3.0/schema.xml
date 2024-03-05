@@ -158,7 +158,7 @@
     <field name="externalStatus" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="embargoEndDate" type="plong" stored="true" indexed="true" multiValued="false"/>
 
-    <field name="retentionStartDate" type="plong" stored="true" indexed="true" multiValued="false"/>
+    <field name="retentionEndDate" type="plong" stored="true" indexed="true" multiValued="false"/>
 
     <field name="subtreePaths" type="string" stored="true" indexed="true" multiValued="true"/>
 

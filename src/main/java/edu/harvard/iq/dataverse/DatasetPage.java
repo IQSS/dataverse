@@ -5728,7 +5728,7 @@ public class DatasetPage implements java.io.Serializable {
         if(dataFile.isRestricted()
                 || !dataFile.isReleased()
                 || FileUtil.isActivelyEmbargoed(dataFile)
-                || FileUtil.isActivelyRetended(dataFile)){
+                || FileUtil.isRetentionExpired(dataFile)){
             return false;
         }
         
@@ -6354,8 +6354,8 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
-    public boolean isActivelyRetended(List<FileMetadata> fmdList) {
-        return FileUtil.isActivelyRetended(fmdList);
+    public boolean isRetentionExpired(List<FileMetadata> fmdList) {
+        return FileUtil.isRetentionExpired(fmdList);
     }
 
     public boolean isRetentionForWholeSelection() {
@@ -6465,7 +6465,7 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isCantDownloadDueToRetention() {
         if (getSelectedNonDownloadableFiles() != null) {
             for (FileMetadata fmd : getSelectedNonDownloadableFiles()) {
-                if (FileUtil.isActivelyRetended(fmd)) {
+                if (FileUtil.isRetentionExpired(fmd)) {
                     return true;
                 }
             }
@@ -6476,7 +6476,7 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isCantRequestDueToRetention() {
         if (fileDownloadHelper.getFilesForRequestAccess() != null) {
             for (DataFile df : fileDownloadHelper.getFilesForRequestAccess()) {
-                if (FileUtil.isActivelyRetended(df)) {
+                if (FileUtil.isRetentionExpired(df)) {
                     return true;
                 }
             }
@@ -6484,9 +6484,9 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
-    private boolean containsOnlyActivelyRetendedFiles(List<FileMetadata> selectedFiles) {
+    private boolean containsOnlyRetentionExpiredFiles(List<FileMetadata> selectedFiles) {
         for (FileMetadata fmd : selectedFiles) {
-            if (!FileUtil.isActivelyRetended(fmd)) {
+            if (!FileUtil.isRetentionExpired(fmd)) {
                 return false;
             }
         }

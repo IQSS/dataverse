@@ -1770,25 +1770,24 @@ public class FileUtil implements java.io.Serializable  {
         return false;
     }
 
-    public static boolean isActivelyRetended(DataFile df) {
+    public static boolean isRetentionExpired(DataFile df) {
         Retention e = df.getRetention();
         if (e != null) {
-            LocalDate startDate = e.getDateUnavailable();
-            // Note that it is retended (unavailable) on the start day and after that.
-            if (startDate != null && startDate.isBefore(LocalDate.now().plusDays(1L))) {
+            LocalDate endDate = e.getDateUnavailable();
+            if (endDate != null && endDate.isBefore(LocalDate.now())) {
                 return true;
             }
         }
         return false;
     }
 
-    public static boolean isActivelyRetended(FileMetadata fileMetadata) {
-        return isActivelyRetended(fileMetadata.getDataFile());
+    public static boolean isRetentionExpired(FileMetadata fileMetadata) {
+        return isRetentionExpired(fileMetadata.getDataFile());
     }
 
-    public static boolean isActivelyRetended(List<FileMetadata> fmdList) {
+    public static boolean isRetentionExpired(List<FileMetadata> fmdList) {
         for (FileMetadata fmd : fmdList) {
-            if (isActivelyRetended(fmd)) {
+            if (isRetentionExpired(fmd)) {
                 return true;
             }
         }

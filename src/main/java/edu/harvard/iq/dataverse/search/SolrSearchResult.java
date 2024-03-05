@@ -123,7 +123,7 @@ public class SolrSearchResult {
 
 	private Long embargoEndDate;
 
-	private Long retentionStartDate;
+	private Long retentionEndDate;
 
 	private boolean datasetValid;
 
@@ -1263,12 +1263,12 @@ public class SolrSearchResult {
 		this.embargoEndDate = embargoEndDate;
 	}
 
-	public Long getRetentionStartDate() {
-		return retentionStartDate;
+	public Long getRetentionEndDate() {
+		return retentionEndDate;
 	}
 
-	public void setRetentionStartDate(Long retentionStartDate) {
-		this.retentionStartDate = retentionStartDate;
+	public void setRetentionEndDate(Long retentionEndDate) {
+		this.retentionEndDate = retentionEndDate;
 	}
 
 	public void setDatasetValid(Boolean datasetValid) {

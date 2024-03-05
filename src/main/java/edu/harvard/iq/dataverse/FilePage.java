@@ -1357,13 +1357,13 @@ public class FilePage implements java.io.Serializable {
     }
 
     public boolean isCantRequestDueToRetention() {
-        return FileUtil.isActivelyRetended(fileMetadata);
+        return FileUtil.isRetentionExpired(fileMetadata);
     }
 
     public String getRetentionPhrase() {
         //Should only be getting called when there is a retention
         if(file.isReleased()) {
-            if(FileUtil.isActivelyRetended(file)) {
+            if(FileUtil.isRetentionExpired(file)) {
                 return BundleUtil.getStringFromBundle("retention.after");
             } else {
                 return BundleUtil.getStringFromBundle("retention.isfrom");

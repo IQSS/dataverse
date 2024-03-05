@@ -1475,11 +1475,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
         }
     }
 
-    public boolean isActivelyRetended(SolrSearchResult result) {
-        Long retentionStartDate = result.getRetentionStartDate();
-        if(retentionStartDate != null) {
-            // Note that it is retended (unavailable) on the start day and after that.
-            return LocalDate.now().plusDays(1L).toEpochDay() > retentionStartDate;
+    public boolean isRetentionExpired(SolrSearchResult result) {
+        Long retentionEndDate = result.getRetentionEndDate();
+        if(retentionEndDate != null) {
+            return LocalDate.now().toEpochDay() > retentionEndDate;
         } else {
             return false;
         }

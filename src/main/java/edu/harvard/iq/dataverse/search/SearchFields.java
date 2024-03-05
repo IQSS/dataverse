@@ -267,7 +267,7 @@ public class SearchFields {
 
     public static final String FULL_TEXT = "_text_";
     public static final String EMBARGO_END_DATE = "embargoEndDate";
-    public static final String RETENTION_START_DATE = "retentionStartDate";
+    public static final String RETENTION_END_DATE = "retentionEndDate";
     
     // SpatialRecursivePrefixTreeFieldType: https://solr.apache.org/guide/8_11/spatial-search.html#rpt
     public static final String GEOLOCATION = "geolocation";

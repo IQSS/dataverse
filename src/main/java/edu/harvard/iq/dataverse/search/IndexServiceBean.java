@@ -1113,7 +1113,7 @@ public class IndexServiceBean {
             }
             LocalDate embargoEndDate=null;
             LocalDate end = null;
-            LocalDate retentionStartDate=null;
+            LocalDate retentionEndDate=null;
             LocalDate start = null;
             final String datasetCitation = dataset.getCitation();
             final Long datasetId = dataset.getId();
@@ -1130,8 +1130,8 @@ public class IndexServiceBean {
                 Retention ret= fileMetadata.getDataFile().getRetention();
                 if(ret!=null) {
                     start = ret.getDateUnavailable();
-                    if(retentionStartDate==null || start.isBefore(retentionStartDate)) {
-                        retentionStartDate=start;
+                    if(retentionEndDate==null || start.isBefore(retentionEndDate)) {
+                        retentionEndDate=start;
                     }
                 }
                 boolean indexThisMetadata = true;
@@ -1166,7 +1166,7 @@ public class IndexServiceBean {
                         datafileSolrInputDocument.addField(SearchFields.EMBARGO_END_DATE, end.toEpochDay()); 
                     }
                     if(start!=null) {
-                        datafileSolrInputDocument.addField(SearchFields.RETENTION_START_DATE, start.toEpochDay());
+                        datafileSolrInputDocument.addField(SearchFields.RETENTION_END_DATE, start.toEpochDay());
                     }
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
@@ -1272,8 +1272,8 @@ public class IndexServiceBean {
                                 logger.info(msg);
                             }
                             datafileSolrInputDocument.addField(SearchFields.ACCESS,
-                                    FileUtil.isActivelyRetended(datafile)
-                                        ? SearchConstants.RETENDED :
+                                    FileUtil.isRetentionExpired(datafile)
+                                        ? SearchConstants.RETENTIONEXPIRED :
                                             FileUtil.isActivelyEmbargoed(datafile)
                                                 ? (fileMetadata.isRestricted() ? SearchConstants.EMBARGOEDTHENRESTRICTED
                                                         : SearchConstants.EMBARGOEDTHENPUBLIC)
@@ -1447,8 +1447,8 @@ public class IndexServiceBean {
             if(embargoEndDate!=null) {
               solrInputDocument.addField(SearchFields.EMBARGO_END_DATE, embargoEndDate.toEpochDay());
             }
-            if(retentionStartDate!=null) {
-                solrInputDocument.addField(SearchFields.RETENTION_START_DATE, retentionStartDate.toEpochDay());
+            if(retentionEndDate!=null) {
+                solrInputDocument.addField(SearchFields.RETENTION_END_DATE, retentionEndDate.toEpochDay());
             }
         }
         Long datasetId = dataset.getId();

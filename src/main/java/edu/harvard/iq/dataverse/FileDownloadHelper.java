@@ -222,8 +222,8 @@ public class FileDownloadHelper implements java.io.Serializable {
              return true;
          }
 
-        // Retended files are always made unavailable, because they might be destroyed
-        if (FileUtil.isActivelyRetended(fileMetadata)) return false;
+        // Retention expired files are always made unavailable, because they might be destroyed
+        if (FileUtil.isRetentionExpired(fileMetadata)) return false;
 
         Long fid = fileMetadata.getId();
         //logger.info("calling candownloadfile on filemetadata "+fid);
@@ -249,7 +249,7 @@ public class FileDownloadHelper implements java.io.Serializable {
 
         if (!isRestrictedFile
                 && !FileUtil.isActivelyEmbargoed(fileMetadata)
-                && !FileUtil.isActivelyRetended(fileMetadata)) {
+                && !FileUtil.isRetentionExpired(fileMetadata)) {
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
