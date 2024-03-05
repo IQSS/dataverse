@@ -63,7 +63,3 @@ to maintain your settings more easily for different environments.
 
 .. _Jakarta Server Faces 3.0 Spec: https://jakarta.ee/specifications/faces/3.0/jakarta-faces-3.0.html#a6088
 .. _PrimeFaces Configuration Docs: https://primefaces.github.io/primefaces/11_0_0/#/gettingstarted/configuration
-
-----
-
-Previous: :doc:`documentation` | Next: :doc:`coding-style`
