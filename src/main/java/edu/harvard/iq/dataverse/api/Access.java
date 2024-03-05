@@ -1744,7 +1744,8 @@ public class Access extends AbstractApiBean {
         boolean embargoed = FileUtil.isActivelyEmbargoed(df);
         // access is also blocked for retended files
         boolean retended = FileUtil.isActivelyRetended(df);
-        // TODO maybe return false here immediately if retended
+        // No access ever if retended
+        if(retended) return false;
 
         /*
         SEK 7/26/2018 for 3661 relying on the version state of the dataset versions

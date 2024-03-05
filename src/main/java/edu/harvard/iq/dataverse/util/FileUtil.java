@@ -1773,8 +1773,9 @@ public class FileUtil implements java.io.Serializable  {
     public static boolean isActivelyRetended(DataFile df) {
         Retention e = df.getRetention();
         if (e != null) {
-            LocalDate endDate = e.getDateUnavailable();
-            if (endDate != null && endDate.isBefore(LocalDate.now())) {
+            LocalDate startDate = e.getDateUnavailable();
+            // Note that it is retended (unavailable) on the start day and after that.
+            if (startDate != null && startDate.isBefore(LocalDate.now().plusDays(1L))) {
                 return true;
             }
         }

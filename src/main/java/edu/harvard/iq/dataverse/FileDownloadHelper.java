@@ -221,7 +221,10 @@ public class FileDownloadHelper implements java.io.Serializable {
              // Always allow download for PrivateUrlUser
              return true;
          }
-        
+
+        // Retended files are always made unavailable, because they might be destroyed
+        if (FileUtil.isActivelyRetended(fileMetadata)) return false;
+
         Long fid = fileMetadata.getId();
         //logger.info("calling candownloadfile on filemetadata "+fid);
         // Note that `isRestricted` at the FileMetadata level is for expressing intent by version. Enforcement is done with `isRestricted` at the DataFile level.
