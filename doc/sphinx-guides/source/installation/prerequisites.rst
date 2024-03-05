@@ -276,17 +276,11 @@ jq
 Installing jq
 =============
 
-``jq`` is a command line tool for parsing JSON output that is used by the Dataverse Software installation script. It is available in the EPEL repository::
+``jq`` is a command line tool for parsing JSON output that is used by the Dataverse Software installation script. It is available in the ``appstream`` repository::
 
-	# yum install epel-release
-	# yum install jq
+	# dnf install jq
 
-or you may install it manually::
-
-        # cd /usr/bin
-        # wget https://stedolan.github.io/jq/download/linux64/jq
-        # chmod +x jq
-        # jq --version
+or you may install the latest binary for your OS and platform, available from https://github.com/jqlang/jq/releases
 
 .. _install-imagemagick:
 
