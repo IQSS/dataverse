@@ -204,8 +204,9 @@ class BeanDispatcher {
             switch ( doiProvider ) {
                 case "EZID": return ctxt.doiEZId();
                 case "DataCite": return ctxt.doiDataCite();
+                case "CrossRef": return ctxt.doiCrossRef();
                 case "FAKE": return ctxt.fakePidProvider();
-                default: 
+                default:
                     logger.log(Level.SEVERE, "Unknown doiProvider: {0}", doiProvider);
                     return null;
             }

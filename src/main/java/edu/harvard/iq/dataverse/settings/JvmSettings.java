@@ -104,7 +104,16 @@ public enum JvmSettings {
     DATACITE_REST_API_URL(SCOPE_PID_DATACITE, "rest-api-url", "doi.dataciterestapiurlstring", "doi.mdcbaseurlstring"),
     DATACITE_USERNAME(SCOPE_PID_DATACITE, "username", "doi.username"),
     DATACITE_PASSWORD(SCOPE_PID_DATACITE, "password", "doi.password"),
-    
+
+    // PROVIDER CROSSREF
+    SCOPE_PID_CROSSREF(SCOPE_PID, "crossref"),
+    CROSSREF_URL(SCOPE_PID_CROSSREF, "url"),
+    CROSSREF_REST_API_URL(SCOPE_PID_CROSSREF, "rest-api-url"),
+    CROSSREF_USERNAME(SCOPE_PID_CROSSREF, "username", "doi.username"),
+    CROSSREF_PASSWORD(SCOPE_PID_CROSSREF, "password", "doi.password"),
+    CROSSREF_DEPOSITOR(SCOPE_PID_CROSSREF, "depositor"),
+    CROSSREF_DEPOSITOR_EMAIL(SCOPE_PID_CROSSREF, "depositor-email"),
+
     // PROVIDER PERMALINK
     SCOPE_PID_PERMALINK(SCOPE_PID, "permalink"),
     PERMALINK_BASEURL(SCOPE_PID_PERMALINK, "base-url", "perma.baseurlstring"),
