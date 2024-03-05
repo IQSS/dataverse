@@ -25,24 +25,37 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     private final Dataset ds;
     private final boolean includeDeaccessioned;
-    private boolean checkPerms;
+    private boolean checkFilePerms;
+    private boolean checkUserPerms;
 
     public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset) {
-        this(aRequest, anAffectedDataset, false, false);
+        this(aRequest, anAffectedDataset, false, false, true);
     }
 
-    public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, boolean includeDeaccessioned, boolean checkPerms) {
+    public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset,
+            boolean includeDeaccessioned, boolean checkFilePerms, boolean checkUserPerms) {
+
         super(aRequest, anAffectedDataset);
         ds = anAffectedDataset;
         this.includeDeaccessioned = includeDeaccessioned;
-        this.checkPerms = checkPerms;
+        this.checkFilePerms = checkFilePerms;
+        this.checkUserPerms = checkUserPerms;
     }
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        if (ds.getLatestVersion().isDraft() && ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)) {
-            return ctxt.engine().submit(new GetDraftDatasetVersionCommand(getRequest(), ds));
+
+        DatasetVersion latestAccessibleDatasetVersion = null;
+
+        if(ds.getLatestVersion().isDraft()){
+            if (ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset) || !checkUserPerms){
+                latestAccessibleDatasetVersion = ctxt.engine().submit(new GetDraftDatasetVersionCommand(getRequest(), ds));
+            }
+        } else {
+            latestAccessibleDatasetVersion = ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(
+                    getRequest(), ds, includeDeaccessioned, checkFilePerms));
         }
-        return ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(getRequest(), ds, includeDeaccessioned, checkPerms));
+
+        return latestAccessibleDatasetVersion;
     }
 }

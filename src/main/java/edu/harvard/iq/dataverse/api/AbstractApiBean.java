@@ -396,12 +396,13 @@ public abstract class AbstractApiBean {
         }
     }
 
-    protected DatasetVersion findDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
+    protected DatasetVersion findDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds,
+            boolean includeDeaccessioned, boolean checkFilePerms, boolean checkUserPerms) throws WrappedResponse {
         DatasetVersion dsv = execCommand(handleVersion(versionNumber, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
 
             @Override
             public Command<DatasetVersion> handleLatest() {
-                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
+                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned, checkFilePerms, checkUserPerms);
             }
 
             @Override
@@ -411,13 +412,14 @@ public abstract class AbstractApiBean {
 
             @Override
             public Command<DatasetVersion> handleSpecific(long major, long minor) {
-                return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor, includeDeaccessioned, checkPermsWhenDeaccessioned);
+                return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor, includeDeaccessioned, checkFilePerms);
             }
 
             @Override
             public Command<DatasetVersion> handleLatestPublished() {
-                return new GetLatestPublishedDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
+                return new GetLatestPublishedDatasetVersionCommand(req, ds, includeDeaccessioned, checkFilePerms);
             }
+            
         }));
         return dsv;
     }
