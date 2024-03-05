@@ -26,20 +26,18 @@ public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<Da
     private final Dataset ds;
     private final boolean includeDeaccessioned;
     private boolean checkFilePerms;
-    private boolean checkUserPerms;
 
     public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset) {
-        this(aRequest, anAffectedDataset, false, false, true);
+        this(aRequest, anAffectedDataset, false, false);
     }
 
     public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset,
-            boolean includeDeaccessioned, boolean checkFilePerms, boolean checkUserPerms) {
+            boolean includeDeaccessioned, boolean checkFilePerms) {
 
         super(aRequest, anAffectedDataset);
         ds = anAffectedDataset;
         this.includeDeaccessioned = includeDeaccessioned;
         this.checkFilePerms = checkFilePerms;
-        this.checkUserPerms = checkUserPerms;
     }
 
     @Override
@@ -48,7 +46,7 @@ public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<Da
         DatasetVersion latestAccessibleDatasetVersion = null;
 
         if(ds.getLatestVersion().isDraft()){
-            if (ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset) || !checkUserPerms){
+            if (ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)){
                 latestAccessibleDatasetVersion = ctxt.engine().submit(new GetDraftDatasetVersionCommand(getRequest(), ds));
             }
         } else {

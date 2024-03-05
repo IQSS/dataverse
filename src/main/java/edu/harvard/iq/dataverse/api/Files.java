@@ -949,8 +949,7 @@ public class Files extends AbstractApiBean {
             Dataset ds = df.getOwner();
             boolean checkFilePerms = true;
             boolean checkUserPerms = true;
-            DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, checkFilePerms,
-                    checkUserPerms);
+            DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, checkFilePerms);
             if (dsv == null) {
                 return unauthorized(BundleUtil.getStringFromBundle("files.api.no.draftOrUnauth"));
             }

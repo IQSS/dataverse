@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionUnrestrictedCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
@@ -397,12 +398,12 @@ public abstract class AbstractApiBean {
     }
 
     protected DatasetVersion findDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds,
-            boolean includeDeaccessioned, boolean checkFilePerms, boolean checkUserPerms) throws WrappedResponse {
+            boolean includeDeaccessioned, boolean checkFilePerms) throws WrappedResponse {
         DatasetVersion dsv = execCommand(handleVersion(versionNumber, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
 
             @Override
             public Command<DatasetVersion> handleLatest() {
-                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned, checkFilePerms, checkUserPerms);
+                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned, checkFilePerms);
             }
 
             @Override

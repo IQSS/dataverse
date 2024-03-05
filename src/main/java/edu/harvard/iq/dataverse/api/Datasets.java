@@ -429,24 +429,22 @@ public class Datasets extends AbstractApiBean {
            
             //If excludeFiles is null the default is to provide the files and because of this we need to check permissions. 
             boolean checkFilePerms = excludeFiles == null ? true : !excludeFiles;
-            boolean checkUserPerms = true;
             boolean deaccesionedLookup = true;
 
             Dataset dst = findDatasetOrDie(datasetId);
             DatasetVersion requestedDatasetVersion 
                     = getDatasetVersionOrDie(req, versionId, dst, uriInfo, headers, includeDeaccessioned,
-                            checkFilePerms, checkUserPerms);
+                            checkFilePerms);
             
-            DatasetVersion latestDatasetVersion = null;
-            if(versionId != DS_VERSION_LATEST){                
-                checkFilePerms = false;
-                checkUserPerms = false;
-                latestDatasetVersion = getDatasetVersionOrDie(req, DS_VERSION_LATEST, dst, uriInfo, headers,
-                        deaccesionedLookup,
-                        checkFilePerms, checkUserPerms);
-            } else {
-                latestDatasetVersion = requestedDatasetVersion;
-            }
+            DatasetVersion latestDatasetVersion = requestedDatasetVersion;
+            // if(versionId != DS_VERSION_LATEST){                
+            //     checkFilePerms = false;
+            //     latestDatasetVersion = getDatasetVersionOrDie(req, DS_VERSION_LATEST, dst, uriInfo, headers,
+            //             deaccesionedLookup,
+            //             checkFilePerms);
+            // } else {
+            //     latestDatasetVersion = requestedDatasetVersion;
+            // }
   
             if (requestedDatasetVersion == null || requestedDatasetVersion.getId() == null) {
                 return notFound("Dataset version not found");
@@ -2733,9 +2731,8 @@ public class Datasets extends AbstractApiBean {
             UriInfo uriInfo, HttpHeaders headers) throws WrappedResponse {
         //The checkPerms was added to check the permissions ONLY when the dataset is deaccessioned.
         boolean checkFilePerms = false;
-        boolean checkUserPerms = true;
         boolean includeDeaccessioned = false;
-        return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, includeDeaccessioned, checkFilePerms, checkUserPerms);
+        return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, includeDeaccessioned, checkFilePerms);
     }
     
     /*
@@ -2744,18 +2741,17 @@ public class Datasets extends AbstractApiBean {
     private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds,
             UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned) throws WrappedResponse {
         boolean checkFilePerms = true;
-        boolean checkUserPerms = true;
-        return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, includeDeaccessioned, checkFilePerms, checkUserPerms);
+        return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, includeDeaccessioned, checkFilePerms);
     }
 
     /*
      * Will allow to define when the permissions should be checked when a deaccesioned dataset is requested. If the user doesn't have edit permissions will result in an error.
      */
     private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds,
-            UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned, boolean checkFilePerms, boolean checkUserPerms)
+            UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned, boolean checkFilePerms)
             throws WrappedResponse {
 
-        DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, checkFilePerms, checkUserPerms);
+        DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, checkFilePerms);
 
         if (dsv == null || dsv.getId() == null) {
             throw new WrappedResponse(
@@ -2767,6 +2763,7 @@ public class Datasets extends AbstractApiBean {
         }
         return dsv;
     }
+    
 
     
 
@@ -4468,7 +4465,7 @@ public class Datasets extends AbstractApiBean {
         boolean checkUserPerms = true;
         return response(req -> ok(
                 getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers,
-                        includeDeaccessioned, checkFilePerms, true).getCitation(true, false)),
+                        includeDeaccessioned, checkFilePerms).getCitation(true, false)),
                 getRequestUser(crc));
     }
 
