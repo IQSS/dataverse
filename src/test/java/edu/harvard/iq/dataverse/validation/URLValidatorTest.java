@@ -29,7 +29,9 @@ public class URLValidatorTest {
             Arguments.of(true, "http://foobar.com:9101"),
             Arguments.of(true, "ftp://user@foobar.com"),
             Arguments.of(false, "cnn.com"),
-            Arguments.of(false, "smb://user@foobar.com")
+            Arguments.of(false, "smb://user@foobar.com"),
+            // case of a real permalink that requires UrlValidator.ALLOW_2_SLASHES
+            Arguments.of(true, "https://archive.softwareheritage.org/swh:1:dir:561bfe6698ca9e58b552b4eb4e56132cac41c6f9;origin=https://github.com/gem-pasteur/macsyfinder;visit=swh:1:snp:1bde3cb370766b10132c4e004c7cb377979928d1;anchor=swh:1:rev:868637fce184865d8e0436338af66a2648e8f6e1")
         );
     }
     
