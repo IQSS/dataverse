@@ -317,6 +317,7 @@ public class Dataset extends DvObjectContainer {
         }
         return hasDeaccessionedVersions; // since any published version would have already returned
     }
+    
 
     public DatasetVersion getLatestVersion() {
         return getVersions().get(0);

@@ -1,19 +1,16 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.pidproviders;
 
-import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
-import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.PidUtil;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalId;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public interface GlobalIdServiceBean {
+public interface PidProvider {
 
-    static final Logger logger = Logger.getLogger(GlobalIdServiceBean.class.getCanonicalName());
+    static final Logger logger = Logger.getLogger(PidProvider.class.getCanonicalName());
 
     boolean alreadyRegistered(DvObject dvo) throws Exception;
     
@@ -36,7 +33,6 @@ public interface GlobalIdServiceBean {
     
     boolean registerWhenPublished();
     boolean canManagePID();
-    boolean isConfigured();
     
     List<String> getProviderInformation();
 
@@ -52,36 +48,24 @@ public interface GlobalIdServiceBean {
     
     Map<String,String> getMetadataForTargetURL(DvObject dvObject);
     
-    DvObject generateIdentifier(DvObject dvObject);
+    DvObject generatePid(DvObject dvObject);
     
     String getIdentifier(DvObject dvObject);
     
     boolean publicizeIdentifier(DvObject studyIn);
     
-    String generateDatasetIdentifier(Dataset dataset);
-    String generateDataFileIdentifier(DataFile datafile);
     boolean isGlobalIdUnique(GlobalId globalId);
     
     String getUrlPrefix();
     String getSeparator();
     
-    static GlobalIdServiceBean getBean(String protocol, CommandContext ctxt) {
-        final Function<CommandContext, GlobalIdServiceBean> protocolHandler = BeanDispatcher.DISPATCHER.get(protocol);
-        if ( protocolHandler != null ) {
-            GlobalIdServiceBean theBean = protocolHandler.apply(ctxt);
-            if(theBean != null && theBean.isConfigured()) {
-                logger.fine("getBean returns " + theBean.getProviderInformation().get(0) + " for protocol " + protocol);
-            }
-            return theBean;
-        } else {
-            logger.log(Level.SEVERE, "Unknown protocol: {0}", protocol);
-            return null;
-        }
-    }
-
-    static GlobalIdServiceBean getBean(CommandContext ctxt) {
-        return getBean(ctxt.settings().getValueForKey(Key.Protocol, ""), ctxt);
-    }
+    String getProtocol();
+    String getProviderType();
+    String getId();
+    String getLabel();
+    String getAuthority();
+    String getShoulder();
+    String getIdentifierGenerationStyle();
     
     public static Optional<GlobalId> parse(String identifierString) {
         try {
@@ -111,6 +95,7 @@ public interface GlobalIdServiceBean {
      *         {@code null} if parsing failed.
      */
     public GlobalId parsePersistentId(String identifierString);
+    
     public GlobalId parsePersistentId(String protocol, String authority, String identifier);
 
     
@@ -119,16 +104,16 @@ public interface GlobalIdServiceBean {
         if (protocol == null || authority == null || identifier == null) {
             return false;
         }
-        if(!authority.equals(GlobalIdServiceBean.formatIdentifierString(authority))) {
+        if(!authority.equals(PidProvider.formatIdentifierString(authority))) {
             return false;
         }
-        if (GlobalIdServiceBean.testforNullTerminator(authority)) {
+        if (PidProvider.testforNullTerminator(authority)) {
             return false;
         }
-        if(!identifier.equals(GlobalIdServiceBean.formatIdentifierString(identifier))) {
+        if(!identifier.equals(PidProvider.formatIdentifierString(identifier))) {
             return false;
         }
-        if (GlobalIdServiceBean.testforNullTerminator(identifier)) {
+        if (PidProvider.testforNullTerminator(identifier)) {
             return false;
         }
         return true;
@@ -177,40 +162,28 @@ public interface GlobalIdServiceBean {
         
         return true;
     }
-}
 
+    public void setPidProviderServiceBean(PidProviderFactoryBean pidProviderFactoryBean);
 
-/*
- * ToDo - replace this with a mechanism like BrandingUtilHelper that would read
- * the config and create PidProviders, one per set of config values and serve
- * those as needed. The help has to be a bean to autostart and to hand the
- * required service beans to the PidProviders. That may boil down to just the
- * dvObjectService (to check for local identifier conflicts) since it will be
- * the helper that has to read settings/get systewmConfig values.
- * 
- */
+    String getDatafilePidFormat();
 
-/**
- * Static utility class for dispatching implementing beans, based on protocol and providers.
- * @author michael
- */
-class BeanDispatcher {
-    static final Map<String, Function<CommandContext, GlobalIdServiceBean>> DISPATCHER = new HashMap<>();
+    Set<String> getManagedSet();
 
-    static {
-        DISPATCHER.put("hdl", ctxt->ctxt.handleNet() );
-        DISPATCHER.put("doi", ctxt->{
-            String doiProvider = ctxt.settings().getValueForKey(Key.DoiProvider, "");
-            switch ( doiProvider ) {
-                case "EZID": return ctxt.doiEZId();
-                case "DataCite": return ctxt.doiDataCite();
-                case "FAKE": return ctxt.fakePidProvider();
-                default: 
-                    logger.log(Level.SEVERE, "Unknown doiProvider: {0}", doiProvider);
-                    return null;
-            }
-        });
-        
-        DISPATCHER.put(PermaLinkPidProviderServiceBean.PERMA_PROTOCOL, ctxt->ctxt.permaLinkProvider() );
-    }
+    Set<String> getExcludedSet();
+
+    /** 
+     * Whether related pids can be created by this pid provider
+     * @see edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider#canCreatePidsLike(GlobalId) more details in the abstract implementation
+     * 
+     * @param pid
+     * @return - whether related pids can be created by this pid provider. 
+     */
+    boolean canCreatePidsLike(GlobalId pid);
+
+    /**
+     * Returns a JSON representation of this pid provider including it's id, label, protocol, authority, separator, and identifier.
+     * @return
+     */
+    public JsonObject getProviderSpecification();
+
 }

@@ -130,4 +130,41 @@ public class Pids extends AbstractApiBean {
         }
     }
 
+    @GET
+    @AuthRequired
+    @Path("providers")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPidProviders(@Context ContainerRequestContext crc) throws WrappedResponse {
+        try {
+            getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+        return ok(PidUtil.getProviders());
+    }
+    
+    @GET
+    @AuthRequired
+    // The :.+ suffix allows PIDs with a / char to be entered w/o escaping
+    @Path("providers/{persistentId:.+}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPidProviderId(@Context ContainerRequestContext crc, @PathParam("persistentId") String persistentId) throws WrappedResponse {
+        try {
+            getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+            GlobalId globalId = PidUtil.parseAsGlobalID(persistentId);
+            if(globalId== null) {
+                return error(Response.Status.NOT_FOUND, "No provider found for PID");
+            } else {
+                String providerId = globalId.getProviderId();
+                if(PidUtil.getManagedProviderIds().contains(providerId)) {
+                    return ok(globalId.getProviderId());
+                } else {
+                    return ok("PID recognized as an unmanaged " + globalId.getProtocol());
+            }
+        }
+    }
+
 }

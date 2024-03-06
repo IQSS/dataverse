@@ -39,6 +39,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.*;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -4583,4 +4584,86 @@ public class Datasets extends AbstractApiBean {
             return ok(permissionService.canDownloadAtLeastOneFile(req, datasetVersion));
         }, getRequestUser(crc));
     }
+    
+    @GET
+    @AuthRequired
+    @Path("{identifier}/pidGenerator")
+    public Response getPidGenerator(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+            @Context HttpHeaders headers) throws WrappedResponse {
+
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        String pidGeneratorId = dataset.getPidGeneratorId();
+        return ok(pidGeneratorId);
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/pidGenerator")
+    public Response setPidGenerator(@Context ContainerRequestContext crc, @PathParam("identifier") String datasetId,
+            String generatorId, @Context HttpHeaders headers) throws WrappedResponse {
+
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        if (PidUtil.getManagedProviderIds().contains(generatorId)) {
+            dataset.setPidGeneratorId(generatorId);
+            datasetService.merge(dataset);
+            return ok("PID Generator set to: " + generatorId);
+        } else {
+            return error(Response.Status.NOT_FOUND, "No PID Generator found for the give id");
+        }
+
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/pidGenerator")
+    public Response resetPidGenerator(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+            @Context HttpHeaders headers) throws WrappedResponse {
+
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+
+        dataset.setPidGenerator(null);
+        datasetService.merge(dataset);
+        return ok("Pid Generator reset to default: " + dataset.getEffectivePidGenerator().getId());
+    }
+
 }

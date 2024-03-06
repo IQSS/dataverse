@@ -1,22 +1,22 @@
-package edu.harvard.iq.dataverse.pidproviders;
+package edu.harvard.iq.dataverse.pidproviders.doi.fake;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
-import jakarta.ejb.Stateless;
+public class FakeDOIProvider extends AbstractDOIProvider {
 
-@Stateless
-public class FakePidProviderServiceBean extends DOIServiceBean {
+    public static final String TYPE = "FAKE";
 
-    private static final Logger logger = Logger.getLogger(FakePidProviderServiceBean.class.getCanonicalName());
+    public FakeDOIProvider(String id, String label, String providerAuthority, String providerShoulder, String identifierGenerationStyle,
+            String datafilePidFormat, String managedList, String excludedList) {
+        super(id, label, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
+    }
 
-    
     //Only need to check locally
     public boolean isGlobalIdUnique(GlobalId globalId) {
         try {
@@ -29,7 +29,7 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
     
     @Override
     public boolean alreadyRegistered(GlobalId globalId, boolean noProviderDefault) {
-        boolean existsLocally = !dvObjectService.isGlobalIdLocallyUnique(globalId);
+        boolean existsLocally = !pidProviderService.isGlobalIdLocallyUnique(globalId);
         return existsLocally ? existsLocally : noProviderDefault;
     }
 
@@ -40,7 +40,7 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
 
     @Override
     public List<String> getProviderInformation() {
-        return List.of("FAKE", "https://dataverse.org");
+        return List.of(getId(), "https://dataverse.org");
     }
 
     @Override
@@ -65,13 +65,21 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
     }
 
     @Override
-    public boolean publicizeIdentifier(DvObject studyIn) {
+    public boolean publicizeIdentifier(DvObject dvObject) {
+        if(dvObject.isInstanceofDataFile() && dvObject.getGlobalId()==null) {
+            generatePid(dvObject);
+        }
         return true;
     }
     
     @Override
     protected String getProviderKeyName() {
         return "FAKE";
+    }
+
+    @Override
+    public String getProviderType() {
+        return TYPE;
     }
 
 }

@@ -1217,6 +1217,10 @@ public class DatasetsIT {
 
     }
 
+    @Disabled
+    /*The identifier generation style is no longer a global, dynamically changeable setting. To make this test work after PR #10234,
+     * will require configuring a PidProvider that uses this style and creating a collection/dataset that uses that provider.
+     */
     @Test
     public void testStoredProcGeneratedAsIdentifierGenerationStyle() {
         // Please note that this test only works if the stored procedure
