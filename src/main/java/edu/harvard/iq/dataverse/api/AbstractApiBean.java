@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionUnrestrictedCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
@@ -397,13 +396,12 @@ public abstract class AbstractApiBean {
         }
     }
 
-    protected DatasetVersion findDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds,
-            boolean includeDeaccessioned, boolean checkFilePerms) throws WrappedResponse {
+    protected DatasetVersion findDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
         DatasetVersion dsv = execCommand(handleVersion(versionNumber, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
 
             @Override
             public Command<DatasetVersion> handleLatest() {
-                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned, checkFilePerms);
+                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
             }
 
             @Override
@@ -413,14 +411,13 @@ public abstract class AbstractApiBean {
 
             @Override
             public Command<DatasetVersion> handleSpecific(long major, long minor) {
-                return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor, includeDeaccessioned, checkFilePerms);
+                return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor, includeDeaccessioned, checkPermsWhenDeaccessioned);
             }
 
             @Override
             public Command<DatasetVersion> handleLatestPublished() {
-                return new GetLatestPublishedDatasetVersionCommand(req, ds, includeDeaccessioned, checkFilePerms);
+                return new GetLatestPublishedDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
             }
-            
         }));
         return dsv;
     }

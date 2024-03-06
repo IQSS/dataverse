@@ -25,32 +25,24 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     private final Dataset ds;
     private final boolean includeDeaccessioned;
-    private boolean checkFilePerms;
+    private boolean checkPerms;
 
     public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset) {
         this(aRequest, anAffectedDataset, false, false);
     }
 
-    public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset,
-            boolean includeDeaccessioned, boolean checkFilePerms) {
-
+    public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, boolean includeDeaccessioned, boolean checkPerms) {
         super(aRequest, anAffectedDataset);
         ds = anAffectedDataset;
         this.includeDeaccessioned = includeDeaccessioned;
-        this.checkFilePerms = checkFilePerms;
+        this.checkPerms = checkPerms;
     }
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-
-        DatasetVersion latestAccessibleDatasetVersion = null;
-
-        if(ds.getLatestVersion().isDraft() && ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)){
-                latestAccessibleDatasetVersion = ctxt.engine().submit(new GetDraftDatasetVersionCommand(getRequest(), ds));
-        } else {
-            latestAccessibleDatasetVersion = ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(
-                    getRequest(), ds, includeDeaccessioned, checkFilePerms));
+        if (ds.getLatestVersion().isDraft() && ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)) {
+            return ctxt.engine().submit(new GetDraftDatasetVersionCommand(getRequest(), ds));
         }
-        return latestAccessibleDatasetVersion;
+        return ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(getRequest(), ds, includeDeaccessioned, checkPerms));
     }
 }

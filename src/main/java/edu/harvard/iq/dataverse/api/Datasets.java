@@ -428,26 +428,22 @@ public class Datasets extends AbstractApiBean {
             
            
             //If excludeFiles is null the default is to provide the files and because of this we need to check permissions. 
-            boolean checkFilePerms = excludeFiles == null ? true : !excludeFiles;
+            boolean checkPerms = excludeFiles == null ? true : !excludeFiles;
             
 
             Dataset dst = findDatasetOrDie(datasetId);
             DatasetVersion requestedDatasetVersion 
                     = getDatasetVersionOrDie(req, versionId, dst, uriInfo, headers, includeDeaccessioned,
-                            checkFilePerms);
+                    checkPerms);
             
-            DatasetVersion latestDatasetVersion = requestedDatasetVersion;
-
-            //We need to retrieve the latest version to check the status as request of the SPA, we have to set the 
-            //deaccesionedLookup to true to check to include deaccessioned datasets in the lookup
-            //checkFilePerms is set to false because we are not going to check the status of the latest version only
-            //if the user is requesting already the latest version don't need to check 
+            DatasetVersion latestDatasetVersion = null;
             boolean deaccesionedLookup = true;
-            checkFilePerms = false;
+            //Check perms is false since we are never going to retrieve files, we are just getting the status of the version.
+            checkPerms = false;
             if(versionId != DS_VERSION_LATEST){                
                 latestDatasetVersion = getDatasetVersionOrDie(req, DS_VERSION_LATEST, dst, uriInfo, headers,
                         deaccesionedLookup,
-                        checkFilePerms);
+                        checkPerms);
             } else {
                 latestDatasetVersion = requestedDatasetVersion;
             }
@@ -2754,10 +2750,10 @@ public class Datasets extends AbstractApiBean {
      * Will allow to define when the permissions should be checked when a deaccesioned dataset is requested. If the user doesn't have edit permissions will result in an error.
      */
     private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds,
-            UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned, boolean checkFilePerms)
+            UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned)
             throws WrappedResponse {
 
-        DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, checkFilePerms);
+        DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
 
         if (dsv == null || dsv.getId() == null) {
             throw new WrappedResponse(
@@ -2769,11 +2765,7 @@ public class Datasets extends AbstractApiBean {
         }
         return dsv;
     }
-    
-
-    
-
-    
+ 
     @GET
     @Path("{identifier}/locks")
     public Response getLocksForDataset(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {

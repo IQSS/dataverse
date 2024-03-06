@@ -947,9 +947,8 @@ public class Files extends AbstractApiBean {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             final DataFile df = execCommand(new GetDataFileCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
             Dataset ds = df.getOwner();
-            boolean checkFilePerms = true;
-            boolean checkUserPerms = true;
-            DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, checkFilePerms);
+            
+            DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, true);
             if (dsv == null) {
                 return unauthorized(BundleUtil.getStringFromBundle("files.api.no.draftOrUnauth"));
             }
