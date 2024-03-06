@@ -466,18 +466,24 @@ public class MailServiceBean implements java.io.Serializable {
             case RETURNEDDS:
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasReturnedByReviewer");
-                String optionalReturnReason = "";
-                /*
-                FIXME
-                Setting up to add single comment when design completed
-                optionalReturnReason = ".";
-                if (comment != null && !comment.isEmpty()) {
-                    optionalReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + comment;
-                }
-                */
+
                 String[] paramArrayReturnedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
-                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()), optionalReturnReason};
+                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
                 messageText += MessageFormat.format(pattern, paramArrayReturnedDataset);
+
+                if (comment != null && !comment.isEmpty()) {
+                    messageText += "\n\n" + MessageFormat.format(BundleUtil.getStringFromBundle("notification.email.wasReturnedByReviewerReason"), comment);
+                }
+
+                Dataverse d = (Dataverse) version.getDataset().getOwner();
+                List<String> contactEmailList = new ArrayList<String>();
+                for (DataverseContact dc : d.getDataverseContacts()) {
+                    contactEmailList.add(dc.getContactEmail());
+                }
+                if (!contactEmailList.isEmpty()) {
+                    String contactEmails = String.join(", ", contactEmailList);
+                    messageText += "\n\n" + MessageFormat.format(BundleUtil.getStringFromBundle("notification.email.wasReturnedByReviewer.collectionContacts"), contactEmails);
+                }
                 return messageText;
 
             case WORKFLOW_SUCCESS:
