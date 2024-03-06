@@ -735,6 +735,14 @@ Once a dataset with embargoed files has been published, no further action is nee
 
 As the primary use case of embargoes is to make the existence of data known now, with a promise (to a journal, project team, etc.) that the data itself will become available at a given future date, users cannot change an embargo once a dataset version is published. Dataverse instance administrators do have the ability to correct mistakes and make changes if/when circumstances warrant.
 
+Retentions
+==========
+
+Support for file-level retentions can also be configured in a Dataverse instance. Retentions make file content inaccessible after the retention end date. This means that file previews and the ability to download files will be blocked. The effect is similar to when a file is restricted except that the retention will end at the specified date without further action and after the retention, requests for file access cannot be made.
+
+Retentions are intended to support use cases where files must be made unavailable (or even destroyed) after a certain period or date.
+Actual destruction is not automatically handled, but would have to be done on the storage if needed.
+
 Dataset Versions
 ================
 
