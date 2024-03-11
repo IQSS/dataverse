@@ -1,16 +1,18 @@
 package edu.harvard.iq.dataverse.api;
 
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.OK;
-import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import edu.harvard.iq.dataverse.metrics.MetricsUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
+import jakarta.ws.rs.core.MediaType;
 
 //TODO: These tests are fairly flawed as they don't actually add data to compare on.
 //To improve these tests we should try adding data and see if the number DOESN'T
@@ -120,6 +122,54 @@ public class MetricsIT {
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
+
+    @Test
+    public void testGetAccountsToMonth() {
+        String thismonth = MetricsUtil.getCurrentMonth();
+
+        Response response = UtilIT.metricsAccountsToMonth(thismonth, null);
+        String precache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //Run each query twice and compare results to tests caching
+        response = UtilIT.metricsAccountsToMonth(thismonth, null);
+        String postcache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        assertEquals(precache, postcache);
+        
+        //Test error when passing extra query params
+        response = UtilIT.metricsAccountsToMonth(thismonth, "dataLocation=local");
+        response.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testGetAccountsTimeSeries() {
+        Response response = UtilIT.metricsAccountsTimeSeries(MediaType.APPLICATION_JSON, null);
+        String precache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //Run each query twice and compare results to tests caching
+        response = UtilIT.metricsAccountsTimeSeries(MediaType.APPLICATION_JSON, null);
+        String postcache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        assertEquals(precache, postcache);
+
+        response = UtilIT.metricsAccountsTimeSeries(FileUtil.MIME_TYPE_CSV, null);
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        //Test error when passing extra query params
+        response = UtilIT.metricsAccountsTimeSeries(MediaType.APPLICATION_JSON, "dataLocation=local");
+        response.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+    }
     
         
     @Test
@@ -214,6 +264,29 @@ public class MetricsIT {
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
     }    
+
+    @Test
+    public void testGetAccountsPastDays() {
+        String days = "30";
+
+        Response response = UtilIT.metricsAccountsPastDays(days, null);
+        String precache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //Run each query twice and compare results to tests caching
+        response = UtilIT.metricsAccountsPastDays(days, null);
+        String postcache = response.prettyPrint();
+        response.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        assertEquals(precache, postcache);
+
+        //Test error when passing extra query params
+        response = UtilIT.metricsAccountsPastDays(days, "dataLocation=local");
+        response.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+    }
     
 
     @Test

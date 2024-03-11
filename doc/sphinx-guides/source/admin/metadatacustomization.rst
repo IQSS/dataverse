@@ -413,7 +413,7 @@ Setting Up a Dev Environment for Testing
 
 You have several options for setting up a dev environment for testing metadata block changes:
 
-- Docker: See :doc:`/container/index`.
+- Docker: See :doc:`/container/running/metadata-blocks` in the Container Guide.
 - AWS deployment: See the :doc:`/developers/deployment` section of the Developer Guide.
 - Full dev environment: See the :doc:`/developers/dev-environment` section of the Developer Guide.
 

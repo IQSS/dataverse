@@ -6,7 +6,7 @@
 
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.net.MalformedURLException;
@@ -33,7 +33,7 @@ public class GlobalId implements java.io.Serializable {
           this.separator = separator;
         }
         this.urlPrefix = urlPrefix;
-        this.managingProviderName = providerName;
+        this.managingProviderId = providerName;
     }
     
     // protocol the identifier system, e.g. "doi"
@@ -42,7 +42,7 @@ public class GlobalId implements java.io.Serializable {
     private String protocol;
     private String authority;
     private String identifier;
-    private String managingProviderName;
+    private String managingProviderId;
     private String separator = "/";
     private String urlPrefix;
 
@@ -67,8 +67,8 @@ public class GlobalId implements java.io.Serializable {
         return identifier;
     }
     
-    public String getProvider() {
-        return managingProviderName;
+    public String getProviderId() {
+        return managingProviderId;
     }
 
     public String toString() {

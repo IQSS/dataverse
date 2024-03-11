@@ -966,25 +966,6 @@ public class SystemConfig {
            return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
         }       
     }
-    public boolean isDataFilePIDSequentialDependent(){
-        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-        if (doiIdentifierType.equals("storedProcGenerated") && doiDataFileFormat.equals("DEPENDENT")){
-            return true;
-        }
-        return false;
-    }
-    
-    public int getPIDAsynchRegFileCount() {
-        String fileCount = settingsService.getValueForKey(SettingsServiceBean.Key.PIDAsynchRegFileCount, "10");
-        int retVal = 10;
-        try {
-            retVal = Integer.parseInt(fileCount);
-        } catch (NumberFormatException e) {           
-            //if no number in the setting we'll return 10
-        }
-        return retVal;
-    }
 
     public boolean isAllowCustomTerms() {
         boolean safeDefaultIfKeyNotFound = true;
@@ -1016,16 +997,7 @@ public class SystemConfig {
         return thisCollection.getFilePIDsEnabled();
     }
     
-    public boolean isIndependentHandleService() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.IndependentHandleService, safeDefaultIfKeyNotFound);
-    
-    }
-    
-    public String getHandleAuthHandle() {
-        String handleAuthHandle = settingsService.getValueForKey(SettingsServiceBean.Key.HandleAuthHandle, null);
-        return handleAuthHandle;
-    }
+
 
     public String getMDCLogPath() {
         String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);

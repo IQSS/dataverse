@@ -292,16 +292,16 @@
                                         "typeName": "eastLongitude",
                                         "value": "23"
                                     },
-                                    "northLongitude": {
+                                    "northLatitude": {
                                         "multiple": false,
                                         "typeClass": "primitive",
-                                        "typeName": "northLongitude",
+                                        "typeName": "northLatitude",
                                         "value": "786"
                                     },
-                                    "southLongitude": {
+                                    "southLatitude": {
                                         "multiple": false,
                                         "typeClass": "primitive",
-                                        "typeName": "southLongitude",
+                                        "typeName": "southLatitude",
                                         "value": "34"
                                     },
                                     "westLongitude": {

@@ -907,14 +907,14 @@
                   "typeClass": "primitive",
                   "value": "-70"
                 },
-                "northLongitude": {
-                  "typeName": "northLongitude",
+                "northLatitude": {
+                  "typeName": "northLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "43"
                 },
-                "southLongitude": {
-                  "typeName": "southLongitude",
+                "southLatitude": {
+                  "typeName": "southLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "42"
@@ -933,14 +933,14 @@
                   "typeClass": "primitive",
                   "value": "-13"
                 },
-                "northLongitude": {
-                  "typeName": "northLongitude",
+                "northLatitude": {
+                  "typeName": "northLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "29"
                 },
-                "southLongitude": {
-                  "typeName": "southLongitude",
+                "southLatitude": {
+                  "typeName": "southLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "28"

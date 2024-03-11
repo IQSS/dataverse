@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.externaltools;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -9,6 +8,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -267,7 +267,7 @@ public class ExternalToolHandlerTest {
                 .build().toString());
 
         var dataset = new Dataset();
-        dataset.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL, "10.5072", "ABC123", null, DOIServiceBean.DOI_RESOLVER_URL, null));
+        dataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.5072", "ABC123", null, AbstractDOIProvider.DOI_RESOLVER_URL, null));
         ApiToken nullApiToken = null;
         String nullLocaleCode = "en";
         var externalToolHandler = new ExternalToolHandler(externalTool, dataset, nullApiToken, nullLocaleCode);
