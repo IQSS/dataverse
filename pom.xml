@@ -32,10 +32,12 @@
         <poi.version>5.2.1</poi.version>
         <tika.version>2.4.1</tika.version>
         <netcdf.version>5.5.3</netcdf.version>
-
-        <smallrye.schemaFilename>dataverse_openapi</smallrye.schemaFilename>
-        <smallrye.infoTitle>Dataverse API</smallrye.infoTitle>
-        <smallrye.outputDirectory>src/main/resources/edu/harvard/iq/dataverse/openapi</smallrye.outputDirectory>
+        
+        <openapi.infoTitle>Dataverse API</openapi.infoTitle>
+        <openapi.infoVersion>${project.version}</openapi.infoVersion>
+        <openapi.infoDescription>Dataverse is an open source publication repository software with an API first approach.</openapi.infoDescription>
+        <!-- https://download.eclipse.org/microprofile/microprofile-open-api-3.1.1/microprofile-openapi-spec-3.1.1.html#_location_and_formats -->
+        <openapi.outputDirectory>${project.build.outputDirectory}/META-INF</openapi.outputDirectory>
     </properties>
     
     <!-- Versions of dependencies used both directly and transitive are managed here.
@@ -686,7 +688,6 @@
                     <include>**/firstNames/*.*</include>
                     <include>**/*.xsl</include>
                     <include>**/services/*</include>
-                    <include>**/openapi/*</include>
                 </includes>
             </resource>
             <resource>
@@ -699,22 +700,6 @@
             </resource>
         </resources>
         <plugins>
-            <plugin>
-                <artifactId>smallrye-open-api-maven-plugin</artifactId>
-                <groupId>io.smallrye</groupId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate-schema</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <schemaFilename>${smallrye.schemaFilename}</schemaFilename>
-                    <infoTitle>${smallrye.infoTitle}</infoTitle>
-                    <outputDirectory>${smallrye.outputDirectory}</outputDirectory>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -906,6 +891,30 @@
                     <encoding>UTF-8</encoding>
                     <consoleOutput>true</consoleOutput>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-open-api-maven-plugin</artifactId>
+                <version>3.10.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-schema</goal>
+                        </goals>
+                        <!-- Plugin scans class files, not sources. Execute after compile phase but before package -->
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <outputDirectory>${openapi.outputDirectory}</outputDirectory>
+                            <schemaFilename>openapi</schemaFilename>
+                            <infoTitle>${openapi.infoTitle}</infoTitle>
+                            <infoVersion>${openapi.infoVersion}</infoVersion>
+                            <infoDescription>${openapi.infoDescription}</infoDescription>
+                            <operationIdStrategy>CLASS_METHOD</operationIdStrategy>
+                            <scanPackages>edu.harvard.iq.dataverse</scanPackages>
+                            <scanDependenciesDisable>true</scanDependenciesDisable>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
