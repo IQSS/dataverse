@@ -4025,6 +4025,18 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         fileMetadatasCount = getVersionFilesResponseEmbargoedThenRestricted.jsonPath().getList("data").size();
         assertEquals(1, fileMetadatasCount);
 
+
+        // Test Access Status Retention
+        UtilIT.setSetting(SettingsServiceBean.Key.MinRetentionDurationInMonths, "-1");
+        String retentionEndDate = LocalDate.now().plusMonths(240).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        // Create retention for test file 2 (Retention and Public)
+        Response createFileRetentionResponse = UtilIT.createFileRetention(datasetId, Integer.parseInt(testFileId2), retentionEndDate, apiToken);
+        createFileRetentionResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // TODO something with the search criteria...  retentionExpired, no just public because retention has not expired ?
+
         // Test Access Status Public
         Response getVersionFilesResponsePublic = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, FileSearchCriteria.FileAccessStatus.Public.toString(), null, null, null, null, false, apiToken);
 

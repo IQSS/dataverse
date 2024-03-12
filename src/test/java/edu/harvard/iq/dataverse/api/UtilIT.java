@@ -3618,6 +3618,20 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/files/actions/:set-embargo");
     }
 
+    static Response createFileRetention(Integer datasetId, Integer fileId, String dateUnavailable, String apiToken) {
+        JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add("dateUnavailable", dateUnavailable);
+        jsonBuilder.add("reason", "This is a test retention");
+        jsonBuilder.add("fileIds", Json.createArrayBuilder().add(fileId));
+        String jsonString = jsonBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .contentType("application/json")
+                .urlEncodingEnabled(false)
+                .post("/api/datasets/" + datasetId + "/files/actions/:set-retention");
+    }
+
     static Response getVersionFileCounts(Integer datasetId,
                                          String version,
                                          String contentType,
