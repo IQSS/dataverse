@@ -2729,8 +2729,11 @@ public class Datasets extends AbstractApiBean {
      * includeDeaccessioned default to false and checkPermsWhenDeaccessioned to false. Use it only when you are sure that the you don't need to work with
      * a deaccessioned dataset.
      */
-    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds,
-            UriInfo uriInfo, HttpHeaders headers) throws WrappedResponse {
+    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, 
+                                                  String versionNumber, 
+                                                  final Dataset ds,
+                                                  UriInfo uriInfo, 
+                                                  HttpHeaders headers) throws WrappedResponse {
         //The checkPerms was added to check the permissions ONLY when the dataset is deaccessioned.
         boolean checkFilePerms = false;
         boolean includeDeaccessioned = false;
@@ -4460,7 +4463,6 @@ public class Datasets extends AbstractApiBean {
                                               @Context UriInfo uriInfo,
                                               @Context HttpHeaders headers) {
         boolean checkFilePerms = false;
-        boolean checkUserPerms = true;
         return response(req -> ok(
                 getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers,
                         includeDeaccessioned, checkFilePerms).getCitation(true, false)),
