@@ -158,8 +158,10 @@ public class JsonPrinterTest {
         emb.setDateAvailable(LocalDate.parse("2021-12-03"));
         emb.setReason("Some reason");
         dataFile.setEmbargo(emb);
+        dsVersion.setId(Long.MIN_VALUE);
         fmd.setDatasetVersion(dsVersion);
         fmd.setDataFile(dataFile);
+        fmd.setVersion(Long.MIN_VALUE);
         List<DataFileCategory> fileCategories = new ArrayList<>();
         DataFileCategory dataFileCategory = new DataFileCategory();
         dataFileCategory.setName("Data");

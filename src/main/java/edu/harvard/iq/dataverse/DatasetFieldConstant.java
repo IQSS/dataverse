@@ -112,8 +112,8 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String geographicUnit="geographicUnit";
     public final static String westLongitude="westLongitude";
     public final static String eastLongitude="eastLongitude";
-    public final static String northLatitude="northLongitude"; //Changed to match DB - incorrectly entered into DB: https://github.com/IQSS/dataverse/issues/5645
-    public final static String southLatitude="southLongitude"; //Incorrect in DB: https://github.com/IQSS/dataverse/issues/5645
+    public final static String northLatitude="northLatitude";
+    public final static String southLatitude="southLatitude";
     public final static String unitOfAnalysis="unitOfAnalysis";
     public final static String universe="universe";
     public final static String kindOfData="kindOfData";

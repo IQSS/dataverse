@@ -2,10 +2,15 @@
 Tools
 =====
 
-These are handy tools for your :doc:`/developers/dev-environment/`.
+These are handy tools for your :doc:`dev-environment`.
 
 .. contents:: |toctitle|
 	:local:
+
+Tools for Faster Deployment
++++++++++++++++++++++++++++
+
+See :ref:`ide-trigger-code-deploy` in the Container Guide.
 
 Netbeans Connector Chrome Extension
 +++++++++++++++++++++++++++++++++++
@@ -18,7 +23,7 @@ Unfortunately, while the Netbeans Connector Chrome Extension used to "just work"
 pgAdmin
 +++++++
 
-You probably installed pgAdmin when following the steps in the :doc:`dev-environment` section but if not, you can download it from https://www.pgadmin.org
+You may have installed pgAdmin when following the steps in the :doc:`classic-dev-env` section but if not, you can download it from https://www.pgadmin.org
 
 Maven
 +++++
@@ -261,10 +266,3 @@ We can see that the first ``FGC`` resulted in reducing the ``"O"`` by almost 7GB
    etc. ...
 
 It is clearly growing - so now we can conclude that indeed something there is using memory in a way that's not recoverable, and this is a clear problem. 
-
-       
-
-
-----
-
-Previous: :doc:`making-releases` | Next: :doc:`unf/index`

@@ -1243,6 +1243,12 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 friendlyNames.add(friendlyName.get());
                 return friendlyNames;
             }
+        } else if (key.equals(SearchFields.DATASET_LICENSE)) {
+            try {
+                friendlyNames.add(BundleUtil.getStringFromPropertyFile("license." + valueWithoutQuotes.toLowerCase().replace(" ","_") + ".name", "License"));
+            } catch (Exception e) {
+                logger.fine(String.format("action=getFriendlyNamesFromFilterQuery cannot find friendlyName for key=%s value=%s", key, value));
+            }
         }
 
         friendlyNames.add(valueWithoutQuotes);
