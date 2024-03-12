@@ -566,7 +566,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         String logTimestamp = logFormatter.format(new Date());
         Logger globusLogger = Logger.getLogger(
                 "edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusUpload" + logTimestamp);
-        String logFileName = "../logs" + File.separator + "globusUpload_id_" + dataset.getId() + "_" + logTimestamp
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusUpload_id_" + dataset.getId() + "_" + logTimestamp
                 + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
@@ -833,7 +833,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         Logger globusLogger = Logger.getLogger(
                 "edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusDownload" + logTimestamp);
 
-        String logFileName = "../logs" + File.separator + "globusDownload_id_" + dataset.getId() + "_" + logTimestamp
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusDownload_id_" + dataset.getId() + "_" + logTimestamp
                 + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;

@@ -180,7 +180,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     public void exportAllSets() {
         String logTimestamp = logFormatter.format(new Date());
         Logger exportLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.OAISetServiceBean." + "UpdateAllSets." + logTimestamp);
-        String logFileName = "../logs" + File.separator + "oaiSetsUpdate_" + logTimestamp + ".log";
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "oaiSetsUpdate_" + logTimestamp + ".log";
         FileHandler fileHandler = null;
         boolean fileHandlerSuceeded = false;
         try {
