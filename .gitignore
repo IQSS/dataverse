@@ -61,3 +61,4 @@ src/main/webapp/resources/images/dataverseproject.png.thumb140
 
 # Docker development volumes
 /docker-dev-volumes
+/.vs
