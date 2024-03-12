@@ -651,6 +651,7 @@ public class JsonPrinter {
         String pidString = (filePid!=null)? filePid.asString(): "";
 
         JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
+        JsonObjectBuilder retention = df.getRetention() != null ? JsonPrinter.json(df.getRetention()) : null;
 
         NullSafeJsonBuilder builder = jsonObjectBuilder()
                 .add("id", df.getId())
@@ -663,6 +664,7 @@ public class JsonPrinter {
                 .add("description", fileMetadata.getDescription())
                 .add("categories", getFileCategories(fileMetadata))
                 .add("embargo", embargo)
+                .add("retention", retention)
                 //.add("released", df.isReleased())
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
@@ -1062,6 +1064,11 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(Embargo embargo) {
         return jsonObjectBuilder().add("dateAvailable", embargo.getDateAvailable().toString()).add("reason",
                 embargo.getReason());
+    }
+
+    public static JsonObjectBuilder json(Retention retention) {
+        return jsonObjectBuilder().add("dateUnavailable", retention.getDateUnavailable().toString()).add("reason",
+                retention.getReason());
     }
 
     public static JsonObjectBuilder json(License license) {
