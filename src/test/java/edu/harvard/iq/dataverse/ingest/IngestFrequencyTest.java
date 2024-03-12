@@ -99,7 +99,7 @@ public class IngestFrequencyTest {
         TabularDataIngest tabDataIngest = null;
 
         try {
-            tabDataIngest = ingestPlugin.read(fileInputStream, null);
+            tabDataIngest = ingestPlugin.read(fileInputStream, false, null);
         } catch (IOException ingestEx) {
             tabDataIngest = null;
             System.out.println("Caught an exception trying to ingest file " + fileName + ": " + ingestEx.getLocalizedMessage());

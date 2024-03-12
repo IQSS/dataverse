@@ -4,11 +4,11 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
 import org.junit.jupiter.api.AfterEach;
@@ -50,7 +50,7 @@ public class RemoteOverlayAccessIOTest {
         System.setProperty("dataverse.files.file.label", "default");
         datafile = MocksFactory.makeDataFile();
         dataset = MocksFactory.makeDataset();
-        dataset.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL, authority, identifier, "/", DOIServiceBean.DOI_RESOLVER_URL, null));
+        dataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, authority, identifier, "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
         datafile.setOwner(dataset);
         datafile.setStorageIdentifier("test://" + baseStoreId + "//" + logoPath);
 

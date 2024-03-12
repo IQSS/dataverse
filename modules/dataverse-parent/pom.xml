@@ -40,8 +40,8 @@
             </dependency>
             <dependency>
                 <groupId>com.google.cloud</groupId>
-                <artifactId>google-cloud-bom</artifactId>
-                <version>${google.cloud.version}</version>
+                <artifactId>libraries-bom</artifactId>
+                <version>${google.library.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -149,18 +149,18 @@
     
         <!-- Major system components and dependencies -->
         <payara.version>6.2023.8</payara.version>
-        <postgresql.version>42.6.0</postgresql.version>
+        <postgresql.version>42.7.2</postgresql.version>
         <solr.version>9.3.0</solr.version>
         <aws.version>1.12.290</aws.version>
-        <google.cloud.version>0.177.0</google.cloud.version>
+        <google.library.version>26.30.0</google.library.version>
     
         <!-- Basic libs, logging -->
         <jakartaee-api.version>8.0.0</jakartaee-api.version>
         <slf4j.version>1.7.35</slf4j.version>
-        <commons.io.version>2.11.0</commons.io.version>
+        <commons.io.version>2.15.1</commons.io.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
-        <commons.compress.version>1.21</commons.compress.version>
+        <commons.compress.version>1.26.0</commons.compress.version>
         <apache.httpcomponents.client.version>4.5.13</apache.httpcomponents.client.version>
         <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
         

@@ -39,7 +39,6 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -52,6 +51,7 @@ import com.apicatalog.jsonld.document.JsonDocument;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import jakarta.json.JsonReader;
 
 public class JSONLDUtil {
@@ -83,7 +83,7 @@ public class JSONLDUtil {
 
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
         if (migrating) {
-            Optional<GlobalId> maybePid = GlobalIdServiceBean.parse(jsonld.getString("@id"));
+            Optional<GlobalId> maybePid = PidProvider.parse(jsonld.getString("@id"));
             if (maybePid.isPresent()) {
                 ds.setGlobalId(maybePid.get());
             } else {
