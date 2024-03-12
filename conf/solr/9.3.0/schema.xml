@@ -229,6 +229,8 @@
 
     <!-- incomplete datasets issue 8822 -->
     <field name="datasetValid" type="boolean" stored="true" indexed="true" multiValued="false"/>
+
+    <field name="license" type="string" stored="true" indexed="true" multiValued="false"/>
     
     <!--
         METADATA SCHEMA FIELDS
@@ -327,7 +329,7 @@
     <field name="keywordVocabularyURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="kindOfData" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="language" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="northLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="northLatitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="notesText" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="originOfSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="otherDataAppraisal" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -370,7 +372,7 @@
     <field name="software" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="softwareName" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="softwareVersion" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="southLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="southLatitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="state" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayCellType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayMeasurementType" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -566,7 +568,7 @@
     <copyField source="keywordVocabularyURI" dest="_text_" maxChars="3000"/>
     <copyField source="kindOfData" dest="_text_" maxChars="3000"/>
     <copyField source="language" dest="_text_" maxChars="3000"/>
-    <copyField source="northLongitude" dest="_text_" maxChars="3000"/>
+    <copyField source="northLatitude" dest="_text_" maxChars="3000"/>
     <copyField source="notesText" dest="_text_" maxChars="3000"/>
     <copyField source="originOfSources" dest="_text_" maxChars="3000"/>
     <copyField source="otherDataAppraisal" dest="_text_" maxChars="3000"/>
@@ -609,7 +611,7 @@
     <copyField source="software" dest="_text_" maxChars="3000"/>
     <copyField source="softwareName" dest="_text_" maxChars="3000"/>
     <copyField source="softwareVersion" dest="_text_" maxChars="3000"/>
-    <copyField source="southLongitude" dest="_text_" maxChars="3000"/>
+    <copyField source="southLatitude" dest="_text_" maxChars="3000"/>
     <copyField source="state" dest="_text_" maxChars="3000"/>
     <copyField source="studyAssayCellType" dest="_text_" maxChars="3000"/>
     <copyField source="studyAssayMeasurementType" dest="_text_" maxChars="3000"/>

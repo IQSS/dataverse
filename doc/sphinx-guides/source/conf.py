@@ -43,6 +43,7 @@ extensions = [
     'sphinx.ext.graphviz',
     'sphinxcontrib.icon',
     'myst_parser',
+    'sphinx_tabs.tabs',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

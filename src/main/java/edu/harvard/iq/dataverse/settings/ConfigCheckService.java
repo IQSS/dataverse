@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.MailServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.MailSessionProducer;
@@ -22,7 +23,7 @@ import java.util.logging.Logger;
 
 @Startup
 @Singleton
-@DependsOn("StartupFlywayMigrator")
+@DependsOn({"StartupFlywayMigrator", "PidProviderFactoryBean"})
 public class ConfigCheckService {
     
     private static final Logger logger = Logger.getLogger(ConfigCheckService.class.getCanonicalName());
@@ -40,14 +41,14 @@ public class ConfigCheckService {
     
     @PostConstruct
     public void startup() {
-        if (!checkSystemDirectories()) {
+        if (!checkSystemDirectories() || !checkPidProviders()) {
             throw new ConfigurationError("Not all configuration checks passed successfully. See logs above.");
         }
         
         // Only checks resulting in warnings, nothing critical that needs to stop deployment
         checkSystemMailSetup();
     }
-    
+
     /**
      * In this method, we check the existence and write-ability of all important directories we use during
      * normal operations. It does not include checks for the storage system. If directories are not available,
@@ -123,4 +124,14 @@ public class ConfigCheckService {
         }
     }
 
+    /**
+     * Verifies that at least one PidProvider capable of editing/minting PIDs is
+     * configured. Requires the @DependsOn("PidProviderFactoryBean") annotation above
+     * since it is the @PostCOnstruct init() method of that class that loads the PidProviders
+     *
+     * @return True if all checks successful, false otherwise.
+     */
+    private boolean checkPidProviders() {
+        return PidUtil.getManagedProviderIds().size() > 0;
+    }
 }

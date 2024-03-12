@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -75,9 +76,19 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         // for data file check permission on owning dataset
-        return Collections.singletonMap("",
-                defPoint instanceof Dataverse ? Collections.singleton(Permission.ManageDataversePermissions)
-                : defPoint instanceof Dataset ? Collections.singleton(Permission.ManageDatasetPermissions) : Collections.singleton(Permission.ManageFilePermissions));
+        Set<Permission> requiredPermissions = new HashSet<Permission>();
+
+        if (defPoint instanceof Dataverse) {
+            requiredPermissions.add(Permission.ManageDataversePermissions);
+        } else if (defPoint instanceof Dataset) {
+            requiredPermissions.add(Permission.ManageDatasetPermissions);
+        } else {
+            requiredPermissions.add(Permission.ManageFilePermissions);
+        }
+
+        requiredPermissions.addAll(role.permissions());
+
+        return Collections.singletonMap("", requiredPermissions);
     }
 
     @Override

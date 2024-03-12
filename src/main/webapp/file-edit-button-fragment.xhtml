@@ -77,6 +77,22 @@
             </h:outputLink>
         </li>
     </ui:fragment>
+    
+    <!-- Single file uningest/reingest -->
+    <ui:fragment rendered="#{isFilePg and (dataverseSession.user.superuser and FilePage.fileMetadata.dataFile.isTabularData()) or (FilePage.fileMetadata.dataFile.isIngestProblem() and FilePage.canPublishDataset())}">
+        <li>
+            <p:commandLink update="@form,:messagePanel" action="#{FilePage.uningestFile()}">
+                <h:outputText value="#{bundle['file.uningest']}"/>
+            </p:commandLink>
+        </li>
+    </ui:fragment>
+    <ui:fragment rendered="#{isFilePg and dataverseSession.user.superuser and FilePage.isIngestable()}">
+        <li>
+            <p:commandLink update="@form,:messagePanel" actionListener="#{FilePage.ingestFile()}">
+                <h:outputText value="#{bundle['file.ingest']}"/>
+            </p:commandLink>
+        </li>
+    </ui:fragment>
 
     <!-- TO-DO #3488 - ADD FILE TAGS FOR FILE PG AND SINGLE FILE-->    
     <ui:fragment rendered="#{fileMetadata==null}">    
