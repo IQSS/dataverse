@@ -7,12 +7,13 @@ package edu.harvard.iq.dataverse.export;
 
 import com.google.gson.Gson;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -56,7 +57,7 @@ public class OpenAireExportUtilTest {
         String persistentAgency = "doi";
         String persistentAuthority = "10.123";
         String persistentId = "123";
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, DOIServiceBean.DOI_RESOLVER_URL, null);
+        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, AbstractDOIProvider.DOI_RESOLVER_URL, null);
 
         // when
         OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.asURL(), null);
@@ -76,7 +77,7 @@ public class OpenAireExportUtilTest {
         String persistentAgency = "hdl";
         String persistentAuthority = "1902.1";
         String persistentId = "111012";
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, HandlenetServiceBean.HDL_RESOLVER_URL, null);
+        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, HandlePidProvider.HDL_RESOLVER_URL, null);
 
         // when
         OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.asURL(), null);
@@ -927,15 +928,15 @@ public class OpenAireExportUtilTest {
                 + "<geoLocationBox>"
                 + "<westBoundLongitude>10</westBoundLongitude>"
                 + "<eastBoundLongitude>20</eastBoundLongitude>"
-                + "<northBoundLatitude>30</northBoundLatitude>"
                 + "<southBoundLatitude>40</southBoundLatitude>"
+                + "<northBoundLatitude>30</northBoundLatitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation>"
                 + "<geoLocation>"
                 + "<geoLocationBox>"
+                + "<eastBoundLongitude>60</eastBoundLongitude>"
                 + "<southBoundLatitude>80</southBoundLatitude>"
                 + "<northBoundLatitude>70</northBoundLatitude>"
-                + "<eastBoundLongitude>60</eastBoundLongitude>"
                 + "<westBoundLongitude>50</westBoundLongitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation></geoLocations>",
@@ -966,8 +967,8 @@ public class OpenAireExportUtilTest {
                 + "<geoLocationBox>"
                 + "<eastBoundLongitude>23</eastBoundLongitude>"
                 + "<northBoundLatitude>786</northBoundLatitude>"
-                + "<westBoundLongitude>45</westBoundLongitude>"
                 + "<southBoundLatitude>34</southBoundLatitude>"
+                + "<westBoundLongitude>45</westBoundLongitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation></geoLocations>",
                 stringWriter.toString());

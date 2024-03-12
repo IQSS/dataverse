@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.api.imports;
 
 import com.google.gson.Gson;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
@@ -11,13 +10,14 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.ForeignMetadataFieldMapping;
 import edu.harvard.iq.dataverse.ForeignMetadataFormatMapping;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.api.dto.*;  
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
+import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -352,7 +352,7 @@ public class ImportGenericServiceBean {
         if (!otherIds.isEmpty()) {
             // We prefer doi or hdl identifiers like "doi:10.7910/DVN/1HE30F"
             for (String otherId : otherIds) {
-                if (otherId.startsWith(DOIServiceBean.DOI_PROTOCOL) || otherId.startsWith(HandlenetServiceBean.HDL_PROTOCOL) || otherId.startsWith(DOIServiceBean.DOI_RESOLVER_URL) || otherId.startsWith(HandlenetServiceBean.HDL_RESOLVER_URL) || otherId.startsWith(DOIServiceBean.HTTP_DOI_RESOLVER_URL) || otherId.startsWith(HandlenetServiceBean.HTTP_HDL_RESOLVER_URL) || otherId.startsWith(DOIServiceBean.DXDOI_RESOLVER_URL) || otherId.startsWith(DOIServiceBean.HTTP_DXDOI_RESOLVER_URL)) {
+                if (otherId.startsWith(AbstractDOIProvider.DOI_PROTOCOL) || otherId.startsWith(HandlePidProvider.HDL_PROTOCOL) || otherId.startsWith(AbstractDOIProvider.DOI_RESOLVER_URL) || otherId.startsWith(HandlePidProvider.HDL_RESOLVER_URL) || otherId.startsWith(AbstractDOIProvider.HTTP_DOI_RESOLVER_URL) || otherId.startsWith(HandlePidProvider.HTTP_HDL_RESOLVER_URL) || otherId.startsWith(AbstractDOIProvider.DXDOI_RESOLVER_URL) || otherId.startsWith(AbstractDOIProvider.HTTP_DXDOI_RESOLVER_URL)) {
                     return otherId;
                 }
             }
@@ -361,7 +361,7 @@ public class ImportGenericServiceBean {
                 try {
                     HandleResolver hr = new HandleResolver();
                     hr.resolveHandle(otherId);
-                    return HandlenetServiceBean.HDL_PROTOCOL + ":" + otherId;
+                    return HandlePidProvider.HDL_PROTOCOL + ":" + otherId;
                 } catch (HandleException e) {
                     logger.fine("Not a valid handle: " + e.toString());
                 }
@@ -388,7 +388,7 @@ public class ImportGenericServiceBean {
        
         String protocol = identifierString.substring(0, index1);
         
-        if (DOIServiceBean.DOI_PROTOCOL.equals(protocol) || HandlenetServiceBean.HDL_PROTOCOL.equals(protocol) || PermaLinkPidProviderServiceBean.PERMA_PROTOCOL.equals(protocol)) {
+        if (AbstractDOIProvider.DOI_PROTOCOL.equals(protocol) || HandlePidProvider.HDL_PROTOCOL.equals(protocol) || PermaLinkPidProvider.PERMA_PROTOCOL.equals(protocol)) {
             logger.fine("Processing hdl:- or doi:- or perma:-style identifier : "+identifierString);        
         
         } else if ("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol)) {
@@ -396,21 +396,21 @@ public class ImportGenericServiceBean {
             // We also recognize global identifiers formatted as global resolver URLs:
             //ToDo - refactor index1 always has -1 here so that we can use index1+1 later
             //ToDo - single map of protocol/url, are all three cases the same then?
-            if (identifierString.startsWith(HandlenetServiceBean.HDL_RESOLVER_URL) || identifierString.startsWith(HandlenetServiceBean.HTTP_HDL_RESOLVER_URL)) {
+            if (identifierString.startsWith(HandlePidProvider.HDL_RESOLVER_URL) || identifierString.startsWith(HandlePidProvider.HTTP_HDL_RESOLVER_URL)) {
                 logger.fine("Processing Handle identifier formatted as a resolver URL: "+identifierString);
-                protocol = HandlenetServiceBean.HDL_PROTOCOL;
-                index1 = (identifierString.startsWith(HandlenetServiceBean.HDL_RESOLVER_URL)) ? HandlenetServiceBean.HDL_RESOLVER_URL.length() - 1 : HandlenetServiceBean.HTTP_HDL_RESOLVER_URL.length() - 1;
+                protocol = HandlePidProvider.HDL_PROTOCOL;
+                index1 = (identifierString.startsWith(HandlePidProvider.HDL_RESOLVER_URL)) ? HandlePidProvider.HDL_RESOLVER_URL.length() - 1 : HandlePidProvider.HTTP_HDL_RESOLVER_URL.length() - 1;
                 index2 = identifierString.indexOf("/", index1 + 1);
-            } else if (identifierString.startsWith(DOIServiceBean.DOI_RESOLVER_URL) || identifierString.startsWith(DOIServiceBean.HTTP_DOI_RESOLVER_URL) || identifierString.startsWith(DOIServiceBean.DXDOI_RESOLVER_URL) || identifierString.startsWith(DOIServiceBean.HTTP_DXDOI_RESOLVER_URL)) {
+            } else if (identifierString.startsWith(AbstractDOIProvider.DOI_RESOLVER_URL) || identifierString.startsWith(AbstractDOIProvider.HTTP_DOI_RESOLVER_URL) || identifierString.startsWith(AbstractDOIProvider.DXDOI_RESOLVER_URL) || identifierString.startsWith(AbstractDOIProvider.HTTP_DXDOI_RESOLVER_URL)) {
                 logger.fine("Processing DOI identifier formatted as a resolver URL: "+identifierString);
-                protocol = DOIServiceBean.DOI_PROTOCOL;
-                identifierString = identifierString.replace(DOIServiceBean.DXDOI_RESOLVER_URL, DOIServiceBean.DOI_RESOLVER_URL);
-                identifierString = identifierString.replace(DOIServiceBean.HTTP_DXDOI_RESOLVER_URL, DOIServiceBean.HTTP_DOI_RESOLVER_URL);
-                index1 = (identifierString.startsWith(DOIServiceBean.DOI_RESOLVER_URL)) ? DOIServiceBean.DOI_RESOLVER_URL.length() - 1 : DOIServiceBean.HTTP_DOI_RESOLVER_URL.length() - 1;
+                protocol = AbstractDOIProvider.DOI_PROTOCOL;
+                identifierString = identifierString.replace(AbstractDOIProvider.DXDOI_RESOLVER_URL, AbstractDOIProvider.DOI_RESOLVER_URL);
+                identifierString = identifierString.replace(AbstractDOIProvider.HTTP_DXDOI_RESOLVER_URL, AbstractDOIProvider.HTTP_DOI_RESOLVER_URL);
+                index1 = (identifierString.startsWith(AbstractDOIProvider.DOI_RESOLVER_URL)) ? AbstractDOIProvider.DOI_RESOLVER_URL.length() - 1 : AbstractDOIProvider.HTTP_DOI_RESOLVER_URL.length() - 1;
                 index2 = identifierString.indexOf("/", index1 + 1);
-            } else if (identifierString.startsWith(PermaLinkPidProviderServiceBean.PERMA_RESOLVER_URL + Dataset.TARGET_URL)) {
-                protocol = PermaLinkPidProviderServiceBean.PERMA_PROTOCOL;
-                index1 = PermaLinkPidProviderServiceBean.PERMA_RESOLVER_URL.length() + + Dataset.TARGET_URL.length() - 1; 
+            } else if (identifierString.startsWith(PermaLinkPidProvider.PERMA_RESOLVER_URL + Dataset.TARGET_URL)) {
+                protocol = PermaLinkPidProvider.PERMA_PROTOCOL;
+                index1 = PermaLinkPidProvider.PERMA_RESOLVER_URL.length() + + Dataset.TARGET_URL.length() - 1; 
                 index2 = identifierString.indexOf("/", index1 + 1);
             } else {
                 logger.warning("HTTP Url in supplied as the identifier is neither a Handle nor DOI resolver: "+identifierString);

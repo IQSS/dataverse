@@ -25,6 +25,11 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
 
     public ReturnDatasetToAuthorCommand(DataverseRequest aRequest, Dataset anAffectedDvObject, String comment) {
         super(aRequest, anAffectedDvObject);
+
+        if (comment == null || comment.isEmpty()) {
+            throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataset.reject.commentNull"));
+        }
+
         this.comment = comment;
     }
 

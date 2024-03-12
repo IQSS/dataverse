@@ -16,7 +16,7 @@ ENABLE_JMX=${ENABLE_JMX:-0}
 ENABLE_JDWP=${ENABLE_JDWP:-0}
 ENABLE_RELOAD=${ENABLE_RELOAD:-0}
 
-DV_PREBOOT=${PAYARA_DIR}/dataverse_preboot
+DV_PREBOOT=${CONFIG_DIR}/dataverse_preboot
 echo "# Dataverse preboot configuration for Payara" > "${DV_PREBOOT}"
 
 # 1. Configure JMX (enabled by default on port 8686, but requires SSL)
@@ -56,6 +56,9 @@ fi
 if [ "${ENABLE_RELOAD}" = "1" ]; then
   echo "Enabling hot reload of deployments."
   echo "set configs.config.server-config.admin-service.das-config.dynamic-reload-enabled=true" >> "${DV_PREBOOT}"
+  echo "set configs.config.server-config.admin-service.das-config.autodeploy-enabled=true" >> "${DV_PREBOOT}"
+  export DATAVERSE_JSF_PROJECT_STAGE=${DATAVERSE_JSF_PROJECT_STAGE:-"Development"}
+  export DATAVERSE_JSF_REFRESH_PERIOD=${DATAVERSE_JSF_REFRESH_PERIOD:-"0"}
 fi
 
 # 4. Add the commands to the existing preboot file, but insert BEFORE deployment

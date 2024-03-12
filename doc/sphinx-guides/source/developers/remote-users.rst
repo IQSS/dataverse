@@ -75,7 +75,3 @@ In case you want to stop and remove the Keycloak container, just run the other a
 ``./rm-keycloak.sh``
 
 Note: the Keycloak admin to login at the admin console is ``kcadmin:kcpassword``
-
-----
-
-Previous: :doc:`unf/index` | Next: :doc:`geospatial`
