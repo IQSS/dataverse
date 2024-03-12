@@ -4,6 +4,7 @@ on:
     push:
         paths:
             - "**.java"
+            - "**.sql"
             - "pom.xml"
             - "modules/**/pom.xml"
             - "!modules/container-base/**"
@@ -11,6 +12,7 @@ on:
     pull_request:
         paths:
             - "**.java"
+            - "**.sql"
             - "pom.xml"
             - "modules/**/pom.xml"
             - "!modules/container-base/**"
