@@ -1170,7 +1170,9 @@ public class IndexServiceBean {
                     }
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
-                        if (!dataset.isHarvested() && !fileMetadata.getDataFile().isRestricted() && !fileMetadata.getDataFile().isFilePackage()) {
+                        if (!dataset.isHarvested() && !fileMetadata.getDataFile().isRestricted()
+                                && !fileMetadata.getDataFile().isFilePackage()
+                                && fileMetadata.getDataFile().getRetention() == null) {
                             StorageIO<DataFile> accessObject = null;
                             InputStream instream = null;
                             ContentHandler textHandler = null;
