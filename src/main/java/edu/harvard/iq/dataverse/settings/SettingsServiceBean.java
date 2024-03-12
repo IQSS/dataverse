@@ -87,6 +87,15 @@ public class SettingsServiceBean {
          * StorageSite database table.
          */
         LocalDataAccessPath,
+        /**
+         * The algorithm used to generate PIDs, randomString (default) or
+         * storedProcedure
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,
@@ -189,19 +198,42 @@ public class SettingsServiceBean {
         SignUpUrl,
         /** Key for whether we allow users to sign up */
         AllowSignUp,
-        /** protocol for global id */
+        /**
+         * protocol for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Protocol,
-        /** authority for global id */
+        /**
+         * authority for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Authority,
-        /** DoiProvider for global id */
+        /**
+         * DoiProvider for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         DoiProvider,
-        /** Shoulder for global id - used to create a common prefix on identifiers */
+        /**
+         * Shoulder for global id - used to create a common prefix on identifiers
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Shoulder,
-        /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
-        DoiUsername,
-        DoiPassword,
-        DoiBaseurlstring,
-        */
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
 
@@ -347,10 +379,16 @@ public class SettingsServiceBean {
          */
         PVCustomPasswordResetAlertMessage,
         /*
-        String to describe DOI format for data files. Default is DEPENDENT. 
-        'DEPENEDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
-        'INDEPENDENT' means a new global id, completely independent from the dataset-level global id.
-        */
+         * String to describe DOI format for data files. Default is DEPENDENT.
+         * 'DEPENDENT' means the DOI will be the Dataset DOI plus a file DOI with a
+         * slash in between. 'INDEPENDENT' means a new global id, completely independent
+         * from the dataset-level global id.
+         *
+         * @deprecated New installations should not use this database setting, but use
+         * the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         DataFilePIDFormat, 
         /* Json array of supported languages
         */
@@ -358,7 +396,7 @@ public class SettingsServiceBean {
         /*
         Number for the minimum number of files to send PID registration to asynchronous workflow
         */
-        PIDAsynchRegFileCount,
+        //PIDAsynchRegFileCount,
         /**
          * 
          */
@@ -366,12 +404,22 @@ public class SettingsServiceBean {
 
         /**
          * Indicates if the Handle service is setup to work 'independently' (No communication with the Global Handle Registry)
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
          */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         IndependentHandleService,
 
         /**
         Handle to use for authentication if the default is not being used
-        */
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         HandleAuthHandle,
 
         /**

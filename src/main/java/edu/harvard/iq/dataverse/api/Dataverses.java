@@ -15,7 +15,6 @@ import edu.harvard.iq.dataverse.api.dto.DataverseMetadataBlockFacetDTO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
@@ -74,6 +73,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlock
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateMetadataBlockFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ValidateDatasetJsonCommand;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -421,7 +422,7 @@ public class Dataverses extends AbstractApiBean {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
                     return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
                 }
-                Optional<GlobalId> maybePid = GlobalIdServiceBean.parse(pidParam);
+                Optional<GlobalId> maybePid = PidProvider.parse(pidParam);
                 if (maybePid.isPresent()) {
                     ds.setGlobalId(maybePid.get());
                 } else {
@@ -496,7 +497,7 @@ public class Dataverses extends AbstractApiBean {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
                     return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
                 }
-                Optional<GlobalId> maybePid = GlobalIdServiceBean.parse(pidParam);
+                Optional<GlobalId> maybePid = PidProvider.parse(pidParam);
                 if (maybePid.isPresent()) {
                     ds.setGlobalId(maybePid.get());
                 } else {
@@ -559,12 +560,10 @@ public class Dataverses extends AbstractApiBean {
             ds.setOwner(owner);
             ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true, licenseSvc);
           //ToDo - verify PID is one Dataverse can manage (protocol/authority/shoulder match)
-            if(!
-            (ds.getAuthority().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Authority))&& 
-            ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol))&&
-            ds.getIdentifier().startsWith(settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder)))) {
-                throw new BadRequestException("Cannot recreate a dataset that has a PID that doesn't match the server's settings");
-            }
+          if (!PidUtil.getPidProvider(ds.getGlobalId().getProviderId()).canManagePID()) {
+              throw new BadRequestException(
+                      "Cannot recreate a dataset that has a PID that doesn't match the server's settings");
+          }
             if(!dvObjectSvc.isGlobalIdLocallyUnique(ds.getGlobalId())) {
                 throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
@@ -610,10 +609,11 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}")
-    public Response viewDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf) {
+    public Response getDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf, @QueryParam("returnOwners") boolean returnOwners) {
         return response(req -> ok(
             json(execCommand(new GetDataverseCommand(req, findDataverseOrDie(idtf))),
-                settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false)
+                settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false),
+                returnOwners
             )), getRequestUser(crc));
     }
 

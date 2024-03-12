@@ -86,7 +86,7 @@ See :ref:`create-dataset-command`.
 Uploading Files
 ~~~~~~~~~~~~~~~
 
-See :ref:`add-file-api`.
+See :ref:`add-file-api`. In addition, when a Dataverse installation is configured to use S3 storage with direct upload enabled, there is API support to send a file directly to S3. This facilitates an efficient method to upload big files, but is more complex. The procedure is described in the :doc:`/developers/s3-direct-upload-api` section of the Developer Guide.
 
 Publishing a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

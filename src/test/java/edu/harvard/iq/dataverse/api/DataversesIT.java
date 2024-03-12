@@ -145,6 +145,34 @@ public class DataversesIT {
         deleteDataverse.prettyPrint();
         deleteDataverse.then().assertThat().statusCode(OK.getStatusCode());
     }
+    
+    
+    @Test
+    public void testGetDataverseOwners() throws FileNotFoundException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken);
+        
+        createDataverse1Response.prettyPrint();
+        createDataverse1Response.then().assertThat().statusCode(CREATED.getStatusCode());
+        
+        String first = UtilIT.getAliasFromResponse(createDataverse1Response);
+        
+        Response getWithOwnersFirst = UtilIT.getDataverseWithOwners(first, apiToken, true);
+        getWithOwnersFirst.prettyPrint();
+        
+        Response createLevel1a = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-level1a", null, apiToken, first);
+        createLevel1a.prettyPrint();
+        String level1a = UtilIT.getAliasFromResponse(createLevel1a);
+        
+        Response getWithOwners = UtilIT.getDataverseWithOwners(level1a, apiToken, true);
+        getWithOwners.prettyPrint();
+        
+        getWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(first));
+        
+    }
 
     /**
      * A regular user can create a Dataverse Collection and access its

@@ -1,0 +1,12 @@
+# This configuration is intended to be used with Caddy, a very small high perf proxy.
+# It will serve the application containers Payara Admin GUI via HTTP instead of HTTPS,
+# avoiding the trouble of self signed certificates for local development.
+
+:4848 {
+	reverse_proxy https://dataverse:4848 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+		header_down Location "^https://" "http://"
+	}
+}
