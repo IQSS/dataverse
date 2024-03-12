@@ -1,17 +1,11 @@
-package edu.harvard.iq.dataverse.pidproviders;
+package edu.harvard.iq.dataverse.pidproviders.doi;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.Stateless;
-
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.NotImplementedException;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
 
@@ -20,15 +14,13 @@ import edu.harvard.iq.dataverse.GlobalId;
  * 
  */
 
-@Stateless
-public class UnmanagedDOIServiceBean extends DOIServiceBean {
+public class UnmanagedDOIProvider extends AbstractDOIProvider {
 
-    private static final Logger logger = Logger.getLogger(UnmanagedDOIServiceBean.class.getCanonicalName());
+    public static final String ID = "UnmanagedDOIProvider";
 
-    @PostConstruct
-    private void init() {
-        // Always on
-        configured = true;
+    public UnmanagedDOIProvider() {
+        //Also using ID as label
+        super(ID, ID);
     }
 
     @Override
@@ -73,11 +65,15 @@ public class UnmanagedDOIServiceBean extends DOIServiceBean {
 
     @Override
     public List<String> getProviderInformation() {
-        return List.of("UnmanagedDOIProvider", "");
+        return List.of(getId(), "");
     }
 
+    @Override
+    public String getProviderType() {
+        return "unamagedDOI";
+    }
 
     // PID recognition
-    // Done by DOIServiceBean
+    // Done by AbstractDOIProvider
 
 }

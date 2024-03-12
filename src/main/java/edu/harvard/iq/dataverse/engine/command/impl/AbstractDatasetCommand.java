@@ -13,6 +13,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.sql.Timestamp;
@@ -23,7 +25,6 @@ import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 
 import jakarta.validation.ConstraintViolation;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -152,18 +153,18 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      */
     protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt, boolean retry) throws CommandException {
         if (!theDataset.isIdentifierRegistered()) {
-            GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(theDataset.getProtocol(), ctxt);
-            if ( globalIdServiceBean != null ) {
+            PidProvider pidProvider = PidUtil.getPidProvider(theDataset.getGlobalId().getProviderId());
+            if ( pidProvider != null ) {
                 try {
-                    if (globalIdServiceBean.alreadyRegistered(theDataset)) {
+                    if (pidProvider.alreadyRegistered(theDataset)) {
                         int attempts = 0;
                         if(retry) {
                             do  {
-                                theDataset.setIdentifier(globalIdServiceBean.generateDatasetIdentifier(theDataset));
+                                pidProvider.generatePid(theDataset);
                                 logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
                                     new Object[]{theDataset.getId(), theDataset.getIdentifier()});
                                 attempts++;
-                            } while (globalIdServiceBean.alreadyRegistered(theDataset) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
+                            } while (pidProvider.alreadyRegistered(theDataset) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
                         }
                         if(!retry) {
                             logger.warning("Reserving PID for: "  + getDataset().getId() + " during publication failed.");
@@ -177,7 +178,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                     }
                     // Invariant: Dataset identifier does not exist in the remote registry
                     try {
-                        globalIdServiceBean.createIdentifier(theDataset);
+                        pidProvider.createIdentifier(theDataset);
                         theDataset.setGlobalIdCreateTime(getTimestamp());
                         theDataset.setIdentifierRegistered(true);
                     } catch (Throwable ex) {
@@ -185,7 +186,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                     }
 
                 } catch (Throwable e) {
-                    throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", globalIdServiceBean.getProviderInformation()), this);
+                    throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", pidProvider.getProviderInformation()), this);
                 }
             } else {
                 throw new IllegalCommandException("This dataset may not be published because its id registry service is not supported.", this);

@@ -1217,6 +1217,10 @@ public class DatasetsIT {
 
     }
 
+    @Disabled
+    /*The identifier generation style is no longer a global, dynamically changeable setting. To make this test work after PR #10234,
+     * will require configuring a PidProvider that uses this style and creating a collection/dataset that uses that provider.
+     */
     @Test
     public void testStoredProcGeneratedAsIdentifierGenerationStyle() {
         // Please note that this test only works if the stored procedure
@@ -1670,6 +1674,26 @@ public class DatasetsIT {
         giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "fileDownloader", "@" + randomUsername, apiToken);
                 giveRandoPermission.prettyPrint();
         assertEquals(200, giveRandoPermission.getStatusCode());
+
+        // Create another random user to become curator:
+
+        Response createCuratorUser = UtilIT.createRandomUser();
+        createCuratorUser.prettyPrint();
+        String curatorUsername = UtilIT.getUsernameFromResponse(createCuratorUser);
+        String curatorUserApiToken = UtilIT.getApiTokenFromResponse(createCuratorUser);
+
+        Response giveCuratorPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "curator", "@" + curatorUsername, apiToken);
+        giveCuratorPermission.prettyPrint();
+        assertEquals(200, giveCuratorPermission.getStatusCode());
+
+        // Test if privilege escalation is possible: curator should not be able to assign admin rights
+        Response giveTooMuchPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "admin", "@" + curatorUsername, curatorUserApiToken);
+        giveTooMuchPermission.prettyPrint();
+        assertEquals(401, giveTooMuchPermission.getStatusCode());
+
+        giveTooMuchPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "admin", "@" + randomUsername, curatorUserApiToken);
+        giveTooMuchPermission.prettyPrint();
+        assertEquals(401, giveTooMuchPermission.getStatusCode());
         
         String idToDelete = JsonPath.from(giveRandoPermission.getBody().asString()).getString("data.id");                
 
@@ -1692,7 +1716,7 @@ public class DatasetsIT {
         deleteGrantedAccess.prettyPrint();
         assertEquals(200, deleteGrantedAccess.getStatusCode());
         
-       Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
         
@@ -1701,6 +1725,14 @@ public class DatasetsIT {
         assertEquals(200, deleteDataverseResponse.getStatusCode());
 
         Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+        deleteUserResponse = UtilIT.deleteUser(randomUsername);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+        deleteUserResponse = UtilIT.deleteUser(curatorUsername);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
         

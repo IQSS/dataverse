@@ -1,5 +1,10 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.pidproviders.doi.ezid;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
@@ -13,40 +18,40 @@ import jakarta.ejb.Stateless;
  *
  * @author skraffmiller
  */
-@Stateless
-public class DOIEZIdServiceBean extends DOIServiceBean {
+public class EZIdDOIProvider extends AbstractDOIProvider {
     
-    private static final Logger logger = Logger.getLogger(DOIEZIdServiceBean.class.getCanonicalName());
+
+
+    private static final Logger logger = Logger.getLogger(EZIdDOIProvider.class.getCanonicalName());
     
     EZIDService ezidService;
     
-    // This has a sane default in microprofile-config.properties
-    private final String baseUrl = JvmSettings.EZID_API_URL.lookup();
+    public static final String TYPE = "ezid";
     
-    public DOIEZIdServiceBean() {
+    private String baseUrl;
+    
+    
+    public EZIdDOIProvider(String id, String label, String providerAuthority, String providerShoulder, String identifierGenerationStyle,
+            String datafilePidFormat, String managedList, String excludedList, String baseUrl, String username, String password) {
+        super(id, label, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
         // Creating the service doesn't do any harm, just initializing some object data here.
         // Makes sure we don't run into NPEs from the other methods, but will obviously fail if the
         // login below does not work.
-        this.ezidService = new EZIDService(this.baseUrl);
+        this.baseUrl = baseUrl;
+        this.ezidService = new EZIDService(baseUrl);
         
         try {
-            // These have (obviously) no default, but still are optional to make the provider optional
-            String username = JvmSettings.EZID_USERNAME.lookupOptional().orElse(null);
-            String password = JvmSettings.EZID_PASSWORD.lookupOptional().orElse(null);
-            
-            if (username != null ^ password != null) {
-                logger.log(Level.WARNING, "You must give both username and password. Will not try to login.");
-            }
-            
+
             if (username != null && password != null) {
                 this.ezidService.login(username, password);
-                this.configured = true;
+            } else {
+                logger.log(Level.WARNING, "You must give both username and password. Will not try to login.");
             }
         } catch (EZIDException e) {
             // We only do the warnings here, but the object still needs to be created.
             // The EJB stateless thing expects this to go through, and it is requested on any
             // global id parsing.
-            logger.log(Level.WARNING, "Login failed to {0}", this.baseUrl);
+            logger.log(Level.WARNING, "Login failed to {0}", baseUrl);
             logger.log(Level.WARNING, "Exception String: {0}", e.toString());
             logger.log(Level.WARNING, "Localized message: {0}", e.getLocalizedMessage());
             logger.log(Level.WARNING, "Cause:", e.getCause());
@@ -227,14 +232,14 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
     
     @Override
     public List<String> getProviderInformation(){
-        return List.of("EZID", this.baseUrl);
+        return List.of(getId(), this.baseUrl);
     }
 
     @Override
     public String createIdentifier(DvObject dvObject) throws Throwable {
         logger.log(Level.FINE, "createIdentifier");
         if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
-            dvObject = generateIdentifier(dvObject);
+            dvObject = generatePid(dvObject);
         }
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = getMetadataForCreateIndicator(dvObject);
@@ -271,7 +276,7 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
      * @return A HashMap with the same values as {@code map}
      */
     private <T> HashMap<T,T> asHashMap(Map<T,T> map) {
-        return (map instanceof HashMap) ? (HashMap)map : new HashMap<>(map);
+        return (map instanceof HashMap) ? (HashMap<T, T>)map : new HashMap<>(map);
     }
 
     @Override
@@ -279,5 +284,9 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
         return "EZID";
     }
 
+    @Override
+    public String getProviderType() {
+        return TYPE;
+    }
 }
 

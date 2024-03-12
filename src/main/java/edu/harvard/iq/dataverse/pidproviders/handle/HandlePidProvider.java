@@ -18,10 +18,12 @@
    Version 3.0.
 */
 
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.pidproviders.handle;
 
-import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,8 +31,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
 import java.security.PrivateKey;
 
 /* Handlenet imports: */
@@ -60,23 +60,32 @@ import org.apache.commons.lang3.NotImplementedException;
  * As of now, it only does the registration updates, to accommodate 
  * the modifyRegistration datasets API sub-command.
  */
-@Stateless
-public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
+public class HandlePidProvider extends AbstractPidProvider {
 
-    @EJB
-    DataverseServiceBean dataverseService;
-    @EJB 
-    SettingsServiceBean settingsService;
-    private static final Logger logger = Logger.getLogger(HandlenetServiceBean.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(HandlePidProvider.class.getCanonicalName());
     
     public static final String HDL_PROTOCOL = "hdl";
-    int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class);
+    public static final String TYPE = "hdl";
     public static final String HTTP_HDL_RESOLVER_URL = "http://hdl.handle.net/";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
+
     
-    public HandlenetServiceBean() {
-        logger.log(Level.FINE,"Constructor");
-        configured = true;
+    
+    int handlenetIndex;
+    private boolean isIndependentHandleService;
+    private String authHandle;
+    private String keyPath;
+    private String keyPassphrase;
+    
+    public HandlePidProvider(String id, String label, String authority, String shoulder, String identifierGenerationStyle,
+            String datafilePidFormat, String managedList, String excludedList, int index, boolean isIndependentService, String authHandle, String path, String passphrase) {
+        super(id, label, HDL_PROTOCOL, authority, shoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
+        this.handlenetIndex = index;
+        this.isIndependentHandleService = isIndependentService;
+        this.authHandle = authHandle;
+        this.keyPath = path;
+        this.keyPassphrase = passphrase;
+
     }
 
     @Override
@@ -231,10 +240,9 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     private PublicKeyAuthenticationInfo getAuthInfo(String handlePrefix) {
         logger.log(Level.FINE,"getAuthInfo");
         byte[] key = null;
-        String adminCredFile = JvmSettings.HANDLENET_KEY_PATH.lookup();
-        int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class);
+        String adminCredFile = getKeyPath();
        
-        key = readKey(adminCredFile);        
+        key = readKey(adminCredFile);
         PrivateKey privkey = null;
         privkey = readPrivKey(key, adminCredFile);
         String authHandle =  getAuthenticationHandle(handlePrefix);
@@ -244,8 +252,8 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     }
     private String getRegistrationUrl(DvObject dvObject) {
         logger.log(Level.FINE,"getRegistrationUrl");
-        String siteUrl = systemConfig.getDataverseSiteUrl();
-        String targetUrl = siteUrl + dvObject.getTargetUrl() + "hdl:" + dvObject.getAuthority()         
+        String siteUrl = SystemConfig.getDataverseSiteUrlStatic();
+        String targetUrl = siteUrl + dvObject.getTargetUrl() + "hdl:" + dvObject.getAuthority()
                 + "/" + dvObject.getIdentifier();         
         return targetUrl;
     }
@@ -278,8 +286,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         try {
             byte[] secKey = null;
             if ( Util.requiresSecretKey(key) ) {
-                String secret = JvmSettings.HANDLENET_KEY_PASSPHRASE.lookup();
-                secKey = secret.getBytes(StandardCharsets.UTF_8);
+                secKey = getKeyPassphrase().getBytes(StandardCharsets.UTF_8);
             }
             key = Util.decrypt(key, secKey);
             privkey = Util.getPrivateKeyFromBytes(key, 0);
@@ -304,9 +311,9 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     
     private String getAuthenticationHandle(String handlePrefix) {
         logger.log(Level.FINE,"getAuthenticationHandle");
-        if (systemConfig.getHandleAuthHandle()!=null) {
-            return systemConfig.getHandleAuthHandle();
-        } else if (systemConfig.isIndependentHandleService()) {
+        if (getHandleAuthHandle()!=null) {
+            return getHandleAuthHandle();
+        } else if (isIndependentHandleService()) {
             return handlePrefix + "/ADMIN";
         } else {
             return "0.NA/" + handlePrefix;
@@ -348,9 +355,8 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
         String handle = getDvObjectHandle(dvObject);
         String authHandle = getAuthenticationHandle(dvObject);
     
-        String adminCredFile = JvmSettings.HANDLENET_KEY_PATH.lookup();
-        int handlenetIndex = JvmSettings.HANDLENET_INDEX.lookup(Integer.class);
-       
+        String adminCredFile = getKeyPath();
+        
         byte[] key = readKey(adminCredFile);
         PrivateKey privkey = readPrivKey(key, adminCredFile);
 
@@ -383,7 +389,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     
     @Override
     public List<String> getProviderInformation(){
-        return List.of("Handle", "https://hdl.handle.net");
+        return List.of(getId(), HDL_RESOLVER_URL);
     }
 
 
@@ -401,7 +407,7 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
         if (dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty()){
-            generateIdentifier(dvObject);
+            generatePid(dvObject);
         }
         return updateIdentifierStatus(dvObject, "public");
 
@@ -437,6 +443,32 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     @Override
     public String getUrlPrefix() {
         return HDL_RESOLVER_URL;
+    }
+
+    @Override
+    public String getProtocol() {
+        return HDL_PROTOCOL;
+    }
+
+    @Override
+    public String getProviderType() {
+        return TYPE;
+    }
+
+    public String getKeyPath() {
+        return keyPath;
+    }
+
+    public String getKeyPassphrase() {
+        return keyPassphrase;
+    }
+
+    public boolean isIndependentHandleService() {
+        return isIndependentHandleService;
+    }
+    
+    public String getHandleAuthHandle() {
+        return authHandle;
     }
 }
 

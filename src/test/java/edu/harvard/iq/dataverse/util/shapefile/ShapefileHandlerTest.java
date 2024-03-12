@@ -144,9 +144,40 @@ public class ShapefileHandlerTest {
         
         msg("Passed!");
     }
-    
-    
-        
+
+
+    @Test
+    public void testShapefileWithQpjAndQmd() throws IOException {
+        msgt("(4) testShapefileWithQpjAndQmd");
+
+        // Create mock files for the new extensions
+        List<String> fileNames = Arrays.asList("testShape.shp", "testShape.shx", "testShape.dbf", "testShape.prj", "testShape.qpj", "testShape.qmd");
+
+        // Create a zip file with these files
+        File zipFile = createAndZipFiles(fileNames, "testShapeWithNewExtensions.zip");
+
+        // Pass the zip to the ShapefileHandler
+        ShapefileHandler shpHandler = new ShapefileHandler(new FileInputStream(zipFile));
+        shpHandler.DEBUG = true;
+
+        // Check if it is recognized as a shapefile
+        assertTrue(shpHandler.containsShapefile(), "The zip should contain a shapefile with the new extensions");
+
+        // Get file groups map and verify presence
+        Map<String, List<String>> fileGroups = shpHandler.getFileGroups();
+        assertFalse(fileGroups.isEmpty(), "The file groups map should not be empty");
+
+        // Ensure the specific extensions are present
+        assertTrue(fileGroups.containsKey("testShape"), "The file group should contain the key 'testShape'");
+        assertTrue(fileGroups.get("testShape").containsAll(Arrays.asList("shp", "shx", "dbf", "prj", "qpj", "qmd")), "The file group should include the new extensions .qpj and .qmd");
+
+        // Delete the test zip file
+        zipFile.delete();
+
+        msg("Test passed successfully!");
+    }
+
+
     @Test
     public void testZippedTwoShapefiles() throws IOException{
         msgt("(2) testZippedTwoShapefiles");

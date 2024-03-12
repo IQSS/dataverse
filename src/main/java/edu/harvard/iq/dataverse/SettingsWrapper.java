@@ -400,13 +400,6 @@ public class SettingsWrapper implements java.io.Serializable {
         return httpUpload;      
     }
     
-    public boolean isDataFilePIDSequentialDependent(){
-        if (dataFilePIDSequentialDependent == null) {
-            dataFilePIDSequentialDependent = systemConfig.isDataFilePIDSequentialDependent();
-        }
-        return dataFilePIDSequentialDependent;
-    }
-    
     public String getSupportTeamName() {
         String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
         InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
@@ -470,23 +463,6 @@ public class SettingsWrapper implements java.io.Serializable {
         return configuredLocales;
     }
     
-    public boolean isDoiInstallation() {
-        String protocol = getValueForKey(SettingsServiceBean.Key.Protocol);
-        if ("doi".equals(protocol)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean isDataCiteInstallation() {
-        String protocol = getValueForKey(SettingsServiceBean.Key.DoiProvider);
-        if ("DataCite".equals(protocol)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     public boolean isMakeDataCountDisplayEnabled() {
         boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath)!=null); //Backward compatible

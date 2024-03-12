@@ -572,6 +572,54 @@ public class MetricsServiceBean implements Serializable {
 
     }
 
+    //Accounts
+
+    /*
+     *
+     * @param yyyymm Month in YYYY-MM format.
+     */
+    public long accountsToMonth(String yyyymm) throws ParseException {
+        Query query = em.createNativeQuery(""
+                + "select count(authenticateduser.id)\n"
+                + "from authenticateduser\n"
+                + "where authenticateduser.createdtime is not null\n"
+                + "and date_trunc('month', createdtime) <=  to_date('" + yyyymm + "','YYYY-MM');"
+        );
+        logger.log(Level.FINE, "Metric query: {0}", query);
+
+        return (long) query.getSingleResult();
+    }
+
+    /*
+     * 
+     * @param days interval since the current date to list 
+     * the number of user accounts created
+     */
+    public long accountsPastDays(int days) {
+        Query query = em.createNativeQuery(""
+                + "select count(id)\n"
+                + "from authenticateduser\n"
+                + "where authenticateduser.createdtime is not null\n"
+                + "and authenticateduser.createdtime > current_date - interval '" + days + "' day;"
+        );
+        logger.log(Level.FINE, "Metric query: {0}", query);
+
+        return (long) query.getSingleResult();
+    }
+
+    public JsonArray accountsTimeSeries() {
+        Query query = em.createNativeQuery(""
+                + "select distinct to_char(au.createdtime, 'YYYY-MM'), count(id)\n"
+                + "from authenticateduser as au\n"
+                + "where au.createdtime is not null\n"
+                + "group by to_char(au.createdtime, 'YYYY-MM')\n"
+                + "order by to_char(au.createdtime, 'YYYY-MM');");
+
+        logger.log(Level.FINE, "Metric query: {0}", query);
+        List<Object[]> results = query.getResultList();
+        return MetricsUtil.timeSeriesToJson(results);
+    }
+
     //MDC
 
 

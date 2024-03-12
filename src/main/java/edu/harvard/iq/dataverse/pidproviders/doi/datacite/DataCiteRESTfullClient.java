@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.pidproviders.doi.datacite;
 
 
 import java.io.Closeable;
@@ -45,21 +45,14 @@ public class DataCiteRESTfullClient implements Closeable {
     private HttpClientContext context;
     private String encoding = "utf-8";
     
-    public DataCiteRESTfullClient(String url, String username, String password) throws IOException {
+    public DataCiteRESTfullClient(String url, String username, String password) {
         this.url = url;
-        try {
-            context = HttpClientContext.create();
-            CredentialsProvider credsProvider = new BasicCredentialsProvider();
-            credsProvider.setCredentials(new AuthScope(null, -1),
-                    new UsernamePasswordCredentials(username, password));
-            context.setCredentialsProvider(credsProvider);
-            
-            httpClient = HttpClients.createDefault();
-        } catch (Exception ioe) {
-            close();
-            logger.log(Level.SEVERE,"Fail to init Client",ioe);
-            throw new RuntimeException("Fail to init Client", ioe);
-        }
+        context = HttpClientContext.create();
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(new AuthScope(null, -1), new UsernamePasswordCredentials(username, password));
+        context.setCredentialsProvider(credsProvider);
+
+        httpClient = HttpClients.createDefault();
     }
 
     public void close() {
