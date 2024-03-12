@@ -73,6 +73,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -2181,6 +2182,11 @@ public class DatasetPage implements java.io.Serializable {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.privateurl.header"),
                         BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageReviewer"));
             }
+        }
+
+        LocalDate minRetentiondate = settingsWrapper.getMinRetentionDate();
+        if (minRetentiondate != null){
+            selectionRetention.setDateUnavailable(minRetentiondate.plusDays(1L));
         }
 
         displayLockInfo(dataset);

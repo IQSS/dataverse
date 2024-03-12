@@ -39,6 +39,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -274,7 +275,12 @@ public class FilePage implements java.io.Serializable {
         if(!hasValidTermsOfAccess && canUpdateDataset() ){
             JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.message.editMetadata.invalid.TOUA.message"));
         }
-        
+
+        LocalDate minRetentiondate = settingsWrapper.getMinRetentionDate();
+        if (minRetentiondate != null){
+            selectionRetention.setDateUnavailable(minRetentiondate.plusDays(1L));
+        }
+
         displayPublishMessage();
         return null;
     }
