@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.externaltools;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -9,7 +8,9 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
@@ -53,7 +54,7 @@ public class ExternalToolHandlerTest {
         Exception expectedException1 = null;
         String nullLocaleCode = null;
         try {
-            ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken, nullFileMetadata, nullLocaleCode);
+            URLTokenUtil externalToolHandler1 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken, nullFileMetadata, nullLocaleCode);
         } catch (Exception ex) {
             expectedException1 = ex;
         }
@@ -71,7 +72,7 @@ public class ExternalToolHandlerTest {
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
         try {
-            ExternalToolHandler externalToolHandler1 = new ExternalToolHandler(externalTool, dataFile, nullApiToken, nullFileMetadata, nullLocaleCode);
+            URLTokenUtil externalToolHandler1 = new ExternalToolHandler(externalTool, dataFile, nullApiToken, nullFileMetadata, nullLocaleCode);
         } catch (Exception ex) {
             expectedException1 = ex;
         }
@@ -92,7 +93,7 @@ public class ExternalToolHandlerTest {
                 .build().toString());
         Exception expectedException2 = null;
         try {
-            ExternalToolHandler externalToolHandler2 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken, nullFileMetadata, nullLocaleCode);
+            URLTokenUtil externalToolHandler2 = new ExternalToolHandler(externalTool, nullDataFile, nullApiToken, nullFileMetadata, nullLocaleCode);
         } catch (Exception ex) {
             expectedException2 = ex;
         }
@@ -225,10 +226,10 @@ public class ExternalToolHandlerTest {
         assertTrue(et != null);
         System.out.println("allowedApiCalls et created");
         System.out.println(et.getAllowedApiCalls());
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(et, ds, at, null);
+        URLTokenUtil externalToolHandler = new ExternalToolHandler(et, ds, at, null);
         System.out.println("allowedApiCalls eth created");
         JsonObject jo = externalToolHandler
-                .createPostBody(externalToolHandler.getParams(JsonUtil.getJsonObject(et.getToolParameters()))).build();
+                .createPostBody(externalToolHandler.getParams(JsonUtil.getJsonObject(et.getToolParameters())), JsonUtil.getJsonArray(et.getAllowedApiCalls())).build();
         assertEquals(1, jo.getJsonObject("queryParameters").getInt("datasetId"));
         String signedUrl = jo.getJsonArray("signedUrls").getJsonObject(0).getString("signedUrl");
         // The date and token will change each time but check for the constant parts of
@@ -266,7 +267,7 @@ public class ExternalToolHandlerTest {
                 .build().toString());
 
         var dataset = new Dataset();
-        dataset.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL, "10.5072", "ABC123", null, DOIServiceBean.DOI_RESOLVER_URL, null));
+        dataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.5072", "ABC123", null, AbstractDOIProvider.DOI_RESOLVER_URL, null));
         ApiToken nullApiToken = null;
         String nullLocaleCode = "en";
         var externalToolHandler = new ExternalToolHandler(externalTool, dataset, nullApiToken, nullLocaleCode);

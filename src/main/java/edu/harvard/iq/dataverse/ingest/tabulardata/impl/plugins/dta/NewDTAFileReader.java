@@ -339,7 +339,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
     }
 
     @Override
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
+    public TabularDataIngest read(BufferedInputStream stream, boolean storeWithVariableHeader, File dataFile) throws IOException {
         logger.fine("NewDTAFileReader: read() start");
 
         // shit ton of diagnostics (still) needed here!!  -- L.A.
@@ -363,7 +363,13 @@ public class NewDTAFileReader extends TabularDataFileReader {
         // "characteristics" - STATA-proprietary information
         // (we are skipping it)
         readCharacteristics(dataReader);
-        readData(dataReader);
+        
+        String variableHeaderLine = null; 
+        
+        if (storeWithVariableHeader) {
+            variableHeaderLine = generateVariableHeader(dataTable.getDataVariables());
+        }
+        readData(dataReader, variableHeaderLine);
 
         // (potentially) large, (potentially) non-ASCII character strings
         // saved outside the <data> section, and referenced 
@@ -707,7 +713,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
     }
 
-    private void readData(DataReader reader) throws IOException {
+    private void readData(DataReader reader, String variableHeaderLine) throws IOException {
         logger.fine("Data section; at offset " + reader.getByteOffset() + "; dta map offset: " + dtaMap.getOffset_data());
         logger.fine("readData(): start");
         reader.readOpeningTag(TAG_DATA);
@@ -731,6 +737,11 @@ public class NewDTAFileReader extends TabularDataFileReader {
         FileOutputStream fileOutTab = new FileOutputStream(tabDelimitedDataFile);
         PrintWriter pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
 
+        // add the variable header here, if needed
+        if (variableHeaderLine != null) {
+            pwout.println(variableHeaderLine); 
+        }
+        
         logger.fine("Beginning to read data stream.");
 
         for (int i = 0; i < nobs; i++) {
@@ -999,6 +1010,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
             int nobs = dataTable.getCaseQuantity().intValue();
 
             String[] line;
+            
+            //@todo: adjust for the case of storing the file with the variable header
 
             for (int obsindex = 0; obsindex < nobs; obsindex++) {
                 if (scanner.hasNext()) {

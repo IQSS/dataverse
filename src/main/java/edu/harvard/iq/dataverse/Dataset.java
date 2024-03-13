@@ -35,6 +35,7 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.storageuse.StorageUse;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
@@ -189,6 +190,10 @@ public class Dataset extends DvObjectContainer {
     }
 
     public Dataset() {
+        this(false);
+    }
+    
+    public Dataset(boolean isHarvested) {
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setDataset(this);
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -196,6 +201,11 @@ public class Dataset extends DvObjectContainer {
         datasetVersion.setVersionNumber((long) 1);
         datasetVersion.setMinorVersionNumber((long) 0);
         versions.add(datasetVersion);
+        
+        if (!isHarvested) {
+            StorageUse storageUse = new StorageUse(this); 
+            this.setStorageUse(storageUse);
+        }
     }
     
     /**
@@ -307,6 +317,7 @@ public class Dataset extends DvObjectContainer {
         }
         return hasDeaccessionedVersions; // since any published version would have already returned
     }
+    
 
     public DatasetVersion getLatestVersion() {
         return getVersions().get(0);

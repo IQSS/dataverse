@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -11,6 +12,8 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
@@ -23,7 +26,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  * Deletes a data file, both DB entity and filesystem object.
@@ -202,15 +204,18 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 */
             }
         }
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
-        try {
-            if (idServiceBean.alreadyRegistered(doomed)) {
-                idServiceBean.deleteIdentifier(doomed);
-            }
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Identifier deletion was not successfull:", e.getMessage());
-        }
+        GlobalId pid = doomed.getGlobalId();
+        if (pid != null) {
+            PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
 
+            try {
+                if (pidProvider.alreadyRegistered(doomed)) {
+                    pidProvider.deleteIdentifier(doomed);
+                }
+            } catch (Exception e) {
+                logger.log(Level.WARNING, "Identifier deletion was not successfull:", e.getMessage());
+            }
+        }
         DataFile doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
         /**
@@ -235,6 +240,20 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
+        // Adjust the storage use for the parent containers: 
+        if (!doomed.isHarvested()) {
+            long storedSize = doomed.getFilesize();
+            // ingested tabular data files also have saved originals that 
+            // are counted as "storage use"
+            Long savedOriginalSize = doomed.getOriginalFileSize(); 
+            if (savedOriginalSize != null) {
+                // Note that DataFile.getFilesize() can return -1 (for "unknown"):
+                storedSize = storedSize > 0 ? storedSize + savedOriginalSize : savedOriginalSize; 
+            }
+            if (storedSize > 0) {
+                ctxt.storageUse().incrementStorageSizeRecursively(doomed.getOwner().getId(), (0L - storedSize));
+            }
+        }
         /**
          * We *could* re-index the entire dataset but it's more efficient to
          * target individual files for deletion, which should always be drafts.

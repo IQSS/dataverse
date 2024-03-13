@@ -53,10 +53,14 @@ Configure a Dataverse Collection to Store All New Files in a Specific File Store
 To direct new files (uploaded when datasets are created or edited) for all datasets in a given Dataverse collection, the store can be specified via the API as shown below, or by editing the 'General Information' for a Dataverse collection on the Dataverse collection page. Only accessible to superusers. ::
  
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $storageDriverLabel http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
+
+(Note that for ``dataverse.files.store1.label=MyLabel``, you should pass ``MyLabel``.)
     
 The current driver can be seen using::
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
+
+(Note that for ``dataverse.files.store1.label=MyLabel``, ``store1`` will be returned.)
 
 and can be reset to the default store with::
 

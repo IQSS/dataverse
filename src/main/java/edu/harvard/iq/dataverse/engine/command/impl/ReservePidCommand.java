@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -11,6 +10,8 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
@@ -41,11 +42,10 @@ public class ReservePidCommand extends AbstractVoidCommand {
                     this, Collections.singleton(Permission.EditDataset), dataset);
         }
 
-        String nonNullDefaultIfKeyNotFound = "";
-        String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
+        PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(dataset);
+        
         try {
-            String returnString = idServiceBean.createIdentifier(dataset);
+            String returnString = pidProvider.createIdentifier(dataset);
             logger.fine(returnString);
             // No errors caught, so mark PID as reserved.
             dataset.setGlobalIdCreateTime(new Date());

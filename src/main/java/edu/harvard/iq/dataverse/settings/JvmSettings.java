@@ -50,6 +50,7 @@ public enum JvmSettings {
     UPLOADS_DIRECTORY(SCOPE_FILES, "uploads"),
     DOCROOT_DIRECTORY(SCOPE_FILES, "docroot"),
     GUESTBOOK_AT_REQUEST(SCOPE_FILES, "guestbook-at-request"),
+    GLOBUS_CACHE_MAXAGE(SCOPE_FILES, "globus-cache-maxage"),
     
     // SOLR INDEX SETTINGS
     SCOPE_SOLR(PREFIX, "solr"),
@@ -90,35 +91,101 @@ public enum JvmSettings {
 
     // PERSISTENT IDENTIFIER SETTINGS
     SCOPE_PID(PREFIX, "pid"),
-    
-    // PROVIDER EZID (legacy) - these settings were formerly kept together with DataCite ones
-    SCOPE_PID_EZID(SCOPE_PID, "ezid"),
-    EZID_API_URL(SCOPE_PID_EZID, "api-url", "doi.baseurlstring"),
-    EZID_USERNAME(SCOPE_PID_EZID, "username", "doi.username"),
-    EZID_PASSWORD(SCOPE_PID_EZID, "password", "doi.password"),
+    PID_PROVIDERS(SCOPE_PID, "providers"),
+    PID_DEFAULT_PROVIDER(SCOPE_PID, "default-provider"),
+    SCOPE_PID_PROVIDER(SCOPE_PID),
+    PID_PROVIDER_TYPE(SCOPE_PID_PROVIDER, "type"),
+    PID_PROVIDER_LABEL(SCOPE_PID_PROVIDER, "label"),
+    PID_PROVIDER_AUTHORITY(SCOPE_PID_PROVIDER, "authority"),
+    PID_PROVIDER_SHOULDER(SCOPE_PID_PROVIDER, "shoulder"),
+    PID_PROVIDER_IDENTIFIER_GENERATION_STYLE(SCOPE_PID_PROVIDER, "identifier-generation-style"),
+    PID_PROVIDER_DATAFILE_PID_FORMAT(SCOPE_PID_PROVIDER, "datafile-pid-format"),
+    PID_PROVIDER_MANAGED_LIST(SCOPE_PID_PROVIDER, "managed-list"),
+    PID_PROVIDER_EXCLUDED_LIST(SCOPE_PID_PROVIDER, "excluded-list"),
+
+        
+    // PROVIDER EZID - these settings were formerly kept together with DataCite ones
+    SCOPE_PID_EZID(SCOPE_PID_PROVIDER, "ezid"),
+    EZID_API_URL(SCOPE_PID_EZID, "api-url"),
+    EZID_USERNAME(SCOPE_PID_EZID, "username"),
+    EZID_PASSWORD(SCOPE_PID_EZID, "password"),
     
     // PROVIDER DATACITE
-    SCOPE_PID_DATACITE(SCOPE_PID, "datacite"),
-    DATACITE_MDS_API_URL(SCOPE_PID_DATACITE, "mds-api-url", "doi.baseurlstring"),
-    DATACITE_REST_API_URL(SCOPE_PID_DATACITE, "rest-api-url", "doi.dataciterestapiurlstring", "doi.mdcbaseurlstring"),
-    DATACITE_USERNAME(SCOPE_PID_DATACITE, "username", "doi.username"),
-    DATACITE_PASSWORD(SCOPE_PID_DATACITE, "password", "doi.password"),
+    SCOPE_PID_DATACITE(SCOPE_PID_PROVIDER, "datacite"),
+    DATACITE_MDS_API_URL(SCOPE_PID_DATACITE, "mds-api-url"),
+    DATACITE_REST_API_URL(SCOPE_PID_DATACITE, "rest-api-url"),
+    DATACITE_USERNAME(SCOPE_PID_DATACITE, "username"),
+    DATACITE_PASSWORD(SCOPE_PID_DATACITE, "password"),
     
     // PROVIDER PERMALINK
-    SCOPE_PID_PERMALINK(SCOPE_PID, "permalink"),
-    PERMALINK_BASEURL(SCOPE_PID_PERMALINK, "base-url", "perma.baseurlstring"),
+    SCOPE_PID_PERMALINK(SCOPE_PID_PROVIDER, "permalink"),
+    PERMALINK_BASE_URL(SCOPE_PID_PERMALINK, "base-url"),
+    PERMALINK_SEPARATOR(SCOPE_PID_PERMALINK, "separator"),
     
     // PROVIDER HANDLE
-    SCOPE_PID_HANDLENET(SCOPE_PID, "handlenet"),
-    HANDLENET_INDEX(SCOPE_PID_HANDLENET, "index", "dataverse.handlenet.index"),
+    SCOPE_PID_HANDLENET(SCOPE_PID_PROVIDER, "handlenet"),
+    HANDLENET_INDEX(SCOPE_PID_HANDLENET, "index"),
+    HANDLENET_INDEPENDENT_SERVICE(SCOPE_PID_HANDLENET, "independent-service"),
+    HANDLENET_AUTH_HANDLE(SCOPE_PID_HANDLENET, "auth-handle"),
     SCOPE_PID_HANDLENET_KEY(SCOPE_PID_HANDLENET, "key"),
-    HANDLENET_KEY_PATH(SCOPE_PID_HANDLENET_KEY, "path", "dataverse.handlenet.admcredfile"),
-    HANDLENET_KEY_PASSPHRASE(SCOPE_PID_HANDLENET_KEY, "passphrase", "dataverse.handlenet.admprivphrase"),
+    HANDLENET_KEY_PATH(SCOPE_PID_HANDLENET_KEY, "path"),
+    HANDLENET_KEY_PASSPHRASE(SCOPE_PID_HANDLENET_KEY, "passphrase"),
+
+    /*
+     * The deprecated legacy settings below are from when you could only have a
+     * single PIDProvider. They mirror the settings above, but are global,not within
+     * the SCOPE_PID_PROVIDER of an individual provider.
+     */
+    /**
+     * DEPRECATED PROVIDER DATACITE
+     * 
+     * @deprecated - legacy single provider setting providing backward compatibility
+     */
+    @Deprecated(forRemoval = true, since = "2024-02-13")
+    SCOPE_LEGACY_PID_DATACITE(SCOPE_PID, "datacite"),
+    LEGACY_DATACITE_MDS_API_URL(SCOPE_LEGACY_PID_DATACITE, "mds-api-url", "doi.baseurlstring"),
+    LEGACY_DATACITE_REST_API_URL(SCOPE_LEGACY_PID_DATACITE, "rest-api-url", "doi.dataciterestapiurlstring",
+            "doi.mdcbaseurlstring"),
+    LEGACY_DATACITE_USERNAME(SCOPE_LEGACY_PID_DATACITE, "username", "doi.username"),
+    LEGACY_DATACITE_PASSWORD(SCOPE_LEGACY_PID_DATACITE, "password", "doi.password"),
+
+    /**
+     * DEPRECATED PROVIDER EZID
+     * 
+     * @deprecated - legacy single provider setting providing backward compatibility
+     */
+    @Deprecated(forRemoval = true, since = "2024-02-13")
+    SCOPE_LEGACY_PID_EZID(SCOPE_PID, "ezid"), LEGACY_EZID_API_URL(SCOPE_LEGACY_PID_EZID, "api-url"),
+    LEGACY_EZID_USERNAME(SCOPE_LEGACY_PID_EZID, "username"), LEGACY_EZID_PASSWORD(SCOPE_LEGACY_PID_EZID, "password"),
+
+    /**
+     * DEPRECATED PROVIDER PERMALINK
+     * 
+     * @deprecated - legacy single provider setting providing backward compatibility
+     */
+    @Deprecated(forRemoval = true, since = "2024-02-13")
+    SCOPE_LEGACY_PID_PERMALINK(SCOPE_PID, "permalink"),
+    LEGACY_PERMALINK_BASEURL(SCOPE_LEGACY_PID_PERMALINK, "base-url", "perma.baseurlstring"),
+
+    /**
+     * DEPRECATED PROVIDER HANDLE
+     * 
+     * @deprecated - legacy single provider setting providing backward compatibility
+     */
+    @Deprecated(forRemoval = true, since = "2024-02-13")
+    SCOPE_LEGACY_PID_HANDLENET(SCOPE_PID, "handlenet"),
+    LEGACY_HANDLENET_INDEX(SCOPE_LEGACY_PID_HANDLENET, "index", "dataverse.handlenet.index"),
+    @Deprecated(forRemoval = true, since = "2024-02-13")
+    SCOPE_LEGACY_PID_HANDLENET_KEY(SCOPE_LEGACY_PID_HANDLENET, "key"),
+    LEGACY_HANDLENET_KEY_PATH(SCOPE_LEGACY_PID_HANDLENET_KEY, "path", "dataverse.handlenet.admcredfile"),
+    LEGACY_HANDLENET_KEY_PASSPHRASE(SCOPE_LEGACY_PID_HANDLENET_KEY, "passphrase", "dataverse.handlenet.admprivphrase"),
 
     // SPI SETTINGS
     SCOPE_SPI(PREFIX, "spi"),
     SCOPE_EXPORTERS(SCOPE_SPI, "exporters"),
     EXPORTERS_DIRECTORY(SCOPE_EXPORTERS, "directory"),
+    SCOPE_PIDPROVIDERS(SCOPE_SPI, "pidproviders"),
+    PIDPROVIDERS_DIRECTORY(SCOPE_PIDPROVIDERS, "directory"),
     
     // MAIL SETTINGS
     SCOPE_MAIL(PREFIX, "mail"),
@@ -150,6 +217,16 @@ public enum JvmSettings {
     SCOPE_NETCDF(PREFIX, "netcdf"),
     GEO_EXTRACT_S3_DIRECT_UPLOAD(SCOPE_NETCDF, "geo-extract-s3-direct-upload"),
 
+    // BAGIT SETTINGS
+    SCOPE_BAGIT(PREFIX, "bagit"),
+    SCOPE_BAGIT_SOURCEORG(SCOPE_BAGIT, "sourceorg"),
+    BAGIT_SOURCE_ORG_NAME(SCOPE_BAGIT_SOURCEORG, "name"),
+    BAGIT_SOURCEORG_ADDRESS(SCOPE_BAGIT_SOURCEORG, "address"),
+    BAGIT_SOURCEORG_EMAIL(SCOPE_BAGIT_SOURCEORG, "email"),
+
+    // STORAGE USE SETTINGS
+    SCOPE_STORAGEUSE(PREFIX, "storageuse"),
+    STORAGEUSE_DISABLE_UPDATES(SCOPE_STORAGEUSE, "disable-storageuse-increments"),
     ;
 
     private static final String SCOPE_SEPARATOR = ".";

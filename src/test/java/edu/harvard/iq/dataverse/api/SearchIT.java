@@ -1197,12 +1197,12 @@ public class SearchIT {
                                                                                         .add("multiple", false)
                                                                                         .add("typeName", "westLongitude")
                                                                         )
-                                                                        .add("southLongitude",
+                                                                        .add("southLatitude",
                                                                                 Json.createObjectBuilder()
                                                                                         .add("value", "42.33661")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
-                                                                                        .add("typeName", "southLongitude")
+                                                                                        .add("typeName", "southLatitude")
                                                                         )
                                                                         .add("eastLongitude",
                                                                                 Json.createObjectBuilder()
@@ -1211,12 +1211,12 @@ public class SearchIT {
                                                                                         .add("multiple", false)
                                                                                         .add("typeName", "eastLongitude")
                                                                         )
-                                                                        .add("northLongitude",
+                                                                        .add("northLatitude",
                                                                                 Json.createObjectBuilder()
                                                                                         .add("value", "42.409599")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
-                                                                                        .add("typeName", "northLongitude")
+                                                                                        .add("typeName", "northLatitude")
                                                                         )
                                                                 )
                                                         )

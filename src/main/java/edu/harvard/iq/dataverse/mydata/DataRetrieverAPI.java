@@ -39,7 +39,6 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 
@@ -226,7 +225,12 @@ public class DataRetrieverAPI extends AbstractApiBean {
                     //SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
                     0, //paginationStart,
                     true, // dataRelatedToMe
-                    SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                    SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE, //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                    true, 
+                    null,
+                    null,
+                    false, // no need to request facets here ...
+                    false  // ... same for highlights
             );
         } catch (SearchException ex) {
             logger.severe("Search for total counts failed with filter query");
