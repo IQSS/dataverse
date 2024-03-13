@@ -4462,15 +4462,21 @@ A comma separated list of Category/Tag names defining the order in which files w
 The setting can include custom tag names along with the pre-defined tags(Documentation, Data, and Code are the defaults but the :ref:`:FileCategories` setting can be used to use a different set of tags).
 The default is category ordering disabled.
 
+``curl -X PUT -d 'Code,Data,Documentation' http://localhost:8080/api/admin/settings/:CategoryOrder``
+
 :OrderByFolder
 ++++++++++++++
 
 A true(default)/false option determining whether datafiles listed on the dataset page should be grouped by folder.
 
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:OrderByFolder``
+
 :AllowUserManagementOfOrder
 +++++++++++++++++++++++++++
 
 A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategoryOrder) on and off dynamically. 
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:AllowUserManagementOfOrder``
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
 
