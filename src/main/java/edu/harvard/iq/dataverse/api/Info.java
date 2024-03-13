@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -12,7 +14,6 @@ import org.apache.commons.io.IOUtils;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.ejb.EJB;
 import jakarta.json.Json;
@@ -100,11 +101,19 @@ public class Info extends AbstractApiBean {
         }
         
         try {
+            
             //We create an input stream based on the requested format and will return the content of the file as a response.
             String baseFileName = "edu/harvard/iq/dataverse/openapi/dataverse_openapi." + requestedFormat;
-            InputStream openapiDefinitionStream  = Info.class.getClassLoader().getResourceAsStream(baseFileName); 
+            // String baseFileName = "META-INF/openapi." + requestedFormat;
+            ClassLoader classLoader = this.getClass().getClassLoader();
+            URL aliasesResource = classLoader.getResource(baseFileName);
+            
+            // String baseFileName = "edu/harvard/iq/dataverse/openapi/dataverse_openapi." + requestedFormat;
+            InputStream openapiDefinitionStream  = //Info.class.getResourceAsStream(baseFileName); 
+                aliasesResource.openStream();
             return Response.ok().entity(IOUtils.toString(openapiDefinitionStream, StandardCharsets.UTF_8))
                         .type(mediaType).build();
+
         } catch (Exception ex) {
             //If a supported file is not found we will return a 400 Bad Request with an exception.
             logger.log(Level.SEVERE, "OpenAPI Definition format not found " + format + ":" + ex.getMessage(), ex);
