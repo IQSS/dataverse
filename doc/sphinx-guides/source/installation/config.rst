@@ -4459,10 +4459,10 @@ To use the current GDCC version directly:
 ++++++++++++++
 
 A comma separated list of Category/Tag names defining the order in which files with those tags should be displayed. 
-The setting can include custom tag names along with the pre-defined tags(Documentation, Data, and Code are the defaults but the :ref:`:FileCategories` setting can be used to use a different set of tags).
+The setting can include custom tag names along with the pre-defined tags (Documentation, Data, and Code are the defaults but the :ref:`:FileCategories` setting can be used to use a different set of tags).
 The default is category ordering disabled.
 
-``curl -X PUT -d 'Code,Data,Documentation' http://localhost:8080/api/admin/settings/:CategoryOrder``
+``curl -X PUT -d 'Documentation,Data,Code' http://localhost:8080/api/admin/settings/:CategoryOrder``
 
 :OrderByFolder
 ++++++++++++++
