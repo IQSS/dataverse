@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UningestFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
 import io.gdcc.spi.export.ExportException;
@@ -28,6 +29,8 @@ import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.ingest.IngestRequest;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
@@ -35,6 +38,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.StringUtil;
+
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
@@ -45,6 +50,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
@@ -112,10 +118,10 @@ public class FilePage implements java.io.Serializable {
     GuestbookResponseServiceBean guestbookResponseService;
     @EJB
     AuthenticationServiceBean authService;
-    
     @EJB
     DatasetServiceBean datasetService;
-    
+    @EJB
+    IngestServiceBean ingestService;
     @EJB
     SystemConfig systemConfig;
 
@@ -209,7 +215,7 @@ public class FilePage implements java.io.Serializable {
             // If this DatasetVersion is unpublished and permission is doesn't have permissions:
             //  > Go to the Login page
             //
-            // Check permisisons       
+            // Check permissions
             Boolean authorized = (fileMetadata.getDatasetVersion().isReleased())
                     || (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
 
@@ -325,6 +331,20 @@ public class FilePage implements java.io.Serializable {
         Collections.sort(retList, CompareExternalToolName);
         return retList;
     }
+    
+    private String termsGuestbookPopupAction = "";
+
+    public void setTermsGuestbookPopupAction(String popupAction){
+        if(popupAction != null && popupAction.length() > 0){
+            logger.info("TGPA set to " + popupAction);
+            this.termsGuestbookPopupAction = popupAction;
+        }
+
+    }
+
+    public String getTermsGuestbookPopupAction(){
+        return termsGuestbookPopupAction;
+    }
 
     public boolean isDownloadPopupRequired() {  
         if(fileMetadata.getId() == null || fileMetadata.getDatasetVersion().getId() == null ){
@@ -340,6 +360,18 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.isRequestAccessPopupRequired(fileMetadata.getDatasetVersion());
     }
 
+    public boolean isGuestbookAndTermsPopupRequired() {  
+        if(fileMetadata.getId() == null || fileMetadata.getDatasetVersion().getId() == null ){
+            return false;
+        }
+        return FileUtil.isGuestbookAndTermsPopupRequired(fileMetadata.getDatasetVersion());
+    }
+    
+    public boolean isGuestbookPopupRequiredAtDownload(){
+        // Only show guestbookAtDownload if guestbook at request is disabled (legacy behavior)
+        DatasetVersion workingVersion = fileMetadata.getDatasetVersion();
+        return FileUtil.isGuestbookPopupRequired(workingVersion) && !workingVersion.getDataset().getEffectiveGuestbookEntryAtRequest();
+    }
 
     public void setFileMetadata(FileMetadata fileMetadata) {
         this.fileMetadata = fileMetadata;
@@ -448,6 +480,120 @@ public class FilePage implements java.io.Serializable {
         init();
         return returnToDraftVersion();
     }
+    
+    public String ingestFile() throws CommandException{
+        
+        User u = session.getUser();
+        if(!u.isAuthenticated() ||  !u.isSuperuser()) {
+            //Shouldn't happen (choice not displayed for users who don't have the right permission), but check anyway
+            logger.warning("User: " + u.getIdentifier() + " tried to ingest a file");
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantIngestFileWarning"));
+            return null;
+        }
+
+        DataFile dataFile = fileMetadata.getDataFile();
+        editDataset = dataFile.getOwner();
+        
+        if (dataFile.isTabularData()) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.alreadyIngestedWarning"));
+            return null;
+        }
+        
+        boolean ingestLock = dataset.isLockedFor(DatasetLock.Reason.Ingest);
+        
+        if (ingestLock) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.ingestInProgressWarning"));
+            return null;
+        }
+        
+        if (!FileUtil.canIngestAsTabular(dataFile)) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantIngestFileWarning"));
+            return null;
+            
+        }
+        
+        dataFile.SetIngestScheduled();
+                
+        if (dataFile.getIngestRequest() == null) {
+            dataFile.setIngestRequest(new IngestRequest(dataFile));
+        }
+
+        dataFile.getIngestRequest().setForceTypeCheck(true);
+        
+        // update the datafile, to save the newIngest request in the database:
+        datafileService.save(file);
+        
+        // queue the data ingest job for asynchronous execution: 
+        String status = ingestService.startIngestJobs(editDataset.getId(), new ArrayList<>(Arrays.asList(dataFile)), (AuthenticatedUser) session.getUser());
+        
+        if (!StringUtil.isEmpty(status)) {
+            // This most likely indicates some sort of a problem (for example, 
+            // the ingest job was not put on the JMS queue because of the size
+            // of the file). But we are still returning the OK status - because
+            // from the point of view of the API, it's a success - we have 
+            // successfully gone through the process of trying to schedule the 
+            // ingest job...
+            
+            logger.warning("Ingest Status for file: " + dataFile.getId() + " : " + status);
+        }
+        logger.fine("File: " + dataFile.getId() + " ingest queued");
+
+        init();
+        JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("file.ingest.ingestQueued"));
+        return returnToDraftVersion();
+    }
+
+    public String uningestFile() throws CommandException {
+
+        if (!file.isTabularData()) {
+            //Ingest never succeeded, either there was a failure or this is not a tabular data file
+            if (file.isIngestProblem()) {
+                //We allow anyone who can publish to uningest in order to clear a problem
+                User u = session.getUser();
+                if (!u.isAuthenticated() || !(permissionService.permissionsFor(u, file).contains(Permission.PublishDataset))) {
+                    logger.warning("User: " + u.getIdentifier() + " tried to uningest a file");
+                    // Shouldn't happen (choice not displayed for users who don't have the right
+                    // permission), but check anyway
+                    JH.addMessage(FacesMessage.SEVERITY_WARN,
+                            BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+                    return null;
+                }
+                file.setIngestDone();
+                file.setIngestReport(null);
+            } else {
+                //Shouldn't happen - got called when there is no tabular data or an ingest problem
+                JH.addMessage(FacesMessage.SEVERITY_WARN,
+                        BundleUtil.getStringFromBundle("file.ingest.cantUningestFileWarning"));
+                return null;
+            }
+        } else {
+            //Superuser required to uningest after a success
+            //Uningest command does it's own check for isSuperuser
+            commandEngine.submit(new UningestFileCommand(dvRequestService.getDataverseRequest(), file));
+            Long dataFileId = file.getId();
+            file = datafileService.find(dataFileId);
+        }
+        editDataset = file.getOwner();
+        if (editDataset.isReleased()) {
+            try {
+                ExportService instance = ExportService.getInstance();
+                instance.exportAllFormats(editDataset);
+
+            } catch (ExportException ex) {
+                // Something went wrong!
+                // Just like with indexing, a failure to export is not a fatal
+                // condition. We'll just log the error as a warning and keep
+                // going:
+                logger.log(Level.WARNING, "Uningest: Exception while exporting:{0}", ex.getMessage());
+            }
+        }
+        datafileService.save(file);
+
+        // Refresh filemetadata with file title, etc.
+        init();
+        JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("file.uningest.complete"));
+        return returnToDraftVersion();
+    }    
     
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
@@ -922,6 +1068,12 @@ public class FilePage implements java.io.Serializable {
         return FileUtil.isPubliclyDownloadable(fileMetadata);
     }
 
+    public boolean isIngestable() {
+        DataFile f = fileMetadata.getDataFile();
+        //Datafile is an ingestable type and hasn't been ingested yet or had an ingest fail
+        return (FileUtil.canIngestAsTabular(f)&&!(f.isTabularData() || f.isIngestProblem()));
+    }
+
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar; 
     
@@ -1043,7 +1195,7 @@ public class FilePage implements java.io.Serializable {
         ApiToken apiToken = null;
         User user = session.getUser();
         if (fileMetadata.getDatasetVersion().isDraft() || fileMetadata.getDatasetVersion().isDeaccessioned() || (fileMetadata.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fileMetadata))) {
-            apiToken=fileDownloadService.getApiToken(user);
+            apiToken=authService.getValidApiTokenForUser(user);
         }
         if(externalTool == null){
             return "";
@@ -1244,6 +1396,15 @@ public class FilePage implements java.io.Serializable {
     //Determines whether this File uses a public store and therefore doesn't support embargoed or restricted files
     public boolean isHasPublicStore() {
         return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(DataAccess.getStorageDriverFromIdentifier(file.getStorageIdentifier())));
+    }
+    
+    //Allows use of fileDownloadHelper in file.xhtml
+    public FileDownloadHelper getFileDownloadHelper() {
+        return fileDownloadHelper;
+    }
+
+    public void setFileDownloadHelper(FileDownloadHelper fileDownloadHelper) {
+        this.fileDownloadHelper = fileDownloadHelper;
     }
 
     /**

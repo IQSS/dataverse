@@ -27,7 +27,7 @@ with Dataverse Software 2.0 and throughout the 3.* lifecycle, UNF v.5
 UNF v.6. Two parallel implementation, in R and Java, will be
 available, for cross-validation.
 
-Learn more: Micah Altman and Gary King. 2007. “A Proposed Standard for the Scholarly Citation of Quantitative Data.” D-Lib Magazine, 13. Publisher’s Version Copy at http://j.mp/2ovSzoT
+Learn more: Micah Altman and Gary King. 2007. “A Proposed Standard for the Scholarly Citation of Quantitative Data.” D-Lib Magazine, 13. Publisher’s Version Copy at https://j.mp/2ovSzoT
 
 **Contents:**
 
@@ -37,7 +37,3 @@ Learn more: Micah Altman and Gary King. 2007. “A Proposed Standard for the Sch
    unf-v3
    unf-v5
    unf-v6
-
-----
-
-Previous: :doc:`/developers/tools` | Next: :doc:`/developers/remote-users`

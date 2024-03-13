@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.settings;
 
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import edu.harvard.iq.dataverse.util.testing.SystemProperty;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@LocalJvmSettings
 class JvmSettingsTest {
     @Test
     @JvmSetting(key = JvmSettings.VERSION, value = "foobar")
@@ -15,22 +17,15 @@ class JvmSettingsTest {
     }
     
     @Test
-    @SystemProperty(key = "doi.username", value = "test")
-    void lookupSettingViaAlias() {
-        assertEquals("test", JvmSettings.DATACITE_USERNAME.lookup());
+    @SystemProperty(key = "dataverse.pid.datacite.datacite.username", value = "test")
+    void lookupPidProviderSetting() {
+        assertEquals("test", JvmSettings.DATACITE_USERNAME.lookup("datacite"));
     }
     
     @Test
-    @SystemProperty(key = "doi.baseurlstring", value = "test")
+    @SystemProperty(key = "dataverse.ingest.rserve.port", value = "1234")
     void lookupSettingViaAliasWithDefaultInMPCFile() {
-        assertEquals("test", JvmSettings.DATACITE_MDS_API_URL.lookup());
-    }
-    
-    @Test
-    @SystemProperty(key = "doi.dataciterestapiurlstring", value = "foo")
-    @SystemProperty(key = "doi.mdcbaseurlstring", value = "bar")
-    void lookupSettingViaAliasWithDefaultInMPCFileAndTwoAliases() {
-        assertEquals("foo", JvmSettings.DATACITE_REST_API_URL.lookup());
+        assertEquals("1234", JvmSettings.RSERVE_PORT.lookup());
     }
 
 }

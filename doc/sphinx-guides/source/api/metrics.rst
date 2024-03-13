@@ -1,7 +1,7 @@
 Metrics API
 ===========
 
-The Metrics API provides counts of downloads, datasets created, files uploaded, and more, as described below. The Dataverse Software also includes aggregate counts of Make Data Count metrics (described in the :doc:`/admin/make-data-count` section of the Admin Guide and available per-Dataset through the :doc:`/api/native-api`). A table of all the endpoints is listed below.
+The Metrics API provides counts of downloads, datasets created, files uploaded, user accounts created, and more, as described below. The Dataverse Software also includes aggregate counts of Make Data Count metrics (described in the :doc:`/admin/make-data-count` section of the Admin Guide and available per-Dataset through the :doc:`/api/native-api`). A table of all the endpoints is listed below.
 
 .. contents:: |toctitle|
     :local:
@@ -21,7 +21,7 @@ The Metrics API includes several categories of endpoints that provide different 
 
   * Form: GET https://$SERVER/api/info/metrics/$type
 
-  * where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
+  * where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files``, ``downloads`` or ``accounts``.
 
   * Example: ``curl https://demo.dataverse.org/api/info/metrics/downloads``
 
@@ -31,7 +31,7 @@ The Metrics API includes several categories of endpoints that provide different 
 
   * Form: GET https://$SERVER/api/info/metrics/$type/toMonth/$YYYY-DD
 
-  * where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
+  * where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files``, ``downloads`` or ``accounts``.
 
   * Example: ``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth/2018-01``
     
@@ -41,7 +41,7 @@ The Metrics API includes several categories of endpoints that provide different 
 
   * Form: GET https://$SERVER/api/info/metrics/$type/pastDays/$days
 
-  * where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
+  * where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files``, ``downloads`` or ``accounts``.
 
   * Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/pastDays/30``
 
@@ -51,7 +51,7 @@ The Metrics API includes several categories of endpoints that provide different 
 
   * Form: GET https://$SERVER/api/info/metrics/$type/monthly
 
-  * where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
+  * where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files``, ``downloads`` or ``accounts``.
 
   * Example: ``curl https://demo.dataverse.org/api/info/metrics/downloads/monthly``
 
@@ -163,6 +163,10 @@ The following table lists the available metrics endpoints (not including the Mak
     /api/info/metrics/uniquefiledownloads/toMonth/{yyyy-MM},"count by id, pid","json, csv",collection subtree,published,y,cumulative up to month specified,unique download counts per file id to the specified month. PIDs are also included in output if they exist
     /api/info/metrics/tree,"id, ownerId, alias, depth, name, children",json,collection subtree,published,y,"tree of dataverses starting at the root or a specified parentAlias with their id, owner id, alias, name, a computed depth, and array of children dataverses","underlying code can also include draft dataverses, this is not currently accessible via api, depth starts at 0"
     /api/info/metrics/tree/toMonth/{yyyy-MM},"id, ownerId, alias, depth, name, children",json,collection subtree,published,y,"tree of dataverses in existence as of specified date starting at the root or a specified parentAlias with their id, owner id, alias, name, a computed depth, and array of children dataverses","underlying code can also include draft dataverses, this is not currently accessible via api, depth starts at 0"
+    /api/info/metrics/accounts,count,json,Dataverse installation,all,y,as of now/totals,
+    /api/info/metrics/accounts/toMonth/{yyyy-MM},count,json,Dataverse installation,all,y,cumulative up to month specified,
+    /api/info/metrics/accounts/pastDays/{n},count,json,Dataverse installation,all,y,aggregate count for past n days,
+    /api/info/metrics/accounts/monthly,"date, count","json, csv",Dataverse installation,all,y,monthly cumulative timeseries from first date of first entry to now,
 
 Related API Endpoints
 ---------------------

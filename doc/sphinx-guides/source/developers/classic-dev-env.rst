@@ -46,7 +46,7 @@ On Linux, you are welcome to use the OpenJDK available from package managers.
 Install Netbeans or Maven
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-NetBeans IDE is recommended, and can be downloaded from http://netbeans.org . Developers may use any editor or IDE. We recommend NetBeans because it is free, works cross platform, has good support for Jakarta EE projects, and includes a required build tool, Maven.
+NetBeans IDE is recommended, and can be downloaded from https://netbeans.org . Developers may use any editor or IDE. We recommend NetBeans because it is free, works cross platform, has good support for Jakarta EE projects, and includes a required build tool, Maven.
 
 Below we describe how to build the Dataverse Software war file with Netbeans but if you prefer to use only Maven, you can find installation instructions in the :doc:`tools` section.
 
@@ -86,7 +86,9 @@ On Mac, run this command:
 
 ``brew install jq``
 
-On Linux, install ``jq`` from your package manager or download a binary from http://stedolan.github.io/jq/
+On Linux, install ``jq`` from your package manager or download a binary from https://stedolan.github.io/jq/
+
+.. _install-payara-dev:
 
 Install Payara
 ~~~~~~~~~~~~~~
@@ -134,7 +136,7 @@ On Linux, you should just install PostgreSQL using your favorite package manager
 Install Solr
 ^^^^^^^^^^^^
 
-`Solr <http://lucene.apache.org/solr/>`_ 9.3.0 is required.
+`Solr <https://lucene.apache.org/solr/>`_ 9.3.0 is required.
 
 To install Solr, execute the following commands:
 
@@ -144,7 +146,7 @@ To install Solr, execute the following commands:
 
 ``cd /usr/local/solr``
 
-``curl -O http://archive.apache.org/dist/solr/solr/9.3.0/solr-9.3.0.tgz``
+``curl -O https://archive.apache.org/dist/solr/solr/9.3.0/solr-9.3.0.tgz``
 
 ``tar xvfz solr-9.3.0.tgz``
 
@@ -260,7 +262,3 @@ Next Steps
 If you can log in to the Dataverse installation, great! If not, please see the :doc:`troubleshooting` section. For further assistance, please see "Getting Help" in the :doc:`intro` section.
 
 You're almost ready to start hacking on code. Now that the installer script has you up and running, you need to continue on to the :doc:`tips` section to get set up to deploy code from your IDE or the command line.
-
-----
-
-Previous: :doc:`intro` | Next: :doc:`tips`

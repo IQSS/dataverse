@@ -27,12 +27,12 @@ separately, in a relational database, so that it can be accessed
 efficiently by the application. For the purposes of archival
 preservation it can be exported, in plain text XML files, using a
 standardized, open `DDI Codebook
-<http://www.ddialliance.org/Specification/DDI-Codebook/2.5/>`_
+<https://www.ddialliance.org/Specification/DDI-Codebook/2.5/>`_
 format. (more info below)
 
 
 Tabular Data and Metadata
-==========================
+=========================
 
 Data vs. Metadata
 -----------------
@@ -53,6 +53,25 @@ Tabular Metadata in the Dataverse Software
 
 The structure of the metadata defining tabular data variables used in
 the Dataverse Software was originally based on the `DDI Codebook
-<http://www.ddialliance.org/Specification/DDI-Codebook/2.5/>`_ format.
+<https://www.ddialliance.org/Specification/DDI-Codebook/2.5/>`_ format.
 
 You can see an example of DDI output under the :ref:`data-variable-metadata-access` section of the :doc:`/api/dataaccess` section of the API Guide.
+
+Uningest and Reingest
+=====================
+
+Ingest will only work for files whose content can be interpreted as a table.
+Multi-sheet spreadsheets and CSV files with a different number of entries per row are two examples where ingest will fail.
+This is non-fatal. The Dataverse software will not produce a .tab version of the file and will show a warning to users
+who can see the draft version of the dataset containing the file that will indicate why ingest failed. When the file is published as 
+part of the dataset, there will be no indication that ingest was attempted and failed.
+
+If the warning message is a concern, the Dataverse software includes both an API call (see :ref:`file-uningest` in the :doc:`/api/native-api` guide) 
+and an Edit/Uningest menu option displayed on the file page, that allow a file to be uningested by anyone who can publish the dataset.
+
+Uningest will remove the warning. Uningest can also be done for a file that was successfully ingested.  This is only available to superusers.
+This will remove the variable-level metadata and the .tab version of the file that was generated.
+
+If a file is a tabular format but was never ingested, .e.g. due to the ingest file size limit being lower in the past, or if ingest had failed,
+e.g. in a prior Dataverse version, an reingest API (see :ref:`file-reingest` in the :doc:`/api/native-api` guide) and a file page Edit/Reingest option
+in the user interface allow ingest to be tried again. As with Uningest, this fucntionality is only available to superusers. 

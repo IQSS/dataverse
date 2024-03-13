@@ -35,7 +35,7 @@ public class DataverseXoaiSetRepository implements SetRepository {
 
     @Override
     public boolean supportSets() {
-        List<OAISet> dataverseOAISets = setService.findAllNamedSets();
+        List<OAISet> dataverseOAISets = setService.findAllActiveNamedSets();
         
         if (dataverseOAISets == null || dataverseOAISets.isEmpty()) {
             return false;
@@ -46,7 +46,7 @@ public class DataverseXoaiSetRepository implements SetRepository {
     @Override
     public List<Set> getSets() { 
         logger.fine("calling retrieveSets()");
-        List<OAISet> dataverseOAISets = setService.findAllNamedSets();
+        List<OAISet> dataverseOAISets = setService.findAllActiveNamedSets();
         List<Set> XOAISets = new ArrayList<Set>();
         
         if (dataverseOAISets != null) {

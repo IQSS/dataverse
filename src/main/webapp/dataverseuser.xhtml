@@ -178,9 +178,6 @@
                                                         <o:param>
                                                             #{DataverseUserPage.getRequestorEmail(item)}
                                                         </o:param>
-                                                        <o:param>
-                                                            #{DataverseUserPage.getReasonForReturn(item.theObject)}
-                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'RETURNEDDS'}">
@@ -233,6 +230,14 @@
                                                         </o:param>
                                                         <o:param>
                                                             #{DataverseUserPage.getRequestorEmail(item)}
+                                                        </o:param>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'REQUESTEDFILEACCESS'}">
+                                                    <span class="icon-dataset text-icon-inline text-muted"></span>
+                                                    <h:outputFormat value="#{bundle['notification.requestedFileAccess']}" escape="false">
+                                                        <o:param>
+                                                            <a href="/dataset.xhtml?persistentId=#{item.theObject.getGlobalId()}" title="#{item.theObject.displayName}">#{item.theObject.displayName}</a>
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
