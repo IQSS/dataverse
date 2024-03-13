@@ -426,28 +426,32 @@ public class Datasets extends AbstractApiBean {
                                @Context HttpHeaders headers) {
         return response( req -> {
             
-           
             //If excludeFiles is null the default is to provide the files and because of this we need to check permissions. 
             boolean checkPerms = excludeFiles == null ? true : !excludeFiles;
             
-
-            Dataset dst = findDatasetOrDie(datasetId);
-            DatasetVersion requestedDatasetVersion 
-                    = getDatasetVersionOrDie(req, versionId, dst, uriInfo, headers, includeDeaccessioned,
-                    checkPerms);
+            Dataset dataset = findDatasetOrDie(datasetId);
+            DatasetVersion requestedDatasetVersion = getDatasetVersionOrDie(req, 
+                                                                            versionId, 
+                                                                            dataset, 
+                                                                            uriInfo, 
+                                                                            headers, 
+                                                                            includeDeaccessioned,
+                                                                            checkPerms);
             
             DatasetVersion latestDatasetVersion = null;
-            boolean deaccesionedLookup = true;
+
             //Check perms is false since we are never going to retrieve files, we are just getting the status of the version.
+            //We also want to check always for deaccessioned datasets.
+            boolean deaccesionedLookup = true;
             checkPerms = false;
-            if(versionId != DS_VERSION_LATEST){                
-                latestDatasetVersion = getDatasetVersionOrDie(req, DS_VERSION_LATEST, dst, uriInfo, headers,
-                        deaccesionedLookup,
-                        checkPerms);
-            } else {
-                latestDatasetVersion = requestedDatasetVersion;
-            }
-  
+            latestDatasetVersion = getDatasetVersionOrDie(req, 
+                                                            DS_VERSION_LATEST, 
+                                                            dataset, 
+                                                            uriInfo, 
+                                                            headers,
+                                                            deaccesionedLookup,
+                                                            checkPerms);
+           
             if (requestedDatasetVersion == null || requestedDatasetVersion.getId() == null) {
                 return notFound("Dataset version not found");
             }
@@ -455,9 +459,14 @@ public class Datasets extends AbstractApiBean {
             if (excludeFiles == null ? true : !excludeFiles) {
                 requestedDatasetVersion = datasetversionService.findDeep(requestedDatasetVersion.getId());
             }
-            return ok(
-                json(requestedDatasetVersion, latestDatasetVersion, 
-                    null, excludeFiles == null ? true : !excludeFiles, returnOwners));
+
+            JsonObjectBuilder jsonBuilder = json(requestedDatasetVersion, 
+                                                 latestDatasetVersion,
+                                                 null, 
+                                                 excludeFiles == null ? true : !excludeFiles, 
+                                                 returnOwners);
+            return ok(jsonBuilder);
+
         }, getRequestUser(crc));
     }
 
