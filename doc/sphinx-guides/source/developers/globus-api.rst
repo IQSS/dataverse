@@ -200,16 +200,16 @@ To begin downloading files, the requestGlobusDownload URL is used:
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
   
-  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST "$SERVER_URL/api/datasets/:persistentId/requestGlobusDownload?persistentId=$PERSISTENT_IDENTIFIER"
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST -d "$JSON_DATA" "$SERVER_URL/api/datasets/:persistentId/requestGlobusDownload?persistentId=$PERSISTENT_IDENTIFIER"
 
 The JSON body sent should include a list of file ids to download and, for a managed endpoint, the Globus principal that will make the transfer:
 
 .. code-block:: bash
 
-  {
-    "principal":"d15d4244-fc10-47f3-a790-85bdb6db9a75", 
-    "fileIds":[60, 61]
-  }
+  export JSON_DATA='{ \
+    "principal":"d15d4244-fc10-47f3-a790-85bdb6db9a75", \ 
+    "fileIds":[60, 61] \
+  }'
   
 Note that this API call takes an optional downloadId parameter that is used with the dataverse-globus app. When downloadId is included, the list of fileIds is not needed.
 
@@ -234,14 +234,14 @@ Dataverse will then monitor the transfer and revoke the read permission when the
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
   
-  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST "$SERVER_URL/api/datasets/:persistentId/monitorGlobusDownload?persistentId=$PERSISTENT_IDENTIFIER"
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-type:application/json" -X POST -d "$JSON_DATA" "$SERVER_URL/api/datasets/:persistentId/monitorGlobusDownload?persistentId=$PERSISTENT_IDENTIFIER"
   
 The JSON body sent just contains the task identifier for the transfer:
 
 .. code-block:: bash
 
-  {
-    "taskIdentifier":"b5fd01aa-8963-11ee-83ae-d5484943e99a"
-  }
+  export JSON_DATA='{ \
+    "taskIdentifier":"b5fd01aa-8963-11ee-83ae-d5484943e99a" \
+  }'
  
 
