@@ -2,13 +2,14 @@ package edu.harvard.iq.dataverse.api.imports;
 
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
+import edu.harvard.iq.dataverse.api.dto.DatasetFieldDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetFieldDTOFactory;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FileMetadataDTO;
 import edu.harvard.iq.dataverse.api.dto.FileMetadataDTO.DataFileDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockWithFieldsDTO;
-import edu.harvard.iq.dataverse.api.dto.DatasetFieldDTO;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.common.DateUtil;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.dataset.CustomFieldMap;
@@ -26,6 +27,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.StringReader;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.export.ddi.DdiConstants.NOTE_TYPE_CONTENTTYPE;
 import static edu.harvard.iq.dataverse.export.ddi.DdiConstants.NOTE_TYPE_TERMS_OF_ACCESS;
@@ -45,6 +48,7 @@ import static edu.harvard.iq.dataverse.export.ddi.DdiConstants.NOTE_TYPE_UNF;
  */
 @Stateless
 public class ImportDDIServiceBean {
+    private static final Logger logger = Logger.getLogger(ImportDDIServiceBean.class.getCanonicalName());
     public static final String SOURCE_DVN_3_0 = "DVN_3_0";
 
     public static final String AGENCY_HANDLE = "handle";
@@ -217,7 +221,7 @@ public class ImportDDIServiceBean {
         }
     }
 
-    private void processDocDscr(XMLStreamReader xmlr, DatasetDTO datasetDTO) throws XMLStreamException {
+    private void processDocDscr(XMLStreamReader xmlr, DatasetDTO datasetDTO) throws XMLStreamException, ImportException {
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
 
@@ -227,9 +231,44 @@ public class ImportDDIServiceBean {
                     if (AGENCY_HANDLE.equals(xmlr.getAttributeValue(null, "agency"))) {
                         parseStudyIdHandle(parseText(xmlr), datasetDTO);
                     }
+                } else if (xmlr.getLocalName().equals("citation")) {
+                    processDocDescrCitation(xmlr, datasetDTO);
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("docDscr")) {
+                    return;
+                }
+            }
+        }
+    }
+
+    private void processDocDescrCitation(XMLStreamReader xmlr, DatasetDTO datasetDTO) throws XMLStreamException, ImportException {
+        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                if (xmlr.getLocalName().equals("distStmt")) {
+                    processDocDescrCitationDistStmt(xmlr, datasetDTO);
+                }
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                if (xmlr.getLocalName().equals("citation")) {
+                    return;
+                }
+            }
+        }
+    }
+
+    private void processDocDescrCitationDistStmt(XMLStreamReader xmlr, DatasetDTO datasetDTO) throws XMLStreamException, ImportException {
+        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                if (xmlr.getLocalName().equals("distDate")) {
+                    String docDistDate = parseDate(xmlr);
+                    try {
+                        datasetDTO.setPublicationDate(DateUtil.formatISOLocalDate(DateUtil.parseDateTimeFormat(docDistDate)));
+                    } catch (DateTimeParseException e) {
+                        logger.warning("Unsupported date format '" + docDistDate + "': " + e.getMessage());
+                    }
+                }
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                if (xmlr.getLocalName().equals("distStmt")) {
                     return;
                 }
             }
@@ -1232,7 +1271,7 @@ public class ImportDDIServiceBean {
                 for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
                     if (event == XMLStreamConstants.START_ELEMENT) {
                         if (xmlr.getLocalName().equals("version")) {
-                            dvDTO.setReleaseDate(xmlr.getAttributeValue(null, "date"));
+                            dvDTO.setReleaseTime(xmlr.getAttributeValue(null, "date"));
                             String versionState = xmlr.getAttributeValue(null, "type");
                             if (versionState != null) {
                                 if (versionState.equals("ARCHIVED")) {

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
-import java.time.Year;
 import java.util.Locale;
 import java.util.Map;
 
@@ -42,8 +41,8 @@ class CitationDataExtractorTest {
     }
 
     @Test
-    @DisplayName("Should extract data year for citation from harvested dataset, year from distribution date")
-    void create_forHarvested_yearFromDistributionDate() throws ParseException {
+    @DisplayName("Should extract data year for citation from harvested dataset, year from production date")
+    void create_forHarvested_yearFromProductionData() throws ParseException {
 
         // given & when
         DatasetVersion datasetVersion = utils.createHarvestedTestDatasetVersionWithDistributionDate("Dataset Title", true);
@@ -57,7 +56,7 @@ class CitationDataExtractorTest {
         assertThat(citationData.getPublisher()).isNull();
         assertThat(citationData.getTitle()).isEqualTo("Dataset Title");
         assertThat(citationData.getVersion()).isNull();
-        assertThat(citationData.getYear()).isEqualTo("2020");
+        assertThat(citationData.getYear()).isEqualTo("1955");
     }
 
     @Test
@@ -75,7 +74,7 @@ class CitationDataExtractorTest {
         assertThat(citationData.getPublisher()).isNull();
         assertThat(citationData.getTitle()).isEqualTo("Dataset Title");
         assertThat(citationData.getVersion()).isNull();
-        assertThat(citationData.getYear()).isEqualTo(String.valueOf(Year.now().getValue()));
+        assertThat(citationData.getYear()).isEqualTo("1955");
     }
 
     @Test
@@ -111,6 +110,6 @@ class CitationDataExtractorTest {
         assertThat(properties).hasSize(4);
         assertThat(properties)
                 .extractingByKeys("datacite.creator", "datacite.publisher", "datacite.title", "datacite.publicationyear")
-                .containsExactly("First Last", ":unav", "Dataset Title", Year.now().toString());
+                .containsExactly("First Last", ":unav", "Dataset Title", "1955");
     }
 }

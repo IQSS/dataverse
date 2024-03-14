@@ -461,6 +461,18 @@ public class ImportDDIServiceBeanTest {
 
     }
 
+    @Test
+    void doImport_should_parse_doc_scoped_fields() throws XMLStreamException, ImportException, IOException {
+        // given
+        String ddiXml = UnitTestUtils.readFileToString("xml/export/ddi/dataset-all-ddi-metadata-fields.xml");
+
+        // when
+        DatasetDTO datasetDto = importDdiService.doImport(ImportType.HARVEST, ddiXml);
+
+        // then
+        assertThat(datasetDto.getPublicationDate()).isEqualTo("2021-02-15");
+    }
+
 
     @Test
     void doImport_should_parse_files_info_from_otherMat() throws XMLStreamException, ImportException {

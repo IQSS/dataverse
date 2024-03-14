@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
-import java.time.Year;
 import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,10 +65,10 @@ class StandardCitationFormatsConverterTest {
         String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
 
         // then
-        assertThat(bibtex).isEqualTo("@data{LK0D1H_" + Year.now() + ",\r\n"
+        assertThat(bibtex).isEqualTo("@data{LK0D1H_1955,\r\n"
                 + "author = {First Last},\r\n"
                 + "title = \"{Dataset Title}\",\r\n"
-                + "year = {" + Year.now() + "},\r\n"
+                + "year = {1955},\r\n"
                 + "doi = {10.5072/FK2/LK0D1H},\r\n"
                 + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
                 + "}\r\n");
@@ -110,10 +109,10 @@ class StandardCitationFormatsConverterTest {
         String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
 
         // then
-        assertThat(bibtex).isEqualTo("@data{LK0D1H_" + Year.now() + ",\r\n"
+        assertThat(bibtex).isEqualTo("@data{LK0D1H_1955,\r\n"
                 + "author = {},\r\n"
                 + "title = \"{Dataset Title}\",\r\n"
-                + "year = {" + Year.now() + "},\r\n"
+                + "year = {1955},\r\n"
                 + "doi = {10.5072/FK2/LK0D1H},\r\n"
                 + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
                 + "}\r\n");
@@ -154,10 +153,10 @@ class StandardCitationFormatsConverterTest {
         String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
 
         // then
-        assertThat(bibtex).isEqualTo("@data{LK0D1H_" + Year.now() + ",\r\n"
+        assertThat(bibtex).isEqualTo("@data{LK0D1H_1955,\r\n"
                 + "author = {First Last},\r\n"
                 + "title = \"{}\",\r\n"
-                + "year = {" + Year.now() + "},\r\n"
+                + "year = {1955},\r\n"
                 + "doi = {10.5072/FK2/LK0D1H},\r\n"
                 + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
                 + "}\r\n");
@@ -198,10 +197,10 @@ class StandardCitationFormatsConverterTest {
         String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
 
         // then
-        assertThat(bibtex).isEqualTo("@data{LK0D1H_" + Year.now() + ",\r\n"
+        assertThat(bibtex).isEqualTo("@data{LK0D1H_1955,\r\n"
                 + "author = {},\r\n"
                 + "title = \"{}\",\r\n"
-                + "year = {" + Year.now() + "},\r\n"
+                + "year = {1955},\r\n"
                 + "doi = {10.5072/FK2/LK0D1H},\r\n"
                 + "url = {https://doi.org/10.5072/FK2/LK0D1H}\r\n"
                 + "}\r\n");
@@ -276,7 +275,7 @@ class StandardCitationFormatsConverterTest {
                 "T1  - Dataset Title\r\n" +
                 "AU  - First Last\r\n" +
                 "DO  - doi:10.5072/FK2/LK0D1H\r\n" +
-                "PY  - " + Year.now()+ "\r\n" +
+                "PY  - 1955\r\n" +
                 "UR  - https://doi.org/10.5072/FK2/LK0D1H\r\n" +
                 "ER  - ");
     }
@@ -323,7 +322,7 @@ class StandardCitationFormatsConverterTest {
         assertThat(ris).isEqualTo("Content: text/plain; charset=\"utf-8\"\r\n" +
                 "TY  - DATA\r\n" +
                 "DO  - doi:10.5072/FK2/LK0D1H\r\n" +
-                "PY  - " + Year.now() + "\r\n" +
+                "PY  - 1955\r\n" +
                 "UR  - https://doi.org/10.5072/FK2/LK0D1H\r\n" +
                 "ER  - ");
     }
@@ -386,7 +385,7 @@ class StandardCitationFormatsConverterTest {
                       "<authors><author>First Last</author></authors>" +
                       "</contributors>" +
                       "<titles><title>Dataset Title</title></titles>" +
-                      "<dates><year>" + Year.now() + "</year></dates>" +
+                      "<dates><year>1955</year></dates>" +
                       "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
                       "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
                       "</record>" +
@@ -447,7 +446,7 @@ class StandardCitationFormatsConverterTest {
                       "<ref-type name=\"Dataset\">59</ref-type>" +
                       "<contributors/>" +
                       "<titles/>" +
-                      "<dates><year>" + Year.now() +"</year></dates>" +
+                      "<dates><year>1955</year></dates>" +
                       "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
                       "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
                     "</record>" +
@@ -484,7 +483,7 @@ class StandardCitationFormatsConverterTest {
 
         // then
         assertThat(citation)
-                .isEqualTo("First Last, " + Year.now() +", \"Dataset Title\", https://doi.org/10.5072/FK2/LK0D1H");
+                .isEqualTo("First Last, 1955, \"Dataset Title\", https://doi.org/10.5072/FK2/LK0D1H");
     }
 
     @Test
@@ -516,7 +515,7 @@ class StandardCitationFormatsConverterTest {
 
         // then
         assertThat(citation)
-                .isEqualTo(Year.now()  +", https://doi.org/10.5072/FK2/LK0D1H");
+                .isEqualTo("1955, https://doi.org/10.5072/FK2/LK0D1H");
     }
 
     @Test
@@ -548,7 +547,7 @@ class StandardCitationFormatsConverterTest {
         String citation = converter.toString(citationData, TEST_LOCALE, true);
 
         // then
-        assertThat(citation).isEqualTo("First Last, " +  Year.now() + ", \"Dataset Title\"," +
+        assertThat(citation).isEqualTo("First Last, 1955, \"Dataset Title\"," +
                 " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>");
     }
 
@@ -581,7 +580,7 @@ class StandardCitationFormatsConverterTest {
         String citation = converter.toString(citationData, TEST_LOCALE, true);
 
         // then
-        assertThat(citation).isEqualTo(Year.now() +
-                ", <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>");
+        assertThat(citation).isEqualTo(
+                "1955, <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>");
     }
 }

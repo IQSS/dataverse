@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.citation;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.common.DateUtil;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import javax.ejb.Stateless;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -228,11 +230,12 @@ public class CitationDataExtractor {
             }
         } else {
             try {
-                citationDate = dsv.getDistributionDate() != null
-                        ? new SimpleDateFormat("yyyy").parse(dsv.getDistributionDate())
-                        : null;
-            } catch (ParseException pe) {
-                logger.warn(String.format("Error parsing date [%s]", dsv.getDistributionDate()), pe);
+                citationDate = DateUtil.parseDateTimeFormatAsDate(dsv.getProductionDate());
+                if (citationDate == null) {
+                    citationDate = dsv.getDataset().getPublicationDate();
+                }
+            } catch (DateTimeParseException pe) {
+                logger.warn(String.format("Error parsing date [%s]", dsv.getProductionDate()), pe);
             }
         }
         if (citationDate == null) {

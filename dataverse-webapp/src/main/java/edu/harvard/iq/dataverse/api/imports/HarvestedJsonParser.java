@@ -64,6 +64,7 @@ public class HarvestedJsonParser {
         dataset.setAuthority(obj.getString("authority", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : obj.getString("authority"));
         dataset.setProtocol(obj.getString("protocol", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Protocol) : obj.getString("protocol"));
         dataset.setIdentifier(obj.getString("identifier", null));
+        parsePublicationDate(obj, dataset);
 
         DatasetVersion dsv = new DatasetVersion();
         dsv.setDataset(dataset);
@@ -101,7 +102,7 @@ public class HarvestedJsonParser {
             if (versionStateStr != null) {
                 dsv.setVersionState(DatasetVersion.VersionState.valueOf(versionStateStr));
             }
-            dsv.setReleaseTime(parseDate(obj.getString("releaseDate", null)));
+            dsv.setReleaseTime(parseDate(obj.getString("releaseTime", null)));
             dsv.setLastUpdateTime(parseTime(obj.getString("lastUpdateTime", null)));
             dsv.setCreateTime(parseTime(obj.getString("createTime", null)));
             dsv.setArchiveTime(parseTime(obj.getString("archiveTime", null)));
@@ -127,6 +128,17 @@ public class HarvestedJsonParser {
             throw new JsonParseException("Error parsing date:" + ex.getMessage(), ex);
         } catch (NumberFormatException ex) {
             throw new JsonParseException("Error parsing number:" + ex.getMessage(), ex);
+        }
+    }
+
+    private void parsePublicationDate(JsonObject obj, Dataset dataset) throws JsonParseException {
+        try {
+            Date publicationDate = parseDate(obj.getString("publicationDate", null));
+            if (publicationDate != null) {
+                dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
+            }
+        } catch (ParseException ex) {
+            throw new JsonParseException("Error parsing date:" + ex.getMessage(), ex);
         }
     }
 

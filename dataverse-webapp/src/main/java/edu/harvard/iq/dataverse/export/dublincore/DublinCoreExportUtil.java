@@ -142,7 +142,7 @@ public class DublinCoreExportUtil {
 
         writeFullElementList(xmlw, dcFlavor + ":" + "language", dto2PrimitiveList(version, DatasetFieldConstant.language));
 
-        writeFullElement(xmlw, dcFlavor + ":" + "date", dto2Primitive(version, DatasetFieldConstant.productionDate));
+        writeFullElement(xmlw, dcFlavor + ":" + "date", datasetDto.getPublicationDate());
 
         writeFullElement(xmlw, dcFlavor + ":" + "contributor", dto2Primitive(version, DatasetFieldConstant.depositor));
 
