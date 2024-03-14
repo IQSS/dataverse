@@ -28,7 +28,7 @@ How to Create a SQL Upgrade Script
 
 We assume you have already read the :doc:`version-control` section and have been keeping your feature branch up to date with the "develop" branch.
 
-Create a new SQL file in the ``src/main/resources/db/migration`` directory. Name the file to something similar to ``V6.1.0.1.sql``. In this example ``6.1`` represents the current version of Dataverse, with the last digit representing number of the script for that version. Should a newer version be merged while you work on your pull request (PR), you may need to update to a higher number. Generally, PR's merged first take priority, and the order may vary depending on QA considerations at the time.
+Create a new SQL file in the ``src/main/resources/db/migration`` directory. Name the file to something similar to ``V6.1.0.1.sql``. In this example ``6.1`` represents the current version of Dataverse, with the last digit representing number of the script for that version. Should a newer version be merged while you work on your pull request (PR), you must update your script to a higher number.
 
 Previously, we used the Flyway file naming conventions. However, this approach occasionally led to inadvertent merging of multiple scripts with the same version, such as ``6.0.0.1__0000-wonderful-pr.sql`` and ``6.0.0.1__0001-wonderful-pr.sql``. After careful consideration and analysis, we agreed to adopt the convention mentioned earlier for naming files. This helps us detect conflicts before merging a PR, preventing the development branch from breaking an installation. For more information on Flyway file naming conventions,  see https://documentation.red-gate.com/fd/migrations-184127470.html 
 
