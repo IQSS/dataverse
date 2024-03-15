@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.harvest.client;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.NavigationWrapper;
+import edu.harvard.iq.dataverse.api.imports.HarvestImporterTypeResolver;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -14,6 +15,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
+import org.dspace.xoai.model.oaipmh.MetadataFormat;
 import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
@@ -58,6 +60,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
     private HarvestingClientsService harvestingClientsService;
     @Inject
     private SystemConfig systemConfig;
+    @Inject
+    private HarvestImporterTypeResolver harvestImporterTypeResolver;
 
     private List<HarvestingClient> configuredHarvestingClients;
     private Dataverse dataverse;
@@ -483,9 +487,15 @@ public class HarvestingClientsPage implements java.io.Serializable {
 
             // First, we'll try to obtain the list of supported metadata formats:
             try {
-                List<String> formats = oaiHandler.runListMetadataFormats();
-                if (formats != null && formats.size() > 0) {
-                    createOaiMetadataFormatSelectItems(formats);
+                List<MetadataFormat> formats = oaiHandler.runListMetadataFormats();
+                if (!formats.isEmpty()) {
+                    List<MetadataFormat> supportedFormats = harvestImporterTypeResolver.filterSupportedFormats(formats);
+                    if (!supportedFormats.isEmpty()) {
+                        createOaiMetadataFormatSelectItems(supportedFormats);
+                    } else {
+                        success = false;
+                        message = "No supported formats received from ListMetadataFormats";
+                    }
                 } else {
                     success = false;
                     message = "received empty list from ListMetadataFormats";
@@ -826,12 +836,13 @@ public class HarvestingClientsPage implements java.io.Serializable {
         this.oaiMetadataFormatSelectItems = oaiMetadataFormatSelectItems;
     }
 
-    private void createOaiMetadataFormatSelectItems(List<String> formats) {
+    private void createOaiMetadataFormatSelectItems(List<MetadataFormat> formats) {
         setOaiMetadataFormatSelectItems(new ArrayList<>());
         if (formats != null) {
-            for (String f : formats) {
-                if (!StringUtils.isEmpty(f)) {
-                    getOaiMetadataFormatSelectItems().add(new SelectItem(f, f));
+            for (MetadataFormat f : formats) {
+                String prefix = f.getMetadataPrefix();
+                if (!StringUtils.isEmpty(prefix)) {
+                    getOaiMetadataFormatSelectItems().add(new SelectItem(prefix, prefix));
                 }
             }
         }

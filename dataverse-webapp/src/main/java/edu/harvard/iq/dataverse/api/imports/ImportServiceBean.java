@@ -70,7 +70,7 @@ public class ImportServiceBean {
     // -------------------- LOGIC --------------------
 
     @TransactionAttribute(REQUIRES_NEW)
-    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, String metadataFormat, File metadataFile, PrintWriter cleanupLog) throws ImportException, IOException {
+    public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, HarvestImporterType importType, File metadataFile, PrintWriter cleanupLog) throws ImportException, IOException {
         if (harvestingClient == null || harvestingClient.getDataverse() == null) {
             throw new ImportException("importHarvestedDataset called wiht a null harvestingClient, or an invalid harvestingClient.");
         }
@@ -90,8 +90,7 @@ public class ImportServiceBean {
         // Kraffmiller's export modules; replace the logic below with clean
         // programmatic lookup of the import plugin needed.
 
-        if ("ddi".equalsIgnoreCase(metadataFormat) || "oai_ddi".equals(metadataFormat)
-                || metadataFormat.toLowerCase().matches("^oai_ddi.*")) {
+        if (importType == HarvestImporterType.DDI) {
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
                 // TODO:
@@ -103,7 +102,7 @@ public class ImportServiceBean {
             } catch (IOException | XMLStreamException | ImportException e) {
                 throw new ImportException("Failed to process DDI XML record: " + e.getClass() + " (" + e.getMessage() + ")");
             }
-        } else if ("dc".equalsIgnoreCase(metadataFormat) || "oai_dc".equals(metadataFormat)) {
+        } else if (importType == HarvestImporterType.DUBLIN_CORE) {
             logger.fine("importing DC " + metadataFile.getAbsolutePath());
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
@@ -111,13 +110,13 @@ public class ImportServiceBean {
             } catch (IOException | XMLStreamException e) {
                 throw new ImportException("Failed to process Dublin Core XML record: " + e.getClass() + " (" + e.getMessage() + ")");
             }
-        } else if ("dataverse_json".equals(metadataFormat)) {
+        } else if (importType == HarvestImporterType.DATAVERSE_JSON) {
             // This is Dataverse metadata already formatted in JSON.
             // Simply read it into a string, and pass to the final import further down:
             logger.fine("Attempting to import custom dataverse metadata from file " + metadataFile.getAbsolutePath());
             json = new String(Files.readAllBytes(metadataFile.toPath()));
         } else {
-            throw new ImportException("Unsupported import metadata format: " + metadataFormat);
+            throw new ImportException("Unsupported import type: " + importType);
         }
 
         if (json == null) {
@@ -126,7 +125,7 @@ public class ImportServiceBean {
                 json = gson.toJson(dsDTO);
                 logger.fine("JSON produced for the metadata harvested: " + json);
             } else {
-                throw new ImportException("Failed to transform XML metadata format " + metadataFormat + " into a DatasetDTO");
+                throw new ImportException("Failed to transform XML metadata format " + importType + " into a DatasetDTO");
             }
         }
 

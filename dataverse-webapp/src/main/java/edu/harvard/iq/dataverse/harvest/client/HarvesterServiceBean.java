@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.harvest.client;
 
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.api.imports.HarvestImporterType;
+import edu.harvard.iq.dataverse.api.imports.HarvestImporterTypeResolver;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -17,6 +19,7 @@ import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.dspace.xoai.model.oaipmh.Header;
+import org.dspace.xoai.serviceprovider.exceptions.IdDoesNotExistException;
 import org.xml.sax.SAXException;
 
 import javax.ejb.Asynchronous;
@@ -62,6 +65,8 @@ public class HarvesterServiceBean {
     EjbDataverseEngine engineService;
     @EJB
     IndexServiceBean indexService;
+    @EJB
+    private HarvestImporterTypeResolver harvestImporterTypeResolver;
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean");
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
@@ -178,8 +183,9 @@ public class HarvesterServiceBean {
         OaiHandler oaiHandler;
 
         try {
-            oaiHandler = new OaiHandler(harvestingClient);
-        } catch (OaiHandlerException ohe) {
+            oaiHandler = new OaiHandler(harvestingClient)
+                    .withFetchedMetadataFormat();
+        } catch (OaiHandlerException | IdDoesNotExistException ohe) {
             String errorMessage = "Failed to create OaiHandler for harvesting client "
                     + harvestingClient.getName()
                     + "; "
@@ -254,13 +260,16 @@ public class HarvesterServiceBean {
 
             } else {
                 hdLogger.info("Successfully retrieved GetRecord response.");
+                HarvestImporterType importType = harvestImporterTypeResolver.resolveImporterType(oaiHandler.getMetadataFormat())
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "Unsupported import metadata format: " + oaiHandler.getMetadataFormat().getMetadataPrefix()));
 
                 tempFile = record.getMetadataFile();
 
                 harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest,
                                                                           oaiHandler.getHarvestingClient(),
                                                                           identifier,
-                                                                          oaiHandler.getMetadataPrefix(),
+                                                                          importType,
                                                                           record.getMetadataFile(),
                                                                           importCleanupLog);
 

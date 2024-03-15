@@ -46,23 +46,18 @@ public class OaiHandler implements Serializable {
         this.baseOaiUrl = baseOaiUrl;
     }
 
-    public OaiHandler(String baseOaiUrl, String metadataPrefix) {
-        this.baseOaiUrl = baseOaiUrl;
-        this.metadataPrefix = metadataPrefix;
-    }
-
-    public OaiHandler(HarvestingClient harvestingClient) throws OaiHandlerException {
+    public OaiHandler(HarvestingClient harvestingClient) throws OaiHandlerException, IdDoesNotExistException {
         this.baseOaiUrl = harvestingClient.getHarvestingUrl();
-        this.metadataPrefix = harvestingClient.getMetadataPrefix();
 
         if (StringUtils.isEmpty(baseOaiUrl)) {
             throw new OaiHandlerException("Valid OAI url is needed to create a handler");
         }
         this.baseOaiUrl = harvestingClient.getHarvestingUrl();
+
+        this.metadataPrefix = harvestingClient.getMetadataPrefix();
         if (StringUtils.isEmpty(metadataPrefix)) {
             throw new OaiHandlerException("HarvestingClient must have a metadataPrefix to create a handler");
         }
-        this.metadataPrefix = harvestingClient.getMetadataPrefix();
 
         if (!StringUtils.isEmpty(harvestingClient.getHarvestingSet())) {
             try {
@@ -79,6 +74,7 @@ public class OaiHandler implements Serializable {
 
     private String baseOaiUrl; //= harvestingClient.getHarvestingUrl();
     private String metadataPrefix; // = harvestingClient.getMetadataPrefix();
+    private MetadataFormat metadataFormat;
     private String setName;
     private Date fromDate;
 
@@ -102,16 +98,16 @@ public class OaiHandler implements Serializable {
         return metadataPrefix;
     }
 
+    public MetadataFormat getMetadataFormat() {
+        return metadataFormat;
+    }
+
     public HarvestingClient getHarvestingClient() {
         return this.harvestingClient;
     }
 
     public void withSetName(String setName) {
         this.setName = setName;
-    }
-
-    public void withMetadataPrefix(String metadataPrefix) {
-        this.metadataPrefix = metadataPrefix;
     }
 
     public void withFromDate(Date fromDate) {
@@ -138,6 +134,27 @@ public class OaiHandler implements Serializable {
         }
 
         return serviceProvider;
+    }
+
+    OaiHandler withServiceProvider(ServiceProvider serviceProvider) {
+        this.serviceProvider = serviceProvider;
+        return this;
+    }
+
+    /**
+     * Fetches all available metadata formats from the remote and searches for the set metadata prefix.
+     */
+    public OaiHandler withFetchedMetadataFormat() throws OaiHandlerException, IdDoesNotExistException {
+        if (this.metadataPrefix == null) {
+            throw new OaiHandlerException("Can't fetch metadata format, prefix not set.");
+        }
+
+        this.metadataFormat = runListMetadataFormats().stream()
+                .filter(format -> metadataPrefix.equals(format.getMetadataPrefix()))
+                .findFirst()
+                .orElseThrow(() -> new OaiHandlerException("Couldn't find meta data format with prefix:" + metadataPrefix));
+
+        return this;
     }
 
     public List<String> runListSets() throws OaiHandlerException {
@@ -177,7 +194,7 @@ public class OaiHandler implements Serializable {
 
     }
 
-    public List<String> runListMetadataFormats() throws OaiHandlerException, IdDoesNotExistException {
+    public List<MetadataFormat> runListMetadataFormats() throws OaiHandlerException, IdDoesNotExistException {
         ServiceProvider sp = getServiceProvider();
 
         Iterator<MetadataFormat> mfIter;
@@ -188,18 +205,14 @@ public class OaiHandler implements Serializable {
             throw new OaiHandlerException("No valid response received from the OAI server.");
         }
 
-        List<String> formats = new ArrayList<>();
+        List<MetadataFormat> formats = new ArrayList<>();
 
         while (mfIter.hasNext()) {
             MetadataFormat format = mfIter.next();
             String formatName = format.getMetadataPrefix();
             if (!StringUtils.isEmpty(formatName)) {
-                formats.add(formatName);
+                formats.add(format);
             }
-        }
-
-        if (formats.size() < 1) {
-            return null;
         }
 
         return formats;
