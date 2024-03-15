@@ -103,7 +103,7 @@ public class Info extends AbstractApiBean {
         try {
             
             //We create an input stream based on the requested format and will return the content of the file as a response.
-            String baseFileName = "META-INF/openapi." + requestedFormat;
+            String baseFileName = "/META-INF/openapi." + requestedFormat;
             ClassLoader classLoader = this.getClass().getClassLoader();
             URL aliasesResource = classLoader.getResource(baseFileName);
             
