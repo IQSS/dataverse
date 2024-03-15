@@ -93,7 +93,7 @@ public class DataverseFacet implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof DatasetFieldType)) {
+        if (!(object instanceof DataverseFacet)) {
             return false;
         }
         DataverseFacet other = (DataverseFacet) object;

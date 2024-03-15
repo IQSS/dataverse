@@ -386,7 +386,17 @@ public class DataFile extends DvObject implements Comparable {
     public void setTags(List<DataFileTag> dataFileTags) {
         this.dataFileTags = dataFileTags;
     }
-    
+
+    public void addUniqueTagByLabel(String tagLabel) throws IllegalArgumentException {
+        if (tagExists(tagLabel)) {
+            return;
+        }
+        DataFileTag tag = new DataFileTag();
+        tag.setTypeByLabel(tagLabel);
+        tag.setDataFile(this);
+        addTag(tag);
+    }
+
     public void addTag(DataFileTag tag) {
         if (dataFileTags == null) {
             dataFileTags = new ArrayList<>();
@@ -535,61 +545,61 @@ public class DataFile extends DvObject implements Comparable {
             fmd.setDescription(description);
         }
     }
+
+    public FileMetadata getDraftFileMetadata() {
+        FileMetadata latestFileMetadata = getLatestFileMetadata();
+        if (latestFileMetadata.getDatasetVersion().isDraft()) {
+            return latestFileMetadata;
+        }
+        return null;
+    }
     
     public FileMetadata getFileMetadata() {
         return getLatestFileMetadata();
     }
-    
-    public FileMetadata getLatestFileMetadata() {
-        FileMetadata fmd = null;
 
-        // for newly added or harvested, just return the one fmd
+    public FileMetadata getLatestFileMetadata() {
+        FileMetadata resultFileMetadata = null;
+
         if (fileMetadatas.size() == 1) {
             return fileMetadatas.get(0);
         }
-        
+
         for (FileMetadata fileMetadata : fileMetadatas) {
-            // if it finds a draft, return it
             if (fileMetadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT)) {
                 return fileMetadata;
-            }            
-            
-            // otherwise return the one with the latest version number
-            // duplicate logic in getLatestPublishedFileMetadata()
-            if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
-                fmd = fileMetadata;
-            } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
-                   ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   ) {
-                fmd = fileMetadata;
             }
+            resultFileMetadata = getTheNewerFileMetadata(resultFileMetadata, fileMetadata);
         }
-        return fmd;
+
+        return resultFileMetadata;
     }
-    
-//    //Returns null if no published version
+
     public FileMetadata getLatestPublishedFileMetadata() throws UnsupportedOperationException {
-        FileMetadata fmd = null;
-        
-        for (FileMetadata fileMetadata : fileMetadatas) {
-            // if it finds a draft, skip
-            if (fileMetadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT)) {
-                continue;
-            }            
-            
-            // otherwise return the one with the latest version number
-            // duplicate logic in getLatestFileMetadata()
-            if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
-                fmd = fileMetadata;
-            } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
-                   ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   ) {
-                fmd = fileMetadata;
-            }
-        }
-        if(fmd == null) {
+        FileMetadata resultFileMetadata = fileMetadatas.stream()
+                .filter(metadata -> !metadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT))
+                .reduce(null, DataFile::getTheNewerFileMetadata);
+
+        if (resultFileMetadata == null) {
             throw new UnsupportedOperationException("No published metadata version for DataFile " + this.getId());
         }
 
-        return fmd;
+        return resultFileMetadata;
+    }
+
+    public static FileMetadata getTheNewerFileMetadata(FileMetadata current, FileMetadata candidate) {
+        if (current == null) {
+            return candidate;
+        }
+
+        DatasetVersion currentVersion = current.getDatasetVersion();
+        DatasetVersion candidateVersion = candidate.getDatasetVersion();
+
+        if (DatasetVersion.compareByVersion.compare(candidateVersion, currentVersion) > 0) {
+            return candidate;
+        }
+
+        return current;
     }
 
     /**
@@ -600,7 +610,7 @@ public class DataFile extends DvObject implements Comparable {
         if (this.filesize == null) {
             // -1 means "unknown"
             return -1;
-        } 
+        }
         return this.filesize;
     }
 
@@ -630,7 +640,7 @@ public class DataFile extends DvObject implements Comparable {
             return BundleUtil.getStringFromBundle("file.sizeNotAvailable");
         }
     }
-
+    
     public boolean isRestricted() {
         return restricted;
     }
@@ -1093,8 +1103,12 @@ public class DataFile extends DvObject implements Comparable {
         return DataFile.TARGET_URL;
     }
 
+    private boolean tagExists(String tagLabel) {
+        for (DataFileTag dataFileTag : dataFileTags) {
+            if (dataFileTag.getTypeLabel().equals(tagLabel)) {
+                return true;
+            }
+        }
+        return false;
+    }
 } // end of class
-    
-
-    
-

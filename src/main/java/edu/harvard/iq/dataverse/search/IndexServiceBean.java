@@ -1,27 +1,6 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataFileTag;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
-import edu.harvard.iq.dataverse.Embargo;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
@@ -420,6 +399,7 @@ public class IndexServiceBean {
         }
     }
 
+    @Asynchronous
     public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
         for(Dataset dataset : datasets) {
             asyncIndexDataset(dataset, true);
@@ -803,6 +783,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.DATASET_PERSISTENT_ID, dataset.getGlobalId().toString());
         solrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
+
         boolean valid;
         if (!indexableDataset.getDatasetVersion().isDraft()) {
             valid = true;
@@ -811,9 +792,7 @@ public class IndexServiceBean {
             version.setDatasetFields(version.initDatasetFields());
             valid = version.isValid();
         }
-        if (JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false)) {
-            solrInputDocument.addField(SearchFields.DATASET_VALID, valid);
-        }
+        solrInputDocument.addField(SearchFields.DATASET_VALID, valid);
 
         final Dataverse dataverse = dataset.getDataverseContext();
         final String dvIndexableCategoryName = dataverse.getIndexableCategoryName();
@@ -875,6 +854,8 @@ public class IndexServiceBean {
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
         String parentDatasetTitle = "TBD";
         if (datasetVersion != null) {
+
+            addLicenseToSolrDoc(solrInputDocument, datasetVersion);
 
             solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
             solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(false));
@@ -1072,13 +1053,17 @@ public class IndexServiceBean {
                             if(maxNorthLat==null || Float.parseFloat(maxNorthLat) < Float.parseFloat(northLat)) {
                                 maxNorthLat=northLat;
                             }
-                            //W, E, N, S
-                            solrInputDocument.addField(SearchFields.GEOLOCATION, "ENVELOPE(" + westLon + "," + eastLon + "," + northLat + "," + southLat + ")");
+
+                            if (DatasetFieldValueValidator.validateBoundingBox(westLon, eastLon, northLat, southLat)) {
+                                //W, E, N, S
+                                solrInputDocument.addField(SearchFields.GEOLOCATION, "ENVELOPE(" + westLon + "," + eastLon + "," + northLat + "," + southLat + ")");
+                            }
                         }
                     }
                     //Only one bbox per dataset
                     //W, E, N, S
-                    if ((minWestLon != null || maxEastLon != null) && (maxNorthLat != null || minSouthLat != null)) {
+                    if (DatasetFieldValueValidator.validateBoundingBox(minWestLon, maxEastLon, maxNorthLat, minSouthLat) &&
+                            (minWestLon != null || maxEastLon != null) && (maxNorthLat != null || minSouthLat != null)) {
                         solrInputDocument.addField(SearchFields.BOUNDING_BOX, "ENVELOPE(" + minWestLon + "," + maxEastLon + "," + maxNorthLat + "," + minSouthLat + ")");
                     }
 
@@ -1259,6 +1244,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameCompleteFinal);
 
                     datafileSolrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
+                    addLicenseToSolrDoc(datafileSolrInputDocument, datasetVersion);
 
                     /**
                      * for rules on sorting files see
@@ -1626,6 +1612,16 @@ public class IndexServiceBean {
             subtrees.add(pathBuilder.toString());
         }
         return subtrees;
+    }
+
+    private void addLicenseToSolrDoc(SolrInputDocument solrInputDocument, DatasetVersion datasetVersion) {
+        if (datasetVersion != null && datasetVersion.getTermsOfUseAndAccess() != null) {
+            String licenseName = "Custom Terms";
+            if(datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
+                licenseName = datasetVersion.getTermsOfUseAndAccess().getLicense().getName();
+            }
+            solrInputDocument.addField(SearchFields.DATASET_LICENSE, licenseName);
+        }
     }
 
     private void addDataverseReleaseDateToSolrDoc(SolrInputDocument solrInputDocument, Dataverse dataverse) {

@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.ThemeWidgetFragment;
 
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 
@@ -46,6 +47,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
+import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -327,8 +329,8 @@ public class Access extends AbstractApiBean {
             dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
             dInfo.addServiceAvailable(new OptionalAccessService("subset", "text/tab-separated-values", "variables=&lt;LIST&gt;", "Column-wise Subsetting"));
         }
-        
-        if(systemConfig.isGlobusFileDownload() && systemConfig.getGlobusStoresList().contains(DataAccess.getStorageDriverFromIdentifier(df.getStorageIdentifier()))) {
+        String driverId = DataAccess.getStorageDriverFromIdentifier(df.getStorageIdentifier());
+        if(systemConfig.isGlobusFileDownload() && (GlobusAccessibleStore.acceptsGlobusTransfers(driverId) || GlobusAccessibleStore.allowsGlobusReferences(driverId))) {
             dInfo.addServiceAvailable(new OptionalAccessService("GlobusTransfer", df.getContentType(), "format=GlobusTransfer", "Download via Globus"));
         }
         
@@ -1196,16 +1198,7 @@ public class Access extends AbstractApiBean {
         
         DataverseTheme theme = dataverse.getDataverseTheme(); 
         if (theme != null && theme.getLogo() != null && !theme.getLogo().equals("")) {
-            Properties p = System.getProperties();
-            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
-  
-            if (domainRoot != null && !"".equals(domainRoot)) {
-                return new File (domainRoot + File.separator + 
-                    "docroot" + File.separator + 
-                    "logos" + File.separator + 
-                    dataverse.getLogoOwnerId() + File.separator + 
-                    theme.getLogo());
-            }
+            return ThemeWidgetFragment.getLogoDir(dataverse.getLogoOwnerId()).resolve(theme.getLogo()).toFile();
         }
             
         return null;         
@@ -1681,7 +1674,48 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.rejectFailure.noRequest", args));
         }
     }
-    
+
+    @GET
+    @AuthRequired
+    @Path("/datafile/{id}/userFileAccessRequested")
+    public Response getUserFileAccessRequested(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        DataFile dataFile;
+        AuthenticatedUser requestAuthenticatedUser;
+        try {
+            dataFile = findDataFileOrDie(dataFileId);
+            requestAuthenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        boolean fileAccessRequested = false;
+        List<FileAccessRequest> requests = dataFile.getFileAccessRequests();
+        for (FileAccessRequest fileAccessRequest : requests) {
+            if (fileAccessRequest.getRequester().getId().equals(requestAuthenticatedUser.getId())) {
+                fileAccessRequested = true;
+                break;
+            }
+        }
+        return ok(fileAccessRequested);
+    }
+
+    @GET
+    @AuthRequired
+    @Path("/datafile/{id}/userPermissions")
+    public Response getUserPermissionsOnFile(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(dataFileId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        User requestUser = getRequestUser(crc);
+        jsonObjectBuilder.add("canDownloadFile", permissionService.userOn(requestUser, dataFile).has(Permission.DownloadFile));
+        jsonObjectBuilder.add("canManageFilePermissions", permissionService.userOn(requestUser, dataFile).has(Permission.ManageFilePermissions));
+        jsonObjectBuilder.add("canEditOwnerDataset", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
+        return ok(jsonObjectBuilder);
+    }
+
     // checkAuthorization is a convenience method; it calls the boolean method
     // isAccessAuthorized(), the actual workhorse, tand throws a 403 exception if not.
     
@@ -1948,22 +1982,5 @@ public class Access extends AbstractApiBean {
             throw new BadRequestException(); 
         }
         return redirectUri;
-    }
-
-    @GET
-    @AuthRequired
-    @Path("/datafile/{id}/userPermissions")
-    public Response getUserPermissionsOnFile(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
-        DataFile dataFile;
-        try {
-            dataFile = findDataFileOrDie(dataFileId);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        User requestUser = getRequestUser(crc);
-        jsonObjectBuilder.add("canDownloadFile", fileDownloadService.canDownloadFile(createDataverseRequest(requestUser), dataFile));
-        jsonObjectBuilder.add("canEditOwnerDataset", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
-        return ok(jsonObjectBuilder);
     }
 }

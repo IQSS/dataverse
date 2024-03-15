@@ -17,8 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -31,6 +30,7 @@ import jakarta.inject.Named;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -48,7 +48,6 @@ import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
 import static jakarta.ejb.TransactionAttributeType.SUPPORTS;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
 /**
@@ -113,20 +112,8 @@ public class EjbDataverseEngine {
     DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels;
 
     @EJB
-    DOIEZIdServiceBean doiEZId;
-    
-    @EJB
-    DOIDataCiteServiceBean doiDataCite;
+    PidProviderFactoryBean pidProviderFactory;
 
-    @EJB
-    FakePidProviderServiceBean fakePidProvider;
-
-    @EJB
-    HandlenetServiceBean handleNet;
-    
-    @EJB
-    PermaLinkPidProviderServiceBean permaLinkProvider;
-    
     @EJB
     SettingsServiceBean settings;
     
@@ -183,6 +170,9 @@ public class EjbDataverseEngine {
     
     @EJB
     ConfirmEmailServiceBean confirmEmailService;
+    
+    @EJB
+    StorageUseServiceBean storageUseService; 
     
     @EJB
     EjbDataverseEngineInner innerEngine;
@@ -480,28 +470,8 @@ public class EjbDataverseEngine {
                 }
 
                 @Override
-                public DOIEZIdServiceBean doiEZId() {
-                    return doiEZId;
-                }
-                
-                @Override
-                public DOIDataCiteServiceBean doiDataCite() {
-                    return doiDataCite;
-                }
-
-                @Override
-                public FakePidProviderServiceBean fakePidProvider() {
-                    return fakePidProvider;
-                }
-
-                @Override
-                public HandlenetServiceBean handleNet() {
-                    return handleNet;
-                }
-
-                @Override
-                public PermaLinkPidProviderServiceBean permaLinkProvider() {
-                    return permaLinkProvider;
+                public PidProviderFactoryBean pidProviderFactory() {
+                    return pidProviderFactory;
                 }
                 
                 @Override
@@ -528,6 +498,12 @@ public class EjbDataverseEngine {
                 public DatasetLinkingServiceBean dsLinking() {
                     return dsLinking;
                 }
+                
+                @Override
+                public StorageUseServiceBean storageUse() {
+                    return storageUseService;
+                }
+                
                 @Override
                 public DataverseEngine engine() {
                     return new DataverseEngine() {
