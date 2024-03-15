@@ -7,10 +7,10 @@ package edu.harvard.iq.dataverse;
 
 import java.util.Set;
 import java.util.regex.Pattern;
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

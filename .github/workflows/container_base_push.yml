@@ -34,7 +34,7 @@ jobs:
             packages: read
         strategy:
             matrix:
-                jdk: [ '11' ]
+                jdk: [ '17' ]
         # Only run in upstream repo - avoid unnecessary runs in forks
         if: ${{ github.repository_owner == 'IQSS' }}
 

@@ -10,22 +10,23 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
  * @author michael
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PersistentIdentifierServiceBeanTest {
     
     @Mock
@@ -42,7 +43,7 @@ public class PersistentIdentifierServiceBeanTest {
     
     CommandContext ctxt;
     
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         ctxt = new TestCommandContext(){

@@ -1,19 +1,20 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import org.erdtman.jcs.JsonCanonicalizer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
 //import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class DRSSubmitToArchiveCommandTest {
 
@@ -113,7 +114,7 @@ public class DRSSubmitToArchiveCommandTest {
             System.out.println(e.getClass() + e.getLocalizedMessage());
             e.printStackTrace();
             //Any exception is a failure, otherwise decoding worked.
-            Assert.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
         }
 
     }

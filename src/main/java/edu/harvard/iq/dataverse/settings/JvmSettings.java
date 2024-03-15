@@ -2,8 +2,6 @@ package edu.harvard.iq.dataverse.settings;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 
-import edu.harvard.iq.dataverse.util.StringUtil;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,6 +47,7 @@ public enum JvmSettings {
     // FILES SETTINGS
     SCOPE_FILES(PREFIX, "files"),
     FILES_DIRECTORY(SCOPE_FILES, "directory"),
+    GUESTBOOK_AT_REQUEST(SCOPE_FILES, "guestbook-at-request"),
     
     // SOLR INDEX SETTINGS
     SCOPE_SOLR(PREFIX, "solr"),
@@ -82,6 +81,11 @@ public enum JvmSettings {
     // Avoids adding flag entries twice.
     FEATURE_FLAG(SCOPE_FLAGS),
     
+    // METADATA SETTINGS
+    SCOPE_METADATA(PREFIX, "metadata"),
+    MDB_SYSTEM_METADATA_KEYS(SCOPE_METADATA, "block-system-metadata-keys"),
+    MDB_SYSTEM_KEY_FOR(MDB_SYSTEM_METADATA_KEYS),
+
     // PERSISTENT IDENTIFIER SETTINGS
     SCOPE_PID(PREFIX, "pid"),
     
@@ -118,11 +122,32 @@ public enum JvmSettings {
     SCOPE_MAIL(PREFIX, "mail"),
     SUPPORT_EMAIL(SCOPE_MAIL, "support-email"),
     CC_SUPPORT_ON_CONTACT_EMAIL(SCOPE_MAIL, "cc-support-on-contact-email"),
+    
+    // AUTH SETTINGS
+    SCOPE_AUTH(PREFIX, "auth"),
+    // AUTH: OIDC SETTINGS
+    SCOPE_OIDC(SCOPE_AUTH, "oidc"),
+    OIDC_ENABLED(SCOPE_OIDC, "enabled"),
+    OIDC_TITLE(SCOPE_OIDC, "title"),
+    OIDC_SUBTITLE(SCOPE_OIDC, "subtitle"),
+    OIDC_AUTH_SERVER_URL(SCOPE_OIDC, "auth-server-url"),
+    OIDC_CLIENT_ID(SCOPE_OIDC, "client-id"),
+    OIDC_CLIENT_SECRET(SCOPE_OIDC, "client-secret"),
+    SCOPE_OIDC_PKCE(SCOPE_OIDC, "pkce"),
+    OIDC_PKCE_ENABLED(SCOPE_OIDC_PKCE, "enabled"),
+    OIDC_PKCE_METHOD(SCOPE_OIDC_PKCE, "method"),
+    OIDC_PKCE_CACHE_MAXSIZE(SCOPE_OIDC_PKCE, "max-cache-size"),
+    OIDC_PKCE_CACHE_MAXAGE(SCOPE_OIDC_PKCE, "max-cache-age"),
 
     // UI SETTINGS
     SCOPE_UI(PREFIX, "ui"),
     UI_ALLOW_REVIEW_INCOMPLETE(SCOPE_UI, "allow-review-for-incomplete"),
     UI_SHOW_VALIDITY_FILTER(SCOPE_UI, "show-validity-filter"),
+
+    // NetCDF SETTINGS
+    SCOPE_NETCDF(PREFIX, "netcdf"),
+    GEO_EXTRACT_S3_DIRECT_UPLOAD(SCOPE_NETCDF, "geo-extract-s3-direct-upload"),
+
     ;
 
     private static final String SCOPE_SEPARATOR = ".";

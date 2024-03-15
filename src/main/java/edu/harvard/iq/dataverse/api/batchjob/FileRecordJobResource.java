@@ -6,21 +6,21 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.engine.command.impl.ImportFromFileSystemCommand;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 
 @Stateless
 @Path("batch/jobs")

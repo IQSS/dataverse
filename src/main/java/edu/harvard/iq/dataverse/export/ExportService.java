@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import io.gdcc.spi.export.XMLExporter;
@@ -47,7 +46,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import org.apache.commons.io.IOUtils;
 

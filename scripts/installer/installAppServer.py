@@ -3,7 +3,7 @@ import subprocess
 
 def runAsadminScript(config):
    # We are going to run a standalone shell script with a bunch of asadmin                                      
-   # commands to set up all the app. server (payara5) components for the application.                                       
+   # commands to set up all the app. server (payara6) components for the application.
    # All the parameters must be passed to that script as environmental                                          
    # variables:
    os.environ['GLASSFISH_DOMAIN'] = "domain1";

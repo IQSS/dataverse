@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
 
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
 
 /**
  *
@@ -25,11 +26,11 @@ import javax.validation.ConstraintViolationException;
 @RequiredPermissions(Permission.EditDataset)
 public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset> {
 
-    private static final Logger logger = Logger.getLogger(UpdateDatasetVersionCommand.class.getCanonicalName());
+    static final Logger logger = Logger.getLogger(UpdateDatasetVersionCommand.class.getCanonicalName());
     private final List<FileMetadata> filesToDelete;
     private boolean validateLenient = false;
     private final DatasetVersion clone;
-    private final FileMetadata fmVarMet;
+    final FileMetadata fmVarMet;
     
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
@@ -98,6 +99,23 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         Dataset theDataset = getDataset();        
         ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
         Dataset savedDataset = null;
+        
+        DatasetVersion persistedVersion = clone;
+        /*
+         * Unless a pre-change clone has been provided, we need to get it from the db.
+         * There are two cases: We're updating an existing draft, which has an id, and
+         * exists in the database We've created a new draft, with null id, and we need
+         * to get the lastest version in the db
+         * 
+         */
+        if(persistedVersion==null) {
+            Long id = getDataset().getLatestVersion().getId();
+            persistedVersion = ctxt.datasetVersion().find(id!=null ? id: getDataset().getLatestVersionForCopy().getId());
+        }
+        
+        //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
+        checkSystemMetadataKeyIfNeeded(getDataset().getOrCreateEditVersion(fmVarMet), persistedVersion);
+        
         
         try {
             // Invariant: Dataset has no locks preventing the update

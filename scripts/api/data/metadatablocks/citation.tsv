@@ -3,7 +3,7 @@
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id	termURI
 	title	Title	The main title of the Dataset		text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation	http://purl.org/dc/terms/title
 	subtitle	Subtitle	A secondary title that amplifies or states certain limitations on the main title		text	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	
-	alternativeTitle	Alternative Title	Either 1) a title commonly used to refer to the Dataset or 2) an abbreviation of the main title		text	2		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	http://purl.org/dc/terms/alternative
+	alternativeTitle	Alternative Title	Either 1) a title commonly used to refer to the Dataset or 2) an abbreviation of the main title		text	2		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	http://purl.org/dc/terms/alternative
 	alternativeURL	Alternative URL	Another URL where one can view or access the data in the Dataset, e.g. a project or personal webpage	https://	url	3	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	https://schema.org/distribution
 	otherId	Other Identifier	Another unique identifier for the Dataset (e.g. producer's or another repository's identifier)		none	4	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	
 	otherIdAgency	Agency	The name of the agency that generated the other identifier		text	5	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation	

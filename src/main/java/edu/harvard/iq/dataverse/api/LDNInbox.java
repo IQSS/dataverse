@@ -28,20 +28,20 @@ import java.io.StringWriter;
 import java.sql.Timestamp;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import javax.json.JsonWriter;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ServiceUnavailableException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.EJB;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonWriter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ServiceUnavailableException;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 
 @Path("inbox")
 public class LDNInbox extends AbstractApiBean {

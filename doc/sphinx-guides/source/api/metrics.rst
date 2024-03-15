@@ -163,3 +163,10 @@ The following table lists the available metrics endpoints (not including the Mak
     /api/info/metrics/uniquefiledownloads/toMonth/{yyyy-MM},"count by id, pid","json, csv",collection subtree,published,y,cumulative up to month specified,unique download counts per file id to the specified month. PIDs are also included in output if they exist
     /api/info/metrics/tree,"id, ownerId, alias, depth, name, children",json,collection subtree,published,y,"tree of dataverses starting at the root or a specified parentAlias with their id, owner id, alias, name, a computed depth, and array of children dataverses","underlying code can also include draft dataverses, this is not currently accessible via api, depth starts at 0"
     /api/info/metrics/tree/toMonth/{yyyy-MM},"id, ownerId, alias, depth, name, children",json,collection subtree,published,y,"tree of dataverses in existence as of specified date starting at the root or a specified parentAlias with their id, owner id, alias, name, a computed depth, and array of children dataverses","underlying code can also include draft dataverses, this is not currently accessible via api, depth starts at 0"
+
+Related API Endpoints
+---------------------
+
+The following endpoints are not under the metrics namespace but also return counts:
+
+- :ref:`file-download-count` 

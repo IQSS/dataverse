@@ -1,13 +1,12 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Stateless;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Stateless;
 
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.NotImplementedException;
@@ -43,8 +42,8 @@ public class UnmanagedDOIServiceBean extends DOIServiceBean {
     }
 
     @Override
-    public boolean alreadyExists(GlobalId pid) {
-        return false;
+    public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) {
+        throw new NotImplementedException();
     }
 
     @Override

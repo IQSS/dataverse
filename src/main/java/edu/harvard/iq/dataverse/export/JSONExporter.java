@@ -2,7 +2,6 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
@@ -11,8 +10,8 @@ import java.io.OutputStream;
 import java.util.Locale;
 import java.util.Optional;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.MediaType;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.MediaType;
 
 
 /**

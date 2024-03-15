@@ -204,7 +204,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         }
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
         try {
-            if (idServiceBean.alreadyExists(doomed)) {
+            if (idServiceBean.alreadyRegistered(doomed)) {
                 idServiceBean.deleteIdentifier(doomed);
             }
         } catch (Exception e) {

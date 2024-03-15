@@ -70,7 +70,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                     target.setAuthority(authority);
                 }
             }
-            if (idServiceBean.alreadyExists(target)) {
+            if (idServiceBean.alreadyRegistered(target)) {
                 return;
             }
             String doiRetString = idServiceBean.createIdentifier(target);

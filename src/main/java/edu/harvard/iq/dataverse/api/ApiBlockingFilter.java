@@ -10,21 +10,22 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.ejb.EJB;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 
 /**
  * A web filter to block API administration calls.
  * @author michael
  */
-public class ApiBlockingFilter implements javax.servlet.Filter {
+public class ApiBlockingFilter implements Filter {
     public static final String UNBLOCK_KEY_QUERYPARAM = "unblock-key";
             
     interface BlockPolicy {

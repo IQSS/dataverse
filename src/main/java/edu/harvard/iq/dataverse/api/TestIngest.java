@@ -18,22 +18,22 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.BufferedInputStream;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.UriInfo;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.QueryParam;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.QueryParam;
 
 
 

@@ -25,15 +25,15 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 
 @ViewScoped
 @Named("Shib")

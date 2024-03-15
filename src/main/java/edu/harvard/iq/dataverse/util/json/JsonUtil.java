@@ -9,11 +9,12 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonWriter;
-import javax.json.JsonWriterFactory;
-import javax.json.stream.JsonGenerator;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
 
 public class JsonUtil {
 
@@ -47,7 +48,7 @@ public class JsonUtil {
         return stringWriter.toString();
     }
 
-    public static String prettyPrint(javax.json.JsonObject jsonObject) {
+    public static String prettyPrint(jakarta.json.JsonObject jsonObject) {
         Map<String, Boolean> config = new HashMap<>();
         config.put(JsonGenerator.PRETTY_PRINTING, true);
         JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(config);
@@ -58,15 +59,19 @@ public class JsonUtil {
         return stringWriter.toString();
     }
     
-    public static javax.json.JsonObject getJsonObject(String serializedJson) {
+    public static jakarta.json.JsonObject getJsonObject(String serializedJson) {
         try (StringReader rdr = new StringReader(serializedJson)) {
-            return Json.createReader(rdr).readObject();
+            try (JsonReader jsonReader = Json.createReader(rdr)) {
+                return jsonReader.readObject();
+            }
         }
     }
     
-    public static javax.json.JsonArray getJsonArray(String serializedJson) {
+    public static jakarta.json.JsonArray getJsonArray(String serializedJson) {
         try (StringReader rdr = new StringReader(serializedJson)) {
-            return Json.createReader(rdr).readArray();
+            try (JsonReader jsonReader = Json.createReader(rdr)) {
+                return jsonReader.readArray();
+            }
         }
     }
 }

@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Map;
 import java.util.HashMap;
-import javax.faces.context.FacesContext;
+import jakarta.faces.context.FacesContext;
 
 public class BundleUtil {
 

@@ -12,31 +12,31 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonString;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
-import javax.validation.constraints.Size;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
+import jakarta.validation.constraints.Size;
 
 import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -60,14 +60,13 @@ public class Template implements Serializable {
     private Long id;
 
     public Template() {
-
     }
 
     //Constructor for create
-    public Template(Dataverse dataverseIn) {
+    public Template(Dataverse dataverseIn, List<MetadataBlock> systemMDBlocks) {
         dataverse = dataverseIn;
         datasetFields = initDatasetFields();
-        initMetadataBlocksForCreate();
+        initMetadataBlocksForCreate(systemMDBlocks);
     }
 
     public Long getId() {
@@ -247,24 +246,26 @@ public class Template implements Serializable {
         return dsfList;
     }
 
-    private void initMetadataBlocksForCreate() {
+    private void initMetadataBlocksForCreate(List<MetadataBlock> systemMDBlocks) {
         metadataBlocksForEdit.clear();
         for (MetadataBlock mdb : this.getDataverse().getMetadataBlocks()) {
-            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
-            for (DatasetField dsf : this.getDatasetFields()) {
+            if (!systemMDBlocks.contains(mdb)) {
+                List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
+                for (DatasetField dsf : this.getDatasetFields()) {
 
-                if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
-                    datasetFieldsForEdit.add(dsf);
+                    if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
+                        datasetFieldsForEdit.add(dsf);
+                    }
                 }
-            }
 
-            if (!datasetFieldsForEdit.isEmpty()) {
-                metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
+                if (!datasetFieldsForEdit.isEmpty()) {
+                    metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
+                }
             }
         }
     }
 
-    public void setMetadataValueBlocks() {
+    public void setMetadataValueBlocks(List<MetadataBlock> systemMDBlocks) {
         //TODO: A lot of clean up on the logic of this method
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
@@ -306,14 +307,16 @@ public class Template implements Serializable {
         }
         
         for (MetadataBlock mdb : editMDB) {
-            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
-            this.setDatasetFields(initDatasetFields());
-            for (DatasetField dsf : this.getDatasetFields() ) {
-                if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) { 
-                    datasetFieldsForEdit.add(dsf);
+            if (!systemMDBlocks.contains(mdb)) {
+                List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
+                this.setDatasetFields(initDatasetFields());
+                for (DatasetField dsf : this.getDatasetFields()) {
+                    if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
+                        datasetFieldsForEdit.add(dsf);
+                    }
                 }
+                metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
             }
-            metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
         }
         
     }

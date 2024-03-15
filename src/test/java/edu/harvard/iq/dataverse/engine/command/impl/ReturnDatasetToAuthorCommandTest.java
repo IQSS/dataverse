@@ -24,14 +24,14 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Future;
-import javax.persistence.EntityManager;
-import javax.servlet.http.HttpServletRequest;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import org.junit.Before;
-import org.junit.Test;
+
+import jakarta.persistence.EntityManager;
+import jakarta.servlet.http.HttpServletRequest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ReturnDatasetToAuthorCommandTest {
 
@@ -39,7 +39,7 @@ public class ReturnDatasetToAuthorCommandTest {
     private DataverseRequest dataverseRequest;
     private TestDataverseEngine testEngine;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dataset = new Dataset();
 
@@ -141,9 +141,10 @@ public class ReturnDatasetToAuthorCommandTest {
             throw new IllegalCommandException("You must enter a reason for returning a dataset to its author.", this);
         }
      */
-    @Test(expected=IllegalArgumentException.class)
-    public void testDatasetNull() throws CommandException {
-        new ReturnDatasetToAuthorCommand(dataverseRequest, null, "");
+    @Test
+    void testDatasetNull() {
+        assertThrows(IllegalArgumentException.class,
+            () -> new ReturnDatasetToAuthorCommand(dataverseRequest, null, ""));
     }
 
     @Test

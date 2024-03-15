@@ -21,13 +21,13 @@ import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Resource;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.Timer;
-import javax.inject.Named;
+import jakarta.annotation.Resource;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.Timer;
+import jakarta.inject.Named;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -51,8 +51,8 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  *
@@ -69,7 +69,7 @@ public class HarvesterServiceBean {
     @EJB
     DatasetServiceBean datasetService;
     @Resource
-    javax.ejb.TimerService timerService;
+    jakarta.ejb.TimerService timerService;
     @EJB
     DataverseTimerServiceBean dataverseTimerService;
     @EJB
@@ -148,12 +148,12 @@ public class HarvesterServiceBean {
                 
         String logTimestamp = logFormatter.format(new Date());
         Logger hdLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean." + harvestingClientConfig.getName() + logTimestamp);
-        String logFileName = "../logs" + File.separator + "harvest_" + harvestingClientConfig.getName() + "_" + logTimestamp + ".log";
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "harvest_" + harvestingClientConfig.getName() + "_" + logTimestamp + ".log";
         FileHandler fileHandler = new FileHandler(logFileName);
         hdLogger.setUseParentHandlers(false);
         hdLogger.addHandler(fileHandler);
         
-        PrintWriter importCleanupLog = new PrintWriter(new FileWriter( "../logs/harvest_cleanup_" + harvestingClientConfig.getName() + "_" + logTimestamp+".txt"));
+        PrintWriter importCleanupLog = new PrintWriter(new FileWriter(System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs/harvest_cleanup_" + harvestingClientConfig.getName() + "_" + logTimestamp + ".txt"));
         
         
         List<Long> harvestedDatasetIds = new ArrayList<>();

@@ -1,21 +1,18 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import io.gdcc.spi.export.ExportDataProvider;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.bagit.OREMap;
+
 import java.io.OutputStream;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.MediaType;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.MediaType;
 
 @AutoService(Exporter.class)
 public class OAI_OREExporter implements Exporter {

@@ -3,74 +3,46 @@ package edu.harvard.iq.dataverse.authorization.providers.shib;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
-import static org.junit.Assert.*;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
-@RunWith(Enclosed.class)
 public class ShibUtilTest {
-
-    @RunWith(Parameterized.class)
-    public static class ShibUtilParamTest {
-
-        @Parameters
-        public static Collection<String[]> data() {
-            return Arrays.asList(new String[][] {
-                { "John", "Harvard", "John", "Harvard", null },
-                { "Guido", "van Rossum", "Guido", "van Rossum", null },
-                { "Philip Seymour", "Hoffman", "Philip Seymour", "Hoffman", "Philip Seymour Hoffman" },
-                { "Edward", "Cummings", "Edward;e e", "Cummings", null },
-                { "Edward", "Cummings", "Edward;e e", "Cummings", "e e cummings" },
-                { "Anthony", "Stark", "Tony;Anthony", "Stark", null },
-                { "Anthony", "Stark", "Anthony;Tony", "Stark", null },
-                { "Antoni", "Gaudí", "Antoni", "Gaudí i Cornet;Gaudí", null },
-                { "Jane", "Doe", null, null, "Jane Doe" },
-                /**
-                * @todo Make findBestFirstAndLastName smart enough to know that the last name
-                *       should be "Hoffman" rather than "Seymour".
-                */
-                { "Philip", "Seymour", null, null, "Philip Seymour Hoffman" },
-                { null, null, null, null, "" }
-            });
-        }
-
-        @Parameter
-        public String expectedFirstName;
-
-        @Parameter(1)
-        public String expectedLastName;
-
-        @Parameter(2)
-        public String actualFirstName;
-
-        @Parameter(3)
-        public String actualLastName;
-
-        @Parameter(4)
-        public String actualDisplayName;
-
-        @Test
-        public void testFindBestFirstAndLastName() {
-
-            // ShibUserNameFields expected1 = new ShibUserNameFields("John", "Harvard");
-            ShibUserNameFields actualValues = ShibUtil.findBestFirstAndLastName(actualFirstName, actualLastName, actualDisplayName);
-            assertEquals(expectedFirstName, actualValues.getFirstName());
-            assertEquals(expectedLastName, actualValues.getLastName());
-        }
+    
+    @ParameterizedTest
+    @CsvSource(value = {
+        "John,Harvard,John,Harvard,NULL",
+        "Guido,van Rossum,Guido,van Rossum,NULL",
+        "Philip Seymour,Hoffman,Philip Seymour,Hoffman,Philip Seymour Hoffman",
+        "Edward,Cummings,Edward;e e,Cummings,NULL",
+        "Edward,Cummings,Edward;e e,Cummings,e e cummings",
+        "Anthony,Stark,Tony;Anthony,Stark,NULL",
+        "Anthony,Stark,Anthony;Tony,Stark,NULL",
+        "Antoni,Gaudí,Antoni,Gaudí i Cornet;Gaudí,NULL",
+        "Jane,Doe,NULL,NULL,Jane Doe",
+        /**
+         * @todo Make findBestFirstAndLastName smart enough to know that the last name
+         *       should be "Hoffman" rather than "Seymour".
+         */
+        "Philip,Seymour,NULL,NULL,Philip Seymour Hoffman",
+        "NULL,NULL,NULL,NULL,EMPTY"
+    }, nullValues = "NULL", emptyValue = "EMPTY")
+    void testFindBestFirstAndLastName(String expectedFirstName, String expectedLastName, String actualFirstName,
+                                      String actualLastName, String actualDisplayName) {
+        // ShibUserNameFields expected1 = new ShibUserNameFields("John", "Harvard");
+        ShibUserNameFields actualValues = ShibUtil.findBestFirstAndLastName(actualFirstName, actualLastName, actualDisplayName);
+        assertEquals(expectedFirstName, actualValues.getFirstName());
+        assertEquals(expectedLastName, actualValues.getLastName());
     }
+    
 
     public static class ShibUtilNoParamTest {
 

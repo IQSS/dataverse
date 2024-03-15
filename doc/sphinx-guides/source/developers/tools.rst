@@ -25,21 +25,6 @@ Maven
 
 With Maven installed you can run ``mvn package`` and ``mvn test`` from the command line. It can be downloaded from https://maven.apache.org
 
-.. _vagrant:
-
-Vagrant
-+++++++
-
-Vagrant allows you to spin up a virtual machine running the Dataverse Software on your development workstation. You'll need to install Vagrant from https://www.vagrantup.com and VirtualBox from https://www.virtualbox.org.
-
-We assume you have already cloned the repo from https://github.com/IQSS/dataverse as explained in the :doc:`/developers/dev-environment` section.
-
-From the root of the git repo (where the ``Vagrantfile`` is), run ``vagrant up`` and eventually you should be able to reach a Dataverse installation at http://localhost:8888 (the ``forwarded_port`` indicated in the ``Vagrantfile``).
-
-Please note that running ``vagrant up`` for the first time should run the ``downloads/download.sh`` script for you to download required software such as an app server, Solr, etc. However, these dependencies change over time so it's a place to look if ``vagrant up`` was working but later fails.
-
-On Windows if you see an error like ``/usr/bin/perl^M: bad interpreter`` you might need to run ``dos2unix`` on the installation scripts. 
-
 PlantUML
 ++++++++
 
@@ -111,7 +96,7 @@ Download SonarQube from https://www.sonarqube.org and start look in the `bin` di
     -Dsonar.test.exclusions='src/test/**,src/main/webapp/resources/**' \
     -Dsonar.issuesReport.html.enable=true \
     -Dsonar.issuesReport.html.location='sonar-issues-report.html' \
-    -Dsonar.jacoco.reportPath=target/jacoco.exec
+    -Dsonar.jacoco.reportPath=target/coverage-reports/jacoco-unit.exec
 
 Once the analysis is complete, you should be able to access http://localhost:9000/dashboard?id=edu.harvard.iq%3Adataverse to see the report. To learn about resource leaks, for example, click on "Bugs", the "Tag", then "leak" or "Rule", then "Resources should be closed".
 

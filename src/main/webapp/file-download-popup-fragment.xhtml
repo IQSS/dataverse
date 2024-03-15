@@ -1,3 +1,4 @@
+<!--  TODO - remove! -->
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
@@ -7,6 +8,8 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+
+    <ui:fragment rendered="#{DatasetPage.editMode != 'CREATE'}">
 
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <p:focus context="guestbookUIFragment"/>
@@ -51,6 +54,7 @@
                 </p>
             </div>
         </div>
+        
 
         <ui:fragment rendered="#{empty workingVersion.termsOfUseAndAccess.license}">
             <div class="form-group"
@@ -138,7 +142,7 @@
                 value="#{MarkupChecker:sanitizeBasicHTML(workingVersion.termsOfUseAndAccess.termsOfAccess)}"
                 escape="false" />
         </div>
-        <p:fragment rendered="#{workingVersion.dataset.guestbook != null and workingVersion.dataset.guestbook.enabled and downloadPopupRequired}" id="guestbookUIFragment">
+        <p:fragment rendered="#{workingVersion.dataset.guestbook != null and workingVersion.dataset.guestbook.enabled and guestbookAndTermsPopupRequired}" id="guestbookUIFragment">
                 <!--
                 Only validate the active context. For example, the user might be filling out
                 the guestbook on the Preview tab rather than after clicking the "download file"
@@ -297,4 +301,5 @@
                 #{bundle.cancel}
             </button>
         </div>
+    </ui:fragment>
 </ui:composition>

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api.auth.doubles;
 
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriInfo;
 
 import static edu.harvard.iq.dataverse.api.auth.WorkflowKeyAuthMechanism.DATAVERSE_WORKFLOW_KEY_REQUEST_HEADER_NAME;
 

@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
 import java.util.Arrays;
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 
 import edu.harvard.iq.dataverse.DOIDataCiteServiceBean;
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;

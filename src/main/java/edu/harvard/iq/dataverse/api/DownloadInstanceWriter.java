@@ -12,14 +12,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 
-import javax.ws.rs.WebApplicationException;
+import jakarta.ws.rs.WebApplicationException;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
 
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.ext.MessageBodyWriter;
+import jakarta.ws.rs.ext.Provider;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.dataaccess.*;
@@ -43,12 +43,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.ws.rs.ClientErrorException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.RedirectionException;
-import javax.ws.rs.ServiceUnavailableException;
-import javax.ws.rs.core.HttpHeaders;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.ClientErrorException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.RedirectionException;
+import jakarta.ws.rs.ServiceUnavailableException;
+import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;

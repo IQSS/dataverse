@@ -16,13 +16,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.ServiceUnavailableException;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.ServiceUnavailableException;
 
 public class PidUtil {
 

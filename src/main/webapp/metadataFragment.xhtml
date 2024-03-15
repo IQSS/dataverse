@@ -57,7 +57,7 @@
                                         </th>
                                         <td>#{publicationDate}</td>
                                     </tr>
-                                    <tr id="metadata_citationDate" jsf:rendered="#{!empty publicationDate and (publicationDate ne citationDate)}">
+                                    <tr id="metadata_citationDate" jsf:rendered="#{!empty citationDate and (publicationDate ne citationDate)}">
                                         <th scope="row">
                                             #{bundle['dataset.metadata.citationDate']}
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"

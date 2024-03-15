@@ -2,20 +2,20 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ejb.Stateless;
+import jakarta.ws.rs.core.Response.Status;
 
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.User;

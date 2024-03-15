@@ -67,7 +67,7 @@
                 </div>
                 <div class="downloads-block" jsf:rendered="#{!editDatafilesPage and !(settingsWrapper.rsyncOnly) and fileMetadata.dataFile.released}">
                     <h:outputFormat styleClass="visible-xs-block visible-sm-block visible-md-inline visible-lg-inline" id="fileDownloadCount" value="{0} #{bundle['metrics.downloads']}">
-                        <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)}"/>
+                        <f:param value="#{guestbookResponseServiceBean.getDownloadCountByDataFileId(fileMetadata.dataFile.id)}"/>
                     </h:outputFormat>
                 </div>
                 <!-- CHECKSUM -->

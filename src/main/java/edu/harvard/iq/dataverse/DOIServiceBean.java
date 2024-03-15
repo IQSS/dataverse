@@ -75,5 +75,4 @@ public abstract class DOIServiceBean extends AbstractGlobalIdServiceBean {
     protected String getProviderKeyName() {
         return null;
     }
-    
 }

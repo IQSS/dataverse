@@ -16,9 +16,9 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;

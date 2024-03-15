@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.Metric;
-import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil.MetricType;
 
 import static edu.harvard.iq.dataverse.metrics.MetricsUtil.*;
@@ -23,19 +23,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.ws.rs.core.UriInfo;
 
 @Stateless
 public class MetricsServiceBean implements Serializable {
@@ -383,7 +383,7 @@ public class MetricsServiceBean implements Serializable {
                 jab.add(stats);
             }
 
-        } catch (javax.persistence.NoResultException nr) {
+        } catch (NoResultException nr) {
             // do nothing
         }
         return jab.build();
@@ -425,6 +425,7 @@ public class MetricsServiceBean implements Serializable {
                 + "select  distinct COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "') as date, count(id)\n"
                 + "from guestbookresponse\n"
                 + ((d == null) ? "" : "where dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")")
+                + ((d == null) ? "where ":" and ") + "eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + " group by COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "') order by  COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -457,6 +458,7 @@ public class MetricsServiceBean implements Serializable {
                         + "from guestbookresponse\n"
                         + "where (date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
                         + "or responsetime is NULL)\n" // includes historic guestbook records without date
+                        + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                     + ((d==null) ? ";": "AND dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ");") 
                 );
                 logger.log(Level.FINE, "Metric query: {0}", query);
@@ -478,6 +480,7 @@ public class MetricsServiceBean implements Serializable {
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
                 + "where responsetime > current_date - interval '" + days + "' day\n"
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + ((d==null) ? ";": "AND dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ");")
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -490,6 +493,7 @@ public class MetricsServiceBean implements Serializable {
                 + " FROM guestbookresponse gb, DvObject ob"
                 + " where ob.id = gb.datafile_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + "group by gb.datafile_id, ob.id, ob.protocol, ob.authority, ob.identifier, to_char(gb.responsetime, 'YYYY-MM') order by to_char(gb.responsetime, 'YYYY-MM');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -504,6 +508,7 @@ public class MetricsServiceBean implements Serializable {
                 + " where ob.id = gb.datafile_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
                 + " and date_trunc('month', gb.responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + "group by gb.datafile_id, ob.id, ob.protocol, ob.authority, ob.identifier order by count desc;");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -519,7 +524,7 @@ public class MetricsServiceBean implements Serializable {
                 job.add(MetricsUtil.COUNT, (long) result[2]);
                 jab.add(job);
             }
-        } catch (javax.persistence.NoResultException nr) {
+        } catch (NoResultException nr) {
             // do nothing
         }
         return jab.build();
@@ -530,6 +535,7 @@ public class MetricsServiceBean implements Serializable {
                 + " FROM guestbookresponse gb, DvObject ob"
                 + " where ob.id = gb.dataset_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + "group by gb.dataset_id, ob.protocol, ob.authority, ob.identifier, to_char(gb.responsetime, 'YYYY-MM') order by to_char(gb.responsetime, 'YYYY-MM');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -547,6 +553,7 @@ public class MetricsServiceBean implements Serializable {
                 + " where ob.id = gb.dataset_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
                 + " and date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
                 + "group by gb.dataset_id, ob.protocol, ob.authority, ob.identifier order by count(distinct email) desc;");
         JsonArrayBuilder jab = Json.createArrayBuilder();
         try {
@@ -558,7 +565,7 @@ public class MetricsServiceBean implements Serializable {
                 jab.add(job);
             }
 
-        } catch (javax.persistence.NoResultException nr) {
+        } catch (NoResultException nr) {
             // do nothing
         }
         return jab.build();
@@ -718,7 +725,7 @@ public class MetricsServiceBean implements Serializable {
         Metric metric = null;
         try {
             metric = (Metric) query.getSingleResult();
-        } catch (javax.persistence.NoResultException nr) {
+        } catch (NoResultException nr) {
             // do nothing
             logger.fine("No result");
         } catch (NonUniqueResultException nur) {

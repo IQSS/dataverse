@@ -14,7 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.Assert;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;

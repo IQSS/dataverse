@@ -29,15 +29,15 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.logging.Logger;
-import javax.ejb.ActivationConfigProperty;
-import javax.ejb.EJB;
-import javax.ejb.MessageDriven;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
+import jakarta.ejb.ActivationConfigProperty;
+import jakarta.ejb.EJB;
+import jakarta.ejb.MessageDriven;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
+import jakarta.jms.ObjectMessage;
 /**
  *
  * This is an experimental, JMS-based implementation of asynchronous 
@@ -49,7 +49,7 @@ import javax.jms.ObjectMessage;
     mappedName = "java:app/jms/queue/ingest",
     activationConfig =  {
         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")
+        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Queue")
     }
 )
 

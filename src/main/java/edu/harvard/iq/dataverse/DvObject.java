@@ -5,14 +5,13 @@ import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Base of the object hierarchy for "anything that can be inside a dataverse".

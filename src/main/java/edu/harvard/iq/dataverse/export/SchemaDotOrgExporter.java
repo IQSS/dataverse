@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Locale;
 import java.util.logging.Logger;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 /**
  * Schema.org JSON-LD is used by Google Dataset Search and other services to

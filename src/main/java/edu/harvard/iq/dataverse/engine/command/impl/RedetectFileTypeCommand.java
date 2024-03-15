@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Logger;
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 @RequiredPermissions(Permission.EditDataset)
 public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {

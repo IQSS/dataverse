@@ -30,15 +30,13 @@ Full Setup
 
 The recommended way to work on the Make Data Count feature is to spin up an EC2 instance that has both the Dataverse Software and Counter Processor installed. Go to the :doc:`deployment` page for details on how to spin up an EC2 instance and make sure that your Ansible file is configured to install Counter Processor before running the "create" script.
 
-(Alternatively, you can try installing Counter Processor in Vagrant. :download:`setup-counter-processor.sh <../../../../scripts/vagrant/setup-counter-processor.sh>` might help you get it installed.)
-
 After you have spun to your EC2 instance, set ``:MDCLogPath`` so that the Dataverse installation creates a log for Counter Processor to operate on. For more on this database setting, see the :doc:`/installation/config` section of the Installation Guide.
 
 Next you need to have the Dataverse installation add some entries to the log that Counter Processor will operate on. To do this, click on some published datasets and download some files.
 
-Next you should run Counter Processor to convert the log into a SUSHI report, which is in JSON format. Before running Counter Processor, you need to put a configuration file into place. As a starting point use :download:`counter-processor-config.yaml <../../../../scripts/vagrant/counter-processor-config.yaml>` and edit the file, paying particular attention to the following settings:
+Next you should run Counter Processor to convert the log into a SUSHI report, which is in JSON format. Before running Counter Processor, you need to put a configuration file into place. As a starting point use :download:`counter-processor-config.yaml <../_static/developers/counter-processor-config.yaml>` and edit the file, paying particular attention to the following settings:
 
-- ``log_name_pattern`` You might want something like ``/usr/local/payara5/glassfish/domains/domain1/logs/counter_(yyyy-mm-dd).log``
+- ``log_name_pattern`` You might want something like ``/usr/local/payara6/glassfish/domains/domain1/logs/counter_(yyyy-mm-dd).log``
 - ``year_month`` You should probably set this to the current month.
 - ``output_file`` This needs to be a directory that the "dataverse" Unix user can read but that the "counter" user can write to. In dev, you can probably get away with "/tmp" as the directory.
 - ``platform`` Out of the box from Counter Processor this is set to ``Dash`` but this should be changed to match the name of your Dataverse installation. Examples are "Harvard Dataverse Repository" for Harvard University or "LibraData" for the University of Virginia.

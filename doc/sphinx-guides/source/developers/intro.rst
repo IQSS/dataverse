@@ -52,7 +52,9 @@ Related Guides
 
 If you are a developer who wants to make use of the Dataverse Software APIs, please see the :doc:`/api/index`. If you have front-end UI questions, please see the :doc:`/style/index`.
 
-If you are a sysadmin who likes to code, you may be interested in hacking on installation scripts mentioned in the :doc:`/installation/index`. We validate the installation scripts with :doc:`/developers/tools` such as `Vagrant <http://vagrantup.com>`_ and Docker (see the :doc:`containers` section).
+If you are a sysadmin who likes to code, you may be interested in hacking on installation scripts mentioned in the :doc:`/installation/index`.
+
+If you are a Docker enthusiasts, please check out the :doc:`/container/index`.
 
 Related Projects
 ----------------

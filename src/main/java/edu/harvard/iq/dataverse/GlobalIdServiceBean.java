@@ -15,10 +15,25 @@ public interface GlobalIdServiceBean {
 
     static final Logger logger = Logger.getLogger(GlobalIdServiceBean.class.getCanonicalName());
 
-    boolean alreadyExists(DvObject dvo) throws Exception;
+    boolean alreadyRegistered(DvObject dvo) throws Exception;
     
-    boolean alreadyExists(GlobalId globalId) throws Exception;
-
+    /**
+     * This call reports whether a PID is registered with the external Provider
+     * service. For providers like DOIs/Handles with an external service, this call
+     * should accurately report whether the PID has been registered in the service.
+     * For providers with no external service, the call should return true if the
+     * PID is defined locally. If it isn't, these no-service providers need to know
+     * whether use case of the caller requires that the returned value should
+     * default to true or false - via the noProviderDefault parameter.
+     * 
+     * @param globalId
+     * @param noProviderDefault - when there is no external service, and no local
+     *                          use of the PID, this should be returned
+     * @return whether the PID should be considered registered or not.
+     * @throws Exception
+     */
+    boolean alreadyRegistered(GlobalId globalId, boolean noProviderDefault) throws Exception;
+    
     boolean registerWhenPublished();
     boolean canManagePID();
     boolean isConfigured();

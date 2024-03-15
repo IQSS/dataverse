@@ -3,13 +3,13 @@ package edu.harvard.iq.dataverse.pidproviders;
 import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
-import java.util.ArrayList;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class FakePidProviderServiceBean extends DOIServiceBean {
@@ -20,7 +20,7 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
     //Only need to check locally
     public boolean isGlobalIdUnique(GlobalId globalId) {
         try {
-            return ! alreadyExists(globalId);
+            return ! alreadyRegistered(globalId, false);
         } catch (Exception e){
             //we can live with failure - means identifier not found remotely
         }
@@ -28,8 +28,9 @@ public class FakePidProviderServiceBean extends DOIServiceBean {
     }
     
     @Override
-    public boolean alreadyExists(GlobalId globalId) throws Exception {
-        return ! dvObjectService.isGlobalIdLocallyUnique(globalId);
+    public boolean alreadyRegistered(GlobalId globalId, boolean noProviderDefault) {
+        boolean existsLocally = !dvObjectService.isGlobalIdLocallyUnique(globalId);
+        return existsLocally ? existsLocally : noProviderDefault;
     }
 
     @Override

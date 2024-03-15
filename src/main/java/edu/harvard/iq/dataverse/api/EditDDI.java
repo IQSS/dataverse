@@ -2,9 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -28,28 +26,25 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
-import org.apache.solr.client.solrj.SolrServerException;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.Path;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.PathParam;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.PathParam;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
 import java.io.InputStream;
 
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.List;
@@ -57,11 +52,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
-import java.util.Date;
-import java.sql.Timestamp;
 
 
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
 
 @Stateless
 @Path("edit")

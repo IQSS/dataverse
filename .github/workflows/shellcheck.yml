@@ -33,7 +33,6 @@ jobs:
                   # Exclude old scripts
                   exclude: |
                       */.git/*
-                      conf/docker-aio/*
                       doc/*
                       downloads/*
                       scripts/database/*
@@ -43,5 +42,4 @@ jobs:
                       scripts/issues/*
                       scripts/r/*
                       scripts/tests/*
-                      scripts/vagrant/*
                       tests/*

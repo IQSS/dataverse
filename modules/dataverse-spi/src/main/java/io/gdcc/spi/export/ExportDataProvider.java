@@ -3,8 +3,8 @@ package io.gdcc.spi.export;
 import java.io.InputStream;
 import java.util.Optional;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 
 /**
  * Provides all the metadata Dataverse has about a given dataset that can then

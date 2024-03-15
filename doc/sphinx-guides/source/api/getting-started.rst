@@ -11,7 +11,7 @@ Servers You Can Test With
 
 Rather than using a production Dataverse installation, API users are welcome to use http://demo.dataverse.org for testing. You can email support@dataverse.org if you have any trouble with this server.  
 
-If you would rather have full control over your own test server, deployments to AWS, Docker, Vagrant, and more are covered in the :doc:`/developers/index` and the :doc:`/installation/index`.
+If you would rather have full control over your own test server, deployments to AWS, Docker, and more are covered in the :doc:`/developers/index` and the :doc:`/installation/index`.
 
 Getting an API Token
 --------------------

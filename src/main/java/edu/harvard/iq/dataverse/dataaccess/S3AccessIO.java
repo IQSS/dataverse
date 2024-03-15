@@ -69,9 +69,9 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.validation.constraints.NotNull;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.validation.constraints.NotNull;
 
 /**
  *

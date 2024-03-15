@@ -14,12 +14,12 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 
-import javax.batch.operations.JobOperator;
-import javax.batch.operations.JobSecurityException;
-import javax.batch.operations.JobStartException;
-import javax.batch.runtime.BatchRuntime;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.operations.JobSecurityException;
+import jakarta.batch.operations.JobStartException;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import java.io.File;
 import java.util.Properties;
 import java.util.logging.Level;

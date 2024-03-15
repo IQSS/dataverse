@@ -565,21 +565,26 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         if (isDirectAccess()) {
             throw new IOException("No DvObject defined in the Data Access Object");
         }
-
-        Path datasetDirectoryPath=null;
         
+        String authorityForFS = null;
+        String identifierForFS = null;
         if (dvObject instanceof Dataset) {
-            datasetDirectoryPath = Paths.get(this.getDataset().getAuthorityForFileStorage(), this.getDataset().getIdentifierForFileStorage());
+            authorityForFS = this.getDataset().getAuthorityForFileStorage();
+            identifierForFS = this.getDataset().getIdentifierForFileStorage();
         } else if (dvObject instanceof DataFile) {
-            datasetDirectoryPath = Paths.get(this.getDataFile().getOwner().getAuthorityForFileStorage(), this.getDataFile().getOwner().getIdentifierForFileStorage());
+            authorityForFS = this.getDataFile().getOwner().getAuthorityForFileStorage();
+            identifierForFS = this.getDataFile().getOwner().getIdentifierForFileStorage();
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("FileAccessIO: Dataverses are not a supported dvObject");
         }
-            
-        if (datasetDirectoryPath == null) {
+        
+        if (authorityForFS == null || identifierForFS == null) {
             throw new IOException("Could not determine the filesystem directory of the parent dataset.");
         }
-        String datasetDirectory = Paths.get(getFilesRootDirectory(), datasetDirectoryPath.toString()).toString();
+        
+        // Determine the final directory tree. As of JDK 16, the first component of the path MUST be non-null
+        // (we check for that via the setting), but also the others make no sense if they are null.
+        String datasetDirectory = Paths.get(getFilesRootDirectory(), authorityForFS, identifierForFS).toString();
 
         if (dvObject.getStorageIdentifier() == null || dvObject.getStorageIdentifier().isEmpty()) {
             throw new IOException("Data Access: No local storage identifier defined for this datafile.");

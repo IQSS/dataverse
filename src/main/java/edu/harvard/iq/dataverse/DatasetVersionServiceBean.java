@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.IOException;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,22 +22,21 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrServerException;
-    
+
 /**
  *
  * @author skraffmiller
@@ -49,7 +48,23 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DatasetVersionServiceBean.class.getCanonicalName());
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-    
+
+    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_LABEL = "SELECT fm FROM FileMetadata fm"
+            + " WHERE fm.datasetVersion.id=:datasetVersionId"
+            + " ORDER BY fm.label";
+    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_DATE = "SELECT fm FROM FileMetadata fm, DvObject dvo"
+            + " WHERE fm.datasetVersion.id = :datasetVersionId"
+            + " AND fm.dataFile.id = dvo.id"
+            + " ORDER BY CASE WHEN dvo.publicationDate IS NOT NULL THEN dvo.publicationDate ELSE dvo.createDate END";
+    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_SIZE = "SELECT fm FROM FileMetadata fm, DataFile df"
+            + " WHERE fm.datasetVersion.id = :datasetVersionId"
+            + " AND fm.dataFile.id = df.id"
+            + " ORDER BY df.filesize";
+    private static final String QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_TYPE = "SELECT fm FROM FileMetadata fm, DataFile df"
+            + " WHERE fm.datasetVersion.id = :datasetVersionId"
+            + " AND fm.dataFile.id = df.id"
+            + " ORDER BY df.contentType";
+
     @EJB
     DatasetServiceBean datasetService;
     
@@ -150,9 +165,36 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             return this.datasetVersionForResponse;
         }                
     } // end RetrieveDatasetVersionResponse
-    
+
+    /**
+     *  Different criteria to sort the results of FileMetadata queries used in {@link DatasetVersionServiceBean#getFileMetadatas}
+     */
+    public enum FileMetadatasOrderCriteria {
+        NameAZ,
+        NameZA,
+        Newest,
+        Oldest,
+        Size,
+        Type
+    }
+
     public DatasetVersion find(Object pk) {
         return em.find(DatasetVersion.class, pk);
+    }
+    
+    public DatasetVersion findDeep(Object pk) {
+        return (DatasetVersion) em.createNamedQuery("DatasetVersion.findById")
+            .setParameter("id", pk)
+            // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files 
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.ingestRequest")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.thumbnailForDataset")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataTables")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.fileCategories")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.embargo")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.datasetVersion")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.releaseUser")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.creator")
+            .getSingleResult();
     }
 
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
@@ -181,7 +223,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 query.setParameter("majorVersionNumber", majorVersionNumber);
                 query.setParameter("minorVersionNumber", minorVersionNumber);
                 foundDatasetVersion = (DatasetVersion) query.getSingleResult();
-            } catch (javax.persistence.NoResultException e) {
+            } catch (NoResultException e) {
                 logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
                 // DO nothing, just return null.
             }
@@ -209,7 +251,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                     }
                 }
                 return retVal;
-            } catch (javax.persistence.NoResultException e) {
+            } catch (NoResultException e) {
                 logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
                 // DO nothing, just return null.
             }
@@ -436,7 +478,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             msg("Found: " + ds);
             return ds;
             
-        } catch (javax.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             msg("DatasetVersion not found: " + queryString);
             logger.log(Level.FINE, "DatasetVersion not found: {0}", queryString);
             return null;
@@ -1202,7 +1244,7 @@ w
         try {
             List<DatasetVersion> dsl = em.createNamedQuery("DatasetVersion.findUnarchivedReleasedVersion", DatasetVersion.class).getResultList();
             return dsl;
-        } catch (javax.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             logger.log(Level.FINE, "No unarchived DatasetVersions found: {0}");
             return null;
         } catch (EJBException e) {
@@ -1210,4 +1252,50 @@ w
             return null;
         }
     } // end getUnarchivedDatasetVersions
+
+    /**
+     * Returns a FileMetadata list of files in the specified DatasetVersion
+     *
+     * @param datasetVersion the DatasetVersion to access
+     * @param limit for pagination, can be null
+     * @param offset for pagination, can be null
+     * @param orderCriteria a FileMetadatasOrderCriteria to order the results
+     * @return a FileMetadata list of the specified DatasetVersion
+     */
+    public List<FileMetadata> getFileMetadatas(DatasetVersion datasetVersion, Integer limit, Integer offset, FileMetadatasOrderCriteria orderCriteria) {
+        TypedQuery<FileMetadata> query = em.createQuery(getQueryStringFromFileMetadatasOrderCriteria(orderCriteria), FileMetadata.class)
+                .setParameter("datasetVersionId", datasetVersion.getId());
+        if (limit != null) {
+            query.setMaxResults(limit);
+        }
+        if (offset != null) {
+            query.setFirstResult(offset);
+        }
+        return query.getResultList();
+    }
+
+    private String getQueryStringFromFileMetadatasOrderCriteria(FileMetadatasOrderCriteria orderCriteria) {
+        String queryString;
+        switch (orderCriteria) {
+            case NameZA:
+                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_LABEL + " DESC";
+                break;
+            case Newest:
+                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_DATE + " DESC";
+                break;
+            case Oldest:
+                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_DATE;
+                break;
+            case Size:
+                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_SIZE;
+                break;
+            case Type:
+                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_TYPE;
+                break;
+            default:
+                queryString = QUERY_STR_FIND_ALL_FILE_METADATAS_ORDER_BY_LABEL;
+                break;
+        }
+        return queryString;
+    }
 } // end class

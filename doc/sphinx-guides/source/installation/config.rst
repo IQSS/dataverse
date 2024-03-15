@@ -1,4 +1,3 @@
-=============
 Configuration
 =============
 
@@ -33,6 +32,12 @@ By default, most APIs can be operated on remotely and a number of endpoints do n
 It is very important to keep the block in place for the "admin" endpoint, and to leave the "builtin-users" endpoint blocked unless you need to access it remotely. Documentation for the "admin" endpoint is spread across the :doc:`/api/native-api` section of the API Guide and the :doc:`/admin/index`.
 
 It's also possible to prevent file uploads via API by adjusting the :ref:`:UploadMethods` database setting.
+
+If you are using a load balancer or a reverse proxy, there are some additional considerations. If no additional configurations are made and the upstream is configured to redirect to localhost, the API will be accessible from the outside, as your installation will register as origin the localhost for any requests to the endpoints "admin" and "builtin-users". To prevent this, you have two options:
+
+- If your upstream is configured to redirect to localhost, you will need to set the :ref:`JVM option <useripaddresssourceheader>` to one of the following values ``%client.name% %datetime% %request% %status% %response.length% %header.referer% %header.x-forwarded-for%`` and configure from the load balancer side the chosen header to populate with the client IP address.
+
+- Another solution is to set the upstream to the client IP address. In this case no further configuration is needed.
 
 Forcing HTTPS
 +++++++++++++
@@ -248,7 +253,7 @@ this provider.
 - :ref:`:Shoulder <:Shoulder>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
-- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
+- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to false)
 
 .. _pids-handle-configuration:
 
@@ -297,7 +302,9 @@ Here are the configuration options for PermaLinks:
 - :ref:`:Shoulder <:Shoulder>`
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
-- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
+- :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to false)
+
+You must restart Payara after making changes to these settings.
 
 .. _auth-modes:
 
@@ -495,11 +502,15 @@ Logging & Slow Performance
 File Storage: Using a Local Filesystem and/or Swift and/or Object Stores and/or Trusted Remote Stores
 -----------------------------------------------------------------------------------------------------
 
-By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
+By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara6/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
 A Dataverse installation can alternately store files in a Swift or S3-compatible object store, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection basis.
 
 A Dataverse installation may also be configured to reference some files (e.g. large and/or sensitive data) stored in a web-accessible trusted remote store.
+
+A Dataverse installation can be configured to allow out of band upload by setting the ``dataverse.files.\<id\>.upload-out-of-band`` JVM option to ``true``.
+By default, Dataverse supports uploading files via the :ref:`add-file-api`. With S3 stores, a direct upload process can be enabled to allow sending the file directly to the S3 store (without any intermediate copies on the Dataverse server).
+With the upload-out-of-band option enabled, it is also possible for file upload to be managed manually or via third-party tools, with the :ref:`Adding the Uploaded file to the Dataset <direct-add-to-dataset-api>` API call (described in the :doc:`/developers/s3-direct-upload-api` page) used to add metadata and inform Dataverse that a new file has been added to the relevant store.
 
 The following sections describe how to set up various types of stores and how to configure for multiple stores.
 
@@ -793,27 +804,28 @@ List of S3 Storage Options
 .. table::
     :align: left
 
-    ===========================================  ==================  ==========================================================================  =============
-    JVM Option                                   Value               Description                                                                 Default value
-    ===========================================  ==================  ==========================================================================  =============
-    dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                  ``file``
-    dataverse.files.<id>.type                    ``s3``              **Required** to mark this storage as S3 based.                              (none)
-    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage                   (none)
-    dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                 (none)
-    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                          ``false``
-    dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.          ``false``
-    dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                  (none)
-    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.             60
-    dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.   ``1024**3``
-    dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.          (none)
-    dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                             ``dataverse``
-    dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.  (none)
-    dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                           (none)
-    dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                     ``false``
-    dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                            ``false``
-    dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                          ``true``
-    dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                     ``256``
-    ===========================================  ==================  ==========================================================================  =============
+    ===========================================  ==================  ===================================================================================  =============
+    JVM Option                                   Value               Description                                                                          Default value
+    ===========================================  ==================  ===================================================================================  =============
+    dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                           ``file``
+    dataverse.files.<id>.type                    ``s3``              **Required** to mark this storage as S3 based.                                       (none)
+    dataverse.files.<id>.label                   <?>                 **Required** label to be shown in the UI for this storage                            (none)
+    dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                          (none)
+    dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                                   ``false``
+    dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset in the S3 store.                    ``false``
+    dataverse.files.<id>.upload-out-of-band      ``true``/``false``  Allow upload of files by out-of-band methods (using some tool other than Dataverse)  ``false``
+    dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                           (none)
+    dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.                      60
+    dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.            ``1024**3``
+    dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.                   (none)
+    dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                                      ``dataverse``
+    dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.           (none)
+    dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                                    (none)
+    dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                              ``false``
+    dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                                     ``false``
+    dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                                   ``true``
+    dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                              ``256``
+    ===========================================  ==================  ===================================================================================  =============
 
 .. table::
     :align: left
@@ -969,7 +981,7 @@ All of these processes are triggered after finishing transfers over the wire and
 Before being moved there,
 
 - JSF Web UI uploads are stored at :ref:`${dataverse.files.uploads} <dataverse.files.uploads>`, defaulting to
-  ``/usr/local/payara5/glassfish/domains/domain1/uploads`` folder in a standard installation. This place is
+  ``/usr/local/payara6/glassfish/domains/domain1/uploads`` folder in a standard installation. This place is
   configurable and might be set to a separate disk volume where stale uploads are purged periodically.
 - API uploads are stored at the system's temporary files location indicated by the Java system property
   ``java.io.tmpdir``, defaulting to ``/tmp`` on Linux. If this location is backed by a `tmpfs <https://www.kernel.org/doc/html/latest/filesystems/tmpfs.html>`_
@@ -1047,7 +1059,7 @@ Custom Navbar Logo
 
 The Dataverse Software allows you to replace the default Dataverse Project icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the logo used in the theme of the root Dataverse collection (see :ref:`theme`).
 
-The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Payara ``logos`` directory and place your custom logo there. By default, your logo image file will be located at ``/usr/local/payara5/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
+The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Payara ``logos`` directory and place your custom logo there. By default, your logo image file will be located at ``/usr/local/payara6/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
 
 Given this location for the custom logo image file, run this curl command to add it to your settings:
 
@@ -1419,24 +1431,25 @@ BagIt file handler configuration settings:
 BagIt Export
 ------------
 
-Your Dataverse installation may be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ archival Bags (sometimes called BagPacks) to `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_ or alternately to any folder on the local filesystem.
+Your Dataverse installation may be configured to submit a copy of published Datasets, packaged as `Research Data Alliance conformant <https://www.rd-alliance.org/system/files/Research%20Data%20Repository%20Interoperability%20WG%20-%20Final%20Recommendations_reviewed_0.pdf>`_ zipped `BagIt <https://tools.ietf.org/html/draft-kunze-bagit-17>`_ archival Bags (sometimes called BagPacks) to one of several supported storage services.
+Supported services include `Chronopolis <https://libraries.ucsd.edu/chronopolis/>`_ via `DuraCloud <https://duraspace.org/duracloud/>`_, Google's Cloud, and any service that can provide an S3 interface or handle files transferred to a folder on the local filesystem.
 
-These archival Bags include all of the files and metadata in a given dataset version and are sufficient to recreate the dataset, e.g. in a new Dataverse instance, or postentially in another RDA-conformant repository.
+These archival Bags include all of the files and metadata in a given dataset version and are sufficient to recreate the dataset, e.g. in a new Dataverse instance, or potentially in another RDA-conformant repository. The `DVUploader <https://github.com/GlobalDataverseCommunityConsortium/dataverse-uploader>`_ includes functionality to recreate a Dataset from an archival Bag produced by Dataverse. (Note that this functionality is distinct from the :ref:`BagIt File Handler` upload files to an existing Dataset via the Dataverse user interface.)
 
 The Dataverse Software offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse Software web interface.
 
 At present, archiving classes include the DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, GoogleCloudSubmitToArchive, and S3SubmitToArchiveCommand , which all extend the AbstractSubmitToArchiveCommand and use the configurable mechanisms discussed below. (A DRSSubmitToArchiveCommand, which works with Harvard's DRS also exists and, while specific to DRS, is a useful example of how Archivers can support single-version-only semantics and support archiving only from specified collections (with collection specific parameters)). 
 
-All current options support the archival status APIs and the same status is available in the dataset page version table (for contributors/those who could view the unpublished dataset, with more detail available to superusers).
+All current options support the :ref:`Archival Status API` calls and the same status is available in the dataset page version table (for contributors/those who could view the unpublished dataset, with more detail available to superusers).
 
 .. _Duracloud Configuration:
 
 Duracloud Configuration
 +++++++++++++++++++++++
 
-Also note that while the current Chronopolis implementation generates the archival Bag and submits it to the archive's DuraCloud interface, the step to make a 'snapshot' of the space containing the archival Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
+The current Chronopolis implementation generates the archival Bag and submits it to the archive's DuraCloud interface. The step to make a 'snapshot' of the space containing the archival Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
 
-The minimal configuration to support an archiver integration involves adding a minimum of two Dataverse Software Keys and any required Payara jvm options. The example instructions here are specific to the DuraCloud Archiver\:
+The minimal configuration to support archiver integration involves adding a minimum of two Dataverse Software settings. Individual archivers may require additional settings and/or Payara jvm options and micro-profile settings. The example instructions here are specific to the DuraCloud Archiver\:
 
 \:ArchiverClassName - the fully qualified class to be used for archiving. For example:
 
@@ -1446,7 +1459,7 @@ The minimal configuration to support an archiver integration involves adding a m
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext, :BagGeneratorThreads"``
 
-The DPN archiver defines three custom settings, one of which is required (the others have defaults):
+The DuraCloud archiver defines three custom settings, one of which is required (the others have defaults):
 
 \:DuraCloudHost - the URL for your organization's Duracloud site. For example:
 
@@ -1512,7 +1525,7 @@ The Google Cloud Archiver also requires a key file that must be renamed to 'goog
 
 For example:
 
-``cp <your key file> /usr/local/payara5/glassfish/domains/domain1/files/googlecloudkey.json``
+``cp <your key file> /usr/local/payara6/glassfish/domains/domain1/files/googlecloudkey.json``
 
 .. _S3 Archiver Configuration:
 
@@ -1628,7 +1641,7 @@ You have a couple of options for putting an updated robots.txt file into product
 
 For more of an explanation of ``ProxyPassMatch`` see the :doc:`shibboleth` section.
 
-If you are not fronting Payara with Apache you'll need to prevent Payara from serving the robots.txt file embedded in the war file by overwriting robots.txt after the war file has been deployed. The downside of this technique is that you will have to remember to overwrite robots.txt in the "exploded" war file each time you deploy the war file, which probably means each time you upgrade to a new version of the Dataverse Software. Furthermore, since the version of the Dataverse Software is always incrementing and the version can be part of the file path, you will need to be conscious of where on disk you need to replace the file. For example, for Dataverse Software 4.6.1 the path to robots.txt may be ``/usr/local/payara5/glassfish/domains/domain1/applications/dataverse-4.6.1/robots.txt`` with the version number ``4.6.1`` as part of the path.
+If you are not fronting Payara with Apache you'll need to prevent Payara from serving the robots.txt file embedded in the war file by overwriting robots.txt after the war file has been deployed. The downside of this technique is that you will have to remember to overwrite robots.txt in the "exploded" war file each time you deploy the war file, which probably means each time you upgrade to a new version of the Dataverse Software. Furthermore, since the version of the Dataverse Software is always incrementing and the version can be part of the file path, you will need to be conscious of where on disk you need to replace the file. For example, for Dataverse Software 4.6.1 the path to robots.txt may be ``/usr/local/payara6/glassfish/domains/domain1/applications/dataverse-4.6.1/robots.txt`` with the version number ``4.6.1`` as part of the path.
 
 Creating a Sitemap and Submitting it to Search Engines
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1641,7 +1654,7 @@ Create or update your sitemap by adding the following curl command to cron to ru
 
 This will create or update a file in the following location unless you have customized your installation directory for Payara:
 
-``/usr/local/payara5/glassfish/domains/domain1/docroot/sitemap/sitemap.xml``
+``/usr/local/payara6/glassfish/domains/domain1/docroot/sitemap/sitemap.xml``
 
 On Dataverse installation with many datasets, the creation or updating of the sitemap can take a while. You can check Payara's server.log file for "BEGIN updateSiteMap" and "END updateSiteMap" lines to know when the process started and stopped and any errors in between.
 
@@ -1684,7 +1697,12 @@ When changing values these values with ``asadmin``, you'll need to delete the ol
 
 ``./asadmin create-jvm-options "-Ddataverse.fqdn=dataverse.example.com"``
 
-It's also possible to change these values by stopping Payara, editing ``payara5/glassfish/domains/domain1/config/domain.xml``, and restarting Payara.
+It's also possible to change these values by stopping Payara, editing ``payara6/glassfish/domains/domain1/config/domain.xml``, and restarting Payara.
+
+In addition, JVM options enabled for "MicroProfile Config" (see docs of any option), can be used with any
+`supported MicroProfile Config API source`_ to provide their values. The most notable source are environment variables;
+many examples are given in detail documentation of enabled options.
+
 
 .. _dataverse.fqdn:
 
@@ -1780,7 +1798,7 @@ Configure a folder to store the incoming file stream during uploads (before tran
 Please also see :ref:`temporary-file-storage` for more details.
 You can use an absolute path or a relative, which is relative to the application server domain directory.
 
-Defaults to ``./uploads``, which resolves to ``/usr/local/payara5/glassfish/domains/domain1/uploads`` in a default
+Defaults to ``./uploads``, which resolves to ``/usr/local/payara6/glassfish/domains/domain1/uploads`` in a default
 installation.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_UPLOADS``.
@@ -2433,6 +2451,32 @@ If this value is not set (the default), Dataverse will not use external Exporter
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SPI_EXPORTERS_DIRECTORY``.
 
+.. _dataverse.netcdf.geo-extract-s3-direct-upload:
+
+dataverse.netcdf.geo-extract-s3-direct-upload
++++++++++++++++++++++++++++++++++++++++++++++
+
+This setting was added to keep S3 direct upload lightweight. When that feature is enabled and you still want NetCDF and HDF5 files to go through metadata extraction of a Geospatial Bounding Box (see :ref:`netcdf-and-hdf5`), which requires the file to be downloaded from S3 in this scenario, make this setting true.
+
+See also :ref:`s3-direct-upload-features-disabled`.
+
+dataverse.auth.oidc.*
++++++++++++++++++++++
+
+Provision a single :doc:`OpenID Connect authentication provider <oidc>` using MicroProfile Config. You can find a list of
+all available options at :ref:`oidc-mpconfig`.
+
+.. _dataverse.files.guestbook-at-request:
+
+dataverse.files.guestbook-at-request
+++++++++++++++++++++++++++++++++++++
+
+This setting enables functionality to allow guestbooks to be displayed when a user requests access to a restricted data file(s) or when a file is downloaded (the historic default). Providing a true/false value for this setting enables the functionality and provides a global default. The behavior can also be changed at the collection level via the user interface and by a superuser for a give dataset using the API.
+
+See also :ref:`guestbook-at-request-api` in the API Guide, and .
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_FILES_GUESTBOOK_AT_REQUEST``.
+
 .. _feature-flags:
 
 Feature Flags
@@ -2451,7 +2495,7 @@ please find all known feature flags below. Any of these flags can be activated u
       - Description
       - Default status
     * - api-session-auth
-      - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and removed once support for bearer tokens has been implemented (see `#9229 <https://github.com/IQSS/dataverse/issues/9229>`_).
+      - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
       - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
@@ -2766,14 +2810,35 @@ timestamps.
 :FilePIDsEnabled
 ++++++++++++++++
 
-Toggles publishing of file-level PIDs for the entire installation. By default this setting is absent and Dataverse Software assumes it to be true. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
+Toggles publishing of file-level PIDs for the entire installation. By default this setting is absent and Dataverse Software assumes it to be false. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
 
-If you don't want to register file-based PIDs for your installation, set:
+It is possible to override the installation-wide setting for specific collections, see :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>`. For example, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
+
+To enable file-level PIDs for the entire installation::
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
+
+
+If you don't want to register file-based PIDs for your entire installation::
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
+.. _:AllowEnablingFilePIDsPerCollection:
 
-It is possible to override the installation-wide setting for specific collections. For example, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
+:AllowEnablingFilePIDsPerCollection
++++++++++++++++++++++++++++++++++++
+
+Toggles whether superusers can change the File PIDs policy per collection. By default this setting is absent and Dataverse Software assumes it to be false.
+
+For example, if this setting is true, registration of PIDs for files can be enabled in a specific collection when it is disabled instance-wide. Or it can be disabled in specific collections where it is enabled by default. See :ref:`collection-attributes-api` for details. 
+
+To enable setting file-level PIDs per collection::
+
+``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:AllowEnablingFilePIDsPerCollection``
+
+
+When :AllowEnablingFilePIDsPerCollection is true, setting File PIDs to be enabled/disabled for a given collection can be done via the Native API - see :ref:`collection-attributes-api` in the Native API Guide.
+
 
 .. _:IndependentHandleService:
 
@@ -2943,6 +3008,8 @@ Notes:
 This setting controls the number of files that can be uploaded through the UI at once. The default is 1000. It should be set to 1 or higher since 0 has no effect. To limit the number of files in a zip file, see ``:ZipUploadFilesLimit``.
 
 ``curl -X PUT -d 500 http://localhost:8080/api/admin/settings/:MultipleUploadFilesLimit``
+
+.. _:ZipDownloadLimit:
 
 :ZipDownloadLimit
 +++++++++++++++++
@@ -3449,7 +3516,7 @@ Sets how long a cached metrics result is used before re-running the query for a 
 
 Sets the path where the raw Make Data Count logs are stored before being processed. If not set, no logs will be created for Make Data Count. See also the :doc:`/admin/make-data-count` section of the Admin Guide.
 
-``curl -X PUT -d '/usr/local/payara5/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
+``curl -X PUT -d '/usr/local/payara6/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
 
 .. _:DisplayMDCMetrics:
 
@@ -3459,6 +3526,20 @@ Sets the path where the raw Make Data Count logs are stored before being process
 ``:DisplayMDCMetrics`` can be set to false to disable display of MDC metrics (e.g. to enable collection of MDC metrics for some period prior to completing the set-up of Counter and performing the other steps described in the :doc:`/admin/make-data-count` section of the Admin Guide).
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:DisplayMDCMetrics``
+
+.. _:MDCStartDate:
+
+:MDCStartDate
++++++++++++++
+
+It is possible to display MDC metrics (as of the start date of MDC logging) along with legacy download counts, generated before MDC was enabled.
+This is enabled via the new setting `:MDCStartDate` that specifies the cut-over date. If a dataset has any legacy access counts collected prior to that date, those numbers will be displayed in addition to the MDC views and downloads recorded since then.
+(Nominally, this date should be when your installation started logging MDC metrics but it can be any date after that if desired.)
+
+
+``curl -X PUT -d '2019-10-01' http://localhost:8080/api/admin/settings/:MDCStartDate``
+
+
 
 .. _:Languages:
 

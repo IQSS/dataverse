@@ -1,36 +1,33 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+
+import java.io.*;
 import java.util.UUID;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import java.io.File;
-import java.io.IOException;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
-import com.jayway.restassured.path.xml.XmlPath;
+import io.restassured.path.xml.XmlPath;
 import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import com.jayway.restassured.specification.RequestSpecification;
+import io.restassured.specification.RequestSpecification;
 import java.util.List;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
-import java.io.InputStream;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.util.Base64;
 import org.apache.commons.io.IOUtils;
@@ -41,19 +38,16 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
-import static com.jayway.restassured.RestAssured.put;
-import static com.jayway.restassured.path.xml.XmlPath.from;
-import static com.jayway.restassured.RestAssured.given;
+import static io.restassured.path.xml.XmlPath.from;
+import static io.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import java.io.StringReader;
+
 import java.util.Collections;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilIT {
 
@@ -67,7 +61,8 @@ public class UtilIT {
     private static final String EMPTY_STRING = "";
     public static final int MAXIMUM_INGEST_LOCK_DURATION = 15;
     public static final int MAXIMUM_PUBLISH_LOCK_DURATION = 15;
-    
+    public static final int MAXIMUM_IMPORT_DURATION = 1;
+
     private static SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
     
     static Matcher<String> equalToCI( String value ) {
@@ -564,7 +559,14 @@ public class UtilIT {
                 .post("/api/datasets/:persistentId/modifyRegistrationMetadata/?persistentId=" + persistentId);
         return response;
     }
-    
+
+    /**
+     * Deprecated because once there are new fields in the database that Solr
+     * doesn't know about, dataset creation could be prevented, or at least
+     * subsequent search operations could fail because the dataset can't be
+     * indexed.
+     */
+    @Deprecated    
     static Response loadMetadataBlock(String apiToken, byte[] body) {
         return given()
           .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -1245,6 +1247,12 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/datasets/" + datasetId + "/destroy");
+    }
+
+    static Response destroyDataset(String pid, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/:persistentId/destroy?persistentId=" + pid);
     }
 
     static Response deleteFile(Integer fileId, String apiToken) {
@@ -2404,6 +2412,12 @@ public class UtilIT {
         RequestSpecification requestSpecification = given();
         return requestSpecification.delete("/api/admin/clearMetricsCache");
     }
+    
+    static Response clearMetricCache(String name) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.delete("/api/admin/clearMetricsCache/" + name);
+    }
+
 
     static Response sitemapUpdate() {
         return given()
@@ -2571,10 +2585,25 @@ public class UtilIT {
         return i <= repeats;
 
     }
-    
-    
-    
-    
+
+    // Modeled after sleepForLock but the dataset isn't locked.
+    // We have to sleep or we can't perform the next operation.
+    static Boolean sleepForDeadlock(int duration) {
+        int i = 0;
+        do {
+            try {
+                Thread.sleep(1000);
+                i++;
+                if (i > duration) {
+                    break;
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } while (true);
+        return i <= duration;
+    }
+
     //Helper function that returns true if a given search returns a non-zero response within a fixed time limit
     // a given duration returns false if still zero results after given duration
     static Boolean sleepForSearch(String searchPart, String apiToken,  String subTree, int duration) {
@@ -3245,5 +3274,52 @@ public class UtilIT {
                 .contentType("application/json")
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/citation");
         return response;
+    }
+
+    static Response getVersionFiles(Integer datasetId, String version, Integer limit, Integer offset, String orderCriteria, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json");
+        if (limit != null) {
+            requestSpecification = requestSpecification.queryParam("limit", limit);
+        }
+        if (offset != null) {
+            requestSpecification = requestSpecification.queryParam("offset", offset);
+        }
+        if (orderCriteria != null) {
+            requestSpecification = requestSpecification.queryParam("orderCriteria", orderCriteria);
+        }
+        return requestSpecification.get("/api/datasets/" + datasetId + "/versions/" + version + "/files");
+    }
+
+    static Response createAndUploadTestFile(String persistentId, String testFileName, byte[] testFileContentInBytes, String apiToken) throws IOException {
+        Path pathToTempDir = Paths.get(Files.createTempDirectory(null).toString());
+        String pathToTestFile = pathToTempDir + File.separator + testFileName;
+        File testFile = new File(pathToTestFile);
+        FileOutputStream fileOutputStream = new FileOutputStream(testFile);
+
+        fileOutputStream.write(testFileContentInBytes);
+        fileOutputStream.flush();
+        fileOutputStream.close();
+
+        return uploadZipFileViaSword(persistentId, pathToTestFile, apiToken);
+    }
+
+    static Response getFileDownloadCount(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + dataFileId + "/downloadCount");
+    }
+
+    static Response getFileDataTables(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/" + dataFileId + "/dataTables");
+    }
+
+    static Response getUserPermissionsOnFile(String dataFileId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + dataFileId + "/userPermissions");
     }
 }

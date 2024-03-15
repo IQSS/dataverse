@@ -8,7 +8,7 @@
         </fileSet>
         <!-- Get our custom Solr files -->
         <fileSet>
-            <directory>conf/solr/8.11.1</directory>
+            <directory>conf/solr/9.3.0</directory>
             <outputDirectory>solr</outputDirectory>
         </fileSet>
         <!-- Get the setup scripts from the installer (selected choice only) -->

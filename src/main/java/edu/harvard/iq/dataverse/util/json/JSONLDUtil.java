@@ -18,17 +18,17 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonString;
-import javax.json.JsonValue;
-import javax.json.JsonWriter;
-import javax.json.JsonWriterFactory;
-import javax.json.JsonValue.ValueType;
-import javax.json.stream.JsonGenerator;
-import javax.ws.rs.BadRequestException;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.JsonValue.ValueType;
+import jakarta.json.stream.JsonGenerator;
+import jakarta.ws.rs.BadRequestException;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
@@ -52,6 +52,7 @@ import com.apicatalog.jsonld.document.JsonDocument;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
+import jakarta.json.JsonReader;
 
 public class JSONLDUtil {
 
@@ -240,6 +241,7 @@ public class JSONLDUtil {
             }
         }
         dsv.setTermsOfUseAndAccess(terms);
+        terms.setDatasetVersion(dsv);
         dsv.setDatasetFields(dsfl);
 
         return dsv;
@@ -349,7 +351,9 @@ public class JSONLDUtil {
      * @return null if exact match, otherwise return a field without the value to be deleted
      */
     private static DatasetField getReplacementField(DatasetField dsf, JsonArray valArray) {
-        // TODO Auto-generated method stub
+        // TODO Parse valArray and remove any matching entries in the dsf
+        // Until then, delete removes all values of a multivalued field
+        // Doing this on a required field will fail.
         return null;
     }
 
@@ -530,13 +534,11 @@ public class JSONLDUtil {
         try (StringReader rdr = new StringReader(jsonLDString)) {
 
             // Use JsonLd to expand/compact to localContext
-            JsonObject jsonld = Json.createReader(rdr).readObject();
-            JsonDocument doc = JsonDocument.of(jsonld);
-            JsonArray array = null;
-            try {
-                array = JsonLd.expand(doc).get();
-                jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(Json.createObjectBuilder().build()))
-                        .get();
+            try (JsonReader jsonReader = Json.createReader(rdr)) {
+                JsonObject jsonld = jsonReader.readObject();
+                JsonDocument doc = JsonDocument.of(jsonld);
+                JsonArray array = JsonLd.expand(doc).get();
+                jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(Json.createObjectBuilder().build())).get();
                 // jsonld = array.getJsonObject(0);
                 logger.fine("Decontextualized object: " + jsonld);
                 return jsonld;

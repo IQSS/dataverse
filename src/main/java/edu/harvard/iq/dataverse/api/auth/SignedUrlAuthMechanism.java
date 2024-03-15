@@ -7,9 +7,9 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
-import javax.inject.Inject;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.UriInfo;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.UriInfo;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;

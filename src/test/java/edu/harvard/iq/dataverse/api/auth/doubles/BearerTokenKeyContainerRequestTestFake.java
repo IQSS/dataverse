@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api.auth.doubles;
 
-import javax.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.HttpHeaders;
 
 public class BearerTokenKeyContainerRequestTestFake extends ContainerRequestTestFake {
 

@@ -42,6 +42,11 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
     
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
+        /*
+         * CreateDatasetVersionCommand assumes you have not added your new version to
+         * the dataset you send. Use UpdateDatasetVersionCommand if you created the new
+         * version via Dataset.getOrCreateEditVersion() and just want to persist it.
+         */
         DatasetVersion latest = dataset.getLatestVersion();
         if ( latest.isWorkingCopy() ) {
             // A dataset can only have a single draft, which has to be the latest.
@@ -50,6 +55,10 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
                 throw new IllegalCommandException("Latest version is already a draft. Cannot add another draft", this);
             }
         }
+        
+        //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
+        checkSystemMetadataKeyIfNeeded(newVersion, latest);
+
                 
         List<FileMetadata> newVersionMetadatum = new ArrayList<>(latest.getFileMetadatas().size());
         for ( FileMetadata fmd : latest.getFileMetadatas() ) {

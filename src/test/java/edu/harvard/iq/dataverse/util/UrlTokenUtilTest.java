@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@LocalJvmSettings
 class UrlTokenUtilTest {
 
     @Test

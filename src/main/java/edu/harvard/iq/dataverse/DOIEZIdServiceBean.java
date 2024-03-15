@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 /**
  *
@@ -63,19 +63,10 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
     }
 
     @Override
-    public boolean alreadyExists(DvObject dvObject) throws Exception {
-        if(dvObject==null) {
-            logger.severe("Null DvObject sent to alreadyExists().");
-            return false;
-        }
-        return alreadyExists(dvObject.getGlobalId());
-    }
-    
-    @Override
-    public boolean alreadyExists(GlobalId pid) throws Exception {
-        logger.log(Level.FINE,"alreadyExists");
+    public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) throws Exception {
+        logger.log(Level.FINE,"alreadyRegistered");
         try {
-            HashMap<String, String> result = ezidService.getMetadata(pid.asString());            
+            HashMap<String, String> result = ezidService.getMetadata(pid.asString());
             return result != null && !result.isEmpty();
             // TODO just check for HTTP status code 200/404, sadly the status code is swept under the carpet
         } catch (EZIDException e ){
@@ -87,7 +78,7 @@ public class DOIEZIdServiceBean extends DOIServiceBean {
             if (e.getLocalizedMessage().contains("no such identifier")){
                 return false;
             }
-            logger.log(Level.WARNING, "alreadyExists failed");
+            logger.log(Level.WARNING, "alreadyRegistered failed");
             logger.log(Level.WARNING, "getIdentifier(dvObject) {0}", pid.asString());
             logger.log(Level.WARNING, "String {0}", e.toString());
             logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());

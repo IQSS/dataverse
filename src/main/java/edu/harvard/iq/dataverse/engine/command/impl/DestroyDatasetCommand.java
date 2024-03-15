@@ -101,7 +101,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         if (!doomed.isHarvested()) {
             GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
             try {
-                if (idServiceBean.alreadyExists(doomed)) {
+                if (idServiceBean.alreadyRegistered(doomed)) {
                     idServiceBean.deleteIdentifier(doomed);
                     for (DataFile df : doomed.getFiles()) {
                         idServiceBean.deleteIdentifier(df);

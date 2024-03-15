@@ -1,49 +1,49 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
-import javax.json.JsonArray;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import jakarta.json.JsonArray;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import org.hamcrest.CoreMatchers;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
 import javax.imageio.ImageIO;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import static org.junit.Assert.assertNotEquals;
-import static java.lang.Thread.sleep;
-import javax.json.JsonObjectBuilder;
+
+import jakarta.json.JsonObjectBuilder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SearchIT {
 
     private static final Logger logger = Logger.getLogger(SearchIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
 
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -105,7 +105,7 @@ public class SearchIT {
         assertEquals(200, grantUser2AccessOnDataset.getStatusCode());
 
         String searchPart = "id:dataset_" + datasetId1 + "_draft";        
-        assertTrue("Failed test if search exceeds max duration " + searchPart , UtilIT.sleepForSearch(searchPart, apiToken2, "", UtilIT.MAXIMUM_INGEST_LOCK_DURATION)); 
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken2, "", UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if search exceeds max duration " + searchPart);
         
         Response shouldBeVisibleToUser2 = UtilIT.search("id:dataset_" + datasetId1 + "_draft", apiToken2);
         shouldBeVisibleToUser2.prettyPrint();
@@ -311,7 +311,7 @@ public class SearchIT {
         allFieldsFromCitation.then().assertThat()
                 .body("data.items[0].metadataBlocks.citation.displayName", CoreMatchers.equalTo("Citation Metadata"))
                 // Many fields returned, all of the citation block that has been filled in.
-                .body("data.items[0].metadataBlocks.citation.fields.typeName.size", Matchers.equalTo(5))
+                .body("data.items[0].metadataBlocks.citation.fields", Matchers.hasSize(5))
                 .statusCode(OK.getStatusCode());
 
     }
@@ -814,7 +814,7 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode());
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(4000);
         } catch (InterruptedException ex) {
             /**
              * This sleep is here because dataverseAlias2 is showing with
@@ -915,7 +915,7 @@ public class SearchIT {
         String searchPart = "*"; 
         
         Response searchPublishedSubtreeSuper = UtilIT.search(searchPart, apiTokenSuper, "&subtree="+parentDataverseAlias);
-        assertTrue("Failed test if search exceeds max duration " + searchPart , UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION)); 
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if search exceeds max duration " + searchPart);
         searchPublishedSubtreeSuper.prettyPrint();
         searchPublishedSubtreeSuper.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -966,6 +966,9 @@ public class SearchIT {
         Response datasetAsJson2 = UtilIT.nativeGet(datasetId2, apiToken);
         datasetAsJson2.then().assertThat()
                 .statusCode(OK.getStatusCode());
+        
+        // Wait a little while for the index to pick up the datasets, otherwise timing issue with searching for it.
+        UtilIT.sleepForReindex(datasetId2.toString(), apiToken, 2);
 
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         String identifier2 = JsonPath.from(datasetAsJson2.getBody().asString()).getString("data.identifier"); 
@@ -1282,7 +1285,7 @@ public class SearchIT {
 
     }
 
-    @After
+    @AfterEach
     public void tearDownDataverse() {
         File treesThumb = new File("scripts/search/data/binary/trees.png.thumb48");
         treesThumb.delete();
@@ -1292,7 +1295,7 @@ public class SearchIT {
         dataverseprojectThumb.delete();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
     }
 

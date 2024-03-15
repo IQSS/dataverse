@@ -8,6 +8,8 @@ Making Releases
 Introduction
 ------------
 
+Note: See :doc:`making-library-releases` for how to publish our libraries to Maven Central. 
+
 See :doc:`version-control` for background on our branching strategy.
 
 The steps below describe making both regular releases and hotfix releases.

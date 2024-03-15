@@ -154,6 +154,8 @@ In the following example, the database id of the file is 42::
 
     export FILE_ID=42
     curl "http://localhost:8080/api/admin/$FILE_ID/registerDataFile"
+    
+This method will return a FORBIDDEN response if minting of file PIDs is not enabled for the collection the file is in. (Note that it is possible to have file PIDs enabled for a specific collection, even when it is disabled for the Dataverse installation as a whole. See :ref:`collection-attributes-api` in the Native API Guide.)
 
 Mint PIDs for all unregistered published files in the specified collection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -162,7 +164,8 @@ The following API will register the PIDs for all the yet unregistered published 
 
     curl "http://localhost:8080/api/admin/registerDataFiles/{collection_alias}"
 
-It will not attempt to register the datafiles in its sub-collections, so this call will need to be repeated on any sub-collections where files need to be registered as well. File-level PID registration must be enabled on the collection. (Note that it is possible to have it enabled for a specific collection, even when it is disabled for the Dataverse installation as a whole. See :ref:`collection-attributes-api` in the Native API Guide.)
+It will not attempt to register the datafiles in its sub-collections, so this call will need to be repeated on any sub-collections where files need to be registered as well.
+File-level PID registration must be enabled on the collection. (Note that it is possible to have it enabled for a specific collection, even when it is disabled for the Dataverse installation as a whole. See :ref:`collection-attributes-api` in the Native API Guide.)
 
 This API will sleep for 1 second between registration calls by default. A longer sleep interval can be specified with an optional ``sleep=`` parameter::
 
@@ -171,7 +174,7 @@ This API will sleep for 1 second between registration calls by default. A longer
 Mint PIDs for ALL unregistered files in the database
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following API will attempt to register the PIDs for all the published files in your instance that do not yet have them::
+The following API will attempt to register the PIDs for all the published files in your instance, in collections that allow file PIDs, that do not yet have them::
 
     curl http://localhost:8080/api/admin/registerDataFileAll
 

@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.util.bagit;
 import edu.harvard.iq.dataverse.util.bagit.BagValidation.FileValidationResult;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.util.Optional;

@@ -21,12 +21,12 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.apache.commons.lang3.StringUtils;
 
 /**
