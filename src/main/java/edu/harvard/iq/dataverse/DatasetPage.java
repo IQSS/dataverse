@@ -5809,6 +5809,19 @@ public class DatasetPage implements java.io.Serializable {
 
     }
 
+    public String getCroissant() {
+        if (isThisLatestReleasedVersion()) {
+            final String CROISSANT_SCHEMA_NAME = "croissant";
+            ExportService instance = ExportService.getInstance();
+            String croissant = instance.getExportAsString(dataset, CROISSANT_SCHEMA_NAME);
+            if (croissant != null) {
+                logger.fine("Returning cached CROISSANT.");
+                return croissant;
+            } 
+        }
+        return "";
+    }
+
     public String getJsonLd() {
         if (isThisLatestReleasedVersion()) {
             ExportService instance = ExportService.getInstance();
