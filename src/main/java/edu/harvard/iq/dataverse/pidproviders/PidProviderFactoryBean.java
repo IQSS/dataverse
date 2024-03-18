@@ -123,7 +123,6 @@ public class PidProviderFactoryBean {
         if (!providers.isPresent()) {
             logger.warning(
                     "No PidProviders configured via dataverse.pid.providers. Please consider updating as older PIDProvider configuration mechanisms will be removed in a future version of Dataverse.");
-            return;
         } else {
             for (String id : providers.get()) {
                 //Allows spaces in PID_PROVIDERS setting

@@ -657,7 +657,7 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(FileMetadata fmd, boolean returnOwners, boolean printDatasetVersion) {
-        JsonObjectBuilder builder = jsonObjectBuilder();
+        NullSafeJsonBuilder builder = jsonObjectBuilder();
 
                 // deprecated: .add("category", fmd.getCategory())
                 // TODO: uh, figure out what to do here... it's deprecated
