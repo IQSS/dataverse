@@ -211,7 +211,7 @@
     <!-- http://stackoverflow.com/questions/13360706/solr-4-0-alphabetical-sorting-trouble/13361226#13361226 -->
     <field name="nameSort" type="alphaOnlySort" indexed="true" stored="true"/>
 
-    <field name="dateSort" type="pdate" indexed="true" stored="true" docValues="true"/>
+    <field name="dateSort" type="pdate" indexed="true" stored="true" />
 
     <!-- Added for Dataverse 4.0: release date https://redmine.hmdc.harvard.edu/issues/3592 -->
     <field name="releasedate" type="pint" indexed="true" stored="true"/>
