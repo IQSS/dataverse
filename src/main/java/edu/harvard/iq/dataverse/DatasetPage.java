@@ -5814,7 +5814,7 @@ public class DatasetPage implements java.io.Serializable {
             final String CROISSANT_SCHEMA_NAME = "croissant";
             ExportService instance = ExportService.getInstance();
             String croissant = instance.getExportAsString(dataset, CROISSANT_SCHEMA_NAME);
-            if (croissant != null) {
+            if (croissant != null && !croissant.isEmpty()) {
                 logger.fine("Returning cached CROISSANT.");
                 return croissant;
             } 
