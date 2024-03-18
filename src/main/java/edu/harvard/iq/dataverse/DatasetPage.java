@@ -5819,7 +5819,7 @@ public class DatasetPage implements java.io.Serializable {
                 return croissant;
             } 
         }
-        return "";
+        return null;
     }
 
     public String getJsonLd() {
