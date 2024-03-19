@@ -1303,9 +1303,18 @@ public class DataversePage implements java.io.Serializable {
         Set<String> providerIds = PidUtil.getManagedProviderIds();
         Set<Entry<String, String>> options = new HashSet<Entry<String, String>>();
         if (providerIds.size() > 1) {
-            String label = defaultPidProvider.getLabel() + BundleUtil.getStringFromBundle("dataverse.default") + ": "
-                    + defaultPidProvider.getProtocol() + ":" + defaultPidProvider.getAuthority()
-                    + defaultPidProvider.getSeparator() + defaultPidProvider.getShoulder();
+
+            String label = null;
+            if (this.dataverse.getOwner() != null && this.dataverse.getOwner().getEffectivePidGenerator()!= null) {
+                PidProvider inheritedPidProvider = this.dataverse.getOwner().getEffectivePidGenerator();
+                label = inheritedPidProvider.getLabel() + BundleUtil.getStringFromBundle("dataverse.inherited") + ": "
+                        + inheritedPidProvider.getProtocol() + ":" + inheritedPidProvider.getAuthority()
+                        + inheritedPidProvider.getSeparator() + inheritedPidProvider.getShoulder();
+            } else {
+                label = defaultPidProvider.getLabel() + BundleUtil.getStringFromBundle("dataverse.default") + ": "
+                        + defaultPidProvider.getProtocol() + ":" + defaultPidProvider.getAuthority()
+                        + defaultPidProvider.getSeparator() + defaultPidProvider.getShoulder();
+            }
             Entry<String, String> option = new AbstractMap.SimpleEntry<String, String>("default", label);
             options.add(option);
         }
