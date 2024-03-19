@@ -187,31 +187,32 @@ public class Search extends AbstractApiBean {
                 spelling_alternatives.add(entry.getKey(), entry.getValue().toString());
             }
 
-            JsonArrayBuilder facets = Json.createArrayBuilder();
-            JsonObjectBuilder facetCategoryBuilder = Json.createObjectBuilder();
-            for (FacetCategory facetCategory : solrQueryResponse.getFacetCategoryList()) {
-                JsonObjectBuilder facetCategoryBuilderFriendlyPlusData = Json.createObjectBuilder();
-                JsonArrayBuilder facetLabelBuilderData = Json.createArrayBuilder();
-                for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
-                    JsonObjectBuilder countBuilder = Json.createObjectBuilder();
-                    countBuilder.add(facetLabel.getName(), facetLabel.getCount());
-                    facetLabelBuilderData.add(countBuilder);
-                }
-                facetCategoryBuilderFriendlyPlusData.add("friendly", facetCategory.getFriendlyName());
-                facetCategoryBuilderFriendlyPlusData.add("labels", facetLabelBuilderData);
-                facetCategoryBuilder.add(facetCategory.getName(), facetCategoryBuilderFriendlyPlusData);
-            }
-            facets.add(facetCategoryBuilder);
-
             JsonObjectBuilder value = Json.createObjectBuilder()
                     .add("q", query)
                     .add("total_count", solrQueryResponse.getNumResultsFound())
                     .add("start", solrQueryResponse.getResultsStart())
                     .add("spelling_alternatives", spelling_alternatives)
                     .add("items", itemsArrayBuilder.build());
+
             if (showFacets) {
+                JsonArrayBuilder facets = Json.createArrayBuilder();
+                JsonObjectBuilder facetCategoryBuilder = Json.createObjectBuilder();
+                for (FacetCategory facetCategory : solrQueryResponse.getFacetCategoryList()) {
+                    JsonObjectBuilder facetCategoryBuilderFriendlyPlusData = Json.createObjectBuilder();
+                    JsonArrayBuilder facetLabelBuilderData = Json.createArrayBuilder();
+                    for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                        JsonObjectBuilder countBuilder = Json.createObjectBuilder();
+                        countBuilder.add(facetLabel.getName(), facetLabel.getCount());
+                        facetLabelBuilderData.add(countBuilder);
+                    }
+                    facetCategoryBuilderFriendlyPlusData.add("friendly", facetCategory.getFriendlyName());
+                    facetCategoryBuilderFriendlyPlusData.add("labels", facetLabelBuilderData);
+                    facetCategoryBuilder.add(facetCategory.getName(), facetCategoryBuilderFriendlyPlusData);
+                }
+                facets.add(facetCategoryBuilder);
                 value.add("facets", facets);
             }
+
             value.add("count_in_response", solrSearchResults.size());
             /**
              * @todo Returning the fq might be useful as a troubleshooting aid
