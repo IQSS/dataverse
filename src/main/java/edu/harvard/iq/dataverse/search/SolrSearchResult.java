@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.*;
-import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
@@ -25,9 +24,6 @@ import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 public class SolrSearchResult {
-	@Inject
-	DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
-
 	private static final Logger logger = Logger.getLogger(SolrSearchResult.class.getCanonicalName());
 
 	private String id;
@@ -399,15 +395,6 @@ public class SolrSearchResult {
 		return matchedFieldsArray;
 	}
 
-	public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
-		return toJsonObject(showRelevance, showEntityIds, showApiUrls, null);
-	}
-
-	public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds, boolean showApiUrls,
-			List<String> metadataFields) {
-		return json(showRelevance, showEntityIds, showApiUrls, metadataFields).build();
-	}
-
 	/**
 	 * Add additional fields for the MyData page
 	 *
@@ -446,12 +433,10 @@ public class SolrSearchResult {
 	} // getJsonForMydata
 
 	public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
-		return json(showRelevance, showEntityIds, showApiUrls, null);
+		return json(showRelevance, showEntityIds, showApiUrls, null, null);
 	}
 
-	public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls,
-			List<String> metadataFields) {
-
+	public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, List<String> metadataFields, Long datasetFileCount) {
 		if (this.type == null) {
 			return jsonObjectBuilder();
 		}
@@ -567,7 +552,7 @@ public class SolrSearchResult {
 					subjects.add(subject);
 				}
 				nullSafeJsonBuilder.add("subjects", subjects);
-				nullSafeJsonBuilder.add("fileCount", datasetVersionFilesServiceBean.getFileMetadataCount(dv));
+				nullSafeJsonBuilder.add("fileCount", datasetFileCount);
 				nullSafeJsonBuilder.add("versionId", dv.getId());
 				nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
 				if (this.isPublishedState()) {

@@ -1,10 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -16,7 +14,6 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchUtil;
-import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
@@ -26,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
+import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -51,10 +49,8 @@ public class Search extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     DataverseServiceBean dataverseService;
-    @EJB
-    DvObjectServiceBean dvObjectService;
-    @EJB
-    SolrIndexServiceBean SolrIndexService;
+    @Inject
+    DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
 
     @GET
     @AuthRequired
@@ -179,7 +175,9 @@ public class Search extends AbstractApiBean {
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
-                itemsArrayBuilder.add(solrSearchResult.toJsonObject(showRelevance, showEntityIds, showApiUrls, metadataFields));
+                DvObject dvObject = solrSearchResult.getEntity();
+                Long datasetFileCount = getDatasetFileCount(dvObject, solrSearchResult);
+                itemsArrayBuilder.add(solrSearchResult.json(showRelevance, showEntityIds, showApiUrls, metadataFields, datasetFileCount));
             }
 
             JsonObjectBuilder spelling_alternatives = Json.createObjectBuilder();
@@ -231,6 +229,14 @@ public class Search extends AbstractApiBean {
         } else {
             return error(Response.Status.BAD_REQUEST, "q parameter is missing");
         }
+    }
+
+    private Long getDatasetFileCount(DvObject dvObject, SolrSearchResult solrSearchResult) {
+        if (dvObject.isInstanceofDataset()) {
+            DatasetVersion datasetVersion = ((Dataset) dvObject).getVersionFromId(solrSearchResult.getDatasetVersionId());
+            return datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion);
+        }
+        return null;
     }
 
     private User getUser(ContainerRequestContext crc) throws WrappedResponse {
