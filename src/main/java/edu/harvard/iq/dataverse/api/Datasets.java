@@ -437,6 +437,10 @@ public class Datasets extends AbstractApiBean {
                                                                             headers, 
                                                                             includeDeaccessioned,
                                                                             checkPerms);
+
+            if (requestedDatasetVersion == null || requestedDatasetVersion.getId() == null) {
+                return notFound("Dataset version not found");
+            }
             
             DatasetVersion latestDatasetVersion = null;
 
@@ -451,10 +455,6 @@ public class Datasets extends AbstractApiBean {
                                                             headers,
                                                             deaccesionedLookup,
                                                             checkPerms);
-           
-            if (requestedDatasetVersion == null || requestedDatasetVersion.getId() == null) {
-                return notFound("Dataset version not found");
-            }
 
             if (excludeFiles == null ? true : !excludeFiles) {
                 requestedDatasetVersion = datasetversionService.findDeep(requestedDatasetVersion.getId());
