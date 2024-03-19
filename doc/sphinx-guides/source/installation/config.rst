@@ -1383,7 +1383,7 @@ Rate limiting can be configured on a tier level with tier 0 being reserved for g
 Superuser accounts are exempt from rate limiting.
 Rate limits can be imposed on command APIs by configuring the tier, the command, and the hourly limit in the database.
 Two database settings configure the rate limiting.
-Note: If either of these settings exist in the database rate limiting will be enabled. If neither setting exists rate limiting is disabled.
+Note: If either of these settings exist in the database rate limiting will be enabled (note that a Payara restart is required for the setting to take effect). If neither setting exists rate limiting is disabled.
 
 - :RateLimitingDefaultCapacityTiers is the number of calls allowed per hour if the specific command is not configured. The values represent the number of calls per hour per user for tiers 0,1,...
   A value of -1 can be used to signify no rate limit. Tiers not specified in this setting will default to `-1` (No Limit). I.e., -d "10000" is equivalent to -d "10000,-1,-1,..."
