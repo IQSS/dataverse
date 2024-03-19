@@ -1,0 +1,1 @@
+When a Dataverse installation is provided with a dataverse-exporter for the croissant format, the content for JSON-LD in the header will be replaced with the croissant format. However, both JSON-LD and Croissant will still be available for download on the Dataset page.
