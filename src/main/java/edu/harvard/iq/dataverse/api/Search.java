@@ -175,9 +175,7 @@ public class Search extends AbstractApiBean {
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
-                DvObject dvObject = solrSearchResult.getEntity();
-                Long datasetFileCount = getDatasetFileCount(dvObject, solrSearchResult);
-                itemsArrayBuilder.add(solrSearchResult.json(showRelevance, showEntityIds, showApiUrls, metadataFields, datasetFileCount));
+                itemsArrayBuilder.add(solrSearchResult.json(showRelevance, showEntityIds, showApiUrls, metadataFields, getDatasetFileCount(solrSearchResult)));
             }
 
             JsonObjectBuilder spelling_alternatives = Json.createObjectBuilder();
@@ -231,7 +229,8 @@ public class Search extends AbstractApiBean {
         }
     }
 
-    private Long getDatasetFileCount(DvObject dvObject, SolrSearchResult solrSearchResult) {
+    private Long getDatasetFileCount(SolrSearchResult solrSearchResult) {
+        DvObject dvObject = solrSearchResult.getEntity();
         if (dvObject.isInstanceofDataset()) {
             DatasetVersion datasetVersion = ((Dataset) dvObject).getVersionFromId(solrSearchResult.getDatasetVersionId());
             return datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion);
