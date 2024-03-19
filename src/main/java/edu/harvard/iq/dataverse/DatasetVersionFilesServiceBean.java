@@ -46,6 +46,16 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * Given a DatasetVersion, returns its total file metadata count
      *
      * @param datasetVersion the DatasetVersion to access
+     * @return long value of total file metadata count
+     */
+    public long getFileMetadataCount(DatasetVersion datasetVersion) {
+        return getFileMetadataCount(datasetVersion, new FileSearchCriteria(null, null, null, null, null));
+    }
+
+    /**
+     * Given a DatasetVersion, returns its total file metadata count
+     *
+     * @param datasetVersion the DatasetVersion to access
      * @param searchCriteria for counting only files matching this criteria
      * @return long value of total file metadata count
      */
