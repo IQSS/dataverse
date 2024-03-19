@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -341,6 +342,8 @@ public class IndexServiceBean {
     private static final Map<Long, Dataset> NEXT_TO_INDEX = new ConcurrentHashMap<>();
     // indexingNow is a set of dataset ids of datasets being indexed asynchronously right now
     private static final Map<Long, Boolean> INDEXING_NOW = new ConcurrentHashMap<>();
+    // semaphore for async indexing
+    private static final Semaphore ASYNC_INDEX_SEMAPHORE = new Semaphore(JvmSettings.MAX_ASYNC_INDEXES.lookupOptional(Integer.class).orElse(4), true);
 
     // When you pass null as Dataset parameter to this method, it indicates that the indexing of the dataset with "id" has finished
     // Pass non-null Dataset to schedule it for indexing
@@ -385,6 +388,19 @@ public class IndexServiceBean {
      */
     @Asynchronous
     public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+        try {
+            ASYNC_INDEX_SEMAPHORE.acquire();
+            doAyncIndexDataset(dataset, doNormalSolrDocCleanUp);
+        } catch (InterruptedException e) {
+            String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+        } finally {
+            ASYNC_INDEX_SEMAPHORE.release();
+        }
+    }
+
+    private void doAyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         Long id = dataset.getId();
         Dataset next = getNextToIndex(id, dataset); // if there is an ongoing index job for this dataset, next is null (ongoing index job will reindex the newest version after current indexing finishes)
         while (next != null) {
@@ -402,7 +418,16 @@ public class IndexServiceBean {
     @Asynchronous
     public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
         for(Dataset dataset : datasets) {
-            asyncIndexDataset(dataset, true);
+            try {
+                ASYNC_INDEX_SEMAPHORE.acquire();
+                doAyncIndexDataset(dataset, true);
+            } catch (InterruptedException e) {
+                String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+                failureLogText += "\r\n" + e.getLocalizedMessage();
+                LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+            } finally {
+                ASYNC_INDEX_SEMAPHORE.release();
+            }
         }
     }
     
@@ -414,7 +439,7 @@ public class IndexServiceBean {
         }
     }
 
-    private void indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
+    public void indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         doIndexDataset(dataset, doNormalSolrDocCleanUp);
         updateLastIndexedTime(dataset.getId());
     }

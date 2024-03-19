@@ -2352,6 +2352,15 @@ when using it to configure your core name!
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PATH``.
 
+dataverse.concurrency.max-async-indexes
++++++++++++++++++++
+
+Maximum number of simultaneously running asynchronous dataset index operations.
+
+Defaults to ``4``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_CONCURRENCY_MAX_ASYNC_INDEXES``.
+
 dataverse.rserve.host
 +++++++++++++++++++++
 

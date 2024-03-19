@@ -247,6 +247,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         logger.info("Successfully published the dataset "+readyDataset.getGlobalId().asString());
         readyDataset = ctxt.em().merge(readyDataset);
+
+        try {
+            ctxt.index().indexDataset(readyDataset, true);
+        } catch (SolrServerException | IOException e) {
+            throw new CommandException("Indexing failed: " + e.getMessage(), this);
+        }
         
         return readyDataset;
     }
@@ -267,7 +273,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         } catch (Exception e) {
             logger.warning("Failure to send dataset published messages for : " + dataset.getId() + " : " + e.getMessage());
         }
-        ctxt.index().asyncIndexDataset(dataset, true);                   
         
         //re-indexing dataverses that have additional subjects
         if (!dataversesToIndex.isEmpty()){
