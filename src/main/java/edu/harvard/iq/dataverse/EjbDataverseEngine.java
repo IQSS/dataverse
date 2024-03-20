@@ -130,6 +130,9 @@ public class EjbDataverseEngine {
     DatasetLinkingServiceBean dsLinking;
 
     @EJB
+    DatasetFieldServiceBean dsField;
+
+    @EJB
     ExplicitGroupServiceBean explicitGroups;
 
     @EJB
@@ -498,7 +501,12 @@ public class EjbDataverseEngine {
                 public DatasetLinkingServiceBean dsLinking() {
                     return dsLinking;
                 }
-                
+
+                @Override
+                public DatasetFieldServiceBean dsField() {
+                    return dsField;
+                }
+
                 @Override
                 public StorageUseServiceBean storageUse() {
                     return storageUseService;

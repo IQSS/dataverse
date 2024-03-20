@@ -151,6 +151,11 @@ public class TestCommandContext implements CommandContext {
     }
 
     @Override
+    public DatasetFieldServiceBean dsField() {
+        return null;
+    }
+
+    @Override
     public AuthenticationServiceBean authentication() {
         return null;
     }
