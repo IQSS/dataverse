@@ -1143,6 +1143,7 @@ File access filtering is also optionally supported. In particular, by the follow
 * ``Restricted``
 * ``EmbargoedThenRestricted``
 * ``EmbargoedThenPublic``
+* ``RetentionPeriodExpired``
 
 If no filter is specified, the files will match all of the above categories.
 
@@ -1192,7 +1193,7 @@ The returned file counts are based on different criteria:
 - Per content type
 - Per category name
 - Per tabular tag name
-- Per access status (Possible values: Public, Restricted, EmbargoedThenRestricted, EmbargoedThenPublic)
+- Per access status (Possible values: Public, Restricted, EmbargoedThenRestricted, EmbargoedThenPublic, RetentionPeriodExpired)
 
 .. code-block:: bash
 
@@ -1246,6 +1247,7 @@ File access filtering is also optionally supported. In particular, by the follow
 * ``Restricted``
 * ``EmbargoedThenRestricted``
 * ``EmbargoedThenPublic``
+* ``RetentionPeriodExpired``
 
 If no filter is specified, the files will match all of the above categories.
 
@@ -2061,6 +2063,7 @@ File access filtering is also optionally supported. In particular, by the follow
 * ``Restricted``
 * ``EmbargoedThenRestricted``
 * ``EmbargoedThenPublic``
+* ``RetentionPeriodExpired``
 
 If no filter is specified, the files will match all of the above categories.
 
