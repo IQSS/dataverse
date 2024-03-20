@@ -1114,14 +1114,13 @@ public class IndexServiceBean {
                         "We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
             }
             LocalDate embargoEndDate=null;
-            LocalDate end = null;
             LocalDate retentionEndDate=null;
-            LocalDate start = null;
             final String datasetCitation = dataset.getCitation();
             final Long datasetId = dataset.getId();
             final String datasetGlobalId = dataset.getGlobalId().toString();
             for (FileMetadata fileMetadata : fileMetadatas) {
-               
+                LocalDate end = null;
+                LocalDate start = null;
                 Embargo emb= fileMetadata.getDataFile().getEmbargo();
                 if(emb!=null) {
                     end = emb.getDateAvailable();
