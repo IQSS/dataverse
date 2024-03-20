@@ -68,7 +68,7 @@ The script will prompt you for some configuration values. If this is a test/eval
 
 If desired, these default values can be configured by creating a ``default.config`` (example :download:`here <../../../../scripts/installer/default.config>`) file in the installer's working directory with new values (if this file isn't present, the above defaults will be used).
 
-This allows the installer to be run in non-interactive mode (with ``./install -y -f > install.out 2> install.err``), which can allow for easier interaction with automated provisioning tools.
+This allows the installer to be run in non-interactive mode (with ``./install.py -y -f > install.out 2> install.err``), which can allow for easier interaction with automated provisioning tools.
 
 All the Payara configuration tasks performed by the installer are isolated in the shell script ``dvinstall/as-setup.sh`` (as ``asadmin`` commands). 
 

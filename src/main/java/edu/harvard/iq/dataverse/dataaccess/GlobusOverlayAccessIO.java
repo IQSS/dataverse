@@ -171,24 +171,25 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     }
 
     protected void validatePath(String relPath) throws IOException {
-        if (isManaged()) {
-            if (!usesStandardNamePattern(relPath)) {
-                throw new IOException("Unacceptable identifier pattern in submitted identifier: " + relPath);
-            }
-        } else {
-            try {
-                String endpoint = findMatchingEndpoint(relPath, allowedEndpoints);
-                logger.fine(endpoint + "  " + relPath);
-
-                if (endpoint == null || !Paths.get(endpoint, relPath).normalize().startsWith(endpoint)) {
-                    throw new IOException(
-                            "storageidentifier doesn't start with one of " + this.driverId + "'s allowed endpoints");
+        if (dvObject != null && dvObject.isInstanceofDataFile()) {
+            if (isManaged()) {
+                if (!usesStandardNamePattern(relPath)) {
+                    throw new IOException("Unacceptable identifier pattern in submitted identifier: " + relPath);
                 }
-            } catch (InvalidPathException e) {
-                throw new IOException("Could not interpret storageidentifier in globus store " + this.driverId);
+            } else {
+                try {
+                    String endpoint = findMatchingEndpoint(relPath, allowedEndpoints);
+                    logger.fine(endpoint + "  " + relPath);
+
+                    if (endpoint == null || !Paths.get(endpoint, relPath).normalize().startsWith(endpoint)) {
+                        throw new IOException("storageidentifier doesn't start with one of " + this.driverId
+                                + "'s allowed endpoints");
+                    }
+                } catch (InvalidPathException e) {
+                    throw new IOException("Could not interpret storageidentifier in globus store " + this.driverId);
+                }
             }
         }
-
     }
 
     // Call the Globus API to get the file size
@@ -214,7 +215,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                 JsonArray dataArray = responseJson.getJsonArray("DATA");
                 if (dataArray != null && dataArray.size() != 0) {
                     //File found
-                    return (long) responseJson.getJsonArray("DATA").getJsonObject(0).getInt("size");
+                    return (long) responseJson.getJsonArray("DATA").getJsonObject(0).getJsonNumber("size").longValueExact();
                 }
             } else {
                 logger.warning("Response from " + get.getURI().toString() + " was "
@@ -239,7 +240,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     public InputStream getInputStream() throws IOException {
         //Currently only supported when using an S3 store with the Globus S3Connector.
         //ToDo: Support when using a managed Globus endpoint that supports http access
-        if(!AbstractRemoteOverlayAccessIO.isNotDataverseAccessible(endpoint)) {
+        if(StorageIO.isDataverseAccessible(endpoint)) {
             return baseStore.getInputStream();
         } else {
             throw new IOException("Not implemented");
@@ -450,8 +451,12 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                     this.setSize(retrieveSizeFromMedia());
                 }
                 // Only applies for the S3 Connector case (where we could have run an ingest)
-                if (dataFile.getContentType() != null && dataFile.getContentType().equals("text/tab-separated-values")
-                        && dataFile.isTabularData() && dataFile.getDataTable() != null && (!this.noVarHeader())) {
+                if (dataFile.getContentType() != null 
+                        && dataFile.getContentType().equals("text/tab-separated-values")
+                        && dataFile.isTabularData() 
+                        && dataFile.getDataTable() != null 
+                        && (!this.noVarHeader())
+                        && (!dataFile.getDataTable().isStoredWithVariableHeader())) {
 
                     List<DataVariable> datavariables = dataFile.getDataTable().getDataVariables();
                     String varHeaderLine = generateVariableHeader(datavariables);

@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -784,6 +783,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.DATASET_PERSISTENT_ID, dataset.getGlobalId().toString());
         solrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
+
         boolean valid;
         if (!indexableDataset.getDatasetVersion().isDraft()) {
             valid = true;
@@ -854,6 +854,8 @@ public class IndexServiceBean {
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
         String parentDatasetTitle = "TBD";
         if (datasetVersion != null) {
+
+            addLicenseToSolrDoc(solrInputDocument, datasetVersion);
 
             solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
             solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(false));
@@ -956,22 +958,39 @@ public class IndexServiceBean {
                             }
                         }
                         if (dsfType.isControlledVocabulary()) {
-                            for (ControlledVocabularyValue controlledVocabularyValue : dsf.getControlledVocabularyValues()) {
-                                if (controlledVocabularyValue.getStrValue().equals(DatasetField.NA_VALUE)) {
-                                    continue;
-                                }
+                            /** If the cvv list is empty but the dfv list is not then it is assumed this was harvested
+                             *  from an installation that had controlled vocabulary entries that don't exist in our this db
+                             * @see <a href="https://github.com/IQSS/dataverse/issues/9992">Feature Request/Idea: Harvest metadata values that aren't from a list of controlled values #9992</a>
+                             */
+                            if (dsf.getControlledVocabularyValues().isEmpty()) {
+                                for (DatasetFieldValue dfv : dsf.getDatasetFieldValues()) {
+                                    if (dfv.getValue().equals(DatasetField.NA_VALUE)) {
+                                        continue;
+                                    }
+                                    solrInputDocument.addField(solrFieldSearchable, dfv.getValue());
 
-                                // Index in all used languages (display and metadata languages
-                                if (!dsfType.isAllowMultiples() || langs.isEmpty()) {
-                                    solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getStrValue());
-                                } else {
-                                    for(String locale: langs) {
-                                        solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getLocaleStrValue(locale));
+                                    if (dsfType.getSolrField().isFacetable()) {
+                                        solrInputDocument.addField(solrFieldFacetable, dfv.getValue());
                                     }
                                 }
+                            } else {
+                                for (ControlledVocabularyValue controlledVocabularyValue : dsf.getControlledVocabularyValues()) {
+                                    if (controlledVocabularyValue.getStrValue().equals(DatasetField.NA_VALUE)) {
+                                        continue;
+                                    }
 
-                                if (dsfType.getSolrField().isFacetable()) {
-                                    solrInputDocument.addField(solrFieldFacetable, controlledVocabularyValue.getStrValue());
+                                    // Index in all used languages (display and metadata languages
+                                    if (!dsfType.isAllowMultiples() || langs.isEmpty()) {
+                                        solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getStrValue());
+                                    } else {
+                                        for(String locale: langs) {
+                                            solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getLocaleStrValue(locale));
+                                        }
+                                    }
+
+                                    if (dsfType.getSolrField().isFacetable()) {
+                                        solrInputDocument.addField(solrFieldFacetable, controlledVocabularyValue.getStrValue());
+                                    }
                                 }
                             }
                         } else if (dsfType.getFieldType().equals(DatasetFieldType.FieldType.TEXTBOX)) {
@@ -1242,6 +1261,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameCompleteFinal);
 
                     datafileSolrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
+                    addLicenseToSolrDoc(datafileSolrInputDocument, datasetVersion);
 
                     /**
                      * for rules on sorting files see
@@ -1609,6 +1629,16 @@ public class IndexServiceBean {
             subtrees.add(pathBuilder.toString());
         }
         return subtrees;
+    }
+
+    private void addLicenseToSolrDoc(SolrInputDocument solrInputDocument, DatasetVersion datasetVersion) {
+        if (datasetVersion != null && datasetVersion.getTermsOfUseAndAccess() != null) {
+            String licenseName = "Custom Terms";
+            if(datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
+                licenseName = datasetVersion.getTermsOfUseAndAccess().getLicense().getName();
+            }
+            solrInputDocument.addField(SearchFields.DATASET_LICENSE, licenseName);
+        }
     }
 
     private void addDataverseReleaseDateToSolrDoc(SolrInputDocument solrInputDocument, Dataverse dataverse) {
