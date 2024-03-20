@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CheckRateLimitForCollectionPage;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateSavedSearchCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
@@ -31,6 +32,8 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
+
+import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import jakarta.ejb.EJB;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -118,6 +121,8 @@ public class DataversePage implements java.io.Serializable {
     @Inject DataverseHeaderFragment dataverseHeaderFragment;
     @EJB
     PidProviderFactoryBean pidProviderFactoryBean;
+    @EJB
+    CacheFactoryBean cacheFactory;
 
     private Dataverse dataverse = new Dataverse();  
 
@@ -318,7 +323,10 @@ public class DataversePage implements java.io.Serializable {
     
     public String init() {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-
+        // Check for rate limit exceeded. Must be done before anything else to prevent unnecessary processing.
+        if (!cacheFactory.checkRate(session.getUser(), new CheckRateLimitForCollectionPage(null,null))) {
+            return BundleUtil.getStringFromBundle("command.exception.user.ratelimited", Arrays.asList(CheckRateLimitForCollectionPage.class.getSimpleName()));
+        }
         if (this.getAlias() != null || this.getId() != null || this.getOwnerId() == null) {// view mode for a dataverse
             if (this.getAlias() != null) {
                 dataverse = dataverseService.findByAlias(this.getAlias());
