@@ -32,10 +32,13 @@ public class CacheFactoryBean implements java.io.Serializable {
 
     @PostConstruct
     public void init() {
-        CompleteConfiguration<String, String> config =
-                new MutableConfiguration<String, String>()
-                        .setTypes( String.class, String.class );
-        rateLimitCache = manager.createCache(RATE_LIMIT_CACHE, config);
+        rateLimitCache = manager.getCache(RATE_LIMIT_CACHE);
+        if (rateLimitCache == null) {
+            CompleteConfiguration<String, String> config =
+                    new MutableConfiguration<String, String>()
+                            .setTypes( String.class, String.class );
+            rateLimitCache = manager.createCache(RATE_LIMIT_CACHE, config);
+        }
     }
 
     /**
