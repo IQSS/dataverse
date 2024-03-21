@@ -199,6 +199,32 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         };
     }
 
+    /**
+     * Determines whether or not a DataFile is present in a DatasetVersion
+     *
+     * @param datasetVersion the DatasetVersion to check
+     * @param dataFile the DataFile to check
+     * @return boolean value
+     */
+    public boolean isDataFilePresentInDatasetVersion(DatasetVersion datasetVersion, DataFile dataFile) {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+        Root<DataFile> dataFileRoot = criteriaQuery.from(DataFile.class);
+        Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
+        Root<DatasetVersion> datasetVersionRoot = criteriaQuery.from(DatasetVersion.class);
+        criteriaQuery
+                .select(criteriaBuilder.count(dataFileRoot))
+                .where(criteriaBuilder.and(
+                        criteriaBuilder.equal(dataFileRoot.get("id"), dataFile.getId()),
+                        criteriaBuilder.equal(datasetVersionRoot.get("id"), datasetVersion.getId()),
+                        fileMetadataRoot.in(dataFileRoot.get("fileMetadatas")),
+                        fileMetadataRoot.in(datasetVersionRoot.get("fileMetadatas"))
+                        )
+                );
+        Long count = em.createQuery(criteriaQuery).getSingleResult();
+        return count != null && count > 0;
+    }
+
     private void addAccessStatusCountToTotal(DatasetVersion datasetVersion, Map<FileAccessStatus, Long> totalCounts, FileAccessStatus dataFileAccessStatus, FileSearchCriteria searchCriteria) {
         long fileMetadataCount = getFileMetadataCountByAccessStatus(datasetVersion, dataFileAccessStatus, searchCriteria);
         if (fileMetadataCount > 0) {
