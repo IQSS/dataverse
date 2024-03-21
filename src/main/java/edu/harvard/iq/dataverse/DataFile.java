@@ -227,10 +227,10 @@ public class DataFile extends DvObject implements Comparable {
 
     private char ingestStatus = INGEST_STATUS_NONE; 
     
-    @OneToOne(mappedBy = "thumbnailFile", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "thumbnailFile")
     private Dataset thumbnailForDataset;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name="embargo_id")
     private Embargo embargo;
 
