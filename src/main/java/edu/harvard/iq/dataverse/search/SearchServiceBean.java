@@ -214,16 +214,17 @@ public class SearchServiceBean {
         }
         
         List<DataverseMetadataBlockFacet> metadataBlockFacets = new LinkedList<>();
-        
-        /*
-         * We talked about this in slack on 2021-09-14, Users can see objects on draft/unpublished 
-         *  if the owner gives permissions to all users so it makes sense to expose this facet 
-         *  to all users. The request of this change started because the order of the facets were 
-         *  changed with the PR #9635 and this was unintended.
-         */
-         solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
 
         if (addFacets) {
+
+            /*
+            * We talked about this in slack on 2021-09-14, Users can see objects on draft/unpublished 
+            *  if the owner gives permissions to all users so it makes sense to expose this facet 
+            *  to all users. The request of this change started because the order of the facets were 
+            *  changed with the PR #9635 and this was unintended.
+            */
+            solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
+
             // -----------------------------------
             // Facets to Retrieve
             // -----------------------------------
