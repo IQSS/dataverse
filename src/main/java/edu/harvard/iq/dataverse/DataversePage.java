@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CheckRateLimitForCollectionPage;
+import edu.harvard.iq.dataverse.engine.command.impl.CheckRateLimitForCollectionPageCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateSavedSearchCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
@@ -118,6 +118,8 @@ public class DataversePage implements java.io.Serializable {
     @EJB
     DataverseLinkingServiceBean linkingService;
     @Inject PermissionsWrapper permissionsWrapper;
+    @Inject 
+    NavigationWrapper navigationWrapper;
     @Inject DataverseHeaderFragment dataverseHeaderFragment;
     @EJB
     PidProviderFactoryBean pidProviderFactoryBean;
@@ -324,8 +326,8 @@ public class DataversePage implements java.io.Serializable {
     public String init() {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         // Check for rate limit exceeded. Must be done before anything else to prevent unnecessary processing.
-        if (!cacheFactory.checkRate(session.getUser(), new CheckRateLimitForCollectionPage(null,null))) {
-            return BundleUtil.getStringFromBundle("command.exception.user.ratelimited", Arrays.asList(CheckRateLimitForCollectionPage.class.getSimpleName()));
+        if (!cacheFactory.checkRate(session.getUser(), new CheckRateLimitForCollectionPageCommand(null,null))) {
+            return navigationWrapper.tooManyRequests();
         }
         if (this.getAlias() != null || this.getId() != null || this.getOwnerId() == null) {// view mode for a dataverse
             if (this.getAlias() != null) {
