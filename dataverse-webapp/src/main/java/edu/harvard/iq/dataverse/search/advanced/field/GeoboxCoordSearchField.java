@@ -45,6 +45,9 @@ public class GeoboxCoordSearchField extends SearchField {
                 .filter(f -> StringUtils.isNotBlank(f.getSingleValue()))
                 .map(f -> f.getSingleValue() + f.getDatasetFieldType().getMetadata("geoboxCoord"))
                 .collect(Collectors.joining("|"));
+        if (coords.isEmpty()) {
+            return QueryPart.EMPTY;
+        }
         return new QueryPart(QueryPartType.FILTER, String.format("[GEO[%s|%s]]", parent.getDatasetFieldType().getName(), coords));
     }
 

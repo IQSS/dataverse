@@ -31,6 +31,7 @@ import io.vavr.Tuple;
 import org.apache.commons.lang3.StringUtils;
 import org.omnifaces.cdi.ViewScoped;
 
+import javax.annotation.PostConstruct;
 import javax.faces.model.SelectItem;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -100,6 +101,7 @@ public class AdvancedSearchPage implements Serializable {
 
     // -------------------- LOGIC --------------------
 
+    @PostConstruct
     public void init() {
         if (dataverseIdentifier != null) {
             dataverse = dataverseDao.findByAlias(dataverseIdentifier);
