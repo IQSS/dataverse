@@ -1,0 +1,1 @@
+In version 6.1, the publication status facet location was unintentionally moved to the bottom, and it also prevented it from being visible to guest users. In version 6.2, we have restored its visibility to all users and moved it back to the top of the list.
