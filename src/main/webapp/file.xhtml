@@ -161,19 +161,19 @@
                                                         <li>
                                                             <h:commandLink
                                                                 id="endNoteLink" value="#{bundle['dataset.cite.downloadBtn.xml']}"
-                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}"
+                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion)}"
                                                             />
                                                         </li>
                                                         <li>
                                                             <h:commandLink
                                                                 id="risLink" value="#{bundle['dataset.cite.downloadBtn.ris']}"
-                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion.dataset)}"
+                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion)}"
                                                             />
                                                         </li>
                                                         <li>
                                                             <h:commandLink
                                                                 id="bibLink" value="#{bundle['dataset.cite.downloadBtn.bib']}" target="_blank"
-                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion.dataset)}"
+                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion)}"
                                                             />
                                                         </li>
                                                     </ul>
