@@ -169,7 +169,7 @@
         </div>
     </p:dialog>
 
-    <!-- Retention Dialog-->
+    <!-- Retention Period Dialog-->
     <p:dialog id="fileRetentionPopup" styleClass="smallPopUp" resizable="false" header="#{bundle['file.editRetention']}" widgetVar="fileRetentionPopup" modal="true" rendered="#{bean != EditDatafilesPage}">
         <p:focus for="fileRetentionDate"/>
         <p class="help-block" jsf:rendered="#{bean.validRetentionSelection}">#{bundle['file.editRetentionDialog.tip']}</p>
