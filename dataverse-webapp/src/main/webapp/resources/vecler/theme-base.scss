@@ -2130,7 +2130,7 @@ $navbar-height: 102px;
 
 	#topNavBar .navbar-nav {
 		> li {
-			height: 40px;
+			min-height: 40px;
 			vertical-align: bottom;
 			float: none;
 			display: inline-block;
