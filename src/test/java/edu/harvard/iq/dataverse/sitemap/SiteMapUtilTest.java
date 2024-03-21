@@ -141,7 +141,7 @@ class SiteMapUtilTest {
         final List<Dataset> datasets = new ArrayList<>(nbDataset);
         for (int i = 1; i <= nbDataset; i++) {
             final Dataset published = new Dataset();
-            published.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL, "10.666", String.format("FAKE/published%s", i), null, DOIServiceBean.DOI_RESOLVER_URL, null));
+            published.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.666", String.format("FAKE/published%s", i), null, AbstractDOIProvider.DOI_RESOLVER_URL, null));
             published.setPublicationDate(new Timestamp(new Date().getTime()));
             published.setModificationTime(new Timestamp(new Date().getTime()));
             datasets.add(published);
