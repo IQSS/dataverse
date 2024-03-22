@@ -6,9 +6,8 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
-public class CheckRateLimitForDatasetPage  extends AbstractVoidCommand {
-
-    public CheckRateLimitForDatasetPage(DataverseRequest aRequest, DvObject dvObject) {
+public class CheckRateLimitForCollectionPageCommand extends AbstractVoidCommand {
+    public CheckRateLimitForCollectionPageCommand(DataverseRequest aRequest, DvObject dvObject) {
         super(aRequest, dvObject);
     }
 
