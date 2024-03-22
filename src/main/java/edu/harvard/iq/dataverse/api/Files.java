@@ -497,7 +497,7 @@ public class Files extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{datasetVersionId}")
-    public Response getFileData(@Context ContainerRequestContext crc,
+    public Response getFileDataForVersion(@Context ContainerRequestContext crc,
                                 @PathParam("id") String fileIdOrPersistentId,
                                 @PathParam("datasetVersionId") String datasetVersionId,
                                 @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
