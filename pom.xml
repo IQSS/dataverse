@@ -902,7 +902,7 @@
                             <goal>generate-schema</goal>
                         </goals>
                         <!-- Plugin scans class files, not sources. Execute after compile phase but before package -->
-                        <phase>prepare-package</phase>
+                        <phase>process-classes</phase>
                         <configuration>
                             <outputDirectory>${openapi.outputDirectory}</outputDirectory>
                             <schemaFilename>openapi</schemaFilename>
