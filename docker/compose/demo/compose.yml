@@ -49,6 +49,8 @@ services:
     container_name: "bootstrap"
     image: gdcc/configbaker:alpha
     restart: "no"
+    environment:
+      - TIMEOUT=3m
     command:
       - bootstrap.sh
       - dev
