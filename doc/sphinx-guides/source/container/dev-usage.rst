@@ -259,7 +259,7 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
 
         **IMPORTANT**: This requires installation of the `Docker plugin <https://plugins.jetbrains.com/plugin/7724-docker>`_.
 
-        **NOTE**: You might need to change the Docker Compose executable in your IDE settings to ``docker`` if you have no ``docker-compose`` bin (*File > Settings > Build > Docker > Tools*).
+        **NOTE**: You might need to change the Docker Compose executable in your IDE settings to ``docker`` if you have no ``docker-compose`` bin, Start from the ``File`` menu if you are on Linux/Windows or ``IntelliJ IDEA`` on Mac and then go to Settings > Build > Docker > Tools. (*File > Settings > Build > Docker > Tools*).
 
         .. image:: img/intellij-compose-add-new-config.png
 
