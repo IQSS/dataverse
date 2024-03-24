@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import jakarta.ws.rs.Produces;
 import org.apache.commons.io.IOUtils;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -23,6 +24,9 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("info")
 public class Info extends AbstractApiBean {
@@ -49,6 +53,10 @@ public class Info extends AbstractApiBean {
 
     @GET
     @Path("version")
+    @Operation(summary = "Get version and build information", description = "Get version and build information")
+    @APIResponse(responseCode = "200",
+                 description = "Version and build information")
+    @Tag(name = "version", description = "Version and build information")
     public Response getInfo() {
         String versionStr = systemConfig.getVersion(true);
         String[] comps = versionStr.split("build",2);
