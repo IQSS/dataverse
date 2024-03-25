@@ -267,7 +267,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         } catch (Exception e) {
             logger.warning("Failure to send dataset published messages for : " + dataset.getId() + " : " + e.getMessage());
         }
-        ctxt.index().asyncIndexDataset(dataset, true); 
         
         //re-indexing dataverses that have additional subjects
         if (!dataversesToIndex.isEmpty()){
@@ -297,7 +296,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             logger.log(Level.WARNING, "Finalization: exception caught while exporting: "+ex.getMessage(), ex);
             // ... but it is important to only update the export time stamp if the 
             // export was indeed successful.
-        }        
+        }
+        ctxt.index().asyncIndexDataset(dataset, true);
         
         return retVal;
     }
