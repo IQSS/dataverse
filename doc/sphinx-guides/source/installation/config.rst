@@ -1373,6 +1373,33 @@ Before being moved there,
   on your machine, large file uploads via API will cause RAM and/or swap usage bursts. You might want to point this to
   a different location, restrict maximum size of it, and monitor for stale uploads.
 
+.. _cache-rate-limiting:
+
+Configure Your Dataverse Installation to Use JCache (with Hazelcast as Provided by Payara) for Rate Limiting
+------------------------------------------------------------------------------------------------------------
+
+Rate limiting has been added to prevent users from over taxing the system either deliberately or by runaway automated processes.
+Rate limiting can be configured on a tier level with tier 0 being reserved for guest users and tiers 1-any for authenticated users.
+Superuser accounts are exempt from rate limiting.
+Rate limits can be imposed on command APIs by configuring the tier, the command, and the hourly limit in the database.
+Two database settings configure the rate limiting.
+Note: If either of these settings exist in the database rate limiting will be enabled (note that a Payara restart is required for the setting to take effect). If neither setting exists rate limiting is disabled.
+
+- :RateLimitingDefaultCapacityTiers is the number of calls allowed per hour if the specific command is not configured. The values represent the number of calls per hour per user for tiers 0,1,...
+  A value of -1 can be used to signify no rate limit. Tiers not specified in this setting will default to `-1` (No Limit). I.e., -d "10000" is equivalent to -d "10000,-1,-1,..."
+
+.. code-block:: bash
+
+  curl http://localhost:8080/api/admin/settings/:RateLimitingDefaultCapacityTiers -X PUT -d '10000,20000'
+
+- :RateLimitingCapacityByTierAndAction is a JSON object specifying the rate by tier and a list of actions (commands). This allows for more control over the rate limit of individual API command calls.
+  In the following example, calls made by a guest user (tier 0) for API GetLatestPublishedDatasetVersionCommand is further limited to only 10 calls per hour, while an authenticated user (tier 1) will be able to make 30 calls per hour to the same API.
+
+:download:`rate-limit-actions.json </_static/installation/files/examples/rate-limit-actions-setting.json>`  Example json for RateLimitingCapacityByTierAndAction
+
+.. code-block:: bash
+
+  curl http://localhost:8080/api/admin/settings/:RateLimitingCapacityByTierAndAction -X PUT -d '[{"tier": 0, "limitPerHour": 10, "actions": ["GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand"]}, {"tier": 0, "limitPerHour": 1, "actions": ["CreateGuestbookResponseCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}, {"tier": 1, "limitPerHour": 30, "actions": ["CreateGuestbookResponseCommand", "GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}]'
 
 .. _Branding Your Installation:
 
@@ -4468,18 +4495,24 @@ To use the current GDCC version directly:
 ++++++++++++++
 
 A comma separated list of Category/Tag names defining the order in which files with those tags should be displayed. 
-The setting can include custom tag names along with the pre-defined tags(Documentation, Data, and Code are the defaults but the :ref:`:FileCategories` setting can be used to use a different set of tags).
+The setting can include custom tag names along with the pre-defined tags (Documentation, Data, and Code are the defaults but the :ref:`:FileCategories` setting can be used to use a different set of tags).
 The default is category ordering disabled.
+
+``curl -X PUT -d 'Documentation,Data,Code' http://localhost:8080/api/admin/settings/:CategoryOrder``
 
 :OrderByFolder
 ++++++++++++++
 
 A true(default)/false option determining whether datafiles listed on the dataset page should be grouped by folder.
 
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:OrderByFolder``
+
 :AllowUserManagementOfOrder
 +++++++++++++++++++++++++++
 
 A true/false (default) option determining whether the dataset datafile table display includes checkboxes enabling users to turn folder ordering and/or category ordering (if an order is defined by :CategoryOrder) on and off dynamically. 
+
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:AllowUserManagementOfOrder``
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
 
@@ -4505,3 +4538,17 @@ tab. files saved with these headers on S3 - since they no longer have
 to be generated and added to the streamed file on the fly.
 
 The setting is ``false`` by default, preserving the legacy behavior. 
+
+:RateLimitingDefaultCapacityTiers
++++++++++++++++++++++++++++++++++
+Number of calls allowed per hour if the specific command is not configured. The values represent the number of calls per hour per user for tiers 0,1,...
+A value of -1 can be used to signify no rate limit. Also, by default, a tier not defined would receive a default of no limit.
+
+:RateLimitingCapacityByTierAndAction
+++++++++++++++++++++++++++++++++++++
+JSON object specifying the rate by tier and a list of actions (commands). This allows for more control over the rate limit of individual API command calls.
+In the following example, calls made by a guest user (tier 0) for API GetLatestPublishedDatasetVersionCommand is further limited to only 10 calls per hour, while an authenticated user (tier 1) will be able to make 30 calls per hour to the same API.
+{"rateLimits":[
+{"tier": 0, "limitPerHour": 10, "actions": ["GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand"]},
+{"tier": 0, "limitPerHour": 1, "actions": ["CreateGuestbookResponseCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]},
+{"tier": 1, "limitPerHour": 30, "actions": ["CreateGuestbookResponseCommand", "GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}]}
