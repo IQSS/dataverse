@@ -446,7 +446,7 @@ public class IndexServiceBean {
     public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
         for(Dataset dataset : datasets) {
             try {
-                ASYNC_INDEX_SEMAPHORE.acquire();
+                acquirePermitFromSemaphore();
                 doAyncIndexDataset(dataset, true);
             } catch (InterruptedException e) {
                 String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
