@@ -263,7 +263,7 @@ Hotswapping methods requires using JDWP (Debug Mode), but does not allow switchi
 
         .. image:: img/intellij-compose-add-new-config.png
 
-        Give your configuration a meaningful name, select the compose file to use (in this case the default one), add the environment variable ``SKIP_DEPLOY=1``, and optionally select the services to start.
+        Give your configuration a meaningful name, select the compose file to use (in this case the default one), add the environment variables ``SKIP_DEPLOY=1`` and ``POSTGRES_VERSION=16``, optionally select the services to start.
         You might also want to change other options like attaching to containers to view the logs within the "Services" tab.
 
         .. image:: img/intellij-compose-setup.png
