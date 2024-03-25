@@ -3025,6 +3025,7 @@ Detailed description for every setting can be found in the table included within
     ``dataverse.mail.mta.noop.strict``,
     ``dataverse.mail.mta.mailextension``
 
+See also :ref:`mail-host-config-auth`.
 
 dataverse.ui.allow-review-for-incomplete
 ++++++++++++++++++++++++++++++++++++++++

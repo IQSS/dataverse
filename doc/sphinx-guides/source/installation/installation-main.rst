@@ -141,6 +141,8 @@ Got ERR_ADDRESS_UNREACHABLE While Navigating on Interface or API Calls
 
 If you are receiving an ``ERR_ADDRESS_UNREACHABLE`` while navigating the GUI or making an API call, make sure the ``siteUrl`` JVM option is defined. For details on how to set ``siteUrl``, please refer to :ref:`dataverse.siteUrl` from the :doc:`config` section. For context on why setting this option is necessary, refer to :ref:`dataverse.fqdn` from the :doc:`config` section.
 
+.. _mail-host-config-auth:
+
 Mail Host Configuration & Authentication
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -149,7 +151,7 @@ If you need to alter your mail host address, user, or provide a password to conn
 To enable authentication with your mail server, simply configure the following options:
 
 - ``dataverse.mail.mta.auth = true``
-- ``dataverse.mail.mta.username = <your username>``
+- ``dataverse.mail.mta.user = <your username>``
 - ``dataverse.mail.mta.password``
 
 **WARNING**:
