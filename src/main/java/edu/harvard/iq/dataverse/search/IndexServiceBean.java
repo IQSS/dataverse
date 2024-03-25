@@ -1503,6 +1503,7 @@ public class IndexServiceBean {
         DvObject dvObjectToModify = em.find(DvObject.class, id);
         dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
         dvObjectToModify = em.merge(dvObjectToModify);
+        em.flush();
     }
 
     /**
