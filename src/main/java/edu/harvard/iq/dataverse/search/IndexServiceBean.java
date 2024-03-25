@@ -48,6 +48,8 @@ import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
+
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.JsonObject;
 import jakarta.persistence.EntityManager;
@@ -72,6 +74,9 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.Timer;
+import org.eclipse.microprofile.metrics.annotation.Metric;
 import org.xml.sax.ContentHandler;
 
 @Stateless
@@ -344,6 +349,27 @@ public class IndexServiceBean {
     private static final Map<Long, Boolean> INDEXING_NOW = new ConcurrentHashMap<>();
     // semaphore for async indexing
     private static final Semaphore ASYNC_INDEX_SEMAPHORE = new Semaphore(JvmSettings.MAX_ASYNC_INDEXES.lookupOptional(Integer.class).orElse(4), true);
+    
+    @Inject
+    @Metric(name = "index_permit_wait_time", absolute = true, unit = MetricUnits.NANOSECONDS,
+            description = "Displays how long does it take to receive a permit to index a dataset")
+    Timer indexPermitWaitTimer;
+    
+    @Inject
+    @Metric(name = "index_time", absolute = true, unit = MetricUnits.NANOSECONDS,
+            description = "Displays how long does it take to index a dataset")
+    Timer indexTimer;
+    
+    /**
+     * Try to acquire a permit from the semaphore avoiding too many parallel indexes, potentially overwhelming Solr.
+     * This method will time the duration waiting for the permit, allowing indexing performance to be measured.
+     * @throws InterruptedException
+     */
+    private void acquirePermitFromSemaphore() throws InterruptedException {
+        try (var timeContext = indexPermitWaitTimer.time()) {
+            ASYNC_INDEX_SEMAPHORE.acquire();
+        }
+    }
 
     // When you pass null as Dataset parameter to this method, it indicates that the indexing of the dataset with "id" has finished
     // Pass non-null Dataset to schedule it for indexing
@@ -389,7 +415,7 @@ public class IndexServiceBean {
     @Asynchronous
     public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         try {
-            ASYNC_INDEX_SEMAPHORE.acquire();
+            acquirePermitFromSemaphore();
             doAyncIndexDataset(dataset, doNormalSolrDocCleanUp);
         } catch (InterruptedException e) {
             String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
@@ -404,7 +430,8 @@ public class IndexServiceBean {
         Long id = dataset.getId();
         Dataset next = getNextToIndex(id, dataset); // if there is an ongoing index job for this dataset, next is null (ongoing index job will reindex the newest version after current indexing finishes)
         while (next != null) {
-            try {
+            // Time context will automatically start on creation and stop when leaving the try block
+            try (var timeContext = indexTimer.time()) {
                 indexDataset(next, doNormalSolrDocCleanUp);
             } catch (Exception e) { // catch all possible exceptions; otherwise when something unexpected happes the dataset wold remain locked and impossible to reindex
                 String failureLogText = "Indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
