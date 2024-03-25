@@ -1791,7 +1791,7 @@ Adding Software Licenses
 
 JSON files for Software Licenses are provided below.
 
-- :download:`licenseCC0-1.0.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
+- :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
 
 Adding Custom Licenses
 ^^^^^^^^^^^^^^^^^^^^^^
