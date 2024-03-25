@@ -7,6 +7,6 @@ At this point, no action is required if you want to keep your current configurat
 Warnings will show in your server logs to inform and remind you about the deprecation.
 A future major release of Dataverse may remove this way of configuration.
 
-For more details on how to configure your the connection to your mail provider, please find updated details within the Installation Guide's main installation and configuration section.
+For more details on how to configure the connection to your mail provider, please find updated details within the Installation Guide's main installation and configuration section.
 
-Please note: as there have been problems with mails delivered to SPAM folders when "From" within mail envelope and mail session configuration mismatched, as of this version the sole source for the "From" address is the setting `dataverse.mail.system-email` once you migrate to the new way of configuration. 
+Please note: as there have been problems with email delivered to SPAM folders when the "From" within mail envelope and the mail session configuration didn't match (#4210), as of this version the sole source for the "From" address is the setting `dataverse.mail.system-email` once you migrate to the new way of configuration. 
