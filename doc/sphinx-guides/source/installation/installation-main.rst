@@ -141,19 +141,6 @@ Got ERR_ADDRESS_UNREACHABLE While Navigating on Interface or API Calls
 
 If you are receiving an ``ERR_ADDRESS_UNREACHABLE`` while navigating the GUI or making an API call, make sure the ``siteUrl`` JVM option is defined. For details on how to set ``siteUrl``, please refer to :ref:`dataverse.siteUrl` from the :doc:`config` section. For context on why setting this option is necessary, refer to :ref:`dataverse.fqdn` from the :doc:`config` section.
 
-Problems Sending Email
-^^^^^^^^^^^^^^^^^^^^^^
-
-If your Dataverse installation is not sending system emails, you may need to provide authentication for your mail host. First, double check the SMTP server being used with this Payara asadmin command:
-
-``./asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
-
-This should return the DNS of the mail host you configured during or after installation. mail/notifyMailSession is the JavaMail Session that's used to send emails to users. 
-
-If the command returns a host you don't want to use, you can modify your notifyMailSession with the Payara ``asadmin set`` command with necessary options (`click here for the manual page <https://docs.oracle.com/cd/E18930_01/html/821-2433/set-1.html>`_), or via the admin console at http://localhost:4848 with your domain running. 
-
-If your mail host requires a username/password for access, continue to the next section.
-
 Mail Host Configuration & Authentication
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
