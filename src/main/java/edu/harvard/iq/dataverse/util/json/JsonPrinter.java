@@ -607,6 +607,7 @@ public class JsonPrinter {
         bld.add("id", blk.getId());
         bld.add("name", blk.getName());
         bld.add("displayName", blk.getDisplayName());
+        bld.add("displayOnCreate", blk.isDisplayOnCreate());
 
         JsonObjectBuilder fieldsBld = jsonObjectBuilder();
         for (DatasetFieldType df : new TreeSet<>(blk.getDatasetFieldTypes())) {
@@ -622,6 +623,7 @@ public class JsonPrinter {
         JsonObjectBuilder fieldsBld = jsonObjectBuilder();
         fieldsBld.add("name", fld.getName());
         fieldsBld.add("displayName", fld.getDisplayName());
+        fieldsBld.add("displayOnCreate", fld.isDisplayOnCreate());
         fieldsBld.add("title", fld.getTitle());
         fieldsBld.add("type", fld.getFieldType().toString());
         fieldsBld.add("typeClass", typeClassString(fld));
