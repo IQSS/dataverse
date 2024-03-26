@@ -71,7 +71,7 @@ class MailSessionProducerIT {
     
     @Nested
     @LocalJvmSettings
-    @JvmSetting(key = JvmSettings.MAIL_MTA_HOST, method = "tcSmtpHost")
+    @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpHost", varArgs = "host")
     @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpPort", varArgs = "port")
     class WithoutAuthentication {
         @Container
@@ -121,7 +121,7 @@ class MailSessionProducerIT {
     
     @Nested
     @LocalJvmSettings
-    @JvmSetting(key = JvmSettings.MAIL_MTA_HOST, method = "tcSmtpHost")
+    @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpHost", varArgs = "host")
     @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpPort", varArgs = "port")
     @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, varArgs = "ssl.enable", value = "true")
     @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, varArgs = "ssl.trust", value = "*")
@@ -183,7 +183,7 @@ class MailSessionProducerIT {
     
     @Nested
     @LocalJvmSettings
-    @JvmSetting(key = JvmSettings.MAIL_MTA_HOST, method = "tcSmtpHost")
+    @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpHost", varArgs = "host")
     @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpPort", varArgs = "port")
     @JvmSetting(key = JvmSettings.MAIL_MTA_AUTH, value = "yes")
     @JvmSetting(key = JvmSettings.MAIL_MTA_USER, value = username)
@@ -252,7 +252,7 @@ class MailSessionProducerIT {
         }
         
         @Test
-        @JvmSetting(key = JvmSettings.MAIL_MTA_HOST, value = "foobar")
+        @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, value = "foobar", varArgs = "host")
         void invalidHostnameIsFailingWhenSending() {
             assertDoesNotThrow(() -> new MailSessionProducer().getSession());
             

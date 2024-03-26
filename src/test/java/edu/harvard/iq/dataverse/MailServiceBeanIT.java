@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Testcontainers(disabledWithoutDocker = true)
 @ExtendWith(MockitoExtension.class)
 @LocalJvmSettings
-@JvmSetting(key = JvmSettings.MAIL_MTA_HOST, method = "tcSmtpHost")
+@JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpHost", varArgs = "host")
 @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpPort", varArgs = "port")
 class MailServiceBeanIT {
     

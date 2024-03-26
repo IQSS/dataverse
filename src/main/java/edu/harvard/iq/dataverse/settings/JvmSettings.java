@@ -195,7 +195,6 @@ public enum JvmSettings {
     MAIL_DEBUG(SCOPE_MAIL, "debug"),
     // Mail Transfer Agent settings
     SCOPE_MAIL_MTA(SCOPE_MAIL, "mta"),
-    MAIL_MTA_HOST(SCOPE_MAIL_MTA, "host"),
     MAIL_MTA_AUTH(SCOPE_MAIL_MTA, "auth"),
     MAIL_MTA_USER(SCOPE_MAIL_MTA, "user"),
     MAIL_MTA_PASSWORD(SCOPE_MAIL_MTA, "password"),
