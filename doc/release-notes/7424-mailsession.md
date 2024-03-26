@@ -6,7 +6,7 @@ At this point, no action is required if you want to keep your current configurat
 Warnings will show in your server logs to inform and remind you about the deprecation.
 A future major release of Dataverse may remove this way of configuration.
 
-Please do take the opportunity to update your SMTP configuration. Details can be found in section of the Installation Guide starting with the [dataverse.mail.system-email](https://guides.dataverse.org/en/6.2/installation/config.html#dataverse-mail-system-email) section of the Installation Guide.
+Please do take the opportunity to update your SMTP configuration. Details can be found in section of the Installation Guide starting with the [SMTP/Email Configuration](https://guides.dataverse.org/en/6.2/installation/config.html#smtp-email-configuration) section of the Installation Guide.
 
 Once reconfiguration is complete, you should remove legacy, unused config. First, run `asadmin delete-javamail-resource mail/notifyMailSession` as described in the [6.1 guides](https://guides.dataverse.org/en/6.1/installation/installation-main.html#mail-host-configuration-authentication). Then run `curl -X DELETE http://localhost:8080/api/admin/settings/:SystemEmail` as this database setting has been replace with `dataverse.mail.system-email` as described below.
 
