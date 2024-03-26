@@ -2946,8 +2946,7 @@ The following table describes the most important settings commonly used.
       - Default Value
     * - ``dataverse.mail.mta.host``
       - The SMTP server to connect to.
-      - | *No default*
-        | (``smtp`` in our :ref:`Dataverse container <app-tunables>`)
+      - *No default*
     * - ``dataverse.mail.mta.port``
       - The SMTP server port to connect to.
       - ``25``
