@@ -602,6 +602,7 @@ public class DatasetsIT {
     */
     @Test
     public void testDatasetVersionsAPI() {
+        
         // Create user
         String apiToken = UtilIT.createRandomUserGetToken();
 
@@ -639,6 +640,11 @@ public class DatasetsIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.files", equalTo(null));
 
+        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiTokenNoPerms, excludeFiles, false);
+        unpublishedDraft.prettyPrint();
+        unpublishedDraft.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+        
         excludeFiles = false; 
         unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, excludeFiles, false);
         unpublishedDraft.prettyPrint();
@@ -646,7 +652,11 @@ public class DatasetsIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.files.size()", equalTo(1));
 
-        
+        unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiTokenNoPerms, excludeFiles, false);
+        unpublishedDraft.prettyPrint();
+        unpublishedDraft.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode());
+
 
         // Publish collection and dataset
         UtilIT.publishDataverseViaNativeApi(collectionAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
@@ -669,7 +679,8 @@ public class DatasetsIT {
                 .body("data.size()", equalTo(2))
                 .body("data[0].files.size()", equalTo(2))
                 .body("data[1].files.size()", equalTo(1));
-        
+
+
         // Now call this api with the new (as of 6.1) pagination parameters
         Integer offset = 0;
         Integer howmany = 1;
@@ -679,15 +690,16 @@ public class DatasetsIT {
         versionsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(1))
+                .body("data.versionState[0]", equalTo("DRAFT"))
                 .body("data[0].files.size()", equalTo(2));
                 
         // And now call it with an un-privileged token, to make sure only one 
-        // (the published) version is shown:
-        
+        // (the published) version is shown:    
         versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiTokenNoPerms);
         versionsResponse.prettyPrint();
         versionsResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
+                .body("data.versionState[0]", not("DRAFT"))
                 .body("data.size()", equalTo(1));
         
         // And now call the "short", no-files version of the same api
@@ -700,35 +712,98 @@ public class DatasetsIT {
 
 
         
-        //Set of tests on non-deaccesioned dataset
-                
-        boolean includeDeaccessioned = true;
-        excludeFiles = true;
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
+        //Set of tests on non-deaccesioned dataset 
+        String specificVersion = "1.0";        
+        boolean includeDeaccessioned = false;
+        Response datasetVersion = null;
         
-        excludeFiles = false;
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));
-        
-        includeDeaccessioned = false;
         excludeFiles = true;
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
+        //Latest published authorized token
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("RELEASED"))
+            .body("data.files", equalTo(null));
+
+        //Latest published unauthorized token
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("RELEASED"))
+            .body("data.files", equalTo(null));
+
+        //Latest authorized token
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("DRAFT"))
+            .body("data.files", equalTo(null));
+
+        //Latest unauthorized token
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("RELEASED"))
+            .body("data.files", equalTo(null));
+
+        //Specific version authorized token
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("RELEASED"))
+            .body("data.files", equalTo(null));
+
+        //Specific version unauthorized token
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("RELEASED"))
+            .body("data.files", equalTo(null));
 
         excludeFiles = false;
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));
-
         
+        //Latest published authorized token
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("RELEASED"))
+            .body("data.files.size()", equalTo(1));
+
+        //Latest published unauthorized token
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("RELEASED"))
+            .body("data.files.size()", equalTo(1));
+
+        //Latest authorized token, user is authenticated should get the Draft version
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("DRAFT"))
+            .body("data.files.size()", equalTo(2));
+
+        //Latest unauthorized token, user has no permissions should get the latest Published version
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("RELEASED"))
+            .body("data.files.size()", equalTo(1));
+
+        //Specific version authorized token
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("RELEASED"))
+            .body("data.files.size()", equalTo(1));
+
+        //Specific version unauthorized token
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("RELEASED"))
+            .body("data.files.size()", equalTo(1));
+
         //We deaccession the dataset
         Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
         deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -736,38 +811,158 @@ public class DatasetsIT {
         //Set of tests on deaccesioned dataset, only 3/9 should return OK message
 
         includeDeaccessioned = true;
-        excludeFiles = true;
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(OK.getStatusCode()).body("data[0].files", equalTo(null));
         excludeFiles = false;
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(OK.getStatusCode()).body("data.files.size()", equalTo(1));;
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(404);
-        
+
+        //Latest published authorized token with deaccessioned dataset
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("DEACCESSIONED"))
+            .body("data.files.size()", equalTo(1));
+
+        //Latest published requesting files, one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        //Latest authorized token should get the DRAFT version
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("DRAFT"))
+            .body("data.files.size()", equalTo(2));
+
+        //Latest unauthorized token requesting files, one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        //Specific version authorized token
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("DEACCESSIONED"))
+            .body("data.files.size()", equalTo(1));
+
+        //Specific version unauthorized token requesting files, one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets.
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        excludeFiles = true;
+
+        //Latest published exclude files authorized token with deaccessioned dataset
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("DEACCESSIONED"))
+            .body("data.files", equalTo(null));
+
+        //Latest published exclude files, should get the DEACCESSIONED version
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("DEACCESSIONED"))
+            .body("data.files", equalTo(null));
+
+        //Latest authorized token should get the DRAFT version with no files
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("DRAFT"))
+            .body("data.files", equalTo(null));
+
+        //Latest unauthorized token excluding files, one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("DEACCESSIONED"))
+            .body("data.files", equalTo(null));
+
+        //Specific version authorized token
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("DEACCESSIONED"))
+            .body("data.files", equalTo(null));
+
+        //Specific version unauthorized token requesting files, one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets.
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("DEACCESSIONED"))
+            .body("data.files", equalTo(null));
+
+        //Set of test when we have a deaccessioned dataset but we don't include deaccessioned
         includeDeaccessioned = false;
-        excludeFiles = true;
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(404);
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(404);
         excludeFiles = false;
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(404);
-        UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned).
-            then().assertThat().statusCode(404);
 
-      
+        //Latest published authorized token with deaccessioned dataset not included
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
+        //Latest published unauthorized token with deaccessioned dataset not included
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
+        //Latest authorized token should get the DRAFT version
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("DRAFT"))
+            .body("data.files.size()", equalTo(2));
 
+        //Latest unauthorized token one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
-        
-        
+        //Specific version authorized token, the version is DEACCESSIONED so shouldn't get any datasets
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
-        
+        //Specific version unauthorized token, the version is DEACCESSIONED so shouldn't get any datasets
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        excludeFiles = true;
+
+        //Latest published authorized token with deaccessioned dataset not included
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        //Latest published unauthorized token with deaccessioned dataset not included
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        //Latest authorized token should get the DRAFT version
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
+            .body("data.versionState", equalTo("DRAFT"))
+            .body("data.files", equalTo(null));
+
+        //Latest unauthorized token one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        //Specific version authorized token, the version is DEACCESSIONED so shouldn't get any datasets
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        //Specific version unauthorized token, the version is DEACCESSIONED so shouldn't get any datasets
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+       
     }
 
     
@@ -1022,6 +1217,10 @@ public class DatasetsIT {
 
     }
 
+    @Disabled
+    /*The identifier generation style is no longer a global, dynamically changeable setting. To make this test work after PR #10234,
+     * will require configuring a PidProvider that uses this style and creating a collection/dataset that uses that provider.
+     */
     @Test
     public void testStoredProcGeneratedAsIdentifierGenerationStyle() {
         // Please note that this test only works if the stored procedure
@@ -1475,6 +1674,26 @@ public class DatasetsIT {
         giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "fileDownloader", "@" + randomUsername, apiToken);
                 giveRandoPermission.prettyPrint();
         assertEquals(200, giveRandoPermission.getStatusCode());
+
+        // Create another random user to become curator:
+
+        Response createCuratorUser = UtilIT.createRandomUser();
+        createCuratorUser.prettyPrint();
+        String curatorUsername = UtilIT.getUsernameFromResponse(createCuratorUser);
+        String curatorUserApiToken = UtilIT.getApiTokenFromResponse(createCuratorUser);
+
+        Response giveCuratorPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "curator", "@" + curatorUsername, apiToken);
+        giveCuratorPermission.prettyPrint();
+        assertEquals(200, giveCuratorPermission.getStatusCode());
+
+        // Test if privilege escalation is possible: curator should not be able to assign admin rights
+        Response giveTooMuchPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "admin", "@" + curatorUsername, curatorUserApiToken);
+        giveTooMuchPermission.prettyPrint();
+        assertEquals(401, giveTooMuchPermission.getStatusCode());
+
+        giveTooMuchPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "admin", "@" + randomUsername, curatorUserApiToken);
+        giveTooMuchPermission.prettyPrint();
+        assertEquals(401, giveTooMuchPermission.getStatusCode());
         
         String idToDelete = JsonPath.from(giveRandoPermission.getBody().asString()).getString("data.id");                
 
@@ -1497,7 +1716,7 @@ public class DatasetsIT {
         deleteGrantedAccess.prettyPrint();
         assertEquals(200, deleteGrantedAccess.getStatusCode());
         
-       Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
         
@@ -1506,6 +1725,14 @@ public class DatasetsIT {
         assertEquals(200, deleteDataverseResponse.getStatusCode());
 
         Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+        deleteUserResponse = UtilIT.deleteUser(randomUsername);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+        deleteUserResponse = UtilIT.deleteUser(curatorUsername);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
         
@@ -1691,6 +1918,43 @@ public class DatasetsIT {
                 .body("message", equalTo("Dataset cannot be edited due to dataset lock."))
                 .statusCode(FORBIDDEN.getStatusCode());
 
+    }
+    
+    @Test
+    public void testGetDatasetOwners() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        logger.info("Dataset created with id " + datasetId + " and persistent id " + persistentId);
+
+        Response getDatasetWithOwners = UtilIT.getDatasetWithOwners(persistentId, apiToken, true);
+        getDatasetWithOwners.prettyPrint();
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(dataverseAlias));       
+        
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());        
     }
 
     /**
@@ -2818,6 +3082,46 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, badTerms, false);
         response.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
 
+        
+        //We publish the dataset and dataverse      
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());    
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        
+        //We check the version is published
+        response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.prettyPrint();
+        jsonLDString = getData(response.getBody().asString());
+        jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+        String publishedVersion = jsonLDObject.getString("http://schema.org/version");
+        assertNotEquals("DRAFT", publishedVersion);
+
+        // Upload a file so a draft version is created
+        String pathToFile = "src/main/webapp/resources/images/cc0.png";
+        Response uploadResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        int fileID = uploadResponse.jsonPath().getInt("data.files[0].dataFile.id");
+        
+        //We check the authenticated user gets DRAFT
+        response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.prettyPrint(); 
+        jsonLDString = getData(response.getBody().asString());
+        jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+        assertEquals("DRAFT", jsonLDObject.getString("http://schema.org/version"));
+        
+        // Create user with no permission and check they get published version
+        String apiTokenNoPerms = UtilIT.createRandomUserGetToken();
+        response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiTokenNoPerms);
+        response.prettyPrint();
+        jsonLDString = getData(response.getBody().asString());
+        jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+        assertNotEquals("DRAFT", jsonLDObject.getString("http://schema.org/version"));
+        
+        // Delete the file
+        Response deleteFileResponse = UtilIT.deleteFileInDataset(fileID, apiToken);
+        deleteFileResponse.prettyPrint();
+        deleteFileResponse.then().assertThat().statusCode(OK.getStatusCode());
+
         // Delete the terms of use
         response = UtilIT.deleteDatasetJsonLDMetadata(datasetId, apiToken,
                 "{\"https://dataverse.org/schema/core#termsOfUse\": \"New terms\"}");
@@ -2831,15 +3135,27 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
         assertTrue(!jsonLDObject.containsKey("https://dataverse.org/schema/core#termsOfUse"));
 
-        // Cleanup - delete dataset, dataverse, user...
-        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
-        deleteDatasetResponse.prettyPrint();
-        assertEquals(200, deleteDatasetResponse.getStatusCode());
+        //Delete the DRAFT dataset
+        Response deleteDraftResponse = UtilIT.deleteDatasetVersionViaNativeApi(datasetId, DS_VERSION_DRAFT, apiToken);
+        deleteDraftResponse.prettyPrint();
+        deleteDraftResponse.then().assertThat().statusCode(OK.getStatusCode());
 
+        //We set the user as superuser so we can delete the published dataset
+        Response superUserResponse = UtilIT.makeSuperUser(username);
+        superUserResponse.prettyPrint();
+        deleteDraftResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        //Delete the published dataset
+        Response deletePublishedResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deletePublishedResponse.prettyPrint();
+        deleteDraftResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        //Delete the dataverse
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverseResponse.prettyPrint();
         assertEquals(200, deleteDataverseResponse.getStatusCode());
 
+        //Delete the user
         Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());

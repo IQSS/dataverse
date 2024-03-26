@@ -10,9 +10,6 @@ cd ../..
 echo "Setting system mail address..."
 curl -X PUT -d "dataverse@localhost" "http://localhost:8080/api/admin/settings/:SystemEmail"
 
-echo "Setting DOI provider to \"FAKE\"..."
-curl "http://localhost:8080/api/admin/settings/:DoiProvider" -X PUT -d FAKE
-
 API_TOKEN=$(grep apiToken "/tmp/setup-all.sh.out" | jq ".data.apiToken" | tr -d \")
 export API_TOKEN
 

@@ -6,9 +6,9 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
-import edu.harvard.iq.dataverse.dataaccess.AbstractRemoteOverlayAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -344,7 +344,7 @@ public class SettingsWrapper implements java.io.Serializable {
         if(isGlobusFileDownload()) {
             String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
             
-            downloadable = downloadable && !AbstractRemoteOverlayAccessIO.isNotDataverseAccessible(driverId); 
+            downloadable = downloadable && StorageIO.isDataverseAccessible(driverId); 
         }
         return downloadable;
     }
@@ -398,13 +398,6 @@ public class SettingsWrapper implements java.io.Serializable {
             httpUpload = getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());
         }
         return httpUpload;      
-    }
-    
-    public boolean isDataFilePIDSequentialDependent(){
-        if (dataFilePIDSequentialDependent == null) {
-            dataFilePIDSequentialDependent = systemConfig.isDataFilePIDSequentialDependent();
-        }
-        return dataFilePIDSequentialDependent;
     }
     
     public String getSupportTeamName() {
@@ -470,23 +463,6 @@ public class SettingsWrapper implements java.io.Serializable {
         return configuredLocales;
     }
     
-    public boolean isDoiInstallation() {
-        String protocol = getValueForKey(SettingsServiceBean.Key.Protocol);
-        if ("doi".equals(protocol)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean isDataCiteInstallation() {
-        String protocol = getValueForKey(SettingsServiceBean.Key.DoiProvider);
-        if ("DataCite".equals(protocol)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     public boolean isMakeDataCountDisplayEnabled() {
         boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath)!=null); //Backward compatible
