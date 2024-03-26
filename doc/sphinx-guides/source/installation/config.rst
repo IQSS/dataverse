@@ -725,7 +725,8 @@ SMTP/Email Configuration
 
 The installer prompts you for some basic options to configure Dataverse to send email using your SMTP server, but in many cases, extra configuration may be necessary.
 
-Make sure the :ref:`dataverse.mail.support-email` has been set. Email will not be sent without it.
+Make sure the :ref:`dataverse.mail.system-email` has been set. Email will not be sent without it. A hint will be logged about this fact.
+If you want to separate system email from your support team's email, take a look at :ref:`dataverse.mail.support-email`.
 
 Then check the list of commonly used settings at the top of :ref:`dataverse.mail.mta`.
 
