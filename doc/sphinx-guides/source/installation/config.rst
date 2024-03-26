@@ -2948,8 +2948,11 @@ The following table describes the most important settings commonly used.
       - The SMTP server to connect to.
       - *No default*
     * - ``dataverse.mail.mta.port``
-      - The SMTP server port to connect to.
+      - The SMTP server port to connect to. (Common are ``25`` for plain, ``587`` for SSL, ``465`` for legacy SSL)
       - ``25``
+    * - ``dataverse.mail.mta.ssl.enable``
+      - Enable if your mail provider uses SSL.
+      - ``false``
     * - ``dataverse.mail.mta.auth``
       - If ``true``, attempt to authenticate the user using the AUTH command.
       - ``false``
@@ -2981,7 +2984,6 @@ Detailed description for every setting can be found in the table included within
 * SSL/TLS:
     ``dataverse.mail.mta.starttls.enable``,
     ``dataverse.mail.mta.starttls.required``,
-    ``dataverse.mail.mta.ssl.enable``,
     ``dataverse.mail.mta.ssl.checkserveridentity``,
     ``dataverse.mail.mta.ssl.trust``,
     ``dataverse.mail.mta.ssl.protocols``,
