@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Arrays;
 
 @Entity
 public class MakeDataCountProcessState implements Serializable {
@@ -18,6 +19,16 @@ public class MakeDataCountProcessState implements Serializable {
         private final String text;
         private MDCProcessState(final String text) {
             this.text = text;
+        }
+        public static MDCProcessState fromString(String text) {
+            if (text != null) {
+                for (MDCProcessState state : MDCProcessState.values()) {
+                    if (text.equals(state.text)) {
+                        return state;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("State must be one of these values: " + Arrays.asList(MDCProcessState.values()) + ".");
         }
         @Override
         public String toString() {
@@ -52,11 +63,7 @@ public class MakeDataCountProcessState implements Serializable {
         this.state_change_time = Timestamp.from(Instant.now());
     }
     public void setState(String state) throws IllegalArgumentException {
-        if (state != null) {
-            setState(MDCProcessState.valueOf(state.toUpperCase()));
-        } else {
-            throw new IllegalArgumentException("State is required and can not be null");
-        }
+        setState(MDCProcessState.fromString(state));
     }
     public MDCProcessState getState() {
         return this.state;

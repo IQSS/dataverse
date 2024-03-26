@@ -211,6 +211,27 @@ public class MakeDataCountApiIT {
         deleteState.then().assertThat().statusCode(OK.getStatusCode());
     }
 
+    @Test
+    public void testUpdateProcessingStateWithInvalidState() {
+        String yearMonth = "2000-02";
+        // make sure it isn't in the DB
+        Response deleteState = UtilIT.makeDataCountDeleteProcessingState(yearMonth);
+        deleteState.then().assertThat().statusCode(anyOf(equalTo(200), equalTo(404)));
+
+        Response stateResponse = UtilIT.makeDataCountUpdateProcessingState(yearMonth, "InvalidState");
+        stateResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        stateResponse = UtilIT.makeDataCountUpdateProcessingState(yearMonth, "new");
+        stateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        stateResponse = UtilIT.makeDataCountUpdateProcessingState(yearMonth, "InvalidState");
+        stateResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        stateResponse = UtilIT.makeDataCountGetProcessingState(yearMonth);
+        stateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        JsonPath stateJson = JsonPath.from(stateResponse.body().asString());
+        String state = stateJson.getString("data.state");
+        assertThat(state, Matchers.equalTo(MakeDataCountProcessState.MDCProcessState.NEW.name()));
+    }
+
     /**
      * Ignore is set on this test because it requires database edits to pass.
      * There are currently two citions for doi:10.7910/DVN/HQZOOB but you have

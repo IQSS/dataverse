@@ -232,8 +232,8 @@ public class MakeDataCountApi extends AbstractApiBean {
         MakeDataCountProcessState mdcps;
         try {
             mdcps = makeDataCountProcessStateService.setMakeDataCountProcessState(yearMonth, state);
-        } catch (IllegalArgumentException e) {
-            return error(Status.BAD_REQUEST,e.getMessage());
+        } catch (Exception e) {
+            return badRequest(e.getMessage());
         }
 
         JsonObjectBuilder output = Json.createObjectBuilder();
