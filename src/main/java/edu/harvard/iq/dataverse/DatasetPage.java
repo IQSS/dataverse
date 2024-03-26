@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataaccess.AbstractRemoteOverlayAccessIO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -25,6 +24,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CheckRateLimitForDatasetPageCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CuratePublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -243,12 +244,16 @@ public class DatasetPage implements java.io.Serializable {
     SolrClientService solrClientService;
     @EJB
     DvObjectServiceBean dvObjectService;
+    @EJB
+    CacheFactoryBean cacheFactory;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
     DatasetVersionUI datasetVersionUI;
     @Inject
     PermissionsWrapper permissionsWrapper;
+    @Inject 
+    NavigationWrapper navigationWrapper;
     @Inject
     FileDownloadHelper fileDownloadHelper;
     @Inject
@@ -1931,7 +1936,10 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private String init(boolean initFull) {
-
+        // Check for rate limit exceeded. Must be done before anything else to prevent unnecessary processing.
+        if (!cacheFactory.checkRate(session.getUser(), new CheckRateLimitForDatasetPageCommand(null,null))) {
+            return navigationWrapper.tooManyRequests();
+        }
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
 
@@ -3372,7 +3380,7 @@ public class DatasetPage implements java.io.Serializable {
             if(globusDownloadEnabled) {
                 String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
                 globusTransferable = GlobusAccessibleStore.isGlobusAccessible(driverId);
-                downloadable = downloadable && !AbstractRemoteOverlayAccessIO.isNotDataverseAccessible(driverId); 
+                downloadable = downloadable && StorageIO.isDataverseAccessible(driverId); 
             }
             if(downloadable){
                 getSelectedDownloadableFiles().add(fmd);
@@ -5808,6 +5816,19 @@ public class DatasetPage implements java.io.Serializable {
 
         return thisLatestReleasedVersion;
 
+    }
+
+    public String getCroissant() {
+        if (isThisLatestReleasedVersion()) {
+            final String CROISSANT_SCHEMA_NAME = "croissant";
+            ExportService instance = ExportService.getInstance();
+            String croissant = instance.getExportAsString(dataset, CROISSANT_SCHEMA_NAME);
+            if (croissant != null && !croissant.isEmpty()) {
+                logger.fine("Returning cached CROISSANT.");
+                return croissant;
+            } 
+        }
+        return null;
     }
 
     public String getJsonLd() {

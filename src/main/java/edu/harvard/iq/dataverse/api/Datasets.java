@@ -45,6 +45,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import edu.harvard.iq.dataverse.util.*;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.*;
@@ -2222,42 +2223,6 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @AuthRequired
-    @Path("{id}/uploadsid")
-    @Deprecated
-    public Response getUploadUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
-        try {
-            Dataset dataset = findDatasetOrDie(idSupplied);
-
-            boolean canUpdateDataset = false;
-            canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(getRequestUser(crc)), dataset).canIssue(UpdateDatasetVersionCommand.class);
-            if (!canUpdateDataset) {
-                return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
-            }
-            S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
-            if (s3io == null) {
-                return error(Response.Status.NOT_FOUND, "Direct upload not supported for files in this dataset: " + dataset.getId());
-            }
-            String url = null;
-            String storageIdentifier = null;
-            try {
-                url = s3io.generateTemporaryS3UploadUrl();
-                storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
-            } catch (IOException io) {
-                logger.warning(io.getMessage());
-                throw new WrappedResponse(io, error(Response.Status.INTERNAL_SERVER_ERROR, "Could not create process direct upload request"));
-            }
-
-            JsonObjectBuilder response = Json.createObjectBuilder()
-                    .add("url", url)
-                    .add("storageIdentifier", storageIdentifier);
-            return ok(response);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-    }
-
-    @GET
-    @AuthRequired
     @Path("{id}/uploadurls")
     public Response getMPUploadUrls(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @QueryParam("size") long fileSize) {
         try {
@@ -2273,6 +2238,22 @@ public class Datasets extends AbstractApiBean {
             if (s3io == null) {
                 return error(Response.Status.NOT_FOUND,
                         "Direct upload not supported for files in this dataset: " + dataset.getId());
+            }
+            Long maxSize = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+            if (maxSize != null) {
+                if(fileSize > maxSize) {
+                    return error(Response.Status.BAD_REQUEST,
+                            "The file you are trying to upload is too large to be uploaded to this dataset. " +
+                                    "The maximum allowed file size is " + maxSize + " bytes.");
+                }
+            }
+            UploadSessionQuotaLimit limit = fileService.getUploadSessionQuotaLimit(dataset);
+            if (limit != null) {
+                if(fileSize > limit.getRemainingQuotaInBytes()) {
+                    return error(Response.Status.BAD_REQUEST,
+                            "The file you are trying to upload is too large to be uploaded to this dataset. " +
+                                    "The remaing file size quota is " + limit.getRemainingQuotaInBytes() + " bytes.");
+                }
             }
             JsonObjectBuilder response = null;
             String storageIdentifier = null;
@@ -3485,6 +3466,16 @@ public class Datasets extends AbstractApiBean {
             params.add(key, substitutedParams.get(key));
         });
         params.add("managed", Boolean.toString(managed));
+        if (managed) {
+            Long maxSize = systemConfig.getMaxFileUploadSizeForStore(storeId);
+            if (maxSize != null) {
+                params.add("fileSizeLimit", maxSize);
+            }
+            UploadSessionQuotaLimit limit = fileService.getUploadSessionQuotaLimit(dataset);
+            if (limit != null) {
+                params.add("remainingQuota", limit.getRemainingQuotaInBytes());
+            }
+        }
         if (transferEndpoint != null) {
             params.add("endpoint", transferEndpoint);
         } else {

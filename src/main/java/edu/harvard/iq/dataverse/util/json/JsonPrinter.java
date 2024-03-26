@@ -657,7 +657,7 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(FileMetadata fmd, boolean returnOwners, boolean printDatasetVersion) {
-        JsonObjectBuilder builder = jsonObjectBuilder();
+        NullSafeJsonBuilder builder = jsonObjectBuilder();
 
                 // deprecated: .add("category", fmd.getCategory())
                 // TODO: uh, figure out what to do here... it's deprecated
@@ -949,6 +949,7 @@ public class JsonPrinter {
                 add("schedule", harvestingClient.isScheduled() ? harvestingClient.getScheduleDescription() : "none").
                 add("status", harvestingClient.isHarvestingNow() ? "inProgress" : "inActive").
                 add("customHeaders", harvestingClient.getCustomHttpHeaders()).
+                add("allowHarvestingMissingCVV", harvestingClient.getAllowHarvestingMissingCVV()).
                 add("lastHarvest", harvestingClient.getLastHarvestTime() == null ? null : harvestingClient.getLastHarvestTime().toString()).
                 add("lastResult", harvestingClient.getLastResult()).
                 add("lastSuccessful", harvestingClient.getLastSuccessfulHarvestTime() == null ? null : harvestingClient.getLastSuccessfulHarvestTime().toString()).
