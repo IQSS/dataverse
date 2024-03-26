@@ -4598,7 +4598,7 @@ public class Datasets extends AbstractApiBean {
         PidProvider pidProvider = dataset.getEffectivePidGenerator();
         if(pidProvider == null) {
             //This is basically a config error, e.g. if a valid pid provider was removed after this dataset used it
-            return error(Response.Status.NOT_FOUND, "No PID Generator found for the give id");
+            return error(Response.Status.NOT_FOUND, BundleUtil.getStringFromBundle("datasets.api.pidgenerator.notfound"));
         }
         String pidGeneratorId = pidProvider.getId();
         return ok(pidGeneratorId);

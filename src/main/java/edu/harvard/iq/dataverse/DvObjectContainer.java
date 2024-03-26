@@ -252,7 +252,11 @@ public abstract class DvObjectContainer extends DvObject {
                             providerSpecs.getString("authority"), providerSpecs.getString("shoulder"));
                 }
             }
-            setPidGenerator(pidGenerator);
+            if(pidGenerator!=null && pidGenerator.canManagePID()) {
+                setPidGenerator(pidGenerator);
+            } else {
+                setPidGenerator(null);
+            }
         }
         return pidGenerator;
     }
