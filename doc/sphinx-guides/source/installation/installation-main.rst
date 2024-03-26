@@ -141,36 +141,6 @@ Got ERR_ADDRESS_UNREACHABLE While Navigating on Interface or API Calls
 
 If you are receiving an ``ERR_ADDRESS_UNREACHABLE`` while navigating the GUI or making an API call, make sure the ``siteUrl`` JVM option is defined. For details on how to set ``siteUrl``, please refer to :ref:`dataverse.siteUrl` from the :doc:`config` section. For context on why setting this option is necessary, refer to :ref:`dataverse.fqdn` from the :doc:`config` section.
 
-.. _mail-host-config-auth:
-
-Mail Host Configuration & Authentication
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If you need to alter your mail host address, user, or provide a password to connect with, these settings are easily changed using JVM options group :ref:`dataverse.mail.mta`.
-
-To enable authentication with your mail server, simply configure the following options:
-
-- ``dataverse.mail.mta.auth = true``
-- ``dataverse.mail.mta.user = <your username>``
-- ``dataverse.mail.mta.password``
-
-**WARNING**:
-We strongly recommend not using plaintext storage or environment variables, but relying on :ref:`secure-password-storage`.
-
-**WARNING**:
-It’s recommended to use an *app password* (for smtp.gmail.com users) or utilize a dedicated/non-personal user account with SMTP server auths so that you do not risk compromising your password.
-
-If your installation’s mail host uses SSL (like smtp.gmail.com) you’ll need to configure these options:
-
-- ``dataverse.mail.mta.ssl.enable = true``
-- ``dataverse.mail.mta.port = 587``
-
-**NOTE**: Some mail providers might still support using port 465, which formerly was assigned to be SMTP over SSL (SMTPS).
-However, this is no longer standardized and the port has been reassigned by the IANA to a different service.
-If your provider supports using port 587, be advised to migrate your configuration.
-
-As the mail server connection (session) is cached once created, you need to restart Payara when applying configuration changes.
-
 UnknownHostException While Deploying
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

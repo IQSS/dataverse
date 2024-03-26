@@ -718,6 +718,19 @@ To enable bearer tokens, you must install and configure Keycloak (for now, see :
 
 You can test that bearer tokens are working by following the example under :ref:`bearer-tokens` in the API Guide.
 
+.. _smtp-config:
+
+SMTP/Email Configuration
+------------------------
+
+The installer prompts you for some basic options to configure Dataverse to send email using your SMTP server, but in many cases, extra configuration may be necessary.
+
+Make sure the :ref:`dataverse.mail.support-email` has been set. Email will not be sent without it.
+
+Then check the list of commonly used settings at the top of :ref:`dataverse.mail.mta`.
+
+If you have trouble, consider turning on debugging with :ref:`dataverse.mail.debug`.
+
 .. _database-persistence:
 
 Database Persistence
@@ -2889,6 +2902,8 @@ Please note that if you're having any trouble sending email, you can refer to "T
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SYSTEM_EMAIL``.
 
+See also :ref:`smtp-config`.
+
 .. _dataverse.mail.support-email:
 
 dataverse.mail.support-email
@@ -2904,6 +2919,8 @@ If you don't include the text, the installation name (see :ref:`Branding Your In
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SUPPORT_EMAIL``.
 
+See also :ref:`smtp-config`.
+
 .. _dataverse.mail.cc-support-on-contact-email:
 
 dataverse.mail.cc-support-on-contact-email
@@ -2915,6 +2932,10 @@ The default is false.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_CC_SUPPORT_ON_CONTACT_EMAIL``.
 
+See also :ref:`smtp-config`.
+
+.. _dataverse.mail.debug:
+
 dataverse.mail.debug
 ++++++++++++++++++++
 
@@ -2922,6 +2943,8 @@ When this boolean setting is true, sending an email will generate more verbose l
 Defaults to ``false``.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_DEBUG``.
+
+See also :ref:`smtp-config`.
 
 .. _dataverse.mail.mta:
 
@@ -3026,7 +3049,7 @@ Detailed description for every setting can be found in the table included within
     ``dataverse.mail.mta.noop.strict``,
     ``dataverse.mail.mta.mailextension``
 
-See also :ref:`mail-host-config-auth`.
+See also :ref:`smtp-config`.
 
 dataverse.ui.allow-review-for-incomplete
 ++++++++++++++++++++++++++++++++++++++++
