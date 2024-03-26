@@ -571,7 +571,7 @@
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.retentionDate.label']}
                                                         </th>
-                                                        <td>#{!(empty FilePage.file.retention) ? FilePage.retentionPhrase: ''} #{!(empty FilePage.file.retention) ? FilePage.file.retention.dateUnavailable : FilePage.file.publicationDateFormattedYYYYMMDD}
+                                                        <td>#{!(empty FilePage.file.retention) ? FilePage.retentionPhrase: ''} #{!(empty FilePage.file.retention) ? FilePage.file.retention.dateUnavailable : FilePage.file.publicationDateFormattedYYYYMMDD}, #{bundle['retention.enddateinfo']}
                                                         </td>
                                                     </tr>
                                                     <tr id="fileRetentionBlock" jsf:rendered="#{!(empty FilePage.file.retention) and ! (empty FilePage.file.retention.reason)}">
