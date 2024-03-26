@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class MailSessionProducer {
@@ -42,6 +43,12 @@ public class MailSessionProducer {
     private static final String PREFIX = "mail.smtp.";
     private static final Logger logger = Logger.getLogger(MailSessionProducer.class.getCanonicalName());
     
+    static {
+        if (Boolean.TRUE.equals(JvmSettings.MAIL_DEBUG.lookup(Boolean.class))) {
+            logger.setLevel(Level.FINE);
+        }
+    }
+    
     Session systemMailSession;
     
     /**
@@ -60,7 +67,7 @@ public class MailSessionProducer {
         } catch (NamingException e) {
             // This exception simply means the appserver did not provide the legacy mail session.
             // Debug level output is just fine.
-            logger.log(Level.FINE, "Error during mail resource lookup", e);
+            logger.log(Level.FINER, "Error during legacy appserver-level mail resource lookup", e);
         }
     }
     
@@ -75,14 +82,21 @@ public class MailSessionProducer {
         }
         
         if (systemMailSession == null) {
+            logger.fine("Setting up new mail session");
+            
             // Initialize with null (= no authenticator) is a valid argument for the session factory method.
             Authenticator authenticator = null;
             
             // In case we want auth, create an authenticator (default = false from microprofile-config.properties)
-            if (JvmSettings.MAIL_MTA_AUTH.lookup(Boolean.class)) {
+            if (Boolean.TRUE.equals(JvmSettings.MAIL_MTA_AUTH.lookup(Boolean.class))) {
+                logger.fine("Mail Authentication is enabled, building authenticator");
                 authenticator = new Authenticator() {
                     @Override
                     protected PasswordAuthentication getPasswordAuthentication() {
+                        logger.fine(() ->
+                            String.format("Returning PasswordAuthenticator with username='%s', password='%s'",
+                                JvmSettings.MAIL_MTA_USER.lookup(),
+                                "*".repeat(JvmSettings.MAIL_MTA_PASSWORD.lookup().length())));
                         return new PasswordAuthentication(JvmSettings.MAIL_MTA_USER.lookup(), JvmSettings.MAIL_MTA_PASSWORD.lookup());
                     }
                 };
@@ -115,6 +129,10 @@ public class MailSessionProducer {
         smtpIntProps.forEach(
             prop -> JvmSettings.MAIL_MTA_SETTING.lookupOptional(Integer.class, prop).ifPresent(
                 number -> configuration.put(PREFIX + prop, number.toString())));
+        
+        logger.fine(() -> "Compiled properties:" + configuration.entrySet().stream()
+            .map(entry -> "\"" + entry.getKey() + "\": \"" + entry.getValue() + "\"")
+            .collect(Collectors.joining(",\n")));
         
         return configuration;
     }
