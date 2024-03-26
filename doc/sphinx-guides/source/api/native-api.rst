@@ -4195,7 +4195,7 @@ List explicit groups under Dataverse collection ``ID``. A curl example using an 
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
 
-  curl -H "X-Dataverse-key:$API_TOKEN"  "$SERVER_URL/api/dataverses/$ID/groups"
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/groups"
 
 The fully expanded example above (without environment variables) looks like this:
 
