@@ -189,8 +189,18 @@ public enum JvmSettings {
     
     // MAIL SETTINGS
     SCOPE_MAIL(PREFIX, "mail"),
+    SYSTEM_EMAIL(SCOPE_MAIL, "system-email"),
     SUPPORT_EMAIL(SCOPE_MAIL, "support-email"),
     CC_SUPPORT_ON_CONTACT_EMAIL(SCOPE_MAIL, "cc-support-on-contact-email"),
+    MAIL_DEBUG(SCOPE_MAIL, "debug"),
+    // Mail Transfer Agent settings
+    SCOPE_MAIL_MTA(SCOPE_MAIL, "mta"),
+    MAIL_MTA_AUTH(SCOPE_MAIL_MTA, "auth"),
+    MAIL_MTA_USER(SCOPE_MAIL_MTA, "user"),
+    MAIL_MTA_PASSWORD(SCOPE_MAIL_MTA, "password"),
+    MAIL_MTA_SUPPORT_UTF8(SCOPE_MAIL_MTA, "allow-utf8-addresses"),
+    // Placeholder setting for a large list of extra settings
+    MAIL_MTA_SETTING(SCOPE_MAIL_MTA),
     
     // AUTH SETTINGS
     SCOPE_AUTH(PREFIX, "auth"),
