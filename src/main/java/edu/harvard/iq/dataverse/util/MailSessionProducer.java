@@ -44,7 +44,7 @@ public class MailSessionProducer {
     private static final Logger logger = Logger.getLogger(MailSessionProducer.class.getCanonicalName());
     
     static {
-        if (Boolean.TRUE.equals(JvmSettings.MAIL_DEBUG.lookup(Boolean.class))) {
+        if (Boolean.TRUE.equals(JvmSettings.MAIL_DEBUG.lookupOptional(Boolean.class).orElse(false))) {
             logger.setLevel(Level.FINE);
         }
     }
