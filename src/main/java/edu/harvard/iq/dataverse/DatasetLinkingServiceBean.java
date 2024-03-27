@@ -8,12 +8,13 @@ package edu.harvard.iq.dataverse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 
 /**
  *
@@ -63,7 +64,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
                 .setParameter("datasetId", datasetId)
                 .setParameter("linkingDataverseId", linkingDataverseId)
                 .getSingleResult();            
-        } catch (javax.persistence.NoResultException e) {
+        } catch (NoResultException e) {
             logger.fine("no datasetLinkingDataverse found for datasetId " + datasetId + " and linkingDataverseId " + linkingDataverseId);        
             return null;
         }

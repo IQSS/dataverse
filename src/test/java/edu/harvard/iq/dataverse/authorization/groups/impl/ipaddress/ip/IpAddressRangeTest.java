@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -83,7 +83,7 @@ public class IpAddressRangeTest {
     
     public void testRange( Boolean expected, IpAddressRange range, IpAddress... addresses ) {
         for ( IpAddress ipa : addresses ) {
-            assertEquals( "Testing " + ipa + " in " + range, expected, range.contains(ipa));
+            assertEquals(expected, range.contains(ipa), "Testing " + ipa + " in " + range);
         }
     }
     

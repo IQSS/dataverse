@@ -16,10 +16,10 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.mocks.MockRoleAssigneeServiceBean;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -34,15 +34,14 @@ public class ExplicitGroupTest {
     public ExplicitGroupTest() {
     }
     
-    @Test( expected=GroupException.class )
+    @Test
     public void addGroupToSelf() throws Exception {
         ExplicitGroup sut = new ExplicitGroup();
         sut.setDisplayName("a group");
-        sut.add( sut );
-        fail("A group cannot be added to itself.");
+        assertThrows(GroupException.class, () -> sut.add( sut ), "A group cannot be added to itself.");
     }
     
-    @Test( expected=GroupException.class )
+    @Test
     public void addGroupToDescendant() throws GroupException{
         Dataverse dv = makeDataverse();
         ExplicitGroup root = new ExplicitGroup(prv);
@@ -60,11 +59,10 @@ public class ExplicitGroupTest {
         
         sub.add( subSub );
         root.add( sub );
-        subSub.add(root);
-        fail("A group cannot contain its parent");
+        assertThrows(GroupException.class, () -> subSub.add(root), "A group cannot contain its parent");
     }
     
-    @Test( expected=GroupException.class )
+    @Test
     public void addGroupToUnrealtedGroup() throws GroupException {
         Dataverse dv1 = makeDataverse();
         Dataverse dv2 = makeDataverse();
@@ -73,9 +71,8 @@ public class ExplicitGroupTest {
         g1.setOwner(dv1);
         g2.setOwner(dv2);
         
-        g1.add(g2);
-        fail("An explicit group cannot contain an explicit group defined in "
-                + "a dataverse that's not an ancestor of that group's owner dataverse.");
+        assertThrows(GroupException.class, () -> g1.add(g2), "An explicit group cannot contain an" +
+            "explicit group defined in a dataverse that's not an ancestor of that group's owner dataverse.");
         
     }
     

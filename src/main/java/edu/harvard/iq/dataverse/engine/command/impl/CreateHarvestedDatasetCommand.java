@@ -16,7 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 public class CreateHarvestedDatasetCommand extends AbstractCreateDatasetCommand {
 
     public CreateHarvestedDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
-        super(theDataset, aRequest);
+        super(theDataset, aRequest, true);
     }
     
     @Override

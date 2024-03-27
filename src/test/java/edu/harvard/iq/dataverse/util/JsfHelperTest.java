@@ -4,72 +4,53 @@
 
 package edu.harvard.iq.dataverse.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-/**
- *
- * @author michael
- */
-@RunWith(Parameterized.class)
 public class JsfHelperTest {
 	
 	enum TestEnum { Lorem, Ipsum, Dolor, Sit, Amet }
 	
-	@BeforeClass
+	@BeforeAll
 	public static void setUpClass() {
 	}
 	
-	@AfterClass
+	@AfterAll
 	public static void tearDownClass() {
 	}
 	
-	@Before
+	@BeforeEach
 	public void setUp() {
 	}
 	
-	@After
+	@AfterEach
 	public void tearDown() {
 	}
-
-	public TestEnum inputEnum;
-	public String inputString;
-	public TestEnum defaultEnumValue;
 	
-	public JsfHelperTest(TestEnum inputEnum, String inputString, TestEnum defaultEnumValue) {
-		this.inputEnum = inputEnum;
-		this.inputString = inputString;
-		this.defaultEnumValue = defaultEnumValue;
-	}
-
-	@Parameters
-	public static Collection<Object[]> parameters() {
-		return Arrays.asList (
-			new Object[][] {
-				{ TestEnum.Lorem, "Lorem", TestEnum.Dolor },
-				{ TestEnum.Lorem, "Lorem   ", TestEnum.Dolor },
-				{ TestEnum.Dolor, null, TestEnum.Dolor },
-				{ TestEnum.Dolor, "THIS IS A BAD VALUE", TestEnum.Dolor },
-			}
+	static Stream<Arguments> parameters() {
+		return Stream.of(
+			Arguments.of(TestEnum.Lorem, "Lorem", TestEnum.Dolor),
+			Arguments.of(TestEnum.Lorem, "Lorem   ", TestEnum.Dolor),
+			Arguments.of(TestEnum.Dolor, null, TestEnum.Dolor),
+			Arguments.of(TestEnum.Dolor, "THIS IS A BAD VALUE", TestEnum.Dolor )
 		);
 	}
 
 	/**
 	 * Test of enumValue method, of class JsfHelper.
 	 */
-	@Test
-	public void testEnumValue() {
+	@ParameterizedTest
+	@MethodSource("parameters")
+	public void testEnumValue(TestEnum inputEnum, String inputString, TestEnum defaultEnumValue) {
 		System.out.println("enumValue");
 		JsfHelper instance = new JsfHelper();
 

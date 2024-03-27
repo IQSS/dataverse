@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.util.FileUtil;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -21,10 +23,13 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  *
@@ -46,7 +51,7 @@ public class FileAccessIOTest {
     public FileAccessIOTest() {
     }
 
-    @Before
+    @BeforeEach
     public void setUpClass() throws IOException {
         dataverse = MocksFactory.makeDataverse();
         dataset = MocksFactory.makeDataset();
@@ -72,7 +77,7 @@ public class FileAccessIOTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDownClass() throws IOException {
         FileUtils.deleteDirectory(new File("/tmp/files/"));
     }
@@ -284,5 +289,32 @@ public class FileAccessIOTest {
             sb.append('\n');
         }
         assertEquals("This is a test string\n", sb.toString());
+    }
+    
+    @Test
+    public void testFileIdentifierFormats() throws IOException {
+        System.setProperty("dataverse.files.filetest.type", "file");
+        System.setProperty("dataverse.files.filetest.label", "Ftest");
+        System.setProperty("dataverse.files.filetest.directory", "/tmp/mydata");
+
+        FileUtil.generateStorageIdentifier();
+        assertTrue(DataAccess.isValidDirectStorageIdentifier("filetest://" + FileUtil.generateStorageIdentifier()));
+        //The tests here don't use a valid identifier string
+        assertFalse(DataAccess.isValidDirectStorageIdentifier(dataFile.getStorageIdentifier()));
+        //bad store id
+        String defaultType = System.getProperty("dataverse.files.file.type");
+        //Assure file isn't a defined store before test and reset afterwards if it was
+        System.clearProperty("dataverse.files.file.type");
+        assertFalse(DataAccess.isValidDirectStorageIdentifier("file://" + FileUtil.generateStorageIdentifier()));
+        if(defaultType!=null) {
+            System.out.println("dataverse.files.file.type reset to " + defaultType);
+            System.setProperty("dataverse.files.file.type", defaultType);
+        }
+        //breakout
+        assertFalse(DataAccess.isValidDirectStorageIdentifier("filetest://../" + FileUtil.generateStorageIdentifier()));
+        
+        System.clearProperty("dataverse.files.filetest.type");
+        System.clearProperty("dataverse.files.filetest.label");
+        System.clearProperty("dataverse.files.filetest.directory");
     }
 }

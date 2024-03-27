@@ -14,12 +14,15 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Matchers;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -50,13 +53,13 @@ public class CreateRoleCommandTest {
         }
     });
     
-    @Before
+    @BeforeEach
     public void before() {
         saveCalled = false;
     }
     
-    @Test( expected = IllegalCommandException.class )
-    public void testNonSuperUsersCantAddRoles() throws CommandException {
+    @Test
+    void testNonSuperUsersCantAddRoles() {
         DataverseRole dvr = new DataverseRole();
         dvr.setAlias("roleTest");
         dvr.setName("Tester Role");
@@ -69,8 +72,7 @@ public class CreateRoleCommandTest {
         normalUser.setSuperuser(false);
         
         CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(normalUser,IpAddress.valueOf("89.17.33.33")), dv);
-        engine.submit(sut);
-    
+        assertThrows(IllegalCommandException.class, () -> engine.submit(sut));
     }
    
     @Test
@@ -88,12 +90,12 @@ public class CreateRoleCommandTest {
         
         CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(normalUser,IpAddress.valueOf("89.17.33.33")), dv);
         engine.submit(sut);
-        assertTrue( "CreateRoleCommand did not call save on the created role.", saveCalled );
+        assertTrue(saveCalled, "CreateRoleCommand did not call save on the created role.");
     
     }
     
-    @Test( expected = IllegalCommandException.class )
-    public void testGuestUsersCantAddRoles() throws CommandException {
+    @Test
+    void testGuestUsersCantAddRoles() {
         DataverseRole dvr = new DataverseRole();
         dvr.setAlias("roleTest");
         dvr.setName("Tester Role");
@@ -103,7 +105,7 @@ public class CreateRoleCommandTest {
         dvr.setOwner(dv);
         
         CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(GuestUser.get(),IpAddress.valueOf("89.17.33.33")), dv);
-        engine.submit(sut);    
+        assertThrows(IllegalCommandException.class, () -> engine.submit(sut));
     }
     
     private class LocalTestEntityManager extends TestEntityManager {
@@ -128,7 +130,7 @@ public class CreateRoleCommandTest {
             //Mocking a query to return no results when 
             //checking for existing role in DB
             TypedQuery mockedQuery = mock(TypedQuery.class);
-            when(mockedQuery.setParameter(Matchers.anyString(), Matchers.anyObject())).thenReturn(mockedQuery);
+            when(mockedQuery.setParameter(ArgumentMatchers.anyString(), ArgumentMatchers.any())).thenReturn(mockedQuery);
             when(mockedQuery.getSingleResult()).thenReturn(null);
             return mockedQuery;
         }

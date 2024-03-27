@@ -49,14 +49,8 @@ public class SetDatasetCitationDateCommand extends AbstractCommand<Dataset>{
         boolean retVal = true;
         Dataset dataset = (Dataset) r;
 
-        try {
-            Future<String> indexString = ctxt.index().indexDataset(dataset, false);
-        } catch (IOException | SolrServerException e) {
-            String failureLogText = "Post set dataset citation date indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dataset);
-            retVal = false;
-        }
+        ctxt.index().asyncIndexDataset(dataset, false);
+
         return retVal;
     }	
 }

@@ -9,6 +9,9 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.api.UtilIT;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.util.FileUtil;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +33,7 @@ public class S3AccessIOTest {
     @Mock
     private AmazonS3 s3client;
     
-    private S3AccessIO<Dataset> dataSetAccess;
+    private StorageIO<Dataset> dataSetAccess;
     private S3AccessIO<DataFile> dataFileAccess;
     private Dataset dataSet;
     private DataFile dataFile;
@@ -42,11 +45,21 @@ public class S3AccessIOTest {
         dataSet = MocksFactory.makeDataset();
         dataFile.setOwner(dataSet);
         dataFileId = UtilIT.getRandomIdentifier();
-        dataFile.setStorageIdentifier("s3://bucket:"+dataFileId);
-        dataSetAccess = new S3AccessIO<>(dataSet, null, s3client, "s3");
-        dataFileAccess = new S3AccessIO<>(dataFile, null, s3client, "s3");
+        System.setProperty("dataverse.files.s3test.type", "s3");
+        System.setProperty("dataverse.files.s3test.label", "S3test");
+        System.setProperty("dataverse.files.s3test.bucket-name", "thebucket");
+
+        dataFile.setStorageIdentifier("s3test://thebucket:"+dataFileId);
+        dataSetAccess = new S3AccessIO<>(dataSet, null, s3client, "s3test");
+        dataFileAccess = new S3AccessIO<>(dataFile, null, s3client, "s3test");
     }
     
+    @AfterEach
+    public void tearDown() {
+        System.clearProperty("dataverse.files.s3test.type");
+        System.clearProperty("dataverse.files.s3test.label");
+        System.clearProperty("dataverse.files.s3test.bucket-name");
+    }
     /*
     createTempFile
     getStorageLocation
@@ -99,7 +112,7 @@ public class S3AccessIOTest {
     @Test
     void default_getUrlExpirationMinutes() {
         // given
-        System.clearProperty("dataverse.files.s3.url-expiration-minutes");
+        System.clearProperty("dataverse.files.s3test.url-expiration-minutes");
         // when & then
         assertEquals(60, dataFileAccess.getUrlExpirationMinutes());
     }
@@ -107,7 +120,7 @@ public class S3AccessIOTest {
     @Test
     void validSetting_getUrlExpirationMinutes() {
         // given
-        System.setProperty("dataverse.files.s3.url-expiration-minutes", "120");
+        System.setProperty("dataverse.files.s3test.url-expiration-minutes", "120");
         // when & then
         assertEquals(120, dataFileAccess.getUrlExpirationMinutes());
     }
@@ -115,9 +128,20 @@ public class S3AccessIOTest {
     @Test
     void invalidSetting_getUrlExpirationMinutes() {
         // given
-        System.setProperty("dataverse.files.s3.url-expiration-minutes", "NaN");
+        System.setProperty("dataverse.files.s3test.url-expiration-minutes", "NaN");
         // when & then
         assertEquals(60, dataFileAccess.getUrlExpirationMinutes());
+    }
+    
+    @Test
+    void testS3IdentifierFormats() throws IOException {
+        assertTrue(DataAccess.isValidDirectStorageIdentifier("s3test://thebucket:" + FileUtil.generateStorageIdentifier()));
+        //The tests here don't use a valid identifier string
+        assertFalse(DataAccess.isValidDirectStorageIdentifier(dataFile.getStorageIdentifier()));
+        //bad store id
+        assertFalse(DataAccess.isValidDirectStorageIdentifier("s3://thebucket:" + FileUtil.generateStorageIdentifier()));
+        //bad bucket
+        assertFalse(DataAccess.isValidDirectStorageIdentifier("s3test://bucket:" + FileUtil.generateStorageIdentifier()));
     }
     
 }

@@ -5,17 +5,18 @@
  */
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.PUT;
+import java.util.logging.Logger;
+import jakarta.ejb.EJB;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.*;
+
+import jakarta.ws.rs.core.Response;
+
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
 
@@ -59,7 +60,27 @@ public class Metadata extends AbstractApiBean {
     public Response reExportAll() {
         datasetService.reExportAllAsync();
         return this.accepted();
-    } 
+    }
+
+    @GET
+    @Path("{id}/reExportDataset")
+    public Response indexDatasetByPersistentId(@PathParam("id") String id) {
+        try {
+            Dataset dataset = findDatasetOrDie(id);
+            datasetService.reExportDatasetAsync(dataset);
+            return ok("export started");
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @GET
+    @Path("clearExportTimestamps")
+    public Response clearExportTimestamps() {
+        // only clear the timestamp in the database, cached metadata export files are not deleted
+        int numItemsCleared = datasetService.clearAllExportTimes();
+        return ok("cleared: " + numItemsCleared);
+    }
 
     /**
      * initial attempt at triggering indexing/creation/population of a OAI set without going throught

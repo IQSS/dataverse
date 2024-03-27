@@ -166,7 +166,7 @@ function sharrre(){
  */
 function contentTruncate(truncSelector, truncMoreBtn, truncMoreTip, truncLessBtn, truncLessTip){
     // SELECTOR ID FROM PARAMETERS
-    $('#' + truncSelector + ' td > div:first-child').each(function () {
+    $('#' + truncSelector).each(function () {
         
         // add responsive img class to limit width to that of container
         $(this).find('img').attr('class', 'img-responsive');
@@ -176,7 +176,7 @@ function contentTruncate(truncSelector, truncMoreBtn, truncMoreTip, truncLessBtn
         
         if (containerHeight > 250) {
             // ADD A MAX-HEIGHT TO CONTAINER
-            $(this).css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
+            $(this).css({'max-height':'250px','overflow-y':'hidden', 'overflow-x':'hidden', 'position':'relative'});
 
             // BTN LABEL TEXT, ARIA ATTR'S, FROM BUNDLE VIA PARAMETERS
             var readMoreBtn = '<button class="btn btn-link desc-more-link" type="button" data-toggle="tooltip" data-original-title="' + truncMoreTip + '" aria-expanded="false" aria-controls="#' + truncSelector + '">' + truncMoreBtn + '</button>';

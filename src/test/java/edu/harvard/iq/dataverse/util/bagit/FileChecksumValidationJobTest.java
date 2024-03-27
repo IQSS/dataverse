@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.util.bagit.data.FileDataProvider.InputStreamProv
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;

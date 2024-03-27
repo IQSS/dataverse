@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 public class EjbUtil {
 
