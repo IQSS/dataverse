@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.Arrays;
 
 @Entity
+@Table(indexes = {@Index(columnList="yearMonth")})
 public class MakeDataCountProcessState implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
