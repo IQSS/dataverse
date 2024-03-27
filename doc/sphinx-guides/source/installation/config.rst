@@ -1427,8 +1427,8 @@ Before being moved there,
 
 .. _cache-rate-limiting:
 
-Configure Your Dataverse Installation to Use JCache (with Hazelcast as Provided by Payara) for Rate Limiting
-------------------------------------------------------------------------------------------------------------
+Rate Limiting
+-------------
 
 Rate limiting has been added to prevent users from over taxing the system either deliberately or by runaway automated processes.
 Rate limiting can be configured on a tier level with tier 0 being reserved for guest users and tiers 1-any for authenticated users.
@@ -1447,7 +1447,7 @@ Note: If either of these settings exist in the database rate limiting will be en
 - :RateLimitingCapacityByTierAndAction is a JSON object specifying the rate by tier and a list of actions (commands). This allows for more control over the rate limit of individual API command calls.
   In the following example, calls made by a guest user (tier 0) for API GetLatestPublishedDatasetVersionCommand is further limited to only 10 calls per hour, while an authenticated user (tier 1) will be able to make 30 calls per hour to the same API.
 
-:download:`rate-limit-actions.json </_static/installation/files/examples/rate-limit-actions-setting.json>`  Example json for RateLimitingCapacityByTierAndAction
+:download:`rate-limit-actions.json </_static/installation/files/examples/rate-limit-actions-setting.json>`  Example JSON for RateLimitingCapacityByTierAndAction
 
 .. code-block:: bash
 
@@ -4714,17 +4714,22 @@ The setting is ``false`` by default, preserving the legacy behavior.
 Number of calls allowed per hour if the specific command is not configured. The values represent the number of calls per hour per user for tiers 0,1,...
 A value of -1 can be used to signify no rate limit. Also, by default, a tier not defined would receive a default of no limit.
 
+See also :ref:`cache-rate-limiting`.
+
 :RateLimitingCapacityByTierAndAction
 ++++++++++++++++++++++++++++++++++++
 JSON object specifying the rate by tier and a list of actions (commands). This allows for more control over the rate limit of individual API command calls.
 In the following example, calls made by a guest user (tier 0) for API GetLatestPublishedDatasetVersionCommand is further limited to only 10 calls per hour, while an authenticated user (tier 1) will be able to make 30 calls per hour to the same API.
-{"rateLimits":[
-{"tier": 0, "limitPerHour": 10, "actions": ["GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand"]},
-{"tier": 0, "limitPerHour": 1, "actions": ["CreateGuestbookResponseCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]},
-{"tier": 1, "limitPerHour": 30, "actions": ["CreateGuestbookResponseCommand", "GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}]}
 
+.. code-block:: shell
 
+  {"rateLimits":[
+    {"tier": 0, "limitPerHour": 10, "actions": ["GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand"]},
+    {"tier": 0, "limitPerHour": 1, "actions": ["CreateGuestbookResponseCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]},
+    {"tier": 1, "limitPerHour": 30, "actions": ["CreateGuestbookResponseCommand", "GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}
+  ]}
 
+See also :ref:`cache-rate-limiting`.
 
 .. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
 .. _password alias: https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Server%20Configuration%20And%20Management/Configuration%20Options/Password%20Aliases.html
