@@ -4455,6 +4455,25 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/metadatablocks"
 
+This endpoint supports the following optional query parameters:
+
+- ``returnDatasetFieldTypes``: Whether or not to return the dataset field types present in each metadata block. If not set, the default value is false.
+- ``onlyDisplayedOnCreate``: Whether or not to return only the metadata blocks that are displayed on dataset creation. If ``returnDatasetFieldTypes`` is true, only the dataset field types shown on dataset creation will be returned within each metadata block. If not set, the default value is false.
+
+An example using the optional query parameters is presented below:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true"
+
 Show Info About Single Metadata Block
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
