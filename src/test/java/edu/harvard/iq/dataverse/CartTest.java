@@ -1,15 +1,15 @@
 package edu.harvard.iq.dataverse;
 
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class CartTest {
 
@@ -17,14 +17,14 @@ public class CartTest {
     private String title;
     private String persistentId;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.cart = new Cart();
         this.title = "title";
         this.persistentId = "persistentId";
     }
 
-    @After
+    @AfterEach
     public void tearDwon() {
         this.cart = null;
         this.title = null;

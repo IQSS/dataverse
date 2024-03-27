@@ -29,7 +29,7 @@ import java.util.Locale;
  * 
  * @author akio sone at UNC-Odum
  */
-public abstract class IngestServiceProvider  implements RegisterableService {
+public abstract class IngestServiceProvider  {
 
     /**
      * The name of the vendor that is responsible for coding this
@@ -62,29 +62,6 @@ public abstract class IngestServiceProvider  implements RegisterableService {
     public IngestServiceProvider() {
     }
 
-    /**
-     * A callback to be called exactly once after this Spi class
-     * has been instantiated and registered in a 
-     * <code>ServiceRegistry</code>.
-     *
-     * @param registry the ServiceRegistry instance.
-     * @param category a <code>Class</code>  object that indicatges
-     * its registry category under which this object has been registered.
-     * category.
-     */
-    public void onRegistration(ServiceRegistry registry,
-                               Class<?> category) {}
-                               
-    /**
-     * A callback whenever this Spi class is deregistered from
-     * a <code>ServiceRegistry</code>.
-     *
-     * @param registry the ServiceRegistry instance.
-     * @param category a <code>Class</code> object that indicatges
-     * its registry category from which this object is being de-registered.
-     */
-    public void onDeregistration(ServiceRegistry registry,
-                                 Class<?> category) {}
     /**
      * Gets the value of the version field.
      *

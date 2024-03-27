@@ -17,13 +17,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.validation.ConstraintViolation;
+
+import jakarta.validation.ConstraintViolation;
 import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class IngestUtilTest {
 
@@ -42,7 +42,7 @@ public class IngestUtilTest {
         Dataset dataset = makeDataset();
 
         // create dataset version
-        DatasetVersion datasetVersion = dataset.getEditVersion();
+        DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
         datasetVersion.setCreateTime(dateFmt.parse("20001012"));
         datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
         datasetVersion.setId(MocksFactory.nextId());
@@ -146,7 +146,7 @@ public class IngestUtilTest {
         Dataset dataset = makeDataset();
 
         // create dataset version
-        DatasetVersion datasetVersion = dataset.getEditVersion();
+        DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
         datasetVersion.setCreateTime(dateFmt.parse("20001012"));
         datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
         datasetVersion.setId(MocksFactory.nextId());
@@ -251,7 +251,7 @@ public class IngestUtilTest {
         Dataset dataset = makeDataset();
 
         // create dataset version
-        DatasetVersion datasetVersion = dataset.getEditVersion();
+        DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
         datasetVersion.setCreateTime(dateFmt.parse("20001012"));
         datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
         datasetVersion.setId(MocksFactory.nextId());
@@ -389,7 +389,7 @@ public class IngestUtilTest {
         Dataset dataset = makeDataset();
 
         // create dataset version
-        DatasetVersion datasetVersion = dataset.getEditVersion();
+        DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
         datasetVersion.setCreateTime(dateFmt.parse("20001012"));
         datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
         datasetVersion.setId(MocksFactory.nextId());
@@ -475,7 +475,7 @@ public class IngestUtilTest {
         Dataset dataset = makeDataset();
 
         // create dataset version
-        DatasetVersion datasetVersion = dataset.getEditVersion();
+        DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
         datasetVersion.setCreateTime(dateFmt.parse("20001012"));
         datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
         datasetVersion.setId(MocksFactory.nextId());

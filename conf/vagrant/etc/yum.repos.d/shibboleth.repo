@@ -1,7 +1,0 @@
-[security_shibboleth]
-name=Shibboleth (CentOS_8)
-type=rpm-md
-baseurl=http://download.opensuse.org/repositories/security:/shibboleth/CentOS_8/
-gpgcheck=1
-gpgkey=http://download.opensuse.org/repositories/security:/shibboleth/CentOS_8/repodata/repomd.xml.key
-enabled=1

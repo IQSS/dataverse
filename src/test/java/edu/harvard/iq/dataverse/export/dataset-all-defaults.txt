@@ -14,8 +14,10 @@
     "lastUpdateTime": "2015-09-29T17:47:35Z",
     "releaseTime": "2015-09-29T17:47:35Z",
     "createTime": "2015-09-24T16:47:50Z",
-    "license": "CC0",
-    "termsOfUse": "CC0 Waiver",
+    "license": {
+          "name": "CC0 1.0",
+          "uri": "http://creativecommons.org/publicdomain/zero/1.0/"
+        },
     "metadataBlocks": {
       "citation": {
         "displayName": "Citation Metadata",
@@ -40,9 +42,9 @@
           },
           {
             "typeName": "alternativeTitle",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "primitive",
-            "value": "Alternative Title"
+            "value": ["Alternative Title"]
           },
           {
             "typeName": "alternativeURL",
@@ -692,9 +694,10 @@
           },
           {
             "typeName": "series",
-            "multiple": false,
+            "multiple": true,
             "typeClass": "compound",
-            "value": {
+            "value": [
+              {
               "seriesName": {
                 "typeName": "seriesName",
                 "multiple": false,
@@ -708,6 +711,7 @@
                 "value": "SeriesInformation"
               }
             }
+            ]
           },
           {
             "typeName": "software",
@@ -889,14 +893,14 @@
                   "typeClass": "primitive",
                   "value": "20"
                 },
-                "northLongitude": {
-                  "typeName": "northLongitude",
+                "northLatitude": {
+                  "typeName": "northLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "30"
                 },
-                "southLongitude": {
-                  "typeName": "southLongitude",
+                "southLatitude": {
+                  "typeName": "southLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "40"
@@ -915,14 +919,14 @@
                   "typeClass": "primitive",
                   "value": "60"
                 },
-                "northLongitude": {
-                  "typeName": "northLongitude",
+                "northLatitude": {
+                  "typeName": "northLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "70"
                 },
-                "southLongitude": {
-                  "typeName": "southLongitude",
+                "southLatitude": {
+                  "typeName": "southLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "80"

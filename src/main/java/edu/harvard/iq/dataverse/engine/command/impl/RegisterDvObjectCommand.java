@@ -4,19 +4,17 @@ import edu.harvard.iq.dataverse.AlternativePersistentIdentifier;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
+
 import java.sql.Timestamp;
 import java.util.Date;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
-import java.io.IOException;
-import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -43,48 +41,37 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         
+        DvObjectContainer container = (target instanceof DvObjectContainer) ? (DvObjectContainer) target : target.getOwner();
+        // Get the pidProvider that is configured to mint new IDs
+        PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(container);
         if(this.migrateHandle){
             //Only continue if you can successfully migrate the handle
-            if (!processMigrateHandle(ctxt)) return;
+            if (HandlePidProvider.HDL_PROTOCOL.equals(pidProvider.getProtocol()) || !processMigrateHandle(ctxt)) return;
         }
-        String nonNullDefaultIfKeyNotFound = "";
-        String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        String authority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        // Get the idServiceBean that is configured to mint new IDs
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
+        
         try {
             //Test to see if identifier already present
             //if so, leave.
             if (target.getIdentifier() == null || target.getIdentifier().isEmpty()) {
-                if (target.isInstanceofDataset()) {
-                    target.setIdentifier(ctxt.datasets().generateDatasetIdentifier((Dataset) target, idServiceBean));
-
-                } else {
-                    target.setIdentifier(ctxt.files().generateDataFileIdentifier((DataFile) target, idServiceBean));
-                }
-                if (target.getProtocol() == null) {
-                    target.setProtocol(protocol);
-                }
-                if (target.getAuthority() == null) {
-                    target.setAuthority(authority);
-                }
+                pidProvider.generatePid(target);
             }
-            if (idServiceBean.alreadyExists(target)) {
+
+            if (pidProvider.alreadyRegistered(target)) {
                 return;
             }
-            String doiRetString = idServiceBean.createIdentifier(target);
+            String doiRetString = pidProvider.createIdentifier(target);
             if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
-                if (!idServiceBean.registerWhenPublished()) {
+                if (!pidProvider.registerWhenPublished()) {
                     // Should register ID before publicize() is called
-                    // For example, DOIEZIdServiceBean tries to recreate the id if the identifier isn't registered before
+                    // For example, DOIEZIdProvider tries to recreate the id if the identifier isn't registered before
                     // publicizeIdentifier is called
                     target.setIdentifierRegistered(true);
                     target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 }
                 if (target.isReleased()) {
-                    idServiceBean.publicizeIdentifier(target);
+                    pidProvider.publicizeIdentifier(target);
                 }
-                if (idServiceBean.registerWhenPublished() && target.isReleased()) {
+                if (pidProvider.registerWhenPublished() && target.isReleased()) {
                     target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                     target.setIdentifierRegistered(true);
                 }
@@ -94,27 +81,21 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
                     Dataset dataset = (Dataset) target;
                     for (DataFile df : dataset.getFiles()) {
                         if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
-                            df.setIdentifier(ctxt.files().generateDataFileIdentifier(df, idServiceBean));
-                            if (df.getProtocol() == null || df.getProtocol().isEmpty()) {
-                                df.setProtocol(protocol);
-                            }
-                            if (df.getAuthority() == null || df.getAuthority().isEmpty()) {
-                                df.setAuthority(authority);
-                            }
+                            pidProvider.generatePid(df);
                         }
-                        doiRetString = idServiceBean.createIdentifier(df);
+                        doiRetString = pidProvider.createIdentifier(df);
                         if (doiRetString != null && doiRetString.contains(df.getIdentifier())) {
-                            if (!idServiceBean.registerWhenPublished()) {
+                            if (!pidProvider.registerWhenPublished()) {
                                 // Should register ID before publicize() is called
-                                // For example, DOIEZIdServiceBean tries to recreate the id if the identifier isn't registered before
+                                // For example, DOIEZIdProvider tries to recreate the id if the identifier isn't registered before
                                 // publicizeIdentifier is called
                                 df.setIdentifierRegistered(true);
                                 df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                             }
                             if (df.isReleased()) {
-                                idServiceBean.publicizeIdentifier(df);
+                                pidProvider.publicizeIdentifier(df);
                             }
-                            if (idServiceBean.registerWhenPublished() && df.isReleased()) {
+                            if (pidProvider.registerWhenPublished() && df.isReleased()) {
                                 df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                                 df.setIdentifierRegistered(true);
                             }
@@ -136,22 +117,15 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             //Only continue if you can successfully migrate the handle
             boolean doNormalSolrDocCleanUp = true;
             Dataset dataset = (Dataset) target;
-            try {
-                ctxt.index().indexDataset(dataset, doNormalSolrDocCleanUp);
-                ctxt.solrIndex().indexPermissionsForOneDvObject( dataset);
-            } catch (IOException | SolrServerException e) {
-                String failureLogText = "Post migrate handle dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
-                failureLogText += "\r\n" + e.getLocalizedMessage();
-                LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dataset);
-
-            }
+            ctxt.index().asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
+            ctxt.solrIndex().indexPermissionsForOneDvObject( dataset);
         }
     }
     
     private Boolean processMigrateHandle (CommandContext ctxt){
         boolean retval = true;
         if(!target.isInstanceofDataset()) return false;
-        if(!target.getProtocol().equals(GlobalId.HDL_PROTOCOL)) return false;
+        if(!target.getProtocol().equals(HandlePidProvider.HDL_PROTOCOL)) return false;
         
         AlternativePersistentIdentifier api = new AlternativePersistentIdentifier();
         api.setProtocol(target.getProtocol());

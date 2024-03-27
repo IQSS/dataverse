@@ -12,7 +12,7 @@ import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 @RequiredPermissions(Permission.PublishDataverse)
 public class CreateSavedSearchCommand extends AbstractCommand<SavedSearch> {

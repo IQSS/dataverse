@@ -7,6 +7,7 @@ public class FacetCategory {
     private String name;
     private List<FacetLabel> facetLabel;
     private String friendlyName;
+    private Long datasetFieldTypeId;
 
     public String getName() {
         return name;
@@ -30,6 +31,14 @@ public class FacetCategory {
 
     public void setFriendlyName(String friendlyName) {
         this.friendlyName = friendlyName;
+    }
+
+    public Long getDatasetFieldTypeId() {
+        return datasetFieldTypeId;
+    }
+
+    public void setDatasetFieldTypeId(Long datasetFieldId) {
+        this.datasetFieldTypeId = datasetFieldId;
     }
 
 }

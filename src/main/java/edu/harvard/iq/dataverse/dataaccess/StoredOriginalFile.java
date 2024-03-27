@@ -27,7 +27,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Logger;
 
-import org.apache.tika.io.IOUtils;
+import org.apache.commons.io.IOUtils;
+
 /**
  *
  * @author Leonid Andreev
@@ -39,7 +40,7 @@ public class StoredOriginalFile {
         
     }
     
-    private static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
+    public static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
     
     public static StorageIO<DataFile> retreive(StorageIO<DataFile> storageIO) {
         String originalMimeType;

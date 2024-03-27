@@ -8,7 +8,7 @@
 # if you'd like to avoid that.
 
 # directory where Payara is installed
-PAYARA_DIR=/usr/local/payara5
+PAYARA_DIR=/usr/local/payara6
 
 # directory within Payara (defaults)
 DV_DIR=${PAYARA_DIR}/glassfish/domains/domain1
@@ -17,7 +17,7 @@ DV_DIR=${PAYARA_DIR}/glassfish/domains/domain1
 ${PAYARA_DIR}/bin/asadmin stop-domain
 
 rm -rf ${PAYARA_DIR}/${DV_DIR}/generated/
-rm -rf ${PAYARA_DIR}/${DV_DIR}/osgi-cache/felix
+rm -rf ${PAYARA_DIR}/${DV_DIR}/osgi-cache/
 
 # restart the domain (also generates a warning if app server is stopped)
 ${PAYARA_DIR}/bin/asadmin start-domain

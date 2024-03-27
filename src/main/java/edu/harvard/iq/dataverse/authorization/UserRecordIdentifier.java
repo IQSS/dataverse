@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.authorization;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 
+import java.util.Objects;
+
 /**
  * Identifies a user using two strings:
  * <ul>
@@ -38,4 +40,16 @@ public class UserRecordIdentifier {
         return new AuthenticatedUserLookup(userIdInRepo, repoId, u);
     }
     
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserRecordIdentifier)) return false;
+        UserRecordIdentifier that = (UserRecordIdentifier) o;
+        return Objects.equals(repoId, that.repoId) && Objects.equals(getUserIdInRepo(), that.getUserIdInRepo());
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(repoId, getUserIdInRepo());
+    }
 }

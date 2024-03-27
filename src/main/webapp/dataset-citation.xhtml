@@ -26,26 +26,20 @@
                 <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" 
                       data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
             </div>
-            <div class="pull-left row col-sm-9 padding-none">
+            <div class="pull-left row col-sm-9 padding-none" jsf:rendered="#{!DatasetPage.anonymizedAccess}">
                 <div class="col-sm-3 col-md-4 col-lg-3 btn-group margin-bottom citation-download" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                     <button type="button" class="btn btn-link dropdown-toggle padding-none downloadCitation" data-toggle="dropdown">
                         #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
                     </button>
-                    <ul class="dropdown-menu" role="menu">
+                    <ul class="dropdown-menu">
                         <li>
-                            <a jsf:id="endNoteLink" jsf:action="#{DatasetPage.fileDownloadService.downloadDatasetCitationXML(DatasetPage.dataset)}" >
-                                #{bundle['dataset.cite.downloadBtn.xml']}
-                            </a>
+                            <h:commandLink id="endNoteLink" value="#{bundle['dataset.cite.downloadBtn.xml']}" action="#{DatasetPage.fileDownloadService.downloadDatasetCitationXML(DatasetPage.dataset)}"/>
                         </li>
                         <li>
-                            <a jsf:id="risLink" jsf:actionListener="#{DatasetPage.fileDownloadService.downloadDatasetCitationRIS(DatasetPage.dataset)}">
-                                #{bundle['dataset.cite.downloadBtn.ris']}
-                            </a>
+                            <h:commandLink id="risLink" value="#{bundle['dataset.cite.downloadBtn.ris']}" action="#{DatasetPage.fileDownloadService.downloadDatasetCitationRIS(DatasetPage.dataset)}"/>
                         </li>
                         <li>
-                            <a jsf:id="bibLink" jsf:actionListener="#{DatasetPage.fileDownloadService.downloadDatasetCitationBibtex(DatasetPage.dataset)}" target="_blank">
-                                #{bundle['dataset.cite.downloadBtn.bib']}
-                            </a>
+                            <h:commandLink id="bibLink" value="#{bundle['dataset.cite.downloadBtn.bib']}" action="#{DatasetPage.fileDownloadService.downloadDatasetCitationBibtex(DatasetPage.dataset)}" target="_blank"/>
                         </li>
                     </ul>
                 </div>

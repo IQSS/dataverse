@@ -33,13 +33,17 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,25 +53,24 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import javax.xml.stream.XMLStreamException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -101,6 +104,8 @@ public class ImportServiceBean {
     
     @EJB
     IndexServiceBean indexService;
+    @EJB
+    LicenseServiceBean licenseService;
     /**
      * This is just a convenience method, for testing migration.  It creates 
      * a dummy dataverse with the directory name as dataverse name & alias.
@@ -134,10 +139,7 @@ public class ImportServiceBean {
             while (cause.getCause() != null) {
                 cause = cause.getCause();
                 if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                 }
             }
             logger.log(Level.SEVERE, sb.toString());
@@ -258,12 +260,11 @@ public class ImportServiceBean {
                 throw new ImportException("Failed to transform XML metadata format "+metadataFormat+" into a DatasetDTO");
             }
         }
-        
-        JsonReader jsonReader = Json.createReader(new StringReader(json));
-        JsonObject obj = jsonReader.readObject();
+
+        JsonObject obj = JsonUtil.getJsonObject(json);
         //and call parse Json to read it into a dataset   
         try {
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService, harvestingClient);
             parser.setLenient(true);
             Dataset ds = parser.parseDataset(obj);
 
@@ -324,26 +325,26 @@ public class ImportServiceBean {
             
             // A Global ID is required, in order for us to be able to harvest and import
             // this dataset:
-            if (StringUtils.isEmpty(ds.getGlobalIdString())) {
+            if (StringUtils.isEmpty(ds.getGlobalId().asString())) {
                 throw new ImportException("The harvested metadata record with the OAI server identifier "+harvestIdentifier+" does not contain a global unique identifier that we could recognize, skipping.");
             }
 
             ds.setHarvestedFrom(harvestingClient);
             ds.setHarvestIdentifier(harvestIdentifier);
             
-            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalIdString());
+            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId().asString());
 
             if (existingDs != null) {
                 // If this dataset already exists IN ANOTHER DATAVERSE
                 // we are just going to skip it!
                 if (existingDs.getOwner() != null && !owner.getId().equals(existingDs.getOwner().getId())) {
-                    throw new ImportException("The dataset with the global id "+ds.getGlobalIdString()+" already exists, in the dataverse "+existingDs.getOwner().getAlias()+", skipping.");
+                    throw new ImportException("The dataset with the global id "+ds.getGlobalId().asString()+" already exists, in the dataverse "+existingDs.getOwner().getAlias()+", skipping.");
                 }
                 // And if we already have a dataset with this same id, in this same
                 // dataverse, but it is  LOCAL dataset (can happen!), we're going to 
                 // skip it also: 
                 if (!existingDs.isHarvested()) {
-                    throw new ImportException("A LOCAL dataset with the global id "+ds.getGlobalIdString()+" already exists in this dataverse; skipping.");
+                    throw new ImportException("A LOCAL dataset with the global id "+ds.getGlobalId().asString()+" already exists in this dataverse; skipping.");
                 }
                 // For harvested datasets, there should always only be one version.
                 // We will replace the current version with the imported version.
@@ -395,10 +396,8 @@ public class ImportServiceBean {
         // convert DTO to Json,
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(dsDTO);
-        JsonReader jsonReader = Json.createReader(new StringReader(json));
-        JsonObject obj = jsonReader.readObject();
 
-        return obj;
+        return JsonUtil.getJsonObject(json);
     }
     
     public JsonObjectBuilder doImport(DataverseRequest dataverseRequest, Dataverse owner, String xmlToParse, String fileName, ImportType importType, PrintWriter cleanupLog) throws ImportException, IOException {
@@ -415,19 +414,19 @@ public class ImportServiceBean {
         // convert DTO to Json, 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(dsDTO);
-        JsonReader jsonReader = Json.createReader(new StringReader(json));
-        JsonObject obj = jsonReader.readObject();
+        JsonObject obj = JsonUtil.getJsonObject(json);
         //and call parse Json to read it into a dataset   
         try {
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
+            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService, licenseService);
             parser.setLenient(!importType.equals(ImportType.NEW));
             Dataset ds = parser.parseDataset(obj);
 
             // For ImportType.NEW, if the user supplies a global identifier, and it's not a protocol
             // we support, it will be rejected.
+            
             if (importType.equals(ImportType.NEW)) {
-                if (ds.getGlobalIdString() != null && !ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""))) {
-                    throw new ImportException("Could not register id " + ds.getGlobalIdString() + ", protocol not supported");
+                if (ds.getGlobalId().asString() != null && !PidUtil.getPidProvider(ds.getGlobalId().getProviderId()).canManagePID()) {
+                    throw new ImportException("Could not register id " + ds.getGlobalId().asString() + ", protocol not supported");
                 }
             }
 
@@ -496,7 +495,7 @@ public class ImportServiceBean {
             }
 
 
-            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalIdString());
+            Dataset existingDs = datasetService.findByGlobalId(ds.getGlobalId().asString());
 
             if (existingDs != null) {
                 if (importType.equals(ImportType.HARVEST)) {
@@ -515,11 +514,11 @@ public class ImportServiceBean {
                     // check that the version number isn't already in the dataset
                     for (DatasetVersion dsv : existingDs.getVersions()) {
                         if (dsv.getVersionNumber().equals(ds.getLatestVersion().getVersionNumber())) {
-                            throw new ImportException("VersionNumber " + ds.getLatestVersion().getVersionNumber() + " already exists in dataset " + existingDs.getGlobalIdString());
+                            throw new ImportException("VersionNumber " + ds.getLatestVersion().getVersionNumber() + " already exists in dataset " + existingDs.getGlobalId().asString());
                         }
                     }
                     DatasetVersion dsv = engineSvc.submit(new CreateDatasetVersionCommand(dataverseRequest, existingDs, ds.getVersions().get(0)));
-                    status = " created datasetVersion, for dataset "+ dsv.getDataset().getGlobalIdString();
+                    status = " created datasetVersion, for dataset "+ dsv.getDataset().getGlobalId().asString();
                     createdId = dsv.getId();
                 }
 

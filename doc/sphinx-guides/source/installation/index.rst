@@ -16,7 +16,6 @@ Installation Guide
    installation-main
    config
    upgrading
-   r-rapache-tworavens
    shibboleth
    oauth2
    oidc

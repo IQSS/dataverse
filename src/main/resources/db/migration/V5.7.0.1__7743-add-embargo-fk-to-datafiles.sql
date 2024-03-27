@@ -1,0 +1,1 @@
+ALTER TABLE datafile ADD COLUMN IF NOT EXISTS embargo_id BIGINT;

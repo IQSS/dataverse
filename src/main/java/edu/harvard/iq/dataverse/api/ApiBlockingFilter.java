@@ -10,21 +10,22 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.ejb.EJB;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 
 /**
  * A web filter to block API administration calls.
  * @author michael
  */
-public class ApiBlockingFilter implements javax.servlet.Filter {
+public class ApiBlockingFilter implements Filter {
     public static final String UNBLOCK_KEY_QUERYPARAM = "unblock-key";
             
     interface BlockPolicy {
@@ -163,7 +164,8 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
             if (settingsSvc.isTrueForKey(SettingsServiceBean.Key.AllowCors, true )) {
                 ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Origin", "*");
                 ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
-                ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Headers", "Content-Type, X-Dataverse-Key");
+                ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Headers", "Accept, Content-Type, X-Dataverse-Key, Range");
+                ((HttpServletResponse) sr1).addHeader("Access-Control-Expose-Headers", "Accept-Ranges, Content-Range, Content-Encoding");
             }
             fc.doFilter(sr, sr1);
         } catch ( ServletException se ) {

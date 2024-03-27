@@ -1,45 +1,53 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.path.json.JsonPath.with;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import static io.restassured.RestAssured.given;
+import static io.restassured.path.json.JsonPath.with;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import javax.ws.rs.core.Response.Status;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.OK;
-import static junit.framework.Assert.assertEquals;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.core.Response.Status;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.nio.file.Files;
+import io.restassured.path.json.JsonPath;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 
 public class DataversesIT {
 
     private static final Logger logger = Logger.getLogger(DataversesIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
     
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
     }
@@ -136,6 +144,72 @@ public class DataversesIT {
         Response deleteDataverse = UtilIT.deleteDataverse("science", apiToken);
         deleteDataverse.prettyPrint();
         deleteDataverse.then().assertThat().statusCode(OK.getStatusCode());
+    }
+    
+    
+    @Test
+    public void testGetDataverseOwners() throws FileNotFoundException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken);
+        
+        createDataverse1Response.prettyPrint();
+        createDataverse1Response.then().assertThat().statusCode(CREATED.getStatusCode());
+        
+        String first = UtilIT.getAliasFromResponse(createDataverse1Response);
+        
+        Response getWithOwnersFirst = UtilIT.getDataverseWithOwners(first, apiToken, true);
+        getWithOwnersFirst.prettyPrint();
+        
+        Response createLevel1a = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-level1a", null, apiToken, first);
+        createLevel1a.prettyPrint();
+        String level1a = UtilIT.getAliasFromResponse(createLevel1a);
+        
+        Response getWithOwners = UtilIT.getDataverseWithOwners(level1a, apiToken, true);
+        getWithOwners.prettyPrint();
+        
+        getWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(first));
+        
+    }
+
+    /**
+     * A regular user can create a Dataverse Collection and access its
+     * GuestbookResponses by DV alias or ID.
+     * A request for a non-existent Dataverse's GuestbookResponses returns
+     * Not Found.
+     * A regular user cannot access the guestbook responses for a Dataverse
+     * that they do not have permissions for, like the root Dataverse.
+     */
+    @Test
+    public void testGetGuestbookResponses() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response create = UtilIT.createRandomDataverse(apiToken);
+        create.prettyPrint();
+        create.then().assertThat().statusCode(CREATED.getStatusCode());
+        String alias = UtilIT.getAliasFromResponse(create);
+        Integer dvId = UtilIT.getDataverseIdFromResponse(create);
+
+        logger.info("Request guestbook responses for non-existent Dataverse");
+        Response getResponsesByBadAlias = UtilIT.getGuestbookResponses("-1", null, apiToken);
+        getResponsesByBadAlias.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        logger.info("Request guestbook responses for existent Dataverse by alias");
+        Response getResponsesByAlias = UtilIT.getGuestbookResponses(alias, null, apiToken);
+        getResponsesByAlias.then().assertThat().statusCode(OK.getStatusCode());
+
+        logger.info("Request guestbook responses for existent Dataverse by ID");
+        Response getResponsesById = UtilIT.getGuestbookResponses(dvId.toString(), null, apiToken);
+        getResponsesById.then().assertThat().statusCode(OK.getStatusCode());
+
+        logger.info("Request guestbook responses for root Dataverse by alias");
+        getResponsesById = UtilIT.getGuestbookResponses("root", null, apiToken);
+        getResponsesById.prettyPrint();
+        getResponsesById.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
     }
 
     @Test
@@ -366,7 +440,7 @@ public class DataversesIT {
         while (checkIndex) {
             try {   
                     try {
-                        Thread.sleep(2000);
+                        Thread.sleep(4000);
                     } catch (InterruptedException ex) {
                     }                
                 Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);
@@ -479,6 +553,143 @@ public class DataversesIT {
         authorAttemptsToAddFileViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
  
+    }
+
+    @Test
+    public void testImportDDI() throws IOException, InterruptedException {
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+
+        // This XML is a full DDI export without a PID.
+        String xml = new String(Files.readAllBytes(Paths.get("doc/sphinx-guides/source/_static/api/ddi_dataset.xml")));
+
+        Response importDDI = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  null, "no");
+        logger.info(importDDI.prettyPrint());
+        assertEquals(201, importDDI.getStatusCode());
+
+        // Under normal conditions, you shouldn't need to destroy these datasets.
+        // Uncomment if they're still around from a previous failed run.
+//        Response destroy1 = UtilIT.destroyDataset("doi:10.5072/FK2/ABCD11", apiToken);
+//        destroy1.prettyPrint();
+//        Response destroy2 = UtilIT.destroyDataset("doi:10.5072/FK2/ABCD22", apiToken);
+//        destroy2.prettyPrint();
+
+        Response importDDIPid = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  "doi:10.5072/FK2/ABCD11", "no");
+        logger.info(importDDIPid.prettyPrint());
+        assertEquals(201, importDDIPid.getStatusCode());
+
+        Response importDDIPidRel = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  "doi:10.5072/FK2/ABCD22", "yes");
+        logger.info(importDDIPidRel.prettyPrint());
+        assertEquals(201, importDDIPidRel.getStatusCode());
+
+
+        Response importDDIRelease = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml, null, "yes");
+        logger.info( importDDIRelease.prettyPrint());
+        assertEquals(201, importDDIRelease.getStatusCode());
+
+        Integer datasetIdInt = JsonPath.from(importDDI.body().asString()).getInt("data.id");
+
+        Response search1 = UtilIT.search("id:dataset_" + datasetIdInt + "_draft", apiToken); // santity check, can find it
+        search1.prettyPrint();
+        search1.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(1))
+                .body("data.count_in_response", CoreMatchers.is(1))
+                .body("data.items[0].name", CoreMatchers.is("Replication Data for: Title"))
+                .statusCode(OK.getStatusCode());
+
+        Response search2 = UtilIT.search("id:dataset_" + datasetIdInt + "_draft", apiToken, "&geo_point=35,15&geo_radius=5"); // should find it
+        search2.prettyPrint();
+        search2.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(1))
+                .body("data.count_in_response", CoreMatchers.is(1))
+                .body("data.items[0].name", CoreMatchers.is("Replication Data for: Title"))
+                .statusCode(OK.getStatusCode());
+
+        Response search3 = UtilIT.search("id:dataset_" + datasetIdInt + "_draft", apiToken, "&geo_point=0,0&geo_radius=5"); // should not find it
+        search3.prettyPrint();
+        search3.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(0))
+                .body("data.count_in_response", CoreMatchers.is(0))
+                .body("data.items", Matchers.empty())
+                .statusCode(OK.getStatusCode());
+
+        //cleanup
+
+        Response destroyDatasetResponse = UtilIT.destroyDataset(datasetIdInt, apiToken);
+        assertEquals(200, destroyDatasetResponse.getStatusCode());
+
+        Integer datasetIdIntPid = JsonPath.from(importDDIPid.body().asString()).getInt("data.id");
+        Response destroyDatasetResponsePid = UtilIT.destroyDataset(datasetIdIntPid, apiToken);
+        assertEquals(200, destroyDatasetResponsePid.getStatusCode());
+
+        Integer datasetIdIntPidRel = JsonPath.from(importDDIPidRel.body().asString()).getInt("data.id");
+        Response destroyDatasetResponsePidRel = UtilIT.destroyDataset(datasetIdIntPidRel, apiToken);
+        assertEquals(200, destroyDatasetResponsePidRel.getStatusCode());
+        
+        UtilIT.sleepForDeadlock(UtilIT.MAXIMUM_IMPORT_DURATION);
+
+        Integer datasetIdIntRelease = JsonPath.from(importDDIRelease.body().asString()).getInt("data.id");
+        Response destroyDatasetResponseRelease = UtilIT.destroyDataset(datasetIdIntRelease, apiToken);
+        assertEquals(200, destroyDatasetResponseRelease.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        assertEquals(200, deleteUserResponse.getStatusCode());
+    }
+    
+    @Test
+    public void testAttributesApi() throws Exception {
+
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        if (createDataverseResponse.getStatusCode() != 201) {
+            System.out.println("A workspace for testing (a dataverse) couldn't be created in the root dataverse. The output was:\n\n" + createDataverseResponse.body().asString());
+            System.out.println("\nPlease ensure that users can created dataverses in the root in order for this test to run.");
+        } else {
+            createDataverseResponse.prettyPrint();
+        }
+        assertEquals(201, createDataverseResponse.getStatusCode());
+
+        String collectionAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        String newCollectionAlias = collectionAlias + "RENAMED";
+        
+        // Change the alias of the collection: 
+        
+        Response changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "alias", newCollectionAlias, apiToken);
+        changeAttributeResp.prettyPrint();
+        
+        changeAttributeResp.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("message.message", equalTo("Update successful"));
+        
+        // Check on the collection, under the new alias: 
+        
+        Response collectionInfoResponse = UtilIT.exportDataverse(newCollectionAlias, apiToken);
+        collectionInfoResponse.prettyPrint();
+        
+        collectionInfoResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.alias", equalTo(newCollectionAlias));
+        
+        // Delete the collection (again, using its new alias):
+        
+        Response deleteCollectionResponse = UtilIT.deleteDataverse(newCollectionAlias, apiToken);
+        deleteCollectionResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), deleteCollectionResponse.getStatusCode());
     }
     
 }

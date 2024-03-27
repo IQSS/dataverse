@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.w3.org/1999/xhtml"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="http://www.w3.org/1999/xhtml">
+
+  <xs:annotation>
+    <xs:documentation>
+      This is the XML SchemaBlock presentation element module for XHTML
+      $Id$
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:annotation>
+    <xs:documentation>
+      Block Presentational Elements
+  
+        * hr
+  
+      This module declares the elements and their attributes used to
+      support block-level presentational markup.
+    </xs:documentation>
+    <xs:documentation source="xhtml-copyright-1.xsd"/>
+    <xs:documentation 
+         source="http://www.w3.org/TR/2001/REC-xhtml-modularization-20010410/abstract_modules.html#s_presentationmodule"/>    
+  </xs:annotation>
+
+  <xs:attributeGroup name="hr.attlist">
+    <xs:attributeGroup ref="Common.attrib"/>
+  </xs:attributeGroup>
+  
+  <xs:group name="hr.content">
+    <xs:sequence/>
+  </xs:group>  
+  
+  <xs:complexType name="hr.type">
+    <xs:group ref="hr.content"/>
+    <xs:attributeGroup ref="hr.attlist"/>
+  </xs:complexType>
+
+  <xs:element name="hr" type="hr.type"/>
+
+</xs:schema>

@@ -1,0 +1,2 @@
+The response for getVersionFiles (/api/datasets/{id}/versions/{versionId}/files) endpoint has been modified to include a total count of records available (totalCount:x).
+This will aid in pagination by allowing the caller to know how many pages can be iterated through. The existing API (getVersionFileCounts) to return the count will still be available.

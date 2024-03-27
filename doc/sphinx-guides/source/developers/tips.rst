@@ -2,7 +2,7 @@
 Tips
 ====
 
-If you just followed the steps in :doc:`dev-environment` for the first time, you will need to get set up to deploy code to your app server. Below you'll find other tips as well.
+If you just followed the steps in :doc:`classic-dev-env` for the first time, you will need to get set up to deploy code to your app server. Below you'll find other tips as well.
 
 .. contents:: |toctitle|
 	:local:
@@ -10,7 +10,7 @@ If you just followed the steps in :doc:`dev-environment` for the first time, you
 Iterating on Code and Redeploying
 ---------------------------------
 
-When you followed the steps in the :doc:`dev-environment` section, the war file was deployed to Payara by the Dataverse Software installation script. That's fine but once you're ready to make a change to the code you will need to get comfortable with undeploying and redeploying code (a war file) to Payara.
+When you followed the steps in the :doc:`classic-dev-env` section, the war file was deployed to Payara by the Dataverse Software installation script. That's fine but once you're ready to make a change to the code you will need to get comfortable with undeploying and redeploying code (a war file) to Payara.
 
 It's certainly possible to manage deployment and undeployment of the war file via the command line using the ``asadmin`` command that ships with Payara (that's what the Dataverse Software installation script uses and the steps are documented below), but we recommend getting set up with an IDE such as Netbeans to manage deployment for you.
 
@@ -19,20 +19,20 @@ Undeploy the war File from the Dataverse Software Installation Script
 
 Because the initial deployment of the war file was done outside of Netbeans by the Dataverse Software installation script, it's a good idea to undeploy that war file to give Netbeans a clean slate to work with.
 
-Assuming you installed Payara in ``/usr/local/payara5``, run the following ``asadmin`` command to see the version of the Dataverse Software that the Dataverse Software installation script deployed:
+Assuming you installed Payara in ``/usr/local/payara6``, run the following ``asadmin`` command to see the version of the Dataverse Software that the Dataverse Software installation script deployed:
 
-``/usr/local/payara5/bin/asadmin list-applications``
+``/usr/local/payara6/bin/asadmin list-applications``
 
 You will probably see something like ``dataverse-5.0 <ejb, web>`` as the output. To undeploy, use whichever version you see like this:
 
-``/usr/local/payara5/bin/asadmin undeploy dataverse-5.0``
+``/usr/local/payara6/bin/asadmin undeploy dataverse-5.0``
 
 Now that Payara doesn't have anything deployed, we can proceed with getting Netbeans set up to deploy the code.
 
 Add Payara as a Server in Netbeans
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Payara Server" and set the installation location to ``/usr/local/payara5``. The defaults are fine so you can click "Next" and "Finish".
+Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Payara Server" and set the installation location to ``/usr/local/payara6``. The defaults are fine so you can click "Next" and "Finish".
 
 Please note that if you are on a Mac, Netbeans may be unable to start Payara due to proxy settings in Netbeans. Go to the "General" tab in Netbeans preferences and click "Test connection" to see if you are affected. If you get a green checkmark, you're all set. If you get a red exclamation mark, change "Proxy Settings" to "No Proxy" and retest. A more complicated answer having to do with changing network settings is available at https://discussions.apple.com/thread/7680039?answerId=30715103022#30715103022 and the bug is also described at https://netbeans.org/bugzilla/show_bug.cgi?id=268076
 
@@ -58,6 +58,8 @@ From the root of the git repo, run the following command to set the build number
 
 This should update or place a file at ``src/main/java/BuildNumber.properties``.
 
+(See also :ref:`auto-custom-build-number` for other ways of changing the build number.)
+
 Then, from Netbeans, click "Run" and then "Clean and Build Project (dataverse)". After this completes successfully, click "Run" and then "Run Project (dataverse)"
 
 Confirm the Change Was Deployed
@@ -78,6 +80,17 @@ Netbeans Connector Chrome Extension
 
 For faster iteration while working on JSF pages, it is highly recommended that you install the Netbeans Connector Chrome Extension listed in the :doc:`tools` section. When you save XHTML or CSS files, you will see the changes immediately. Hipsters call this "hot reloading". :)
 
+Thumbnails
+----------
+
+In order for thumnails to be generated for PDFs, you need to install ImageMagick and configure Dataverse to use the ``convert`` binary.
+
+Assuming you're using Homebrew:
+
+``brew install imagemagick``
+
+Then configure the JVM option mentioned in :ref:`install-imagemagick` to the path to ``convert`` which for Homebrew is usually ``/usr/local/bin/convert``.
+
 Database Schema Exploration
 ---------------------------
 
@@ -86,7 +99,7 @@ With over 100 tables, the Dataverse Software PostgreSQL database ("dvndb") can b
 pgAdmin
 ~~~~~~~~
 
-Back in the :doc:`dev-environment` section, we had you install pgAdmin, which can help you explore the tables and execute SQL commands. It's also listed in the :doc:`tools` section.
+Back in the :doc:`classic-dev-env` section, we had you install pgAdmin, which can help you explore the tables and execute SQL commands. It's also listed in the :doc:`tools` section.
 
 SchemaSpy
 ~~~~~~~~~
@@ -104,7 +117,7 @@ Deploying With ``asadmin``
 
 Sometimes you want to deploy code without using Netbeans or from the command line on a server you have ssh'ed into.
 
-For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/payara5/glassfish/bin`` or wherever you have installed Payara.
+For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/payara6/glassfish/bin`` or wherever you have installed Payara.
 
 There are four steps to this process:
 
@@ -153,6 +166,8 @@ Git on Mac
 
 On a Mac, you won't have git installed unless you have "Command Line Developer Tools" installed but running ``git clone`` for the first time will prompt you to install them.
 
+.. _auto-custom-build-number:
+
 Automation of Custom Build Number on Webpage
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -161,6 +176,15 @@ to let Git automatically update ``src/main/java/BuildNumber.properties`` for you
 commit id in your test deployment webpages on the bottom right corner next to the version.
 
 When you prefer manual updates, there is another script, see above: :ref:`custom_build_num_script`.
+
+An alternative to that is using *MicroProfile Config* and set the option ``dataverse.build`` via a system property,
+environment variable (``DATAVERSE_BUILD``) or `one of the other config sources
+<https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html#config-sources>`__.
+
+You could even override the version itself with the option ``dataverse.version`` in the same way, which is usually
+picked up from a build time source.
+
+See also discussion of version numbers in :ref:`run-build-create-war`.
 
 Sample Data
 -----------
@@ -177,6 +201,41 @@ If you already have a working dev environment with Glassfish and want to switch 
 
 - Copy the "domain1" directory from Glassfish to Payara.
 
-----
+UI Pages Development
+--------------------
 
-Previous: :doc:`dev-environment` | Next: :doc:`troubleshooting`
+While most of the information in this guide focuses on service and backing beans ("the back end") development in Java, working on JSF/Primefaces xhtml pages presents its own unique challenges. 
+
+.. _avoid-efficiency-issues-with-render-logic-expressions:
+
+Avoiding Inefficiencies in JSF Render Logic
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is important to keep in mind that the expressions in JSF ``rendered=`` attributes may be evaluated **multiple** times. So it is crucial not to use any expressions that require database lookups, or otherwise take any appreciable amount of time and resources. Render attributes should exclusively contain calls to methods in backing beans or caching service wrappers that perform any real work on the first call only, then keep returning the cached result on all the consecutive calls. This way it is irrelevant how many times PrimeFaces may need to call the method as any effect on the performance will be negligible.
+
+If you are ever in doubt as to how many times the method in your render logic expression is called, you can simply add a logging statement to the method in question. Or you can simply err on the side of assuming that it's going to be called a lot, and ensure that any repeated calls are not expensive to process.
+
+A simplest, trivial example would be a direct call to a method in SystemConfig service bean. For example, 
+
+``<h:outputText rendered="#{systemConfig.advancedModeEnabled}" ...``
+
+If this method (``public boolean isAdvancedModeEnabled()`` in ``SystemConfig.java``) consults a database setting every time it is called, this database query will be repeated every time JSF reevaluates the expression above. A lookup of a single database setting is not very expensive of course, but repeated enough times unnecessary queries do add up, especially on a busy server. So instead of SystemConfig, SettingsWrapper (a ViewScope bean) should be used to cache the result on the first call:
+
+``<h:outputText rendered="#{settingsWrapper.advancedModeEnabled}" ...``
+
+with the following code in ``SettingsWrapper.java``:
+
+.. code:: java
+	  
+	  private Boolean  advancedModeEnabled = null; 
+	  
+	  public boolean isAdvancedModeEnabled() {
+	     if (advancedModeEnabled == null) {
+                advancedModeEnabled = systemConfig.isAdvancedModeEnabled();
+             }
+             return advancedModeEnabled; 
+          }
+
+A more serious example would be direct calls to PermissionServiceBean methods used in render logic expressions. This is something that has happened and caused some problems in real life. A simple permission service lookup (for example, whether a user is authorized to create a dataset in the current dataverse) can easily take 15 database queries. Repeated multiple times, this can quickly become a measurable delay in rendering the page. PermissionsWrapper must be used exclusively for any such lookups from JSF pages.
+
+See also :doc:`performance`.

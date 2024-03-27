@@ -93,7 +93,7 @@ public class PrivateUrlUtil {
         }
         Dataset dataset = getDatasetFromRoleAssignment(roleAssignment);
         if (dataset != null) {
-            PrivateUrlUser privateUrlUser = new PrivateUrlUser(dataset.getId());
+            PrivateUrlUser privateUrlUser = new PrivateUrlUser(dataset.getId(), roleAssignment.isAnonymizedAccess());
             return privateUrlUser;
         }
         return null;
@@ -130,7 +130,7 @@ public class PrivateUrlUtil {
     static String getDraftUrl(DatasetVersion draft) {
         if (draft != null) {
             Dataset dataset = draft.getDataset();
-            if (dataset != null) {
+            if (dataset != null && dataset.getGlobalId()!=null) {
                 if ( dataset.getGlobalId().isComplete() ) {
                     String relativeUrl = "/dataset.xhtml?persistentId=" + dataset.getGlobalId().toString() + "&version=DRAFT";
                     return relativeUrl;

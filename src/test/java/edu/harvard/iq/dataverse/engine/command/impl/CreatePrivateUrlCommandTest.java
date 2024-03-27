@@ -14,11 +14,13 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CreatePrivateUrlCommandTest {
 
@@ -27,8 +29,10 @@ public class CreatePrivateUrlCommandTest {
     private final Long privateUrlAlreadyExists = 1l;
     private final Long latestVersionIsNotDraft = 2l;
     private final Long createDatasetLong = 3l;
-
-    @Before
+    private final Long versionIsReleased = 4l;
+    
+    
+    @BeforeEach
     public void setUp() {
         dataset = new Dataset();
         testEngine = new TestDataverseEngine(new TestCommandContext() {
@@ -93,30 +97,25 @@ public class CreatePrivateUrlCommandTest {
     @Test
     public void testDatasetNull() {
         dataset = null;
-        String expected = "Can't create Private URL. Dataset is null.";
-        String actual = null;
         PrivateUrl privateUrl = null;
         try {
-            privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset));
+            privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, false));
+            //Should not get here - exception expected
+            assertTrue(false);
         } catch (CommandException ex) {
-            actual = ex.getMessage();
         }
-        assertEquals(expected, actual);
         assertNull(privateUrl);
     }
 
     @Test
     public void testAlreadyExists() {
         dataset.setId(privateUrlAlreadyExists);
-        String expected = "Private URL already exists for dataset id " + privateUrlAlreadyExists + ".";
-        String actual = null;
         PrivateUrl privateUrl = null;
         try {
-            privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset));
+            privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, false));
+            assertTrue(false);
         } catch (CommandException ex) {
-            actual = ex.getMessage();
         }
-        assertEquals(expected, actual);
         assertNull(privateUrl);
     }
 
@@ -129,15 +128,12 @@ public class CreatePrivateUrlCommandTest {
         versions.add(datasetVersion);
         dataset.setVersions(versions);
         dataset.setId(latestVersionIsNotDraft);
-        String expected = "Can't create Private URL because the latest version of dataset id " + latestVersionIsNotDraft + " is not a draft.";
-        String actual = null;
         PrivateUrl privateUrl = null;
         try {
-            privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset));
+            privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, false));
+            assertTrue(false);
         } catch (CommandException ex) {
-            actual = ex.getMessage();
         }
-        assertEquals(expected, actual);
         assertNull(privateUrl);
     }
 
@@ -145,7 +141,7 @@ public class CreatePrivateUrlCommandTest {
     public void testCreatePrivateUrlSuccessfully() throws CommandException {
         dataset = new Dataset();
         dataset.setId(createDatasetLong);
-        PrivateUrl privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset));
+        PrivateUrl privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, false));
         assertNotNull(privateUrl);
         assertNotNull(privateUrl.getDataset());
         assertNotNull(privateUrl.getRoleAssignment());
@@ -156,6 +152,45 @@ public class CreatePrivateUrlCommandTest {
         assertEquals(expectedUser.getDisplayInfo().getTitle(), "Private URL Enabled");
         assertNotNull(privateUrl.getToken());
         assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
+    }
+    
+    @Test
+    public void testCreateAnonymizedAccessPrivateUrlSuccessfully() throws CommandException {
+        dataset = new Dataset();
+        dataset.setId(createDatasetLong);
+        PrivateUrl privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, true));
+        assertNotNull(privateUrl);
+        assertNotNull(privateUrl.getDataset());
+        assertNotNull(privateUrl.getRoleAssignment());
+        PrivateUrlUser expectedUser = new PrivateUrlUser(dataset.getId());
+        assertEquals(expectedUser.getIdentifier(), privateUrl.getRoleAssignment().getAssigneeIdentifier());
+        assertEquals(expectedUser.isSuperuser(), false);
+        assertEquals(expectedUser.isAuthenticated(), false);
+        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Private URL Enabled");
+        assertNotNull(privateUrl.getToken());
+        assertTrue(privateUrl.isAnonymizedAccess());
+        assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
+    }
+    
+    @Test
+    public void testAttemptCreateAnonymizedAccessPrivateUrlOnReleased() {
+        dataset = new Dataset();
+        List<DatasetVersion> versions = new ArrayList<>();
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+        DatasetVersion datasetVersion2 = new DatasetVersion();
+        
+        versions.add(datasetVersion);
+        versions.add(datasetVersion2);
+        dataset.setVersions(versions);
+        dataset.setId(versionIsReleased);
+        PrivateUrl privateUrl = null;
+        try {
+            privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, true));
+            assertTrue(false);
+        } catch (CommandException ex) {
+        }
+        assertNull(privateUrl);
     }
 
 }

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.w3.org/1999/xhtml"
+           xmlns="http://www.w3.org/1999/xhtml">
+
+  <xs:annotation>
+    <xs:documentation>
+      This is the XML Schema common attributes module for XHTML
+      $Id$
+    </xs:documentation>
+    <xs:documentation source="xhtml-copyright-1.xsd"/>
+    <xs:documentation
+         source="http://www.w3.org/TR/xhtml-modularization/abstract_modules.html#s_commonatts"/>
+  </xs:annotation>
+
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="../xml.xsd">
+    <xs:annotation>
+      <xs:documentation>
+        This import brings in the XML namespace attributes
+        The module itself does not provide the schemaLocation
+        and expects the driver schema to provide the
+        actual SchemaLocation.
+      </xs:documentation>
+    </xs:annotation>
+  </xs:import>
+
+  <xs:attributeGroup name="id">
+    <xs:attribute name="id" type="xs:ID"/>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="class">
+    <xs:attribute name="class" type="xs:NMTOKENS"/>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="title">
+    <xs:attribute name="title" type="xs:string"/>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="Core.attrib">
+    <xs:attributeGroup ref="id"/>
+    <xs:attributeGroup ref="class"/>
+    <xs:attributeGroup ref="title"/>
+    <xs:attributeGroup ref="Core.extra.attrib"/>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="I18n.attrib">
+    <xs:attribute ref="xml:lang"/>
+    <xs:attributeGroup ref="I18n.extra.attrib"/>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="Common.attrib">
+    <xs:attributeGroup ref="Core.attrib"/>
+    <xs:attributeGroup ref="I18n.attrib"/>
+    <xs:attributeGroup ref="Common.extra"/>
+  </xs:attributeGroup>
+
+
+  <!-- Global attributes -->
+  <xs:attribute name="id" type="xs:ID"/>
+  <xs:attribute name="class" type="xs:NMTOKENS"/>
+  <xs:attribute name="title" type="xs:string"/>
+
+  <xs:attributeGroup name="Global.core.attrib">
+    <xs:attribute ref="id"/>
+    <xs:attribute ref="class"/>
+    <xs:attribute ref="title"/>
+    <xs:attributeGroup ref="Global.core.extra.attrib"/>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="Global.i18n.attrib">
+    <xs:attribute ref="xml:lang"/>
+    <xs:attributeGroup ref="Global.I18n.extra.attrib"/>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="Global.common.attrib">
+    <xs:attributeGroup ref="Global.core.attrib"/>
+    <xs:attributeGroup ref="Global.i18n.attrib"/>
+    <xs:attributeGroup ref="Global.Common.extra"/>
+  </xs:attributeGroup>
+
+
+</xs:schema>

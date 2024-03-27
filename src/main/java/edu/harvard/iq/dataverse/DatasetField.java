@@ -19,21 +19,21 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import org.apache.commons.lang.StringUtils;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import org.apache.commons.lang3.StringUtils;
 
 @Entity
 @ValidateDatasetFieldType
@@ -241,15 +241,23 @@ public class DatasetField implements Serializable {
             return datasetFieldValues.get(0).getValue();
         } else if (controlledVocabularyValues != null && !controlledVocabularyValues.isEmpty()) {
             if (controlledVocabularyValues.get(0) != null){
-                return controlledVocabularyValues.get(0).getStrValue();                
+                return controlledVocabularyValues.get(0).getLocaleStrValue();                
             }
         }
         return null;
     }
 
     public String getDisplayValue() {
+        return getDisplayValue(null);
+    }
+    
+    public String getDisplayValue(String lang) {
+        if(lang!=null && lang.isBlank()) {
+            //null will cause the current UI lang to be picked up
+            lang=null;
+        }
         String returnString = "";
-        for (String value : getValues()) {
+        for (String value : getValues(lang)) {
             if(value == null) {
                 value="";
             }
@@ -301,6 +309,14 @@ public class DatasetField implements Serializable {
      * despite the name, this returns a list of display values; not a list of values
      */
     public List<String> getValues() {
+        return getValues(null);
+    }
+
+    public List<String> getValues(String langCode) {
+        if(langCode!=null && langCode.isBlank()) {
+            //null picks up current UI lang
+            langCode=null;
+        }
         List<String> returnList = new ArrayList<>();
         if (!datasetFieldValues.isEmpty()) {
             for (DatasetFieldValue dsfv : datasetFieldValues) {
@@ -308,8 +324,8 @@ public class DatasetField implements Serializable {
             }
         } else {
             for (ControlledVocabularyValue cvv : controlledVocabularyValues) {
-                if (cvv != null && cvv.getLocaleStrValue() != null) {
-                    returnList.add(cvv.getLocaleStrValue());
+                if (cvv != null && cvv.getLocaleStrValue(langCode) != null) {
+                    returnList.add(cvv.getLocaleStrValue(langCode));
                 }
             }
         }
@@ -579,7 +595,8 @@ public class DatasetField implements Serializable {
                     return true;
                 }
             } else { // controlled vocab
-                if (this.getControlledVocabularyValues().isEmpty()) {
+                // during harvesting some CVV are put in getDatasetFieldValues. we don't want to remove those
+                if (this.getControlledVocabularyValues().isEmpty() && this.getDatasetFieldValues().isEmpty()) {
                     return true;
                 }                 
             }

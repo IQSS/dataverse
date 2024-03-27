@@ -2,32 +2,41 @@ package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
-import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import org.passay.CharacterRule;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Year;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.Properties;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import org.passay.CharacterRule;
-import org.apache.commons.io.IOUtils;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * System-wide configuration
@@ -48,28 +57,7 @@ public class SystemConfig {
     AuthenticationServiceBean authenticationService;
     
    public static final String DATAVERSE_PATH = "/dataverse/";
-
-    /**
-     * A JVM option for the advertised fully qualified domain name (hostname) of
-     * the Dataverse installation, such as "dataverse.example.com", which may
-     * differ from the hostname that the server knows itself as.
-     *
-     * The equivalent in DVN 3.x was "dvn.inetAddress".
-     */
-    public static final String FQDN = "dataverse.fqdn";
-    
-    /**
-     * A JVM option for specifying the "official" URL of the site.
-     * Unlike the FQDN option above, this would be a complete URL, 
-     * with the protocol, port number etc. 
-     */
-    public static final String SITE_URL = "dataverse.siteUrl";
-
-    /**
-     * A JVM option for where files are stored on the file system.
-     */
-    public static final String FILES_DIRECTORY = "dataverse.files.directory";
-
+   
     /**
      * Some installations may not want download URLs to their files to be
      * available in Schema.org JSON-LD output.
@@ -78,167 +66,94 @@ public class SystemConfig {
 
     /**
      * A JVM option to override the number of minutes for which a password reset
-     * token is valid ({@link #minutesUntilPasswordResetTokenExpires}).
+     * token is valid ({@link #getMinutesUntilPasswordResetTokenExpires}).
      */
     private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
-
-    /**
-     * A common place to find the String for a sane Solr hostname:port
-     * combination.
-     */
-    private String saneDefaultForSolrHostColonPort = "localhost:8983";
 
     /**
      * The default number of datafiles that we allow to be created through 
      * zip file upload.
      */
     private static final int defaultZipUploadFilesLimit = 1000; 
+    public static final long defaultZipDownloadLimit = 104857600L; // 100MB
     private static final int defaultMultipleUploadFilesLimit = 1000;
     private static final int defaultLoginSessionTimeout = 480; // = 8 hours
-
-    private static String appVersionString = null; 
-    private static String buildNumberString = null; 
+    
+    private String buildNumber = null;
     
     private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
     
     private static final long DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT = 5000L; 
+    private static final long DEFAULT_THUMBNAIL_SIZE_LIMIT_IMAGE = 3000000L; // 3 MB
+    private static final long DEFAULT_THUMBNAIL_SIZE_LIMIT_PDF = 1000000L; // 1 MB
+    
+    public final static String DEFAULTCURATIONLABELSET = "DEFAULT";
+    public final static String CURATIONLABELSDISABLED = "DISABLED";
     
     public String getVersion() {
         return getVersion(false);
     }
     
+    // The return value is a "prviate static String", that should be initialized
+    // once, on the first call (see the code below)... But this is a @Stateless 
+    // bean... so that would mean "once per thread"? - this would be a prime 
+    // candidate for being moved into some kind of an application-scoped caching
+    // service... some CachingService @Singleton - ? (L.A. 5.8)
     public String getVersion(boolean withBuildNumber) {
-        
-        if (appVersionString == null) {
-
-            // The Version Number is no longer supplied in a .properties file - so
-            // we can't just do 
-            //  return BundleUtil.getStringFromBundle("version.number", null, ResourceBundle.getBundle("VersionNumber", Locale.US));
-            //
-            // Instead, we'll rely on Maven placing the version number into the
-            // Manifest, and getting it from there:
-            // (this is considered a better practice, and will also allow us
-            // to maintain this number in only one place - the pom.xml file)
-            // -- L.A. 4.0.2
-            
-            // One would assume, that once the version is in the MANIFEST.MF, 
-            // as Implementation-Version:, it would be possible to obtain 
-            // said version simply as 
-            //    appVersionString = getClass().getPackage().getImplementationVersion();
-            // alas - that's not working, for whatever reason. (perhaps that's 
-            // only how it works with jar-ed packages; not with .war files).
-            // People on the interwebs suggest that one should instead 
-            // open the Manifest as a resource, then extract its attributes. 
-            // There were some complications with that too. Plus, relying solely 
-            // on the MANIFEST.MF would NOT work for those of the developers who 
-            // are using "in place deployment" (i.e., where 
-            // Netbeans runs their builds directly from the local target 
-            // directory, bypassing the war file deployment; and the Manifest 
-            // is only available in the .war file). For that reason, I am 
-            // going to rely on the pom.properties file, and use java.util.Properties 
-            // to read it. We have to look for this file in 2 different places
-            // depending on whether this is a .war file deployment, or a 
-            // developers build. (the app-level META-INF is only populated when
-            // a .war file is built; the "maven-archiver" directory, on the other 
-            // hand, is only available when it's a local build deployment).
-            // So, long story short, I'm resorting to the convoluted steps below. 
-            // It may look hacky, but it should actually be pretty solid and 
-            // reliable. 
-            
-            
-            // First, find the absolute path url of the application persistence file
-            // always supplied with the Dataverse app:
-            java.net.URL fileUrl = Thread.currentThread().getContextClassLoader().getResource("META-INF/persistence.xml");
-            String filePath = null;
-
-
-            if (fileUrl != null) {
-                filePath = fileUrl.getFile();
-                if (filePath != null) {
-                    InputStream mavenPropertiesInputStream = null;
-                    String mavenPropertiesFilePath; 
-                    Properties mavenProperties = new Properties();
-
-                    
-                    filePath = filePath.replaceFirst("/[^/]*$", "/");
-                    // Using a relative path, find the location of the maven pom.properties file. 
-                    // First, try to look for it in the app-level META-INF. This will only be 
-                    // available if it's a war file deployment: 
-                    mavenPropertiesFilePath = filePath.concat("../../../META-INF/maven/edu.harvard.iq/dataverse/pom.properties");                                     
-                    
-                    try {
-                        mavenPropertiesInputStream = new FileInputStream(mavenPropertiesFilePath);
-                    } catch (IOException ioex) {
-                        // OK, let's hope this is a local dev. build. 
-                        // In that case the properties file should be available in 
-                        // the maven-archiver directory: 
-                        
-                        mavenPropertiesFilePath = filePath.concat("../../../../maven-archiver/pom.properties");
-                        
-                        // try again: 
-                        
-                        try {
-                            mavenPropertiesInputStream = new FileInputStream(mavenPropertiesFilePath);
-                        } catch (IOException ioex2) {
-                            logger.warning("Failed to find and/or open for reading the pom.properties file.");
-                            mavenPropertiesInputStream = null; 
-                        }
-                    }
-                    
-                    if (mavenPropertiesInputStream != null) {
-                        try {
-                            mavenProperties.load(mavenPropertiesInputStream);
-                            appVersionString = mavenProperties.getProperty("version");                        
-                        } catch (IOException ioex) {
-                            logger.warning("caught IOException trying to read and parse the pom properties file.");
-                        } finally {
-                            IOUtils.closeQuietly(mavenPropertiesInputStream);
-                        }
-                    }
-                    
-                } else {
-                    logger.warning("Null file path representation of the location of persistence.xml in the webapp root directory!"); 
-                }
-            } else {
-                logger.warning("Could not find the location of persistence.xml in the webapp root directory!");
-            }
-
-            
-            if (appVersionString == null) {
-                // still null? - defaulting to 4.0:    
-                appVersionString = "4.0";
-            }
-        }
+        // Retrieve the version via MPCONFIG
+        // NOTE: You may override the version via all methods of MPCONFIG.
+        //       It will default to read from microprofile-config.properties source,
+        //       which contains in the source a Maven property reference to ${project.version}.
+        //       When packaging the app to deploy it, Maven will replace this, rendering it a static entry.
+        String appVersion = JvmSettings.VERSION.lookup();
             
         if (withBuildNumber) {
-            if (buildNumberString == null) {
-                // (build number is still in a .properties file in the source tree; it only 
-                // contains a real build number if this war file was built by 
-                // Jenkins) 
-                        
+            if (buildNumber == null) {
+                // (build number is still in a .properties file in the source tree; it only
+                // contains a real build number if this war file was built by Jenkins)
+                // TODO: might be replaced with same trick as for version via Maven property w/ empty default
                 try {
-                    buildNumberString = ResourceBundle.getBundle("BuildNumber").getString("build.number");
+                    buildNumber = ResourceBundle.getBundle("BuildNumber").getString("build.number");
                 } catch (MissingResourceException ex) {
-                    buildNumberString = null; 
+                    buildNumber = null;
+                }
+                
+                // Also try to read the build number via MicroProfile Config if not already present from the
+                // properties file (so can be overridden by env var or other source)
+                if (buildNumber == null || buildNumber.isEmpty()) {
+                    buildNumber = JvmSettings.BUILD.lookupOptional().orElse("");
                 }
             }
             
-            if (buildNumberString != null && !buildNumberString.equals("")) {
-                return appVersionString + " build " + buildNumberString; 
-            } 
-        }        
-        
-        return appVersionString; 
-    }
-
-    public String getSolrHostColonPort() {
-        String SolrHost;
-        if ( System.getenv("SOLR_SERVICE_HOST") != null && System.getenv("SOLR_SERVICE_HOST") != ""){
-            SolrHost = System.getenv("SOLR_SERVICE_HOST");
+            if (!buildNumber.equals("")) {
+                return appVersion + " build " + buildNumber;
+            }
         }
-        else SolrHost = saneDefaultForSolrHostColonPort;
-        String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, SolrHost);
-        return solrHostColonPort;
+        
+        return appVersion;
+    }
+    
+    /**
+     * Retrieve the Solr endpoint in "host:port" form, to be used with a Solr client.
+     *
+     * This will retrieve the setting from either the database ({@link SettingsServiceBean.Key#SolrHostColonPort}) or
+     * via Microprofile Config API (properties {@link JvmSettings#SOLR_HOST} and {@link JvmSettings#SOLR_PORT}).
+     *
+     * A database setting always takes precedence. If not given via other config sources, a default from
+     * <code>resources/META-INF/microprofile-config.properties</code> is used. (It's possible to use profiles.)
+     *
+     * @return Solr endpoint as string "hostname:port"
+     */
+    public String getSolrHostColonPort() {
+        // Get from MPCONFIG. Might be configured by a sysadmin or simply return the default shipped with
+        // resources/META-INF/microprofile-config.properties.
+        // NOTE: containers should use system property mp.config.profile=ct to use sane container usage default
+        String host = JvmSettings.SOLR_HOST.lookup();
+        String port = JvmSettings.SOLR_PORT.lookup();
+        
+        // DB setting takes precedence over all. If not present, will return default from above.
+        return Optional.ofNullable(settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort))
+            .orElse(host + ":" + port);
     }
 
     public boolean isProvCollectionEnabled() {
@@ -254,16 +169,18 @@ public class SystemConfig {
         int defaultValue = 10080; //one week in minutes
         SettingsServiceBean.Key key = SettingsServiceBean.Key.MetricsCacheTimeoutMinutes;
         String metricsCacheTimeString = settingsService.getValueForKey(key);
-        int returnInt = 0;
-        try {
-            returnInt = Integer.parseInt(metricsCacheTimeString);
-            if (returnInt >= 0) {
-                return returnInt;
-            } else {
-                logger.info("Returning " + defaultValue + " for " + key + " because value must be greater than zero, not \"" + metricsCacheTimeString + "\".");
+        if (metricsCacheTimeString != null) {
+            int returnInt = 0;
+            try {
+                returnInt = Integer.parseInt(metricsCacheTimeString);
+                if (returnInt >= 0) {
+                    return returnInt;
+                } else {
+                    logger.info("Returning " + defaultValue + " for " + key + " because value must be greater than zero, not \"" + metricsCacheTimeString + "\".");
+                }
+            } catch (NumberFormatException ex) {
+                logger.info("Returning " + defaultValue + " for " + key + " because value must be an integer greater than zero, not \"" + metricsCacheTimeString + "\".");
             }
-        } catch (NumberFormatException ex) {
-            logger.info("Returning " + defaultValue + " for " + key + " because value must be an integer greater than zero, not \"" + metricsCacheTimeString + "\".");
         }
         return defaultValue;
     }
@@ -314,32 +231,58 @@ public class SystemConfig {
     }
     
     /**
-     * The "official", designated URL of the site;
-     * can be defined as a complete URL; or derived from the 
-     * "official" hostname. If none of these options is set,
-     * defaults to the InetAddress.getLocalHOst() and https;
-     * These are legacy JVM options. Will be eventualy replaced
-     * by the Settings Service configuration.
+     * Lookup (or construct) the designated URL of this instance from configuration.
+     *
+     * Can be defined as a complete URL via <code>dataverse.siteUrl</code>; or derived from the hostname
+     * <code>dataverse.fqdn</code> and HTTPS. If none of these options is set, defaults to the
+     * {@link InetAddress#getLocalHost} and HTTPS.
+     *
+     * NOTE: This method does not provide any validation.
+     * TODO: The behaviour of this method is subject to a later change, see
+     *       https://github.com/IQSS/dataverse/issues/6636
+     *
+     * @return The designated URL of this instance as per configuration.
      */
     public String getDataverseSiteUrl() {
         return getDataverseSiteUrlStatic();
     }
     
+    /**
+     * Lookup (or construct) the designated URL of this instance from configuration.
+     *
+     * Can be defined as a complete URL via <code>dataverse.siteUrl</code>; or derived from the hostname
+     * <code>dataverse.fqdn</code> and HTTPS. If none of these options is set, defaults to the
+     * {@link InetAddress#getLocalHost} and HTTPS.
+     *
+     * NOTE: This method does not provide any validation.
+     * TODO: The behaviour of this method is subject to a later change, see
+     *       https://github.com/IQSS/dataverse/issues/6636
+     *
+     * @return The designated URL of this instance as per configuration.
+     */
     public static String getDataverseSiteUrlStatic() {
-        String hostUrl = System.getProperty(SITE_URL);
-        if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl;
+        // If dataverse.siteUrl has been configured, simply return it
+        Optional<String> siteUrl = JvmSettings.SITE_URL.lookupOptional();
+        if (siteUrl.isPresent()) {
+            return siteUrl.get();
         }
-        String hostName = System.getProperty(FQDN);
-        if (hostName == null) {
-            try {
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
+        
+        // Otherwise try to lookup dataverse.fqdn setting and default to HTTPS
+        Optional<String> fqdn = JvmSettings.FQDN.lookupOptional();
+        if (fqdn.isPresent()) {
+            return "https://" + fqdn.get();
         }
-        hostUrl = "https://" + hostName;
-        return hostUrl;
+        
+        // Last resort - get the servers local name and use it.
+        // BEWARE - this is dangerous.
+        // 1) A server might have a different name than your repository URL.
+        // 2) The underlying reverse DNS lookup might point to a different name than your repository URL.
+        // 3) If this server has multiple IPs assigned, which one will it be for the lookup?
+        try {
+            return "https://" + InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException e) {
+            return null;
+        }
     }
     
     /**
@@ -347,22 +290,6 @@ public class SystemConfig {
      */
     public String getPageURLWithQueryString() {
         return PrettyContext.getCurrentInstance().getRequestURL().toURL() + PrettyContext.getCurrentInstance().getRequestQueryString().toQueryString();
-    }
-
-    /**
-     * The "official" server's fully-qualified domain name: 
-     */
-    public String getDataverseServer() {
-        // still reliese on a JVM option: 
-        String fqdn = System.getProperty(FQDN);
-        if (fqdn == null) {
-            try {
-                fqdn = InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                return null;
-            }
-        }
-        return fqdn;
     }
 
     public String getGuidesBaseUrl() {
@@ -391,12 +318,12 @@ public class SystemConfig {
         return metricsUrl;
     }
 
-    static long getLongLimitFromStringOrDefault(String limitSetting, Long defaultValue) {
+    public static long getLongLimitFromStringOrDefault(String limitSetting, Long defaultValue) {
         Long limit = null;
 
         if (limitSetting != null && !limitSetting.equals("")) {
             try {
-                limit = new Long(limitSetting);
+                limit = Long.valueOf(limitSetting);
             } catch (NumberFormatException nfe) {
                 limit = null;
             }
@@ -405,12 +332,12 @@ public class SystemConfig {
         return limit != null ? limit : defaultValue;
     }
 
-    static int getIntLimitFromStringOrDefault(String limitSetting, Integer defaultValue) {
+    public static int getIntLimitFromStringOrDefault(String limitSetting, Integer defaultValue) {
         Integer limit = null;
 
         if (limitSetting != null && !limitSetting.equals("")) {
             try {
-                limit = new Integer(limitSetting);
+                limit = Integer.valueOf(limitSetting);
             } catch (NumberFormatException nfe) {
                 limit = null;
             }
@@ -421,13 +348,12 @@ public class SystemConfig {
 
     /**
      * Download-as-zip size limit.
-     * returns 0 if not specified; 
-     * (the file zipper will then use the default value)
+     * returns defaultZipDownloadLimit if not specified; 
      * set to -1 to disable zip downloads. 
      */
     public long getZipDownloadLimit() {
         String zipLimitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);
-        return getLongLimitFromStringOrDefault(zipLimitOption, 0L);
+        return getLongLimitFromStringOrDefault(zipLimitOption, defaultZipDownloadLimit);
     }
     
     public int getZipUploadFilesLimit() {
@@ -463,29 +389,28 @@ public class SystemConfig {
         return 500000;
     }
 
-    // TODO: (?)
-    // create sensible defaults for these things? -- 4.2.2
     public long getThumbnailSizeLimitImage() {
-        long limit = getThumbnailSizeLimit("Image");
-        return limit == 0 ? 500000 : limit;
-    } 
-    
-    public long getThumbnailSizeLimitPDF() {
-        long limit = getThumbnailSizeLimit("PDF");
-        return limit == 0 ? 500000 : limit;
+        return getThumbnailSizeLimit("Image");
     }
-    
-    public long getThumbnailSizeLimit(String type) {
+
+    public long getThumbnailSizeLimitPDF() {
+        return getThumbnailSizeLimit("PDF");
+    }
+
+    public static long getThumbnailSizeLimit(String type) {
         String option = null; 
         
         //get options via jvm options
         
         if ("Image".equals(type)) {
             option = System.getProperty("dataverse.dataAccess.thumbnail.image.limit");
+            return getLongLimitFromStringOrDefault(option, DEFAULT_THUMBNAIL_SIZE_LIMIT_IMAGE);
         } else if ("PDF".equals(type)) {
             option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
+            return getLongLimitFromStringOrDefault(option, DEFAULT_THUMBNAIL_SIZE_LIMIT_PDF);
         }
 
+        // Zero (0) means no limit.
         return getLongLimitFromStringOrDefault(option, 0L);
     }
     
@@ -509,7 +434,7 @@ public class SystemConfig {
         // is no language-specific value
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
         //Now get the language-specific value if it exists
-        if (!language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage())) {
+        if (language != null && !language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage())) {
             appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language,	appTermsOfUse);
         }
         return appTermsOfUse;
@@ -555,7 +480,7 @@ public class SystemConfig {
         }
         return null;
     }
-    
+
     public long getTabularIngestSizeLimit() {
         // This method will return the blanket ingestable size limit, if 
         // set on the system. I.e., the universal limit that applies to all 
@@ -832,7 +757,20 @@ public class SystemConfig {
          * Traditional Dataverse file handling, which tends to involve users
          * uploading and downloading files using a browser or APIs.
          */
-        NATIVE("native/http");
+        NATIVE("native/http"),
+
+        /**
+         * Upload through Globus of large files
+         */
+
+        GLOBUS("globus"), 
+        
+        /**
+         * Upload folders of files through dvwebloader app
+         */
+
+        WEBLOADER("dvwebloader");
+        ;
 
 
         private final String text;
@@ -872,7 +810,9 @@ public class SystemConfig {
          * go through Glassfish.
          */
         RSYNC("rsal/rsync"),
-        NATIVE("native/http");
+        NATIVE("native/http"),
+        GLOBUS("globus")
+        ;
         private final String text;
 
         private FileDownloadMethods(final String text) {
@@ -953,22 +893,30 @@ public class SystemConfig {
         }
 
     }
-
+    
     public boolean isPublicInstall(){
         boolean saneDefault = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
     }
     
     public boolean isRsyncUpload(){
-        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
+        return getMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString(), true);
+    }
+
+    public boolean isGlobusUpload(){
+        return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), true);
     }
     
+    public boolean isWebloaderUpload(){
+        return getMethodAvailable(FileUploadMethods.WEBLOADER.toString(), true);
+    }
+
     // Controls if HTTP upload is enabled for both GUI and API.
     public boolean isHTTPUpload(){       
-        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());       
+        return getMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString(), true);
     }
     
-    public boolean isRsyncOnly(){       
+    public boolean isRsyncOnly(){
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         if(downloadMethods == null){
             return false;
@@ -981,26 +929,32 @@ public class SystemConfig {
             return false;
         } else {
            return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
-        }        
+        }
     }
     
     public boolean isRsyncDownload() {
-        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
+        return getMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString(), false);
     }
     
     public boolean isHTTPDownload() {
-        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        logger.warning("Download Methods:" + downloadMethods);
-        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.NATIVE.toString());
+        return getMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString(), false);
+    }
+
+    public boolean isGlobusDownload() {
+        return getMethodAvailable(FileDownloadMethods.GLOBUS.toString(), false);
     }
     
-    private Boolean getUploadMethodAvailable(String method){
-        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-        if (uploadMethods==null){
+    public boolean isGlobusFileDownload() {
+        return (isGlobusDownload() && settingsService.isTrueForKey(SettingsServiceBean.Key.GlobusSingleFileTransfer, false));
+    }
+
+    private Boolean getMethodAvailable(String method, boolean upload) {
+        String methods = settingsService.getValueForKey(
+                upload ? SettingsServiceBean.Key.UploadMethods : SettingsServiceBean.Key.DownloadMethods);
+        if (methods == null) {
             return false;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+            return Arrays.asList(methods.toLowerCase().split("\\s*,\\s*")).contains(method);
         }
     }
     
@@ -1012,37 +966,37 @@ public class SystemConfig {
            return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
         }       
     }
-    public boolean isDataFilePIDSequentialDependent(){
-        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, DataFilePIDFormat.DEPENDENT.toString());
-        if (doiIdentifierType.equals("sequentialNumber") && doiDataFileFormat.equals(DataFilePIDFormat.DEPENDENT.toString())){
-            return true;
-        }
-        return false;
-    }
-    
-    public int getPIDAsynchRegFileCount() {
-        String fileCount = settingsService.getValueForKey(SettingsServiceBean.Key.PIDAsynchRegFileCount, "10");
-        int retVal = 10;
-        try {
-            retVal = Integer.parseInt(fileCount);
-        } catch (NumberFormatException e) {           
-            //if no number in the setting we'll return 10
-        }
-        return retVal;
-    }
-    
-    public boolean isFilePIDsEnabled() {
+
+    public boolean isAllowCustomTerms() {
         boolean safeDefaultIfKeyNotFound = true;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, safeDefaultIfKeyNotFound);
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound);
     }
-    
-    public boolean isIndependentHandleService() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.IndependentHandleService, safeDefaultIfKeyNotFound);
-    
+
+    public boolean isFilePIDsEnabledForCollection(Dataverse collection) {
+        if (collection == null) {
+            return false;
+        }
+        
+        Dataverse thisCollection = collection; 
+        
+        // If neither enabled nor disabled specifically for this collection,
+        // the parent collection setting is inherited (recursively): 
+        while (thisCollection.getFilePIDsEnabled() == null) {
+            if (thisCollection.getOwner() == null) {
+                // We've reached the root collection, and file PIDs registration
+                // hasn't been explicitly enabled, therefore we presume that it is
+                // subject to how the registration is configured for the 
+                // entire instance:
+                return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, false); 
+            }
+            thisCollection = thisCollection.getOwner();
+        }
+        
+        // If present, the setting of the first direct ancestor collection 
+        // takes precedent:
+        return thisCollection.getFilePIDsEnabled();
     }
-    
+
     public String getMDCLogPath() {
         String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
         return mDCLogPath;
@@ -1056,10 +1010,155 @@ public class SystemConfig {
 	public boolean directUploadEnabled(DvObjectContainer container) {
     	return Boolean.getBoolean("dataverse.files." + container.getEffectiveStorageDriverId() + ".upload-redirect");
 	}
-	
-	public String getDataCiteRestApiUrlString() {
-		//As of 5.0 the 'doi.dataciterestapiurlstring' is the documented jvm option. Prior versions used 'doi.mdcbaseurlstring' or were hardcoded to api.datacite.org, so the defaults are for backward compatibility.
-        return System.getProperty("doi.dataciterestapiurlstring", System.getProperty("doi.mdcbaseurlstring", "https://api.datacite.org"));
-	}
+        
+    public boolean isExternalDataverseValidationEnabled() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataValidatorScript) != null;
+        // alternatively, we can also check if the script specified exists, 
+        // and is executable. -- ?
+    }
+    
+    public boolean isExternalDatasetValidationEnabled() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidatorScript) != null;
+        // alternatively, we can also check if the script specified exists, 
+        // and is executable. -- ?
+    }
+    
+    public String getDataverseValidationExecutable() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataValidatorScript);
+    }
+    
+    public String getDatasetValidationExecutable() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidatorScript);
+    }
+    
+    public String getDataverseValidationFailureMsg() {
+        String defaultMessage = "This dataverse collection cannot be published because it has failed an external metadata validation test.";
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataPublishValidationFailureMsg, defaultMessage);
+    }
+    
+    public String getDataverseUpdateValidationFailureMsg() {
+        String defaultMessage = "This dataverse collection cannot be updated because it has failed an external metadata validation test.";
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataUpdateValidationFailureMsg, defaultMessage);
+    }
+    
+    public String getDatasetValidationFailureMsg() {
+        String defaultMessage = "This dataset cannot be published because it has failed an external metadata validation test.";
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidationFailureMsg, defaultMessage);
+    }
+    
+    public boolean isExternalValidationAdminOverrideEnabled() {
+        return "true".equalsIgnoreCase(settingsService.getValueForKey(SettingsServiceBean.Key.ExternalValidationAdminOverride));
+    }
+    
+    public long getDatasetValidationSizeLimit() {
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetChecksumValidationSizeLimit);
 
+        if (limitEntry != null) {
+            try {
+                Long sizeOption = new Long(limitEntry);
+                return sizeOption;
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid value for DatasetValidationSizeLimit option? - " + limitEntry);
+            }
+        }
+        // -1 means no limit is set;
+        return -1;
+    }
+
+    public long getFileValidationSizeLimit() {
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.DataFileChecksumValidationSizeLimit);
+
+        if (limitEntry != null) {
+            try {
+                Long sizeOption = new Long(limitEntry);
+                return sizeOption;
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid value for FileValidationSizeLimit option? - " + limitEntry);
+            }
+        }
+        // -1 means no limit is set;
+        return -1;
+    }
+    public Map<String, String[]> getCurationLabels() {
+        Map<String, String[]> labelMap = new HashMap<String, String[]>();
+        String setting = settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "");
+        if (!setting.isEmpty()) {
+            try (JsonReader jsonReader = Json.createReader(new StringReader(setting))){
+                
+                Pattern pattern = Pattern.compile("(^[\\w ]+$)"); // alphanumeric, underscore and whitespace allowed
+
+                JsonObject labelSets = jsonReader.readObject();
+                for (String key : labelSets.keySet()) {
+                    JsonArray labels = (JsonArray) labelSets.getJsonArray(key);
+                    String[] labelArray = new String[labels.size()];
+
+                    boolean allLabelsOK = true;
+                    Iterator<JsonValue> iter = labels.iterator();
+                    int i = 0;
+                    while (iter.hasNext()) {
+                        String label = ((JsonString) iter.next()).getString();
+                        Matcher matcher = pattern.matcher(label);
+                        if (!matcher.matches()) {
+                            logger.warning("Label rejected: " + label + ", Label set " + key + " ignored.");
+                            allLabelsOK = false;
+                            break;
+                        }
+                        labelArray[i] = label;
+                        i++;
+                    }
+                    if (allLabelsOK) {
+                        labelMap.put(key, labelArray);
+                    }
+                }
+            } catch (Exception e) {
+                logger.warning("Unable to parse " + SettingsServiceBean.Key.AllowedCurationLabels.name() + ": "
+                        + e.getLocalizedMessage());
+                e.printStackTrace();
+            }
+        }
+        return labelMap;
+    }
+    
+    public boolean isSignupDisabledForRemoteAuthProvider(String providerId) {
+        Boolean ret =  settingsService.getValueForCompoundKeyAsBoolean(SettingsServiceBean.Key.AllowRemoteAuthSignUp, providerId);
+        
+        // we default to false - i.e., "not disabled" if the setting is not present: 
+        if (ret == null) {
+            return false; 
+        }
+        
+        return !ret; 
+    }
+    
+    public boolean isStorageQuotasEnforced() {
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.UseStorageQuotas, false);
+    }
+    
+    /**
+     * This method should only be used for testing of the new storage quota 
+     * mechanism, temporarily. (it uses the same value as the quota for 
+     * *everybody* regardless of the circumstances, defined as a database 
+     * setting)
+     */
+    public Long getTestStorageQuotaLimit() {
+        return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.StorageQuotaSizeInBytes);
+    }
+    /**
+     * Should we store tab-delimited files produced during ingest *with* the
+     * variable name header line included?
+     * @return boolean - defaults to false.
+     */
+    public boolean isStoringIngestedFilesWithHeaders() {
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders, false);
+    }
+
+    /**
+     * RateLimitUtil will parse the json to create a List<RateLimitSetting>
+     */
+    public String getRateLimitsJson() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.RateLimitingCapacityByTierAndAction, "");
+    }
+    public String getRateLimitingDefaultCapacityTiers() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers, "");
+    }
 }
