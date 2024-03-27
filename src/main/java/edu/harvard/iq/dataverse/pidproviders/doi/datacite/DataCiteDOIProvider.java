@@ -313,7 +313,31 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         return status;
     }
     
-
     
+    @Override
+    public boolean updateIdentifier(DvObject dvObject) {
+        logger.log(Level.FINE,"updateIdentifierStatus");
+        if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
+            dvObject = generatePid(dvObject);
+        }
+        String identifier = getIdentifier(dvObject);
+        Map<String, String> metadata = getUpdateMetadata(dvObject);
+        metadata.put("_status", "public");
+        metadata.put("datacite.publicationyear", generateYear(dvObject));
+        metadata.put("_target", getTargetUrl(dvObject));
+        try {
+            String updated = doiDataCiteRegisterService.reRegisterIdentifier(identifier, metadata, dvObject);
+            if(updated.length()!=0) {
+                logger.info(identifier + "updated: " + updated );
+                return true;
+            } else {
+                logger.info("No updated needed for " + identifier);
+                return false; //No update needed
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "updateIdentifier failed: " + e.getMessage(), e);
+            return false;
+        }
+    }
 
 }

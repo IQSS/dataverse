@@ -23,6 +23,12 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.XmlMetadataTemplate;
 
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.builder.Input.Builder;
+import org.xmlunit.diff.Diff;
+import org.xmlunit.diff.Difference;
+
 /**
  *
  * @author luopc
@@ -69,6 +75,35 @@ public class DOIDataCiteRegisterService {
 
         return retString;
     }
+    
+    
+    public String reRegisterIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
+        String retString = "";
+        String numericIdentifier = identifier.substring(identifier.indexOf(":") + 1);
+        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+        String target = metadata.get("_target");
+        String currentMetadata = client.getMetadata(numericIdentifier);
+        Diff myDiff = DiffBuilder.compare(xmlMetadata)
+                .withTest(currentMetadata).ignoreWhitespace().checkForSimilar()
+                .build();
+
+        if (myDiff.hasDifferences()) {
+            for(Difference d : myDiff.getDifferences()) {
+            
+              logger.fine(d.toString());
+            }
+            retString = "metadata:\\r" + client.postMetadata(xmlMetadata) + "\\r";
+        }
+        if (!target.equals(client.getUrl(numericIdentifier))) {
+            logger.info("Updating target URL to " +  target);
+            client.postUrl(numericIdentifier, target);
+            retString = retString + "url:\\r" + target;
+
+        }
+
+        return retString;
+    }
+
 
     public String deactivateIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
         String retString = "";

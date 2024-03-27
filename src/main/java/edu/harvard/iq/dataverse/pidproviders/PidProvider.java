@@ -54,6 +54,8 @@ public interface PidProvider {
     
     boolean publicizeIdentifier(DvObject studyIn);
     
+    boolean updateIdentifier(DvObject dvObject);
+    
     boolean isGlobalIdUnique(GlobalId globalId);
     
     String getUrlPrefix();

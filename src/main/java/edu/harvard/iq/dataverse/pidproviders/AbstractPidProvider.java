@@ -547,4 +547,10 @@ public abstract class AbstractPidProvider implements PidProvider {
         providerSpecification.add("excludedSet", Strings.join(",", excludedSet.toArray()));
         return providerSpecification.build();
     }
+    
+    @Override
+    public boolean updateIdentifier(DvObject dvObject) {
+        //By default, these are the same
+        return publicizeIdentifier(dvObject);
+    }
 }
