@@ -195,14 +195,14 @@ public class MakeDataCountApiIT {
         stateJson.prettyPrint();
         String state1 = stateJson.getString("data.state");
         assertThat(state1, Matchers.equalTo(MakeDataCountProcessState.MDCProcessState.PROCESSING.name()));
-        String updateTimestamp1 = stateJson.getString("data.state-change-timestamp");
+        String updateTimestamp1 = stateJson.getString("data.stateChangeTimestamp");
 
         updateState = UtilIT.makeDataCountUpdateProcessingState(yearMonth, MakeDataCountProcessState.MDCProcessState.DONE.toString());
         updateState.then().assertThat().statusCode(OK.getStatusCode());
         stateJson = JsonPath.from(updateState.body().asString());
         stateJson.prettyPrint();
         String state2 = stateJson.getString("data.state");
-        String updateTimestamp2 = stateJson.getString("data.state-change-timestamp");
+        String updateTimestamp2 = stateJson.getString("data.stateChangeTimestamp");
         assertThat(state2, Matchers.equalTo(MakeDataCountProcessState.MDCProcessState.DONE.name()));
 
         assertThat(updateTimestamp2, Matchers.is(Matchers.greaterThan(updateTimestamp1)));

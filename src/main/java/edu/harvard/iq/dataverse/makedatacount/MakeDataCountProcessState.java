@@ -41,7 +41,7 @@ public class MakeDataCountProcessState implements Serializable {
     @Column(nullable = false)
     private MDCProcessState state;
     @Column(nullable = true)
-    private Timestamp state_change_time;
+    private Timestamp stateChangeTimestamp;
 
     public MakeDataCountProcessState() { }
     public MakeDataCountProcessState (String yearMonth, String state) {
@@ -61,7 +61,7 @@ public class MakeDataCountProcessState implements Serializable {
     }
     public void setState(MDCProcessState state) {
         this.state = state;
-        this.state_change_time = Timestamp.from(Instant.now());
+        this.stateChangeTimestamp = Timestamp.from(Instant.now());
     }
     public void setState(String state) throws IllegalArgumentException {
         setState(MDCProcessState.fromString(state));
@@ -70,6 +70,6 @@ public class MakeDataCountProcessState implements Serializable {
         return this.state;
     }
     public Timestamp getStateChangeTime() {
-        return state_change_time;
+        return stateChangeTimestamp;
     }
 }

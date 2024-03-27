@@ -219,7 +219,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             JsonObjectBuilder output = Json.createObjectBuilder();
             output.add("yearMonth", mdcps.getYearMonth());
             output.add("state", mdcps.getState().name());
-            output.add("state-change-timestamp", mdcps.getStateChangeTime().toString());
+            output.add("stateChangeTimestamp", mdcps.getStateChangeTime().toString());
             return ok(output);
         } else {
             return error(Status.NOT_FOUND, "Could not find an existing process state for " + yearMonth);
@@ -239,7 +239,7 @@ public class MakeDataCountApi extends AbstractApiBean {
         JsonObjectBuilder output = Json.createObjectBuilder();
         output.add("yearMonth", mdcps.getYearMonth());
         output.add("state", mdcps.getState().name());
-        output.add("state-change-timestamp", mdcps.getStateChangeTime().toString());
+        output.add("stateChangeTimestamp", mdcps.getStateChangeTime().toString());
         return ok(output);
     }
 
