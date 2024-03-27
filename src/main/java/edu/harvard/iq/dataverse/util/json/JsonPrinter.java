@@ -580,10 +580,10 @@ public class JsonPrinter {
         return blockBld;
     }
 
-    public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDetailedData, boolean onlyDisplayedOnCreate) {
+    public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes, boolean onlyDisplayedOnCreate) {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         for (MetadataBlock metadataBlock : metadataBlocks) {
-            arrayBuilder.add(returnDetailedData ? json(metadataBlock, onlyDisplayedOnCreate) : brief.json(metadataBlock));
+            arrayBuilder.add(returnDatasetFieldTypes ? json(metadataBlock, onlyDisplayedOnCreate) : brief.json(metadataBlock));
         }
         return arrayBuilder;
     }

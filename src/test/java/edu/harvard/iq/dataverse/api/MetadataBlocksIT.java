@@ -40,14 +40,14 @@ public class MetadataBlocksIT {
                 .body("data[0].displayName", equalTo("Citation Metadata"))
                 .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks));
 
-        // returnDetailedData=true
+        // returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(false, true);
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", not(equalTo(null)))
                 .body("data.size()", equalTo(expectedDefaultNumberOfMetadataBlocks));
 
-        // onlyDisplayedOnCreate=true and returnDetailedData=true
+        // onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(true, true);
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())

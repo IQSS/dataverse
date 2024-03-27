@@ -19,9 +19,9 @@ public class MetadataBlocks extends AbstractApiBean {
 
     @GET
     public Response listMetadataBlocks(@QueryParam("onlyDisplayedOnCreate") boolean onlyDisplayedOnCreate,
-                                       @QueryParam("returnDetailedData") boolean returnDetailedData) {
+                                       @QueryParam("returnDatasetFieldTypes") boolean returnDatasetFieldTypes) {
         List<MetadataBlock> metadataBlocks = metadataBlockSvc.listMetadataBlocks(onlyDisplayedOnCreate);
-        return ok(json(metadataBlocks, returnDetailedData, onlyDisplayedOnCreate));
+        return ok(json(metadataBlocks, returnDatasetFieldTypes, onlyDisplayedOnCreate));
     }
 
     @Path("{identifier}")
