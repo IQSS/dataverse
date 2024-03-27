@@ -48,7 +48,7 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
 import java.util.Collections;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilIT {
@@ -1084,11 +1084,23 @@ public class UtilIT {
                 .urlEncodingEnabled(false)
                 .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + optionalQueryParam);
     }
-    
-    static Response getFileData(String fileId, String apiToken) {       
+
+    static Response getFileData(String fileId, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId );
+                .get("/api/files/" + fileId);
+    }
+
+    static Response getFileData(String fileId, String apiToken, String datasetVersionId) {
+        return getFileData(fileId, apiToken, datasetVersionId, false, false);
+    }
+
+    static Response getFileData(String fileId, String apiToken, String datasetVersionId, boolean includeDeaccessioned, boolean returnDatasetVersion) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("includeDeaccessioned", includeDeaccessioned)
+                .queryParam("returnDatasetVersion", returnDatasetVersion)
+                .get("/api/files/" + fileId + "/versions/" + datasetVersionId);
     }
 
     static Response testIngest(String fileName, String fileType) {
@@ -1475,6 +1487,31 @@ public class UtilIT {
                         + "?persistentId="
                         + persistentId
                         + (excludeFiles ? "&excludeFiles=true" : ""));
+    }
+    
+    static Response getDatasetWithOwners(String persistentId,  String apiToken, boolean returnOwners) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/:persistentId/"
+                        + "?persistentId="
+                        + persistentId
+                        + (returnOwners ? "&returnOwners=true" : ""));
+    }
+    
+    static Response getFileWithOwners(String datafileId,  String apiToken, boolean returnOwners) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/files/"
+                        + datafileId
+                        + (returnOwners ? "/?returnOwners=true" : ""));
+    }
+    
+    static Response getDataverseWithOwners(String alias,  String apiToken, boolean returnOwners) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"
+                        + alias
+                        + (returnOwners ? "/?returnOwners=true" : ""));
     }
 
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
@@ -2527,6 +2564,25 @@ public class UtilIT {
         RequestSpecification requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/downloads/toMonth" + optionalYyyyMm + optionalQueryParams);
     }
+
+    static Response metricsAccountsToMonth(String yyyymm, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/accounts/toMonth/" + yyyymm + optionalQueryParams);
+    }
+
+    static Response metricsAccountsTimeSeries(String mediaType, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
+        RequestSpecification requestSpecification = given();
+        requestSpecification.contentType(mediaType);
+        return requestSpecification.get("/api/info/metrics/accounts/monthly" + optionalQueryParams);
+    }
     
     static Response metricsDataversesPastDays(String days, String queryParams) {
         String optionalQueryParams = "";
@@ -2562,6 +2618,15 @@ public class UtilIT {
         }
         RequestSpecification requestSpecification = given();
         return requestSpecification.get("/api/info/metrics/downloads/pastDays/" + days + optionalQueryParams);
+    }
+
+    static Response metricsAccountsPastDays(String days, String queryParams) {
+        String optionalQueryParams = "";
+        if (queryParams != null) {
+            optionalQueryParams = "?" + queryParams;
+        }
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/info/metrics/accounts/pastDays/" + days + optionalQueryParams);
     }
 
     static Response metricsDataversesByCategory(String queryParams) {

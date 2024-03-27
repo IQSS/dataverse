@@ -286,7 +286,3 @@ GitHub documents how to make changes to a fork at https://help.github.com/articl
         vim path/to/file.txt
         git commit
         git push OdumInstitute 4709-postgresql_96
-
-----
-
-Previous: :doc:`troubleshooting` | Next: :doc:`sql-upgrade-scripts`
