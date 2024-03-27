@@ -4321,11 +4321,11 @@ can enter for an embargo end date. This limit will be enforced in the popup dial
 :MinRetentionDurationInMonths
 +++++++++++++++++++++++++++++
 
-This setting controls whether retentions are allowed in a Dataverse instance and can limit the minimum duration users are allowed to specify. A value of 0 months or non-existent
-setting indicates retentions are not supported. A value of -1 allows retentions of any length. Any other value indicates the minimum number of months (from the current date) a user
-can enter for a retention end date. This limit will be enforced in the popup dialog in which users enter the retention date. For example, to set a ten year minimum:
+This setting controls whether retention periods are allowed in a Dataverse instance and can limit the minimum duration users are allowed to specify. A value of 0 months or non-existent
+setting indicates retention periods are not supported. A value of -1 allows retention periods of any length. Any other value indicates the minimum number of months (from the current date) a user
+can enter for a retention period end date. This limit will be enforced in the popup dialog in which users enter the retention period end date. For example, to set a ten year minimum:
 
-``curl -X PUT -d 120 http://localhost:8080/api/admin/settings/:MaxEmbargoDurationInMonths``
+``curl -X PUT -d 120 http://localhost:8080/api/admin/settings/:MinRetentionDurationInMonths``
 
 
 :DataverseMetadataValidatorScript
