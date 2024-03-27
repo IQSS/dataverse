@@ -3,11 +3,11 @@ package edu.harvard.iq.dataverse.makedatacount;
 import edu.harvard.iq.dataverse.Dataset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Matchers;
 
-import javax.ejb.EJBException;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import jakarta.ejb.EJBException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import org.mockito.ArgumentMatchers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +36,7 @@ public class DatasetMetricsServiceBeanTest {
     @Test
     void testGetDatasetMetricsByDatasetMonthCountry_withoutResults() {
         when(query.getResultList()).thenReturn(new ArrayList());
-        when(this.serviceBean.em.createQuery(Matchers.anyString())).thenReturn(query);
+        when(this.serviceBean.em.createQuery(ArgumentMatchers.anyString())).thenReturn(query);
 
         assertNull(serviceBean.getDatasetMetricsByDatasetMonthCountry(dataset, "01-01", "CH"));
     }
@@ -44,7 +44,7 @@ public class DatasetMetricsServiceBeanTest {
     @Test
     void testGetDatasetMetricsByDatasetMonthCountry_throwsForMultipleResults() {
         when(query.getResultList()).thenReturn(Arrays.asList(1, 2));
-        when(this.serviceBean.em.createQuery(Matchers.anyString())).thenReturn(query);
+        when(this.serviceBean.em.createQuery(ArgumentMatchers.anyString())).thenReturn(query);
 
         assertThrows(EJBException.class, () -> {
             serviceBean.getDatasetMetricsByDatasetMonthCountry(dataset, "01-01", "CH");
@@ -65,7 +65,7 @@ public class DatasetMetricsServiceBeanTest {
         datasetMetrics.setDownloadsUniqueMachine(8L);
 
         when(query.getResultList()).thenReturn(Arrays.asList(datasetMetrics));
-        when(this.serviceBean.em.createQuery(Matchers.anyString())).thenReturn(query);
+        when(this.serviceBean.em.createQuery(ArgumentMatchers.anyString())).thenReturn(query);
 
         DatasetMetrics result = serviceBean.getDatasetMetricsByDatasetMonthCountry(dataset, "04.2019", "CH");
 

@@ -10,11 +10,9 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.FilePage;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.io.IOException;
 import java.util.logging.Logger;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
@@ -26,19 +24,20 @@ import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.apache.commons.io.IOUtils;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.json.JsonObject;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.json.JsonObject;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  * This bean contains functionality for the provenance json pop up
@@ -92,7 +91,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     public void handleFileUpload(FileUploadEvent event) throws IOException {
         jsonUploadedTempFile = event.getFile();
         provJsonParsedEntities = new HashMap<>();
-        provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputstream());
+        provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputStream());
         
         
         if(!provUtil.isProvValid(provJsonState)) { //if uploaded prov-json does not comply with schema
@@ -214,7 +213,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             popupDataFile.setProvEntityName(null); 
         }        
         if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) { //delete and create again can both happen at once
-            stagingEntry.provJson = IOUtils.toString(jsonUploadedTempFile.getInputstream());
+            stagingEntry.provJson = IOUtils.toString(jsonUploadedTempFile.getInputStream());
             stagingEntry.deleteJson = false;
 
             jsonUploadedTempFile = null;

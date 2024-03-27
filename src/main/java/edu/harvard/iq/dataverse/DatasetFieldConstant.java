@@ -6,8 +6,8 @@
 
 package edu.harvard.iq.dataverse;
 
-import javax.enterprise.context.Dependent;
-import javax.inject.Named;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Named;
 
 /**
  *
@@ -97,7 +97,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String topicClassVocab="topicClassVocab";
     public final static String topicClassVocabURI="topicClassVocabURI";
     public final static String descriptionText="dsDescriptionValue";
-    public final static String descriptionDate="descriptionDate";
+    public final static String descriptionDate="dsDescriptionDate";
     public final static String timePeriodCovered="timePeriodCovered"; // SEK added 6/13/2016
     public final static String timePeriodCoveredStart="timePeriodCoveredStart";
     public final static String timePeriodCoveredEnd="timePeriodCoveredEnd";
@@ -112,8 +112,8 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String geographicUnit="geographicUnit";
     public final static String westLongitude="westLongitude";
     public final static String eastLongitude="eastLongitude";
-    public final static String northLatitude="northLongitude"; //Changed to match DB - incorrectly entered into DB
-    public final static String southLatitude="southLongitude"; //Incorrect in DB
+    public final static String northLatitude="northLatitude";
+    public final static String southLatitude="southLatitude";
     public final static String unitOfAnalysis="unitOfAnalysis";
     public final static String universe="universe";
     public final static String kindOfData="kindOfData";

@@ -1,0 +1,18 @@
+-- these queries will delete the saved searches identified using the ss_for_deletion query
+
+begin;
+
+create temporary table delete_ss on commit drop as (
+Select ss.id
+from savedsearch ss, savedsearchfilterquery ssfq, dataverselinkingdataverse dld
+where ss.id = ssfq.savedsearch_id
+and ss.definitionpoint_id = dld.linkingdataverse_id
+and dld.dataverse_id = rtrim(reverse(split_part(reverse(ssfq.filterquery),'/',1)),'"')::integer
+and ss.query='*'
+and ssfq.filterquery like 'subtreePaths%'
+);
+
+delete from savedsearchfilterquery where savedsearch_id in (select id from delete_ss);
+delete from savedsearch where id in (select id from delete_ss);
+
+commit;

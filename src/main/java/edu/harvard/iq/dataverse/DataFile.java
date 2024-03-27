@@ -5,49 +5,34 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import javax.validation.constraints.Pattern;
-import org.hibernate.validator.constraints.NotBlank;
+import java.util.stream.Collectors;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  *
@@ -56,16 +41,20 @@ import org.hibernate.validator.constraints.NotBlank;
 @NamedQueries({
 	@NamedQuery( name="DataFile.removeFromDatasetVersion",
 		query="DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId"),
-        @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth", 
+        @NamedQuery(name = "DataFile.findByCreatorId",
+                query = "SELECT o FROM DataFile o WHERE o.creator.id=:creatorId"),
+        @NamedQuery(name = "DataFile.findByReleaseUserId",
+                query = "SELECT o FROM DataFile o WHERE o.releaseUser.id=:releaseUserId"),
+        @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth",
                 query="SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority"),
-        @NamedQuery(name="DataFile.findDataFileThatReplacedId", 
+        @NamedQuery(name="DataFile.findDataFileThatReplacedId",
                 query="SELECT s.id FROM DataFile s WHERE s.previousDataFileId=:identifier")
 })
 @Entity
 @Table(indexes = {@Index(columnList="ingeststatus")
-		, @Index(columnList="checksumvalue")
-		, @Index(columnList="contenttype")
-		, @Index(columnList="restricted")})
+        , @Index(columnList="checksumvalue")
+        , @Index(columnList="contenttype")
+        , @Index(columnList="restricted")})
 public class DataFile extends DvObject implements Comparable {
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
     private static final long serialVersionUID = 1L;
@@ -82,7 +71,6 @@ public class DataFile extends DvObject implements Comparable {
     @Column( nullable = false )
     @Pattern(regexp = "^.*/.*$", message = "{contenttype.slash}")
     private String contentType;
-    
 
 //    @Expose    
 //    @SerializedName("storageIdentifier")
@@ -190,6 +178,9 @@ public class DataFile extends DvObject implements Comparable {
     private List<DataTable> dataTables;
     
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<AuxiliaryFile> auxiliaryFiles;
+   
+    @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<IngestReport> ingestReports;
     
     @OneToOne(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -204,6 +195,28 @@ public class DataFile extends DvObject implements Comparable {
     @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<GuestbookResponse> guestbookResponses;
 
+    @OneToMany(mappedBy="dataFile",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    private List<FileAccessRequest> fileAccessRequests;
+
+    @ManyToMany
+    @JoinTable(name = "fileaccessrequests",
+    joinColumns = @JoinColumn(name = "datafile_id"),
+    inverseJoinColumns = @JoinColumn(name = "authenticated_user_id"))
+    private List<AuthenticatedUser> fileAccessRequesters;
+
+    
+    public List<FileAccessRequest> getFileAccessRequests(){
+        return fileAccessRequests;
+    }
+    
+    public List<FileAccessRequest> getFileAccessRequests(FileAccessRequest.RequestState state){
+        return fileAccessRequests.stream().filter(far -> far.getState() == state).collect(Collectors.toList());
+    }
+
+    public void setFileAccessRequests(List<FileAccessRequest> fARs){
+        this.fileAccessRequests = fARs;
+    }
+    
     public List<GuestbookResponse> getGuestbookResponses() {
         return guestbookResponses;
     }
@@ -211,11 +224,23 @@ public class DataFile extends DvObject implements Comparable {
     public void setGuestbookResponses(List<GuestbookResponse> guestbookResponses) {
         this.guestbookResponses = guestbookResponses;
     }
-    
+
     private char ingestStatus = INGEST_STATUS_NONE; 
     
     @OneToOne(mappedBy = "thumbnailFile")
     private Dataset thumbnailForDataset;
+
+    @ManyToOne
+    @JoinColumn(name="embargo_id")
+    private Embargo embargo;
+
+    public Embargo getEmbargo() {
+        return embargo;
+    }
+
+    public void setEmbargo(Embargo embargo) {
+        this.embargo = embargo;
+    }
 
     public DataFile() {
         this.fileMetadatas = new ArrayList<>();
@@ -227,8 +252,63 @@ public class DataFile extends DvObject implements Comparable {
         this.fileMetadatas = new ArrayList<>();
         initFileReplaceAttributes();
     }
+
+    /*
+    Used in manage file permissions UI 
+    to easily display those files that have been deleted in the current draft 
+    or previous version which may have roles assigned or pending requests for access
+    */
+   
+    @Transient
+    private Boolean deleted;
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+    
+    /*
+    For use during file upload so that the user may delete 
+    files that have already been uploaded to the current dataset version
+    */
+    
+    @Transient
+    private boolean markedAsDuplicate;
+
+    public boolean isMarkedAsDuplicate() {
+        return markedAsDuplicate;
+    }
+
+    public void setMarkedAsDuplicate(boolean markedAsDuplicate) {
+        this.markedAsDuplicate = markedAsDuplicate;
+    }
+    
+    @Transient
+    private String duplicateFilename;
+
+    public String getDuplicateFilename() {
+        return duplicateFilename;
+    }
+
+    public void setDuplicateFilename(String duplicateFilename) {
+        this.duplicateFilename = duplicateFilename;
+    }
+
+    public List<AuxiliaryFile> getAuxiliaryFiles() {
+        return auxiliaryFiles;
+    }
+
+    public void setAuxiliaryFiles(List<AuxiliaryFile> auxiliaryFiles) {
+        this.auxiliaryFiles = auxiliaryFiles;
+    }
     
     
+    
+    
+       
     /**
      * All constructors should use this method
      * to initialize this file replace attributes
@@ -306,7 +386,17 @@ public class DataFile extends DvObject implements Comparable {
     public void setTags(List<DataFileTag> dataFileTags) {
         this.dataFileTags = dataFileTags;
     }
-    
+
+    public void addUniqueTagByLabel(String tagLabel) throws IllegalArgumentException {
+        if (tagExists(tagLabel)) {
+            return;
+        }
+        DataFileTag tag = new DataFileTag();
+        tag.setTypeByLabel(tagLabel);
+        tag.setDataFile(this);
+        addTag(tag);
+    }
+
     public void addTag(DataFileTag tag) {
         if (dataFileTags == null) {
             dataFileTags = new ArrayList<>();
@@ -355,7 +445,7 @@ public class DataFile extends DvObject implements Comparable {
                 return ingestReports.get(0).getReport();
             }
         }
-        return "Ingest failed. No further information is available.";
+        return BundleUtil.getStringFromBundle("file.ingestFailed");
     }
     
     public boolean isTabularData() {
@@ -380,6 +470,30 @@ public class DataFile extends DvObject implements Comparable {
             }
         }
         return null;
+    }
+    
+    public String getOriginalFileName() {
+        if (isTabularData()) {
+            DataTable dataTable = getDataTable();
+            if (dataTable != null) {
+                return dataTable.getOriginalFileName() != null ? dataTable.getOriginalFileName()
+                        : getDerivedOriginalFileName();
+            }
+        }
+        return null;
+    }
+
+    
+    private String getDerivedOriginalFileName() {
+        FileMetadata fm = getFileMetadata();
+        String filename = fm.getLabel();
+        String originalExtension = FileUtil.generateOriginalExtension(getOriginalFileFormat());
+        String extensionToRemove = StringUtil.substringIncludingLast(filename, ".");
+        if (StringUtil.nonEmpty(extensionToRemove)) {
+            return filename.replaceAll(extensionToRemove + "$", originalExtension);
+        } else{
+            return filename + originalExtension ;
+        }        
     }
 
     @Override
@@ -431,61 +545,61 @@ public class DataFile extends DvObject implements Comparable {
             fmd.setDescription(description);
         }
     }
+
+    public FileMetadata getDraftFileMetadata() {
+        FileMetadata latestFileMetadata = getLatestFileMetadata();
+        if (latestFileMetadata.getDatasetVersion().isDraft()) {
+            return latestFileMetadata;
+        }
+        return null;
+    }
     
     public FileMetadata getFileMetadata() {
         return getLatestFileMetadata();
     }
-    
-    public FileMetadata getLatestFileMetadata() {
-        FileMetadata fmd = null;
 
-        // for newly added or harvested, just return the one fmd
+    public FileMetadata getLatestFileMetadata() {
+        FileMetadata resultFileMetadata = null;
+
         if (fileMetadatas.size() == 1) {
             return fileMetadatas.get(0);
         }
-        
+
         for (FileMetadata fileMetadata : fileMetadatas) {
-            // if it finds a draft, return it
             if (fileMetadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT)) {
                 return fileMetadata;
-            }            
-            
-            // otherwise return the one with the latest version number
-            // duplicate logic in getLatestPublishedFileMetadata()
-            if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
-                fmd = fileMetadata;
-            } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
-                   ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   ) {
-                fmd = fileMetadata;
             }
+            resultFileMetadata = getTheNewerFileMetadata(resultFileMetadata, fileMetadata);
         }
-        return fmd;
+
+        return resultFileMetadata;
     }
-    
-//    //Returns null if no published version
+
     public FileMetadata getLatestPublishedFileMetadata() throws UnsupportedOperationException {
-        FileMetadata fmd = null;
-        
-        for (FileMetadata fileMetadata : fileMetadatas) {
-            // if it finds a draft, skip
-            if (fileMetadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT)) {
-                continue;
-            }            
-            
-            // otherwise return the one with the latest version number
-            // duplicate logic in getLatestFileMetadata()
-            if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
-                fmd = fileMetadata;
-            } else if ((fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber())==0 )&& 
-                   ( fileMetadata.getDatasetVersion().getMinorVersionNumber().compareTo( fmd.getDatasetVersion().getMinorVersionNumber()) > 0 )   ) {
-                fmd = fileMetadata;
-            }
-        }
-        if(fmd == null) {
+        FileMetadata resultFileMetadata = fileMetadatas.stream()
+                .filter(metadata -> !metadata.getDatasetVersion().getVersionState().equals(VersionState.DRAFT))
+                .reduce(null, DataFile::getTheNewerFileMetadata);
+
+        if (resultFileMetadata == null) {
             throw new UnsupportedOperationException("No published metadata version for DataFile " + this.getId());
         }
-        
-        return fmd;
+
+        return resultFileMetadata;
+    }
+
+    public static FileMetadata getTheNewerFileMetadata(FileMetadata current, FileMetadata candidate) {
+        if (current == null) {
+            return candidate;
+        }
+
+        DatasetVersion currentVersion = current.getDatasetVersion();
+        DatasetVersion candidateVersion = candidate.getDatasetVersion();
+
+        if (DatasetVersion.compareByVersion.compare(candidateVersion, currentVersion) > 0) {
+            return candidate;
+        }
+
+        return current;
     }
 
     /**
@@ -496,7 +610,7 @@ public class DataFile extends DvObject implements Comparable {
         if (this.filesize == null) {
             // -1 means "unknown"
             return -1;
-        } 
+        }
         return this.filesize;
     }
 
@@ -520,9 +634,13 @@ public class DataFile extends DvObject implements Comparable {
      * @return 
      */
     public String getFriendlySize() {
-        return FileSizeChecker.bytesToHumanReadable(filesize);
+        if (filesize != null) {
+            return FileSizeChecker.bytesToHumanReadable(filesize);
+        } else {
+            return BundleUtil.getStringFromBundle("file.sizeNotAvailable");
+        }
     }
-
+    
     public boolean isRestricted() {
         return restricted;
     }
@@ -633,21 +751,7 @@ public class DataFile extends DvObject implements Comparable {
     public void setAsThumbnailForDataset(Dataset dataset) {
         thumbnailForDataset = dataset;
     }
-    
-    /**
-     * URL to use with the WorldMapRelatedData API
-     * Used within dataset.xhtml
-     * 
-     * @param dataverseUserID
-     * @return URL for "Map It" functionality
-     */
-    public String getMapItURL(Long dataverseUserID){
-        if (dataverseUserID==null){
-            return null;
-        }
-        return WorldMapRelatedData.getMapItURL(this.getId(), dataverseUserID);
-    }
-        
+
     /*
         8/10/2014 - Using the current "open access" url
     */
@@ -672,13 +776,6 @@ public class DataFile extends DvObject implements Comparable {
         }
         return null; 
     }
-    
-
-    @ManyToMany
-    @JoinTable(name = "fileaccessrequests",
-    joinColumns = @JoinColumn(name = "datafile_id"),
-    inverseJoinColumns = @JoinColumn(name = "authenticated_user_id"))
-    private List<AuthenticatedUser> fileAccessRequesters;
 
     public List<AuthenticatedUser> getFileAccessRequesters() {
         return fileAccessRequesters;
@@ -687,14 +784,52 @@ public class DataFile extends DvObject implements Comparable {
     public void setFileAccessRequesters(List<AuthenticatedUser> fileAccessRequesters) {
         this.fileAccessRequesters = fileAccessRequesters;
     }
-    
-    public boolean isHarvested() {
-        
-        // (storageIdentifier is not nullable - so no need to check for null
-        // pointers below):
-        if (this.getStorageIdentifier().startsWith("http://") || this.getStorageIdentifier().startsWith("https://")) {
+
+
+    public void addFileAccessRequest(FileAccessRequest request) {
+        if (this.fileAccessRequests == null) {
+            this.fileAccessRequests = new ArrayList<>();
+        }
+
+        this.fileAccessRequests.add(request);
+    }
+
+    public FileAccessRequest getAccessRequestForAssignee(RoleAssignee roleAssignee) {
+        if (this.fileAccessRequests == null) {
+            return null;
+        }
+
+        return this.fileAccessRequests.stream()
+                .filter(fileAccessRequest -> fileAccessRequest.getRequester().equals(roleAssignee) && fileAccessRequest.isStateCreated()).findFirst()
+                .orElse(null);
+    }
+
+    public boolean removeFileAccessRequest(FileAccessRequest request) {
+        if (this.fileAccessRequests == null) {
+            return false;
+        }
+
+        if (request != null) {
+            this.fileAccessRequests.remove(request);
             return true;
         }
+
+        return false;
+    }
+
+    public boolean containsActiveFileAccessRequestFromUser(RoleAssignee roleAssignee) {
+        if (this.fileAccessRequests == null) {
+            return false;
+        }
+
+        Set<AuthenticatedUser> existingUsers = getFileAccessRequests(FileAccessRequest.RequestState.CREATED).stream()
+            .map(FileAccessRequest::getRequester)
+            .collect(Collectors.toSet());
+
+        return existingUsers.contains(roleAssignee);
+    }
+
+    public boolean isHarvested() {
         
         Dataset ownerDataset = this.getOwner();
         if (ownerDataset != null) {
@@ -751,6 +886,10 @@ public class DataFile extends DvObject implements Comparable {
        return getLatestFileMetadata().getLabel(); 
     }
     
+    public String getDirectoryLabel() {
+       return getLatestFileMetadata().getDirectoryLabel();
+    }
+    
     @Override 
     public String getCurrentName(){
         return getLatestFileMetadata().getLabel();
@@ -758,8 +897,18 @@ public class DataFile extends DvObject implements Comparable {
     
     @Override
     public int compareTo(Object o) {
+        /*
+         * The primary intent here is to provide ordering by displayName. However, the
+         * secondary comparison by id is needed to insure that two DataFiles with the
+         * same displayName aren't considered equal, e.g. in structures that require
+         * unique keys. See Issues #4287 and #6401.
+         */
         DataFile other = (DataFile) o;
-        return this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
+        int comparison = this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
+        if (comparison == 0) {
+            comparison = this.getId().compareTo(other.getId());
+        }
+        return comparison;
     }
     
     /**
@@ -841,8 +990,6 @@ public class DataFile extends DvObject implements Comparable {
     
     public JsonObject asGsonObject(boolean prettyPrint){
         
-        String overarchingKey = "data";
-        
         GsonBuilder builder;
         if (prettyPrint){  // Add pretty printing
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
@@ -873,7 +1020,7 @@ public class DataFile extends DvObject implements Comparable {
         // https://github.com/IQSS/dataverse/issues/761, https://github.com/IQSS/dataverse/issues/2110, https://github.com/IQSS/dataverse/issues/3191
         //
         datasetMap.put("title", thisFileMetadata.getDatasetVersion().getTitle());
-        datasetMap.put("persistentId", getOwner().getGlobalIdString());
+        datasetMap.put("persistentId", getOwner().getGlobalId().asString());
         datasetMap.put("url", getOwner().getPersistentURL());
         datasetMap.put("version", thisFileMetadata.getDatasetVersion().getSemanticVersion());
         datasetMap.put("id", getOwner().getId());
@@ -951,9 +1098,17 @@ public class DataFile extends DvObject implements Comparable {
         return null;
     }
     
+    @Override
+    public String getTargetUrl() {
+        return DataFile.TARGET_URL;
+    }
 
+    private boolean tagExists(String tagLabel) {
+        for (DataFileTag dataFileTag : dataFileTags) {
+            if (dataFileTag.getTypeLabel().equals(tagLabel)) {
+                return true;
+            }
+        }
+        return false;
+    }
 } // end of class
-    
-
-    
-

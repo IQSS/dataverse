@@ -15,6 +15,5 @@ export SMTP_SERVER=localhost
 export MEM_HEAP_SIZE=2048
 export GLASSFISH_DOMAIN=domain1
 cd scripts/installer
-cp pgdriver/postgresql-8.4-703.jdbc4.jar $GLASSFISH_ROOT/glassfish/lib
 cp ../../conf/jhove/jhove.conf $GLASSFISH_ROOT/glassfish/domains/$GLASSFISH_DOMAIN/config/jhove.conf
 ./glassfish-setup.sh

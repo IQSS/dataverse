@@ -7,6 +7,11 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 public class ShibAuthenticationProvider implements AuthenticationProvider {
 
     public static final String PROVIDER_ID = "shib";
+    
+    @Override
+    public int getOrder() {
+        return 20;
+    }
 
     @Override
     public String getId() {
@@ -27,5 +32,9 @@ public class ShibAuthenticationProvider implements AuthenticationProvider {
     public boolean isDisplayIdentifier() {
         return false;
     }
+
+    // We don't override "isEmailVerified" because we're using timestamps
+    // ("emailconfirmed" on the "authenticateduser" table) to know if
+    // Shib users have confirmed/verified their email or not.
 
 }

@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -23,11 +22,11 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.StringUtil;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Logger;
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 
 /**
  *
@@ -48,17 +47,19 @@ public class UningestFileCommand extends AbstractVoidCommand  {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         
-        // first check if  user is a superuser
-        if ( (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
-            throw new PermissionException("Uningest File can only be called by Superusers.",
-                this,  Collections.singleton(Permission.EditDataset), uningest);                
+        // first check if user is a superuser
+        if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
+            throw new PermissionException("Uningest File can only be called by Superusers.", this,
+                    Collections.singleton(Permission.EditDataset), uningest);
         }
         
         // is this actually a tabular data file?
         if (!uningest.isTabularData()) {
             throw new IllegalCommandException("UningestFileCommand called on a non-tabular data file (id="+uningest.getId()+")", this);
         }
-        
+
+        String originalFileName = uningest.getOriginalFileName();
+
         StorageIO<DataFile> dataAccess = null;
         // size of the stored original:
         Long storedOriginalFileSize;
@@ -104,6 +105,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         // all the attribute of the file that are stored in the database: 
         
         // the file size: 
+        long archivalFileSize = uningest.getFilesize();
         uningest.setFilesize(storedOriginalFileSize);
         
         // original file format:
@@ -138,9 +140,14 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         // Modify the file name - which is stored in FileMetadata, and there
         // could be more than one: 
         
-        String originalExtension = FileUtil.generateOriginalExtension(originalFileFormat);
-        
+       // String originalExtension = FileUtil.generateOriginalExtension(originalFileFormat);
         for (FileMetadata fm : uningest.getFileMetadatas()) {
+            
+            fm.setLabel(originalFileName);
+            ctxt.em().merge(fm);
+            
+            /* 
+            getOriginalFileName method replaces this code
             String filename = fm.getLabel();
             String extensionToRemove = StringUtil.substringIncludingLast(filename, ".");
             if (StringUtil.nonEmpty(extensionToRemove)) {
@@ -148,6 +155,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
                 fm.setLabel(newFileName);
                 ctxt.em().merge(fm);
             }
+             */
             
             DatasetVersion dv = fm.getDatasetVersion();
             
@@ -157,27 +165,26 @@ public class UningestFileCommand extends AbstractVoidCommand  {
             ctxt.datasetVersion().fixMissingUnf(dv.getId().toString(), true);
         }
 
-        MapLayerMetadata mapLayerMetadata = ctxt.mapLayerMetadata().findMetadataByDatafile(uningest);
-        if (mapLayerMetadata != null) {
-            try {
-                String id = getUser().getIdentifier();
-                id = id.startsWith("@") ? id.substring(1) : id;
-                AuthenticatedUser authenticatedUser = ctxt.authentication().getAuthenticatedUser(id);
-                ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(uningest, authenticatedUser);
-            } catch (Exception e) {
-                logger.warning("Unable to delete WorldMap file - may not have existed. Data File id: " + uningest.getId());
-            }
-            ctxt.mapLayerMetadata().deleteMapLayerMetadataObject(mapLayerMetadata, getUser());
-        }
-        
         try{
             dataAccess.deleteAllAuxObjects();
         } catch (IOException e){
             logger.warning("Io Exception deleting all aux objects : " + uningest.getId());
         }
         
+        // Finally, adjust the recorded storage use for the ancestral 
+        // DvObjectContainers (the parent dataset + all the parent collections
+        // up to the root):
+        if (archivalFileSize > 0) {
+            ctxt.storageUse().incrementStorageSizeRecursively(uningest.getOwner().getId(), (0L - archivalFileSize));
+        }
+        
     }
     
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        
+        return true; 
+    }
     
     private void resetIngestStats(DataFile uningest, CommandContext ctxt){
         

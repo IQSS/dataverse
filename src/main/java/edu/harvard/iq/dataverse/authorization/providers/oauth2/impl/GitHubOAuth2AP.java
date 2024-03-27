@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
 import com.github.scribejava.apis.GitHubApi;
-import com.github.scribejava.core.builder.api.BaseApi;
+import com.github.scribejava.core.builder.api.DefaultApi20;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUserNameFields;
@@ -9,9 +9,9 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.StringReader;
 import java.util.Collections;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
 /**
  * IDP adaptor for GitHub.com
@@ -28,7 +28,7 @@ public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     }
     
     @Override
-    public BaseApi getApiInstance() {
+    public DefaultApi20 getApiInstance() {
         return GitHubApi.instance();
     }
     

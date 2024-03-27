@@ -21,8 +21,9 @@ import java.util.Arrays;
 import java.util.List;
 //import org.apache.commons.httpclient.Header;
 //import org.apache.commons.httpclient.methods.GetMethod;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -62,23 +63,28 @@ public class StorageIOTest {
     @Test
     public void testGetDvObject() {
         assertEquals(null, instance.getDvObject());
-        instance.setDvObject(new Dataset());
-        assertEquals(new Dataset(), instance.getDataset());
+        Dataset d= new Dataset();
+        instance.setDvObject(d);
+        //assertSame uses == rather than the .equals() method which would (currently) be true for any two Datasets 
+        assertSame(d, instance.getDataset());
 
         try {
             instance.getDataFile();
             fail("This should have thrown");
         } catch (ClassCastException ex) {
-            assertEquals(ex.getMessage(), "edu.harvard.iq.dataverse.Dataset cannot be cast to edu.harvard.iq.dataverse.DataFile");
+            //Test succeeds
         }
         try {
             instance.getDataverse();
             fail("This should have thrown");
         } catch (ClassCastException ex) {
-            assertEquals(ex.getMessage(), "edu.harvard.iq.dataverse.Dataset cannot be cast to edu.harvard.iq.dataverse.Dataverse");
+            //Test succeeds
         }
-        assertEquals(new DataFile(), new FileAccessIO<>(new DataFile()).getDataFile());
-        assertEquals(new Dataverse(), new FileAccessIO<>(new Dataverse()).getDataverse());
+        // null driver defaults to 'file'
+        DataFile f= new DataFile();
+        Dataverse dv = new Dataverse();
+        assertSame(f, new FileAccessIO<>(f, null, null).getDataFile());
+        assertSame(dv, new FileAccessIO<>(dv, null, null).getDataverse());
     }
 
     @Test
@@ -236,5 +242,17 @@ public class StorageIOTest {
         List<DataVariable> dvs = Arrays.asList(new DataVariable[]{var, var});
         assertEquals("Random	Random\n", instance.generateVariableHeader(dvs));
         assertEquals(null, instance.generateVariableHeader(null));
+    }
+    
+    @Test
+    public void testGetConfigParam() {
+        System.setProperty("dataverse.files.globus.type", "globus");
+    assertEquals("globus", StorageIO.getConfigParamForDriver("globus", StorageIO.TYPE));
+    System.clearProperty("dataverse.files.globus.type");
+    }
+    
+    @Test
+    public void testGetConfigParamWithDefault() {
+    assertEquals(DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER, StorageIO.getConfigParamForDriver("globus", AbstractRemoteOverlayAccessIO.BASE_STORE, DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER));
     }
 }

@@ -12,6 +12,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.io.IOException;
@@ -30,15 +32,23 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
     
     private static final Logger logger = Logger.getLogger(AbstractCreateDatasetCommand.class.getCanonicalName());
     
-    final protected boolean registrationRequired;
+    final protected boolean harvested;
+    final protected boolean validate;
     
     public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         this(theDataset, aRequest, false);
     }
 
-    public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isRegistrationRequired) {
+    public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isHarvested) {
         super(aRequest, theDataset);
-        registrationRequired = isRegistrationRequired;
+        harvested=isHarvested;
+        this.validate = true;
+    }
+
+    public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isHarvested, boolean validate) {
+        super(aRequest, theDataset);
+        harvested=isHarvested;
+        this.validate = validate;
     }
    
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
@@ -60,6 +70,11 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // base class - default to nothing.
     }
     
+
+    protected void postDBFlush( Dataset theDataset, CommandContext ctxt ) throws CommandException {
+        // base class - default to nothing.
+    }
+    
     protected abstract void handlePid( Dataset theDataset, CommandContext ctxt ) throws CommandException ;
     
     @Override
@@ -68,15 +83,20 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         additionalParameterTests(ctxt);
         
         Dataset theDataset = getDataset();
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
+        PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(theDataset);
+        
         if ( isEmpty(theDataset.getIdentifier()) ) {
-            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
+            pidProvider.generatePid(theDataset);
         }
         
         DatasetVersion dsv = getVersionToPersist(theDataset);
         // This re-uses the state setup logic of CreateDatasetVersionCommand, but
         // without persisting the new version, or altering its files. 
-        new CreateDatasetVersionCommand(getRequest(), theDataset, dsv).prepareDatasetAndVersion();
+        new CreateDatasetVersionCommand(getRequest(), theDataset, dsv, validate).prepareDatasetAndVersion();
+        
+        if(!harvested) {
+            checkSystemMetadataKeyIfNeeded(dsv, null);
+        }
         
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
         
@@ -88,34 +108,22 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         
-        String nonNullDefaultIfKeyNotFound = "";
         if (theDataset.getProtocol()==null) {
-            theDataset.setProtocol(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound));
+            theDataset.setProtocol(pidProvider.getProtocol());
         }
         if (theDataset.getAuthority()==null) {
-            theDataset.setAuthority(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound));
+            theDataset.setAuthority(pidProvider.getAuthority());
         }
         if (theDataset.getStorageIdentifier() == null) {
-            try {
-                DataAccess.createNewStorageIO(theDataset, "placeholder");
-            } catch (IOException ioex) {
-                // if setting the storage identifier through createNewStorageIO fails, dataset creation
-                // does not have to fail. we just set the storage id to a default -SF
-                String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
-                theDataset.setStorageIdentifier(storageDriver  + "://" + theDataset.getGlobalId().asString());
-                logger.log(Level.INFO, "Failed to create StorageIO. StorageIdentifier set to default. Not fatal.({0})", ioex.getMessage());
-            }
+        	String driverId = theDataset.getEffectiveStorageDriverId();
+        	theDataset.setStorageIdentifier(driverId  + DataAccess.SEPARATOR + theDataset.getAuthorityForFileStorage() + "/" + theDataset.getIdentifierForFileStorage());
         }
         if (theDataset.getIdentifier()==null) {
-            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
+            pidProvider.generatePid(theDataset);
         }
         
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)
         handlePid(theDataset, ctxt);
-                
-        if (registrationRequired && (theDataset.getGlobalIdCreateTime() == null)) {
-            throw new CommandExecutionException("Dataset could not be created.  Registration failed", this);
-        }
         
         ctxt.em().persist(theDataset);
         
@@ -130,18 +138,11 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // Now we need the acutal dataset id, so we can start indexing.
         ctxt.em().flush();
         
-        // TODO: switch to asynchronous version when JPA sync works
-        // ctxt.index().asyncIndexDataset(theDataset.getId(), true); 
-        try{
-              ctxt.index().indexDataset(theDataset, true);
-        } catch (IOException | SolrServerException e) {
-            String failureLogText = "Post create dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + theDataset.getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, theDataset);
-        }
-         
-        ctxt.solrIndex().indexPermissionsOnSelfAndChildren(theDataset.getId());
+        //Use for code that requires database ids
+        postDBFlush(theDataset, ctxt);
         
+        ctxt.index().asyncIndexDataset(theDataset, true);
+                 
         return theDataset;
     }
 

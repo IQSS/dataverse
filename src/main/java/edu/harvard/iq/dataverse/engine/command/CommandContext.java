@@ -1,8 +1,5 @@
 package edu.harvard.iq.dataverse.engine.command;
 
-import edu.harvard.iq.dataverse.DOIDataCiteServiceBean;
-import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -18,7 +15,6 @@ import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
-import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
@@ -33,17 +29,17 @@ import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
-import java.util.List;
 import java.util.Stack;
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * An interface for accessing Dataverse's resources, user info etc. Used by the
@@ -100,13 +96,7 @@ public interface CommandContext {
 
     public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels();
 
-    public DOIEZIdServiceBean doiEZId();
-
-    public DOIDataCiteServiceBean doiDataCite();
-
-    public FakePidProviderServiceBean fakePidProvider();
-
-    public HandlenetServiceBean handleNet();
+    public PidProviderFactoryBean pidProviderFactory();
 
     public GuestbookServiceBean guestbooks();
 
@@ -125,6 +115,8 @@ public interface CommandContext {
     public UserNotificationServiceBean notifications();
 
     public AuthenticationServiceBean authentication();
+    
+    public StorageUseServiceBean storageUse();
 
     public SystemConfig systemConfig();
 
@@ -133,8 +125,6 @@ public interface CommandContext {
     public DatasetVersionServiceBean datasetVersion();
     
     public WorkflowServiceBean workflows();
-
-    public MapLayerMetadataServiceBean mapLayerMetadata();
 
     public DataCaptureModuleServiceBean dataCaptureModule();
     

@@ -17,9 +17,7 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
-import edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordWriter;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.BufferedReader;
@@ -31,9 +29,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
 
 /**
  * This class is for importing files added to s3 outside of dataverse.
@@ -69,7 +67,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         
         String dcmBucketName = System.getProperty("dataverse.files.dcm-s3-bucket-name");
         String dcmDatasetKey = s3ImportPath;
-        String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
+        String dvBucketName = System.getProperty("dataverse.files.s3.bucket-name");
 
         String dvDatasetKey = getS3DatasetKey(dataset);
         
@@ -137,7 +135,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         //This is a brittle calculation, changes of the dcm post_upload script will blow this up
         String rootPackageName = "package_" + folderName.replace("/", "");
 
-        String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
+        String dvBucketName = System.getProperty("dataverse.files.s3.bucket-name");
         String dvDatasetKey = getS3DatasetKey(dataset);
 
         //getting the name of the .sha file via substring, ${packageName}.sha
@@ -206,35 +204,21 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         fmd.setDatasetVersion(dataset.getLatestVersion());
 
         FileUtil.generateS3PackageStorageIdentifier(packageFile);
-
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
+        PidProvider pidProvider = commandEngine.getContext().dvObjects().getEffectivePidGenerator(dataset);
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
-            String packageIdentifier = dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean);
-            packageFile.setIdentifier(packageIdentifier);
-        }
-
-        String nonNullDefaultIfKeyNotFound = "";
-        String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-
-        if (packageFile.getProtocol() == null) {
-            packageFile.setProtocol(protocol);
-        }
-        if (packageFile.getAuthority() == null) {
-            packageFile.setAuthority(authority);
+            pidProvider.generatePid(packageFile);
         }
 
         if (!packageFile.isIdentifierRegistered()) {
             String doiRetString = "";
-            idServiceBean = GlobalIdServiceBean.getBean(commandEngine.getContext());
             try {
-                doiRetString = idServiceBean.createIdentifier(packageFile);
+                doiRetString = pidProvider.createIdentifier(packageFile);
             } catch (Throwable e) {
 
             }
 
             // Check return value to make sure registration succeeded
-            if (!idServiceBean.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
+            if (!pidProvider.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
                 packageFile.setIdentifierRegistered(true);
                 packageFile.setGlobalIdCreateTime(new Date());
             }

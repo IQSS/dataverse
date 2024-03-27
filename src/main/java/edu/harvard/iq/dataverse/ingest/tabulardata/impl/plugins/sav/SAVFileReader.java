@@ -19,17 +19,42 @@
 */
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav;
 
-import java.io.*;
-import java.nio.*;
-import java.util.logging.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
-import java.util.*;
-import java.util.regex.*;
-import java.text.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
-import org.apache.commons.lang.*;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -40,8 +65,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
-import edu.harvard.iq.dataverse.ingest.tabulardata.InvalidData; 
-
+import edu.harvard.iq.dataverse.ingest.tabulardata.InvalidData;
 
 
 /**
@@ -314,7 +338,7 @@ public class SAVFileReader  extends TabularDataFileReader{
         }
     }
 
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException{
+    public TabularDataIngest read(BufferedInputStream stream, boolean storeWithVariableHeader, File dataFile) throws IOException{
         dbgLog.info("SAVFileReader: read() start");
         
         if (dataFile != null) {
@@ -398,7 +422,7 @@ public class SAVFileReader  extends TabularDataFileReader{
 
 	    methodCurrentlyExecuted = "decodeRecordTypeData";
 	    dbgLog.fine("***** SAVFileReader: executing method decodeRecordTypeData");
-	    decodeRecordTypeData(stream); 
+	    decodeRecordTypeData(stream, storeWithVariableHeader); 
 
 		
 	} catch (IllegalArgumentException e) {
@@ -2284,7 +2308,7 @@ public class SAVFileReader  extends TabularDataFileReader{
     
     
 
-    void decodeRecordTypeData(BufferedInputStream stream) throws IOException {
+    void decodeRecordTypeData(BufferedInputStream stream, boolean storeWithVariableHeader) throws IOException {
         dbgLog.fine("decodeRecordTypeData(): start");
 
 	///String fileUnfValue = null;
@@ -2296,9 +2320,9 @@ public class SAVFileReader  extends TabularDataFileReader{
             throw new IllegalArgumentException("stream == null!");
         }
         if (isDataSectionCompressed){
-            decodeRecordTypeDataCompressed(stream);
+            decodeRecordTypeDataCompressed(stream, storeWithVariableHeader);
         } else {
-            decodeRecordTypeDataUnCompressed(stream);
+            decodeRecordTypeDataUnCompressed(stream, storeWithVariableHeader);
         }
             
         /* UNF calculation was here... */
@@ -2338,7 +2362,7 @@ public class SAVFileReader  extends TabularDataFileReader{
 
     }
 
-    void decodeRecordTypeDataCompressed(BufferedInputStream stream) throws IOException {
+    void decodeRecordTypeDataCompressed(BufferedInputStream stream, boolean storeWithVariableHeader) throws IOException {
 
         dbgLog.fine("***** decodeRecordTypeDataCompressed(): start *****");
 
@@ -2371,7 +2395,10 @@ public class SAVFileReader  extends TabularDataFileReader{
         dbgLog.fine("printFormatTable:\n" + printFormatTable);
         variableFormatTypeList = new String[varQnty];
 
-
+        // write the variable header out, if instructed to do so
+        if (storeWithVariableHeader) {
+            pwout.println(generateVariableHeader(dataTable.getDataVariables()));
+        }
 
         for (int i = 0; i < varQnty; i++) {
             variableFormatTypeList[i] = SPSSConstants.FORMAT_CATEGORY_TABLE.get(
@@ -2923,7 +2950,7 @@ public class SAVFileReader  extends TabularDataFileReader{
     }
 
 
-    void decodeRecordTypeDataUnCompressed(BufferedInputStream stream) throws IOException {
+    void decodeRecordTypeDataUnCompressed(BufferedInputStream stream, boolean storeWithVariableHeader) throws IOException {
         dbgLog.fine("***** decodeRecordTypeDataUnCompressed(): start *****");
 
         if (stream ==null){
@@ -2989,6 +3016,11 @@ public class SAVFileReader  extends TabularDataFileReader{
         ///dataTable2 = new Object[varQnty][caseQnty];
 	// storage of date formats to pass to UNF	
         ///dateFormats = new String[varQnty][caseQnty];
+        
+        // write the variable header out, if instructed to do so
+        if (storeWithVariableHeader) {
+            pwout.println(generateVariableHeader(dataTable.getDataVariables()));
+        }
 
         try {
             for (int i = 0; ; i++){  // case-wise loop

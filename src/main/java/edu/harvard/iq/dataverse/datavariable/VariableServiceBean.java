@@ -7,12 +7,12 @@
 package edu.harvard.iq.dataverse.datavariable;
 
 import java.util.List;
-import java.util.logging.Logger;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 
 /**
  *
@@ -105,7 +105,7 @@ public class VariableServiceBean {
         VariableFormatType type = null;
         try {
             type = (VariableFormatType)query.getSingleResult();
-        } catch (javax.persistence.NoResultException e) {
+        } catch (jakarta.persistence.NoResultException e) {
             // DO nothing, just return null.
         }
         return type;
@@ -116,7 +116,7 @@ public class VariableServiceBean {
         VariableIntervalType type = null;
         try {
             type=(VariableIntervalType)em.createQuery(query).getSingleResult();
-        } catch (javax.persistence.NoResultException e) {
+        } catch (jakarta.persistence.NoResultException e) {
             // DO nothing, just return null.
         }
         return type;
@@ -127,7 +127,7 @@ public class VariableServiceBean {
         SummaryStatisticType type = null;
         try {
             type = (SummaryStatisticType) em.createQuery(query).getSingleResult();
-        } catch (javax.persistence.NoResultException e) {
+        } catch (jakarta.persistence.NoResultException e) {
             // DO nothing, just return null.
         }
         return type;

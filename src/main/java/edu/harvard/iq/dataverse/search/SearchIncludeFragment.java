@@ -2,12 +2,15 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataversePage;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
@@ -18,37 +21,29 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.enterprise.context.RequestScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.lang.StringUtils;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
+
 
 //@ViewScoped
 @RequestScoped
@@ -84,7 +79,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     @Inject
     DataversePage dataversePage;
     @EJB
-    SystemConfig systemConfig;
+    DatasetFieldServiceBean datasetFieldService;
 
     private String browseModeString = "browse";
     private String searchModeString = "search";
@@ -126,7 +121,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private Long facetCountDatasets = 0L;
     private Long facetCountFiles = 0L;
     Map<String, Long> previewCountbyType = new HashMap<>();
-    private SolrQueryResponse solrQueryResponseAllTypes;
     private String sortField;
     private SortOrder sortOrder;
     private String currentSort;
@@ -138,8 +132,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
     Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
     private boolean solrIsDown = false;
+    private boolean solrIsTemporarilyUnavailable = false; 
     private Map<String, Integer> numberOfFacets = new HashMap<>();
-    private boolean debug = false;
 //    private boolean showUnpublished;
     List<String> filterQueriesDebug = new ArrayList<>();
 //    private Map<String, String> friendlyName = new HashMap<>();
@@ -220,7 +214,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             qParam = "&q=" + query;
         }
 
-        return widgetWrapper.wrapURL(dataverseRedirectPage + "?faces-redirect=true&q=" + qParam + optionalDataverseScope);
+        return widgetWrapper.wrapURL(dataverseRedirectPage + "?faces-redirect=true" + qParam + optionalDataverseScope);
 
     }
 
@@ -264,18 +258,32 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 selectedTypesString = "dataverses:datasets:files";
             }
         }
+        
+        /*
+        The real issue here (https://github.com/IQSS/dataverse/issues/7304) is caused 
+        by the types query being treated as a filter query.
+        So I'm ignoring it if it comes up in the fq array and setting it via the 
+        selectedTypesString
+        SEK 8/25/2021
+        */
 
         filterQueries = new ArrayList<>();
         for (String fq : Arrays.asList(fq0, fq1, fq2, fq3, fq4, fq5, fq6, fq7, fq8, fq9)) {
             if (fq != null) {
-                filterQueries.add(fq);
+                if (!isfilterQueryAlreadyInMap(fq)) {
+                    if(!fq.contains(SearchFields.TYPE)){
+                        filterQueries.add(fq);
+                    }                    
+                }
             }
         }
 
+
         SolrQueryResponse solrQueryResponse = null;
+        SolrQueryResponse solrQueryResponseSecondPass = null;
 
-        List<String> filterQueriesFinal = new ArrayList<>();
-
+        List<String> filterQueriesExtended = new ArrayList<>();
+        
         if (dataverseAlias != null) {
             this.dataverse = dataverseService.findByAlias(dataverseAlias);
         }
@@ -283,38 +291,42 @@ public class SearchIncludeFragment implements java.io.Serializable {
             dataversePath = dataverseService.determineDataversePath(this.dataverse);
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
             //logger.info("SUBTREE parameter: " + dataversePath);
-            if (!this.dataverse.equals(dataverseService.findRootDataverse())) {
+            if (!(this.dataverse.getOwner() == null)) { 
                 /**
                  * @todo centralize this into SearchServiceBean
                  */
-                filterQueriesFinal.add(filterDownToSubtree);
+                if (!isfilterQueryAlreadyInMap(filterDownToSubtree)){
+                    filterQueriesExtended.add(filterDownToSubtree);
+                }
 //                this.dataverseSubtreeContext = dataversePath;
             } else {
 //                this.dataverseSubtreeContext = "all";
                 this.setRootDv(true);
             }
         } else {
-            this.dataverse = dataverseService.findRootDataverse();
+            this.dataverse = settingsWrapper.getRootDataverse();
 //            this.dataverseSubtreeContext = "all";
             this.setRootDv(true);
         }
 
+        filterQueriesExtended.addAll(filterQueries);
+
+        /**
+         * Add type queries, for the types (Dataverses, Datasets, Datafiles) 
+         * currently selected:
+         */
         selectedTypesList = new ArrayList<>();
         String[] parts = selectedTypesString.split(":");
-//        int count = 0;
         selectedTypesList.addAll(Arrays.asList(parts));
-
-        List<String> filterQueriesFinalAllTypes = new ArrayList<>();
+                
         String[] arr = selectedTypesList.toArray(new String[selectedTypesList.size()]);
         selectedTypesHumanReadable = combine(arr, " OR ");
         if (!selectedTypesHumanReadable.isEmpty()) {
             typeFilterQuery = SearchFields.TYPE + ":(" + selectedTypesHumanReadable + ")";
-        }
-        filterQueriesFinal.addAll(filterQueries);
-        filterQueriesFinalAllTypes.addAll(filterQueriesFinal);
+        } 
+        List<String> filterQueriesFinal = new ArrayList<>();
+        filterQueriesFinal.addAll(filterQueriesExtended);
         filterQueriesFinal.add(typeFilterQuery);
-        String allTypesFilterQuery = SearchFields.TYPE + ":(dataverses OR datasets OR files)";
-        filterQueriesFinalAllTypes.add(allTypesFilterQuery);
 
         if (page <= 1) {
             // http://balusc.omnifaces.org/2015/10/the-empty-string-madness.html
@@ -335,6 +347,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         try {
             logger.fine("ATTENTION! query from user:   " + query);
             logger.fine("ATTENTION! queryToPassToSolr: " + queryToPassToSolr);
+            logger.fine("ATTENTION! filterQueriesFinal: " + filterQueriesFinal.toString());
             logger.fine("ATTENTION! sort by: " + sortField);
 
             /**
@@ -346,17 +359,79 @@ public class SearchIncludeFragment implements java.io.Serializable {
             DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), httpServletRequest);
             List<Dataverse> dataverses = new ArrayList<>();
             dataverses.add(dataverse);
-            solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
+            solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null, !isFacetsDisabled(), true);
             if (solrQueryResponse.hasError()){
                 logger.info(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
+            } 
+            // Solr "temporarily unavailable" is the condition triggered by 
+            // receiving a 503 from the search engine, that is in turn a result
+            // of one of the Solr "circuit breakers" being triggered by excessive
+            // load. We treat this condition as distinct from "Solr is down", 
+            // on the assumption that it is transitive. 
+            if (solrQueryResponse.isSolrTemporarilyUnavailable()) {
+                setSolrTemporarilyUnavailable(true);
             }
             // This 2nd search() is for populating the "type" ("dataverse", "dataset", "file") facets: -- L.A. 
             // (why exactly do we need it, again?)
-            solrQueryResponseAllTypes = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
-            if (solrQueryResponse.hasError()){
-                logger.info(solrQueryResponse.getError());
-                setSolrErrorEncountered(true);
+            // To get the counts we display in the types facets particulary for unselected types - SEK 08/25/2021
+            // Sure, but we should not waste resources here. We will try to save 
+            // solr some extra work and a) only run this second query IF there is 
+            // one or more unselected type facets; and b) drop all the extra 
+            // parameters from this second query - such as facets and highlights -
+            // that we do not actually need for the purposes of finding these 
+            // extra numbers. -- L.A. 10/16/2023
+            
+            // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
+            previewCountbyType.put(BundleUtil.getStringFromBundle("dataverses"), 0L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle("datasets"), 0L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle("files"), 0L);
+            
+            
+            // This will populate the type facet counts for the types that are 
+            // currently selected on the collection page:
+            for (FacetCategory facetCategory : solrQueryResponse.getTypeFacetCategories()) {
+                for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                    previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
+                }
+            }
+            
+            if (!wasSolrErrorEncountered() && selectedTypesList.size() < 3 && !isSolrTemporarilyUnavailable() && !isFacetsDisabled()) {
+                // If some types are NOT currently selected, we will need to 
+                // run a second search to obtain the numbers of the unselected types:
+                
+                List<String> filterQueriesFinalSecondPass = new ArrayList<>();
+                filterQueriesFinalSecondPass.addAll(filterQueriesExtended);
+                   
+                arr = new String[3];
+                int c = 0;
+                for (String dvObjectType : Arrays.asList("dataverses", "datasets", "files")) {
+                    if (!selectedTypesList.contains(dvObjectType)) {
+                        arr[c++] = dvObjectType;
+                    }
+                }
+                filterQueriesFinalSecondPass.add(SearchFields.TYPE + ":(" + combine(arr, " OR ", c) + ")");
+                logger.fine("second pass query: " + queryToPassToSolr);
+                logger.fine("second pass filter query: "+filterQueriesFinalSecondPass.toString());
+
+                solrQueryResponseSecondPass = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalSecondPass, null, sortOrder.toString(), 0, onlyDataRelatedToMe, 1, false, null, null, false, false);
+
+                if (solrQueryResponseSecondPass != null) {
+
+                    if (solrQueryResponseSecondPass.hasError()) {
+                        logger.fine(solrQueryResponseSecondPass.getError());
+                        setSolrErrorEncountered(true);
+                    }
+
+                    // And now populate the remaining type facets:
+                    for (FacetCategory facetCategory : solrQueryResponseSecondPass.getTypeFacetCategories()) {
+                        for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                            previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
+                        }
+                    }
+                } else {
+                    logger.warning("null solr response from the second pass type query");
+                }
             }
             
         } catch (SearchException ex) {
@@ -436,23 +511,34 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 }
             }
 
-            // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
-            previewCountbyType.put(BundleUtil.getStringFromBundle("dataverses"), 0L);
-            previewCountbyType.put(BundleUtil.getStringFromBundle("datasets"), 0L);
-            previewCountbyType.put(BundleUtil.getStringFromBundle("files"), 0L);
-            if (solrQueryResponseAllTypes != null) {
-                for (FacetCategory facetCategory : solrQueryResponseAllTypes.getTypeFacetCategories()) {
-                    for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
-                        previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
-                    }
-                }
-            }
             
             setDisplayCardValues();
             
+            if (settingsWrapper.displayChronologicalDateFacets()) {
+                Set<String> facetsToSort = new HashSet<String>();
+                facetsToSort.add(SearchFields.PUBLICATION_YEAR);
+                List<DataverseFacet> facets = dataversePage.getDataverse().getDataverseFacets();
+                for (DataverseFacet facet : facets) {
+                    DatasetFieldType dft = facet.getDatasetFieldType();
+                    if (dft.getFieldType() == FieldType.DATE) {
+                        // Currently all date fields are stored in solr as strings and so get an "_s" appended. 
+                        // If these someday are indexed as dates, this should change
+                        facetsToSort.add(dft.getName()+"_s");
+                    }
+                }
+
+                // Sort Pub Year Chronologically (alphabetically descending - works until 10000
+                // AD)
+                for (FacetCategory fc : facetCategoryList) {
+                    if (facetsToSort.contains(fc.getName())) {
+                        Collections.sort(fc.getFacetLabel(), Collections.reverseOrder());
+                    }
+                }
+            }
+                        
             dataversePage.setQuery(query);
             dataversePage.setFacetCategoryList(facetCategoryList);
-            dataversePage.setFilterQueries(filterQueries);
+            dataversePage.setFilterQueries(filterQueriesFinal);
             dataversePage.setSearchResultsCount(searchResultsCount);
             dataversePage.setSelectedTypesString(selectedTypesString);
             dataversePage.setSortField(sortField);
@@ -480,6 +566,25 @@ public class SearchIncludeFragment implements java.io.Serializable {
 //        friendlyName.put(SearchFields.FILE_TYPE, "File Type");
 //        friendlyName.put(SearchFields.PRODUCTION_DATE_YEAR_ONLY, "Production Date");
 //        friendlyName.put(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, "Distribution Date");
+    }
+    
+    private Map<String, Integer> fqMap = null;
+
+    private boolean isfilterQueryAlreadyInMap(String fq) {
+        
+        if (fqMap == null) {
+            fqMap = new HashMap<>();
+            fqMap.put(fq, 1);
+            return false;
+        }
+
+        if (fqMap.get(fq) != null) {
+            return true;
+        } else {
+            fqMap.put(fq, 1);
+            return false;
+        }
+        
     }
 
   
@@ -555,6 +660,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
     // http://stackoverflow.com/questions/1515437/java-function-for-arrays-like-phps-join/1515548#1515548
     String combine(String[] s, String glue) {
         int k = s.length;
+        return combine(s, glue, k);
+    }
+    
+    String combine(String[] s, String glue, int k) {
         if (k == 0) {
             return null;
         }
@@ -969,22 +1078,35 @@ public class SearchIncludeFragment implements java.io.Serializable {
     public void setSolrIsDown(boolean solrIsDown) {
         this.solrIsDown = solrIsDown;
     }
+    
+    public boolean isSolrTemporarilyUnavailable() {
+        return solrIsTemporarilyUnavailable;
+    }
+    
+    public void setSolrTemporarilyUnavailable(boolean solrIsTemporarilyUnavailable) {
+        this.solrIsTemporarilyUnavailable = solrIsTemporarilyUnavailable; 
+    }
 
+    /**
+     * Indicates that the fragment should not be requesting facets in Solr 
+     * searches and rendering them on the page.
+     * @return true if disabled; false by default 
+     */
+    public boolean isFacetsDisabled() {
+        // The method is used in rendered="..." logic. So we are using 
+        // SettingsWrapper to make sure we are not looking it up repeatedly 
+        // (settings are not expensive to look up, but 
+        // still).
+        
+        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacets, false);
+    }
+    
     public boolean isRootDv() {
         return rootDv;
     }
 
     public void setRootDv(boolean rootDv) {
         this.rootDv = rootDv;
-    }
-
-    public boolean isDebug() {
-        return (debug && session.getUser().isSuperuser())
-                || settingsWrapper.isTrueForKey(":Debug", false);
-    }
-
-    public void setDebug(boolean debug) {
-        this.debug = debug;
     }
 
     public List<String> getFilterQueriesDebug() {
@@ -1055,6 +1177,20 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return true;
     }
     
+    public String getTypeFromFilterQuery(String filterQuery) {
+
+        if (filterQuery == null) {
+            return null;
+        }
+
+        if(!filterQuery.contains(":")) {
+            //Filter query must be delimited by a :
+            return null;
+        } else {
+            return filterQuery.substring(0,filterQuery.indexOf(":"));
+        }
+    }
+    
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
         
         
@@ -1064,13 +1200,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return null;
         }
         
-        String[] parts = filterQuery.split(":");
-        if (parts.length != 2){
-            //logger.log(Level.INFO, "String array has {0} part(s).  Should have 2: {1}", new Object[]{parts.length, filterQuery});
+        if(!filterQuery.contains(":")) {
             return null;
         }
-        String key = parts[0];
-        String value = parts[1];
+        
+        int index = filterQuery.indexOf(":");
+        String key = filterQuery.substring(0,index);
+        String value = filterQuery.substring(index+1);
 
         List<String> friendlyNames = new ArrayList<>();
 
@@ -1095,11 +1231,38 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 friendlyNames.add(key);
             }
         }
+
         String noLeadingQuote = value.replaceAll("^\"", "");
         String noTrailingQuote = noLeadingQuote.replaceAll("\"$", "");
         String valueWithoutQuotes = noTrailingQuote;
+
+        if (key.equals(SearchFields.METADATA_TYPES) && getDataverse() != null && getDataverse().getMetadataBlockFacets() != null) {
+            Optional<String> friendlyName = getDataverse().getMetadataBlockFacets().stream().filter(block -> block.getMetadataBlock().getName().equals(valueWithoutQuotes)).findFirst().map(block -> block.getMetadataBlock().getLocaleDisplayFacet());
+            logger.fine(String.format("action=getFriendlyNamesFromFilterQuery key=%s value=%s friendlyName=%s", key, value, friendlyName));
+            if(friendlyName.isPresent()) {
+                friendlyNames.add(friendlyName.get());
+                return friendlyNames;
+            }
+        } else if (key.equals(SearchFields.DATASET_LICENSE)) {
+            try {
+                friendlyNames.add(BundleUtil.getStringFromPropertyFile("license." + valueWithoutQuotes.toLowerCase().replace(" ","_") + ".name", "License"));
+            } catch (Exception e) {
+                logger.fine(String.format("action=getFriendlyNamesFromFilterQuery cannot find friendlyName for key=%s value=%s", key, value));
+            }
+        }
+
         friendlyNames.add(valueWithoutQuotes);
         return friendlyNames;
+    }
+    
+    public Long getFieldTypeId(String friendlyName) {
+        List<DatasetFieldType> types = datasetFieldService.findAllFacetableFieldTypes();
+        for (DatasetFieldType type : types) {
+            if (datasetfieldFriendlyNamesBySolrField.get(type.getSolrField().getNameFacetable()).equals(friendlyName)) {
+                return type.getId();
+            }
+        }
+        return null;
     }
 
     public String getNewSelectedTypes(String typeClicked) {
@@ -1155,30 +1318,43 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public String tabularDataDisplayInfo(DataFile datafile) {
-        String ret = "";
+        String tabInfo = "";
 
         if (datafile == null) {
-            return null;
+            return "";
+        }
+
+        if (datafile.isTabularData() && datafile.getDataTable() != null) {
+            DataTable datatable = datafile.getDataTable();
+            Long varNumber = datatable.getVarQuantity();
+            Long obsNumber = datatable.getCaseQuantity();
+            if (varNumber != null && varNumber.intValue() != 0) {
+                tabInfo = tabInfo.concat(varNumber + " " + BundleUtil.getStringFromBundle("file.metaData.dataFile.dataTab.variables"));
+                if (obsNumber != null && obsNumber.intValue() != 0) {
+                    tabInfo = tabInfo.concat(", " + obsNumber + " " + BundleUtil.getStringFromBundle("file.metaData.dataFile.dataTab.observations"));
+                }
+            }
+        }
+
+        return tabInfo;
+    }
+    
+    public String tabularDataUnfDisplay(DataFile datafile) {
+        String tabUnf = "";
+
+        if (datafile == null) {
+            return "";
         }
 
         if (datafile.isTabularData() && datafile.getDataTable() != null) {
             DataTable datatable = datafile.getDataTable();
             String unf = datatable.getUnf();
-            Long varNumber = datatable.getVarQuantity();
-            Long obsNumber = datatable.getCaseQuantity();
-            if (varNumber != null && varNumber.intValue() != 0) {
-                ret = ret.concat(varNumber + " Variables");
-                if (obsNumber != null && obsNumber.intValue() != 0) {
-                    ret = ret.concat(", " + obsNumber + " Observations");
-                }
-                ret = ret.concat(" - ");
-            }
             if (unf != null && !unf.equals("")) {
-                ret = ret.concat("UNF: " + unf);
+                tabUnf = tabUnf.concat(unf);
             }
         }
 
-        return ret;
+        return tabUnf;
     }
 
     public String dataFileSizeDisplay(DataFile datafile) {
@@ -1190,20 +1366,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     }
 
-    public String dataFileChecksumDisplay(DataFile datafile) {
-        if (datafile == null) {
-            return "";
-        }
-
-        if (datafile.getChecksumValue() != null && !StringUtils.isEmpty(datafile.getChecksumValue())) {
-            if (datafile.getChecksumType() != null) {
-                return " " + datafile.getChecksumType() + ": " + datafile.getChecksumValue() + " ";
-            }
-        }
-
-        return "";
+    public boolean canPublishDataset(Long datasetId){
+        return permissionsWrapper.canIssuePublishDatasetCommand(dvObjectService.findDvObject(datasetId));
     }
-
+    
     public void setDisplayCardValues() {
 
         Set<Long> harvestedDatasetIds = null;
@@ -1220,7 +1386,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 result.setImageUrl(thumbnailServiceWrapper.getDataverseCardImageAsBase64Url(result));
             } else if (result.getType().equals("datasets")) {
                 if (result.getEntity() != null) {
-                    result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(result));
+                    result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsUrl(result));
                 }
                 
                 if (result.isHarvested()) {
@@ -1276,7 +1442,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 if (dataverse.getId().equals(result.getParentIdAsLong())) {
                     // definitely NOT linked:
                     result.setIsInTree(true);
-                } else if (result.getParentIdAsLong() == dataverseService.findRootDataverse().getId()) {
+                } else if (result.getParentIdAsLong().equals(settingsWrapper.getRootDataverse().getId())) {
                     // the object's parent is the root Dv; and the current 
                     // Dv is NOT root... definitely linked:
                     result.setIsInTree(false);
@@ -1304,6 +1470,19 @@ public class SearchIncludeFragment implements java.io.Serializable {
             dvObjectParentIds = null;
         }
         
+    }
+    
+    public boolean isActivelyEmbargoed(SolrSearchResult result) {
+        Long embargoEndDate = result.getEmbargoEndDate();
+        if(embargoEndDate != null) {
+            return LocalDate.now().toEpochDay() < embargoEndDate;
+        } else {
+            return false;
+        }
+    }
+    
+    public boolean isValid(SolrSearchResult result) {
+        return result.isValid();
     }
     
     public enum SortOrder {

@@ -1,22 +1,23 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static com.jayway.restassured.RestAssured.given;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
+import static io.restassured.RestAssured.given;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class FileMetadataIT {
 
@@ -32,16 +33,18 @@ public class FileMetadataIT {
     private static int dsId;
     private static int dsIdFirst;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
-    @Before
+    @BeforeEach
     public void setUpDataverse() {
         try {
             // create random test name
-            testName = UUID.randomUUID().toString().substring(0, 8);
+            // "abc" added so the name/alias isn't an integer, a requirement for dataverse creation.
+            // Longer term, consider switching to UtilIT.getRandomDvAlias (and rewriting these tests).
+            testName = "abc" + UUID.randomUUID().toString().substring(0, 8);
             // create user and set token
             token = given()
                     .body("{"
@@ -77,17 +80,16 @@ public class FileMetadataIT {
                     .then().assertThat().statusCode(201);
             System.out.println("DATAVERSE: " + RestAssured.baseURI + "/dataverse/" + testName);
         } catch (Exception e) {
-            System.out.println("Error setting up test dataverse: " + e.getMessage());
-            fail();
+            fail("Error setting up test dataverse: " + e.getMessage(), e);
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         RestAssured.reset();
     }
 
-    @After
+    @AfterEach
     public void tearDownDataverse() {
         try {
             // delete dataset
@@ -118,6 +120,8 @@ public class FileMetadataIT {
     @Test
     public void testJsonParserWithDirectoryLabels() {
         try {
+            //SEK 4/14/2020 need to be super user to add a dataset with files
+            UtilIT.makeSuperUser(testName).then().assertThat().statusCode(OK.getStatusCode());
 
             // try to create a dataset with directory labels that contain both leading and trailing file separators
             //Should work now
@@ -161,9 +165,7 @@ public class FileMetadataIT {
                     .statusCode(200);
 
         } catch (Exception e) {
-            System.out.println("Error testJsonParserWithDirectoryLabels: " + e.getMessage());
-            e.printStackTrace();
-            fail();
+            fail("Error testJsonParserWithDirectoryLabels: " + e.getMessage(), e);
         }
     }
 

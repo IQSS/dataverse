@@ -6,19 +6,19 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Dataverse.DataverseType;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+
+import static edu.harvard.iq.dataverse.dataverse.DataverseUtil.validateDataverseMetadataExternally;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.search.IndexResponse;
-import java.io.IOException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
-import javax.persistence.TypedQuery;
-import org.apache.solr.client.solrj.SolrServerException;
+import java.util.logging.Logger;
+import jakarta.persistence.TypedQuery;
 
 /**
  * Update an existing dataverse.
@@ -26,11 +26,14 @@ import org.apache.solr.client.solrj.SolrServerException;
  */
 @RequiredPermissions( Permission.EditDataverse )
 public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
+        private static final Logger logger = Logger.getLogger(UpdateDataverseCommand.class.getName());
 	
 	private final Dataverse editedDv;
 	private final List<DatasetFieldType> facetList;
         private final List<Dataverse> featuredDataverseList;
         private final List<DataverseFieldTypeInputLevel> inputLevelList;
+        
+        private boolean datasetsReindexRequired = false; 
 
 	public UpdateDataverseCommand(Dataverse editedDv, List<DatasetFieldType> facetList, List<Dataverse> featuredDataverseList, 
                     DataverseRequest aRequest,  List<DataverseFieldTypeInputLevel> inputLevelList ) {
@@ -57,9 +60,29 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 	
 	@Override
 	public Dataverse execute(CommandContext ctxt) throws CommandException {
-            DataverseType oldDvType = ctxt.dataverses().find(editedDv.getId()).getDataverseType();
-            String oldDvAlias = ctxt.dataverses().find(editedDv.getId()).getAlias();
-            String oldDvName = ctxt.dataverses().find(editedDv.getId()).getName();
+            logger.fine("Entering update dataverse command");
+            
+            // Perform any optional validation steps, if defined:
+            if (ctxt.systemConfig().isExternalDataverseValidationEnabled()) {
+                // For admins, an override of the external validation step may be enabled: 
+                if (!(getUser().isSuperuser() && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
+                    String executable = ctxt.systemConfig().getDataverseValidationExecutable();
+                    boolean result = validateDataverseMetadataExternally(editedDv, executable, getRequest());
+
+                    if (!result) {
+                        String rejectionMessage = ctxt.systemConfig().getDataverseUpdateValidationFailureMsg();
+                        throw new IllegalCommandException(rejectionMessage, this);
+                    }
+                }
+            }
+            
+            Dataverse oldDv = ctxt.dataverses().find(editedDv.getId());
+            
+            DataverseType oldDvType = oldDv.getDataverseType();
+            String oldDvAlias = oldDv.getAlias();
+            String oldDvName = oldDv.getName();
+            oldDv = null; 
+            
             Dataverse result = ctxt.dataverses().save(editedDv);
             
             if ( facetList != null ) {
@@ -84,26 +107,36 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
                 }
             }
             
+            // We don't want to reindex the children datasets unnecessarily: 
+            // When these values are changed we need to reindex all children datasets
+            // This check is not recursive as all the values just report the immediate parent
+            if (!oldDvType.equals(editedDv.getDataverseType())
+                || !oldDvName.equals(editedDv.getName())
+                || !oldDvAlias.equals(editedDv.getAlias())) {
+                datasetsReindexRequired = true;
+            }
             
             return result;
 	}
         
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
+        
+        // first kick of async index of datasets
+        // TODO: is this actually needed? Is there a better way to handle
+        // It appears that we at some point lost some extra logic here, where
+        // we only reindex the underlying datasets if one or more of the specific set
+        // of fields have been changed (since these values are included in the 
+        // indexed solr documents for dataasets). So I'm putting that back. -L.A.
         Dataverse result = (Dataverse) r;
-
-        List<Dataset> datasets = ctxt.datasets().findByOwnerId(result.getId());
-        try {
-            Future<String> indResponse = ctxt.index().indexDataverse(result);
+        
+        if (datasetsReindexRequired) {
+            List<Dataset> datasets = ctxt.datasets().findByOwnerId(result.getId());
             ctxt.index().asyncIndexDatasetList(datasets, true);
-        } catch (IOException | SolrServerException e) {
-            String failureLogText = "Indexing failed for Updated Dataverse. You can kickoff a re-index of this datavese with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + result.getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, result);
-            return false;
         }
-        return true;
-    }
+        
+        return ctxt.dataverses().index((Dataverse) r);
+    }  
 
 }
 

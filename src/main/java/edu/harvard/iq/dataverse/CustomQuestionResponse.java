@@ -7,8 +7,8 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.faces.model.SelectItem;
-import javax.persistence.*;
+import jakarta.faces.model.SelectItem;
+import jakarta.persistence.*;
 
 /**
  *
@@ -103,17 +103,6 @@ public class CustomQuestionResponse implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dvn.core.vdc.CustomQuestionResponse[ id=" + id + " ]";
     }
-    
-    @Transient private String validationMessage;
 
-    public String getValidationMessage() {
-        return validationMessage;
-    }
-
-    public void setValidationMessage(String validationMessage) {
-        this.validationMessage = validationMessage;
-    }
-    
-    
 }
 

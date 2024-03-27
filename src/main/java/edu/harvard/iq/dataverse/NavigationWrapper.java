@@ -14,13 +14,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang.StringUtils;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -87,6 +88,10 @@ public class NavigationWrapper implements java.io.Serializable {
         }        
     }
     
+    public String tooManyRequests() {
+        return sendError(Status.TOO_MANY_REQUESTS.getStatusCode());
+    }
+     
     public String notFound() {
         return sendError(HttpServletResponse.SC_NOT_FOUND);
     }
@@ -96,7 +101,8 @@ public class NavigationWrapper implements java.io.Serializable {
         try {
             context.getExternalContext().responseSendError(errorCode,null);
         } catch (IOException ex) {
-            Logger.getLogger(PermissionsWrapper.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(PermissionsWrapper.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(NavigationWrapper.class.getName()).fine("Caught exception in sendError(): "+ex.getMessage());
         }
         context.responseComplete();
         return "";

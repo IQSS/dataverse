@@ -7,10 +7,7 @@ package edu.harvard.iq.dataverse.timer;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
@@ -28,19 +25,17 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerConfig;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.servlet.http.HttpServletRequest;
 
 
 /**
@@ -56,15 +51,13 @@ import javax.servlet.http.HttpServletRequest;
 @Singleton
 @Startup
 public class DataverseTimerServiceBean implements Serializable {
-    @Resource
-    javax.ejb.TimerService timerService;
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean");
+    
+    @Resource
+    jakarta.ejb.TimerService timerService;
     @EJB
     HarvesterServiceBean harvesterService;
-    @EJB
-    DataverseServiceBean dataverseService;
     @EJB
     HarvestingClientServiceBean harvestingClientService;
     @EJB 
@@ -105,7 +98,7 @@ public class DataverseTimerServiceBean implements Serializable {
         } catch (UnknownHostException ex) {
             Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        timerService.createTimer(initialExpiration, intervalDuration, info);
+        timerService.createIntervalTimer(initialExpiration, intervalDuration, new TimerConfig(info, false));
     }
 
     /**
@@ -116,7 +109,7 @@ public class DataverseTimerServiceBean implements Serializable {
      */
     @Timeout
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void handleTimeout(javax.ejb.Timer timer) {
+    public void handleTimeout(jakarta.ejb.Timer timer) {
         // We have to put all the code in a try/catch block because
         // if an exception is thrown from this method, Glassfish will automatically
         // call the method a second time. (The minimum number of re-tries for a Timer method is 1)

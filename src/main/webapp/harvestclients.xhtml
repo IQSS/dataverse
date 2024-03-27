@@ -31,7 +31,7 @@
                                 <p:commandLink type="button" id="addClientEmpty" styleClass="btn btn-default margin-bottom"
                                                actionListener="#{harvestingClientsPage.initNewClient}"
                                                update=":harvestingClientsForm:newHarvestingClientDialog"
-                                               oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');bind_bsui_components();">
+                                               oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');">
                                     <span class="glyphicon glyphicon-plus"/> #{bundle['harvestclients.btn.add']}
                                 </p:commandLink>
                             </div>
@@ -88,7 +88,7 @@
                                         <p:commandLink style="margin-left:1em;" id="addClient" styleClass="btn btn-default"
                                                         actionListener="#{harvestingClientsPage.initNewClient}"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
-                                                        oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');bind_bsui_components();">
+                                                        oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');">
                                              <span class="glyphicon glyphicon-plus"/> #{bundle['harvestclients.btn.add']}
                                          </p:commandLink>
                                     </div>
@@ -125,7 +125,7 @@
                                     <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    disabled="#{harvestClient.harvestingNow or harvestClient.deleteInProgress}"
                                                    action="#{harvestingClientsPage.editClient(harvestClient)}"
-                                                   oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');bind_bsui_components();"
+                                                   oncomplete="PF('newHarvestingClientForm').show();handleResizeDialog('newHarvestingClientDialog');"
                                                    update=":harvestingClientsForm,:harvestingClientsForm:newHarvestingClientDialog"
                                                    title="#{bundle['harvestclients.tab.header.action.btn.edit']}">
                                         <span class="glyphicon glyphicon-pencil no-text"></span>
@@ -133,7 +133,7 @@
                                     <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    disabled="#{harvestClient.harvestingNow or harvestClient.deleteInProgress}"
                                                    action="#{harvestingClientsPage.setClientForDelete(harvestClient)}"
-                                                   oncomplete="PF('deleteConfirmation').show();bind_bsui_components();"
+                                                   oncomplete="PF('deleteConfirmation').show();"
                                                    update=":harvestingClientsForm, :messagePanel,:harvestingClientsForm:clientsTable, :harvestingClientsForm:deleteConfirmation, :harvestingClientsForm:newHarvestingClientDialog"
                                                    title="#{bundle['harvestclients.tab.header.action.btn.delete']}">
                                         <span class="glyphicon glyphicon-trash no-text"></span>
@@ -274,10 +274,24 @@
                                             <p:ajax process="@this" event="itemSelect" />
                                             <p:ajax process="@this" event="itemUnselect" />
                                         </p:autoComplete>
-                                        <script>
-                                            handle_dropdown_popup_scroll();
-                                        </script>
                                         <p:message for="destinationDataverseMenu"/>
+                                    </div>
+                                </div>
+                                
+                                <!-- (optional): custom header -->
+                                <div class="form-group">
+                                    <label for="customHeader" class="col-sm-2 control-label">
+                                        <span>
+                                            #{bundle['harvestclients.newClientDialog.customHeader']} 
+                                        </span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p:inputText id="customHeader" styleClass="form-control"
+                                                     value="#{harvestingClientsPage.newCustomHeader}"
+                                                     binding="#{harvestingClientsPage.newClientCustomHeaderInputField}"/>
+                                        <p:watermark for="customHeader" value="#{bundle['harvestclients.newClientDialog.customHeader.watermark']}" id="watermark1" />
+                                        <p:message for="customHeader"/>
+                                        <p class="help-block" jsf:rendered="#{harvestingClientsPage.createMode}">#{bundle['harvestclients.newClientDialog.customHeader.helptext']}</p>
                                     </div>
                                 </div>
 
@@ -286,7 +300,7 @@
                                         <p:commandLink rendered="#{!harvestingClientsPage.initialSettingsValidated}"
                                                         id="validateInitialSettingsBtn"
                                                         styleClass="btn btn-default"
-                                                        oncomplete="PF('newHarvestingClientForm').show();bind_bsui_components();"
+                                                        oncomplete="PF('newHarvestingClientForm').show();"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
                                                         action="#{harvestingClientsPage.validateInitialSettings()}">
                                             <span class="glyphicon glyphicon-menu-right"/> #{bundle.next}
@@ -320,13 +334,18 @@
                                             <f:selectItems value="#{harvestingClientsPage.oaiSetsSelectItems}" />
                                         </p:selectOneMenu>
                                         <p:message for="serverOaiSets"/>
-                                        <!-- a readonly label, in "edit existing client" mode: -->
+                                        <!-- a readonly label, in "edit existing client" mode: (No longer needed, since we now allow editing sets in existing clients! -->
                                         <p:inputText rendered="#{false}"
                                                      readonly="true"
                                                      styleClass="form-control"
                                                      value="#{harvestingClientsPage.newOaiSet}"/>
                                         <p class="help-block" jsf:rendered="#{harvestingClientsPage.createMode and !empty harvestingClientsPage.oaiSetsSelectItems}">#{bundle['harvestclients.newClientDialog.oaiSets.helptext']}</p>
                                         <p class="help-block" jsf:rendered="#{harvestingClientsPage.createMode and empty harvestingClientsPage.oaiSetsSelectItems}">#{bundle['harvestclients.newClientDialog.oaiSets.helptext.noset']}</p>
+                                        
+                                        <p class="help-block" jsf:rendered="#{harvestingClientsPage.setListTruncated}">
+                                            <span class="glyphicon glyphicon-warning-sign text-warning"/>
+                                            #{bundle['harvestclients.newClientDialog.oaiSets.listTruncated']}
+                                        </p>
                                     </div>
                                 </div>
 
@@ -339,7 +358,7 @@
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestclients.newClientDialog.oaiMetadataFormat.tip']}"></span>
                                     </label>
                                     <div class="col-sm-6">
-                                        <!-- select menu, shown in "create new client" mode, after the server has been contacted and we got the list of available metadata formats: -->
+                                        <!-- select menu; it's populated by contacting the remote server and obtaining the list of available metadata formats: -->
                                         <p:selectOneMenu id="oaiMetadataFormat"
                                                          binding="#{harvestingClientsPage.metadataFormatMenu}"
                                                          styleClass="form-control"
@@ -350,11 +369,11 @@
                                             <f:selectItems value="#{harvestingClientsPage.oaiMetadataFormatSelectItems}" />
                                         </p:selectOneMenu>
                                         <p:message for="oaiMetadataFormat"/>
-                                        <!-- a readonly label, in "edit existing client" mode: -->
-                                        <p:inputText rendered="#{harvestingClientsPage.editMode}"
-                                                     readonly="true"
+                                        <!-- a readonly label, in "edit existing client" mode: (No longer needed! - since we now allow formats to be edited) -->
+                                        <!-- p:inputText rendered="#{harvestingClientsPage.editMode}"
+                                                     readonly="false" 
                                                      styleClass="form-control"
-                                                     value="#{harvestingClientsPage.selectedClient.metadataPrefix}"/>
+                                                     value="#{harvestingClientsPage.selectedClient.metadataPrefix}"/ -->
                                     </div>
                                 </div>
 
@@ -363,14 +382,14 @@
                                         <p:commandLink id="createStepTwoPrevious"
                                                         styleClass="btn btn-default"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
-                                                        oncomplete="PF('newHarvestingClientForm').show();bind_bsui_components();"
+                                                        oncomplete="PF('newHarvestingClientForm').show();"
                                                         action="#{harvestingClientsPage.backToStepOne()}">
                                             <span class="glyphicon glyphicon-menu-left"/> #{bundle.previous}
                                         </p:commandLink>
                                         <p:commandLink id="createStepTwoNext"
                                                         styleClass="btn btn-default"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
-                                                        oncomplete="PF('newHarvestingClientForm').show();bind_bsui_components();"
+                                                        oncomplete="PF('newHarvestingClientForm').show();"
                                                         action="#{harvestingClientsPage.goToStepThree()}">
                                             <f:param name="DO_VALIDATION" value="true"/>
                                             <span class="glyphicon glyphicon-menu-right"/> #{bundle.next}
@@ -457,14 +476,14 @@
                                         <p:commandLink id="createStepThreePrevious"
                                                         styleClass="btn btn-default"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
-                                                        oncomplete="PF('newHarvestingClientForm').show();bind_bsui_components();"
+                                                        oncomplete="PF('newHarvestingClientForm').show();"
                                                         action="#{harvestingClientsPage.backToStepTwo()}">
                                             <span class="glyphicon glyphicon-menu-left"/> #{bundle.previous}
                                         </p:commandLink>
                                         <p:commandLink id="createStepThreeNext"
                                                         styleClass="btn btn-default"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
-                                                        oncomplete="PF('newHarvestingClientForm').show();bind_bsui_components();"
+                                                        oncomplete="PF('newHarvestingClientForm').show();"
                                                         action="#{harvestingClientsPage.goToStepFour()}">
                                             <span class="glyphicon glyphicon-menu-right"/> #{bundle.next}
                                         </p:commandLink>
@@ -487,8 +506,12 @@
                                     </label>
                                     <div class="col-sm-6">
                                         <p:selectOneMenu id="harvestingStyle"
-                                                         styleClass="form-control" value="#{harvestingClientsPage.newHarvestingStyle}"
-                                                         rendered="#{harvestingClientsPage.initialSettingsValidated}">
+                                                         binding="#{harvestingClientsPage.remoteArchiveStyleMenu}"
+                                                         styleClass="form-control" 
+                                                         value="#{harvestingClientsPage.newHarvestingStyle}"
+                                                         rendered="#{harvestingClientsPage.initialSettingsValidated}"
+                                                         validator="#{harvestingClientsPage.validateRemoteArchiveStyle}">
+                                            <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
                                             <f:selectItems value="#{harvestingClientsPage.harvestingStylesSelectItems}" />
                                         </p:selectOneMenu>
                                         <p:message for="harvestingStyle"/>
@@ -529,7 +552,7 @@
                                         <p:commandLink id="createStepFourPrevious"
                                                         styleClass="btn btn-default"
                                                         update=":harvestingClientsForm:newHarvestingClientDialog"
-                                                        oncomplete="PF('newHarvestingClientForm').show();bind_bsui_components();"
+                                                        oncomplete="PF('newHarvestingClientForm').show();"
                                                         action="#{harvestingClientsPage.backToStepThree()}">
                                             <span class="glyphicon glyphicon-menu-left"/> #{bundle.previous}
                                         </p:commandLink>
@@ -539,7 +562,7 @@
                                                        value="#{bundle['harvestclients.newClientDialog.btn.create']}"
                                                        update="newHarvestingClientDialogContent :messagePanel :harvestingClientsForm clientsTable emptyClientsTable"
                                                        actionListener="#{harvestingClientsPage.createClient}"
-                                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else PF('newHarvestingClientForm').show();bind_bsui_components();">
+                                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else PF('newHarvestingClientForm').show();">
                                             <f:param name="DO_VALIDATION" value="true"/>
                                         </p:commandLink>
                                         <p:commandLink styleClass="btn btn-default"
@@ -547,7 +570,9 @@
                                                        value="#{bundle['harvestclients.viewEditDialog.btn.save']}"
                                                        update="newHarvestingClientDialogContent :messagePanel :harvestingClientsForm clientsTable emptyClientsTable"
                                                        actionListener="#{harvestingClientsPage.saveClient}"
-                                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else PF('newHarvestingClientForm').show();bind_bsui_components();"/>
+                                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else PF('newHarvestingClientForm').show();">
+                                            <f:param name="DO_VALIDATION" value="true"/>
+                                        </p:commandLink>
                                         <button class="btn btn-link" jsf:rendered="#{harvestingClientsPage.initialSettingsValidated}" onclick="PF('newHarvestingClientForm').hide()" type="button">
                                             #{bundle.cancel}
                                         </button>

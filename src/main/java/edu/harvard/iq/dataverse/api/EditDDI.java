@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -24,20 +25,21 @@ import edu.harvard.iq.dataverse.datavariable.CategoryMetadata;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataDDIParser;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.Path;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.PathParam;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.PathParam;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -50,11 +52,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
-import java.util.Date;
-import java.sql.Timestamp;
 
 
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
 
 @Stateless
 @Path("edit")
@@ -78,21 +78,22 @@ public class EditDDI  extends AbstractApiBean {
     @Inject
     DataverseRequestServiceBean dvRequestService;
 
+    @EJB
+    IndexServiceBean indexService;
+
     @Inject
     DataverseSession session;
 
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
-    @Context
-    protected HttpServletRequest httpRequest;
-
     private VariableMetadataUtil variableMetadataUtil;
 
 
     @PUT
-    @Consumes("application/xml")
+    @AuthRequired
     @Path("{fileId}")
-    public Response edit (InputStream body, @PathParam("fileId") String fileId) {
+    @Consumes("application/xml")
+    public Response edit(@Context ContainerRequestContext crc, InputStream body, @PathParam("fileId") String fileId) {
         DataFile dataFile = null;
         try {
             dataFile = findDataFileOrDie(fileId);
@@ -100,7 +101,7 @@ public class EditDDI  extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-        User apiTokenUser = checkAuth(dataFile);
+        User apiTokenUser = checkAuth(getRequestUser(crc), dataFile);
 
         if (apiTokenUser == null) {
             return unauthorized("Cannot edit metadata, access denied" );
@@ -141,7 +142,7 @@ public class EditDDI  extends AbstractApiBean {
             boolean varUpdate = varUpdates(mapVarToVarMet, fml, neededToUpdateVM, false);
             if (varUpdate || groupUpdate) {
 
-                if (!updateDraftVersion(neededToUpdateVM, varGroupMap, dataset, latestVersion, groupUpdate, fml)) {
+                if (!updateDraftVersion(neededToUpdateVM, varGroupMap, dataset, apiTokenUser, groupUpdate, fml)) {
                     return error(Response.Status.INTERNAL_SERVER_ERROR, "Failed to update draft version" );
                 }
             } else {
@@ -184,7 +185,7 @@ public class EditDDI  extends AbstractApiBean {
         Command<Dataset> cmd;
         try {
 
-            DataverseRequest dr = new DataverseRequest(apiTokenUser, httpRequest);
+            DataverseRequest dr = createDataverseRequest(apiTokenUser);
             cmd = new UpdateDatasetVersionCommand(dataset, dr, fm);
             ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             dataset = commandEngine.submit(cmd);
@@ -226,7 +227,6 @@ public class EditDDI  extends AbstractApiBean {
             }
         }
 
-
         //add New groups
         for (VarGroup varGroup : varGroupMap.values()) {
             varGroup.setFileMetadata(fml);
@@ -239,6 +239,8 @@ public class EditDDI  extends AbstractApiBean {
             }
         }
 
+        boolean doNormalSolrDocCleanUp = true;
+        indexService.asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
 
         return true;
     }
@@ -273,13 +275,8 @@ public class EditDDI  extends AbstractApiBean {
 
     }
 
-    private boolean updateDraftVersion(ArrayList<VariableMetadata> neededToUpdateVM, Map<Long,VarGroup> varGroupMap, Dataset dataset, DatasetVersion newDatasetVersion, boolean groupUpdate, FileMetadata fml ) {
+    private boolean updateDraftVersion(ArrayList<VariableMetadata> neededToUpdateVM, Map<Long,VarGroup> varGroupMap, Dataset dataset, User apiTokenUser, boolean groupUpdate, FileMetadata fml ) {
 
-
-        Timestamp updateTime = new Timestamp(new Date().getTime());
-
-        newDatasetVersion.setLastUpdateTime(updateTime);
-        dataset.setModificationTime(updateTime);
 
         for (int i = 0; i < neededToUpdateVM.size(); i++)  {
             VariableMetadata vm = neededToUpdateVM.get(i);
@@ -323,6 +320,30 @@ public class EditDDI  extends AbstractApiBean {
                 varGroup.setId(null);
                 em.merge(varGroup);
             }
+        }
+        Command<Dataset> cmd;
+        try {
+            DataverseRequest dr = createDataverseRequest(apiTokenUser);
+            cmd = new UpdateDatasetVersionCommand(dataset, dr);
+            ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
+            commandEngine.submit(cmd);
+
+        } catch (EJBException ex) {
+            StringBuilder error = new StringBuilder();
+            error.append(ex).append(" ");
+            error.append(ex.getMessage()).append(" ");
+            Throwable cause = ex;
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                error.append(cause).append(" ");
+                error.append(cause.getMessage()).append(" ");
+            }
+            logger.log(Level.SEVERE, "Couldn''t save dataset: {0}", error.toString());
+
+            return false;
+        } catch (CommandException ex) { ;
+            logger.log(Level.SEVERE, "Couldn''t save dataset: {0}", ex.getMessage());
+            return false;
         }
 
         return true;
@@ -397,27 +418,10 @@ public class EditDDI  extends AbstractApiBean {
     }
 
 
-    private User checkAuth(DataFile dataFile) {
-
-        User apiTokenUser = null;
-
-        try {
-            apiTokenUser = findUserOrDie();
-        } catch (WrappedResponse wr) {
-            apiTokenUser = null;
-            logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
+    private User checkAuth(User requestUser, DataFile dataFile) {
+        if (!permissionService.requestOn(createDataverseRequest(requestUser), dataFile.getOwner()).has(Permission.EditDataset)) {
+            return null;
         }
-
-        if (apiTokenUser != null) {
-            // used in an API context
-            if (!permissionService.requestOn(createDataverseRequest(apiTokenUser), dataFile.getOwner()).has(Permission.EditDataset)) {
-                apiTokenUser = null;
-            }
-        }
-
-        return apiTokenUser;
-
+        return requestUser;
     }
 }
-
-

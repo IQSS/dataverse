@@ -23,7 +23,7 @@ preprocess<-function(hostname=NULL, fileid=NULL, testdata=NULL, types=NULL, file
     }
     
     defaulttypes <- typeGuess(mydata)
-    # Note: types can be passed directly to preprocess, as would be the case if a TwoRavens user tagged a variable as "nominal"
+    # Note: types can be passed directly to preprocess, as would be the case if an external tool tagged a variable as "nominal"
     if(is.null(types)) { # no types have been passed, so simply copying the defaults into the type fields
         types$numchar <- defaulttypes$defaultNumchar
         types$nature <- defaulttypes$defaultNature

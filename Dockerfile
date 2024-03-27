@@ -1,1 +1,1 @@
-# See `conf/docker` for Docker images
+# See http://guides.dataverse.org/en/latest/developers/containers.html

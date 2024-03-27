@@ -8,16 +8,16 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.util.Objects;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 /**
  *
@@ -52,6 +52,9 @@ public class DataverseTheme implements Serializable {
     private Alignment logoAlignment;
     private String logoBackgroundColor;
     private String logo;
+    private Alignment logoFooterAlignment;
+    private String logoFooterBackgroundColor;
+    private String logoFooter;
     private String tagline;
     private String linkUrl;
     private String linkColor;
@@ -60,8 +63,9 @@ public class DataverseTheme implements Serializable {
    public enum ImageFormat {
 
         SQUARE, RECTANGLE
-    }  
-      public ImageFormat getLogoFormat() {
+    }
+
+    public ImageFormat getLogoFormat() {
         return logoFormat;
     }
 
@@ -91,6 +95,30 @@ public class DataverseTheme implements Serializable {
 
     public void setLogo(String logo) {
         this.logo = logo;
+    }
+
+    public Alignment getLogoFooterAlignment() {
+        return logoFooterAlignment;
+    }
+
+    public void setLogoFooterAlignment(Alignment logoFooterAlignment) {
+        this.logoFooterAlignment = logoFooterAlignment;
+    }
+
+    public String getLogoFooterBackgroundColor() {
+        return logoFooterBackgroundColor;
+    }
+
+    public void setLogoFooterBackgroundColor(String logoFooterBackgroundColor) {
+        this.logoFooterBackgroundColor = logoFooterBackgroundColor;
+    }
+
+    public String getLogoFooter() {
+        return logoFooter;
+    }
+
+    public void setLogoFooter(String logoFooter) {
+        this.logoFooter = logoFooter;
     }
 
     public String getTagline() {
@@ -153,7 +181,7 @@ public class DataverseTheme implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof DatasetFieldType)) {
+        if (!(object instanceof DataverseTheme)) {
             return false;
         }
         DataverseTheme other = (DataverseTheme) object;

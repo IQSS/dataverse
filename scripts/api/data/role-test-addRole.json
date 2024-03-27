@@ -1,0 +1,10 @@
+{
+    "alias":"testRole",
+    "name":"Test Role",
+    "description":"Test Role for adding/deleting.",
+    "permissions":[
+        "ViewUnpublishedDataset",
+        "ViewUnpublishedDataverse",
+         "DownloadFile"
+    ]
+}

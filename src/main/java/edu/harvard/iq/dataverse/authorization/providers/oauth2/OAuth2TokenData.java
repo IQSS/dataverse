@@ -4,14 +4,14 @@ import com.github.scribejava.core.model.OAuth2AccessToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.io.Serializable;
 import java.sql.Timestamp;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 
 /**
  * Token data for a given user, received from an OAuth2 system. Contains the 
@@ -58,9 +58,6 @@ public class OAuth2TokenData implements Serializable {
     @Column(length = 64)
     private String refreshToken;
     
-    @Column(length = 64)
-    private String scope;
-    
     @Column(length = 32)
     private String tokenType;
     
@@ -78,7 +75,6 @@ public class OAuth2TokenData implements Serializable {
         OAuth2TokenData retVal = new OAuth2TokenData();
         retVal.setAccessToken(accessTokenResponse.getAccessToken());
         retVal.setRefreshToken( accessTokenResponse.getRefreshToken() );
-        retVal.setScope( accessTokenResponse.getScope() );
         retVal.setTokenType( accessTokenResponse.getTokenType() );
         if ( accessTokenResponse.getExpiresIn() != null ) {
             retVal.setExpiryDate( new Timestamp( System.currentTimeMillis() + accessTokenResponse.getExpiresIn()));
@@ -134,14 +130,6 @@ public class OAuth2TokenData implements Serializable {
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
-    }
-
-    public String getScope() {
-        return scope;
-    }
-
-    public void setScope(String scope) {
-        this.scope = scope;
     }
 
     public String getTokenType() {

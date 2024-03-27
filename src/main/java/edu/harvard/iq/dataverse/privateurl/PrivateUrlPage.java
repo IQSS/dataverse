@@ -4,10 +4,10 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  * Backing bean for JSF page. Sets session to {@link PrivateUrlUser}. 
@@ -35,7 +35,6 @@ public class PrivateUrlPage implements Serializable {
             String draftDatasetPageToBeRedirectedTo = privateUrlRedirectData.getDraftDatasetPageToBeRedirectedTo() + "&faces-redirect=true";
             PrivateUrlUser privateUrlUser = privateUrlRedirectData.getPrivateUrlUser();
             session.setUser(privateUrlUser);
-            session.configureSessionTimeout();
             logger.info("Redirecting PrivateUrlUser '" + privateUrlUser.getIdentifier() + "' to " + draftDatasetPageToBeRedirectedTo);
             return draftDatasetPageToBeRedirectedTo;
         } catch (Exception ex) {

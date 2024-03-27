@@ -5,12 +5,13 @@
  */
 package edu.harvard.iq.dataverse;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.inject.spi.CDI;
 
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.convert.Converter;
+import jakarta.faces.convert.FacesConverter;
 
 /**
  *
@@ -19,8 +20,8 @@ import javax.faces.convert.FacesConverter;
 @FacesConverter("metadataBlockConverter")
 public class MetadataBlockConverter implements Converter {
 
-    @EJB
-    DataverseServiceBean dataverseService;
+    //@EJB
+    DataverseServiceBean dataverseService = CDI.current().select(DataverseServiceBean.class).get();
 
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
         MetadataBlock mdb = dataverseService.findMDB(new Long(submittedValue));

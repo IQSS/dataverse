@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
 import java.util.Collection;
 
@@ -12,8 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.MissingResourceException;
-import javax.faces.model.SelectItem;
-import javax.persistence.*;
+import jakarta.faces.model.SelectItem;
+import jakarta.persistence.*;
 
 /**
  * Defines the meaning and constraints of a metadata field and its values.
@@ -54,7 +55,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     /**
      * The internal, DDI-like name, no spaces, etc.
      */
-    @Column(name = "name", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "name", columnDefinition = "TEXT", nullable = false, unique=true)
     private String name;
 
     /**
@@ -140,8 +141,11 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     
     public DatasetFieldType() {}
 
+    //For use in tests
     public DatasetFieldType(String name, FieldType fieldType, boolean allowMultiples) {
+        // use the name for both default name and title
         this.name = name;
+        this.title = name;
         this.fieldType = fieldType;
         this.allowMultiples = allowMultiples;
         childDatasetFieldTypes = new LinkedList<>();
@@ -280,7 +284,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     public boolean isControlledVocabulary() {
-        return controlledVocabularyValues != null && !controlledVocabularyValues.isEmpty();
+        return allowControlledVocabulary;
     }
 
     /**
@@ -305,6 +309,14 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public String getUri() {
     	return uri;
+    }
+    
+    public JsonLDTerm getJsonLDTerm() {
+        if(uri!=null) {
+        return new JsonLDTerm(name,uri);
+        } else {
+            return new JsonLDTerm(metadataBlock.getJsonLDNamespace(), name);
+        }
     }
 
     public void setUri(String uri) {
@@ -540,7 +552,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             
             boolean makeSolrFieldMultivalued;
             // http://stackoverflow.com/questions/5800762/what-is-the-use-of-multivalued-field-type-in-solr
-            if (allowMultiples || parentAllowsMultiplesBoolean) {
+            if (allowMultiples || parentAllowsMultiplesBoolean || isControlledVocabulary()) {
                 makeSolrFieldMultivalued = true;
             } else {
                 makeSolrFieldMultivalued = false;

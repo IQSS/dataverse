@@ -16,7 +16,9 @@ import java.util.TimeZone;
  */
 public class DateUtil {
 
+    public static String YEAR_PATTERN = "yyyy";
     public static String YEAR_DASH_MONTH_PATTERN = "yyyy-MM";
+    public static String YEAR_DASH_MONTH_DASH_DAY_PATTERN = "yyyy-MM-dd";
 
     public static String formatDate(Date dateToformat) {
         String formattedDate;
@@ -61,6 +63,42 @@ public class DateUtil {
              e.printStackTrace();
              return null;
          }
+    }
+
+    public static Date parseDate(String dateString) {
+        SimpleDateFormat sdf;
+        Date date;
+
+        // YYYY-MM-DD
+        date = parseDate(dateString, YEAR_DASH_MONTH_DASH_DAY_PATTERN);
+        if (date != null) {
+            return date;
+        }
+
+        // YYYY-MM
+        date = parseDate(dateString, YEAR_DASH_MONTH_PATTERN);
+        if (date != null) {
+            return date;
+        }
+
+        // YYYT
+        date = parseDate(dateString, YEAR_PATTERN);
+        return date;
+        
+    }
+
+    public static Date parseDate(String dateString, String format) {
+        
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat(format);
+            Date date = sdf.parse(dateString);
+            return date;
+        } catch (ParseException ex) {
+            // ignore
+        } catch (Exception ex) {
+            // ignore
+        }
+        return null;
     }
 
 }

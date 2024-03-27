@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -12,23 +13,20 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
-import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import java.util.Date;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
@@ -84,8 +82,11 @@ public class BuiltinUsers extends AbstractApiBean {
     //and use the values to create BuiltinUser/AuthenticatedUser.
     //--MAD 4.9.3
     @POST
-    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key) {
-        return internalSave(user, password, key);
+    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key, @QueryParam("sendEmailNotification") Boolean sendEmailNotification) {   
+        if( sendEmailNotification == null )
+            sendEmailNotification = true;
+        
+        return internalSave(user, password, key, sendEmailNotification);
     }
 
     /**
@@ -105,7 +106,29 @@ public class BuiltinUsers extends AbstractApiBean {
         return internalSave(user, password, key);
     }
     
+    /**
+     * Created this new endpoint to resolve issue #6915, optionally preventing 
+     * the email notification to the new user on account creation by adding 
+     * "false" as the third path parameter.
+     *
+     * @param user
+     * @param password
+     * @param key
+     * @param sendEmailNotification
+     * @return
+     */
+    @POST
+    @Path("{password}/{key}/{sendEmailNotification}")
+    public Response create(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key, @PathParam("sendEmailNotification") Boolean sendEmailNotification) {
+        return internalSave(user, password, key, sendEmailNotification);
+    }
+    
+    // internalSave without providing an explicit "sendEmailNotification"
     private Response internalSave(BuiltinUser user, String password, String key) {
+        return internalSave(user, password, key, true);
+    }
+    
+    private Response internalSave(BuiltinUser user, String password, String key, Boolean sendEmailNotification) {
         String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
         
         if (expectedKey == null) {
@@ -149,21 +172,13 @@ public class BuiltinUsers extends AbstractApiBean {
             } catch (Exception e) {
                 logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
             }
-            if (rootDataversePresent) {
+            if (rootDataversePresent && sendEmailNotification) {
                 userNotificationSvc.sendNotification(au,
                         new Timestamp(new Date().getTime()),
                         UserNotification.Type.CREATEACC, null);
             }
 
-            ApiToken token = new ApiToken();
-
-            token.setTokenString(java.util.UUID.randomUUID().toString());
-            token.setAuthenticatedUser(au);
-
-            Calendar c = Calendar.getInstance();
-            token.setCreateTime(new Timestamp(c.getTimeInMillis()));
-            c.roll(Calendar.YEAR, 1);
-            token.setExpireTime(new Timestamp(c.getTimeInMillis()));
+            ApiToken token = authSvc.generateApiTokenForUser(au);
             authSvc.save(token);
 
             JsonObjectBuilder resp = Json.createObjectBuilder();
@@ -195,4 +210,14 @@ public class BuiltinUsers extends AbstractApiBean {
         }
     }
 
+    /***
+     * This method was moved here from AbstractApiBean during the filter-based auth
+     * refactoring, in order to preserve the existing BuiltinUsers endpoints behavior.
+     *
+     * @param apiKey from request
+     * @return error Response
+     */
+    private Response badApiKey(String apiKey) {
+        return error(Status.UNAUTHORIZED, (apiKey != null) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + ApiKeyAuthMechanism.DATAVERSE_API_KEY_REQUEST_HEADER_NAME);
+    }
 }

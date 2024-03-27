@@ -16,7 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
-//import javax.ejb.EJB;
+//import jakarta.ejb.EJB;
 
 /**
  *  Used by the IngestServiceBean to redistribute a zipped Shapefile*

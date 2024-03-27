@@ -5,38 +5,38 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PreDestroy;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.component.html.HtmlInputText;
-import javax.faces.context.FacesContext;
-import javax.faces.validator.ValidatorException;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.html.HtmlInputText;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.validator.ValidatorException;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
-import org.primefaces.context.RequestContext;
+import org.apache.commons.lang3.StringUtils;
+import org.primefaces.PrimeFaces;
+//import org.primefaces.context.RequestContext;
 
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -51,9 +51,12 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     static final String DEFAULT_TEXT_COLOR = "888888";
     private static final Logger logger = Logger.getLogger(ThemeWidgetFragment.class.getCanonicalName());   
 
+    public static final String LOGOS_SUBDIR = "logos";
+    public static final String LOGOS_TEMP_SUBDIR = LOGOS_SUBDIR + File.separator + "temp";
 
     private File tempDir;
     private File uploadedFile;
+    private File uploadedFileFooter;
     private Dataverse editDv= new Dataverse();
     private HtmlInputText linkUrlInput;
     private HtmlInputText taglineInput;
@@ -87,12 +90,18 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
 
  
-   
+    public static Path getLogoDir(String ownerId) {
+        return Path.of(JvmSettings.DOCROOT_DIRECTORY.lookup(), LOGOS_SUBDIR, ownerId);
+    }
     
-    private  void createTempDir() {
+    private void createTempDir() {
           try {
-            File tempRoot = Files.createDirectories(Paths.get("../docroot/logos/temp")).toFile();
-            tempDir = Files.createTempDirectory(tempRoot.toPath(),editDv.getId().toString()).toFile();
+            // Create the temporary space if not yet existing (will silently ignore preexisting)
+            // Note that the docroot directory is checked within ConfigCheckService for presence and write access.
+            Path tempRoot = Path.of(JvmSettings.DOCROOT_DIRECTORY.lookup(), LOGOS_TEMP_SUBDIR);
+            Files.createDirectories(tempRoot);
+            
+            this.tempDir = Files.createTempDirectory(tempRoot, editDv.getId().toString()).toFile();
         } catch (IOException e) {
             throw new RuntimeException("Error creating temp directory", e); // improve error handling
         }
@@ -115,6 +124,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             throw new RuntimeException("Error deleting temp directory", e); // improve error handling
         }
         uploadedFile=null;
+        uploadedFileFooter=null;
         tempDir=null;
     }
     
@@ -149,6 +159,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         DataverseTheme dvt = new DataverseTheme();
         dvt.setLinkColor(DEFAULT_LINK_COLOR);
         dvt.setLogoBackgroundColor(DEFAULT_LOGO_BACKGROUND_COLOR);
+        dvt.setLogoFooterBackgroundColor(DEFAULT_LOGO_BACKGROUND_COLOR);
         dvt.setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
         dvt.setTextColor(DEFAULT_TEXT_COLOR);
         dvt.setDataverse(editDv);
@@ -161,9 +172,8 @@ public class ThemeWidgetFragment implements java.io.Serializable {
 
     public void setEditDv(Dataverse editDV) {
          this.editDv = editDV;
-      
-          
     }
+
     public void validateTagline(FacesContext context, UIComponent component, Object value) throws ValidatorException {
 
         if (!StringUtils.isEmpty((String) value) && ((String) value).length() > 140) {
@@ -202,11 +212,45 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     public boolean uploadExists() {
         return uploadedFile!=null;
     }
+
+    public boolean uploadExistsFooter() {
+        return uploadedFileFooter!=null;
+    }
+
     /**
      * Copy uploaded file to temp area, until we are ready to save
      * Copy filename into Dataverse logo 
      * @param event 
      */
+
+    // This method is for footer image. The syntax is same that handleImageFileUpload for header image
+
+    public void handleImageFooterFileUpload(FileUploadEvent event) {
+
+        logger.finer("entering fileUpload");
+        if (this.tempDir==null) {
+            createTempDir();
+            logger.finer("created tempDir");
+        }
+        UploadedFile uFile = event.getFile();
+        try {
+            uploadedFileFooter = new File(tempDir, uFile.getFileName());
+            if (!uploadedFileFooter.exists()) {
+                uploadedFileFooter.createNewFile();
+            }
+            logger.finer("created file");
+            Files.copy(uFile.getInputStream(), uploadedFileFooter.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            logger.finer("copied inputstream to file");
+            editDv.getDataverseTheme().setLogoFooter(uFile.getFileName());
+
+        } catch (IOException e) {
+            logger.finer("caught IOException");
+            logger.throwing("ThemeWidgetFragment", "handleImageFileUpload", e);
+            throw new RuntimeException("Error uploading logo file", e); // improve error handling
+        }
+        logger.finer("end handelImageFileUpload");
+    }
+
 
     public void handleImageFileUpload(FileUploadEvent event) {
 
@@ -222,7 +266,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
                 uploadedFile.createNewFile();
             }
             logger.finer("created file");
-            Files.copy(uFile.getInputstream(), uploadedFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(uFile.getInputStream(), uploadedFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
             logger.finer("copied inputstream to file");
             editDv.getDataverseTheme().setLogo(uFile.getFileName());
 
@@ -241,7 +285,11 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     public void removeLogo() {
         editDv.getDataverseTheme().setLogo(null);
         this.cleanupTempDirectory();
-       
+    }
+
+    public void removeLogoFooter() {
+        editDv.getDataverseTheme().setLogoFooter(null);
+        this.cleanupTempDirectory();
     }
 
     public boolean getInheritCustomization() {
@@ -258,8 +306,9 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         }
     }
     public void resetForm() {
-        RequestContext context = RequestContext.getCurrentInstance();
-        context.reset(":dataverseForm:themeWidgetsTabView");
+        //RequestContext context = RequestContext.getCurrentInstance();
+        //context.reset(":dataverseForm:themeWidgetsTabView");
+        PrimeFaces.current().resetInputs(":dataverseForm:themeWidgetsTabView");
     }
     
     public String cancel() {
@@ -274,7 +323,19 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             uploadedFile=null;
             editDv.setDataverseTheme(null);
         }
-        Command<Dataverse>    cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, dvRequestService.getDataverseRequest());
+
+        Command<Dataverse>  cmd;
+
+        cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, dvRequestService.getDataverseRequest(), "HEADER");
+        if (!exectThemeCommand(cmd))
+            return null;
+
+        if (uploadedFileFooter!=null){
+            cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFileFooter, dvRequestService.getDataverseRequest(), "FOOTER");
+            if (!exectThemeCommand(cmd))
+                return null;
+        }
+
         try {
             commandEngine.submit(cmd);
         } catch (Exception ex) {
@@ -287,6 +348,18 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         }
         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.theme.success"));    
         return "dataverse.xhtml?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
+    }
+
+
+    public  boolean exectThemeCommand(Command<Dataverse> cmd){
+        try {
+            commandEngine.submit(cmd);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "error updating dataverse theme", ex);
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataverse.save.failed"), BundleUtil.getStringFromBundle("dataverse.theme.failure")));
+            return false;
+        }
+        return true;
     }
       
  }

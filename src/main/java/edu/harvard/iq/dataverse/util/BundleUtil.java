@@ -10,7 +10,9 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.faces.context.FacesContext;
+import java.util.Map;
+import java.util.HashMap;
+import jakarta.faces.context.FacesContext;
 
 public class BundleUtil {
 
@@ -18,8 +20,22 @@ public class BundleUtil {
 
     private static final String defaultBundleFile = "Bundle";
 
+    private static final Map<String, ClassLoader> classLoaderCache = new HashMap<String, ClassLoader>();
+
     public static String getStringFromBundle(String key) {
-        return getStringFromBundle(key, null);
+        return getStringFromBundle(key, (List<String>)null);
+    }
+    
+    public static String getStringFromBundle(String key, Locale locale) {
+        return getStringFromBundle(key, null, locale);
+    }
+
+    private static String getStringFromBundle(String key, List<String> arguments, Locale locale) {
+        ResourceBundle bundle = getResourceBundle(defaultBundleFile, locale);
+        if (bundle == null) {
+            return null;
+        }
+        return getStringFromBundle(key, arguments, bundle);
     }
 
     public static String getStringFromBundle(String key, List<String> arguments) {
@@ -63,8 +79,12 @@ public class BundleUtil {
         }
     }
 
-    public static String getStringFromPropertyFile(String key, String propertyFileName  ) throws MissingResourceException {
-        ResourceBundle bundle = getResourceBundle(propertyFileName);
+    public static String getStringFromPropertyFile(String key, String propertyFileName) throws MissingResourceException {
+        return getStringFromPropertyFile(key, propertyFileName, null);
+    }
+    
+    public static String getStringFromPropertyFile(String key, String propertyFileName, Locale locale) throws MissingResourceException {
+        ResourceBundle bundle = getResourceBundle(propertyFileName,locale);
         if (bundle == null) {
             return null;
         }
@@ -85,22 +105,38 @@ public class BundleUtil {
         }
 
         if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
-            bundle = ResourceBundle.getBundle("propertyFiles/" +propertyFileName, currentLocale);
+            bundle = ResourceBundle.getBundle("propertyFiles/" + propertyFileName, currentLocale);
         } else {
-            File bundleFileDir  = new File(filesRootDirectory);
-            URL[] urls = null;
             try {
-                urls = new URL[]{bundleFileDir.toURI().toURL()};
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
+                ClassLoader loader = getClassLoader(filesRootDirectory);
+                bundle = ResourceBundle.getBundle(propertyFileName, currentLocale, loader);
+            } catch (MissingResourceException mre) {
+                logger.warning("No property file named " + propertyFileName + "_" + currentLocale.getLanguage()
+                        + " found in " + filesRootDirectory + ", using untranslated values");
+                bundle = ResourceBundle.getBundle("propertyFiles/" + propertyFileName, currentLocale);
             }
-
-            ClassLoader loader = new URLClassLoader(urls);
-            bundle = ResourceBundle.getBundle(propertyFileName, currentLocale, loader);
         }
 
         return bundle ;
+    }
+
+    private static ClassLoader getClassLoader(String filesRootDirectory) {
+        if (classLoaderCache.containsKey(filesRootDirectory)){
+            return classLoaderCache.get(filesRootDirectory);
+        }
+
+        File bundleFileDir  = new File(filesRootDirectory);
+        URL[] urls = null;
+        try {
+            urls = new URL[]{bundleFileDir.toURI().toURL()};
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        ClassLoader loader = new URLClassLoader(urls);
+        classLoaderCache.put(filesRootDirectory, loader);
+        return loader;
     }
 
     public static Locale getCurrentLocale() {
@@ -145,19 +181,21 @@ public class BundleUtil {
         }
         return getStringFromBundleNoMissingCheck(key, null, bundle);
     }
-
+    
+    /**
+     * Return JVM default locale.
+     *
+     * For now, this simply forwards default system behaviour.
+     * That means on JDK8 the system property user.language will be set on startup
+     * from environment variables like LANG or via Maven arguments (which is important for testing).
+     * (See also pom.xml for an example how we pinpoint this for reproducible tests!)
+     * (You should also be aware that good IDEs are honoring settings from pom.xml.)
+     *
+     * Nonetheless, someday we might want to have more influence on how this is determined, thus this wrapper.
+     * @return Dataverse default locale
+     */
     public static Locale getDefaultLocale() {
-        String localeEnvVar = System.getenv().get("LANG");
-        if (localeEnvVar != null) {
-            if (localeEnvVar.indexOf('.') > 0) {
-                localeEnvVar = localeEnvVar.substring(0, localeEnvVar.indexOf('.'));
-            }
-            if (!"en_US".equals(localeEnvVar)) {
-                logger.fine("BundleUtil: LOCALE code from the environmental variable is "+localeEnvVar);
-                return new Locale(localeEnvVar);
-            }
-        }
-
-        return new Locale("en");
+        return Locale.getDefault();
     }
+
 }

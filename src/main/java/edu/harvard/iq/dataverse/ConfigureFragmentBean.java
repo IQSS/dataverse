@@ -16,10 +16,10 @@ import org.primefaces.PrimeFaces;
 
 import java.sql.Timestamp;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.Date;
 
 
@@ -96,7 +96,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
         }
 
         
-        toolHandler = new ExternalToolHandler(tool, datafileService.find(fileId), apiToken, datafileService.findFileMetadata(fileMetadataId));
+        toolHandler = new ExternalToolHandler(tool, datafileService.find(fileId), apiToken, datafileService.findFileMetadata(fileMetadataId), session.getLocaleCode());
 
         return toolHandler;
     }
@@ -107,7 +107,8 @@ public class ConfigureFragmentBean implements java.io.Serializable{
         User user = session.getUser();
         if (user instanceof AuthenticatedUser) {
             apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
-            if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
+            if (apiToken == null) {
+                //No un-expired token
                 apiToken = authService.generateApiTokenForUser(( AuthenticatedUser) user);
                 toolHandler.setApiToken(apiToken);
                 toolHandler.getToolUrlWithQueryParams();

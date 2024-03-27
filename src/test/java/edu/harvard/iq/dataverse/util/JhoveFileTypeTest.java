@@ -5,10 +5,10 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class JhoveFileTypeTest {
 
@@ -24,7 +24,7 @@ public class JhoveFileTypeTest {
     static File ico;
     static File ipynb;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         System.setProperty("com.sun.aas.instanceRoot", baseDirForConfigFiles);
         jhoveFileType = new JhoveFileType();
@@ -41,7 +41,7 @@ public class JhoveFileTypeTest {
         ipynb = new File("src/test/java/edu/harvard/iq/dataverse/util/irc-metrics.ipynb");
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         // SiteMapUtilTest relies on com.sun.aas.instanceRoot being null.
         System.clearProperty("com.sun.aas.instanceRoot");

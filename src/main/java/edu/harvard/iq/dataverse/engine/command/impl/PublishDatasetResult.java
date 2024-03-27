@@ -11,11 +11,21 @@ import edu.harvard.iq.dataverse.DatasetLock;
 public class PublishDatasetResult {
     
     private final Dataset dataset;
-    private final boolean isCompleted;
+    private final Status status;
+    
+    public enum Status {
+        /** Dataset has been published */
+        Completed,
+        /** Publish workflow is in progress */
+        Workflow,
+        /** Publishing is being finalized asynchronously */
+        Inprogress
+    }
+        
 
-    public PublishDatasetResult(Dataset dataset, boolean isCompleted) {
+    public PublishDatasetResult(Dataset dataset, Status status) {
         this.dataset = dataset;
-        this.isCompleted = isCompleted;
+        this.status = status;
     }
     
     /**
@@ -34,7 +44,14 @@ public class PublishDatasetResult {
      * @return {@code true} iff the publication process was completed. {@code false} otherwise.
      */
     public boolean isCompleted() {
-        return isCompleted;
+        return status == Status.Completed;
     }
     
+    public boolean isWorkflow() {
+        return status == Status.Workflow;
+    }
+    
+    public boolean isInProgress() {
+        return status == Status.Inprogress;
+    }
 }

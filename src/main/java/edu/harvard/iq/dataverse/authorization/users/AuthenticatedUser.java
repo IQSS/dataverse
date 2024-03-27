@@ -1,34 +1,51 @@
 package edu.harvard.iq.dataverse.authorization.users;
 
 import edu.harvard.iq.dataverse.Cart;
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.ValidateEmail;
+import edu.harvard.iq.dataverse.FileAccessRequest;
+import edu.harvard.iq.dataverse.UserNotification.Type;
+import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.validation.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2TokenData;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
-import org.hibernate.validator.constraints.NotBlank;
+import java.util.Set;
+
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Transient;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * When adding an attribute to this class, be sure to update the following:
@@ -53,7 +70,8 @@ import org.hibernate.validator.constraints.NotBlank;
     @NamedQuery( name="AuthenticatedUser.filter",
                 query="select au from AuthenticatedUser au WHERE ("
                         + "LOWER(au.userIdentifier) like LOWER(:query) OR "
-                        + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query))"),
+                        + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query) or "
+                        + "lower(au.email) like lower(:query))"),
     @NamedQuery( name="AuthenticatedUser.findAdminUser",
                 query="select au from AuthenticatedUser au WHERE "
                         + "au.superuser = true "
@@ -112,6 +130,40 @@ public class AuthenticatedUser implements User, Serializable {
     
     private boolean superuser;
 
+    @Column(nullable=false)
+    private boolean deactivated;
+
+    @Column(nullable=true)
+    private Timestamp deactivatedTime;
+
+    @Column(columnDefinition="TEXT", nullable=true)
+    private String mutedEmails;
+
+    @Column(columnDefinition="TEXT", nullable=true)
+    private String mutedNotifications;
+    
+    @Transient
+    private Set<Type> mutedEmailsSet = new HashSet<>();
+    
+    @Transient
+    private Set<Type> mutedNotificationsSet = new HashSet<>();
+
+    @Column(nullable=false)
+    @Min(value = 1, message = "Rate Limit Tier must be greater than 0.")
+    private int rateLimitTier = 1;
+
+    @PrePersist
+    void prePersist() {
+        mutedNotifications = Type.toStringValue(mutedNotificationsSet);
+        mutedEmails = Type.toStringValue(mutedEmailsSet);
+    }
+    
+    @PostLoad
+    public void initialize() {
+        mutedNotificationsSet = Type.tokenizeToSet(mutedNotifications);
+        mutedEmailsSet = Type.tokenizeToSet(mutedEmails);
+    }
+
     /**
      * @todo Consider storing a hash of *all* potentially interesting Shibboleth
      * attribute key/value pairs, not just the Identity Provider (IdP).
@@ -123,6 +175,29 @@ public class AuthenticatedUser implements User, Serializable {
     public String getIdentifier() {
         return IDENTIFIER_PREFIX + userIdentifier;
     }
+
+    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE})
+    private List<UserNotification> notifications;
+
+    public List<UserNotification> getUserNotifications() {
+        return notifications;
+    }
+
+    public void setUserNotifications(List<UserNotification> notifications) {
+        this.notifications = notifications;
+    }
+    
+    @OneToMany(mappedBy = "requestor", cascade={CascadeType.REMOVE})
+    private List<UserNotification> requests;
+
+    public List<UserNotification> getUserRequests() {
+        return requests;
+    }
+
+    public void setUserRequestss(List<UserNotification> requests) {
+        this.requests = requests;
+    }
+
     
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLock> datasetLocks;
@@ -133,6 +208,32 @@ public class AuthenticatedUser implements User, Serializable {
 
     public void setDatasetLocks(List<DatasetLock> datasetLocks) {
         this.datasetLocks = datasetLocks;
+    }
+
+    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<OAuth2TokenData> oAuth2TokenDatas;
+
+    /*for many to many fileAccessRequests*/
+    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    private List<FileAccessRequest> fileAccessRequests;
+
+    public List<FileAccessRequest> getFileAccessRequests() {
+        return fileAccessRequests;
+    }
+
+    public void setFileAccessRequests(List<FileAccessRequest> fARs) {
+        this.fileAccessRequests = fARs;
+    }
+
+    public List<DataFile> getRequestedDataFiles(){
+        List<DataFile> requestedDataFiles = new ArrayList<>();
+
+        for(FileAccessRequest far : getFileAccessRequests()){
+            if(far.isStateCreated()) {
+                requestedDataFiles.add(far.getDataFile());
+            }
+        }
+        return requestedDataFiles;
     }
     
     @Override
@@ -158,6 +259,13 @@ public class AuthenticatedUser implements User, Serializable {
         }
     }
 
+    // For Shib users, set "email confirmed" timestamp on login.
+    public void updateEmailConfirmedToNow() {
+        if (ShibAuthenticationProvider.PROVIDER_ID.equals(this.getAuthenticatedUserLookup().getAuthenticationProviderId())) {
+            Timestamp emailConfirmedNow = new Timestamp(new Date().getTime());
+            this.setEmailConfirmed(emailConfirmedNow);
+        }
+    }
 
     //For User List Admin dashboard
     @Transient
@@ -278,6 +386,30 @@ public class AuthenticatedUser implements User, Serializable {
         this.superuser = superuser;
     }
 
+    @Override
+    public boolean isDeactivated() {
+        return deactivated;
+    }
+
+    public void setDeactivated(boolean deactivated) {
+        this.deactivated = deactivated;
+    }
+
+    public Timestamp getDeactivatedTime() {
+        return deactivatedTime;
+    }
+
+    public void setDeactivatedTime(Timestamp deactivatedTime) {
+        this.deactivatedTime = deactivatedTime;
+    }
+
+    public int getRateLimitTier() {
+        return rateLimitTier;
+    }
+    public void setRateLimitTier(int rateLimitTier) {
+        this.rateLimitTier = rateLimitTier;
+    }
+
     @OneToOne(mappedBy = "authenticatedUser")
     private AuthenticatedUserLookup authenticatedUserLookup;
 
@@ -316,7 +448,6 @@ public class AuthenticatedUser implements User, Serializable {
     
     public JsonObjectBuilder toJson() {
         //JsonObjectBuilder authenicatedUserJson = Json.createObjectBuilder();
-        
         NullSafeJsonBuilder authenicatedUserJson = NullSafeJsonBuilder.jsonObjectBuilder();
          
         authenicatedUserJson.add("id", this.id);
@@ -334,6 +465,11 @@ public class AuthenticatedUser implements User, Serializable {
         authenicatedUserJson.add("createdTime", UserUtil.getTimestampStringOrNull(this.createdTime));
         authenicatedUserJson.add("lastLoginTime", UserUtil.getTimestampStringOrNull(this.lastLoginTime));
         authenicatedUserJson.add("lastApiUseTime", UserUtil.getTimestampStringOrNull(this.lastApiUseTime));
+
+        authenicatedUserJson.add("deactivated", this.deactivated);
+        authenicatedUserJson.add("deactivatedTime", UserUtil.getTimestampStringOrNull(this.deactivatedTime));
+        authenicatedUserJson.add("mutedEmails", JsonPrinter.enumsToJson(this.mutedEmailsSet));
+        authenicatedUserJson.add("mutedNotifications", JsonPrinter.enumsToJson(this.mutedNotificationsSet));
 
         return authenicatedUserJson;
     }
@@ -436,5 +572,37 @@ public class AuthenticatedUser implements User, Serializable {
     
     public void setCart(Cart cart) {
         this.cart = cart;
+    }
+
+    public Set<Type> getMutedEmails() {
+        return mutedEmailsSet;
+    }
+
+    public void setMutedEmails(Set<Type> mutedEmails) {
+        this.mutedEmailsSet = mutedEmails;
+        this.mutedEmails = Type.toStringValue(mutedEmails);
+    }
+
+    public Set<Type> getMutedNotifications() {
+        return mutedNotificationsSet;
+    }
+
+    public void setMutedNotifications(Set<Type> mutedNotifications) {
+        this.mutedNotificationsSet = mutedNotifications;
+        this.mutedNotifications = Type.toStringValue(mutedNotifications);
+    }
+    
+    public boolean hasEmailMuted(Type type) {
+        if (this.mutedEmailsSet == null || type == null) {
+            return false;
+        }
+        return this.mutedEmailsSet.contains(type);
+    }
+    
+    public boolean hasNotificationMuted(Type type) {
+        if (this.mutedNotificationsSet == null || type == null) {
+            return false;
+        }
+        return this.mutedNotificationsSet.contains(type);
     }
 }

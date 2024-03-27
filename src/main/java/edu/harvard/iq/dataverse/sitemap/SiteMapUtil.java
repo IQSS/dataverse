@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.sitemap;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObjectContainer;
+import edu.harvard.iq.dataverse.settings.ConfigCheckService;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.xml.XmlValidator;
 import java.io.File;
@@ -210,16 +212,17 @@ public class SiteMapUtil {
         }
         return false;
     }
-
+    
+    /**
+     * Lookup the location where to generate the sitemap.
+     *
+     * Note: the location is checked to be configured, does exist and is writeable in
+     * {@link ConfigCheckService#checkSystemDirectories()}
+     *
+     * @return Sitemap storage location ([docroot]/sitemap)
+     */
     private static String getSitemapPathString() {
-        String sitemapPathString = "/tmp";
-        // i.e. /usr/local/glassfish4/glassfish/domains/domain1
-        String domainRoot = System.getProperty("com.sun.aas.instanceRoot");
-        if (domainRoot != null) {
-            // Note that we write to a directory called "sitemap" but we serve just "/sitemap.xml" using PrettyFaces.
-            sitemapPathString = domainRoot + File.separator + "docroot" + File.separator + "sitemap";
-        }
-        return sitemapPathString;
+        return JvmSettings.DOCROOT_DIRECTORY.lookup() + File.separator + "sitemap";
 
     }
 }

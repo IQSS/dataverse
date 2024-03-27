@@ -8,22 +8,39 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
+import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
-import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
-import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupTest;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonValue;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,28 +52,16 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -66,6 +71,7 @@ public class JsonParserTest {
     
     MockDatasetFieldSvc datasetFieldTypeSvc = null;
     MockSettingsSvc settingsSvc = null;
+    LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
     DatasetFieldType keywordType;
     DatasetFieldType descriptionType;
     DatasetFieldType subjectType;
@@ -76,17 +82,18 @@ public class JsonParserTest {
     public JsonParserTest() {
     }
     
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
     
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
     }
     
-    @Before
+    @BeforeEach
     public void setUp() {
         datasetFieldTypeSvc = new MockDatasetFieldSvc();
+        datasetFieldTypeSvc.setMetadataBlock("citation");
 
         keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", FieldType.TEXT, true));
         descriptionType = datasetFieldTypeSvc.add( new DatasetFieldType("description", FieldType.TEXTBOX, false) );
@@ -117,7 +124,7 @@ public class JsonParserTest {
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
         settingsSvc = new MockSettingsSvc();
-        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc);
+        sut = new JsonParser(datasetFieldTypeSvc, null, settingsSvc, licenseService);
     }
     
     @Test 
@@ -178,8 +185,8 @@ public class JsonParserTest {
     }
     
     
-    @Test(expected=JsonParseException.class)
-     public void testChildValidation() throws JsonParseException {
+    @Test
+    void testChildValidation() {
         // This Json String is a compound field that contains the wrong
         // fieldType as a child ("description" is not a child of "coordinate").
         // It should throw a JsonParseException when it encounters the invalid child.
@@ -204,8 +211,8 @@ public class JsonParserTest {
         JsonReader jsonReader = Json.createReader(new StringReader(text));
         JsonObject obj = jsonReader.readObject();
 
-        sut.parseField(obj);
-       }
+        assertThrows(JsonParseException.class, () -> sut.parseField(obj));
+    }
     
     
     @Test
@@ -327,12 +334,12 @@ public class JsonParserTest {
      * @throws JsonParseException if all goes well - this is expected.
      * @throws IOException when test file IO goes wrong - this is bad.
      */
-    @Test(expected = JsonParseException.class)
-    public void testParseNoAliasDataverse() throws JsonParseException, IOException {
+    @Test
+    void testParseNoAliasDataverse() throws IOException {
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/no-alias-dataverse.json")) {
             dvJson = Json.createReader(jsonFile).readObject();
-            Dataverse actual = sut.parseDataverse(dvJson);
+            assertThrows(JsonParseException.class, () -> sut.parseDataverse(dvJson));
         }
     }
     
@@ -341,12 +348,12 @@ public class JsonParserTest {
      * @throws JsonParseException if all goes well - this is expected.
      * @throws IOException when test file IO goes wrong - this is bad.
      */
-    @Test(expected = JsonParseException.class)
-    public void testParseNoNameDataverse() throws JsonParseException, IOException {
+    @Test
+    void testParseNoNameDataverse() throws IOException {
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/no-name-dataverse.json")) {
             dvJson = Json.createReader(jsonFile).readObject();
-            Dataverse actual = sut.parseDataverse(dvJson);
+            assertThrows(JsonParseException.class, () -> sut.parseDataverse(dvJson));
         }
     }
     
@@ -356,12 +363,12 @@ public class JsonParserTest {
      * @throws JsonParseException if all goes well - this is expected.
      * @throws IOException when test file IO goes wrong - this is bad.
      */
-    @Test(expected = JsonParseException.class)
-    public void testParseNoContactEmailsDataverse() throws JsonParseException, IOException {
+    @Test
+    void testParseNoContactEmailsDataverse() throws IOException {
         JsonObject dvJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/no-contacts-dataverse.json")) {
             dvJson = Json.createReader(jsonFile).readObject();
-            Dataverse actual = sut.parseDataverse(dvJson);
+            assertThrows(JsonParseException.class, () -> sut.parseDataverse(dvJson));
         }
     }
 
@@ -414,16 +421,14 @@ public class JsonParserTest {
      * Expect an exception when the dataset JSON is empty.
      * @throws JsonParseException when the test is broken
      */
-    @Test(expected = NullPointerException.class)
-    public void testParseEmptyDataset() throws JsonParseException {
+    @Test
+    void testParseEmptyDataset() throws JsonParseException {
         JsonObject dsJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/empty-dataset.json")) {
             InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
             dsJson = Json.createReader(reader).readObject();
             System.out.println(dsJson != null);
-            Dataset actual = sut.parseDataset(dsJson);
-            assertEquals("10.5072", actual.getAuthority());
-            assertEquals("doi", actual.getProtocol());
+            assertThrows(NullPointerException.class, () -> sut.parseDataset(dsJson));
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
         }
@@ -431,19 +436,19 @@ public class JsonParserTest {
 
     /**
      * 
-     * Expect an exception when the dataset version JSON contains fields
+     * Expect no exception when the dataset version JSON contains fields
      * that the {@link DatasetFieldService} doesn't know about.
-     * @throws JsonParseException as expected
+     * @throws JsonParseException should not happen here
      * @throws IOException when test file IO goes wrong - this is bad.
      */
-    @Test(expected = JsonParseException.class)
-    public void testParseOvercompleteDatasetVersion() throws JsonParseException, IOException {
+    @Test
+    void testParseOvercompleteDatasetVersion() throws IOException {
         JsonObject dsJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/complete-dataset-version.json")) {
             InputStreamReader reader = new InputStreamReader(jsonFile, "UTF-8");
             dsJson = Json.createReader(reader).readObject();
-            System.out.println(dsJson != null);
-            DatasetVersion actual = sut.parseDatasetVersion(dsJson);
+            Assumptions.assumeTrue(dsJson != null);
+            assertDoesNotThrow(() -> sut.parseDatasetVersion(dsJson));
         }
     }
     
@@ -530,6 +535,61 @@ public class JsonParserTest {
         assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe79::22c9:d0ff:fe48:ce61")) ));
         assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1")) ));
         
+    }
+    
+    @Test
+    public void testValidMailDomainGroup() throws JsonParseException {
+        // given
+        MailDomainGroup test = MailDomainGroupTest.genGroup();
+        
+        // when
+        JsonObject serialized = JsonPrinter.json(test).build();
+        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(serialized);
+        
+        // then
+        assertEquals(test, parsed);
+        assertEquals(test.hashCode(), parsed.hashCode());
+    }
+    
+    @Test
+    public void testValidRegexMailDomainGroup() throws JsonParseException {
+        // given
+        MailDomainGroup test = MailDomainGroupTest.genRegexGroup();
+        
+        // when
+        JsonObject serialized = JsonPrinter.json(test).build();
+        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(serialized);
+        
+        // then
+        assertEquals(test, parsed);
+        assertEquals(test.hashCode(), parsed.hashCode());
+    }
+    
+    @Test
+    void testMailDomainGroupMissingName() {
+        // given
+        String noname = "{ \"id\": 1, \"alias\": \"test\", \"domains\": [] }";
+        JsonObject obj = Json.createReader(new StringReader(noname)).readObject();
+        // when && then
+        assertThrows(JsonParseException.class, () -> new JsonParser().parseMailDomainGroup(obj));
+    }
+    
+    @Test
+    void testMailDomainGroupMissingDomains() {
+        // given
+        String noname = "{ \"name\": \"test\", \"alias\": \"test\" }";
+        JsonObject obj = Json.createReader(new StringReader(noname)).readObject();
+        // when && then
+        assertThrows(JsonParseException.class, () -> new JsonParser().parseMailDomainGroup(obj));
+    }
+    
+    @Test
+    void testMailDomainGroupNotEnabledRegexDomains() {
+        // given
+        String regexNotEnabled = "{ \"id\": 1, \"alias\": \"test\", \"domains\": [\"^foobar\\\\.com\"] }";
+        JsonObject obj = Json.createReader(new StringReader(regexNotEnabled)).readObject();
+        // when && then
+        assertThrows(JsonParseException.class, () -> new JsonParser().parseMailDomainGroup(obj));
     }
 
     @Test
@@ -634,6 +694,25 @@ public class JsonParserTest {
             }
              return null;
         }
+
+        @Override
+        public boolean isTrueForKey(Key key, boolean safeDefaultIfKeyNotFound) {
+            if (key == Key.AllowCustomTermsOfUse) {
+                return false;
+            }
+            return safeDefaultIfKeyNotFound;
+        }
     }
 
+    @Test
+    public void testEnum() throws JsonParseException {
+        JsonArrayBuilder arr = Json.createArrayBuilder();
+        for (Type entry : Arrays.asList(Type.REVOKEROLE, Type.ASSIGNROLE)) {
+            arr.add(entry.name());
+        }
+        Set<Type> typesSet = new HashSet<>(JsonParser.parseEnumsFromArray(arr.build(), Type.class));
+        assertEquals(2, typesSet.size(), "Set contains two elements");
+        assertTrue(typesSet.contains(Type.REVOKEROLE), "Set contains REVOKEROLE");
+        assertTrue(typesSet.contains(Type.ASSIGNROLE), "Set contains ASSIGNROLE");
+    }
 }

@@ -33,14 +33,14 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.OutputStream;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLOutputFactory;
@@ -320,6 +320,30 @@ public class DDIExportServiceBean {
             }
         }
 
+        if (checkField("qstn", excludedFieldSet, includedFieldSet)) {
+            if (vm != null) {
+                if (!StringUtilisEmpty(vm.getLiteralquestion()) || !StringUtilisEmpty(vm.getInterviewinstruction()) || !StringUtilisEmpty(vm.getPostquestion())) {
+                    xmlw.writeStartElement("qstn");
+                    if (!StringUtilisEmpty(vm.getLiteralquestion())) {
+                        xmlw.writeStartElement("qstnLit");
+                        xmlw.writeCharacters(vm.getLiteralquestion());
+                        xmlw.writeEndElement(); // qstnLit
+                    }
+                    if (!StringUtilisEmpty(vm.getInterviewinstruction())) {
+                        xmlw.writeStartElement("ivuInstr");
+                        xmlw.writeCharacters(vm.getInterviewinstruction());
+                        xmlw.writeEndElement(); //ivuInstr
+                    }
+                    if (!StringUtilisEmpty(vm.getPostquestion())) {
+                        xmlw.writeStartElement("postQTxt");
+                        xmlw.writeCharacters(vm.getPostquestion());
+                        xmlw.writeEndElement(); //ivuInstr
+                    }
+                    xmlw.writeEndElement(); //qstn
+                }
+            }
+        }
+
         // invalrng
         if (checkField("invalrng", excludedFieldSet, includedFieldSet)) {
             boolean invalrngAdded = false;
@@ -465,29 +489,7 @@ public class DDIExportServiceBean {
             }
         }
 
-        if (checkField("qstn", excludedFieldSet, includedFieldSet)) {
-            if (vm != null) {
-                if (!StringUtilisEmpty(vm.getLiteralquestion()) || !StringUtilisEmpty(vm.getInterviewinstruction()) || !StringUtilisEmpty(vm.getPostquestion())) {
-                    xmlw.writeStartElement("qstn");
-                    if (!StringUtilisEmpty(vm.getLiteralquestion())) {
-                        xmlw.writeStartElement("qstnLit");
-                        xmlw.writeCharacters(vm.getLiteralquestion());
-                        xmlw.writeEndElement(); // qstnLit
-                    }
-                    if (!StringUtilisEmpty(vm.getInterviewinstruction())) {
-                        xmlw.writeStartElement("ivuInstr");
-                        xmlw.writeCharacters(vm.getInterviewinstruction());
-                        xmlw.writeEndElement(); //ivuInstr
-                    }
-                    if (!StringUtilisEmpty(vm.getPostquestion())) {
-                        xmlw.writeStartElement("postQTxt");
-                        xmlw.writeCharacters(vm.getPostquestion());
-                        xmlw.writeEndElement(); //ivuInstr
-                    }
-                    xmlw.writeEndElement(); //qstn
-                }
-            }
-        }
+
 
         xmlw.writeEndElement(); //var
 
@@ -543,6 +545,16 @@ public class DDIExportServiceBean {
             List<DataVariable> vars = variableService.findByDataTableId(dt.getId());
             if (checkField("catgry", excludedFieldSet, includedFieldSet)) {
                 if (checkIsWithoutFrequencies(vars)) {
+                    // @todo: the method called here to calculate frequencies 
+                    // when they are missing from the database (for whatever
+                    // reasons) subsets the physical tab-delimited file and 
+                    // calculates them in real time. this is very expensive operation
+                    // potentially. let's make sure that, when we do this, we 
+                    // save the resulting frequencies in the database, so that 
+                    // we don't have to do this again. Also, let's double check 
+                    // whether the "checkIsWithoutFrequencies()" method is doing
+                    // the right thing - as it appears to return true when there 
+                    // are no categorical variables in the DataTable (?)
                     calculateFrequencies(df, vars);
                 }
             }
@@ -578,6 +590,7 @@ public class DDIExportServiceBean {
 
     private void calculateFrequencies(DataFile df, List<DataVariable> vars)
     {
+        // @todo: see the comment in the part of the code that calls this method
         try {
             DataConverter dc = new DataConverter();
             File tabFile = dc.downloadFromStorageIO(df.getStorageIO());

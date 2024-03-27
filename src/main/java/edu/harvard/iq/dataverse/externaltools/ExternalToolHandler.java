@@ -2,172 +2,176 @@ package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
+
+import edu.harvard.iq.dataverse.util.UrlSignerUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Base64;
+import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
+
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.ws.rs.HttpMethod;
+
+import org.apache.commons.codec.binary.StringUtils;
+
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_LATEST;
 
 /**
  * Handles an operation on a specific file. Requires a file id in order to be
  * instantiated. Applies logic based on an {@link ExternalTool} specification,
  * such as constructing a URL to access that file.
  */
-public class ExternalToolHandler {
+public class ExternalToolHandler extends URLTokenUtil {
 
-    private static final Logger logger = Logger.getLogger(ExternalToolHandler.class.getCanonicalName());
+    public final ExternalTool externalTool;
 
-    private final ExternalTool externalTool;
-    private final DataFile dataFile;
-    private final Dataset dataset;
-    private final FileMetadata fileMetadata;
+    private String requestMethod;
 
-    private ApiToken apiToken;
+    
 
     /**
      * File level tool
      *
      * @param externalTool The database entity.
-     * @param dataFile Required.
-     * @param apiToken The apiToken can be null because "explore" tools can be
-     * used anonymously.
+     * @param dataFile     Required.
+     * @param apiToken     The apiToken can be null because "explore" tools can be
+     *                     used anonymously.
      */
-    public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken, FileMetadata fileMetadata) {
+    public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken,
+            FileMetadata fileMetadata, String localeCode) {
+        super(dataFile, apiToken, fileMetadata, localeCode);
         this.externalTool = externalTool;
-        if (dataFile == null) {
-            String error = "A DataFile is required.";
-            logger.warning("Error in ExternalToolHandler constructor: " + error);
-            throw new IllegalArgumentException(error);
-        }
-        if (fileMetadata == null) {
-            String error = "A FileMetadata is required.";
-            logger.warning("Error in ExternalToolHandler constructor: " + error);
-            throw new IllegalArgumentException(error);
-        }
-        this.dataFile = dataFile;
-        this.apiToken = apiToken;
-        this.fileMetadata = fileMetadata;
-        dataset = fileMetadata.getDatasetVersion().getDataset();
     }
 
     /**
      * Dataset level tool
      *
      * @param externalTool The database entity.
-     * @param dataset Required.
-     * @param apiToken The apiToken can be null because "explore" tools can be
-     * used anonymously.
+     * @param dataset      Required.
+     * @param apiToken     The apiToken can be null because "explore" tools can be
+     *                     used anonymously.
      */
-    public ExternalToolHandler(ExternalTool externalTool, Dataset dataset, ApiToken apiToken) {
+    public ExternalToolHandler(ExternalTool externalTool, Dataset dataset, ApiToken apiToken, String localeCode) {
+        super(dataset, apiToken, localeCode);
         this.externalTool = externalTool;
-        if (dataset == null) {
-            String error = "A Dataset is required.";
-            logger.warning("Error in ExternalToolHandler constructor: " + error);
-            throw new IllegalArgumentException(error);
-        }
-        this.dataset = dataset;
-        this.apiToken = apiToken;
-        this.dataFile = null;
-        this.fileMetadata = null;
     }
 
-    public DataFile getDataFile() {
-        return dataFile;
+    public String handleRequest() {
+        return handleRequest(false);
     }
 
-    public FileMetadata getFileMetadata() {
-        return fileMetadata;
-    }
+    public String handleRequest(boolean preview) {
+        JsonObject toolParameters = JsonUtil.getJsonObject(externalTool.getToolParameters());
+        JsonString method = toolParameters.getJsonString(HTTP_METHOD);
+        requestMethod = method != null ? method.getString() : HttpMethod.GET;
+        JsonObject params = getParams(toolParameters);
+        logger.fine("Found params: " + JsonUtil.prettyPrint(params));
+        if (requestMethod.equals(HttpMethod.GET)) {
+            String paramsString = "";
+            if (externalTool.getAllowedApiCalls() == null) {
+                // Legacy, using apiKey
+                logger.fine("Legacy Case");
 
-    public ApiToken getApiToken() {
-        return apiToken;
-    }
-
-    // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
-    public String getQueryParametersForUrl() {
-        String toolParameters = externalTool.getToolParameters();
-        JsonReader jsonReader = Json.createReader(new StringReader(toolParameters));
-        JsonObject obj = jsonReader.readObject();
-        JsonArray queryParams = obj.getJsonArray("queryParameters");
-        if (queryParams == null || queryParams.isEmpty()) {
-            return "";
-        }
-        List<String> params = new ArrayList<>();
-        queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
-            queryParam.keySet().forEach((key) -> {
-                String value = queryParam.getString(key);
-                String param = getQueryParam(key, value);
-                if (param != null && !param.isEmpty()) {
-                    params.add(param);
-                }
-            });
-        });
-        return "?" + String.join("&", params);
-    }
-
-    private String getQueryParam(String key, String value) {
-        ReservedWord reservedWord = ReservedWord.fromString(value);
-        switch (reservedWord) {
-            case FILE_ID:
-                // getDataFile is never null for file tools because of the constructor
-                return key + "=" + getDataFile().getId();
-            case FILE_PID:
-                GlobalId filePid = getDataFile().getGlobalId();
-                if (filePid != null) {
-                    return key + "=" + getDataFile().getGlobalId();
-                }
-                break;
-            case SITE_URL:
-                return key + "=" + SystemConfig.getDataverseSiteUrlStatic();
-            case API_TOKEN:
-                String apiTokenString = null;
-                ApiToken theApiToken = getApiToken();
-                if (theApiToken != null) {
-                    apiTokenString = theApiToken.getTokenString();
-                    return key + "=" + apiTokenString;
-                }
-                break;
-            case DATASET_ID:
-                return key + "=" + dataset.getId();
-            case DATASET_PID:
-                return key + "=" + dataset.getGlobalId().asString();
-            case DATASET_VERSION:
-                String versionString = null;
-                if(fileMetadata!=null) { //true for file case
-                    versionString = fileMetadata.getDatasetVersion().getFriendlyVersionNumber();
-                } else { //Dataset case - return the latest visible version (unless/until the dataset case allows specifying a version)
-                    if (getApiToken() != null) {
-                        versionString = dataset.getLatestVersion().getFriendlyVersionNumber();
+                for (Entry<String, JsonValue> entry : params.entrySet()) {
+                    paramsString = paramsString + (paramsString.isEmpty() ? "?" : "&") + entry.getKey() + "=";
+                    JsonValue val = entry.getValue();
+                    if (val.getValueType().equals(JsonValue.ValueType.NUMBER)) {
+                        paramsString += ((JsonNumber) val).intValue();
                     } else {
-                        versionString = dataset.getLatestVersionForCopy().getFriendlyVersionNumber();
+                        paramsString += ((JsonString) val).getString();
                     }
                 }
-                if (("DRAFT").equals(versionString)) {
-                    versionString = ":draft"; // send the token needed in api calls that can be substituted for a numeric
-                                              // version.
+            } else {
+                //Send a signed callback to get params and signedURLs 
+                String callback = null;
+                switch (externalTool.getScope()) {
+                case DATASET:
+                    callback=SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/datasets/"
+                            + dataset.getId() + "/versions/" + DS_VERSION_LATEST + "/toolparams/" + externalTool.getId();
+                    break;
+                case FILE:
+                    callback= SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/files/"
+                            + dataFile.getId() + "/metadata/" + fileMetadata.getId() + "/toolparams/"
+                            + externalTool.getId();
                 }
-                return key + "=" + versionString;
-            case FILE_METADATA_ID:
-                if(fileMetadata!=null) { //true for file case
-                    return key + "=" + fileMetadata.getId();
+                if (apiToken != null) {
+                    callback = UrlSignerUtil.signUrl(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(), HttpMethod.GET,
+                        JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + apiToken.getTokenString());
                 }
-            default:
-                break;
+                paramsString= "?callback=" + Base64.getEncoder().encodeToString(StringUtils.getBytesUtf8(callback));
+                if (getLocaleCode() != null) {
+                    paramsString += "&locale=" + getLocaleCode();
+                }
+            }
+            if (preview) {
+                paramsString += "&preview=true";
+            }
+            logger.fine("GET return is: " + paramsString);
+            return paramsString;
+
+        } else {
+            // ToDo - if the allowedApiCalls() are defined, could/should we send them to
+            // tools using POST as well?
+
+            if (requestMethod.equals(HttpMethod.POST)) {
+                String body = JsonUtil.prettyPrint(createPostBody(params, null).build());
+                try {
+                    logger.fine("POST Body: " + body);
+                    return postFormData(body);
+                } catch (IOException | InterruptedException ex) {
+                    Logger.getLogger(ExternalToolHandler.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
         return null;
     }
 
+    private String postFormData(String allowedApis) throws IOException, InterruptedException {
+        String url = null;
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(allowedApis))
+                .uri(URI.create(externalTool.getToolUrl())).header("Content-Type", "application/json").build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        boolean redirect = false;
+        int status = response.statusCode();
+        if (status != HttpURLConnection.HTTP_OK) {
+            if (status == HttpURLConnection.HTTP_MOVED_TEMP || status == HttpURLConnection.HTTP_MOVED_PERM
+                    || status == HttpURLConnection.HTTP_SEE_OTHER) {
+                redirect = true;
+            }
+        }
+        if (redirect == true) {
+            String newUrl = response.headers().firstValue("location").get();
+//            toolContext = "http://" + response.uri().getAuthority();
+
+            url = newUrl;
+        }
+        return url;
+    }
+
     public String getToolUrlWithQueryParams() {
-        return externalTool.getToolUrl() + getQueryParametersForUrl();
+        String params = ExternalToolHandler.this.handleRequest();
+        return externalTool.getToolUrl() + params;
+    }
+
+    public String getToolUrlForPreviewMode() {
+        return externalTool.getToolUrl() + handleRequest(true);
     }
 
     public ExternalTool getExternalTool() {
@@ -178,4 +182,21 @@ public class ExternalToolHandler {
         this.apiToken = apiToken;
     }
 
+    /**
+     * @return Returns Javascript that opens the explore tool in a new browser tab
+     *         if the browser allows it.If not, it shows an alert that popups must
+     *         be enabled in the browser.
+     */
+    public String getExploreScript() {
+        String toolUrl = this.getToolUrlWithQueryParams();
+        logger.fine("Exploring with " + toolUrl);
+        return getScriptForUrl(toolUrl);
+    }
+
+    // TODO: Consider merging with getExploreScript
+    public String getConfigureScript() {
+        String toolUrl = this.getToolUrlWithQueryParams();
+        logger.fine("Configuring with " + toolUrl);
+        return getScriptForUrl(toolUrl);
+    }
 }

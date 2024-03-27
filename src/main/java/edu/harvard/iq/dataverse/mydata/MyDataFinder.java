@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import org.apache.commons.lang.StringUtils;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Given a user and a set of filters (dvobject type, roles, publication status):
@@ -47,6 +47,7 @@ public class MyDataFinder {
     private RoleAssigneeServiceBean roleAssigneeService;
     private DvObjectServiceBean dvObjectServiceBean;
     private GroupServiceBean groupService;
+    private String noMsgResultsFound;
     //private RoleAssigneeServiceBean roleService = new RoleAssigneeServiceBean();
     //private MyDataQueryHelperServiceBean myDataQueryHelperService;
     // --------------------
@@ -85,11 +86,12 @@ public class MyDataFinder {
     private List<Long> fileGrandparentFileIds = new ArrayList<>();  // dataverse has file permissions
 
 
-    public MyDataFinder(DataverseRolePermissionHelper rolePermissionHelper, RoleAssigneeServiceBean roleAssigneeService, DvObjectServiceBean dvObjectServiceBean, GroupServiceBean groupService) {
+    public MyDataFinder(DataverseRolePermissionHelper rolePermissionHelper, RoleAssigneeServiceBean roleAssigneeService, DvObjectServiceBean dvObjectServiceBean, GroupServiceBean groupService, String _noMsgResultsFound) {
         this.rolePermissionHelper = rolePermissionHelper;
         this.roleAssigneeService = roleAssigneeService;
         this.dvObjectServiceBean = dvObjectServiceBean;
         this.groupService = groupService;
+        this.noMsgResultsFound = _noMsgResultsFound;
         this.loadHarvestedDataverseIds();
     }
 
@@ -211,7 +213,7 @@ public class MyDataFinder {
         // -----------------------------------------------------------------
         String dvObjectFQ = this.getSolrDvObjectFilterQuery();
         if (dvObjectFQ ==null){
-            this.addErrorMessage(DataRetrieverAPI.MSG_NO_RESULTS_FOUND);
+            this.addErrorMessage(noMsgResultsFound);
             return null;
         }
         filterQueries.add(dvObjectFQ);
@@ -235,6 +237,12 @@ public class MyDataFinder {
         // -----------------------------------------------------------------
         filterQueries.add(this.filterParams.getSolrFragmentForPublicationStatus());
         //fq=publicationStatus:"Unpublished"&fq=publicationStatus:"Draft"
+
+        // -----------------------------------------------------------------
+        // (4) FQ by dataset metadata validity
+        // -----------------------------------------------------------------
+        filterQueries.add(this.filterParams.getSolrFragmentForDatasetValidity());
+        //fq=datasetValid:(true OR false)
 
         return filterQueries;
     }
@@ -278,7 +286,7 @@ public class MyDataFinder {
 
 
         if ((distinctEntityIds.isEmpty()) && (distinctParentIds.isEmpty())) {
-            this.addErrorMessage(DataRetrieverAPI.MSG_NO_RESULTS_FOUND);
+            this.addErrorMessage(noMsgResultsFound);
             return null;
         }
 
@@ -390,11 +398,16 @@ public class MyDataFinder {
      *
      * @return
      */
-    public JsonObjectBuilder getSelectedFilterParamsAsJSON(){
+    public JsonObjectBuilder getSelectedFilterParamsAsJSON() {
 
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
         jsonData.add("publication_statuses", this.filterParams.getListofSelectedPublicationStatuses())
                 .add("role_names", this.getListofSelectedRoles());
+
+        JsonArrayBuilder selVal = this.filterParams.getListofSelectedValidities();
+        if (selVal != null) {
+            jsonData.add("dataset_valid", selVal);
+        }
 
         return jsonData;
     }
@@ -514,8 +527,8 @@ public class MyDataFinder {
 
             this.childToParentIds.put(dvId, parentId);
 
-            switch(dtype){
-                case(DvObject.DATAVERSE_DTYPE_STRING):
+            switch(DvObject.DType.valueOf(dtype)){
+                case Dataverse:
                     //if (this.idsWithDataversePermissions.containsKey(dvId)){
                     this.directDataverseIds.add(dvId);  // Direct dataverse (no indirect dataverses)
                     //}
@@ -530,7 +543,7 @@ public class MyDataFinder {
                         this.datasetParentIds.add(dvId);    // Parent to dataset
                     }
                     break;
-                case(DvObject.DATASET_DTYPE_STRING):
+                case Dataset:
                     //if (this.idsWithDatasetPermissions.containsKey(dvId)){
                     this.directDatasetIds.add(dvId); // Direct dataset
                     //}
@@ -538,7 +551,7 @@ public class MyDataFinder {
                         this.fileParentIds.add(dvId);   // Parent to file
                     }
                     break;
-                case(DvObject.DATAFILE_DTYPE_STRING):
+                case DataFile:
                     if (this.idsWithFilePermissions.containsKey(dvId)){
                         this.directFileIds.add(dvId); // Direct file
                     }
@@ -583,7 +596,7 @@ public class MyDataFinder {
             this.childToParentIds.put(dvId, parentId);
 
             // Should ALWAYS be a Dataset!
-            if (dtype.equals(DvObject.DATASET_DTYPE_STRING)){
+            if (DvObject.DType.valueOf(dtype).equals(DvObject.DType.Dataset)){
                 this.fileParentIds.add(dvId);
             }
         }

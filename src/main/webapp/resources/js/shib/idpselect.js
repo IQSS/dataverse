@@ -892,8 +892,6 @@ function IdPSelectUI() {
     var lang;
     var majorLang;
     var defaultLang;
-    var langBundle;
-    var defaultLangBundle;
     var defaultLogo;
     var defaultLogoWidth;
     var defaultLogoHeight;
@@ -1022,35 +1020,13 @@ function IdPSelectUI() {
         maxIdPCharsDropDown = paramsSupplied.maxIdPCharsDropDown;
         maxIdPCharsAltTxt = paramsSupplied.maxIdPCharsAltTxt;
 
-        if (typeof navigator == 'undefined') {
-            lang = paramsSupplied.defaultLanguage;
-        } else {
-            lang = navigator.language || navigator.userLanguage || paramsSupplied.defaultLanguage;
-        }
+        lang = shibLang || paramsSupplied.defaultLanguage;
         if (lang.indexOf('-') > 0) {
             majorLang = lang.substring(0, lang.indexOf('-'));
         }
 
         defaultLang = paramsSupplied.defaultLanguage;
 
-        if (typeof paramsSupplied.langBundles[lang] != 'undefined') {
-            langBundle = paramsSupplied.langBundles[lang];
-        } else if (typeof majorLang != 'undefined' && typeof paramsSupplied.langBundles[majorLang] != 'undefined') {
-            langBundle = paramsSupplied.langBundles[majorLang];
-        }
-        defaultLangBundle = paramsSupplied.langBundles[paramsSupplied.defaultLanguage];
-
-        //
-        // Setup Language bundles
-        //
-        if (!defaultLangBundle) {
-            fatal('No languages work');
-            return false;
-        }
-        if (!langBundle) {
-            debug('No language support for ' + lang);
-            langBundle = defaultLangBundle;
-        }
 
         if (paramsSupplied.testGUI) {
             //
@@ -1876,10 +1852,7 @@ function IdPSelectUI() {
     */
     var getLocalizedMessage = function(messageId){
 
-        var message = langBundle[messageId];
-        if(!message){
-            message = defaultLangBundle[messageId];
-        }
+        var message = shibLangBundle[messageId];
         if(!message){
             message = 'Missing message for ' + messageId;
         }

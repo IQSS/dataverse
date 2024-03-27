@@ -28,6 +28,7 @@ public interface AuthenticationProvider {
         
     AuthenticationProviderDisplayInfo getInfo();
     
+    default int getOrder() { return 1; }
     default boolean isPasswordUpdateAllowed() { return false; };
     default boolean isUserInfoUpdateAllowed() { return false; };
     default boolean isUserDeletionAllowed() { return false; };

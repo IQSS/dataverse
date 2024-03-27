@@ -3,19 +3,19 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import java.util.Objects;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 /**
  * A role of a user in a Dataverse. A User may have many roles in a given Dataverse.
@@ -42,7 +42,7 @@ import javax.persistence.UniqueConstraint;
 	@NamedQuery( name  = "RoleAssignment.listByDefinitionPointId",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.definitionPoint.id=:definitionPointId" ),
 	@NamedQuery( name  = "RoleAssignment.listByRoleId",
-				 query = "SELECT r FROM RoleAssignment r WHERE r.role=:roleId" ),
+				 query = "SELECT r FROM RoleAssignment r WHERE r.role.id=:roleId" ),
 	@NamedQuery( name  = "RoleAssignment.listByPrivateUrlToken",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.privateUrlToken=:privateUrlToken" ),
 	@NamedQuery( name  = "RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId",
@@ -71,13 +71,21 @@ public class RoleAssignment implements java.io.Serializable {
     @Column(nullable = true)
     private String privateUrlToken;
 	
+    @Column(nullable = true)
+    private Boolean privateUrlAnonymizedAccess;
+	
 	public RoleAssignment() {}
 		
 	public RoleAssignment(DataverseRole aRole, RoleAssignee anAssignee, DvObject aDefinitionPoint, String privateUrlToken) {
+	    this(aRole, anAssignee, aDefinitionPoint, privateUrlToken, false);
+	}
+	
+	public RoleAssignment(DataverseRole aRole, RoleAssignee anAssignee, DvObject aDefinitionPoint, String privateUrlToken, Boolean anonymizedAccess) {
         role = aRole;
         assigneeIdentifier = anAssignee.getIdentifier();
         definitionPoint = aDefinitionPoint;
         this.privateUrlToken = privateUrlToken;
+        this.privateUrlAnonymizedAccess=anonymizedAccess;
     }
 	
 	public Long getId() {
@@ -114,6 +122,10 @@ public class RoleAssignment implements java.io.Serializable {
 
     public String getPrivateUrlToken() {
         return privateUrlToken;
+    }
+
+    public boolean isAnonymizedAccess(){
+        return (privateUrlAnonymizedAccess==null) ? false: privateUrlAnonymizedAccess;
     }
 
 	@Override

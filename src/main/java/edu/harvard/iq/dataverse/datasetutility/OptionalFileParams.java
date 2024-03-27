@@ -10,10 +10,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
+
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.lang.reflect.Type;
@@ -62,8 +65,25 @@ public class OptionalFileParams {
     private boolean restrict = false;
     public static final String RESTRICT_ATTR_NAME = "restrict";
 
+    private boolean tabIngest = true;
+    public static final String TAB_INGEST_ATTR_NAME = "tabIngest";
+    
+    private String storageIdentifier;
+    public static final String STORAGE_IDENTIFIER_ATTR_NAME = "storageIdentifier";
+    private String fileName;
+    public static final String FILE_NAME_ATTR_NAME = "fileName";
+    private String mimeType;
+    public static final String MIME_TYPE_ATTR_NAME = "mimeType";
+    private String checkSumValue;
+    private ChecksumType checkSumType;
+    public static final String LEGACY_CHECKSUM_ATTR_NAME = "md5Hash";
+    public static final String CHECKSUM_OBJECT_NAME = "checksum";
+    public static final String CHECKSUM_OBJECT_TYPE = "@type";
+    public static final String CHECKSUM_OBJECT_VALUE = "@value";
 
-     
+    public OptionalFileParams() {
+    }
+    
     public OptionalFileParams(String jsonData) throws DataFileTagException{
         
         if (jsonData != null){
@@ -92,6 +112,21 @@ public class OptionalFileParams {
         setCategories(newCategories);
         this.addFileDataTags(potentialFileDataTags);
         this.restrict = restrict;
+    }
+
+    //For use in replace operations - load the file metadata from the file being replaced so it can be applied to the new file
+    //checksum and mimetype aren't needed
+    public OptionalFileParams(DataFile df) throws DataFileTagException {
+        FileMetadata fm = df.getFileMetadata();
+
+        this.description = fm.getDescription();
+        setCategories(fm.getCategoriesByName());
+        this.addFileDataTags(df.getTagLabels());
+        this.restrict = fm.isRestricted();
+        //Explicitly do not replace the file name - replaces with -force may change the mimetype and extension
+        //this.label = fm.getLabel(); 
+        this.directoryLabel = fm.getDirectoryLabel();
+        this.provFreeForm = fm.getProvFreeForm();
     }
 
 
@@ -142,7 +177,15 @@ public class OptionalFileParams {
     public boolean getRestriction(){
         return this.restrict;
     }
-    
+
+    public void setTabIngest(boolean tabIngest) {
+        this.tabIngest = tabIngest;
+    }
+
+    public boolean getTabIngest() {
+        return this.tabIngest;
+    }
+
     public boolean hasCategories(){
         if ((categories == null)||(this.categories.isEmpty())){
             return false;
@@ -184,7 +227,48 @@ public class OptionalFileParams {
         }
         return true;
     }
-    
+
+	public boolean hasStorageIdentifier() {
+		return ((storageIdentifier!=null)&&(!storageIdentifier.isEmpty()));
+	}
+
+	public String getStorageIdentifier() {
+		return storageIdentifier;
+	}
+
+	public boolean hasFileName() {
+		return ((fileName!=null)&&(!fileName.isEmpty()));
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public boolean hasMimetype() {
+		return ((mimeType!=null)&&(!mimeType.isEmpty()));
+	}
+
+	public String getMimeType() {
+		return mimeType;
+	}
+
+	public void setCheckSum(String checkSum, ChecksumType type) {
+		this.checkSumValue = checkSum;
+		this.checkSumType = type;
+	}
+	
+	public boolean hasCheckSum() {
+		return ((checkSumValue!=null)&&(!checkSumValue.isEmpty()));
+	}
+
+	public String getCheckSum() {
+		return checkSumValue;
+	}
+	
+    public ChecksumType getCheckSumType() {
+        return checkSumType;
+    }
+
     /**
      *  Set tags
      *  @param tags
@@ -234,12 +318,7 @@ public class OptionalFileParams {
 //            logger.log(Level.SEVERE, "jsonData is null");
         }
         JsonObject jsonObj;
-        try {
-            jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
-        } catch (ClassCastException ex) {
-            logger.info("Exception parsing string '" + jsonData + "': " + ex);
-            return;
-        }
+        jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
 
         // -------------------------------
         // get description as string
@@ -279,6 +358,63 @@ public class OptionalFileParams {
         if ((jsonObj.has(RESTRICT_ATTR_NAME)) && (!jsonObj.get(RESTRICT_ATTR_NAME).isJsonNull())){
             
             this.restrict = Boolean.valueOf(jsonObj.get(RESTRICT_ATTR_NAME).getAsString());
+        }
+
+        // -------------------------------
+        // get tabIngest as boolean
+        // -------------------------------
+        if ((jsonObj.has(TAB_INGEST_ATTR_NAME)) && (!jsonObj.get(TAB_INGEST_ATTR_NAME).isJsonNull())){
+
+            this.tabIngest = Boolean.valueOf(jsonObj.get(TAB_INGEST_ATTR_NAME).getAsString());
+        }
+        
+        // -------------------------------
+        // get storage identifier as string
+        // -------------------------------
+        if ((jsonObj.has(STORAGE_IDENTIFIER_ATTR_NAME)) && (!jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).isJsonNull())){
+            // Basic sanity check that driver specified is defined and the overall
+            // identifier is consistent with that store's config. Note that being able to
+            // specify a driver that does not support direct uploads is currently used with
+            // out-of-band uploads, e.g. for bulk migration.
+            String storageId = jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).getAsString();
+            if (DataAccess.isValidDirectStorageIdentifier(storageId)) {
+                this.storageIdentifier = storageId;
+            }
+
+        }
+        
+        // -------------------------------
+        // get file name as string
+        // -------------------------------
+        if ((jsonObj.has(FILE_NAME_ATTR_NAME)) && (!jsonObj.get(FILE_NAME_ATTR_NAME).isJsonNull())){
+
+            this.fileName = jsonObj.get(FILE_NAME_ATTR_NAME).getAsString();
+        }
+        
+        // -------------------------------
+        // get mimetype as string
+        // -------------------------------
+        if ((jsonObj.has(MIME_TYPE_ATTR_NAME)) && (!jsonObj.get(MIME_TYPE_ATTR_NAME).isJsonNull())){
+
+            this.mimeType = jsonObj.get(MIME_TYPE_ATTR_NAME).getAsString();
+        }
+        
+        // -------------------------------
+        // get md5 checkSum as string
+        // -------------------------------
+        if ((jsonObj.has(LEGACY_CHECKSUM_ATTR_NAME)) && (!jsonObj.get(LEGACY_CHECKSUM_ATTR_NAME).isJsonNull())){
+
+            this.checkSumValue = jsonObj.get(LEGACY_CHECKSUM_ATTR_NAME).getAsString().toLowerCase();
+            this.checkSumType= ChecksumType.MD5;
+        }
+        // -------------------------------
+        // get checkSum type and value
+        // -------------------------------
+        else if ((jsonObj.has(CHECKSUM_OBJECT_NAME)) && (!jsonObj.get(CHECKSUM_OBJECT_NAME).isJsonNull())){
+
+            this.checkSumValue = ((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_VALUE).getAsString().toLowerCase();
+            this.checkSumType = ChecksumType.fromString(((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_TYPE).getAsString());
+
         }
         
         // -------------------------------
@@ -516,5 +652,5 @@ public class OptionalFileParams {
         }                
         
     }
-        
+
 }

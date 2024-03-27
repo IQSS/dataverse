@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import jakarta.persistence.NoResultException;
 
 /**
  * Create a new role in a dataverse.
@@ -34,9 +36,19 @@ public class CreateRoleCommand extends AbstractCommand<DataverseRole> {
         User user = getUser();
         //todo: temporary for 4.0 - only superusers can create and edit roles
         if ((!(user instanceof AuthenticatedUser) || !user.isSuperuser())) {
-            throw new IllegalCommandException("Roles can only be created or edited by superusers.",this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("permission.role.must.be.created.by.superuser"),this);
         }
-
+        //Test to see if the role already exists in DB
+        try {
+            DataverseRole testRole = ctxt.em().createNamedQuery("DataverseRole.findDataverseRoleByAlias", DataverseRole.class)
+                    .setParameter("alias", created.getAlias())
+                    .getSingleResult();
+            if (!(testRole == null)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("permission.role.not.created.alias.already.exists"), this);
+            }
+        } catch (NoResultException nre) {
+            //  we want no results because that meand we can create a role
+        }
         dv.addRole(created);
         return ctxt.roles().save(created);
     }

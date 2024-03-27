@@ -6,19 +6,21 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDataFilesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -28,12 +30,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+
+import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
@@ -66,6 +70,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     SwordAuth swordAuth;
     @Inject
     UrlManager urlManager;
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
 
     private HttpServletRequest httpRequest;
 
@@ -108,7 +114,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         MediaResource mediaResource = new MediaResource(fixmeInputStream, contentType, packaging, isPackaged);
                         return mediaResource;
                     } else {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to get a media resource representation of the dataset with global ID " + dataset.getGlobalIdString());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to get a media resource representation of the dataset with global ID " + dataset.getGlobalId().asString());
                     }
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Downloading files via the SWORD-based Dataverse Data Deposit API is not (yet) supported: https://github.com/IQSS/dataverse/issues/183");
@@ -213,7 +219,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unsupported file type found in URL: " + uri);
             }
         } else {
-            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Target or identifer not specified in URL: " + uri);
+            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Target or identifier not specified in URL: " + uri);
         }
     }
 
@@ -240,14 +246,14 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             }
             UpdateDatasetVersionCommand updateDatasetCommand = new UpdateDatasetVersionCommand(dataset, dvReq);
             if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalIdString());
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId().asString());
             }
             
             //---------------------------------------
             // Make sure that the upload type is not rsync - handled above for dual mode
             // ------------------------------------- 
 
-            if (dataset.getEditVersion().isHasPackageFile()) {                
+            if (dataset.getOrCreateEditVersion().isHasPackageFile()) {                
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile"));
             }
             
@@ -273,7 +279,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             }
 
             String uploadedZipFilename = deposit.getFilename();
-            DatasetVersion editVersion = dataset.getEditVersion();
+            DatasetVersion editVersion = dataset.getOrCreateEditVersion();
 
             if (deposit.getInputStream() == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Deposit input stream was null.");
@@ -298,36 +304,42 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
              */
             String guessContentTypeForMe = null;
             List<DataFile> dataFiles = new ArrayList<>();
+
             try {
-                try {
-                    dataFiles = FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, systemConfig);
-                } catch (EJBException ex) {
-                    Throwable cause = ex.getCause();
-                    if (cause != null) {
-                        if (cause instanceof IllegalArgumentException) {
-                            /**
-                             * @todo should be safe to remove this catch of
-                             * EJBException and IllegalArgumentException once
-                             * this ticket is resolved:
-                             *
-                             * IllegalArgumentException: MALFORMED when
-                             * uploading certain zip files
-                             * https://github.com/IQSS/dataverse/issues/1021
-                             */
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles. Problem with zip file, perhaps: " + cause);
-                        } else {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles: " + cause);
-                        }
+                //CreateDataFileResult createDataFilesResponse =  FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, null, null, systemConfig);
+                UploadSessionQuotaLimit quota = null; 
+                if (systemConfig.isStorageQuotasEnforced()) {
+                    quota = dataFileService.getUploadSessionQuotaLimit(dataset);
+                }
+                Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvReq, editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, null, quota, null);
+                CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
+                dataFiles = createDataFilesResult.getDataFiles();
+            } catch (CommandException ex) {
+                Throwable cause = ex.getCause();
+                if (cause != null) {
+                    if (cause instanceof IllegalArgumentException) {
+                        /**
+                         * @todo should be safe to remove this catch of
+                         * EJBException and IllegalArgumentException once this
+                         * ticket is resolved:
+                         *
+                         * IllegalArgumentException: MALFORMED when uploading
+                         * certain zip files
+                         * https://github.com/IQSS/dataverse/issues/1021
+                         */
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset. Problem with zip file, perhaps: " + cause);
                     } else {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles. No cause: " + ex.getMessage());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + cause);
                     }
-                } /*TODO: L.A. 4.6! catch (FileExceedsMaxSizeException ex) {
+                } else {
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + ex.getMessage());
+                }
+            }
+            /*TODO: L.A. 4.6! catch (FileExceedsMaxSizeException ex) {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles: " + ex.getMessage());
                     //Logger.getLogger(MediaResourceManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                }*/
-            } catch (IOException ex) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + ex.getMessage());
-            }
+            }*/
+            
             if (!dataFiles.isEmpty()) {
                 Set<ConstraintViolation> constraintViolations = editVersion.validate();
                 if (constraintViolations.size() > 0) {
@@ -335,7 +347,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
                 } else {
 
-                    ingestService.saveAndAddFilesToDataset(editVersion, dataFiles);
+                    ingestService.saveAndAddFilesToDataset(editVersion, dataFiles, null, true);
 
                 }
             } else {
@@ -362,13 +374,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     cause = cause.getCause();
                     sb.append(cause + " ");
                     if (cause instanceof ConstraintViolationException) {
-                        ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                        for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                            sb.append(" Invalid value \"").append(violation.getInvalidValue()).append("\" for ")
-                                    .append(violation.getPropertyPath()).append(" at ")
-                                    .append(violation.getLeafBean()).append(" - ")
-                                    .append(violation.getMessage());
-                        }
+                        sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                     }
                 }
                 throw returnEarly("EJBException: " + sb.toString());
