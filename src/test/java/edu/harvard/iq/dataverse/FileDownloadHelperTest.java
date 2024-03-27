@@ -221,7 +221,7 @@ class FileDownloadHelperTest {
         DataFile dataFile = new DataFile();
         dataFile.setId(2L);
 
-        // With an embargo, an unrestricted file should only be accessible if the embargo has ended
+        // With an expired retention end date, an unrestricted file should not be accessible
 
         Retention ret = new Retention(LocalDate.now().minusDays(1), "Retention period expired");
         dataFile.setRetention(ret);
@@ -243,7 +243,7 @@ class FileDownloadHelperTest {
         DataFile dataFile = new DataFile();
         dataFile.setId(2L);
 
-        // With an embargo, an unrestricted file should only be accessible if the embargo has ended
+        // With a retention end date in the future, an unrestricted file should be accessible
 
         Retention ret = new Retention(LocalDate.now(), "Retention period NOT expired");
         dataFile.setRetention(ret);
