@@ -130,8 +130,18 @@ import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.MediaType;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+
+import com.mashape.unirest.request.body.MultipartBody;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -1245,6 +1255,21 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces("application/json")
+    @Operation(summary = "Save auxiliary file with version", 
+               description = "Saves an auxlirary file")
+    @APIResponses(value = {
+        @APIResponse(responseCode = "200",
+                    description = "File saved response"),
+        @APIResponse(responseCode = "403",
+                    description = "User not authorized to edit the dataset."),
+        @APIResponse(responseCode = "400",
+                    description = "File not found based on id.")
+    })
+    @Tag(name = "saveAuxiliaryFileWithVersion", 
+         description = "Save Auxiliary File With Version")
+    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA,
+         schema = @Schema(implementation = MultipartBody.class)))
     public Response saveAuxiliaryFileWithVersion(@Context ContainerRequestContext crc,
                                                  @PathParam("fileId") Long fileId,
                                                  @PathParam("formatTag") String formatTag,

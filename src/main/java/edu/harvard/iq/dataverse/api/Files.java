@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.api;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.mashape.unirest.request.body.MultipartBody;
+
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -64,6 +66,13 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 
 import jakarta.ws.rs.core.UriInfo;
+
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -176,6 +185,15 @@ public class Files extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/replace")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces("application/json")
+    @Operation(summary = "Replace a file on a dataset", 
+               description = "Replace a file to a dataset")
+    @APIResponse(responseCode = "200",
+               description = "File replaced successfully on the dataset")
+    @Tag(name = "replaceFilesInDataset", 
+         description = "Replace a file to a dataset")
+    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA,
+         schema = @Schema(implementation = MultipartBody.class))) 
     public Response replaceFileInDataset(
                     @Context ContainerRequestContext crc,
                     @PathParam("id") String fileIdOrPersistentId,

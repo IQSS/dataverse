@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.amazonaws.services.s3.model.PartETag;
+import com.mashape.unirest.request.body.MultipartBody;
+
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
@@ -65,6 +67,12 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
 import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -1945,6 +1953,15 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/thumbnail")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces("application/json")
+    @Operation(summary = "Uploads a logo for a dataset", 
+               description = "Uploads a logo for a dataset")
+    @APIResponse(responseCode = "200",
+               description = "Dataset logo uploaded successfully")
+    @Tag(name = "uploadDatasetLogo", 
+         description = "Uploads a logo for a dataset")
+    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA,
+         schema = @Schema(implementation = MultipartBody.class)))          
     public Response uploadDatasetLogo(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream) {
         try {
             DatasetThumbnail datasetThumbnail = execCommand(new UpdateDatasetThumbnailCommand(createDataverseRequest(getRequestUser(crc)), findDatasetOrDie(idSupplied), UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, inputStream));
@@ -2417,6 +2434,15 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/add")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces("application/json")
+    @Operation(summary = "Uploads a file for a dataset", 
+               description = "Uploads a file for a dataset")
+    @APIResponse(responseCode = "200",
+               description = "File uploaded successfully to dataset")
+    @Tag(name = "addFileToDataset", 
+         description = "Uploads a file for a dataset")
+    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA,
+         schema = @Schema(implementation = MultipartBody.class)))  
     public Response addFileToDataset(@Context ContainerRequestContext crc,
                     @PathParam("id") String idSupplied,
                     @FormDataParam("jsonData") String jsonData,
@@ -3618,6 +3644,15 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/addGlobusFiles")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces("application/json")
+    @Operation(summary = "Uploads a globus file for a dataset", 
+               description = "Uploads a globus file for a dataset")
+    @APIResponse(responseCode = "200",
+               description = "Globus file uploaded successfully to dataset")
+    @Tag(name = "addGlobusFilesToDataset", 
+         description = "Uploads a globus file for a dataset")
+    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA,
+         schema = @Schema(implementation = MultipartBody.class)))  
     public Response addGlobusFilesToDataset(@Context ContainerRequestContext crc,
                                             @PathParam("id") String datasetId,
                                             @FormDataParam("jsonData") String jsonData,
@@ -4000,6 +4035,15 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/addFiles")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces("application/json")
+    @Operation(summary = "Uploads a set of files to a dataset", 
+               description = "Uploads a set of files to a dataset")
+    @APIResponse(responseCode = "200",
+               description = "Files uploaded successfully to dataset")
+    @Tag(name = "addFilesToDataset", 
+         description = "Uploads a set of files to a dataset")
+    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA,
+         schema = @Schema(implementation = MultipartBody.class)))  
     public Response addFilesToDataset(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied,
             @FormDataParam("jsonData") String jsonData) {
 
@@ -4067,6 +4111,15 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/replaceFiles")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces("application/json")
+    @Operation(summary = "Replace a set of files to a dataset", 
+               description = "Replace a set of files to a dataset")
+    @APIResponse(responseCode = "200",
+               description = "Files replaced successfully to dataset")
+    @Tag(name = "replaceFilesInDataset", 
+         description = "Replace a set of files to a dataset")
+    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA,
+         schema = @Schema(implementation = MultipartBody.class))) 
     public Response replaceFilesInDataset(@Context ContainerRequestContext crc,
                                           @PathParam("id") String idSupplied,
                                           @FormDataParam("jsonData") String jsonData) {
