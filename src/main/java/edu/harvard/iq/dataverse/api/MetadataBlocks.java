@@ -18,15 +18,15 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 public class MetadataBlocks extends AbstractApiBean {
 
     @GET
-    public Response list(@QueryParam("onlyDisplayedOnCreate") boolean onlyDisplayedOnCreate,
-                         @QueryParam("returnDetailedData") boolean returnDetailedData) {
+    public Response listMetadataBlocks(@QueryParam("onlyDisplayedOnCreate") boolean onlyDisplayedOnCreate,
+                                       @QueryParam("returnDetailedData") boolean returnDetailedData) {
         List<MetadataBlock> metadataBlocks = metadataBlockSvc.listMetadataBlocks(onlyDisplayedOnCreate);
         return ok(json(metadataBlocks, returnDetailedData, onlyDisplayedOnCreate));
     }
 
     @Path("{identifier}")
     @GET
-    public Response getBlock(@PathParam("identifier") String idtf) {
+    public Response getMetadataBlock(@PathParam("identifier") String idtf) {
         MetadataBlock b = findMetadataBlock(idtf);
         return (b != null) ? ok(json(b)) : notFound("Can't find metadata block '" + idtf + "'");
     }
