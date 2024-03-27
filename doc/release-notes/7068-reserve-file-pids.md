@@ -2,8 +2,8 @@
 
 ### Pre-Publish File DOI Reservation with DataCite
 
-Dataverse installations using DataCite will be able to reserve the persistent identifiers for files with DataCite ahead of publishing time. This allows the file DOI to be reserved earlier in the data sharing process and makes the step of publishing datasets simpler and less error-prone. Note that reserving file DOIs can slow uploads with large numbers of files so administrators may need to adjust timeouts (specifically any Apache "``ProxyPass / ajp://localhost:8009/ timeout=``" setting in the recommended Dataverse configuration).
+Dataverse installations using DataCite (or other persistent identifier (PID) Providers that support reserving PIDs) will be able to reserve PIDs for files when they are uploaded (rather than at publication time). Note that reserving file DOIs can slow uploads with large numbers of files so administrators may need to adjust timeouts (specifically any Apache "``ProxyPass / ajp://localhost:8009/ timeout=``" setting in the recommended Dataverse configuration).
 
 ## Major Use Cases
 
-- Users will have DOIs reserved for their files upon dataset create instead of at publish time. (Issue #7068, PR #7334)
+- Users will have DOIs/PIDs reserved for their files as part of file upload instead of at publication time. (Issue #7068, PR #7334)
