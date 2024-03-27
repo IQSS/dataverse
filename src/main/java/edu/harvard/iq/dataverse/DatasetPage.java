@@ -790,11 +790,17 @@ public class DatasetPage implements java.io.Serializable {
             return isIndexedVersion = false;
         }
         // If this is the latest published version, we want to confirm that this 
-        // version was successfully indexed after the last publication 
-        
+        // version was successfully indexed after the last publication
         if (isThisLatestReleasedVersion()) {
-            return isIndexedVersion = (workingVersion.getDataset().getIndexTime() != null)
-                    && workingVersion.getDataset().getIndexTime().after(workingVersion.getReleaseTime());
+            if (workingVersion.getDataset().getIndexTime() == null) {
+                return isIndexedVersion = false;
+            }
+            // We add 3 hours to the indexed time to prevent false negatives
+            // when indexed time gets overwritten in finalizing the publication step
+            // by a value before the release time
+            final long duration = 3 * 60 * 60 * 1000;
+            final Timestamp movedIndexTime = new Timestamp(workingVersion.getDataset().getIndexTime().getTime() + duration);
+            return isIndexedVersion = movedIndexTime.after(workingVersion.getReleaseTime());
         }
         
         // Drafts don't have the indextime stamps set/incremented when indexed, 
