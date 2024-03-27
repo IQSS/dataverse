@@ -34,6 +34,7 @@ oauth-credentials.md
 /src/main/webapp/oauth2/newAccount.html
 scripts/api/setup-all.sh*
 scripts/api/setup-all.*.log
+src/main/resources/edu/harvard/iq/dataverse/openapi/
 
 # ctags generated tag file
 tags

@@ -111,9 +111,9 @@ public class WorkflowsAdmin extends AbstractApiBean {
         }
     }
     
-    @Path("/{identifier}")
+    @Path("/{id}")
     @GET
-    public Response getWorkflow(@PathParam("identifier") String identifier ) {
+    public Response getWorkflow(@PathParam("id") String identifier ) {
         try {
             long idtf = Long.parseLong(identifier);
             return workflows.getWorkflow(idtf)

@@ -119,7 +119,7 @@ public class BuiltinUsers extends AbstractApiBean {
      */
     @POST
     @Path("{password}/{key}/{sendEmailNotification}")
-    public Response create(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key, @PathParam("sendEmailNotification") Boolean sendEmailNotification) {
+    public Response createWithNotification(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key, @PathParam("sendEmailNotification") Boolean sendEmailNotification) {
         return internalSave(user, password, key, sendEmailNotification);
     }
     
