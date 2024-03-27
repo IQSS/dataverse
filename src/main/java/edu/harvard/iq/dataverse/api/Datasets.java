@@ -3645,12 +3645,12 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/addGlobusFiles")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces("application/json")
-    @Operation(summary = "Uploads a globus file for a dataset", 
-               description = "Uploads a globus file for a dataset")
+    @Operation(summary = "Uploads a Globus file for a dataset", 
+               description = "Uploads a Globus file for a dataset")
     @APIResponse(responseCode = "200",
                description = "Globus file uploaded successfully to dataset")
     @Tag(name = "addGlobusFilesToDataset", 
-         description = "Uploads a globus file for a dataset")
+         description = "Uploads a Globus file for a dataset")
     @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA,
          schema = @Schema(implementation = MultipartBody.class)))  
     public Response addGlobusFilesToDataset(@Context ContainerRequestContext crc,

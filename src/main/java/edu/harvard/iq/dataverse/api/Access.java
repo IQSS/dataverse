@@ -1257,7 +1257,7 @@ public class Access extends AbstractApiBean {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces("application/json")
     @Operation(summary = "Save auxiliary file with version", 
-               description = "Saves an auxlirary file")
+               description = "Saves an auxiliary file")
     @APIResponses(value = {
         @APIResponse(responseCode = "200",
                     description = "File saved response"),
