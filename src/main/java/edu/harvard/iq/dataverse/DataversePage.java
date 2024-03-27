@@ -1307,11 +1307,11 @@ public class DataversePage implements java.io.Serializable {
             String label = null;
             if (this.dataverse.getOwner() != null && this.dataverse.getOwner().getEffectivePidGenerator()!= null) {
                 PidProvider inheritedPidProvider = this.dataverse.getOwner().getEffectivePidGenerator();
-                label = inheritedPidProvider.getLabel() + BundleUtil.getStringFromBundle("dataverse.inherited") + ": "
+                label = inheritedPidProvider.getLabel() + " " + BundleUtil.getStringFromBundle("dataverse.inherited") + ": "
                         + inheritedPidProvider.getProtocol() + ":" + inheritedPidProvider.getAuthority()
                         + inheritedPidProvider.getSeparator() + inheritedPidProvider.getShoulder();
             } else {
-                label = defaultPidProvider.getLabel() + BundleUtil.getStringFromBundle("dataverse.default") + ": "
+                label = defaultPidProvider.getLabel() +  " " + BundleUtil.getStringFromBundle("dataverse.default") + ": "
                         + defaultPidProvider.getProtocol() + ":" + defaultPidProvider.getAuthority()
                         + defaultPidProvider.getSeparator() + defaultPidProvider.getShoulder();
             }
