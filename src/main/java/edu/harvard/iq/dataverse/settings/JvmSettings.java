@@ -60,6 +60,10 @@ public enum JvmSettings {
     SOLR_CORE(SCOPE_SOLR, "core"),
     SOLR_PATH(SCOPE_SOLR, "path"),
 
+    // INDEX CONCURENCY
+    SCOPE_SOLR_CONCURENCY(SCOPE_SOLR, "concurrency"),
+    MAX_ASYNC_INDEXES(SCOPE_SOLR_CONCURENCY, "max-async-indexes"),
+
     // RSERVE CONNECTION
     SCOPE_RSERVE(PREFIX, "rserve"),
     RSERVE_HOST(SCOPE_RSERVE, "host"),
