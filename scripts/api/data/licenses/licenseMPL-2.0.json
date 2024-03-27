@@ -1,0 +1,10 @@
+{
+  "rightsName": "MPL 2.0",
+  "rightsURI": "https://www.mozilla.org/en-US/MPL/2.0/",
+  "rightsIdentifier": "MPL-2.0",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeURI": "https://spdx.org/licenses/",
+  "rightsShortDescription": "Mozilla Public License 2.0.",
+  "rightsActive": "true",
+  "sortOrder": 17
+}

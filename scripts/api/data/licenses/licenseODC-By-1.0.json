@@ -1,0 +1,10 @@
+{
+  "rightsName": "ODC-By 1.0",
+  "rightsURI": "https://opendatacommons.org/licenses/by/1.0/",
+  "rightsIdentifier": "ODC-By-1.0",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeURI": "https://spdx.org/licenses/",
+  "rightsShortDescription": "Open Data Commons Attribution License v1.0.",
+  "rightsActive": "true",
+  "sortOrder": 19
+}

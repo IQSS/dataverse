@@ -1,0 +1,11 @@
+{
+  "rightsName": "GPL 2.0 only",
+  "rightsURI": "https://www.gnu.org/licenses/old-licenses/gpl-2.0-standalone.html",
+  "rightsIdentifier": "GPL-2.0-only",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeURI": "https://spdx.org/licenses/",
+  "rightsShortDescription": "GNU General Public License v2.0 only.",
+  "rightsIconUrl": "https://licensebuttons.net/l/GPL/2.0/88x62.png",
+  "rightsActive": "true",
+  "sortOrder": 11
+}

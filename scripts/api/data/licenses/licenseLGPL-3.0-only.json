@@ -1,0 +1,10 @@
+{
+  "rightsName": "LGPL 3.0 only",
+  "rightsURI": "https://www.gnu.org/licenses/lgpl-3.0-standalone.html",
+  "rightsIdentifier": "LGPL-3.0-only",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeURI": "https://spdx.org/licenses/",
+  "rightsShortDescription": "GNU Lesser General Public License v3.0 only.",
+  "rightsActive": "true",
+  "sortOrder": 14
+}

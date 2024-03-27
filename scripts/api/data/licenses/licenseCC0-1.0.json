@@ -1,8 +1,11 @@
 {
-  "name": "CC0 1.0",
-  "uri": "http://creativecommons.org/publicdomain/zero/1.0",
-  "shortDescription": "Creative Commons CC0 1.0 Universal Public Domain Dedication.",
-  "iconUrl": "https://licensebuttons.net/p/zero/1.0/88x31.png",
-  "active": true,
+  "rightsName": "CC0 1.0",
+  "rightsURI": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "rightsIdentifier": "CC0-1.0",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeURI": "https://spdx.org/licenses/",
+  "rightsShortDescription": "Creative Commons Zero v1.0 Universal.",
+  "rightsIconUrl": "https://licensebuttons.net/p/zero/1.0/88x31.png",
+  "rightsActive": "true",
   "sortOrder": 1
 }

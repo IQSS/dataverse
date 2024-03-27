@@ -1,0 +1,10 @@
+{
+  "rightsName": "Etalab 2.0",
+  "rightsURI": "https://spdx.org/licenses/etalab-2.0.html",
+  "rightsIdentifier": "etalab-2.0",
+  "rightsIdentifierScheme": "SPDX",
+  "schemeURI": "https://spdx.org/licenses/",
+  "rightsShortDescription": "Etalab Open License 2.0.",
+  "rightsActive": "true",
+  "sortOrder": 29
+}
