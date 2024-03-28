@@ -307,11 +307,9 @@ public class AuthenticationServiceBean {
             if (user != null && !user.isDeactivated()) {
                 user = userService.updateLastLogin(user);
             }
-            
+
             if ( user == null ) {
                 throw new IllegalStateException("Authenticated user does not exist. The functionality to support creating one at this point in authentication has been removed.");
-                //return createAuthenticatedUser(
-                //        new UserRecordIdentifier(authenticationProviderId, resp.getUserId()), resp.getUserId(), resp.getUserDisplayInfo(), true );
             } else {
                 if (BuiltinAuthenticationProvider.PROVIDER_ID.equals(user.getAuthenticatedUserLookup().getAuthenticationProviderId())) {
                     return user;
