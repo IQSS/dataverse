@@ -371,4 +371,13 @@ public class FileUtilTest {
         assertEquals("application/octet-stream", contentType);
     }
 
+    @Test
+    public void testGZipFile() throws IOException {
+        String path = "src/test/resources/fits/";
+        String pathAndFile = path + "FOSy19g0309t_c2f.fits.gz";
+        File file = new File(pathAndFile);
+        String contentType = FileUtil.determineFileType(file, pathAndFile);
+        assertEquals("application/fits-gzipped", contentType);
+    }
+
 }
