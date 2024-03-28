@@ -30,7 +30,7 @@ public class MetadataBlockServiceBean {
 
     public List<MetadataBlock> listMetadataBlocks(boolean onlyDisplayedOnCreate) {
         if (onlyDisplayedOnCreate) {
-            return listMetadataBlocksDisplayedOnCreate();
+            return listMetadataBlocksDisplayedOnCreate(null);
         }
         return em.createNamedQuery("MetadataBlock.listAll", MetadataBlock.class).getResultList();
     }
@@ -49,13 +49,24 @@ public class MetadataBlockServiceBean {
         }
     }
 
-    private List<MetadataBlock> listMetadataBlocksDisplayedOnCreate() {
+    public List<MetadataBlock> listMetadataBlocksDisplayedOnCreate(Dataverse ownerDataverse) {
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<MetadataBlock> criteriaQuery = criteriaBuilder.createQuery(MetadataBlock.class);
         Root<MetadataBlock> metadataBlockRoot = criteriaQuery.from(MetadataBlock.class);
         Join<MetadataBlock, DatasetFieldType> datasetFieldTypeJoin = metadataBlockRoot.join("datasetFieldTypes");
         Predicate displayOnCreatePredicate = criteriaBuilder.isTrue(datasetFieldTypeJoin.get("displayOnCreate"));
-        criteriaQuery.where(displayOnCreatePredicate);
+
+        if (ownerDataverse != null) {
+            Root<Dataverse> dataverseRoot = criteriaQuery.from(Dataverse.class);
+            criteriaQuery.where(criteriaBuilder.and(
+                    criteriaBuilder.equal(dataverseRoot.get("id"), ownerDataverse.getId()),
+                    metadataBlockRoot.in(dataverseRoot.get("metadataBlocks")),
+                    displayOnCreatePredicate
+            ));
+        } else {
+            criteriaQuery.where(displayOnCreatePredicate);
+        }
+
         criteriaQuery.select(metadataBlockRoot).distinct(true);
         TypedQuery<MetadataBlock> typedQuery = em.createQuery(criteriaQuery);
         return typedQuery.getResultList();
