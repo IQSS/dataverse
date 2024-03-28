@@ -1,0 +1,1 @@
+A new file has been added to import the MIT License to Dataverse on licenseMIT.json

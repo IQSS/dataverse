@@ -1838,6 +1838,13 @@ JSON files for `Creative Commons licenses <https://creativecommons.org/about/ccl
 
 .. _adding-custom-licenses:
 
+Adding Software Licenses
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+JSON files for Software Licenses are provided below.
+
+- :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
+
 Adding Custom Licenses
 ^^^^^^^^^^^^^^^^^^^^^^
 
