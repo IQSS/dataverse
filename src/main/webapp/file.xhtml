@@ -557,7 +557,8 @@
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
                                                         </th>
-                                                        <td>#{!(empty FilePage.file.embargo) ? ''.concat(FilePage.embargoPhrase).concat(' ').concat(FilePage.file.embargo.dateAvailable) : ''}
+                                                        <td>#{(empty FilePage.file.embargo) and !(empty FilePage.file.released) and !(empty FilePage.file.retention) ? ''.concat(FilePage.file.publicationDateFormattedYYYYMMDD).concat('; ') : ''}
+                                                            #{!(empty FilePage.file.embargo) ? ''.concat(FilePage.embargoPhrase).concat(' ').concat(FilePage.file.embargo.dateAvailable) : ''}
                                                             #{!(empty FilePage.file.embargo) and !(empty FilePage.file.retention) ? '; ': ''}
                                                             #{!(empty FilePage.file.retention) ? ''.concat(FilePage.retentionPhrase)
                                                               .concat(' ').concat(FilePage.file.retention.dateUnavailable)
