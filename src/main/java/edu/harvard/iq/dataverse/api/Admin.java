@@ -1035,15 +1035,33 @@ public class Admin extends AbstractApiBean {
 		ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "toggleSuperuser")
 				.setInfo(identifier);
 		try {
-			AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
-                        if (user.isDeactivated()) {
-                            return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
-                        }
+			final AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+			return changeSuperUserStatus(user, !user.isSuperuser());
+		} catch (Exception e) {
+			alr.setActionResult(ActionLogRecord.Result.InternalError);
+			alr.setInfo(alr.getInfo() + "// " + e.getMessage());
+			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+		} finally {
+			actionLogSvc.log(alr);
+		}
+	}
 
-			user.setSuperuser(!user.isSuperuser());
+	private Response changeSuperUserStatus(AuthenticatedUser user, Boolean isSuperuser) {
+		if (user.isDeactivated()) {
+			return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
+		}
+		user.setSuperuser(isSuperuser);
+		return ok("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set" : "removed")
+				+ " as a superuser.");
+	}
 
-			return ok("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set" : "removed")
-					+ " as a superuser.");
+	@Path("superuser/{identifier}")
+	@PUT
+	public Response changeSuperUserStatus(@PathParam("identifier") String identifier, Boolean isSuperUser) {
+		ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "changeSuperUserStatus")
+				.setInfo(identifier + ":" + isSuperUser);
+		try {
+            return changeSuperUserStatus(authSvc.getAuthenticatedUser(identifier), isSuperUser);
 		} catch (Exception e) {
 			alr.setActionResult(ActionLogRecord.Result.InternalError);
 			alr.setInfo(alr.getInfo() + "// " + e.getMessage());

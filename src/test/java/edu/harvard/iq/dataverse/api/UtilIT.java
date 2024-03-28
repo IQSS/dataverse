@@ -1525,6 +1525,11 @@ public class UtilIT {
         return response;
     }
 
+    static Response changeSuperUserStatus(String username, Boolean isSuperUser) {
+        Response response = given().body(isSuperUser).put("/api/admin/superuser/" + username);
+        return response;
+    }
+
     static Response reindexDataset(String persistentId) {
         Response response = given()
                 .get("/api/admin/index/dataset?persistentId=" + persistentId);

@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
  */
 public class RolesIT {
     
-    private static final Logger logger = Logger.getLogger(AdminIT.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(RolesIT.class.getCanonicalName());
 
     @BeforeAll
     public static void setUp() {
