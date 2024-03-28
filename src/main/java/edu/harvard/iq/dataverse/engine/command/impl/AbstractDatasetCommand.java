@@ -2,10 +2,13 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionDifference;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -24,9 +27,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 
+import jakarta.ejb.EJB;
 import jakarta.validation.ConstraintViolation;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 
 /**
@@ -228,6 +230,15 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                 if (mdKey == null || !mdKey.equalsIgnoreCase(smdbString)) {
                     throw new IllegalCommandException("Updating system metadata in block " + mdb.getName() + " requires a valid key", this);
                 }
+            }
+        }
+    }
+
+    protected void registerExternalVocabValuesIfAny(CommandContext ctxt, DatasetVersion newVersion) {
+        for (DatasetField df : newVersion.getFlatDatasetFields()) {
+            logger.fine("Found id: " + df.getDatasetFieldType().getId());
+            if (ctxt.dsField().getCVocConf(true).containsKey(df.getDatasetFieldType().getId())) {
+                ctxt.dsField().registerExternalVocabValues(df);
             }
         }
     }
