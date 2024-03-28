@@ -23,12 +23,7 @@ import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.pkce.CodeChallengeMethod;
 import com.nimbusds.oauth2.sdk.pkce.CodeVerifier;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
-import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
-import com.nimbusds.openid.connect.sdk.Nonce;
-import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
-import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
-import com.nimbusds.openid.connect.sdk.UserInfoRequest;
-import com.nimbusds.openid.connect.sdk.UserInfoResponse;
+import com.nimbusds.openid.connect.sdk.*;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderConfigurationRequest;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
@@ -173,12 +168,16 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      */
     @Override
     public String buildAuthzUrl(String state, String callbackUrl) {
+        return buildAuthzUrl(state,callbackUrl,Optional.empty());
+    }
+
+    public String buildAuthzUrl(String state, String callbackUrl, Optional<Prompt.Type> promptType) {
         State stateObject = new State(state);
         URI callback = URI.create(callbackUrl);
         Nonce nonce = new Nonce();
         CodeVerifier pkceVerifier = pkceEnabled ? new CodeVerifier() : null;
         
-        AuthenticationRequest req = new AuthenticationRequest.Builder(new ResponseType("code"),
+        AuthenticationRequest.Builder reqB = new AuthenticationRequest.Builder(new ResponseType("code"),
                                                                       Scope.parse(this.scope),
                                                                       this.clientAuth.getClientID(),
                                                                       callback)
@@ -186,8 +185,11 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
             .state(stateObject)
             // Called method is nullsafe - will disable sending a PKCE challenge in case the verifier is not present
             .codeChallenge(pkceVerifier, pkceMethod)
-            .nonce(nonce)
-            .build();
+            .nonce(nonce);
+        if(promptType.isPresent()) {
+            reqB.prompt(promptType.get());
+        }
+        AuthenticationRequest req= reqB.build();
         
         // Cache the PKCE verifier, as we need the secret in it for verification later again, after the client sends us
         // the auth code! We use the state to cache the verifier, as the state is unique per authentication event.

@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
@@ -12,10 +15,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.SecureRandom;
+import java.sql.Timestamp;
 import java.time.Clock;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,7 +32,7 @@ import jakarta.validation.constraints.NotNull;
 import static edu.harvard.iq.dataverse.util.StringUtil.toOption;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.text.MessageFormat;
-import java.util.ArrayList;
+
 import org.omnifaces.util.Faces;
 
 /**
@@ -55,7 +57,8 @@ public class OAuth2LoginBackingBean implements Serializable {
      * TODO: Only used in exchangeCodeForToken(). Make local var in method.
      */
     private OAuth2UserRecord oauthUser;
-
+    @EJB
+    UserNotificationServiceBean userNotificationService;
     @EJB
     AuthenticationServiceBean authenticationSvc;
     
@@ -100,8 +103,16 @@ public class OAuth2LoginBackingBean implements Serializable {
 
             if (oIdp.isPresent() && code.isPresent()) {
                 AbstractOAuth2AuthenticationProvider idp = oIdp.get();
-                oauthUser = idp.getUserRecord(code.get(), req.getParameter("state"), systemConfig.getOAuth2CallbackUrl());
-                
+
+                // Since we want a different behavior after authz, we pass a property (`?signup=true`) to the callback URL.
+                // We need to reuse the same callback URL when requesting the userRecord, otherwise it's invalid.
+                String singup = req.getParameter("signup");
+                if(singup !=null && singup.equals("true")) {
+                    // ensure we have the same callback that we used initially
+                    oauthUser = idp.getUserRecord(code.get(), req.getParameter("state"), systemConfig.getOAuth2CallbackUrl()+"?signup=true");
+                }else {
+                    oauthUser = idp.getUserRecord(code.get(), req.getParameter("state"), systemConfig.getOAuth2CallbackUrl());
+                }
                 // Throw an error if this authentication method is disabled:
                 // (it's not clear if it's possible at all, for somebody to get here with 
                 // the provider really disabled; but, shouldn't hurt either).
@@ -121,8 +132,45 @@ public class OAuth2LoginBackingBean implements Serializable {
                         signUpDisabled = true; 
                         throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.signupDisabledForProvider"), idp.getId())); 
                     } else {
-                        newAccountPage.setNewUser(oauthUser);
-                        Faces.redirect("/oauth2/firstLogin.xhtml");
+                        // Here is the automatic account generation without explicit user interaction
+                        // Most of the code is copied and adapted from OAuth2FirstLoginPage
+                        // if signup is ture (it's a request to create an account without a seperated UI page)
+                        if(singup !=null && singup.equals("true")){
+
+                            AuthenticatedUser aUser = authenticationSvc.getAuthenticatedUserByEmail(oauthUser.getDisplayInfo().getEmailAddress());
+                            if (aUser != null) {
+                                logger.log(Level.WARNING, "Cannot create user, account with email adress already exists" );
+                            }
+                            if (authenticationSvc.identifierExists(oauthUser.getUsername())) {
+                                logger.log(Level.WARNING, "Cannot create user, account with username already exists" );
+                            }
+                            AuthenticatedUserDisplayInfo newAud = new AuthenticatedUserDisplayInfo(oauthUser.getDisplayInfo().getFirstName(),
+                                    oauthUser.getDisplayInfo().getLastName(),
+                                    oauthUser.getDisplayInfo().getEmailAddress(),
+                                    oauthUser.getDisplayInfo().getAffiliation(),
+                                    oauthUser.getDisplayInfo().getPosition());
+                            final AuthenticatedUser user = authenticationSvc.createAuthenticatedUser(oauthUser.getUserRecordIdentifier(), oauthUser.getUsername(), newAud, true);
+                            // in the UI case the session is set...I'm not sure if this is needed for the API use application
+                            session.setUser(user);
+                            /**
+                             * @todo Move this to AuthenticationServiceBean.createAuthenticatedUser
+                             */
+                            userNotificationService.sendNotification(user,
+                                    new Timestamp(new Date().getTime()),
+                                    UserNotification.Type.CREATEACC, null);
+
+                            final OAuth2TokenData tokenData = oauthUser.getTokenData();
+                            if (tokenData != null) {
+                                tokenData.setUser(user);
+                                tokenData.setOauthProviderId(oauthUser.getServiceId());
+                                oauth2Tokens.store(tokenData);
+                            }
+                            Faces.redirect(redirectPage.orElse("/"));
+                        }
+                        else {
+                            newAccountPage.setNewUser(oauthUser);
+                            Faces.redirect("/oauth2/firstLogin.xhtml");
+                        }
                     }
         
                 } else {
