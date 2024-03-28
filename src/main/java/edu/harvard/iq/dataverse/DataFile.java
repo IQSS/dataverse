@@ -242,6 +242,18 @@ public class DataFile extends DvObject implements Comparable {
         this.embargo = embargo;
     }
 
+    @ManyToOne
+    @JoinColumn(name="retention_id")
+    private Retention retention;
+
+    public Retention getRetention() {
+        return retention;
+    }
+
+    public void setRetention(Retention retention) {
+        this.retention = retention;
+    }
+
     public DataFile() {
         this.fileMetadatas = new ArrayList<>();
         initFileReplaceAttributes();

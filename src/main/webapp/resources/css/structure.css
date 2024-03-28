@@ -1121,6 +1121,40 @@ padding-right:0px;
     font-weight: 700;
 }
 
+/*RETENTION*/
+.retentionright {
+  margin-left:10px;
+}
+.retentioncheckbox {
+  margin-top: 20px;
+  padding-bottom: 30px;
+}
+.retentionmsg {
+  display:block;
+}
+.retention {
+        display:flex;
+        flex-direction:column;
+}
+.retention.text-warning, .retention.text-danger {
+        flex-direction:row;
+}
+.retention span {
+        margin-right: 10px;
+}
+.retention span.glyphicon-asterisk {
+            font-size: .5em;
+                vertical-align: top;
+}
+
+.retention .col-lg-3 {
+    padding-left:0px;
+}
+
+.retentionlabel {
+    font-weight: 700;
+}
+
 /*Accessibility*/
 .text-muted {
     color: #707070;

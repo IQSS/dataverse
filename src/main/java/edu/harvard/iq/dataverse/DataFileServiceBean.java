@@ -1365,7 +1365,10 @@ public class DataFileServiceBean implements java.io.Serializable {
         DataFile d = find(id);
         return d.getEmbargo();
     }
-    
+
+    public boolean isRetentionExpired(FileMetadata fm) {
+        return FileUtil.isRetentionExpired(fm);
+    }
     /**
      * Checks if the supplied DvObjectContainer (Dataset or Collection; although
      * only collection-level storage quotas are officially supported as of now)

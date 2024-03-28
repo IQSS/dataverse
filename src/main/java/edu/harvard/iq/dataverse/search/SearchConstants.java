@@ -40,5 +40,5 @@ public class SearchConstants {
     public static final String RESTRICTED = "Restricted";
     public static final String EMBARGOEDTHENRESTRICTED = "EmbargoedThenRestricted";
     public static final String EMBARGOEDTHENPUBLIC = "EmbargoedThenPublic";
-
+    public static final String RETENTIONEXPIRED = "RetentionPeriodExpired";
 }

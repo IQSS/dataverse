@@ -118,6 +118,18 @@
         </li>
     </ui:fragment>
 
+    <ui:fragment rendered="#{settingsWrapper.retentionAllowed}">
+        <li>
+            <p:commandLink      update="@([id$=fileRetentionPopup])"
+                                onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
+                                            return false;"
+                                oncomplete="PF('fileRetentionPopup').show();">
+                <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
+                <h:outputText value="#{bundle['file.retention']}"/>
+            </p:commandLink>
+        </li>
+    </ui:fragment>
+
     <!-- TO-DO #7342 - ADD PROVENANCE FOR SINGLE FILE-->    
     <ui:fragment rendered="#{isFilePg and systemConfig.provCollectionEnabled}">
         <li>

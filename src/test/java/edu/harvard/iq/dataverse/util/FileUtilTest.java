@@ -1,13 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.Embargo;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.Guestbook;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.FileUtil.FileCitationExtension;
 
@@ -213,6 +206,42 @@ public class FileUtilTest {
             dsv.setDataset(dataset);
             embargoedFileMetadata.setRestricted(false);
             assertFalse(FileUtil.isPubliclyDownloadable(embargoedFileMetadata));
+        }
+
+        @Test
+        public void testIsPubliclyDownloadable4() {
+
+            FileMetadata retentionFileMetadata = new FileMetadata();
+            DataFile df = new DataFile();
+            Retention r = new Retention();
+            r.setDateUnavailable(LocalDate.now().minusDays(1) );
+            df.setRetention(r);
+            retentionFileMetadata.setDataFile(df);
+            DatasetVersion dsv = new DatasetVersion();
+            dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
+            retentionFileMetadata.setDatasetVersion(dsv);
+            Dataset dataset = new Dataset();
+            dsv.setDataset(dataset);
+            retentionFileMetadata.setRestricted(false);
+            assertFalse(FileUtil.isPubliclyDownloadable(retentionFileMetadata));
+        }
+
+        @Test
+        public void testIsPubliclyDownloadable5() {
+
+            FileMetadata retentionFileMetadata = new FileMetadata();
+            DataFile df = new DataFile();
+            Retention r = new Retention();
+            r.setDateUnavailable(LocalDate.now());
+            df.setRetention(r);
+            retentionFileMetadata.setDataFile(df);
+            DatasetVersion dsv = new DatasetVersion();
+            dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
+            retentionFileMetadata.setDatasetVersion(dsv);
+            Dataset dataset = new Dataset();
+            dsv.setDataset(dataset);
+            retentionFileMetadata.setRestricted(false);
+            assertTrue(FileUtil.isPubliclyDownloadable(retentionFileMetadata));
         }
 
         @Test
