@@ -116,7 +116,7 @@ The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.Data
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
-  export JSON_DATA="{'description':'My description.','directoryLabel':'data/subdir1','categories':['Data'], 'restrict':'false', 'storageIdentifier':'trs://images/dataverse_project_logo.svg', 'fileName':'dataverse_logo.svg', 'mimeType':'image/svg+xml', 'checksum': {'@type': 'SHA-1', '@value': '123456'}}"
+  export JSON_DATA='{"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"trs://images/dataverse_project_logo.svg", "fileName":"dataverse_logo.svg", "mimeType":"image/svg+xml", "checksum": {"@type": "SHA-1", "@value": "123456"}}'
 
   curl -X POST -H "X-Dataverse-key: $API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/add?persistentId=$PERSISTENT_IDENTIFIER" -F "jsonData=$JSON_DATA"
   
