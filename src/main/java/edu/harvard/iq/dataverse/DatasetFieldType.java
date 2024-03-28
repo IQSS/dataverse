@@ -37,7 +37,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
      */
     public enum FieldType {
         TEXT, TEXTBOX, DATE, EMAIL, URL, FLOAT, INT, NONE
-    };    
+    }
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -543,11 +543,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             }
 
             Boolean parentAllowsMultiplesBoolean = false;
-            if (isHasParent()) {
-                if (getParentDatasetFieldType() != null) {
+            if (isHasParent() && (getParentDatasetFieldType() != null)) {
                     DatasetFieldType parent = getParentDatasetFieldType();
                     parentAllowsMultiplesBoolean = parent.isAllowMultiples();
-                }
             }
             
             boolean makeSolrFieldMultivalued;
@@ -566,8 +564,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
              */
             String oddValue = name + getTmpNullFieldTypeIdentifier();
             boolean makeSolrFieldMultivalued = false;
-            SolrField solrField = new SolrField(oddValue, solrType, makeSolrFieldMultivalued, facetable);
-            return solrField;
+            return new SolrField(oddValue, solrType, makeSolrFieldMultivalued, facetable);
         }
     }
 

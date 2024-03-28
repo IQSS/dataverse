@@ -509,12 +509,10 @@ public class DatasetPage implements java.io.Serializable {
                 return null;
             }
 
-            if (datasetThumbnail.isFromDataFile()) {
-                if (!datasetThumbnail.getDataFile().equals(dataset.getThumbnailFile())) {
+            if (datasetThumbnail.isFromDataFile() && (!datasetThumbnail.getDataFile().equals(dataset.getThumbnailFile()))) {
                     datasetService.assignDatasetThumbnailByNativeQuery(dataset, datasetThumbnail.getDataFile());
                     // refresh the dataset:
                     dataset = datasetService.find(dataset.getId());
-                }
             }
 
             thumbnailString = datasetThumbnail.getBase64image();
@@ -572,16 +570,14 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
-    public void addItemtoCart(String title, String persistentId) throws Exception{
-        if (canComputeAllFiles(true)) {
-            if (session.getUser() instanceof AuthenticatedUser) {
-                AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
-                try {
-                    authUser.getCart().addItem(title, persistentId);
-                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
-                } catch (Exception ex){
-                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
-                }
+    public void addItemtoCart(String title, String persistentId) throws Exception {
+        if (canComputeAllFiles(true) && (session.getUser() instanceof AuthenticatedUser)) {
+            AuthenticatedUser authUser = (AuthenticatedUser) session.getUser();
+            try {
+                authUser.getCart().addItem(title, persistentId);
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.success"));
+            } catch (Exception ex){
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.compute.computeBatch.failure"));
             }
         }
     }
@@ -1119,11 +1115,11 @@ public class DatasetPage implements java.io.Serializable {
         return null;
     }
 
-    public SwiftAccessIO getSwiftObject() {
+    public SwiftAccessIO<DataFile> getSwiftObject() {
         try {
             StorageIO<DataFile> storageIO = getInitialDataFile() == null ? null : getInitialDataFile().getStorageIO();
-            if (storageIO != null && storageIO instanceof SwiftAccessIO) {
-                return (SwiftAccessIO)storageIO;
+            if (storageIO instanceof SwiftAccessIO) {
+                return (SwiftAccessIO<DataFile>)storageIO;
             } else {
                 logger.fine("DatasetPage: Failed to cast storageIO as SwiftAccessIO (most likely because storageIO is a FileAccessIO)");
             }
@@ -1135,7 +1131,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getSwiftContainerName() throws IOException {
-        SwiftAccessIO swiftObject = getSwiftObject();
+        SwiftAccessIO<DataFile> swiftObject = getSwiftObject();
         try {
             swiftObject.open();
             return swiftObject.getSwiftContainerName();
@@ -1166,10 +1162,7 @@ public class DatasetPage implements java.io.Serializable {
 
     //This function applies to a single datafile
     private boolean isSwiftStorage(FileMetadata metadata){
-        if (metadata.getDataFile().getStorageIdentifier().startsWith("swift://")) {
-            return true;
-        }
-        return false;
+        return metadata.getDataFile().getStorageIdentifier().startsWith("swift://");
     }
 
 
@@ -1264,11 +1257,11 @@ public class DatasetPage implements java.io.Serializable {
 
     //For a single file
     public String getComputeUrl(FileMetadata metadata) {
-        SwiftAccessIO swiftObject = null;
+        SwiftAccessIO<DataFile> swiftObject = null;
         try {
             StorageIO<DataFile> storageIO = metadata.getDataFile().getStorageIO();
-            if (storageIO != null && storageIO instanceof SwiftAccessIO) {
-                swiftObject = (SwiftAccessIO)storageIO;
+            if (storageIO instanceof SwiftAccessIO) {
+                swiftObject = (SwiftAccessIO<DataFile>)storageIO;
                 swiftObject.open();
             }
 
@@ -1871,10 +1864,6 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         return fm.getDataFile().isShapefileType();
-    }
-
-    private void msg(String s){
-        // System.out.println(s);
     }
 
     private List<FileMetadata> displayFileMetadata;
@@ -2484,8 +2473,6 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
-        folderMap = null;
-
     }
 
     private DefaultTreeNode createFolderTreeNode(String name, TreeNode parent) {
@@ -2685,20 +2672,6 @@ public class DatasetPage implements java.io.Serializable {
             logger.log(Level.SEVERE, "sendBackToContributor: {0}", message);
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.reject.failure", Collections.singletonList(message)));
         }
-
-        /*
-         The notifications below are redundant, since the ReturnDatasetToAuthorCommand
-         sends them already. - L.A. Sep. 7 2017
-
-        List<AuthenticatedUser> authUsers = permissionService.getUsersWithPermissionOn(Permission.PublishDataset, dataset);
-        List<AuthenticatedUser> editUsers = permissionService.getUsersWithPermissionOn(Permission.EditDataset, dataset);
-
-        editUsers.removeAll(authUsers);
-        new HashSet<>(editUsers).forEach( au ->
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()),
-                                                     UserNotification.Type.RETURNEDDS, dataset.getLatestVersion().getId())
-        );
-        */
 
         //FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetSubmitted", "This dataset has been sent back to the contributor.");
         //FacesContext.getCurrentInstance().addMessage(null, message);
