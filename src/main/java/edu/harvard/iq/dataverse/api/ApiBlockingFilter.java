@@ -49,7 +49,7 @@ public class ApiBlockingFilter implements Filter {
         @Override
         public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
             HttpServletResponse httpResponse = (HttpServletResponse) sr1;
-            httpResponse.getWriter().println("{ status:\"error\", message:\"Endpoint blocked. Please contact the dataverse administrator\"}" );
+            httpResponse.getWriter().println("{ \"status\":\"error\", \"message\":\"Endpoint blocked. Please contact the dataverse administrator\"}" );
             httpResponse.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             httpResponse.setContentType("application/json");
         }
@@ -67,7 +67,7 @@ public class ApiBlockingFilter implements Filter {
                 fc.doFilter(sr, sr1);
             } else {
                 HttpServletResponse httpResponse = (HttpServletResponse) sr1;
-                httpResponse.getWriter().println("{ status:\"error\", message:\"Endpoint available from localhost only. Please contact the dataverse administrator\"}" );
+                httpResponse.getWriter().println("{ \"status\":\"error\", \"message\":\"Endpoint available from localhost only. Please contact the dataverse administrator\"}" );
                 httpResponse.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                 httpResponse.setContentType("application/json");
             }
@@ -102,7 +102,7 @@ public class ApiBlockingFilter implements Filter {
             
             if ( block ) {
                 HttpServletResponse httpResponse = (HttpServletResponse) sr1;
-                httpResponse.getWriter().println("{ status:\"error\", message:\"Endpoint available using API key only. Please contact the dataverse administrator\"}" );
+                httpResponse.getWriter().println("{ \"status\":\"error\", \"message\":\"Endpoint available using API key only. Please contact the dataverse administrator\"}" );
                 httpResponse.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                 httpResponse.setContentType("application/json");
             } else {
