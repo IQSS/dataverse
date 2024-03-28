@@ -231,14 +231,20 @@
                   "typeClass": "primitive",
                   "value": "KeywordTerm1"
                 },
+                "keywordTermURI": {
+                  "typeName": "keywordTermURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://keywordTermURI1.org"
+                },
                 "keywordVocabulary": {
                   "typeName": "keywordVocabulary",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "KeywordVocabulary1"
                 },
-                "keywordVocabularyURI": {
-                  "typeName": "keywordVocabularyURI",
+                "keywordVocabularyURL": {
+                  "typeName": "keywordVocabularyURL",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "http://KeywordVocabularyURL1.org"
@@ -251,14 +257,20 @@
                   "typeClass": "primitive",
                   "value": "KeywordTerm2"
                 },
+                "keywordTermURI": {
+                  "typeName": "keywordTermURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://keywordTermURI2.org"
+                },
                 "keywordVocabulary": {
                   "typeName": "keywordVocabulary",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "KeywordVocabulary2"
                 },
-                "keywordVocabularyURI": {
-                  "typeName": "keywordVocabularyURI",
+                "keywordVocabularyURL": {
+                  "typeName": "keywordVocabularyURL",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "http://KeywordVocabularyURL2.org"

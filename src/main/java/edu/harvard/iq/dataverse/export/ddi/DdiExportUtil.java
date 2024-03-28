@@ -714,7 +714,7 @@ public class DdiExportUtil {
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String keywordValue = "";
                             String keywordVocab = "";
-                            String keywordURI = "";
+                            String keywordURL = "";
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.keywordValue.equals(next.getTypeName())) {
@@ -726,8 +726,8 @@ public class DdiExportUtil {
                                 if (DatasetFieldConstant.keywordVocab.equals(next.getTypeName())) {
                                     keywordVocab = next.getSinglePrimitive();
                                 }
-                                if (DatasetFieldConstant.keywordVocabURI.equals(next.getTypeName())) {
-                                    keywordURI = next.getSinglePrimitive();
+                                if (DatasetFieldConstant.keywordVocabURL.equals(next.getTypeName())) {
+                                    keywordURL = next.getSinglePrimitive();
                                 }
                             }
                             if (!keywordValue.isEmpty()) {
@@ -735,8 +735,8 @@ public class DdiExportUtil {
                                 if (!keywordVocab.isEmpty()) {
                                     writeAttribute(xmlw, "vocab", keywordVocab);
                                 }
-                                if (!keywordURI.isEmpty()) {
-                                    writeAttribute(xmlw, "vocabURI", keywordURI);
+                                if (!keywordURL.isEmpty()) {
+                                    writeAttribute(xmlw, "vocabURI", keywordURL);
                                 }
                                 if (lang != null && isCVV) {
                                     writeAttribute(xmlw, "xml:lang", defaultLocale.getLanguage());
@@ -756,8 +756,8 @@ public class DdiExportUtil {
                                         if (!keywordVocab.isEmpty()) {
                                             writeAttribute(xmlw, "vocab", keywordVocab);
                                         }
-                                        if (!keywordURI.isEmpty()) {
-                                            writeAttribute(xmlw, "vocabURI", keywordURI);
+                                        if (!keywordURL.isEmpty()) {
+                                            writeAttribute(xmlw, "vocabURI", keywordURL);
                                         }
                                         writeAttribute(xmlw, "xml:lang", lang);
                                         xmlw.writeCharacters(translatedValue);

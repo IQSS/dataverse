@@ -546,7 +546,7 @@ public class ImportDDIServiceBean {
                 if (xmlr.getLocalName().equals("keyword")) {
                     HashSet<FieldDTO> set = new HashSet<>();
                     addToSet(set,"keywordVocabulary", xmlr.getAttributeValue(null, "vocab"));     
-                    addToSet(set, "keywordVocabularyURI", xmlr.getAttributeValue(null, "vocabURI") );
+                    addToSet(set, "keywordVocabularyURL", xmlr.getAttributeValue(null, "vocabURI") );
                     addToSet(set,"keywordValue", parseText(xmlr));
                     if (!set.isEmpty()) {
                         keywords.add(set);
