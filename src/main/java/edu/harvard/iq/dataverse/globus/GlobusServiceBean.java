@@ -1257,11 +1257,11 @@ public class GlobusServiceBean implements java.io.Serializable {
                     Long fileId = Long.parseLong(idAsString);
                     // If we need to create a GuestBookResponse record, we have to
                     // look up the DataFile object for this file:
+                    df = dataFileService.findCheapAndEasy(fileId);
+                    selectedFiles.add(df);
                     if (!doNotSaveGuestbookResponse) {
-                        df = dataFileService.findCheapAndEasy(fileId);
                         guestbookResponse.setDataFile(df);
                         fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
-                        selectedFiles.add(df);
                     }
                 } catch (NumberFormatException nfe) {
                     logger.warning(
