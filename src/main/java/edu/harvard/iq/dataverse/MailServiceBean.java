@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -24,11 +25,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.annotation.Resource;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.mail.Address;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
@@ -78,77 +83,133 @@ public class MailServiceBean implements java.io.Serializable {
      */
     public MailServiceBean() {
     }
+    
+    /**
+     * Creates a new instance of MailServiceBean with explicit injection, as used during testing.
+     */
+    public MailServiceBean(Session session, SettingsServiceBean settingsService) {
+        this.session = session;
+        this.settingsService = settingsService;
+    }
 
-    @Resource(name = "mail/notifyMailSession")
+    @Inject
+    @Named("mail/systemSession")
     private Session session;
 
     public boolean sendSystemEmail(String to, String subject, String messageText) {
         return sendSystemEmail(to, subject, messageText, false);
     }
-
+    
+    /**
+     * Send a system notification to one or multiple recipients by email.
+     * Will skip sending when {@link #getSystemAddress()} doesn't return a configured "from" address.
+     * @param to A comma separated list of one or multiple recipients' addresses. May contain a "personal name" and
+     *           the recipients address in &lt;&gt;. See also {@link InternetAddress}.
+     * @param subject The message's subject
+     * @param messageText The message's text
+     * @param isHtmlContent Determine if the message text is formatted using HTML or plain text.
+     * @return Status: true if sent successfully, false otherwise
+     */
     public boolean sendSystemEmail(String to, String subject, String messageText, boolean isHtmlContent) {
-
-        boolean sent = false;
-        InternetAddress systemAddress = getSystemAddress(); 
-
-        String body = messageText
-                + (isHtmlContent ? BundleUtil.getStringFromBundle("notification.email.closing.html", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress)))
-                        : BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress))));
-
-        logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
-        try {
-            MimeMessage msg = new MimeMessage(session);
-            if (systemAddress != null) {
-                msg.setFrom(systemAddress);
-                msg.setSentDate(new Date());
-                String[] recipientStrings = to.split(",");
-                InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
-                for (int i = 0; i < recipients.length; i++) {
-                    try {
-                        recipients[i] = new InternetAddress(recipientStrings[i], "", charset);
-                    } catch (UnsupportedEncodingException ex) {
-                        logger.severe(ex.getMessage());
-                    }
-                }
-                msg.setRecipients(Message.RecipientType.TO, recipients);
-                msg.setSubject(subject, charset);
-                if (isHtmlContent) {
-                    msg.setText(body, charset, "html");
-                } else {
-                    msg.setText(body, charset);
-                }
-
-                try {
-                    Transport.send(msg, recipients);
-                    sent = true;
-                } catch (MessagingException ssfe) {
-                    logger.warning("Failed to send mail to: " + to);
-                    logger.warning("MessagingException Message: " + ssfe);
-                }
-            } else {
-                logger.fine("Skipping sending mail to " + to + ", because the \"no-reply\" address not set (" + Key.SystemEmail + " setting).");
-            }
-        } catch (AddressException ae) {
-            logger.warning("Failed to send mail to " + to);
-            ae.printStackTrace(System.out);
-        } catch (MessagingException me) {
-            logger.warning("Failed to send mail to " + to);
-            me.printStackTrace(System.out);
+        Optional<InternetAddress> optionalAddress = getSystemAddress();
+        if (optionalAddress.isEmpty()) {
+            logger.fine(() -> "Skipping sending mail to " + to + ", because no system address has been set.");
+            return false;
         }
-        return sent;
-    }
+        InternetAddress systemAddress = optionalAddress.get();
 
-    public InternetAddress getSystemAddress() {
-       String systemEmail = settingsService.getValueForKey(Key.SystemEmail);
-       return MailUtil.parseSystemAddress(systemEmail);
+        String body = messageText +
+            BundleUtil.getStringFromBundle(isHtmlContent ? "notification.email.closing.html" : "notification.email.closing",
+                List.of(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress)));
+
+        logger.fine(() -> "Sending email to %s. Subject: <<<%s>>>. Body: %s".formatted(to, subject, body));
+        try {
+            // Since JavaMail 1.6, we have support for UTF-8 mail addresses and do not need to handle these ourselves.
+            InternetAddress[] recipients = InternetAddress.parse(to);
+            
+            MimeMessage msg = new MimeMessage(session);
+            msg.setFrom(systemAddress);
+            msg.setSentDate(new Date());
+            msg.setRecipients(Message.RecipientType.TO, recipients);
+            msg.setSubject(subject, charset);
+            if (isHtmlContent) {
+                msg.setText(body, charset, "html");
+            } else {
+                msg.setText(body, charset);
+            }
+            
+            Transport.send(msg, recipients);
+            return true;
+        } catch (MessagingException ae) {
+            logger.log(Level.WARNING, "Failed to send mail to %s: %s".formatted(to, ae.getMessage()), ae);
+            logger.info("When UTF-8 characters in recipients: make sure MTA supports it and JVM option " + JvmSettings.MAIL_MTA_SUPPORT_UTF8.getScopedKey() + "=true");
+        }
+        return false;
+    }
+    
+    /**
+     * Lookup the system mail address ({@code InternetAddress} may contain personal and actual address).
+     * @return The system mail address or an empty {@code Optional} if not configured.
+     */
+    public Optional<InternetAddress> getSystemAddress() {
+        boolean providedByDB = false;
+        String mailAddress = JvmSettings.SYSTEM_EMAIL.lookupOptional().orElse(null);
+        
+        // Try lookup of (deprecated) database setting only if not configured via MPCONFIG
+        if (mailAddress == null) {
+            mailAddress = settingsService.getValueForKey(Key.SystemEmail);
+            // Encourage people to migrate from deprecated setting
+            if (mailAddress != null) {
+                providedByDB = true;
+                logger.warning("The :SystemMail DB setting has been deprecated, please reconfigure using JVM option " + JvmSettings.SYSTEM_EMAIL.getScopedKey());
+            }
+        }
+        
+        try {
+            // Parse and return.
+            return Optional.of(new InternetAddress(Objects.requireNonNull(mailAddress), true));
+        } catch (AddressException e) {
+            logger.log(Level.WARNING, "Could not parse system mail address '%s' provided by %s: "
+                .formatted(providedByDB ? "DB setting" : "JVM option", mailAddress), e);
+        } catch (NullPointerException e) {
+            // Do not pester the logs - no configuration may mean someone wants to disable mail notifications
+            logger.fine("Could not find a system mail setting in database (key :SystemEmail, deprecated) or JVM option '" + JvmSettings.SYSTEM_EMAIL.getScopedKey() + "'");
+        }
+        // We define the system email address as an optional setting, in case people do not want to enable mail
+        // notifications (like in a development context, but might be useful elsewhere, too).
+        return Optional.empty();
+    }
+    
+    /**
+     * Lookup the support team mail address ({@code InternetAddress} may contain personal and actual address).
+     * Will default to return {@code #getSystemAddress} if not configured.
+     * @return Support team mail address
+     */
+    public Optional<InternetAddress> getSupportAddress() {
+        Optional<String> supportMailAddress = JvmSettings.SUPPORT_EMAIL.lookupOptional();
+        if (supportMailAddress.isPresent()) {
+            try {
+                return Optional.of(new InternetAddress(supportMailAddress.get(), true));
+            } catch (AddressException e) {
+                logger.log(Level.WARNING, "Could not parse support mail address '%s', defaulting to system address: ".formatted(supportMailAddress.get()), e);
+            }
+        }
+        return getSystemAddress();
     }
 
     //@Resource(name="mail/notifyMailSession")
     public void sendMail(String reply, String to, String cc, String subject, String messageText) {
+        Optional<InternetAddress> optionalAddress = getSystemAddress();
+        if (optionalAddress.isEmpty()) {
+            logger.fine(() -> "Skipping sending mail to " + to + ", because no system address has been set.");
+            return;
+        }
+        // Always send from system address to avoid email being blocked
+        InternetAddress fromAddress = optionalAddress.get();
+        
         try {
             MimeMessage msg = new MimeMessage(session);
-            // Always send from system address to avoid email being blocked
-            InternetAddress fromAddress = getSystemAddress();
+            
             try {
                 setContactDelegation(reply, fromAddress);
             } catch (UnsupportedEncodingException ex) {
@@ -466,18 +527,24 @@ public class MailServiceBean implements java.io.Serializable {
             case RETURNEDDS:
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasReturnedByReviewer");
-                String optionalReturnReason = "";
-                /*
-                FIXME
-                Setting up to add single comment when design completed
-                optionalReturnReason = ".";
-                if (comment != null && !comment.isEmpty()) {
-                    optionalReturnReason = ".\n\n" + BundleUtil.getStringFromBundle("wasReturnedReason") + "\n\n" + comment;
-                }
-                */
+
                 String[] paramArrayReturnedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
-                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()), optionalReturnReason};
+                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
                 messageText += MessageFormat.format(pattern, paramArrayReturnedDataset);
+
+                if (comment != null && !comment.isEmpty()) {
+                    messageText += "\n\n" + MessageFormat.format(BundleUtil.getStringFromBundle("notification.email.wasReturnedByReviewerReason"), comment);
+                }
+
+                Dataverse d = (Dataverse) version.getDataset().getOwner();
+                List<String> contactEmailList = new ArrayList<String>();
+                for (DataverseContact dc : d.getDataverseContacts()) {
+                    contactEmailList.add(dc.getContactEmail());
+                }
+                if (!contactEmailList.isEmpty()) {
+                    String contactEmails = String.join(", ", contactEmailList);
+                    messageText += "\n\n" + MessageFormat.format(BundleUtil.getStringFromBundle("notification.email.wasReturnedByReviewer.collectionContacts"), contactEmails);
+                }
                 return messageText;
 
             case WORKFLOW_SUCCESS:
@@ -505,13 +572,12 @@ public class MailServiceBean implements java.io.Serializable {
                 messageText += MessageFormat.format(pattern, paramArrayStatus);
                 return messageText;
             case CREATEACC:
-                InternetAddress systemAddress = getSystemAddress();
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
                         BrandingUtil.getInstallationBrandName(),
                         systemConfig.getGuidesBaseUrl(),
                         systemConfig.getGuidesVersion(),
-                        BrandingUtil.getSupportTeamName(systemAddress),
-                        BrandingUtil.getSupportTeamEmailAddress(systemAddress)
+                        BrandingUtil.getSupportTeamName(getSystemAddress().orElse(null)),
+                        BrandingUtil.getSupportTeamEmailAddress(getSystemAddress().orElse(null))
                 ));
                 String optionalConfirmEmailAddon = confirmEmailService.optionalConfirmEmailAddonMsg(userNotification.getUser());
                 accountCreatedMessage += optionalConfirmEmailAddon;

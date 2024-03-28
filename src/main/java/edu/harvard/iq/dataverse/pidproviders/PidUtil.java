@@ -1,9 +1,8 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +13,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import jakarta.json.Json;
@@ -113,24 +113,22 @@ public class PidUtil {
      * @return DOI in the form 10.7910/DVN/TJCLKP (no "doi:")
      */
     private static String acceptOnlyDoi(GlobalId globalId) {
-        if (!DOIServiceBean.DOI_PROTOCOL.equals(globalId.getProtocol())) {
+        if (!AbstractDOIProvider.DOI_PROTOCOL.equals(globalId.getProtocol())) {
             throw new IllegalArgumentException(BundleUtil.getStringFromBundle("pids.datacite.errors.DoiOnly"));
         }
         return globalId.getAuthority() + "/" + globalId.getIdentifier();
     }
 
-    static Map<String, GlobalIdServiceBean> providerMap = new HashMap<String, GlobalIdServiceBean>();
-    static Map<String, GlobalIdServiceBean> unmanagedProviderMap = new HashMap<String, GlobalIdServiceBean>();
+    static Map<String, PidProvider> providerMap = new HashMap<String, PidProvider>();
+    static Map<String, PidProvider> unmanagedProviderMap = new HashMap<String, PidProvider>();
 
-    public static void addAllToProviderList(List<GlobalIdServiceBean> list) {
-        for (GlobalIdServiceBean pidProvider : list) {
-            providerMap.put(pidProvider.getProviderInformation().get(0), pidProvider);
-        }
+    public static void addToProviderList(PidProvider pidProvider) {
+        providerMap.put(pidProvider.getId(), pidProvider);
     }
 
-    public static void addAllToUnmanagedProviderList(List<GlobalIdServiceBean> list) {
-        for (GlobalIdServiceBean pidProvider : list) {
-            unmanagedProviderMap.put(pidProvider.getProviderInformation().get(0), pidProvider);
+    public static void addAllToUnmanagedProviderList(List<PidProvider> list) {
+        for (PidProvider pidProvider : list) {
+            unmanagedProviderMap.put(pidProvider.getId(), pidProvider);
         }
     }
 
@@ -141,7 +139,7 @@ public class PidUtil {
      */
     public static GlobalId parseAsGlobalID(String identifier) {
         logger.fine("In parseAsGlobalId: " + providerMap.size());
-        for (GlobalIdServiceBean pidProvider : providerMap.values()) {
+        for (PidProvider pidProvider : providerMap.values()) {
             logger.fine(" Checking " + String.join(",", pidProvider.getProviderInformation()));
             GlobalId globalId = pidProvider.parsePersistentId(identifier);
             if (globalId != null) {
@@ -149,7 +147,7 @@ public class PidUtil {
             }
         }
         // If no providers can managed this PID, at least allow it to be recognized
-        for (GlobalIdServiceBean pidProvider : unmanagedProviderMap.values()) {
+        for (PidProvider pidProvider : unmanagedProviderMap.values()) {
             logger.fine(" Checking " + String.join(",", pidProvider.getProviderInformation()));
             GlobalId globalId = pidProvider.parsePersistentId(identifier);
             if (globalId != null) {
@@ -167,14 +165,14 @@ public class PidUtil {
     public static GlobalId parseAsGlobalID(String protocol, String authority, String identifier) {
         logger.fine("Looking for " + protocol + " " + authority + " " + identifier);
         logger.fine("In parseAsGlobalId: " + providerMap.size());
-        for (GlobalIdServiceBean pidProvider : providerMap.values()) {
+        for (PidProvider pidProvider : providerMap.values()) {
             logger.fine(" Checking " + String.join(",", pidProvider.getProviderInformation()));
             GlobalId globalId = pidProvider.parsePersistentId(protocol, authority, identifier);
             if (globalId != null) {
                 return globalId;
             }
         }
-        for (GlobalIdServiceBean pidProvider : unmanagedProviderMap.values()) {
+        for (PidProvider pidProvider : unmanagedProviderMap.values()) {
             logger.fine(" Checking " + String.join(",", pidProvider.getProviderInformation()));
             GlobalId globalId = pidProvider.parsePersistentId(protocol, authority, identifier);
             if (globalId != null) {
@@ -191,28 +189,96 @@ public class PidUtil {
      * This method should be deprecated/removed when further refactoring to support
      * multiple PID providers is done. At that point, when the providers aren't
      * beans, this code can be moved into other classes that go in the providerMap.
-     * If this method is not kept in sync with the DOIServiceBean and
-     * HandlenetServiceBean implementations, the tests using it won't be valid tests
-     * of the production code.
+     * If this method is not kept in sync with the AbstractDOIProvider and HandlePidProvider
+     * implementations, the tests using it won't be valid tests of the production
+     * code.
      */
 
     private static GlobalId parseUnmanagedDoiOrHandle(String protocol, String authority, String identifier) {
         // Default recognition - could be moved to new classes in the future.
-        if (!GlobalIdServiceBean.isValidGlobalId(protocol, authority, identifier)) {
+        if (!PidProvider.isValidGlobalId(protocol, authority, identifier)) {
             return null;
         }
         String urlPrefix = null;
         switch (protocol) {
-        case DOIServiceBean.DOI_PROTOCOL:
-            if (!GlobalIdServiceBean.checkDOIAuthority(authority)) {
+        case AbstractDOIProvider.DOI_PROTOCOL:
+            if (!PidProvider.checkDOIAuthority(authority)) {
                 return null;
             }
-            urlPrefix = DOIServiceBean.DOI_RESOLVER_URL;
+            urlPrefix = AbstractDOIProvider.DOI_RESOLVER_URL;
             break;
-        case HandlenetServiceBean.HDL_PROTOCOL:
-            urlPrefix = HandlenetServiceBean.HDL_RESOLVER_URL;
+        case HandlePidProvider.HDL_PROTOCOL:
+            urlPrefix = HandlePidProvider.HDL_RESOLVER_URL;
             break;
         }
         return new GlobalId(protocol, authority, identifier, "/", urlPrefix, null);
+    }
+
+    /**
+     * Get a PidProvider by name. GlobalIds have a getProviderName() method so this
+     * method is often used as
+     * getPidProvider(dvObject.getGlobalId().getProviderName(); (which will fail if
+     * the GlobalId is null - use PidProviderFactoryBean.getPidProvider(DvObject) if
+     * you aren't sure.
+     * 
+     */
+
+    public static PidProvider getPidProvider(String name) {
+        for (PidProvider pidProvider : providerMap.values()) {
+            if (name.equals(pidProvider.getId())) {
+                return pidProvider;
+            }
+        }
+        for (PidProvider pidProvider : unmanagedProviderMap.values()) {
+            if (name.equals(pidProvider.getId())) {
+                return pidProvider;
+            }
+        }
+        return null;
+    }
+
+
+
+    /**
+     * Method to clear all managed/unmanaged PidProviders. Only for testing as these
+     * lists are only loaded once by the @Stateless PidProviderFactoryBean in Dataverse.
+     */
+    public static void clearPidProviders() {
+        providerMap.clear();
+        unmanagedProviderMap.clear();
+    }
+
+    /**
+     * Get a PidProvider by protocol/authority/shoulder.
+     */
+    public static PidProvider getPidProvider(String protocol, String authority, String shoulder) {
+        return getPidProvider(protocol, authority, shoulder, AbstractPidProvider.SEPARATOR);
+    }
+    
+    public static PidProvider getPidProvider(String protocol, String authority, String shoulder, String separator) {
+        for (PidProvider pidProvider : providerMap.values()) {
+            if (protocol.equals(pidProvider.getProtocol()) && authority.equals(pidProvider.getAuthority())
+                    && shoulder.equals(pidProvider.getShoulder()) && separator.equals(pidProvider.getSeparator())) {
+                return pidProvider;
+            }
+        }
+        for (PidProvider pidProvider : unmanagedProviderMap.values()) {
+            if (protocol.equals(pidProvider.getProtocol())) {
+                return pidProvider;
+            }
+        }
+        return null;
+    }
+
+    public static Set<String> getManagedProviderIds() {
+        return providerMap.keySet();
+    }
+    
+    public static JsonObject getProviders() {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        for (PidProvider pidProvider : providerMap.values()) {
+            builder.add(pidProvider.getId(), pidProvider.getProviderSpecification());
+        }
+        return builder.build();
     }
 }
