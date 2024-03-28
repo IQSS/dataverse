@@ -1,1 +1,1 @@
-The computational workflow metadata block has been updated to display the link for the External Code Repository URL field.
+The computational workflow metadata block has been updated to present a clickable link for the External Code Repository URL field.
