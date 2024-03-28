@@ -5307,7 +5307,7 @@ Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST  "https://demo.datavers
 This action changes the identifier of user johnsmith to jsmith.
 
 Toggle User superuser powers
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
 
@@ -5318,7 +5318,7 @@ Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (withou
 .. _change-superuser-status:
 
 Change superuser status
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 Changes a user superuser power status with  a boolean value
 
 .. code-block:: bash
