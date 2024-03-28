@@ -1,2 +1,2 @@
-We have updated the tooltip for the Geospatial metadata where previously the use of comas was incorrectly suggested. 
+We have updated the tooltips in the Geospatial metadata block, where the use of comas instead of dots in coordinate values was incorrectly suggested. 
 
