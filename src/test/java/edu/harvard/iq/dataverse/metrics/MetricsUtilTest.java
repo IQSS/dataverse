@@ -6,38 +6,36 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Arrays;
-import java.util.Collection;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 
-public class MetricsUtilTest {
+class MetricsUtilTest {
 
-    public static class MetricsUtilNoParamTest {
+    @Nested
+    class MetricsUtilNoParamTest {
 
         private static final long COUNT = 42l;
 
         @Test
-        public void testCountToJson() {
-            // This constructor is just here for code coverage. :)
-            MetricsUtil metricsUtil = new MetricsUtil();
+        void testCountToJson() {
             JsonObject jsonObject = MetricsUtil.countToJson(COUNT).build();
             System.out.println(JsonUtil.prettyPrint(jsonObject));
             assertEquals(COUNT, jsonObject.getJsonNumber("count").longValue());
         }
 
         @Test
-        public void testDataversesByCategoryToJson() {
+        void testDataversesByCategoryToJson() {
             List<Object[]> list = new ArrayList<>();
             Object[] obj00 = { "RESEARCH_PROJECTS", 791l };
             Object[] obj01 = { "RESEARCHERS", 745l };
@@ -66,7 +64,7 @@ public class MetricsUtilTest {
         }
 
         @Test
-        public void testDatasetsBySubjectToJson() {
+        void testDatasetsBySubjectToJson() {
             List<Object[]> list = new ArrayList<>();
             Object[] obj00 = { "Social Sciences", 24955l };
             Object[] obj01 = { "Medicine, Health and Life Sciences", 2262l };
@@ -105,7 +103,7 @@ public class MetricsUtilTest {
         }
 
         @Test
-        public void testDataversesBySubjectToJson() {
+        void testDataversesBySubjectToJson() {
             List<Object[]> list = new ArrayList<>();
             Object[] obj00 = { "Social Sciences", 24955l };
             Object[] obj01 = { "Medicine, Health and Life Sciences", 2262l };
@@ -164,7 +162,7 @@ public class MetricsUtilTest {
         }
 
         @Test
-        public void testGetCurrentMonth() {
+        void testGetCurrentMonth() {
             String expectedMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
             String currentMonth = MetricsUtil.getCurrentMonth();
             assertEquals(expectedMonth, currentMonth);
@@ -173,7 +171,7 @@ public class MetricsUtilTest {
         // Create JsonArray, turn into string and back into array to confirm data
         // integrity
         @Test
-        public void testStringToJsonArrayBuilder() {
+        void testStringToJsonArrayBuilder() {
             System.out.println("testStringToJsonArrayBuilder");
             List<Object[]> list = new ArrayList<>();
             Object[] obj00 = { "Social Sciences", 24955l };
@@ -192,7 +190,7 @@ public class MetricsUtilTest {
         // Create JsonObject, turn into string and back into array to confirm data
         // integrity
         @Test
-        public void testStringToJsonObjectBuilder() {
+        void testStringToJsonObjectBuilder() {
             System.out.println("testStringToJsonObjectBuilder");
 
             JsonObject jsonObjBefore = Json.createObjectBuilder().add("Test", "result").build();
@@ -202,6 +200,12 @@ public class MetricsUtilTest {
             System.out.println(JsonUtil.prettyPrint(jsonObjAfter));
 
             assertEquals(jsonObjBefore.getString("Test"), jsonObjAfter.getString("Test"));
+        }
+
+        @Test
+        void testStringToJsonWithNull() {
+            assertNull(MetricsUtil.stringToJsonArray(null));
+            assertNull(MetricsUtil.stringToJsonObject(null));
         }
 
     }
