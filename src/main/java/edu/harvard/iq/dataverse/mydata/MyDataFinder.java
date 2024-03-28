@@ -11,7 +11,9 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,7 +49,6 @@ public class MyDataFinder {
     private RoleAssigneeServiceBean roleAssigneeService;
     private DvObjectServiceBean dvObjectServiceBean;
     private GroupServiceBean groupService;
-    private String noMsgResultsFound;
     //private RoleAssigneeServiceBean roleService = new RoleAssigneeServiceBean();
     //private MyDataQueryHelperServiceBean myDataQueryHelperService;
     // --------------------
@@ -86,12 +87,11 @@ public class MyDataFinder {
     private List<Long> fileGrandparentFileIds = new ArrayList<>();  // dataverse has file permissions
 
 
-    public MyDataFinder(DataverseRolePermissionHelper rolePermissionHelper, RoleAssigneeServiceBean roleAssigneeService, DvObjectServiceBean dvObjectServiceBean, GroupServiceBean groupService, String _noMsgResultsFound) {
+    public MyDataFinder(DataverseRolePermissionHelper rolePermissionHelper, RoleAssigneeServiceBean roleAssigneeService, DvObjectServiceBean dvObjectServiceBean, GroupServiceBean groupService) {
         this.rolePermissionHelper = rolePermissionHelper;
         this.roleAssigneeService = roleAssigneeService;
         this.dvObjectServiceBean = dvObjectServiceBean;
         this.groupService = groupService;
-        this.noMsgResultsFound = _noMsgResultsFound;
         this.loadHarvestedDataverseIds();
     }
 
@@ -213,7 +213,7 @@ public class MyDataFinder {
         // -----------------------------------------------------------------
         String dvObjectFQ = this.getSolrDvObjectFilterQuery();
         if (dvObjectFQ ==null){
-            this.addErrorMessage(noMsgResultsFound);
+            this.addErrorMessage(BundleUtil.getStringFromBundle("myDataFinder.error.result.empty"));
             return null;
         }
         filterQueries.add(dvObjectFQ);
@@ -286,7 +286,7 @@ public class MyDataFinder {
 
 
         if ((distinctEntityIds.isEmpty()) && (distinctParentIds.isEmpty())) {
-            this.addErrorMessage(noMsgResultsFound);
+            this.addErrorMessage(BundleUtil.getStringFromBundle("myDataFinder.error.result.empty"));
             return null;
         }
 
@@ -430,24 +430,25 @@ public class MyDataFinder {
     }
 
 
-    private boolean runStep1RoleAssignments(){
+    private boolean runStep1RoleAssignments() {
 
         List<Object[]> results = this.roleAssigneeService.getAssigneeAndRoleIdListFor(filterParams);
 
         //logger.info("runStep1RoleAssignments results: " + results.toString());
 
-        if (results == null){
-            this.addErrorMessage("Sorry, the EntityManager isn't working (still).");
+        if (results == null) {
+            this.addErrorMessage(BundleUtil.getStringFromBundle("myDataFinder.error.result.null"));
             return false;
-        }else if (results.isEmpty()){
+        } else if (results.isEmpty()) {
             List<String> roleNames = this.rolePermissionHelper.getRoleNamesByIdList(this.filterParams.getRoleIds());
-            if ((roleNames == null)||(roleNames.isEmpty())){
-                this.addErrorMessage("Sorry, you have no assigned roles.");
-            }else{
-                if (roleNames.size()==1){
-                    this.addErrorMessage("Sorry, nothing was found for this role: " + StringUtils.join(roleNames, ", "));
-                }else{
-                    this.addErrorMessage("Sorry, nothing was found for these roles: " + StringUtils.join(roleNames, ", "));
+            if ((roleNames == null) || (roleNames.isEmpty())) {
+                this.addErrorMessage(BundleUtil.getStringFromBundle("myDataFinder.error.result.no.role"));
+            } else {
+                final List<String> args = Arrays.asList(StringUtils.join(roleNames, ", "));
+                if (roleNames.size() == 1) {
+                    this.addErrorMessage(BundleUtil.getStringFromBundle("myDataFinder.error.result.role.empty", args));
+                } else {
+                    this.addErrorMessage(BundleUtil.getStringFromBundle("myDataFinder.error.result.roles.empty", args));
                 }
             }
             return false;
@@ -497,7 +498,7 @@ public class MyDataFinder {
         List<Object[]> results = this.dvObjectServiceBean.getDvObjectInfoForMyData(directDvObjectIds);
 //List<RoleAssignment> results = this.roleAssigneeService.getAssignmentsFor(this.userIdentifier);
         if (results.isEmpty()){
-            this.addErrorMessage("Sorry, you have no assigned Dataverses, Datasets, or Files.");
+            this.addErrorMessage(BundleUtil.getStringFromBundle("myDataFinder.error.result.no.dvobject"));
             return false;
         }
 
