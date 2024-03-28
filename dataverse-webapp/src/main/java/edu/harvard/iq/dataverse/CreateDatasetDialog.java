@@ -1,15 +1,14 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.common.MarkupChecker;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.dataverselookup.DataverseLookupService;
 import edu.harvard.iq.dataverse.search.dataverselookup.LookupData;
 import edu.harvard.iq.dataverse.search.dataversestree.NodeData;
 import edu.harvard.iq.dataverse.search.dataversestree.NodesInfo;
 import edu.harvard.iq.dataverse.search.dataversestree.SolrTreeService;
+import edu.harvard.iq.dataverse.search.dataversestree.TreeNodeBrowser;
 import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.event.NodeExpandEvent;
-import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
 import javax.inject.Inject;
@@ -17,6 +16,9 @@ import javax.inject.Named;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @ViewScoped
 @Named("CreateDatasetDialog")
@@ -26,15 +28,15 @@ public class CreateDatasetDialog implements Serializable {
     private DataverseLookupService dataverseLookupService;
     private DataverseDao dataverseDao;
 
-    private Mode selectedMode = Mode.LOOKUP;
     private boolean initialized = false;
 
     private NodesInfo nodesInfo = new NodesInfo(Collections.emptyMap(), Collections.emptySet());
-    private TreeNode rootNode = new DefaultTreeNode(new NodeData(null, "TreeRoot", true, false));
     private TreeNode selectedNode;
 
     private String permissionFilterQuery;
-    private LookupData lookupSelection;
+    private String treeFilter;
+    private String prevTreeFilter;
+    private TreeNodeBrowser treeNodeBrowser;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -52,19 +54,15 @@ public class CreateDatasetDialog implements Serializable {
     // -------------------- GETTERS --------------------
 
     public TreeNode getRootNode() {
-        return rootNode;
+        return treeNodeBrowser != null ? treeNodeBrowser.getRootNode() : null;
     }
 
     public TreeNode getSelectedNode() {
         return selectedNode;
     }
 
-    public Mode getSelectedMode() {
-        return selectedMode;
-    }
-
-    public LookupData getLookupSelection() {
-        return lookupSelection;
+    public String getTreeFilter() {
+        return treeFilter;
     }
 
     // -------------------- LOGIC --------------------
@@ -74,51 +72,56 @@ public class CreateDatasetDialog implements Serializable {
             return;
         }
         permissionFilterQuery = dataverseLookupService.buildFilterQuery(dataverseRequestService.getDataverseRequest());
-        nodesInfo = solrTreeService.fetchNodesInfo(dataverseRequestService.getDataverseRequest());
+
         Dataverse rootDataverse = dataverseDao.findRootDataverse();
-        Long rootId = rootDataverse.getId();
-        TreeNode firstNode = new DefaultTreeNode(new NodeData(rootId, rootDataverse.getDisplayName(), true,
-                nodesInfo.isSelectable(rootId)), rootNode);
-        fetchChildNodes(firstNode);
-        firstNode.setExpanded(true);
-        firstNode.setSelectable(nodesInfo.isSelectable(rootId));
+        nodesInfo = solrTreeService.fetchNodesInfo(dataverseRequestService.getDataverseRequest());
+        treeNodeBrowser = new TreeNodeBrowser(rootDataverse, nodesInfo, this::loadParentDataverseId, this::fetchChildren);
         initialized = true;
     }
 
     public void onNodeExpand(NodeExpandEvent event) {
         TreeNode selectedNode = event.getTreeNode();
-        selectedNode.getChildren().clear(); // clear placeholders
-        fetchChildNodes(selectedNode);
+        treeNodeBrowser.fetchChildNodes(selectedNode);
     }
 
-    public List<LookupData> fetchLookupData(String query) {
-        return dataverseLookupService.fetchLookupData(query, permissionFilterQuery);
-    }
+    public void executeTreeFilter() {
+        if (prevTreeFilter != null && prevTreeFilter.equals(treeFilter)) {
+            return;
+        }
 
-    public String stripHtml(String text) {
-        return MarkupChecker.stripAllTags(text);
+        treeNodeBrowser.resetRoot();
+
+        if (treeFilter == null || treeFilter.length() < 3) {
+            return;
+        }
+
+        List<LookupData> results = dataverseLookupService.fetchLookupDataByNameAndExtraDescription(treeFilter, permissionFilterQuery);
+        if (results.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Long> parentIdsCache = treeNodeBrowser.expandTreeTo(results.stream()
+                .collect(Collectors.toMap(LookupData::getId, LookupData::getParentId)));
+        treeNodeBrowser.trimTree(parentIdsCache.keySet());
+
+        prevTreeFilter = treeFilter;
     }
 
     public String createDataset() {
-        return "/createDataset.xhtml?ownerId=" + (selectedMode == Mode.LOOKUP
-                ? lookupSelection.getId()
-                : ((NodeData) selectedNode.getData()).getId())
+        return "/createDataset.xhtml?ownerId=" + ((NodeData) selectedNode.getData()).getId()
                 + "&faces-redirect=true";
     }
 
     // -------------------- PRIVATE --------------------
 
-    private void fetchChildNodes(TreeNode parentNode) {
-        NodeData data = (NodeData) parentNode.getData();
-        List<NodeData> childNodes = solrTreeService.fetchNodes(data.getId(), nodesInfo);
-        for (NodeData child : childNodes) {
-            DefaultTreeNode treeNode = new DefaultTreeNode(child);
-            treeNode.setSelectable(child.isSelectable());
-            if (child.isExpandable()) {
-                treeNode.getChildren().add(new DefaultTreeNode(NodeData.PLACEHOLDER));
-            }
-            parentNode.getChildren().add(treeNode);
-        }
+    private Optional<Long> loadParentDataverseId(Long id) {
+        return Optional.ofNullable(dataverseDao.find(id))
+                .map(Dataverse::getOwner)
+                .map(Dataverse::getId);
+    }
+
+    private List<NodeData> fetchChildren(Long id) {
+        return solrTreeService.fetchNodes(id, nodesInfo);
     }
 
     // -------------------- SETTERS --------------------
@@ -127,18 +130,7 @@ public class CreateDatasetDialog implements Serializable {
         this.selectedNode = selectedNode;
     }
 
-    public void setSelectedMode(Mode selectedMode) {
-        this.selectedMode = selectedMode;
-    }
-
-    public void setLookupSelection(LookupData lookupSelection) {
-        this.lookupSelection = lookupSelection;
-    }
-
-    // -------------------- INNER CLASSES --------------------
-
-    public enum Mode {
-        TREE,
-        LOOKUP
+    public void setTreeFilter(String treeFilter) {
+        this.treeFilter = treeFilter;
     }
 }

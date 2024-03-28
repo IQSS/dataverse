@@ -89,7 +89,7 @@ class DataverseLookupServiceTest {
     }
 
     @Test
-    void findDataverseByName__stripTagsFromName() throws Exception {
+    void findDataverseById() throws Exception {
         // given
         when(solrClient.query(any())).thenReturn(
                 createSolrResponse(document(
@@ -99,7 +99,7 @@ class DataverseLookupServiceTest {
                         field(SearchFields.PARENT_NAME, "Root"))));
 
         // when
-        LookupData found = service.findDataverseByName("<b>Test</b> dataverse");
+        LookupData found = service.findDataverseById(11L);
 
         // then
         assertThat(found)

@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.search.dataverselookup;
 
-import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.common.MarkupChecker;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.query.PermissionFilterQueryBuilder;
@@ -28,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,8 +55,15 @@ public class DataverseLookupService {
 
     // -------------------- LOGIC --------------------
 
+    public List<LookupData> fetchLookupDataByNameAndExtraDescription(String query, String permissionFilterQuery) {
+        return fetchLookupDataWithProcessedQuery(processQueryByNameAndExtraDescription(query), permissionFilterQuery);
+    }
+
     public List<LookupData> fetchLookupData(String query, String permissionFilterQuery) {
-        String processedQuery = processQuery(query);
+        return fetchLookupDataWithProcessedQuery(processQuery(query), permissionFilterQuery);
+    }
+
+    private List<LookupData> fetchLookupDataWithProcessedQuery(String processedQuery, String permissionFilterQuery) {
         SolrQuery solrQuery = createSolrQuery(processedQuery, permissionFilterQuery);
         QueryResponse response = querySolr(solrQuery);
         if (response == null) {
@@ -111,23 +117,25 @@ public class DataverseLookupService {
         return permissionFilterQueryBuilder.buildPermissionFilterQueryForAddDataset(dataverseRequest);
     }
 
-    public LookupData findDataverseByName(String itemName) {
-        itemName = MarkupChecker.stripAllTags(itemName);
-        String query = String.format("%s:\"%s\" AND %s:%s", SearchFields.NAME, itemName,
+    public LookupData findDataverseById(Long id) {
+        String query = String.format("%s:\"%s\" AND %s:%s", SearchFields.ENTITY_ID, id,
                 SearchFields.TYPE, SearchObjectType.DATAVERSES.getSolrValue());
         SolrQuery solrQuery = new SolrQuery(query)
                 .setRows(1)
-                .setFields(SearchFields.ENTITY_ID, SearchFields.IDENTIFIER, SearchFields.NAME, SearchFields.PARENT_NAME);
+                .setFields(SearchFields.IDENTIFIER, SearchFields.NAME, SearchFields.PARENT_ID, SearchFields.PARENT_NAME);
         QueryResponse response = querySolr(solrQuery);
-        if (response == null || response.getResults().size() < 1) {
+        if (response == null || response.getResults().isEmpty()) {
             return null;
         }
         SolrDocument result = response.getResults().get(0);
-        Long id = (Long) result.getFieldValue(SearchFields.ENTITY_ID);
         String identifier = (String) result.getFieldValue(SearchFields.IDENTIFIER);
         String name = (String) result.getFieldValue(SearchFields.NAME);
+        String parentId = (String) result.getFieldValue(SearchFields.PARENT_ID);
         String parentName = (String) result.getFieldValue(SearchFields.PARENT_NAME);
-        return new LookupData(id, identifier, name, parentName, StringUtils.EMPTY);
+        return new LookupData(
+                id, identifier, name,
+                StringUtils.isNotBlank(parentId) ? Long.parseLong(parentId) : null,
+                parentName, StringUtils.EMPTY);
     }
 
     // -------------------- PRIVATE --------------------
@@ -143,6 +151,14 @@ public class DataverseLookupService {
                 .map(s -> s + "*")
                 .collect(Collectors.joining(" OR "));
         return toProcess.length > 1 ? String.format("(%s)", processed) : processed;
+    }
+
+    private String processQueryByNameAndExtraDescription(String query) {
+        String toProcess = querySanitizer.removeSolrSpecialChars(query)
+                .replaceAll("\\s", Matcher.quoteReplacement("\\\\ "));
+        return String.format("(%s:%s* OR %s:%s*)",
+                SearchFields.NAME, toProcess,
+                SearchFields.DATAVERSE_EXTRA_DESCRIPTION, toProcess);
     }
 
     private SolrQuery createSolrQuery(String queryToSolr, String permissionFilterQuery) {
@@ -182,14 +198,10 @@ public class DataverseLookupService {
         List<LookupData> lookupData = new ArrayList<>(entries.size());
         for (EntryData entryData : entries) {
             EntryData upperParent = indexForParents.get(entryData.parentId);
-            lookupData.add(new LookupData(entryData.id, entryData.identifier, entryData.name, entryData.parentName,
-                    upperParent != null ? upperParent.parentName : StringUtils.EMPTY));
+            lookupData.add(new LookupData(entryData.id, entryData.identifier, entryData.name, entryData.parentId
+                    , entryData.parentName, upperParent != null ? upperParent.parentName : StringUtils.EMPTY));
         }
         return lookupData;
-    }
-
-    private String addHighlightTags(String value) {
-        return HIGHLIGHT_PRE + value + HIGHLIGHT_POST;
     }
 
     private List<EntryData> processRawData(List<SolrDocument> rawData, Map<String, HighlightedData> highlightedDataMap) {

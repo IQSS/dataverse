@@ -4,13 +4,15 @@ public class LookupData {
     private final Long id;
     private final String identifier;
     private final String name;
+    private final Long parentId;
     private final String parentName;
     private final String upperParentName;
 
-    public LookupData(Long id, String identifier, String name, String parentName, String upperParentName) {
+    public LookupData(Long id, String identifier, String name, Long parentId, String parentName, String upperParentName) {
         this.id = id;
         this.identifier = identifier;
         this.name = name;
+        this.parentId = parentId;
         this.parentName = parentName;
         this.upperParentName = upperParentName;
     }
@@ -25,6 +27,10 @@ public class LookupData {
 
     public String getName() {
         return name;
+    }
+
+    public Long getParentId() {
+        return parentId;
     }
 
     public String getParentName() {

@@ -28,11 +28,11 @@ public class DataverseLookupConverter implements Converter {
 
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
-        return dataverseLookupService.findDataverseByName(value);
+        return value == null || value.isEmpty() ? null : dataverseLookupService.findDataverseById(Long.valueOf(value));
     }
 
     @Override
     public String getAsString(FacesContext context, UIComponent component, Object value) {
-        return value == null ? StringUtils.EMPTY : ((LookupData) value).getName();
+        return value == null ? StringUtils.EMPTY : ((LookupData) value).getId().toString();
     }
 }
