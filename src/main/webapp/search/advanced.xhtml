@@ -121,6 +121,7 @@
                                                     <p:inputText id="searchValue2" styleClass="form-control" value="#{item.searchValue}" rendered="#{empty item.controlledVocabularyValues}">
                                                         <f:passThroughAttribute name="lang" value="#{AdvancedSearchPage.getFieldLanguage(cvoc.getString('languages'))}"/>
                                                         <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvoc.getString('cvoc-url','')}"/>
+                                                        <f:passThroughAttribute name="data-cvoc-headers" value="#{cvoc.containsKey('headers') ? cvoc.get('headers').toString() : '{}'}"/>
                                                         <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvoc.getString('protocol','')}"/>
                                                         <f:passThroughAttribute name="data-cvoc-filter" value="#{cvoc.getString('term-parent-uri','')}"/>
                                                         <f:passThroughAttribute name="data-cvoc-vocabs" value="#{cvoc.get('vocabs').toString()}"/>
