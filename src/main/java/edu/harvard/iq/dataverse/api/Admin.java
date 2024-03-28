@@ -1030,6 +1030,7 @@ public class Admin extends AbstractApiBean {
     }
 
 	@Path("superuser/{identifier}")
+	@Deprecated
 	@POST
 	public Response toggleSuperuser(@PathParam("identifier") String identifier) {
 		ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "toggleSuperuser")

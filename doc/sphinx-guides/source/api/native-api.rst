@@ -5306,12 +5306,33 @@ Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST  "https://demo.datavers
 
 This action changes the identifier of user johnsmith to jsmith.
 
-Make User a SuperUser
+Toggle User superuser powers
 ~~~~~~~~~~~~~~~~~~~~~
 
 Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
 
     POST http://$SERVER/api/admin/superuser/$identifier
+
+.. note:: this endpoint is deprecated. Use the change superuser status endpoint
+
+.. _change-superuser-status:
+
+Change superuser status
+~~~~~~~~~~~~~~~~~~~~~
+Changes a user superuser power status with  a boolean value
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost:8080
+  export USERNAME=jdoe
+  export IS_SUPERUSER=true
+  curl -X PUT "$SERVER/api/admin/superuser/$USERNAME" --data "$IS_SUPERUSER"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X PUT "http://localhost:8080/api/admin/superuser/jdoe" --data "true"
 
 .. _delete-a-user:
 

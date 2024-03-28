@@ -1,0 +1,1 @@
+Adding a new endpoint to make supersuser status change calls idempotent. Also Deprecating and renaming the old API.
