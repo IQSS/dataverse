@@ -647,6 +647,13 @@ public class UtilIT {
                 .post("/api/dataverses/" + dataverseAlias + "/metadatablocks");
     }
 
+    static Response listMetadataBlocks(boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes) {
+        return given()
+                .queryParam("onlyDisplayedOnCreate", onlyDisplayedOnCreate)
+                .queryParam("returnDatasetFieldTypes", returnDatasetFieldTypes)
+                .get("/api/metadatablocks");
+    }
+
     static Response getMetadataBlock(String block) {
         return given()
                 .get("/api/metadatablocks/" + block);

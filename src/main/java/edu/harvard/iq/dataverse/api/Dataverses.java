@@ -710,14 +710,20 @@ public class Dataverses extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{identifier}/metadatablocks")
-    public Response listMetadataBlocks(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+    public Response listMetadataBlocks(@Context ContainerRequestContext crc,
+                                       @PathParam("identifier") String dvIdtf,
+                                       @QueryParam("onlyDisplayedOnCreate") boolean onlyDisplayedOnCreate,
+                                       @QueryParam("returnDatasetFieldTypes") boolean returnDatasetFieldTypes) {
         try {
-            JsonArrayBuilder arr = Json.createArrayBuilder();
-            final List<MetadataBlock> blocks = execCommand(new ListMetadataBlocksCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf)));
-            for (MetadataBlock mdb : blocks) {
-                arr.add(brief.json(mdb));
-            }
-            return ok(arr);
+            final List<MetadataBlock> metadataBlocks = execCommand(
+                    new ListMetadataBlocksCommand(
+                            createDataverseRequest(getRequestUser(crc)),
+                            findDataverseOrDie(dvIdtf),
+                            onlyDisplayedOnCreate,
+                            metadataBlockSvc
+                    )
+            );
+            return ok(json(metadataBlocks, returnDatasetFieldTypes, onlyDisplayedOnCreate));
         } catch (WrappedResponse we) {
             return we.getResponse();
         }

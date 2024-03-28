@@ -466,9 +466,6 @@ public class Dataverse extends DvObjectContainer {
         this.templateRoot = templateRoot;
     }
 
-   
-
-
     public List<MetadataBlock> getMetadataBlocks() {
         return getMetadataBlocks(false);
     }
