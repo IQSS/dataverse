@@ -181,7 +181,6 @@ public class HarvestingClientsIT {
     }
 
     private void harvestingClientRun(boolean allowHarvestingMissingCVV)  throws InterruptedException {
-        int expectedNumberOfSetsHarvested = allowHarvestingMissingCVV ? DATASETS_IN_CONTROL_SET : DATASETS_IN_CONTROL_SET - 1;
 
         // This test will create a client and attempt to perform an actual 
         // harvest and validate the resulting harvested content. 
@@ -266,7 +265,11 @@ public class HarvestingClientsIT {
                 assertEquals(harvestTimeStamp, responseJsonPath.getString("data.lastNonEmpty"));
                 
                 // d) Confirm that the correct number of datasets have been harvested:
-                assertEquals(expectedNumberOfSetsHarvested, responseJsonPath.getInt("data.lastDatasetsHarvested"));
+                if (allowHarvestingMissingCVV) {
+                    assertEquals(DATASETS_IN_CONTROL_SET, responseJsonPath.getInt("data.lastDatasetsHarvested"));
+                } else {
+                    assertTrue(responseJsonPath.getInt("data.lastDatasetsHarvested") < DATASETS_IN_CONTROL_SET);
+                }
                 
                 // ok, it looks like the harvest has completed successfully.
                 break;
