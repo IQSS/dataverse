@@ -6,7 +6,9 @@ import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
@@ -25,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * /api/harvest/clients/ api to run an actual harvest of a control set and
  * then validate the resulting harvested content. 
  */
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class HarvestingClientsIT {
 
     private static final Logger logger = Logger.getLogger(HarvestingClientsIT.class.getCanonicalName());
@@ -87,7 +88,6 @@ public class HarvestingClientsIT {
     }
 
     @Test
-    @Order(1)
     public void testCreateEditDeleteClient() throws InterruptedException {
         // This method focuses on testing the native Dataverse harvesting client
         // API. 
@@ -170,12 +170,10 @@ public class HarvestingClientsIT {
     }
 
     @Test
-    @Order(2)
     public void testHarvestingClientRun_AllowHarvestingMissingCVV_True()  throws InterruptedException {
         harvestingClientRun(true);
     }
     @Test
-    @Order(3)
     public void testHarvestingClientRun_AllowHarvestingMissingCVV_False()  throws InterruptedException {
         harvestingClientRun(false);
     }
