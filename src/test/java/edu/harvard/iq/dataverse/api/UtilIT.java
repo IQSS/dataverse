@@ -3150,6 +3150,19 @@ public class UtilIT {
         return requestSpecification.post("/api/admin/makeDataCount/" + idInPath + "/updateCitationsForDataset"+ optionalQueryParam);
     }
 
+    static Response makeDataCountGetProcessingState(String yearMonth) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/admin/makeDataCount/" + yearMonth + "/processingState");
+    }
+    static Response makeDataCountUpdateProcessingState(String yearMonth, String state) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.post("/api/admin/makeDataCount/" + yearMonth + "/processingState?state=" + state);
+    }
+    static Response makeDataCountDeleteProcessingState(String yearMonth) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.delete("/api/admin/makeDataCount/" + yearMonth + "/processingState");
+    }
+
     static Response editDDI(String body, String fileId, String apiToken) {
         if (apiToken == null) {
             apiToken = "";
