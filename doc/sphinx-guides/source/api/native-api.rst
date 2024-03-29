@@ -5313,7 +5313,7 @@ Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (withou
 
     POST http://$SERVER/api/admin/superuser/$identifier
 
-.. note:: this endpoint is deprecated. Use the change superuser status endpoint
+.. note:: This endpoint is deprecated. Use the set superuser status endpoint instead.
 
 .. _change-superuser-status:
 
