@@ -10,7 +10,7 @@ This API changelog is experimental and we would love feedback on its usefulness.
 v6.3
 ----
 
-- **/api/admin/superuser/{identifier}**: The POST endpoint is being deprecated in favor for the PUT,which we can specifically set the superuser status in the body.
+- **/api/admin/superuser/{identifier}**: The POST endpoint is being deprecated in favor for the PUT, which we can specifically set the superuser status in the body.
 
 v6.2
 ----
