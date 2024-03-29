@@ -1526,7 +1526,7 @@ public class UtilIT {
         return response;
     }
 
-    static Response changeSuperUserStatus(String username, Boolean isSuperUser) {
+    static Response setSuperuserStatus(String username, Boolean isSuperUser) {
         Response response = given().body(isSuperUser).put("/api/admin/superuser/" + username);
         return response;
     }

@@ -903,7 +903,7 @@ public class AdminIT {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String username = UtilIT.getUsernameFromResponse(createUser);
-        Response toggleSuperuser = UtilIT.changeSuperUserStatus(username, status);
+        Response toggleSuperuser = UtilIT.setSuperuserStatus(username, status);
         toggleSuperuser.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
