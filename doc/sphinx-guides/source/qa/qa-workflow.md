@@ -98,3 +98,7 @@
 1. Delete merged branch
     
     Just a housekeeping move if the PR is from IQSS. Click the delete branch button where the merge button had been. There is no deletion for outside contributions.
+
+1. Ensure that deployment to beta.dataverse.org succeeded.
+
+    Go to <https://github.com/IQSS/dataverse/actions/workflows/deploy_beta_testing.yml> to keep any eye on the deployment to <https://beta.dataverse.org> to make sure it succeeded. The latest commit will appear at the bottom right and <https://beta.dataverse.org/api/info/version>.  

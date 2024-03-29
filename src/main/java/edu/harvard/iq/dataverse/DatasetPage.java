@@ -2050,7 +2050,7 @@ public class DatasetPage implements java.io.Serializable {
                         // to the local 404 page, below.
                         logger.warning("failed to issue a redirect to "+originalSourceURL);
                     }
-                    return originalSourceURL;
+                    return null;
                 }
 
                 return permissionsWrapper.notFound();
