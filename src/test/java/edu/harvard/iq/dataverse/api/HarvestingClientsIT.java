@@ -170,12 +170,12 @@ public class HarvestingClientsIT {
     }
 
     @Test
-    public void testHarvestingClientRun_AllowHarvestingMissingCVV_True()  throws InterruptedException {
-        harvestingClientRun(true);
-    }
-    @Test
     public void testHarvestingClientRun_AllowHarvestingMissingCVV_False()  throws InterruptedException {
         harvestingClientRun(false);
+    }
+    @Test
+    public void testHarvestingClientRun_AllowHarvestingMissingCVV_True()  throws InterruptedException {
+        harvestingClientRun(true);
     }
 
     private void harvestingClientRun(boolean allowHarvestingMissingCVV)  throws InterruptedException {
