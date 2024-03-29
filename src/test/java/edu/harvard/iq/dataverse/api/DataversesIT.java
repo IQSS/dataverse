@@ -702,8 +702,8 @@ public class DataversesIT {
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        Response setMetadataBlocks = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
-        setMetadataBlocks.then().assertThat().statusCode(OK.getStatusCode());
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
+        setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Dataverse not found
         Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks("-1", false, false, apiToken);
