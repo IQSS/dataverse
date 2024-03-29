@@ -3325,8 +3325,8 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         //Some are selected and there are non-downloadable ones or there are both downloadable and globus transferable files
-        if ((!(getSelectedDownloadableFiles().isEmpty() && getSelectedGlobusTransferableFiles().isEmpty())
-                && (!getSelectedNonDownloadableFiles().isEmpty()) || (!getSelectedDownloadableFiles().isEmpty() && !getSelectedGlobusTransferableFiles().isEmpty()))) {
+        if (((!getSelectedDownloadableFiles().isEmpty() && !getSelectedGlobusTransferableFiles().isEmpty())
+                || (!getSelectedNonDownloadableFiles().isEmpty()) && (!getSelectedDownloadableFiles().isEmpty() || !getSelectedGlobusTransferableFiles().isEmpty()))) {
             setValidateFilesOutcome("Mixed");
             return true;
         }
