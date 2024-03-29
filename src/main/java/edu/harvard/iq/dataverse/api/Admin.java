@@ -1037,7 +1037,7 @@ public class Admin extends AbstractApiBean {
 				.setInfo(identifier);
 		try {
 			final AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
-			return changeSuperUserStatus(user, !user.isSuperuser());
+			return setSuperuserStatus(user, !user.isSuperuser());
 		} catch (Exception e) {
 			alr.setActionResult(ActionLogRecord.Result.InternalError);
 			alr.setInfo(alr.getInfo() + "// " + e.getMessage());
@@ -1047,7 +1047,7 @@ public class Admin extends AbstractApiBean {
 		}
 	}
 
-	private Response changeSuperUserStatus(AuthenticatedUser user, Boolean isSuperuser) {
+	private Response setSuperuserStatus(AuthenticatedUser user, Boolean isSuperuser) {
 		if (user.isDeactivated()) {
 			return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
 		}
@@ -1058,11 +1058,11 @@ public class Admin extends AbstractApiBean {
 
 	@Path("superuser/{identifier}")
 	@PUT
-	public Response changeSuperUserStatus(@PathParam("identifier") String identifier, Boolean isSuperUser) {
+	public Response setSuperuserStatus(@PathParam("identifier") String identifier, Boolean isSuperUser) {
 		ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "changeSuperUserStatus")
 				.setInfo(identifier + ":" + isSuperUser);
 		try {
-            return changeSuperUserStatus(authSvc.getAuthenticatedUser(identifier), isSuperUser);
+            return setSuperuserStatus(authSvc.getAuthenticatedUser(identifier), isSuperUser);
 		} catch (Exception e) {
 			alr.setActionResult(ActionLogRecord.Result.InternalError);
 			alr.setInfo(alr.getInfo() + "// " + e.getMessage());
