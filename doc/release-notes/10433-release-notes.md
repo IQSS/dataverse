@@ -1,1 +1,1 @@
-Add a thumbnail logo into Theme dataverse page to be display on featured dataverses. If present, the thumbnail is show, otherwise it's the logo, otherwise the Dataverse Logo is used.
+Add the ability to configure a thumbnail logo that is displayed for a collection when the collection is configured as a featured collection. If present, this thumbnail logo is shown. Otherwise, the collection logo is shown. Configuration is done under the "Theme" for a collection.
