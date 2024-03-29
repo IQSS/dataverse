@@ -5317,9 +5317,10 @@ Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (withou
 
 .. _change-superuser-status:
 
-Change superuser status
-~~~~~~~~~~~~~~~~~~~~~~~
-Changes a user superuser power status with  a boolean value
+Set Superuser Status
+~~~~~~~~~~~~~~~~~~~~
+
+Specify the superuser status of a user with a boolean value.
 
 .. code-block:: bash
 
