@@ -899,7 +899,7 @@ public class AdminIT {
 
     @ParameterizedTest
     @ValueSource(booleans={true,false})
-    public void testChangeSuperUserStatus(Boolean status) {
+    public void testSetSuperUserStatus(Boolean status) {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String username = UtilIT.getUsernameFromResponse(createUser);
