@@ -208,6 +208,7 @@ public class ImageThumbConverter {
         // will run the ImageMagick on it, and will save its output in another temp 
         // file, and will save it as an "auxiliary" file via the driver. 
         boolean tempFilesRequired = false;
+        File tempFile = null;
 
         try {
             Path pdfFilePath = storageIO.getFileSystemPath();
@@ -225,7 +226,7 @@ public class ImageThumbConverter {
         }
 
         if (tempFilesRequired) {
-            InputStream inputStream = null; 
+            InputStream inputStream = null;
             try {
                 storageIO.open();
                 inputStream = storageIO.getInputStream();
@@ -234,12 +235,11 @@ public class ImageThumbConverter {
                 return false;
             }
 
-            File tempFile;
             OutputStream outputStream = null;
             try {
                 tempFile = File.createTempFile("tempFileToRescale", ".tmp");
                 outputStream = new FileOutputStream(tempFile);
-                //Reads/transfers all bytes from the input stream to the output stream. 
+                //Reads/transfers all bytes from the input stream to the output stream.
                 inputStream.transferTo(outputStream);
             } catch (IOException ioex) {
                 logger.warning("GenerateImageThumb: failed to save pdf bytes in a temporary file.");
@@ -269,6 +269,12 @@ public class ImageThumbConverter {
             } catch (IOException ioex) {
                 logger.warning("failed to save generated pdf thumbnail, as AUX file " + THUMBNAIL_SUFFIX + size + "!");
                 return false;
+            }
+            finally {
+                try {
+                    tempFile.delete();
+                }
+                catch (Exception e) {}
             }
         }
 
@@ -370,6 +376,14 @@ public class ImageThumbConverter {
         } catch (Exception ioex) {
             logger.warning("Failed to rescale and/or save the image: " + ioex.getMessage());
             return false;
+        }
+        finally {
+            if(tempFileRequired) {
+                try {
+                    tempFile.delete();
+                }
+                catch (Exception e) {}
+            }
         }
 
         return true;
