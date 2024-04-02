@@ -29,6 +29,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("info")
+@Tag(name = "info", description = "General information about the Dataverse installation.")
 public class Info extends AbstractApiBean {
 
     @EJB
@@ -56,7 +57,6 @@ public class Info extends AbstractApiBean {
     @Operation(summary = "Get version and build information", description = "Get version and build information")
     @APIResponse(responseCode = "200",
                  description = "Version and build information")
-    @Tag(name = "version", description = "Version and build information")
     public Response getInfo() {
         String versionStr = systemConfig.getVersion(true);
         String[] comps = versionStr.split("build",2);
