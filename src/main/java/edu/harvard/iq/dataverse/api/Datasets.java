@@ -41,6 +41,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.*;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
@@ -4628,6 +4629,12 @@ public class Datasets extends AbstractApiBean {
         }, getRequestUser(crc));
     }
     
+    /**
+     * Get the PidProvider that will be used for generating new DOIs in this dataset
+     *
+     * @return - the id of the effective PID generator for the given dataset
+     * @throws WrappedResponse
+     */
     @GET
     @AuthRequired
     @Path("{identifier}/pidGenerator")
@@ -4641,7 +4648,12 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
-        String pidGeneratorId = dataset.getPidGeneratorId();
+        PidProvider pidProvider = dataset.getEffectivePidGenerator();
+        if(pidProvider == null) {
+            //This is basically a config error, e.g. if a valid pid provider was removed after this dataset used it
+            return error(Response.Status.NOT_FOUND, BundleUtil.getStringFromBundle("datasets.api.pidgenerator.notfound"));
+        }
+        String pidGeneratorId = pidProvider.getId();
         return ok(pidGeneratorId);
     }
 
