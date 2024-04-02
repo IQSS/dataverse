@@ -3263,6 +3263,14 @@ public class UtilIT {
                 .post("/api/roles?dvo="+dvAlias);
         return addBannerMessageResponse;
     }
+    
+    static Response addFeaturedDataverse (String dvAlias, String featuredDvAlias, String apiToken) {
+
+        Response addBannerMessageResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/dataverses/"+dvAlias+"/featured/"+featuredDvAlias);
+        return addBannerMessageResponse;
+    }
 
     static Response deleteDataverseRole( String roleAlias, String apiToken) {
 

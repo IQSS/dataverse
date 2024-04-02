@@ -692,4 +692,29 @@ public class DataversesIT {
         assertEquals(OK.getStatusCode(), deleteCollectionResponse.getStatusCode());
     }
     
+    @Test
+    public void testLinkDataverse() throws Exception {
+
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        
+        Response createSubDVToBeFeatured = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-feature", null, apiToken, dataverseAlias);    
+        String subDataverseAlias = UtilIT.getAliasFromResponse(createSubDVToBeFeatured);
+        
+        Response featureSubDVResponse = UtilIT.addFeaturedDataverse(dataverseAlias, subDataverseAlias, apiToken);
+        
+        assertEquals(OK.getStatusCode(), featureSubDVResponse.getStatusCode());
+        
+        Response deleteSubCollectionResponse = UtilIT.deleteDataverse(subDataverseAlias, apiToken);
+        deleteSubCollectionResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), deleteSubCollectionResponse.getStatusCode());
+        
+        Response deleteCollectionResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteCollectionResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), deleteCollectionResponse.getStatusCode());
+    }
+    
 }

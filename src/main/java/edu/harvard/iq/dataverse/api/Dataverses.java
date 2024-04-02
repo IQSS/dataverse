@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.DataverseFeaturedDataverse;
+import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
 import edu.harvard.iq.dataverse.DataverseMetadataBlockFacet;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
@@ -14,6 +16,7 @@ import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DataverseMetadataBlockFacetDTO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
@@ -136,6 +139,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.StreamingOutput;
+import java.util.ArrayList;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -167,6 +171,12 @@ public class Dataverses extends AbstractApiBean {
     
     @EJB
     DataverseServiceBean dataverseService;
+    
+    @EJB
+    DataverseLinkingServiceBean linkingService;
+    
+    @EJB
+    FeaturedDataverseServiceBean featuredDataverseService;
 
     @EJB
     SwordServiceBean swordService;
@@ -818,6 +828,78 @@ public class Dataverses extends AbstractApiBean {
             return ok(fs);
         } catch (WrappedResponse e) {
             return e.getResponse();
+        }
+    }
+    
+    @POST
+    @AuthRequired
+    @Path("{identifier}/featured")
+    /**
+     * Allows user to set featured dataverses - must have edit dataverse permission
+     * 
+     */
+    public Response setFeaturedDataverses(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,  String dvAliases) {
+        List<Dataverse> dvsFromInput = new LinkedList<>();
+        for (JsonString dvAlias : Util.asJsonArray(dvAliases).getValuesAs(JsonString.class)) {
+            
+            Dataverse dvToBeFeatured = dataverseService.findByAlias(dvAlias.getString());
+            if (dvToBeFeatured == null) {
+                return error(Response.Status.BAD_REQUEST, "Can't find dataverse collection with alias '" + dvAlias + "'");
+            } 
+            dvsFromInput.add(dvToBeFeatured);
+        }
+  
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            List<Dataverse> featuredSource = new ArrayList<>();
+            List<Dataverse> featuredTarget = new ArrayList<>();
+            featuredSource.addAll(dataverseService.findAllPublishedByOwnerId(dataverse.getId()));
+            featuredSource.addAll(linkingService.findLinkedDataverses(dataverse.getId()));
+            List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
+            
+            if(featuredSource.isEmpty()){
+               return error(Response.Status.BAD_REQUEST, "There are no collections avaialble to be featured in Dataverse collection '" + dataverse.getDisplayName() + "'."); 
+            }
+
+            for (DataverseFeaturedDataverse dfd : featuredList) {
+                Dataverse fd = dfd.getFeaturedDataverse();
+                featuredTarget.add(fd);
+                featuredSource.remove(fd);
+            }
+
+            for (Dataverse test : dvsFromInput) {
+                if (featuredTarget.contains(test)) {
+                    return error(Response.Status.BAD_REQUEST, "Dataverse collection '" + test.getDisplayName() + "' is already featured in Dataverse collection '" + dataverse.getDisplayName() + "'.");
+                }
+
+                if (featuredSource.contains(test)) {
+                    featuredTarget.add(test);
+                } else {
+                    return error(Response.Status.BAD_REQUEST, "Dataverse collection '" + test.getDisplayName() + "' may not be featured in Dataverse collection '" + dataverse.getDisplayName() + "'.");
+                }
+
+            }
+            // by passing null for Facets and DataverseFieldTypeInputLevel, those are not changed
+            execCommand(new UpdateDataverseCommand(dataverse, null, featuredTarget, createDataverseRequest(getRequestUser(crc)), null));
+            return ok("Featured Dataverses of dataverse " + dvIdtf + " updated.");
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+
+    }
+    
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/featured")
+    public Response deleteFeaturedCollections(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            List<Dataverse> featuredTarget = new ArrayList<>();
+            execCommand(new UpdateDataverseCommand(dataverse, null, featuredTarget, createDataverseRequest(getRequestUser(crc)), null));
+            return ok(BundleUtil.getStringFromBundle("dataverses.api.delete.featured.collections.successful"));
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
         }
     }
 
