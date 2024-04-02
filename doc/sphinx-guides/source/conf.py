@@ -42,6 +42,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.graphviz',
     'sphinxcontrib.icon',
+    'sphinxcontrib.jquery',
     'myst_parser',
     'sphinx_tabs.tabs',
 ]
