@@ -101,10 +101,13 @@ public class FileTypeDetector {
 
             // Is this a zipped Shapefile?
             // Check for shapefile extensions as described here: http://en.wikipedia.org/wiki/Shapefile
-
-            ShapefileHandler shapefileHandler = new ShapefileHandler(f);
-            if (shapefileHandler.containsShapefile()) {
-                fileType = ShapefileHandler.SHAPEFILE_FILE_TYPE;
+            try {
+                ShapefileHandler shapefileHandler = new ShapefileHandler(f);
+                if (shapefileHandler.containsShapefile()) {
+                    fileType = ShapefileHandler.SHAPEFILE_FILE_TYPE;
+                }
+            } catch (Exception ex) {
+                logger.warn("Shapefile inspection failed for file {}", fileName, ex);
             }
         }
         

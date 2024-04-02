@@ -53,6 +53,7 @@ import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
 import javax.annotation.PreDestroy;
+import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -882,7 +883,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // zip file.
             dFileList = dataFileCreator.createDataFiles(inputStream, uploadedFile.getFileName(), uploadedFile.getContentType());
             dataFileUploadInfo.addSizeAndDataFiles(fileSize, dFileList);
-        } catch (IOException | FileExceedsMaxSizeException ex) {
+        } catch (EJBException | IOException | FileExceedsMaxSizeException ex) {
             logger.warning("Failed to process and/or save the file " + uploadedFile.getFileName() + "; " + ex.getMessage());
             return;
         } catch (VirusFoundException e) {

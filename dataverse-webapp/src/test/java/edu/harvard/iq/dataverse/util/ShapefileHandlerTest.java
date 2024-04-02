@@ -1,6 +1,5 @@
-package edu.harvard.iq.dataverse.util.shapefile;
+package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -16,6 +15,7 @@ import java.util.zip.ZipOutputStream;
 
 import static edu.harvard.iq.dataverse.util.ShapefileHandler.SHP_XML_EXTENSION;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 /**
@@ -35,13 +35,12 @@ public class ShapefileHandlerTest {
         File zipfile_obj = createAndZipFiles(file_names, "not-quite-a-shape.zip");
 
         ShapefileHandler shp_handler = new ShapefileHandler(zipfile_obj);
-        shp_handler.DEBUG = true;
 
         assertThat(shp_handler.containsShapefile()).isFalse();
 
-        assertThat(shp_handler.getFileGroups()).isNotEmpty();
-        assertThat(shp_handler.getFileGroups()).containsOnlyKeys("not-quite-a-shape");
-        assertThat(shp_handler.getFileGroups()).extractingByKey("not-quite-a-shape").asList()
+        assertThat(shp_handler.getBaseNameExtensions()).isNotEmpty();
+        assertThat(shp_handler.getBaseNameExtensions()).containsOnlyKeys("not-quite-a-shape");
+        assertThat(shp_handler.getBaseNameExtensions()).extractingByKey("not-quite-a-shape").asList()
                 .containsExactly("shp", "shx", "dbf", "pdf");
     }
 
@@ -57,17 +56,27 @@ public class ShapefileHandlerTest {
         File zipfile_obj = createAndZipFiles(file_names, "two-shapes.zip");
 
         ShapefileHandler shp_handler = new ShapefileHandler(zipfile_obj);
-        shp_handler.DEBUG = true;
 
         assertThat(shp_handler.containsShapefile()).isTrue();
-        assertThat(shp_handler.errorFound).isFalse();
 
-        assertThat(shp_handler.getFileGroups()).isNotEmpty();
-        assertThat(shp_handler.getFileGroups()).containsOnlyKeys("shape1", "shape2");
-        assertThat(shp_handler.getFileGroups()).extractingByKey("shape1").asList()
+        assertThat(shp_handler.getBaseNameExtensions()).isNotEmpty();
+        assertThat(shp_handler.getBaseNameExtensions()).containsOnlyKeys("shape1", "shape2");
+        assertThat(shp_handler.getBaseNameExtensions()).extractingByKey("shape1").asList()
             .containsExactly("shp", "shx", "dbf", "prj", "fbn", "fbx");
-        assertThat(shp_handler.getFileGroups()).extractingByKey("shape2").asList()
+        assertThat(shp_handler.getBaseNameExtensions()).extractingByKey("shape2").asList()
             .containsExactly("shp", "shx", "dbf", "prj", "txt", "pdf", ShapefileHandler.BLANK_EXTENSION);
+    }
+
+    @Test
+    public void testZipped__duplicate() throws IOException {
+
+        List<String> file_names = Arrays.asList("shape2.shp", "shape2.shx", "shape2.dbf", "shape2.prj",     // 2nd shapefile
+                "shape2.txt", "shape2.pdf", "shape2", "folder/shape2.pdf" // duplicate
+        );
+
+        File zipfile_obj = createAndZipFiles(file_names, "duplicate_file.zip");
+
+        assertThatThrownBy(() -> new ShapefileHandler(zipfile_obj)).hasMessage("Found file-name collision: shape2.pdf");
     }
 
     @Test
@@ -79,12 +88,15 @@ public class ShapefileHandlerTest {
 
         File zipfile_obj = createAndZipFiles(file_names, "two-shapes.zip");
         File test_unzip_folder = this.tempFolder.newFolder("test_unzip").getAbsoluteFile();
+        File test_rezip_folder = this.tempFolder.newFolder("test_rezip").getAbsoluteFile();
 
 
         ShapefileHandler shp_handler = new ShapefileHandler(zipfile_obj);
-        shp_handler.rezipShapefileSets(test_unzip_folder);
+        shp_handler.reZipShapefileSets(test_unzip_folder, test_rezip_folder);
 
-        assertThat(test_unzip_folder.list()).containsOnly("shape1.zip", "shape2.zip", "shape2.txt", "shape2.pdf", "shape2");
+        assertThat(test_unzip_folder.list().length).isEqualTo(0);
+        assertThat(test_rezip_folder.list())
+                .containsOnly("shape1.zip", "shape2.zip", "shape2.txt", "shape2.pdf", "shape2");
     }
     
 
@@ -95,19 +107,18 @@ public class ShapefileHandlerTest {
         File zipfile_obj = createAndZipFiles(file_names, "shape-plus.zip");
 
         ShapefileHandler shp_handler = new ShapefileHandler(zipfile_obj);
-        shp_handler.DEBUG = true;
 
         assertThat(shp_handler.containsShapefile()).isTrue();
 
-        assertThat(shp_handler.getFileGroups()).isNotEmpty();
-        assertThat(shp_handler.getFileGroups()).containsOnlyKeys("shape1", "README", "shape_notes");
+        assertThat(shp_handler.getBaseNameExtensions()).isNotEmpty();
+        assertThat(shp_handler.getBaseNameExtensions()).containsOnlyKeys("shape1", "README", "shape_notes");
 
-        assertThat(shp_handler.getFileGroups()).extractingByKey("shape1").asList()
+        assertThat(shp_handler.getBaseNameExtensions()).extractingByKey("shape1").asList()
             .containsExactly("shp", "shx", "dbf", "prj", "pdf", "cpg", SHP_XML_EXTENSION);
         
-        assertThat(shp_handler.getFileGroups()).extractingByKey("README").asList()
+        assertThat(shp_handler.getBaseNameExtensions()).extractingByKey("README").asList()
             .containsExactly("md");
-        assertThat(shp_handler.getFileGroups()).extractingByKey("shape_notes").asList()
+        assertThat(shp_handler.getBaseNameExtensions()).extractingByKey("shape_notes").asList()
             .containsExactly("txt");
     }
 
@@ -117,11 +128,14 @@ public class ShapefileHandlerTest {
         List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.pdf", "shape1.cpg", "shape1." + SHP_XML_EXTENSION, "README.md", "shape_notes.txt");
         File zipfile_obj = createAndZipFiles(file_names, "shape-plus.zip");
         File unzip2Folder = this.tempFolder.newFolder("test_unzip2").getAbsoluteFile();
-        
-        ShapefileHandler shp_handler = new ShapefileHandler(zipfile_obj);
-        shp_handler.rezipShapefileSets(unzip2Folder);
+        File rezip2Folder = this.tempFolder.newFolder("test_rezip2").getAbsoluteFile();
 
-        assertThat(unzip2Folder.list()).containsOnly("shape1.zip", "shape1.pdf", "README.md", "shape_notes.txt");
+        ShapefileHandler shp_handler = new ShapefileHandler(zipfile_obj);
+        shp_handler.reZipShapefileSets(unzip2Folder, rezip2Folder);
+
+        assertThat(unzip2Folder.list()).isEmpty();
+        assertThat(rezip2Folder.list())
+                .containsOnly("shape1.zip", "shape1.pdf", "README.md", "shape_notes.txt");
     }
 
     /**

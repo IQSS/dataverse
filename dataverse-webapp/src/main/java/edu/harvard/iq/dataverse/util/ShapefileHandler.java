@@ -2,37 +2,37 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.common.files.mime.ShapefileMimeType;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipInputStream;
-
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * Used to identify, "repackage", and extract data from Shapefiles in .zip format
  * <p>
  * (1) Identify if a .zip contains a shapefile:
- * boolean containsShapefile(FileInputStream zipStream) or boolean containsShapefile(FileInputStream zip_filename)
+ * boolean containsShapefile()
  * <p>
  * <p>
  * <p>
@@ -50,20 +50,18 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * "shape1.pdf", "README.md", "shape_notes.txt"
  * <p>
  * Code Example:
- * FileInputStream shp_file_input_stream = new FileInputStream(new File("zipped_shapefile.zip"))
- * ShapefileHandler shp_handler = new ShapefileHandler(shp_file_input_stream);
- * if (shp_handler.containsShapefile()){
- * File rezip_folder = new File("~/folder_for_rezipping");
- * boolean rezip_success = shp_handler.rezipShapefileSets(shp_file_input_stream, rezip_folder );
- * if (!rezip_success){
- * // rezip failed, should be an error message (String) available
- * System.out.println(shp_handler.error_message);
+ * <pre>{@code
+ * try {
+ *   ShapefileHandler shp_handler = new ShapefileHandler(new File("zipped_shapefile.zip"));
+ *   if (shp_handler.containsShapefile()){
+ *     File rezip_folder = new File("~/folder_for_rezipping");
+ *     List<File> reZippedFiles = shp_handler.reZipShapefileSets(rezip_folder);
+ *     // ...
+ *   }
+ * } catch(Exception e) {
+ *   System.out.println(e.getMessage());
  * }
- * }else{
- * if (shp_handler.errorFound){
- * System.out.println("Error message: " + shp_handler.error_message;
- * }
- * }
+ * }</pre>
  *
  * @author raprasad
  */
@@ -73,441 +71,75 @@ public class ShapefileHandler {
 
     // Reference for these extensions: http://en.wikipedia.org/wiki/Shapefile
     public final static String SHAPEFILE_FILE_TYPE = ShapefileMimeType.SHAPEFILE_FILE_TYPE.getMimeValue();
-    public final static String SHAPEFILE_FILE_TYPE_FRIENDLY_NAME = ShapefileMimeType.SHAPEFILE_FILE_TYPE.getFriendlyName();
     public final static List<String> SHAPEFILE_MANDATORY_EXTENSIONS = Arrays.asList("shp", "shx", "dbf", "prj");
     public final static String SHP_XML_EXTENSION = "shp.xml";
     public final static String BLANK_EXTENSION = "__PLACEHOLDER-FOR-BLANK-EXTENSION__";
     public final static List<String> SHAPEFILE_ALL_EXTENSIONS = Arrays.asList("shp", "shx", "dbf", "prj", "sbn", "sbx", "fbn", "fbx", "ain", "aih", "ixs", "mxs", "atx", "cpg", SHP_XML_EXTENSION);
+    private final File zipfile;
 
-    public boolean DEBUG = false;
-
-    private boolean zipFileProcessed = false;
-    public boolean errorFound = false;
-    public String errorMessage = "";
-
-    private File zipfile;
-
-    // List of files in .zip archive
-    private List<String> filesListInDir = new ArrayList<>();
-
-    // Hash of file names and byte sizes {  "file name" : bytes }  example: { "water.shp" : 541234 }
-    private HashMap<String, Long> filesizeHash = new HashMap<>();
-
-    // Hash of file basenames and a list of extensions. 
-    /*   e.g.  { "subway_shapefile" : [ ".dbf", ".prj", ".sbn", ".sbx", ".shp", ".shx"] 
-               , "shapefile_info" : [".docx"]
-               , "README" : ["md"]
-               , "Notes" : [""]
-              }
-    */
-    private Map<String, List<String>> fileGroups = new HashMap<>();
-
-    private List<File> finalRezippedFiles = new ArrayList<>();
-
-    private String outputFolder = "unzipped";
-    private String rezippedFolder = "rezipped";
-
-    // Debug helper
-    private void msg(String s) {
-        //logger.info(s);
-        if (DEBUG) {
-            System.out.println(s);
-        }
-    }
-
-    private void msgt(String s) {
-        msg("-------------------------------");
-        msg(s);
-        msg("-------------------------------");
-    }
-
-    /*
-         Constructor, start with FileInputStream
+    /**
+     * Hash of file basenames and a list of extensions.
+     * e.g.  { "subway_shapefile" : [ ".dbf", ".prj", ".sbn", ".sbx", ".shp", ".shx"],
+     *         "shapefile_info" : [".docx"],
+     *,        "README" : ["md"],
+     *         "Notes" : [""]
+     * }
      */
+    private final Map<String, List<String>> baseNameExtensions = new HashMap<>();
+
+    // -------------------- CONSTRUCTOR --------------------
+
     public ShapefileHandler(File zipFile) {
-        if (zipFile == null) {
-            this.addErrorMessage("The zipFile was null");
-            return;
-        }
         this.zipfile = zipFile;
-        this.examineZipfile(zipFile);
+
+        examineZipFile();
     }
 
-    public List<File> getFinalRezippedFiles() {
-        return this.finalRezippedFiles;
+    // -------------------- GETTERS --------------------
+
+    Map<String, List<String>> getBaseNameExtensions() {
+        return this.baseNameExtensions;
     }
 
-    private void addFinalRezippedFile(String targetFileFullpath) {
-        if (targetFileFullpath == null) {
-            logger.warning("addFinalRezippedFile. targetFileFullpath is null");
-            return;
-        }
-        File finalFile = new File(targetFileFullpath);
-        if (!(finalFile.isFile())) {
-            logger.warning("addFinalRezippedFile. Not a file: " + targetFileFullpath);
-            return;
-        }
-        this.finalRezippedFiles.add(finalFile);
-    }
+    // -------------------- LOGIC --------------------
 
-
-    private void addErrorMessage(String m) {
-        if (m == null) {
-            return;
-        }
-        logger.severe("ShapeFileHandler Error: " + m);
-        this.errorFound = true;
-        this.errorMessage = m;
-    }
-
-    private boolean createDirectory(File folder) {
-        if (folder == null) {
-            return false;
-        }
-        try {
-            if (!folder.exists()) {
-                msg("Creating folder: " + folder.getName());
-                folder.mkdirs();
-            } else {
-                msg("Folder exists: " + folder.getName());
-            }
-        } catch (SecurityException ex) {
-            this.addErrorMessage("Tried to create directory but resulted in SecurityException");
-            return false;
-        } catch (NullPointerException ex) {
-            this.addErrorMessage("Tried to create directory but resulted in NullPointerException");
-
-            return false;
-        }
-        return true;
-    } // createDirectory    
-
-
-    public Map<String, List<String>> getFileGroups() {
-        return this.fileGroups;
-    }
-
-    /*
-        Iterate through Hash of file base names and extensions
-    */
-    public void showFileGroups() {
-
-        msgt("Hash: file base names + extensions");
-
-        for (Map.Entry<String, List<String>> entry : fileGroups.entrySet()) {
-            msg("\nKey: [" + entry.getKey() + "] Ext List: " + entry.getValue());
-            if (doesListContainShapefileExtensions(entry.getValue())) {
-                msg(" >>>> YES, This is a shapefile!");
-            } else {
-                msg(" >>>> Not a shapefile");
-            }
-        }
-
-    } // end showFileGroups
-
-    /*
-        Return a count of shapefile sets in this .zip
-    */
-    public int getShapefileCount() {
-        int shp_cnt = 0;
-
-        for (Map.Entry<String, List<String>> entry : fileGroups.entrySet()) {
-            if (doesListContainShapefileExtensions(entry.getValue())) {
-                shp_cnt += 1;
-            }
-        }
-        return shp_cnt;
-    }
-
-    private String getFileBasename(String fileName) {
-        if (fileName == null) {
-            return null;
-        }
-        String unzipFileName = new File(fileName).getName();
-        if (unzipFileName.equals("")) {
-            logger.info("getFileBasename.  fileName is an empty string: " + fileName);
-            return null;
-        }
-        return unzipFileName;
-    }
-
-    /*
-        Unzip the files to the directory, FLATTENING the directory structure
-        
-        Any colliding names will result  in overwrites
-    
-    */
-    private boolean unzipFilesToDirectory(File zipfile, File target_directory) throws IOException {
-        //logger.info("unzipFilesToDirectory: " + target_directory.getAbsolutePath() );
-
-        if (zipfile == null) {
-            this.addErrorMessage("unzipFilesToDirectory. The zipfile is null.");
-            return false;
-        }
-        if (!target_directory.isDirectory()) {
-            this.addErrorMessage("This directory does not exist: " + target_directory.getAbsolutePath());
-            return false;
-        }
-
-        List<String> unzippedFileNames = new ArrayList<>();
-
-        ZipInputStream zipStream = new ZipInputStream(Files.newInputStream(zipfile.toPath()));
-
-        ZipEntry origEntry;
-        byte[] buffer = new byte[2048];
-        try {
-            while ((origEntry = zipStream.getNextEntry()) != null) {
-
-                String zentryFileName = origEntry.getName();
-                //logger.info("\nOriginal entry name: " + origEntry);
-
-                if (this.isFileToSkip(zentryFileName)) {
-                    logger.fine("Skip file");
-                    continue;
-                }
-
-                // Create sub directory, if needed
-                if (origEntry.isDirectory()) {
-                    //logger.info("Subdirectory found!");
-                    logger.fine("Skip directory");
-                    //String dirpath = target_directory.getAbsolutePath() + "/" + zentryFileName;
-                    //createDirectory(dirpath);
-                    continue;           // Continue to next Entry
-                }
-                logger.fine("file found!");
-
-                // Write the file
-                String unzipFileName = this.getFileBasename(zentryFileName);
-                if (unzipFileName == null) {
-                    logger.warning("Zip Entry Basename is an empty string: " + zentryFileName);
-                    continue;
-                }
-
-                String outpath = target_directory.getAbsolutePath() + "/" + unzipFileName;
-                if (unzippedFileNames.contains(outpath)) {
-                    logger.info("Potential name collision.  Avoiding duplicate files in 'collapsed' zip directories. Skipping file: " + zentryFileName);
-                    continue;
-                } else {
-                    unzippedFileNames.add(outpath);
-                }
-                logger.fine("Write zip file: " + outpath);
-                FileOutputStream fileOutputStream;
-                long fsize = 0;
-                fileOutputStream = new FileOutputStream(outpath);
-                int len;// = 0;
-                while ((len = zipStream.read(buffer)) > 0) {
-                    fileOutputStream.write(buffer, 0, len);
-                    fsize += len;
-                } // end while
-                fileOutputStream.close();
-            } // end outer while
-        } catch (IOException ex) {
-            for (StackTraceElement el : ex.getStackTrace()) {
-                logger.severe(el.toString());
-            }
-            this.addErrorMessage("Failed to open ZipInputStream entry" + ex.getMessage());
-            return false;
-        }
-
-        try {
-            zipStream.close();
-        } catch (IOException ex) {
-            Logger.getLogger(ShapefileHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return true;
-    }
-
-    /*
-        Rezip the shapefile(s) into a given directory
-        Assumes that the zipfile_input_stream has already been checked!
-    */
-    public boolean rezipShapefileSets(File rezippedFolder) throws IOException {
+    /**
+     * Re-group the shapefile(s) into a given directory.
+     *
+     * Creates to subdirectories:
+     * - unzipped: directory into which the zip-file is extracted
+     * - rezipped: contains the resulting re-pack
+     *
+     * @return List of resulting files after re-packaging.
+     */
+    public List<File> reZipShapefileSets(File unzipDirectory, File reZipDirectory) throws IOException {
         logger.fine("rezipShapefileSets");
-        //msgt("rezipShapefileSets");
-        if (!this.zipFileProcessed) {
-            this.addErrorMessage("First use 'examineZipFile' (called in the constructor)");
-            return false;
-        }
-        if (!this.containsShapefile()) {
-            this.addErrorMessage("There are no shapefiles here!");
-            return false;
-        }
-        if (zipfile == null) {
-            this.addErrorMessage("The zipfile is null.");
-            return false;
-        }
-        if (rezippedFolder == null) {
-            this.addErrorMessage("The rezippedFolder is null.");
-            return false;
-        }
 
-        if (!rezippedFolder.isDirectory()) {
-            this.addErrorMessage("The rezippedFolder does not exist: " + rezippedFolder.getAbsolutePath());
-            return false;
-        }
         if (!containsShapefile()) {
-            msgt("There are no shapefiles to re-zip");
-            return false;
+            throw new IllegalArgumentException("No shapefiles in zip");
         }
 
-        // Create target directory for unzipping files
-        String dirname_for_unzipping;
-        File dir_for_unzipping;
-
-        dirname_for_unzipping = rezippedFolder.getAbsolutePath() + "/" + "scratch-for-unzip-12345";
-        dir_for_unzipping = new File(dirname_for_unzipping);
-        logger.fine("Try to create directory: " + dirname_for_unzipping);
-
-        if (!this.createDirectory(dir_for_unzipping)) {
-            this.addErrorMessage("Failed to make directory: " + dirname_for_unzipping);
-            return false;
-        }
-
-
-        // Unzip files!
-        if (!this.unzipFilesToDirectory(zipfile, dir_for_unzipping)) {
-            this.addErrorMessage("Failed to unzip files.");
-            return false;
-        }
-        // Redistribute files!
-        String target_dirname = rezippedFolder.getAbsolutePath();
-        boolean redistribute_success = this.redistributeFilesFromZip(dirname_for_unzipping, target_dirname);
-
-        // Delete unzipped files in scratch directory
-        FileUtils.deleteDirectory(dir_for_unzipping);
-
-        logger.fine("Post redistribute:)");
-        for (File f : new File(target_dirname).listFiles()) {
-            logger.fine("File exists: " + f.getAbsolutePath());
-        }
-
-        return redistribute_success;
-
-    }
-
-    private String getRedistributeFilePath(String dirname, String file_basename, String file_ext) {
-
-        if (dirname == null) {
-            this.addErrorMessage("getRedistributeFilePath. dirname is null");
-            return null;
-        }
-        if (file_basename == null) {
-            this.addErrorMessage("getRedistributeFilePath. file_basename is null");
-            return null;
-        }
-        if (file_ext == null) {
-            this.addErrorMessage("getRedistributeFilePath. file_ext is null");
-            return null;
-        }
-        if (file_ext.equals(BLANK_EXTENSION)) {
-            return dirname + "/" + file_basename;
-        }
-        return dirname + "/" + file_basename + "." + file_ext;
-    }
-
-    /*
-        Create new zipped shapefile
-    
-    
-    */
-    private boolean redistributeFilesFromZip(String source_dirname, String target_dirname) {
-
-        logger.fine("redistributeFilesFromZip. source: '" + source_dirname + "'  target: '" + target_dirname + "'");
-
-        int cnt = 0;
-       /* START: Redistribute files by iterating through the Map of basenames + extensions
-        
-        example key: "shape1"
-        example ext_list: ["shp", "shx", "dbf", "prj"]
-       */
-        for (Map.Entry<String, List<String>> entry : fileGroups.entrySet()) {
-            cnt++;
-            String key = entry.getKey();
-            List<String> ext_list = entry.getValue();
-
-            msg("\n(" + cnt + ") Basename: " + key);
-            msg("Extensions: " + Arrays.toString(ext_list.toArray()));
-
-            // Is this a shapefile?  If so, rezip it
-            if (doesListContainShapefileExtensions(ext_list)) {
-
-                List<String> namesToZip = new ArrayList<>();
-
-                for (String ext_name : ext_list) {
-                    if (!this.isShapefileExtension(ext_name)) {
-                        // Another file with similar basename as shapefile.  
-                        // e.g. if shapefile basename is "census", this might be "census.xls", "census.pdf", or another non-shapefile extension
-                        String source_file_fullpath = this.getRedistributeFilePath(source_dirname, key, ext_name);
-                        String targetFileFullpath = this.getRedistributeFilePath(target_dirname, key, ext_name);
-                        this.straightFileCopy(source_file_fullpath, targetFileFullpath);
-                        this.addFinalRezippedFile(targetFileFullpath);
-                    } else {
-                        namesToZip.add(key + "." + ext_name);
-
-                    }
-                }
-
-                String target_zipfile_name = target_dirname + "/" + key + ".zip";
-                //this.msg("target_zipfile_name: "+ target_zipfile_name);
-                //this.msg("source_dirname: "+ source_dirname);
-
-                //msgt("create zipped shapefile");
-                ZipMaker zip_maker = new ZipMaker(namesToZip, source_dirname, target_zipfile_name);
-                this.addFinalRezippedFile(target_zipfile_name);
-
-                // rezip it
-
-            } else {
-                // Non-shapefiles
-                for (String ext_name : ext_list) {
-                    String source_file_fullpath = this.getRedistributeFilePath(source_dirname, key, ext_name);
-                    String targetFileFullpath = this.getRedistributeFilePath(target_dirname, key, ext_name);
-                    this.straightFileCopy(source_file_fullpath, targetFileFullpath);
-                    this.addFinalRezippedFile(targetFileFullpath);
-
-                }
-            }
-        }
-
-        // END: Redistribute files
-
-        return true;
-    }  // end: redistributeFilesFromZip
-
-
-    private boolean straightFileCopy(String sourceFileName, String targetFileName) {
-
-        //msg("Copy [" + sourceFileName + " to [" + targetFileName + "]");
-        if ((sourceFileName == null) || (targetFileName == null)) {
-            this.addErrorMessage("The source or target file was null.\nSource: " + sourceFileName + "\nTarget: " + targetFileName);
-            return false;
-        }
-
-        File source_file = new File(sourceFileName);
-        File target_file = new File(targetFileName);
+        verifyDestinationDirectories(unzipDirectory, reZipDirectory);
         try {
-            Files.copy(source_file.toPath(), target_file.toPath(), REPLACE_EXISTING);
-        } catch (IOException ex) {
-            this.addErrorMessage("Failed to copy file. IOException\nSource: " + sourceFileName + "\nTarget: " + targetFileName);
-            return false;
+            // Unzip files!
+            unzipFilesToDirectory(unzipDirectory.toPath());
+
+            // Redistribute files!
+            redistributeFilesFromZip(unzipDirectory.toPath(), reZipDirectory.toPath());
+
+            return Optional.ofNullable(reZipDirectory.listFiles()).map(Arrays::asList).orElse(Collections.emptyList());
+        } finally {
+            logger.fine(() -> "Post redistribute, unzipped files:" + Optional.ofNullable(unzipDirectory.listFiles())
+                    .map(Arrays::stream).orElse(Stream.empty()).map(File::getName)
+                    .collect(Collectors.joining(",")));
         }
-
-        return true;
-
     }
 
-    public boolean containsOnlySingleShapefile() {
-        if (containsShapefile()) {
-            return fileGroups.size() == filesizeHash.size();
-        }
-        return false;
-    }
-
-    /*
-        Does this zip file contain a shapefile set?
-    */
+    /**
+     * Does this zip file contain a shapefile set?
+     */
     public boolean containsShapefile() {
-        for (Map.Entry<String, List<String>> entry : fileGroups.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : baseNameExtensions.entrySet()) {
             List<String> extenstionList = entry.getValue();
             if (doesListContainShapefileExtensions(extenstionList)) {
                 return true;
@@ -517,6 +149,126 @@ public class ShapefileHandler {
         return false;
     }
 
+    // -------------------- PRIVATE --------------------
+
+    private void verifyDestinationDirectories(File... directories) throws IOException {
+        for(File dir : directories) {
+            if (dir == null || !dir.isDirectory() || !FileUtils.isEmptyDirectory(dir)) {
+                throw new IllegalArgumentException("Invalid target directory:" + dir);
+            }
+        }
+    } // createDirectories
+
+    private String getFileBasename(String fileName) {
+        if (fileName == null) {
+            return null;
+        }
+        String unzipFileName = new File(fileName).getName();
+        if (unzipFileName.isEmpty()) {
+            logger.info("getFileBasename.  fileName is an empty string: " + fileName);
+            return null;
+        }
+        return unzipFileName;
+    }
+
+    /**
+     * Unzip the files to the directory, FLATTENING the directory structure
+     */
+    private void unzipFilesToDirectory(Path unzipDirectory) {
+        try(ZipArchiveInputStream zipStream = new ZipArchiveInputStream(Files.newInputStream(zipfile.toPath()))) {
+            ZipEntry origEntry;
+            while ((origEntry = zipStream.getNextEntry()) != null) {
+                String zentryFileName = origEntry.getName();
+                String unzipFileName = getFileBasename(zentryFileName);
+
+                if (isFileToSkip(unzipFileName)) {
+                    logger.fine("Skip file");
+                    continue;
+                }
+
+                // Create sub-directory, if needed
+                if (origEntry.isDirectory()) {
+                    logger.fine("Skip directory");
+                    continue; // Continue to next Entry
+                }
+
+                logger.fine("file found!");
+
+                // Write the file
+                Path outpath = unzipDirectory.resolve(unzipFileName);
+                logger.fine("Write zip file: " + outpath);
+                try (OutputStream fileOutputStream = Files.newOutputStream(outpath)) {
+                    IOUtils.copy(zipStream, fileOutputStream);
+                }
+            } // end outer while
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, "Failed to open ZipInputStream entry", ex);
+            throw new IllegalStateException("Failed to unzip:" + ex.getMessage());
+        }
+    }
+
+    private Path getFilePath(Path directory, String file_basename, String file_ext) {
+        if (file_ext.equals(BLANK_EXTENSION)) {
+            return directory.resolve(file_basename);
+        }
+        return directory.resolve(file_basename + "." + file_ext);
+    }
+
+    /**
+     * Create new zipped shapefile
+     */
+    private void redistributeFilesFromZip(Path unzipDirectory, Path rezipDirectory) throws IOException {
+        logger.fine("redistributeFilesFromZip. source: '" + unzipDirectory + "'  target: '" + rezipDirectory + "'");
+
+        int cnt = 0;
+        /* START: Redistribute files by iterating through the Map of basenames + extensions
+           example key: "shape1"
+           example ext_list: ["shp", "shx", "dbf", "prj"]
+        */
+        for (Map.Entry<String, List<String>> entry : baseNameExtensions.entrySet()) {
+            cnt++;
+            String baseName = entry.getKey();
+            List<String> ext_list = entry.getValue();
+
+            logger.fine("\n(" + cnt + ") Basename: " + baseName);
+            logger.fine("Extensions: " + Arrays.toString(ext_list.toArray()));
+
+            // Is this a shapefile?  If so, rezip it
+            if (doesListContainShapefileExtensions(ext_list)) {
+                Path reZippedFileName = rezipDirectory.resolve(baseName + ".zip");
+                try (ZipFileBuilder shapefileZip = new ZipFileBuilder(reZippedFileName)) {
+                    for (String ext_name : ext_list) {
+                        Path sourceFile = getFilePath(unzipDirectory, baseName, ext_name);
+                        if (!isShapefileExtension(ext_name)) {
+                            // Another file with similar basename as shapefile.
+                            // e.g. if shapefile basename is "census", this might be "census.xls", "census.pdf", or another non-shapefile extension
+                            moveFile(sourceFile, getFilePath(rezipDirectory, baseName, ext_name));
+                        } else {
+                            shapefileZip.addToZipFile(sourceFile);
+                            Files.delete(sourceFile);
+                        }
+                    }
+                }
+                // rezip it
+            } else {
+                // Non-shapefiles
+                for (String ext_name : ext_list) {
+                    moveFile(getFilePath(unzipDirectory, baseName, ext_name),
+                            getFilePath(rezipDirectory, baseName, ext_name));
+                }
+            }
+        }
+
+    }  // end: redistributeFilesFromZip
+
+    private void moveFile(Path sourceFileName, Path targetFileName) {
+        try {
+            Files.move(sourceFileName, targetFileName);
+        } catch (IOException ex) {
+            throw new IllegalStateException("Failed to move file. Source: " + sourceFileName + " Target: " + targetFileName, ex);
+        }
+    }
+
     private boolean isShapefileExtension(String ext_name) {
         if (ext_name == null) {
             return false;
@@ -524,28 +276,20 @@ public class ShapefileHandler {
         return SHAPEFILE_ALL_EXTENSIONS.contains(ext_name);
     }
 
-    /*
-        Does a list of file extensions match those required for a shapefile set?
-    */
+    /**
+     * Does a list of file extensions match those required for a shapefile set?
+     */
     private boolean doesListContainShapefileExtensions(List<String> ext_list) {
-        if (ext_list == null) {
-            return false;
-        }
-        return ext_list.containsAll(SHAPEFILE_MANDATORY_EXTENSIONS);
+        return new HashSet<>(ext_list).containsAll(SHAPEFILE_MANDATORY_EXTENSIONS);
     }
-
 
     private void addToFileGroupHash(String basename, String ext) {
         if ((basename == null) || (ext == null)) {
             return;
         }
-        List<String> extension_list = fileGroups.get(basename);
-        if (extension_list == null) {
-            extension_list = new ArrayList<>();
-        }
+        List<String> extension_list = baseNameExtensions.computeIfAbsent(basename, k -> new ArrayList<>());
         if (!(extension_list.contains(ext))) {
             extension_list.add(ext);
-            fileGroups.put(basename, extension_list);
         }
     }   // end addToFileGroupHash
 
@@ -595,89 +339,37 @@ public class ShapefileHandler {
             return true;
         }
 
-        File fnameFile = new File(fname);
-        return fnameFile.getName().endsWith(".DS_Store");
+        return fname.endsWith(".DS_Store");
     }
 
-    /**************************************
+    /**
      * Iterate through the zip file contents.
      * Does it contain any shapefiles?
-     *
-     * @param FileInputStream zip_file_stream
      */
-    private boolean examineZipfile(File file) {
-
-        if (file == null) {
-            this.addErrorMessage("The zip file was null");
-            return false;
+    private void examineZipFile() {
+        if (zipfile == null || !zipfile.isFile()) {
+            throw new IllegalArgumentException("Invalid zip file: " + zipfile);
         }
 
-        // Clear out file lists
-        this.filesListInDir.clear();
-        this.filesizeHash.clear();
-        this.fileGroups.clear();
-
-        try (ZipFile zipFile = new ZipFile(file)) {
+        try (ZipFile zipFile = ZipFile.builder().setFile(zipfile).get()) {
+            Set<String> fileNamesInZip = new HashSet<>();
             Enumeration<ZipArchiveEntry> zipFileEntries = zipFile.getEntries();
             while(zipFileEntries.hasMoreElements()) {
                 ZipArchiveEntry zipFileEntry = zipFileEntries.nextElement();
-                String zentryFileName = zipFileEntry.getName();
-                
-                if (this.isFileToSkip(zentryFileName)) {
-                    continue;
-                }
-                
-                if (zipFileEntry.isDirectory()) {
-                    continue;
-                }
-                String unzipFileName = this.getFileBasename(zentryFileName);
-                if (unzipFileName == null) {
-                    logger.warning("Zip Entry Basename is an empty string: " + zentryFileName);
-                    continue;
-                }
-                
-                String s = String.format("Entry: %s len %d added %TD",
-                        unzipFileName, zipFileEntry.getSize(),
-                        new Date(zipFileEntry.getTime()));
+                String unzipFileName = getFileBasename(zipFileEntry.getName());
 
-                if (!this.filesListInDir.contains(s)) {
-                    this.filesListInDir.add(s);
-                    updateFileGroupHash(unzipFileName);
-                    this.filesizeHash.put(unzipFileName, zipFileEntry.getSize());
+                if (isFileToSkip(unzipFileName) || zipFileEntry.isDirectory()) {
+                    continue;
                 }
+                
+                if (fileNamesInZip.contains(unzipFileName)) {
+                    throw new IllegalStateException("Found file-name collision: " + unzipFileName);
+                }
+                fileNamesInZip.add(unzipFileName);
+                updateFileGroupHash(unzipFileName);
             }
-
-            if (this.filesListInDir.isEmpty()) {
-                errorMessage = "No files in zipStream";
-                return false;
-            }
-
-            this.zipFileProcessed = true;
-            return true;
         } catch (IOException ex) {
-            this.addErrorMessage("IOException File name");
-            msgt("IOException");
-            return false;
+            throw new IllegalStateException("Error inspecting zip file", ex);
         }
-
     }
-
-    public static void main(String[] args) {
-
-        // Example usage
-        if (args.length == 0) {
-
-
-        } else if (args.length > 1) {
-            System.out.println("Please only give one file name!");
-        } else {
-           /*
-           String zip_name =  args[0];      
-           System.out.println( "Process File: " + zip_name);
-           System.out.println( "Process File: " + zip_name);                
-           ShapefileHandler zpt = new ShapefileHandler(zip_name);
-           */
-        }
-    } // end main
-
 } // end ShapefileHandler
