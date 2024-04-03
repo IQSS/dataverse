@@ -1,8 +1,10 @@
 package edu.harvard.iq.dataverse.workflow;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
@@ -58,6 +60,9 @@ public class WorkflowServiceBean {
     
     @EJB
     DatasetServiceBean datasets;
+    
+    @EJB
+    DvObjectServiceBean dvObjects;
 
     @EJB
     SettingsServiceBean settings;
@@ -387,16 +392,11 @@ public class WorkflowServiceBean {
                 //Now lock for FinalizePublication - this block mirrors that in PublishDatasetCommand
                 AuthenticatedUser user = ctxt.getRequest().getAuthenticatedUser();
                 DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
-                lock.setDataset(ctxt.getDataset());
-                String currentGlobalIdProtocol = settings.getValueForKey(SettingsServiceBean.Key.Protocol, "");
-                String currentGlobalAuthority= settings.getValueForKey(SettingsServiceBean.Key.Authority, "");
-                String dataFilePIDFormat = settings.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+                Dataset dataset = ctxt.getDataset();
+                lock.setDataset(dataset);
                 boolean registerGlobalIdsForFiles = 
-                        (currentGlobalIdProtocol.equals(ctxt.getDataset().getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT")) 
-                        && systemConfig.isFilePIDsEnabledForCollection(ctxt.getDataset().getOwner());
-                if ( registerGlobalIdsForFiles ){
-                    registerGlobalIdsForFiles = currentGlobalAuthority.equals( ctxt.getDataset().getAuthority() );
-                }
+                        systemConfig.isFilePIDsEnabledForCollection(ctxt.getDataset().getOwner()) &&
+                                dvObjects.getEffectivePidGenerator(dataset).canCreatePidsLike(dataset.getGlobalId());
                 
                 boolean validatePhysicalFiles = systemConfig.isDatafileValidationOnPublishEnabled();
                 String info = "Publishing the dataset; "; 

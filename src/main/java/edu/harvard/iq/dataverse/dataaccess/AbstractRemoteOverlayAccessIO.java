@@ -334,11 +334,5 @@ public abstract class AbstractRemoteOverlayAccessIO<T extends DvObject> extends 
         logger.fine("fullStoragePath: " + fullStoragePath);
         return fullStoragePath;
     }
-    
-    public static boolean isNotDataverseAccessible(String storeId) {
-        return Boolean.parseBoolean(StorageIO.getConfigParamForDriver(storeId, FILES_NOT_ACCESSIBLE_BY_DATAVERSE));
-    }
-
-
 
 }

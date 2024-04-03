@@ -71,6 +71,7 @@ public class VariableMetadata implements Serializable  {
     /**
      * universe: metadata variable field.
      */
+    @Column(columnDefinition="TEXT")
     private String universe;
 
     /**

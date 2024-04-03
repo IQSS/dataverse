@@ -29,9 +29,7 @@ public class AuthFilter implements Filter {
         logger.info(AuthFilter.class.getName() + "initialized. filterConfig.getServletContext().getServerInfo(): " + filterConfig.getServletContext().getServerInfo());
 
         try {
-            String glassfishLogsDirectory = "logs";
-
-            FileHandler logFile = new FileHandler(".." + File.separator + glassfishLogsDirectory + File.separator + "authfilter.log");
+            FileHandler logFile = new FileHandler( System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "authfilter.log");
             SimpleFormatter formatterTxt = new SimpleFormatter();
             logFile.setFormatter(formatterTxt);
             logger.addHandler(logFile);
