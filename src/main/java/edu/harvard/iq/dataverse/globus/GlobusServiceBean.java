@@ -134,7 +134,7 @@ public class GlobusServiceBean implements java.io.Serializable {
      * @param globusLogger - a separate logger instance, may be null
      */
     public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger) {
-        globusLogger.info("Start deleting rule " + ruleId + " for dataset " + dataset.getId());
+        globusLogger.fine("Start deleting rule " + ruleId + " for dataset " + dataset.getId());
         if (ruleId.length() > 0) {
             if (dataset != null) {
                 GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
@@ -179,25 +179,95 @@ public class GlobusServiceBean implements java.io.Serializable {
         permissions.setPrincipal(principal);
         permissions.setPath(endpoint.getBasePath() + "/");
         permissions.setPermissions("rw");
-
+        
         JsonObjectBuilder response = Json.createObjectBuilder();
-        response.add("status", requestPermission(endpoint, dataset, permissions));
-        String driverId = dataset.getEffectiveStorageDriverId();
-        JsonObjectBuilder paths = Json.createObjectBuilder();
-        for (int i = 0; i < numberOfPaths; i++) {
-            String storageIdentifier = DataAccess.getNewStorageIdentifier(driverId);
-            int lastIndex = Math.max(storageIdentifier.lastIndexOf("/"), storageIdentifier.lastIndexOf(":"));
-            paths.add(storageIdentifier, endpoint.getBasePath() + "/" + storageIdentifier.substring(lastIndex + 1));
-
+        //Try to create the directory (202 status) if it does not exist (502-already exists)
+        int mkDirStatus = makeDirs(endpoint, dataset);
+        if (!(mkDirStatus== 202 || mkDirStatus == 502)) {
+            return response.add("status", mkDirStatus).build();
         }
-        response.add("paths", paths.build());
+        //The dir for the dataset's data exists, so try to request permission for the principal
+        int requestPermStatus = requestPermission(endpoint, dataset, permissions);
+        response.add("status", requestPermStatus);
+        if (requestPermStatus == 201) {
+            String driverId = dataset.getEffectiveStorageDriverId();
+            JsonObjectBuilder paths = Json.createObjectBuilder();
+            for (int i = 0; i < numberOfPaths; i++) {
+                String storageIdentifier = DataAccess.getNewStorageIdentifier(driverId);
+                int lastIndex = Math.max(storageIdentifier.lastIndexOf("/"), storageIdentifier.lastIndexOf(":"));
+                paths.add(storageIdentifier, endpoint.getBasePath() + "/" + storageIdentifier.substring(lastIndex + 1));
+
+            }
+            response.add("paths", paths.build());
+        }
         return response.build();
     }
 
+    /**
+     * Call to create the directories for the specified dataset.
+     * 
+     * @param dataset
+     * @return - an error status at whichever subdir the process fails at or the
+     *         final success status
+     */
+    private int makeDirs(GlobusEndpoint endpoint, Dataset dataset) {
+        logger.fine("Creating dirs: " + endpoint.getBasePath());
+        int index = endpoint.getBasePath().lastIndexOf(dataset.getAuthorityForFileStorage())
+                + dataset.getAuthorityForFileStorage().length();
+        String nextDir = endpoint.getBasePath().substring(0, index);
+        int response = makeDir(endpoint, nextDir);
+        String identifier = dataset.getIdentifierForFileStorage();
+        //Usually identifiers will have 0 or 1 slashes (e.g. FK2/ABCDEF) but the while loop will handle any that could have more
+        //Will skip if the first makeDir above failed
+        while ((identifier.length() > 0) && ((response == 202 || response == 502))) {
+            index = identifier.indexOf('/');
+            if (index == -1) {
+                //Last dir to create
+                response = makeDir(endpoint, nextDir + "/" + identifier);
+                identifier = "";
+            } else {
+                //The next dir to create
+                nextDir = nextDir + "/" + identifier.substring(0, index);
+                response = makeDir(endpoint, nextDir);
+                //The rest of the identifier
+                identifier = identifier.substring(index + 1);
+            }
+        }
+        return response;
+    }
+    
+    private int makeDir(GlobusEndpoint endpoint, String dir) {
+        MakeRequestResponse result = null;
+        String body = "{\"DATA_TYPE\":\"mkdir\",\"path\":\"" + dir + "\"}";
+        try {
+            logger.fine(body);
+            URL url = new URL(
+                    "https://transfer.api.globusonline.org/v0.10/operation/endpoint/" + endpoint.getId() + "/mkdir");
+            result = makeRequest(url, "Bearer", endpoint.getClientToken(), "POST", body);
+
+            switch (result.status) {
+            case 202:
+                logger.fine("Dir " + dir + " was created successfully.");
+                break;
+            case 502:
+                logger.fine("Dir " + dir + " already exists.");
+                break;
+            default:
+                logger.warning("Status " + result.status + " received when creating dir " + dir);
+                logger.fine("Response: " + result.jsonResponse);
+            }
+        } catch (MalformedURLException ex) {
+            // Misconfiguration
+            logger.warning("Failed to create dir on " + endpoint.getId());
+            return 500;
+        }
+        return result.status;
+    }
+    
     private int requestPermission(GlobusEndpoint endpoint, Dataset dataset, Permissions permissions) {
         Gson gson = new GsonBuilder().create();
         MakeRequestResponse result = null;
-        logger.info("Start creating the rule");
+        logger.fine("Start creating the rule");
 
         try {
             URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access");
@@ -218,7 +288,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                 if (globusResponse != null && globusResponse.containsKey("access_id")) {
                     permissions.setId(globusResponse.getString("access_id"));
                     monitorTemporaryPermissions(permissions.getId(), dataset.getId());
-                    logger.info("Access rule " + permissions.getId() + " was created successfully");
+                    logger.fine("Access rule " + permissions.getId() + " was created successfully");
                 } else {
                     // Shouldn't happen!
                     logger.warning("Access rule id not returned for dataset " + dataset.getId());
@@ -363,7 +433,6 @@ public class GlobusServiceBean implements java.io.Serializable {
         try {
             connection = (HttpURLConnection) url.openConnection();
             // Basic
-            logger.info(authType + " " + authCode);
             logger.fine("For URL: " + url.toString());
             connection.setRequestProperty("Authorization", authType + " " + authCode);
             // connection.setRequestProperty("Content-Type",
@@ -573,7 +642,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         String logTimestamp = logFormatter.format(new Date());
         Logger globusLogger = Logger.getLogger(
                 "edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusUpload" + logTimestamp);
-        String logFileName = "../logs" + File.separator + "globusUpload_id_" + dataset.getId() + "_" + logTimestamp
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusUpload_id_" + dataset.getId() + "_" + logTimestamp
                 + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
@@ -713,7 +782,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                                 .mapToObj(index -> ((JsonObject) newfilesJsonArray.get(index)).getJsonObject(fileId))
                                 .filter(Objects::nonNull).collect(Collectors.toList());
                         if (newfileJsonObject != null) {
-                            logger.info("List Size: " + newfileJsonObject.size());
+                            logger.fine("List Size: " + newfileJsonObject.size());
                             // if (!newfileJsonObject.get(0).getString("hash").equalsIgnoreCase("null")) {
                             JsonPatch path = Json.createPatchBuilder()
                                     .add("/md5Hash", newfileJsonObject.get(0).getString("hash")).build();
@@ -851,7 +920,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         Logger globusLogger = Logger.getLogger(
                 "edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusDownload" + logTimestamp);
 
-        String logFileName = "../logs" + File.separator + "globusDownload_id_" + dataset.getId() + "_" + logTimestamp
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "globusDownload_id_" + dataset.getId() + "_" + logTimestamp
                 + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
@@ -884,7 +953,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         String taskIdentifier = jsonObject.getString("taskIdentifier");
 
         GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
-        logger.info("Endpoint path: " + endpoint.getBasePath());
+        logger.fine("Endpoint path: " + endpoint.getBasePath());
 
         // If the rules_cache times out, the permission will be deleted. Presumably that
         // doesn't affect a
@@ -892,10 +961,10 @@ public class GlobusServiceBean implements java.io.Serializable {
         GlobusTask task = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
         String ruleId = getRuleId(endpoint, task.getOwner_id(), "r");
         if (ruleId != null) {
-            logger.info("Found rule: " + ruleId);
+            logger.fine("Found rule: " + ruleId);
             Long datasetId = rulesCache.getIfPresent(ruleId);
             if (datasetId != null) {
-                logger.info("Deleting from cache: rule: " + ruleId);
+                logger.fine("Deleting from cache: rule: " + ruleId);
                 // Will not delete rule
                 rulesCache.invalidate(ruleId);
             }
@@ -909,7 +978,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         // Transfer is done (success or failure) so delete the rule
         if (ruleId != null) {
-            logger.info("Deleting: rule: " + ruleId);
+            logger.fine("Deleting: rule: " + ruleId);
             deletePermission(ruleId, dataset, globusLogger);
         }
 
@@ -1032,7 +1101,6 @@ public class GlobusServiceBean implements java.io.Serializable {
     }
 
     private CompletableFuture<FileDetailsHolder> calculateDetailsAsync(String id, Logger globusLogger) {
-        // logger.info(" calcualte additional details for these globus id ==== " + id);
 
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -1071,7 +1139,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                 count = 3;
             } catch (IOException ioex) {
                 count = 3;
-                logger.info(ioex.getMessage());
+                logger.fine(ioex.getMessage());
                 globusLogger.info(
                         "DataFile (fullPath " + fullPath + ") does not appear to be accessible within Dataverse: ");
             } catch (Exception ex) {

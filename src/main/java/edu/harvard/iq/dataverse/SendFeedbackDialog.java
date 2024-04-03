@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.MailUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.Optional;
 import java.util.Random;
@@ -101,8 +101,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
         op1 = Long.valueOf(random.nextInt(10));
         op2 = Long.valueOf(random.nextInt(10));
         userSum = null;
-        String supportEmail = JvmSettings.SUPPORT_EMAIL.lookupOptional().orElse(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail));
-        systemAddress = MailUtil.parseSystemAddress(supportEmail);
+        systemAddress = mailService.getSupportAddress().orElse(null);
     }
 
     public Long getOp1() {
@@ -217,6 +216,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
         }
             logger.fine("sending feedback: " + feedback);
             mailService.sendMail(feedback.getFromEmail(), feedback.getToEmail(), feedback.getCcEmail(), feedback.getSubject(), feedback.getBody());
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("contact.sent"));
         return null;
     }
     

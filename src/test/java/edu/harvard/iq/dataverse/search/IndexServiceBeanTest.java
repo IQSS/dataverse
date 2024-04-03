@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.Dataverse.DataverseType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -134,7 +135,7 @@ public class IndexServiceBeanTest {
 
     private IndexableDataset createIndexableDataset() {
         final Dataset dataset = MocksFactory.makeDataset();
-        dataset.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL,"10.666", "FAKE/fake", "/", DOIServiceBean.DOI_RESOLVER_URL, null));
+        dataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.666", "FAKE/fake", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
         final DatasetVersion datasetVersion = dataset.getCreateVersion(null);
         DatasetField field = createCVVField("language", "English", false);
         datasetVersion.getDatasetFields().add(field);
