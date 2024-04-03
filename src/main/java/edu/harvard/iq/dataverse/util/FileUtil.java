@@ -248,7 +248,7 @@ public class FileUtil implements java.io.Serializable  {
 
     public FileUtil() {
     }
-
+    
    
     public static String getFileExtension(String fileName){
         String ext = null;
@@ -590,7 +590,7 @@ public class FileUtil implements java.io.Serializable  {
             return isFITSFile(ins);
         } catch (IOException ex) {
             logger.fine("IOException: "+ ex.getMessage());
-        }
+        } 
         
         return false;
     }
@@ -835,7 +835,7 @@ public class FileUtil implements java.io.Serializable  {
             throws IOException, FileExceedsMaxSizeException, FileExceedsStorageQuotaException {
             return saveInputStreamInTempFile(inputStream, fileSizeLimit, null);
         }
-
+        
         public static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit, Long storageQuotaLimit)
             throws IOException, FileExceedsMaxSizeException, FileExceedsStorageQuotaException {
         Path tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
@@ -848,14 +848,14 @@ public class FileUtil implements java.io.Serializable  {
             Long fileSize = tempFile.toFile().length();
             if (fileSizeLimit != null && fileSize > fileSizeLimit) {
                 try {tempFile.toFile().delete();} catch (Exception ex) {}
-                throw new FileExceedsMaxSizeException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)));
+                throw new FileExceedsMaxSizeException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)));  
             }
             
             if (storageQuotaLimit != null && fileSize > storageQuotaLimit) {
                 try {tempFile.toFile().delete();} catch (Exception ex) {}
-                throw new FileExceedsStorageQuotaException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded"), bytesToHumanReadable(fileSize), bytesToHumanReadable(storageQuotaLimit)));
+                throw new FileExceedsStorageQuotaException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded"), bytesToHumanReadable(fileSize), bytesToHumanReadable(storageQuotaLimit)));  
             }
-
+            
             return tempFile.toFile();
         }
         throw new IOException("Failed to save uploaded file.");
@@ -1206,7 +1206,7 @@ public class FileUtil implements java.io.Serializable  {
         }
         return answer;
     }
-
+    
     /**
      * Provide download URL if no Terms of Use, no guestbook, and not
      * restricted.
@@ -1781,5 +1781,5 @@ public class FileUtil implements java.io.Serializable  {
         String storageIdentifier = dataFile.getStorageIdentifier();
         return storageIdentifier.substring(0, storageIdentifier.indexOf(DataAccess.SEPARATOR));
     }
-
+    
 }
