@@ -273,7 +273,7 @@ Remember, it’s only a test (and it's not graded)! Some guidelines to bear in m
 - If you need to test an optional service (S3, etc.), add it to our docker compose file. See :doc:`/container/dev-usage`.
 - Just as with any development, if you’re stuck: ask for help!
 
-To execute existing integration tests on your local Dataverse installation, a helpful command line tool to use is `Maven <https://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <https://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it’s easily done via Homebrew: ``brew install maven``.
+To execute existing integration tests on your local Dataverse installation from the command line, use Maven. You should have Maven installed as per :doc:`dev-environment`, but if not it's easily done via Homebrew: ``brew install maven``.
 
 Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)>]``.
 
@@ -427,6 +427,8 @@ target/coverage-it/index.html is the place to start reading the code coverage re
 Load/Performance Testing
 ------------------------
 
+See also :doc:`/qa/performance-tests` in the QA Guide.
+
 .. _locust:
 
 Locust
@@ -553,7 +555,3 @@ Future Work on Accessibility Testing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Using https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible and hooks available from accessibility testing tools, automate the running of accessibility tools on PRs so that developers will receive quicker feedback on proposed code changes that reduce the accessibility of the application.
-
-----
-
-Previous: :doc:`sql-upgrade-scripts` | Next: :doc:`documentation`

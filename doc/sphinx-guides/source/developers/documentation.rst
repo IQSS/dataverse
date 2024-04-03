@@ -18,7 +18,7 @@ If you find a typo or a small error in the documentation you can fix it using Gi
 - Under the **Write** tab, delete the long welcome message and write a few words about what you fixed.
 - Click **Create Pull Request**.
 
-That's it! Thank you for your contribution! Your pull request will be added manually to the main Dataverse Project board at https://github.com/orgs/IQSS/projects/2 and will go through code review and QA before it is merged into the "develop" branch. Along the way, developers might suggest changes or make them on your behalf. Once your pull request has been merged you will be listed as a contributor at https://github.com/IQSS/dataverse/graphs/contributors
+That's it! Thank you for your contribution! Your pull request will be added manually to the main Dataverse Project board at https://github.com/orgs/IQSS/projects/34 and will go through code review and QA before it is merged into the "develop" branch. Along the way, developers might suggest changes or make them on your behalf. Once your pull request has been merged you will be listed as a contributor at https://github.com/IQSS/dataverse/graphs/contributors
 
 Please see https://github.com/IQSS/dataverse/pull/5857 for an example of a quick fix that was merged (the "Files changed" tab shows how a typo was fixed).
 
@@ -159,7 +159,3 @@ A few notes about the command above:
 Also, as of this writing we have enabled PDF builds from the "develop" branch. You download the PDF from http://preview.guides.gdcc.io/_/downloads/en/develop/pdf/
 
 If you would like to help improve the PDF version of the guides, please get in touch! Please see :ref:`getting-help-developers` for ways to contact the developer community.
-
-----
-
-Previous: :doc:`testing` | Next: :doc:`dependencies`

@@ -1,30 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
-import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseLinkingDataverse;
-import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -38,10 +16,15 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.exception.RateLimitCommandException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
-import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
+import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -51,6 +34,21 @@ import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.json.*;
+import jakarta.json.JsonValue.ValueType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.Response.Status;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
@@ -59,24 +57,6 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonException;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonValue;
-import jakarta.json.JsonValue.ValueType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.PersistenceContext;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.*;
-import jakarta.ws.rs.core.Response.ResponseBuilder;
-import jakarta.ws.rs.core.Response.Status;
 
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
@@ -416,9 +396,34 @@ public abstract class AbstractApiBean {
             }
         }
     }
-    
+
+    protected DatasetVersion findDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
+        DatasetVersion dsv = execCommand(handleVersion(versionNumber, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
+
+            @Override
+            public Command<DatasetVersion> handleLatest() {
+                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
+            }
+
+            @Override
+            public Command<DatasetVersion> handleDraft() {
+                return new GetDraftDatasetVersionCommand(req, ds);
+            }
+
+            @Override
+            public Command<DatasetVersion> handleSpecific(long major, long minor) {
+                return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor, includeDeaccessioned, checkPermsWhenDeaccessioned);
+            }
+
+            @Override
+            public Command<DatasetVersion> handleLatestPublished() {
+                return new GetLatestPublishedDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
+            }
+        }));
+        return dsv;
+    }
+
     protected DataFile findDataFileOrDie(String id) throws WrappedResponse {
-        
         DataFile datafile;
         if (id.equals(PERSISTENT_ID_KEY)) {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
@@ -571,6 +576,8 @@ public abstract class AbstractApiBean {
         try {
             return engineSvc.submit(cmd);
 
+        } catch (RateLimitCommandException ex) {
+            throw new WrappedResponse(rateLimited(ex.getMessage()));
         } catch (IllegalCommandException ex) {
             //for 8859 for api calls that try to update datasets with TOA out of compliance
                 if (ex.getMessage().toLowerCase().contains("terms of use")){
@@ -661,7 +668,15 @@ public abstract class AbstractApiBean {
             .add("data", bld).build())
             .type(MediaType.APPLICATION_JSON).build();
     }
-    
+
+    protected Response ok( JsonArrayBuilder bld , long totalCount) {
+        return Response.ok(Json.createObjectBuilder()
+                        .add("status", ApiConstants.STATUS_OK)
+                        .add("totalCount", totalCount)
+                        .add("data", bld).build())
+                .type(MediaType.APPLICATION_JSON).build();
+    }
+
     protected Response ok( JsonArray ja ) {
         return Response.ok(Json.createObjectBuilder()
             .add("status", ApiConstants.STATUS_OK)
@@ -764,11 +779,15 @@ public abstract class AbstractApiBean {
     protected Response badRequest( String msg ) {
         return error( Status.BAD_REQUEST, msg );
     }
-    
+
     protected Response forbidden( String msg ) {
         return error( Status.FORBIDDEN, msg );
     }
-    
+
+    protected Response rateLimited( String msg ) {
+        return error( Status.TOO_MANY_REQUESTS, msg );
+    }
+
     protected Response conflict( String msg ) {
         return error( Status.CONFLICT, msg );
     }
