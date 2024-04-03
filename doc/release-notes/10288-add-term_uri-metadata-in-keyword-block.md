@@ -1,12 +1,12 @@
 ### New keywordTermURI Metadata in keyword Metadata Block
 
-Adding a new metadata `keywordTermURI` to the `keyword` metadata block to facilitate the integration of controlled vocabulary services, in particular by adding the possibility of saving the "term" and its associated URI. (Issue #10288)
+Adding a new metadata `keywordTermURI` to the `keyword` metadata block to facilitate the integration of controlled vocabulary services, in particular by adding the possibility of saving the "term" and its associated URI. For more information, see #10288 and PR #10371.
 
 ## Upgrade Instructions
 
 1\. Update the Citation metadata block
 
-- `wget https://github.com/IQSS/dataverse/releases/download/v6.2/citation.tsv`
+- `wget https://github.com/IQSS/dataverse/releases/download/v6.3/citation.tsv`
 - `curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @citation.tsv -H "Content-type: text/tab-separated-values"`
 
 2\. Update your Solr `schema.xml` to include the new field.
