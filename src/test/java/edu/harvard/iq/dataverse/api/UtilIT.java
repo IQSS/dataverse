@@ -3268,11 +3268,27 @@ public class UtilIT {
         
         String jsonString = "[\"" + featuredDvAlias + "\"]";
 
-        Response addBannerMessageResponse = given()
+        Response addFeaturedDataverseResponse = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
                 .post("/api/dataverses/"+dvAlias+"/featured/");
-        return addBannerMessageResponse;
+        return addFeaturedDataverseResponse;
+    }
+    
+    static Response deleteFeaturedDataverses (String dvAlias, String apiToken) {
+
+        Response deleteFeaturedDataversesResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/dataverses/"+dvAlias+"/featured/");
+        return deleteFeaturedDataversesResponse;
+    }
+    
+    static Response getFeaturedDataverses (String dvAlias, String apiToken) {
+
+        Response deleteFeaturedDataversesResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"+dvAlias+"/featured/");
+        return deleteFeaturedDataversesResponse;
     }
 
     static Response deleteDataverseRole( String roleAlias, String apiToken) {

@@ -746,6 +746,20 @@ public class DataversesIT {
         featureSubDVResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), featureSubDVResponse.getStatusCode());
         
+         
+        Response getFeaturedDataverseResponse = UtilIT.getFeaturedDataverses(dataverseAlias, apiToken);
+        getFeaturedDataverseResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), getFeaturedDataverseResponse.getStatusCode());
+        getFeaturedDataverseResponse.then().assertThat()
+                .body("data[0]", equalTo(subDataverseAlias));
+        
+        Response deleteFeaturedDataverseResponse = UtilIT.deleteFeaturedDataverses(dataverseAlias, apiToken);
+        deleteFeaturedDataverseResponse.prettyPrint();
+        
+        assertEquals(OK.getStatusCode(), deleteFeaturedDataverseResponse.getStatusCode());
+        deleteFeaturedDataverseResponse.then().assertThat()
+                .body(containsString("Featured dataverses have been removed"));
+        
         Response deleteSubCollectionResponse = UtilIT.deleteDataverse(subDataverseAlias, apiToken);
         deleteSubCollectionResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), deleteSubCollectionResponse.getStatusCode());
