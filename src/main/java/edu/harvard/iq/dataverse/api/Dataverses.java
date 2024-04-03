@@ -59,6 +59,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListExplicitGroupsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ListFeaturedCollectionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlockFacetsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
@@ -830,6 +831,31 @@ public class Dataverses extends AbstractApiBean {
             return e.getResponse();
         }
     }
+    
+    
+    @GET
+    @AuthRequired
+    @Path("{identifier}/featured")
+    /*
+    Allows user to get the collections that are featured by a given collection
+    probably more for SPA than end user
+    */
+    public Response getFeaturedDataverses(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,  String dvAliases) {
+
+        try {
+            User u = getRequestUser(crc);
+            DataverseRequest r = createDataverseRequest(u);
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            JsonArrayBuilder fs = Json.createArrayBuilder();
+            for (Dataverse f : execCommand(new ListFeaturedCollectionsCommand(r, dataverse))) {
+                fs.add(f.getAlias());
+            }
+            return ok(fs);
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+            
     
     @POST
     @AuthRequired
