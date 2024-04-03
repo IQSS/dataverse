@@ -35,7 +35,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import io.restassured.path.json.JsonPath;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import org.hamcrest.CoreMatchers;
+import static org.hamcrest.CoreMatchers.containsString;
 import org.hamcrest.Matchers;
 
 public class DataversesIT {
@@ -719,16 +721,27 @@ public class DataversesIT {
         Response featureSubDVResponseUnpublished = UtilIT.addFeaturedDataverse(dataverseAlias, subDataverseAlias, apiToken);
         featureSubDVResponseUnpublished.prettyPrint();
         assertEquals(400, featureSubDVResponseUnpublished.getStatusCode());
+        featureSubDVResponseUnpublished.then().assertThat()
+                .body(containsString("may not be featured"));
         
         //can't feature a dataverse you don't own
         Response featureSubDVResponseNotOwned = UtilIT.addFeaturedDataverse(dataverseAlias, "root", apiToken);
         featureSubDVResponseNotOwned.prettyPrint();
         assertEquals(400, featureSubDVResponseNotOwned.getStatusCode());
+        featureSubDVResponseNotOwned.then().assertThat()
+                .body(containsString("may not be featured"));
+        
+        //can't feature a dataverse that doesn't exist
+        Response featureSubDVResponseNotExist = UtilIT.addFeaturedDataverse(dataverseAlias, "dummy-alias-sek-foobar-333", apiToken);
+        featureSubDVResponseNotExist.prettyPrint();
+        assertEquals(400, featureSubDVResponseNotExist.getStatusCode());
+        featureSubDVResponseNotExist.then().assertThat()
+                .body(containsString("Can't find dataverse collection"));
         
         publishDataverse = UtilIT.publishDataverseViaNativeApi(subDataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
 
-        
+        //once published it should work
         Response featureSubDVResponse = UtilIT.addFeaturedDataverse(dataverseAlias, subDataverseAlias, apiToken);
         featureSubDVResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), featureSubDVResponse.getStatusCode());
