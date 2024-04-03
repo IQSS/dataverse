@@ -569,7 +569,7 @@ Note: you must have "Add Dataset" permission in the given collection to invoke t
 Set Featured Collections for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Assign featured collections for a given Dataverse collection identified by ``id``:
+Add featured collections to a given Dataverse collection identified by ``id``:
 
 .. code-block:: bash
 
@@ -587,7 +587,7 @@ The fully expanded example above (without environment variables) looks like this
 
 Where collection-alias.json contains a JSON encoded list of collections aliases to be featured (e.g. ``["collection1-alias","collection2-alias"]``).
 
-Note: You may only feature collections that are published and owned by or linked to the featuring collection.
+Note: You may only feature collections that are published and owned by or linked to the featuring collection. Also, using this endpoint will only add new featured collections it will not remove collections that have already been featured.
 
 Remove Featured Collections from a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
