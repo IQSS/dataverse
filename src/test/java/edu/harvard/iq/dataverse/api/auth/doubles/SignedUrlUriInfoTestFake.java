@@ -2,14 +2,14 @@ package edu.harvard.iq.dataverse.api.auth.doubles;
 
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import java.net.URI;
 
 import static edu.harvard.iq.dataverse.util.UrlSignerUtil.SIGNED_URL_TOKEN;
 import static edu.harvard.iq.dataverse.util.UrlSignerUtil.SIGNED_URL_USER;
-import static javax.ws.rs.HttpMethod.GET;
+import static jakarta.ws.rs.HttpMethod.GET;
 
 public class SignedUrlUriInfoTestFake extends UriInfoTestFake {
 

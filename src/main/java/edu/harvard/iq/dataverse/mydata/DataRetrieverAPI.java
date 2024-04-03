@@ -6,6 +6,7 @@ package edu.harvard.iq.dataverse.mydata;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
@@ -24,23 +25,22 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
-import java.math.BigDecimal;
+
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.logging.Logger;
 import java.util.Locale;
-import javax.ejb.EJB;
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
+import jakarta.ejb.EJB;
+import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -84,7 +84,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
     
     private List<DataverseRole> roleList;
     private DataverseRolePermissionHelper rolePermissionHelper;
-    private List<String> defaultDvObjectTypes = MyDataFilterParams.defaultDvObjectTypes;
     private MyDataFinder myDataFinder;
     private SolrQueryResponse solrQueryResponse;
     private AuthenticatedUser authUser = null;
@@ -99,11 +98,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
      */
     public DataRetrieverAPI(){
            
-    }
-    
-    private int randInt(int min, int max) {
-        Random rand = new Random();
-        return rand.nextInt((max - min) + 1) + min;
     }
     
     public String getRetrieveDataFullAPIPath(){
@@ -231,7 +225,12 @@ public class DataRetrieverAPI extends AbstractApiBean {
                     //SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
                     0, //paginationStart,
                     true, // dataRelatedToMe
-                    SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                    SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE, //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                    true, 
+                    null,
+                    null,
+                    false, // no need to request facets here ...
+                    false  // ... same for highlights
             );
         } catch (SearchException ex) {
             logger.severe("Search for total counts failed with filter query");
@@ -265,12 +264,14 @@ public class DataRetrieverAPI extends AbstractApiBean {
     @Produces({"application/json"})
     public String retrieveMyDataAsJsonString(
             @Context ContainerRequestContext crc,
-            @QueryParam("dvobject_types") List<String> dvobject_types,
-            @QueryParam("published_states") List<String> published_states,
-            @QueryParam("selected_page") Integer selectedPage,
-            @QueryParam("mydata_search_term") String searchTerm,
-            @QueryParam("role_ids") List<Long> roleIds,
-            @QueryParam("userIdentifier") String userIdentifier) {
+            @QueryParam("dvobject_types") List<DvObject.DType> dvobject_types,
+            @QueryParam("published_states") List<String> published_states, 
+            @QueryParam("selected_page") Integer selectedPage, 
+            @QueryParam("mydata_search_term") String searchTerm,             
+            @QueryParam("role_ids") List<Long> roleIds, 
+            @QueryParam("userIdentifier") String userIdentifier,
+            @QueryParam("filter_validities") Boolean filterValidities,
+            @QueryParam("dataset_valid") List<Boolean> datasetValidities) {
         boolean OTHER_USER = false;
 
         String localeCode = session.getLocaleCode();
@@ -304,7 +305,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);    
         
        
-        List<String> dtypes;
+        List<DvObject.DType> dtypes;
         if (dvobject_types != null){
             dtypes = dvobject_types;
         }else{
@@ -314,6 +315,10 @@ public class DataRetrieverAPI extends AbstractApiBean {
         if (published_states != null){
             pub_states = published_states;
         }
+        List<Boolean> validities = null;
+        if (filterValidities != null && filterValidities){
+            validities = datasetValidities;
+        }
         
         // ---------------------------------
         // (1) Initialize filterParams and check for Errors 
@@ -321,7 +326,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         DataverseRequest dataverseRequest = createDataverseRequest(authUser);
 
         
-        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, dtypes, pub_states, roleIds, searchTerm);
+        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, dtypes, pub_states, roleIds, searchTerm, validities);
         if (filterParams.hasError()){
             return this.getJSONErrorString(filterParams.getErrorMessage(), filterParams.getErrorMessage());
         }

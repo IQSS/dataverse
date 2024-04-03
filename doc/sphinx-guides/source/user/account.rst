@@ -109,7 +109,7 @@ If you are leaving your institution and need to convert your Dataverse installat
 ORCID Log In
 ~~~~~~~~~~~~~
 
-You can set up your Dataverse installation account to allow you to log in using your ORCID credentials. ORCID® is an independent non-profit effort to provide an open registry of unique researcher identifiers and open services to link research activities and organizations to these identifiers. Learn more at `orcid.org <http://orcid.org>`_. 
+You can set up your Dataverse installation account to allow you to log in using your ORCID credentials. ORCID® is an independent non-profit effort to provide an open registry of unique researcher identifiers and open services to link research activities and organizations to these identifiers. Learn more at `orcid.org <https://orcid.org>`_. 
 
 Create a Dataverse installation account using ORCID
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -145,6 +145,8 @@ Microsoft Azure AD, GitHub, and Google Log In
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can also convert your Dataverse installation account to use authentication provided by GitHub, Microsoft, or Google. These options may be found in the "Other options" section of the log in page, and function similarly to how ORCID is outlined above. If you would like to convert your account away from using one of these services for log in, then you can follow the same steps as listed above for converting away from the ORCID log in.
+
+.. _my-data:
 
 My Data
 -------

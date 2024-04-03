@@ -14,12 +14,12 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 
-import javax.batch.operations.JobOperator;
-import javax.batch.operations.JobSecurityException;
-import javax.batch.operations.JobStartException;
-import javax.batch.runtime.BatchRuntime;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.operations.JobSecurityException;
+import jakarta.batch.operations.JobStartException;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import java.io.File;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -83,7 +83,7 @@ public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {
             //       We probably want package files to be able to use specific stores instead.
             //       More importantly perhaps, the approach above does not take into account
             //       if the dataset may have an AlternativePersistentIdentifier, that may be
-            //       designated isStorageLocationDesignator() - i.e., if a different identifer
+            //       designated isStorageLocationDesignator() - i.e., if a different identifier
             //       needs to be used to name the storage directory, instead of the main/current
             //       persistent identifier above.
             if (!isValidDirectory(directory)) {

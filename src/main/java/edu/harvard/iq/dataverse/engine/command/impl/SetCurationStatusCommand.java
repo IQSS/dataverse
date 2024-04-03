@@ -101,14 +101,7 @@ public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
         boolean retVal = true;
         Dataset dataset = (Dataset) r;
 
-        try {
-            Future<String> indexString = ctxt.index().indexDataset(dataset, true);
-        } catch (IOException | SolrServerException e) {
-            String failureLogText = "Post submit for review indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dataset);
-            retVal = false;
-        }
+        ctxt.index().asyncIndexDataset(dataset, true);
         return retVal;
     }
 

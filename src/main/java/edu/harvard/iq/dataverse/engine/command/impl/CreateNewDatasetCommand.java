@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.UserNotification;
@@ -12,12 +13,13 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.util.logging.Logger;
 
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import java.util.List;
 import java.sql.Timestamp;
@@ -49,15 +51,17 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     private final Dataverse dv;
 
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
-        this( theDataset, aRequest, false); 
+        this( theDataset, aRequest, null);
     }
     
-    public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired) {
-        this( theDataset, aRequest, registrationRequired, null);
+    public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, Template template) {
+        super(theDataset, aRequest);
+        this.template = template;
+        dv = theDataset.getOwner();
     }
     
-    public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean registrationRequired, Template template) {
-        super(theDataset, aRequest, registrationRequired);
+    public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, Template template, boolean validate) {
+        super(theDataset, aRequest, false, validate);
         this.template = template;
         dv = theDataset.getOwner();
     }
@@ -69,13 +73,18 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
      */
     @Override
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
-        if ( nonEmpty(getDataset().getIdentifier()) ) {
-            GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(getDataset().getProtocol(), ctxt);
-            if ( !ctxt.datasets().isIdentifierUnique(getDataset().getIdentifier(), getDataset(), idServiceBean) ) {
-                throw new IllegalCommandException(String.format("Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
-                                                                 getDataset().getIdentifier(), getDataset().getProtocol(), getDataset().getAuthority()), 
-                    this);
-           }
+        if (nonEmpty(getDataset().getIdentifier())) {
+            GlobalId pid = getDataset().getGlobalId();
+            if (pid != null) {
+                PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
+
+                if (!pidProvider.isGlobalIdUnique(pid)) {
+                    throw new IllegalCommandException(String.format(
+                            "Dataset with identifier '%s', protocol '%s' and authority '%s' already exists",
+                            getDataset().getIdentifier(), getDataset().getProtocol(), getDataset().getAuthority()),
+                            this);
+                }
+            }
         }
     }
     
@@ -86,8 +95,11 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
 
     @Override
     protected void handlePid(Dataset theDataset, CommandContext ctxt) throws CommandException {
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
-        if ( !idServiceBean.registerWhenPublished() ) {
+        PidProvider pidProvider = PidUtil.getPidProvider(theDataset.getGlobalId().getProviderId());
+        if(!pidProvider.canManagePID()) {
+            throw new IllegalCommandException("PID Provider " + pidProvider.getId() + " is not configured.", this);
+        }
+        if ( !pidProvider.registerWhenPublished() ) {
             // pre-register a persistent id
             registerExternalIdentifier(theDataset, ctxt, true);
         }

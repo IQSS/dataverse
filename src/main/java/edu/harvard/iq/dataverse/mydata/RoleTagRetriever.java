@@ -23,9 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import org.apache.commons.lang3.StringUtils;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
 
 /**
  * Input:  dvObject id, parent Id, and dvObject type (from Solr)
@@ -346,7 +345,7 @@ public class RoleTagRetriever {
                        
             //msg("result: dvId: " + dvId + " |dtype: " + dtype + " |parentId: " + parentId);
             // Should ALWAYS be a Dataset!
-            if (dtype.equals(DvObject.DATASET_DTYPE_STRING)){  
+            if (DvObject.DType.valueOf(dtype).equals(DvObject.DType.Dataset)) {
                 this.childToParentIdHash.put(dvId, parentId); // Store the parent child relation
                 this.addIdNeedingRoleRetrieval(parentId); // We need the roles for this dataverse
                 this.idToDvObjectType.put(parentId, SearchConstants.SOLR_DATAVERSES); // store the dv object type

@@ -5,13 +5,14 @@
  */
 package edu.harvard.iq.dataverse;
 
-import javax.validation.ConstraintValidatorContext;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import jakarta.validation.ConstraintValidatorContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.mockito.Mockito;
 
 /**
@@ -25,25 +26,26 @@ public class DatasetFieldValidatorTest {
     public DatasetFieldValidatorTest() {
     }
     
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
     
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
     }
     
-    @Before
+    @BeforeEach
     public void setUp() {
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
     }
 
 
     /**
      * Test of isValid method, of class DatasetFieldValidator.
+     * TODO: this should be converted into one or two ParameterizedTest methods, potentially including a DisplayNameGenerator
      */
     @Test
     public void testIsValid() {
@@ -84,7 +86,7 @@ public class DatasetFieldValidatorTest {
         testDatasetField.setSingleValue(value);
         
         DatasetFieldValidator datasetFieldValidator = new DatasetFieldValidator();
-        assertEquals( test, expectedOutcome, datasetFieldValidator.isValid(testDatasetField, constraintValidatorContext));
+        assertEquals(expectedOutcome, datasetFieldValidator.isValid(testDatasetField, constraintValidatorContext), test);
        
     }
       
@@ -120,7 +122,7 @@ public class DatasetFieldValidatorTest {
         
 
         DatasetFieldValidator datasetFieldValidator = new DatasetFieldValidator();
-        assertEquals( test, expectedOutcome, datasetFieldValidator.isValid(child1DatasetField, constraintValidatorContext));
+        assertEquals(expectedOutcome, datasetFieldValidator.isValid(child1DatasetField, constraintValidatorContext), test);
     }
     
     @Test

@@ -28,17 +28,17 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import org.apache.commons.io.filefilter.NotFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
-import javax.annotation.PostConstruct;
-import javax.batch.api.BatchProperty;
-import javax.batch.api.chunk.AbstractItemReader;
-import javax.batch.operations.JobOperator;
-import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.context.JobContext;
-import javax.batch.runtime.context.StepContext;
-import javax.ejb.EJB;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.annotation.PostConstruct;
+import jakarta.batch.api.BatchProperty;
+import jakarta.batch.api.chunk.AbstractItemReader;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.batch.runtime.context.JobContext;
+import jakarta.batch.runtime.context.StepContext;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.Serializable;
@@ -109,7 +109,7 @@ public class FileRecordReader extends AbstractItemReader {
         // We probably want package files to be able to use specific stores instead.
         // More importantly perhaps, the approach above does not take into account
         // if the dataset may have an AlternativePersistentIdentifier, that may be 
-        // designated isStorageLocationDesignator() - i.e., if a different identifer
+        // designated isStorageLocationDesignator() - i.e., if a different identifier
         // needs to be used to name the storage directory, instead of the main/current
         // persistent identifier above. 
         getJobLogger().log(Level.INFO, "Reading dataset directory: " + directory.getAbsolutePath() 

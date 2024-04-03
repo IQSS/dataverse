@@ -10,12 +10,13 @@ var UploadState = {
         HASHED: 'hashed',
         FINISHED: 'finished',
         FAILED: 'failed'
-}
-
+};
 //true indicates direct upload is being used, but cancel may set it back to false at which point direct upload functions should not do further work
 var directUploadEnabled = false;
 
 var directUploadReport = true;
+
+var checksumAlgName;
 
 //How many files have started being processed but aren't yet being uploaded
 var filesInProgress = 0;
@@ -24,63 +25,86 @@ var curFile = 0;
 //The number of upload ids that have been assigned in the files table
 var getUpId = (function() {
         var counter = -1;
-        return function() { counter += 1; return counter }
+    return function () {
+        counter += 1;
+        return counter;
+    };
 })();
 //How many files are completely done
 var finishFile = (function() {
         var counter = 0;
-        return function() { counter += 1; return counter }
+    return function () {
+        counter += 1;
+        return counter;
+    };
 })();
 
 
 function setupDirectUpload(enabled) {
-        if (enabled) {
-                directUploadEnabled = true;
-                //An indicator as to which version is being used - should keep updated.
-                console.log('Dataverse Direct Upload for v5.0');
-                $('.ui-fileupload-upload').hide();
-                $('.ui-fileupload-cancel').hide();
+    if (enabled) {
+        directUploadEnabled = true;
+        //An indicator as to which version is being used - should keep updated.
+        console.log('Dataverse Direct Upload for v5.0');
+        $('.ui-fileupload-upload').hide();
+        $('.ui-fileupload-cancel').hide();
+
+        fetch("api/files/fixityAlgorithm")
+            .then((response) => {
+                if (!response.ok) {
+                    console.log("Did not get fixityAlgorithm from Dataverse, using MD5");
+                    return null;
+                } else {
+                    return response.json();
+                }
+            }).then(checksumAlgJson => {
+                checksumAlgName = "MD5";
+                if (checksumAlgJson != null) {
+                    checksumAlgName = checksumAlgJson.data.message;
+                }
+            })
+            .then(() => {
                 //Catch files entered via upload dialog box. Since this 'select' widget is replaced by PF, we need to add a listener again when it is replaced
                 var fileInput = document.getElementById('datasetForm:fileUpload_input');
                 if (fileInput !== null) {
-                        fileInput.addEventListener('change', function(event) {
-                                fileList = [];
-                                for (var i = 0; i < fileInput.files.length; i++) {
-                                        queueFileForDirectUpload(fileInput.files[i]);
-                                }
-                        }, { once: false });
+                    fileInput.addEventListener('change', function(event) {
+                        fileList = [];
+                        for (var i = 0; i < fileInput.files.length; i++) {
+                            queueFileForDirectUpload(fileInput.files[i]);
+                        }
+                    }, { once: false });
                 }
                 //Add support for drag and drop. Since the fileUploadForm is not replaced by PF, catching changes with a mutationobserver isn't needed
                 var fileDropWidget = document.getElementById('datasetForm:fileUpload');
                 fileDropWidget.addEventListener('drop', function(event) {
-                        fileList = [];
-                        for (var i = 0; i < event.dataTransfer.files.length; i++) {
-                                queueFileForDirectUpload(event.dataTransfer.files[i]);
-                        }
+                    fileList = [];
+                    for (var i = 0; i < event.dataTransfer.files.length; i++) {
+                        queueFileForDirectUpload(event.dataTransfer.files[i]);
+                    }
                 }, { once: false });
 
                 var config = { childList: true };
                 var callback = function(mutations) {
-                        mutations.forEach(function(mutation) {
-                                for (i = 0; i < mutation.addedNodes.length; i++) {
-                                        //Add a listener on any replacement file 'select' widget
-                                        if (mutation.addedNodes[i].id == 'datasetForm:fileUpload_input') {
-                                                fileInput = mutation.addedNodes[i];
-                                                mutation.addedNodes[i].addEventListener('change', function(event) {
-                                                        for (var j = 0; j < mutation.addedNodes[i].files.length; j++) {
-                                                                queueFileForDirectUpload(mutation.addedNodes[i].files[j]);
-                                                        }
-                                                }, { once: false });
-                                        }
-                                }
-                        });
+                    mutations.forEach(function(mutation) {
+                        for (i = 0; i < mutation.addedNodes.length; i++) {
+                            //Add a listener on any replacement file 'select' widget
+                    if (mutation.addedNodes[i].id === 'datasetForm:fileUpload_input') {
+                                fileInput = mutation.addedNodes[i];
+                                mutation.addedNodes[i].addEventListener('change', function(event) {
+                                    for (var j = 0; j < mutation.addedNodes[i].files.length; j++) {
+                                        queueFileForDirectUpload(mutation.addedNodes[i].files[j]);
+                                    }
+                                }, { once: false });
+                            }
+                        }
+                    });
                 };
-                if (observer2 != null) {
-                        observer2.disconnect();
+        if (observer2 !== null) {
+                    observer2.disconnect();
                 }
                 observer2 = new MutationObserver(callback);
                 observer2.observe(document.getElementById('datasetForm:fileUpload'), config);
-        } //else ?
+            });
+    }//else ?
 }
 
 function sleep(ms) {
@@ -93,7 +117,7 @@ async function cancelDatasetCreate() {
                 fileList = [];
                 directUploadEnabled = false;
                 directUploadReport = false;
-                while (curFile != numDone) {
+        while (curFile !== numDone) {
                         $("#cancelCreate").prop('onclick', null).text("Cancel In Progress...").prop('disabled', true);
                         $("#datasetForm\\:save").prop('disabled', true);
                         await sleep(1000);
@@ -111,7 +135,7 @@ async function cancelDatasetEdit() {
                 fileList = [];
                 directUploadEnabled = false;
                 directUploadReport = false;
-                        while (curFile != numDone) {
+        while (curFile !== numDone) {
                         $("#doneFilesButtonnop").prop('onclick', null).text("Cancel In Progress...").prop('disabled', true);
                         await sleep(1000);
                 }
@@ -228,7 +252,7 @@ var fileUpload = class fileUploadClass {
                     while((started-this.numEtags)>10) {
                       await sleep(delay);
                     }
-                    if(typeof this.etags[key] == 'undefined' || this.etags[key]==-1) {
+                if (typeof this.etags[key] === 'undefined' || this.etags[key] == -1) {
                        this.etags[key]=-1;
                        var size = Math.min(partSize, this.file.size-(key-1)*partSize);
                        var offset=(key-1)*partSize;
@@ -246,7 +270,7 @@ var fileUpload = class fileUploadClass {
                                 //The header has quotes around the eTag
                                 this.etags[key]=response.getResponseHeader('ETag').replace(/["]+/g, '');
                                 this.numEtags = this.numEtags+1;
-                                if(this.numEtags == Object.keys(this.urls.urls).length) {
+                            if (this.numEtags === Object.keys(this.urls.urls).length) {
                                   this.multipartComplete();
                                 }
                         },
@@ -256,7 +280,7 @@ var fileUpload = class fileUploadClass {
                                 console.log(thisFile + ' : part' + key);
                                 this.numEtags = this.numEtags+1;
                                 this.etags[key]=-1;
-                                if(this.numEtags == Object.keys(this.urls.urls).length) {
+                            if (this.numEtags === Object.keys(this.urls.urls).length) {
                                   this.multipartComplete();
                                 }
                         },
@@ -293,8 +317,8 @@ var fileUpload = class fileUploadClass {
           console.log('reporting file ' + this.file.name);
           var allGood=true;
           //Safety check - verify that all eTags were set
-          for(val in this.etags.values()) {
-            if (val==-1) {
+          for (let val in this.etags.values()) {
+            if (val == -1) {
               allGood=false;
               break;
             }
@@ -317,15 +341,15 @@ var fileUpload = class fileUploadClass {
                 this.state = UploadState.UPLOADED;
                 console.log('S3 Upload complete for ' + this.file.name + ' : ' + this.storageId);
                 if (directUploadReport) {
-                        getMD5(this.file, prog => {
+                        getChecksum(this.file, prog => {
                                 var current = 1 + prog;
                                 $('[upid="' + this.id + '"] progress').attr({
                                         value: current,
                                         max: 2
                                 });
-                        }).then(md5 => {
-                                this.handleDirectUpload(md5);
-                        }, err => console.error(err));
+                        }).then(checksum => {
+                                this.handleDirectUpload(checksum);
+                        }).catch(err => console.error(err));
                 }
                 else {
                         console.log("Abandoned: " + this.storageId);
@@ -371,7 +395,7 @@ var fileUpload = class fileUploadClass {
                         }
             });        }
 
-        async handleDirectUpload(md5) {
+        async handleDirectUpload(checksum) {
                 this.state = UploadState.HASHED;
                 //Wait for each call to finish and update the DOM
                 while (inDataverseCall === true) {
@@ -380,7 +404,7 @@ var fileUpload = class fileUploadClass {
                 inDataverseCall = true;
                 //storageId is not the location - has a : separator and no path elements from dataset
                 //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
-                handleExternalUpload([{ name: 'uploadComponentId', value: 'datasetForm:fileUpload' }, { name: 'fullStorageIdentifier', value: this.storageId }, { name: 'fileName', value: this.file.name }, { name: 'contentType', value: this.file.type }, { name: 'checksumType', value: 'MD5' }, { name: 'checksumValue', value: md5 }]);
+                handleExternalUpload([{ name: 'uploadComponentId', value: 'datasetForm:fileUpload' }, { name: 'fullStorageIdentifier', value: this.storageId }, { name: 'fileName', value: this.file.name }, { name: 'contentType', value: this.file.type }, { name: 'checksumType', value: checksumAlgName }, { name: 'checksumValue', value: checksum }]);
         }
 }
 
@@ -404,10 +428,10 @@ async function uploadFileDirectly(urls, storageId, filesize) {
 
                 //As long as we have the right file size, we're OK
                 for (i = 0; i < fileList.length; i++) {
-                        if (fileList[i].file.size == filesize) {
-                                upload = fileList.splice(i,1)[0];
-                                break;
-                        }
+                    if (fileList[i].file.size == filesize) {
+                        upload = fileList.splice(i,1)[0];
+                        break;
+                    }
                 }
                 upload.urls = JSON.parse(urls);
                 upload.storageId = storageId;
@@ -432,6 +456,8 @@ function removeErrors() {
 
 var observer = null;
 
+// uploadStarted and uploadFinished are not related to direct upload.
+// They deal with clearing old errors and watching for new ones and then signaling when all uploads are done
 function uploadStarted() {
         // If this is not the first upload, remove error messages since
         // the upload of any files that failed will be tried again.
@@ -458,7 +484,7 @@ function uploadStarted() {
                 });
         };
         //uploadStarted appears to be called only once, but, if not, we should stop any current observer
-        if (observer != null) {
+    if (observer !== null) {
                 observer.disconnect();
         }
         observer = new MutationObserver(callback);
@@ -469,7 +495,7 @@ function uploadFinished(fileupload) {
         if (fileupload.files.length === 0) {
                 $('button[id$="AllUploadsFinished"]').trigger('click');
                 //stop observer when we're done
-                if (observer != null) {
+        if (observer !== null) {
                         observer.disconnect();
                         observer = null;
                 }
@@ -488,7 +514,7 @@ async function directUploadFinished() {
                         if (total === numDone) {
                                 $('button[id$="AllUploadsFinished"]').trigger('click');
                                 //stop observer when we're done
-                                if (observer != null) {
+                if (observer !== null) {
                                         observer.disconnect();
                                         observer = null;
                                 }
@@ -497,7 +523,7 @@ async function directUploadFinished() {
                         if ((inProgress < 4) && (inProgress < inList)) {
                                 filesInProgress = filesInProgress + 1;
                                 for (i = 0; i < fileList.length; i++) {
-                                  if(fileList[i].state==UploadState.QUEUED) {
+                    if (fileList[i].state === UploadState.QUEUED) {
                                     fileList[i].startRequestForDirectUploadUrl();
                                     break;
                                   }
@@ -557,8 +583,8 @@ async function uploadFailure(jqXHR, upid, filename) {
         }
 
         //statusText for error 0 is the unhelpful 'error'
-        if (status == 0) statusText = 'Network Error';
-
+    if (status == 0)
+        statusText = 'Network Error';
         //Log the error
         console.log('Upload error:' + name + ' upid=' + id + ', Error ' + status + ': ' + statusText);
         //Find the table
@@ -573,15 +599,15 @@ async function uploadFailure(jqXHR, upid, filename) {
         node.appendChild(textnode);
         //Add the error message to the correct row
         for (i = 0; i < rows.length; i++) {
-                if (rows[i].getAttribute('upid') == id) {
-                        //Remove any existing error message/only show last error (have seen two error 0 from one network disconnect)
-                        var err = rows[i].getElementsByClassName('ui-fileupload-error');
-                        if (err.length != 0) {
-                                err[0].remove();
-                        }
-                        rows[i].appendChild(node);
-                        break;
-                }
+        if (rows[i].getAttribute('upid') === id) {
+            //Remove any existing error message/only show last error (have seen two error 0 from one network disconnect)
+            var err = rows[i].getElementsByClassName('ui-fileupload-error');
+            if (err.length !== 0) {
+                err[0].remove();
+            }
+                rows[i].appendChild(node);
+                break;
+            }
         }
         if (directUploadEnabled) {
                 //Mark this file as processed and keep processing further files
@@ -622,12 +648,30 @@ function readChunked(file, chunkCallback, endCallback) {
         }
         readNext();
 }
-
-function getMD5(blob, cbProgress) {
+function getChecksum(blob, cbProgress) {
         return new Promise((resolve, reject) => {
-                var md5 = CryptoJS.algo.MD5.create();
+
+
+        var checksumAlg; 
+                        switch (checksumAlgName) {
+                    case 'MD5':
+                        checksumAlg = CryptoJS.algo.MD5.create();
+                        break;
+                    case 'SHA-1':
+                        checksumAlg = CryptoJS.algo.SHA1.create();
+                        break;
+                    case 'SHA-256':
+                        checksumAlg = CryptoJS.algo.SHA256.create();
+                        break;
+                    case 'SHA-512':
+                        checksumAlg = CryptoJS.algo.SHA512.create();
+                        break;
+                    default:
+                        console.log('$(checksumAlgName) is not supported, using MD5 as the checksumAlg checksum Algorithm');
+                                checksumAlg = CryptoJS.algo.MD5.create();
+                }
                 readChunked(blob, (chunk, offs, total) => {
-                        md5.update(CryptoJS.enc.Latin1.parse(chunk));
+                        checksumAlg.update(CryptoJS.enc.Latin1.parse(chunk));
                         if (cbProgress) {
                                 cbProgress(offs / total);
                         }
@@ -636,7 +680,7 @@ function getMD5(blob, cbProgress) {
                                 reject(err);
                         } else {
                                 // TODO: Handle errors
-                                var hash = md5.finalize();
+                                var hash = checksumAlg.finalize();
                                 var hashHex = hash.toString(CryptoJS.enc.Hex);
                                 resolve(hashHex);
                         }

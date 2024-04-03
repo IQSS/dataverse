@@ -12,22 +12,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Request;
+import jakarta.ws.rs.core.Response;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.core.Variant;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.Variant;
 
 /**
  * API endpoints for various metrics.
@@ -412,7 +412,7 @@ public class Metrics extends AbstractApiBean {
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
-        String metricName = "filesByType";
+        String metricName = "filesByTypeMonthly";
 
         JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
 
@@ -546,6 +546,98 @@ public class Metrics extends AbstractApiBean {
 
         return ok(jsonObj);
     }
+
+    /** Accounts */
+
+    @GET
+    @Path("accounts")
+    public Response getAccountsAllTime(@Context UriInfo uriInfo) {
+        return getAccountsToMonth(uriInfo, MetricsUtil.getCurrentMonth());
+    }
+
+    @GET
+    @Path("accounts/toMonth/{yyyymm}")
+    public Response getAccountsToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm) {
+
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+
+        String metricName = "accountsToMonth";
+        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
+        JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, null));
+
+        if (null == jsonObj) { // run query and save
+            Long count;
+            try {
+                count = metricsSvc.accountsToMonth(sanitizedyyyymm);
+            } catch (ParseException e) {
+                return error(BAD_REQUEST, "Unable to parse supplied date: " + e.getLocalizedMessage());
+            }
+            jsonObj = MetricsUtil.countToJson(count).build();
+            metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, null, jsonObj.toString()));
+        }
+
+        return ok(jsonObj);
+    }
+
+    @GET
+    @Path("accounts/pastDays/{days}")
+    public Response getAccountsPastDays(@Context UriInfo uriInfo, @PathParam("days") int days) {
+
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+
+        String metricName = "accountsPastDays";
+
+        if (days < 1) {
+            return error(BAD_REQUEST, "Invalid parameter for number of days.");
+        }
+
+        JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null, null));
+
+        if (null == jsonObj) { // run query and save
+            Long count = metricsSvc.accountsPastDays(days);
+            jsonObj = MetricsUtil.countToJson(count).build();
+            metricsSvc.save(new Metric(metricName, String.valueOf(days), null, null, jsonObj.toString()));
+        }
+
+        return ok(jsonObj);
+    }
+
+    @GET
+    @Path("accounts/monthly")
+    @Produces("text/csv, application/json")
+    public Response getAccountsTimeSeries(@Context Request req, @Context UriInfo uriInfo) {
+
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+
+        String metricName = "accounts";
+        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, null));
+
+        if (null == jsonArray) { // run query and save
+            // Only handling published right now
+            jsonArray = metricsSvc.accountsTimeSeries();
+            metricsSvc.save(new Metric(metricName, null, null, null, jsonArray.toString()));
+        }
+
+        MediaType requestedType = getVariant(req, MediaType.valueOf(FileUtil.MIME_TYPE_CSV), MediaType.APPLICATION_JSON_TYPE);
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
+            return ok(jsonArray);
+        }
+        return ok(FileUtil.jsonArrayOfObjectsToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "accounts.timeseries.csv");
+    }
+
+    /** MakeDataCount */
 
     @GET
     @Path("makeDataCount/{metric}")

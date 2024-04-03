@@ -82,11 +82,7 @@ Run `service httpd restart`.
 
 ## Update/verify files under /etc/shibboleth
 
-For /etc/shibboleth/shibboleth2.xml use the version from https://github.com/IQSS/dataverse/blob/master/conf/vagrant/etc/shibboleth/shibboleth2.xml but replace "pdurbin.pagekite.me" with the "shibtest.dataverse.org".
-
-Put https://github.com/IQSS/dataverse/blob/master/conf/vagrant/etc/shibboleth/dataverse-idp-metadata.xml at /etc/shibboleth/dataverse-idp-metadata.xml
-
-Put https://github.com/IQSS/dataverse/blob/master/conf/vagrant/etc/shibboleth/attribute-map.xml at 
+Get files from the Installation Guide.
 
 After making these changes, run `service shibd restart` and `service httpd restart`.
 

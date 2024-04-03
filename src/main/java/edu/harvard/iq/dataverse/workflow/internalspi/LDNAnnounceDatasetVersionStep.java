@@ -27,12 +27,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -216,7 +216,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         Dataset d = ctxt.getDataset();
         job.add("object",
                 Json.createObjectBuilder().add("id", d.getLocalURL())
-                        .add("ietf:cite-as", d.getGlobalId().toURL().toExternalForm())
+                        .add("ietf:cite-as", d.getGlobalId().asURL())
                         .add("sorg:name", d.getDisplayName()).add("type", "sorg:Dataset"));
         job.add("origin", Json.createObjectBuilder().add("id", SystemConfig.getDataverseSiteUrlStatic())
                 .add("inbox", SystemConfig.getDataverseSiteUrlStatic() + "/api/inbox").add("type", "Service"));

@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.InternetAddress;
 
 public class BrandingUtil {
 

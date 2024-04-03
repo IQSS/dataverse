@@ -14,14 +14,14 @@
       {
         "locale":"{localeCode}"
       }
-    ],
-    "allowedApiCalls": [
-        {
-          "name":"retrieveDatasetJson",
-          "httpMethod":"GET",
-          "urlTemplate":"/api/v1/datasets/{datasetId}",
-          "timeOut":10
-        }
-      ]
-  }
+    ]
+  },
+  "allowedApiCalls": [
+    {
+      "name":"retrieveDatasetJson",
+      "httpMethod":"GET",
+      "urlTemplate":"/api/v1/datasets/{datasetId}",
+      "timeOut":10
+    }
+  ]
 }

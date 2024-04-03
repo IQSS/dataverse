@@ -36,6 +36,18 @@ At present, one potential drawback for direct-upload is that files are only part
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.ingestsizelimit=<size in bytes>"``
 
+.. _s3-direct-upload-features-disabled:
+
+Features that are Disabled if S3 Direct Upload is Enabled
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following features are disabled when S3 direct upload is enabled.
+
+- Unzipping of zip files. (See :ref:`compressed-files`.)
+- Extraction of metadata from FITS files. (See :ref:`fits`.)
+- Creation of NcML auxiliary files (See :ref:`netcdf-and-hdf5`.)
+- Extraction of a geospatial bounding box from NetCDF and HDF5 files (see :ref:`netcdf-and-hdf5`) unless :ref:`dataverse.netcdf.geo-extract-s3-direct-upload` is set to true.
+
 .. _cors-s3-bucket:
 
 Allow CORS for S3 Buckets
@@ -62,7 +74,7 @@ with the contents of the file cors.json as follows:
                 "AllowedOrigins": ["*"],
                 "AllowedHeaders": ["*"],
                 "AllowedMethods": ["PUT", "GET"],
-                "ExposeHeaders": ["ETag"]
+                "ExposeHeaders": ["ETag", "Accept-Ranges", "Content-Encoding", "Content-Range"]
              }
           ]
         }
@@ -137,29 +149,44 @@ Globus File Transfer
 
 Note: Globus file transfer is still experimental but feedback is welcome! See :ref:`support`.
 
-Users can transfer files via `Globus <ttps://www.globus.org>`_ into and out of datasets when their Dataverse installation is configured to use a Globus accessible S3 store and a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ "transfer" app has been properly installed and configured.
+Users can transfer files via `Globus <https://www.globus.org>`_ into and out of datasets, or reference files on a remote Globus endpoint, when their Dataverse installation is configured to use a Globus accessible store(s) 
+and a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ app has been properly installed and configured.
 
-Due to differences in the access control models of a Dataverse installation and Globus, enabling the Globus capability on a store will disable the ability to restrict and embargo files in that store.
+Globus endpoints can be in a variety of places, from data centers to personal computers. 
+This means that from within the Dataverse software, a Globus transfer can feel like an upload or a download (with Globus Personal Connect running on your laptop, for example) or it can feel like a true transfer from one server to another (from a cluster in a data center into a Dataverse dataset or vice versa).
 
-As Globus aficionados know, Globus endpoints can be in a variety of places, from data centers to personal computers. This means that from within the Dataverse software, a Globus transfer can feel like an upload or a download (with Globus Personal Connect running on your laptop, for example) or it can feel like a true transfer from one server to another (from a cluster in a data center into a Dataverse dataset or vice versa).
-
-Globus transfer uses a very efficient transfer mechanism and has additional features that make it suitable for large files and large numbers of files:
+Globus transfer uses an efficient transfer mechanism and has additional features that make it suitable for large files and large numbers of files:
 
 * robust file transfer capable of restarting after network or endpoint failures
 * third-party transfer, which enables a user accessing a Dataverse installation in their desktop browser to initiate transfer of their files from a remote endpoint (i.e. on a local high-performance computing cluster), directly to an S3 store managed by the Dataverse installation
 
-Globus transfer requires use of the Globus S3 connector which requires a paid Globus subscription at the host institution. Users will need a Globus account which could be obtained via their institution or directly from Globus (at no cost).
+Note: Due to differences in the access control models of a Dataverse installation and Globus and the current Globus store model, Dataverse cannot enforce per-file-access restrictions.
+It is therefore recommended that a store be configured as public, which disables the ability to restrict and embargo files in that store, when Globus access is allowed.
 
-The setup required to enable Globus is described in the `Community Dataverse-Globus Setup and Configuration document <https://docs.google.com/document/d/1mwY3IVv8_wTspQC0d4ddFrD2deqwr-V5iAGHgOy4Ch8/edit?usp=sharing>`_ and the references therein.
+Dataverse supports three options for using Globus, two involving transfer to Dataverse-managed endpoints and one allowing Dataverse to reference files on remote endpoints.
+Dataverse-managed endpoints must be Globus 'guest collections' hosted on either a file-system-based endpoint or an S3-based endpoint (the latter requires use of the Globus
+S3 connector which requires a paid Globus subscription at the host institution). In either case, Dataverse is configured with the Globus credentials of a user account that can manage the endpoint.
+Users will need a Globus account, which can be obtained via their institution or directly from Globus (at no cost).
+
+With the file-system endpoint, Dataverse does not currently have access to the file contents. Thus, functionality related to ingest, previews, fixity hash validation, etc. are not available. (Using the S3-based endpoint, Dataverse has access via S3 and all functionality normally associated with direct uploads to S3 is available.)
+
+For the reference use case, Dataverse must be configured with a list of allowed endpoint/base paths from which files may be referenced. In this case, since Dataverse is not accessing the remote endpoint itself, it does not need Globus credentials. 
+Users will need a Globus account in this case, and the remote endpoint must be configured to allow them access (i.e. be publicly readable, or potentially involving some out-of-band mechanism to request access (that could be described in the dataset's Terms of Use and Access).
+
+All of Dataverse's Globus capabilities are now store-based (see the store documentation) and therefore different collections/datasets can be configured to use different Globus-capable stores (or normal file, S3 stores, etc.)
+
+More details of the setup required to enable Globus is described in the `Community Dataverse-Globus Setup and Configuration document <https://docs.google.com/document/d/1mwY3IVv8_wTspQC0d4ddFrD2deqwr-V5iAGHgOy4Ch8/edit?usp=sharing>`_ and the references therein.
 
 As described in that document, Globus transfers can be initiated by choosing the Globus option in the dataset upload panel. (Globus, which does asynchronous transfers, is not available during dataset creation.) Analogously, "Globus Transfer" is one of the download options in the "Access Dataset" menu and optionally the file landing page download menu (if/when supported in the dataverse-globus app).
 
 An overview of the control and data transfer interactions between components was presented at the 2022 Dataverse Community Meeting and can be viewed in the `Integrations and Tools Session Video <https://youtu.be/3ek7F_Dxcjk?t=5289>`_ around the 1 hr 28 min mark.
 
-See also :ref:`Globus settings <:GlobusBasicToken>`.
+See also :ref:`Globus settings <:GlobusSettings>`.
 
 Data Capture Module (DCM)
 -------------------------
+
+Please note: The DCM feature is deprecated.
 
 Data Capture Module (DCM) is an experimental component that allows users to upload large datasets via rsync over ssh.
 
@@ -197,7 +224,7 @@ The JSON that a DCM sends to your Dataverse installation on successful checksum 
    :language: json
 
 - ``status`` - The valid strings to send are ``validation passed`` and ``validation failed``.
-- ``uploadFolder`` - This is the directory on disk where your Dataverse installation should attempt to find the files that a DCM has moved into place. There should always be a ``files.sha`` file and a least one data file. ``files.sha`` is a manifest of all the data files and their checksums. The ``uploadFolder`` directory is inside the directory where data is stored for the dataset and may have the same name as the "identifier" of the persistent id (DOI or Handle). For example, you would send ``"uploadFolder": "DNXV2H"`` in the JSON file when the absolute path to this directory is ``/usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/DNXV2H/DNXV2H``.
+- ``uploadFolder`` - This is the directory on disk where your Dataverse installation should attempt to find the files that a DCM has moved into place. There should always be a ``files.sha`` file and a least one data file. ``files.sha`` is a manifest of all the data files and their checksums. The ``uploadFolder`` directory is inside the directory where data is stored for the dataset and may have the same name as the "identifier" of the persistent id (DOI or Handle). For example, you would send ``"uploadFolder": "DNXV2H"`` in the JSON file when the absolute path to this directory is ``/usr/local/payara6/glassfish/domains/domain1/files/10.5072/FK2/DNXV2H/DNXV2H``.
 - ``totalSize`` - Your Dataverse installation will use this value to represent the total size in bytes of all the files in the "package" that's created. If 360 data files and one ``files.sha`` manifest file are in the ``uploadFolder``, this value is the sum of the 360 data files.
 
 
@@ -219,9 +246,9 @@ Add Dataverse Installation settings to use mock (same as using DCM, noted above)
 
 At this point you should be able to download a placeholder rsync script. Your Dataverse installation is then waiting for news from the DCM about if checksum validation has succeeded or not. First, you have to put files in place, which is usually the job of the DCM. You should substitute "X1METO" for the "identifier" of the dataset you create. You must also use the proper path for where you store files in your dev environment.
 
-- ``mkdir /usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/X1METO``
-- ``mkdir /usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
-- ``cd /usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
+- ``mkdir /usr/local/payara6/glassfish/domains/domain1/files/10.5072/FK2/X1METO``
+- ``mkdir /usr/local/payara6/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
+- ``cd /usr/local/payara6/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
 - ``echo "hello" > file1.txt``
 - ``shasum file1.txt > files.sha``
 
@@ -236,103 +263,10 @@ The following low level command should only be used when troubleshooting the "im
 
 ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$DV_BASE_URL/api/batch/jobs/import/datasets/files/$DATASET_DB_ID?uploadFolder=$UPLOAD_FOLDER&totalSize=$TOTAL_SIZE"``
 
-Steps to set up a DCM via Docker for Development
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If you need a fully operating DCM client for development purposes, these steps will guide you to setting one up. This includes steps to set up the DCM on S3 variant.
-
-Docker Image Set-up
-^^^^^^^^^^^^^^^^^^^
-
-See https://github.com/IQSS/dataverse/blob/develop/conf/docker-dcm/readme.md
-
-- Install docker if you do not have it
-      
-Optional steps for setting up the S3 Docker DCM Variant
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- Before: the default bucket for DCM to hold files in S3 is named test-dcm. It is coded into `post_upload_s3.bash` (line 30). Change to a different bucket if needed.
-- Also Note: With the new support for multiple file store in the Dataverse Software, DCM requires a store with id="s3" and DCM will only work with this store.
-
-  - Add AWS bucket info to dcmsrv
-    - Add AWS credentials to ``~/.aws/credentials``
-
-      - ``[default]``
-      - ``aws_access_key_id =``
-      - ``aws_secret_access_key =``
-
-- Dataverse installation configuration (on dvsrv):
-
-  - Set S3 as the storage driver
-
-    - ``cd /opt/payara5/bin/``
-    - ``./asadmin delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
-    - ``./asadmin create-jvm-options "\-Ddataverse.files.storage-driver-id=s3"``
-    - ``./asadmin create-jvm-options "\-Ddataverse.files.s3.type=s3"``
-    - ``./asadmin create-jvm-options "\-Ddataverse.files.s3.label=s3"``
-    
-
-  - Add AWS bucket info to your Dataverse installation
-    - Add AWS credentials to ``~/.aws/credentials``
-    
-      - ``[default]``
-      - ``aws_access_key_id =``
-      - ``aws_secret_access_key =``
-
-    - Also: set region in ``~/.aws/config`` to create a region file. Add these contents:
-
-      - ``[default]``
-      - ``region = us-east-1``
-
-  - Add the S3 bucket names to your Dataverse installation
-
-    - S3 bucket for your Dataverse installation
-
-      - ``/usr/local/payara5/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.s3.bucket-name=iqsstestdcmbucket"``
-
-    - S3 bucket for DCM (as your Dataverse installation needs to do the copy over)
-
-      - ``/usr/local/payara5/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.dcm-s3-bucket-name=test-dcm"``
-
-  - Set download method to be HTTP, as DCM downloads through S3 are over this protocol ``curl -X PUT "http://localhost:8080/api/admin/settings/:DownloadMethods" -d "native/http"``
-
-Using the DCM Docker Containers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-For using these commands, you will need to connect to the shell prompt inside various containers (e.g. ``docker exec -it dvsrv /bin/bash``)
-
-- Create a dataset and download rsync upload script
-
-  - connect to client container: ``docker exec -it dcm_client bash``
-  - create dataset: ``cd /mnt ; ./create.bash`` ; this will echo the database ID to stdout
-  - download transfer script: ``./get_transfer.bash $database_id_from_create_script``
-  - execute the transfer script: ``bash ./upload-${database_id_from-create_script}.bash`` , and follow instructions from script.
-
-- Run script
-
-  - e.g. ``bash ./upload-3.bash`` (``3`` being the database id from earlier commands in this example).
-
-- Manually run post upload script on dcmsrv
-
-  - for posix implementation: ``docker exec -it dcmsrv /opt/dcm/scn/post_upload.bash``
-  - for S3 implementation: ``docker exec -it dcmsrv /opt/dcm/scn/post_upload_s3.bash``
-
-Additional DCM docker development tips
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- You can completely blow away all the docker images with these commands (including non DCM ones!)
-  - ``docker-compose -f docmer-compose.yml down -v``
-
-- There are a few logs to tail
-
-  - dvsrv : ``tail -n 2000 -f /opt/payara5/glassfish/domains/domain1/logs/server.log``
-  - dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/breakage.log``
-  - dcmsrv : ``tail -n 2000 -f /var/log/lighttpd/access.log``
-
-- You may have to restart the app server domain occasionally to deal with memory filling up. If deployment is getting reallllllly slow, its a good time.
-
 Repository Storage Abstraction Layer (RSAL)
 -------------------------------------------
+
+Please note: The RSAL feature is deprecated.
 
 Steps to set up a DCM via Docker for Development
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
