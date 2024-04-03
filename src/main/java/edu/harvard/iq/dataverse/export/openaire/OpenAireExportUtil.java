@@ -13,16 +13,16 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -189,10 +189,10 @@ public class OpenAireExportUtil {
         if (StringUtils.isNotBlank(identifier)) {
             Map<String, String> identifier_map = new HashMap<String, String>();
 
-            if (StringUtils.containsIgnoreCase(identifier, DOIServiceBean.DOI_RESOLVER_URL)) {
+            if (StringUtils.containsIgnoreCase(identifier, AbstractDOIProvider.DOI_RESOLVER_URL)) {
                 identifier_map.put("identifierType", "DOI");
                 identifier = StringUtils.substring(identifier, identifier.indexOf("10."));
-            } else if (StringUtils.containsIgnoreCase(identifier, HandlenetServiceBean.HDL_RESOLVER_URL)) {
+            } else if (StringUtils.containsIgnoreCase(identifier, HandlePidProvider.HDL_RESOLVER_URL)) {
                 identifier_map.put("identifierType", "Handle");
                 if (StringUtils.contains(identifier, "http")) {
                     identifier = identifier.replace(identifier.substring(0, identifier.indexOf("/") + 2), "");

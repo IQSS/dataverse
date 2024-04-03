@@ -828,9 +828,9 @@ public class ImportDDIServiceBean {
                 } else if (xmlr.getLocalName().equals("eastBL")) {
                      addToSet(set,"eastLongitude", parseText(xmlr));
                } else if (xmlr.getLocalName().equals("southBL")) {
-                     addToSet(set,"southLongitude", parseText(xmlr));
+                     addToSet(set,"southLatitude", parseText(xmlr));
                } else if (xmlr.getLocalName().equals("northBL")) {
-                      addToSet(set,"northLongitude", parseText(xmlr));
+                      addToSet(set,"northLatitude", parseText(xmlr));
               }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("geoBndBox")) break; 
