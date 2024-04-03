@@ -3265,10 +3265,13 @@ public class UtilIT {
     }
     
     static Response addFeaturedDataverse (String dvAlias, String featuredDvAlias, String apiToken) {
+        
+        String jsonString = "[\"" + featuredDvAlias + "\"]";
 
         Response addBannerMessageResponse = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/dataverses/"+dvAlias+"/featured/"+featuredDvAlias);
+                .body(jsonString)
+                .post("/api/dataverses/"+dvAlias+"/featured/");
         return addBannerMessageResponse;
     }
 

@@ -840,6 +840,7 @@ public class Dataverses extends AbstractApiBean {
      */
     public Response setFeaturedDataverses(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,  String dvAliases) {
         List<Dataverse> dvsFromInput = new LinkedList<>();
+
         for (JsonString dvAlias : Util.asJsonArray(dvAliases).getValuesAs(JsonString.class)) {
             
             Dataverse dvToBeFeatured = dataverseService.findByAlias(dvAlias.getString());

@@ -693,7 +693,7 @@ public class DataversesIT {
     }
     
     @Test
-    public void testLinkDataverse() throws Exception {
+    public void testFeatureDataverse() throws Exception {
 
         Response createUser = UtilIT.createRandomUser();
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -701,16 +701,45 @@ public class DataversesIT {
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+
+        
         Response createSubDVToBeFeatured = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-feature", null, apiToken, dataverseAlias);    
         String subDataverseAlias = UtilIT.getAliasFromResponse(createSubDVToBeFeatured);
         
-        Response featureSubDVResponse = UtilIT.addFeaturedDataverse(dataverseAlias, subDataverseAlias, apiToken);
+        //publish a sub dataverse so that the owner will have something to feature
+        Response createSubDVToBePublished = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-pub", null, apiToken, dataverseAlias); 
+        assertEquals(201, createSubDVToBePublished.getStatusCode());
+        String subDataverseAliasPub = UtilIT.getAliasFromResponse(createSubDVToBePublished);
+        publishDataverse = UtilIT.publishDataverseViaNativeApi(subDataverseAliasPub, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
         
+        //can't feature a dataverse that is unpublished
+        Response featureSubDVResponseUnpublished = UtilIT.addFeaturedDataverse(dataverseAlias, subDataverseAlias, apiToken);
+        featureSubDVResponseUnpublished.prettyPrint();
+        assertEquals(400, featureSubDVResponseUnpublished.getStatusCode());
+        
+        //can't feature a dataverse you don't own
+        Response featureSubDVResponseNotOwned = UtilIT.addFeaturedDataverse(dataverseAlias, "root", apiToken);
+        featureSubDVResponseNotOwned.prettyPrint();
+        assertEquals(400, featureSubDVResponseNotOwned.getStatusCode());
+        
+        publishDataverse = UtilIT.publishDataverseViaNativeApi(subDataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+
+        
+        Response featureSubDVResponse = UtilIT.addFeaturedDataverse(dataverseAlias, subDataverseAlias, apiToken);
+        featureSubDVResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), featureSubDVResponse.getStatusCode());
         
         Response deleteSubCollectionResponse = UtilIT.deleteDataverse(subDataverseAlias, apiToken);
         deleteSubCollectionResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), deleteSubCollectionResponse.getStatusCode());
+        
+        Response deleteSubCollectionPubResponse = UtilIT.deleteDataverse(subDataverseAliasPub, apiToken);
+        deleteSubCollectionResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), deleteSubCollectionPubResponse.getStatusCode());
         
         Response deleteCollectionResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteCollectionResponse.prettyPrint();
