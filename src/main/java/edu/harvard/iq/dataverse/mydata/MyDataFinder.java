@@ -239,7 +239,7 @@ public class MyDataFinder {
         //fq=publicationStatus:"Unpublished"&fq=publicationStatus:"Draft"
 
         // -----------------------------------------------------------------
-        // (4) FQ by dataset metadata vlidity
+        // (4) FQ by dataset metadata validity
         // -----------------------------------------------------------------
         filterQueries.add(this.filterParams.getSolrFragmentForDatasetValidity());
         //fq=datasetValid:(true OR false)
