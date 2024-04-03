@@ -37,10 +37,12 @@ Roadmap
 
 For the Dataverse Software development roadmap, please see https://www.iq.harvard.edu/roadmap-dataverse-project
 
+.. _kanban-board:
+
 Kanban Board
 ------------
 
-You can get a sense of what's currently in flight (in dev, in QA, etc.) by looking at https://github.com/orgs/IQSS/projects/2
+You can get a sense of what's currently in flight (in dev, in QA, etc.) by looking at https://github.com/orgs/IQSS/projects/34
 
 Issue Tracker
 -------------
@@ -73,7 +75,3 @@ As a developer, you also may be interested in these projects related to Datavers
 - Third party apps - make use of Dataverse installation APIs: :doc:`/api/apps`
 - chat.dataverse.org - chat interface for Dataverse Project users and developers: https://github.com/IQSS/chat.dataverse.org
 - [Your project here] :)
-
-----
-
-Next: :doc:`dev-environment`
