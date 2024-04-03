@@ -413,7 +413,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
 
                             if (fileEntryName != null && !fileEntryName.equals("")) {
 
-                                String shortName = fileEntryName.replaceFirst("^.*[\\/]", "");
+                                String shortName = fileEntryName.replaceFirst("^.*[\\\\/]", "");
 
                                 // Check if it's a "fake" file - a zip archive entry
                                 // created for a MacOS X filesystem element: (these
