@@ -1242,9 +1242,8 @@ public class DataFileServiceBean implements java.io.Serializable {
      * Check that a identifier entered by the user is unique (not currently used
      * for any other study in this Dataverse Network). Also check for duplicate
      * in the remote PID service if needed
-     * @param userIdentifier
-     * @param datafile
-     * @param idServiceBean
+     * @param datafileId
+     * @param storageLocation
      * @return  {@code true} iff the global identifier is unique.
      */
     public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {

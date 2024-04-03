@@ -22,7 +22,7 @@
 #
 
 # Make the Java base image and version configurable (useful for trying newer Java versions and flavors)
-ARG JAVA_IMAGE="eclipse-temurin:11-jre"
+ARG JAVA_IMAGE="eclipse-temurin:17-jre"
 FROM $JAVA_IMAGE
 
 # Default payara ports to expose
@@ -49,8 +49,6 @@ ENV PAYARA_DIR="${HOME_DIR}/appserver" \
 ENV PATH="${PATH}:${PAYARA_DIR}/bin:${SCRIPT_DIR}" \
     DOMAIN_DIR="${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}" \
     DEPLOY_PROPS="" \
-    PREBOOT_COMMANDS="${CONFIG_DIR}/pre-boot-commands.asadmin" \
-    POSTBOOT_COMMANDS="${CONFIG_DIR}/post-boot-commands.asadmin" \
     JVM_ARGS="" \
     MEM_MAX_RAM_PERCENTAGE="70.0" \
     MEM_XSS="512k" \
@@ -65,7 +63,8 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin:${SCRIPT_DIR}" \
     JVM_DUMPS_ARG="-XX:+HeapDumpOnOutOfMemoryError" \
     ENABLE_JMX=0 \
     ENABLE_JDWP=0 \
-    ENABLE_RELOAD=0
+    ENABLE_RELOAD=0 \
+    SKIP_DEPLOY=0
 
 ### PART 1: SYSTEM ###
 ARG UID=1000
@@ -84,8 +83,11 @@ RUN <<EOF
     adduser --system --uid ${UID} --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara
     echo payara:payara | chpasswd
     # Set permissions
-    chown -R payara: "${HOME_DIR}"
-    chown -R payara: "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
+    # Note: Following OpenShift best practices for arbitrary user id support:
+    #       https://docs.openshift.com/container-platform/4.14/openshift_images/create-images.html#use-uid_create-images
+    chown -R payara:0 "${HOME_DIR}" "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
+    chmod -R g=u "${HOME_DIR}" "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
+
 EOF
 
 ARG JATTACH_VERSION="v2.1"
@@ -154,7 +156,7 @@ RUN <<EOF
     ${ASADMIN} create-jvm-options "-XX\:MaxHeapFreeRatio=\${ENV=MEM_MAX_HEAP_FREE_RATIO}"
     ${ASADMIN} create-jvm-options "-XX\:HeapDumpPath=\${ENV=DUMPS_DIR}"
     # Set logging to console only for containers
-    ${ASADMIN} set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false \
+    ${ASADMIN} set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false
 
     ### PRODUCTION READINESS
     ${ASADMIN} create-jvm-options '-XX\:+UseG1GC'
@@ -187,7 +189,7 @@ RUN <<EOF
     # Misc settings
     ${ASADMIN} create-system-properties fish.payara.classloading.delegate="false"
     ${ASADMIN} create-system-properties jersey.config.client.readTimeout="300000"
-    ${ASADMIN} create-system-properties jersey.config.client.connectTimeout="300000" \
+    ${ASADMIN} create-system-properties jersey.config.client.connectTimeout="300000"
 
     ### DATAVERSE APPLICATION SPECIFICS
     # Configure the MicroProfile directory config source to point to /secrets
@@ -202,7 +204,7 @@ RUN <<EOF
     ${ASADMIN} set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled=true
     ${ASADMIN} create-system-properties javax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl
     # Always disable phoning home...
-    ${ASADMIN} disable-phone-home \
+    ${ASADMIN} disable-phone-home
 
     ### CLEANUP
     # Stop domain
@@ -217,6 +219,13 @@ RUN <<EOF
         "${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/osgi-cache" \
         "${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/logs"
 EOF
+
+USER root
+# Prepare domaindir to be writeable when running on OpenShift (arbitrary UIDs)
+# https://docs.openshift.com/container-platform/4.14/openshift_images/create-images.html#use-uid_create-images
+RUN true && \
+    chgrp -R 0 "${DOMAIN_DIR}" && \
+    chmod -R g=u "${DOMAIN_DIR}"
 
 # Set the entrypoint to tini (as a process supervisor)
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]

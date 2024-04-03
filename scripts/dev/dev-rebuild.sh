@@ -56,9 +56,6 @@ cd ../..
 echo "Creating SQL sequence..."
 psql -h localhost -U $DB_USER $DB_NAME -f doc/sphinx-guides/source/_static/util/createsequence.sql
 
-echo "Setting DOI provider to \"FAKE\"..." 
-curl http://localhost:8080/api/admin/settings/:DoiProvider -X PUT -d FAKE
-
 echo "Allowing GUI edits to be visible without redeploy..."
 $PAYARA_DIR/glassfish/bin/asadmin create-system-properties "dataverse.jsf.refresh-period=1"
 
