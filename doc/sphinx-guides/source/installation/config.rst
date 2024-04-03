@@ -2052,6 +2052,9 @@ If you are not fronting Payara with Apache you'll need to prevent Payara from se
 Creating a Sitemap and Submitting it to Search Engines
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Sitemap file
+############
+
 Search engines have an easier time indexing content when you provide them a sitemap. The Dataverse Software sitemap includes URLs to all published Dataverse collections and all published datasets that are not harvested or deaccessioned.
 
 Create or update your sitemap by adding the following curl command to cron to run nightly or as you see fit:
@@ -2068,12 +2071,20 @@ https://demo.dataverse.org/sitemap.xml is the sitemap URL for the Dataverse Proj
 
 Once the sitemap has been generated and placed in the domain docroot directory, it will become available to the outside callers at <YOUR_SITE_URL>/sitemap/sitemap.xml; it will also be accessible at <YOUR_SITE_URL>/sitemap.xml (via a *pretty-faces* rewrite rule). Some search engines will be able to find it at this default location. Some, **including Google**, need to be **specifically instructed** to retrieve it.
 
-According to `Sitemaps.org protocol <https://www.sitemaps.org/protocol.html#index>`_, a sitemap file must have no more than 50,000 URLs and must be no larger than 50MiB. In this case, the protocol instructs you to create a sitemap index file called ``sitemap_index.xml`` (instead of ``sitemap.xml``), which references multiples sitemap files. Be aware in previous steps to use the correct file name corresponding to your situation.
-
 One way to submit your sitemap URL to Google is by using their "Search Console" (https://search.google.com/search-console). In order to use the console, you will need to authenticate yourself as the owner of your Dataverse site. Various authentication methods are provided; but if you are already using Google Analytics, the easiest way is to use that account. Make sure you are logged in on Google with the account that has the edit permission on your Google Analytics property; go to the search console and enter the root URL of your Dataverse installation, then choose Google Analytics as the authentication method. Once logged in, click on "Sitemaps" in the menu on the left. (todo: add a screenshot?) Consult `Google's "submit a sitemap" instructions`_ for more information; and/or similar instructions for other search engines.
 
 .. _Google's "submit a sitemap" instructions: https://support.google.com/webmasters/answer/183668
 
+Sitemap index file
+##################
+
+According to `Sitemaps.org protocol <https://www.sitemaps.org/protocol.html#index>`_, a sitemap file must have no more than 50,000 URLs and must be no larger than 50MiB. In this case, the protocol instructs you to create a sitemap index file called ``sitemap_index.xml`` (instead of ``sitemap.xml``), which references multiples sitemap files. In this case, the created files containing the URLs will be named ``sitemap1.xml``, ``sitemap2.xml``, etc. This referenced files are also generated in the same place as other sitemap files and there will be as many files as necessary to contain the URLs of dataverses and datasets presents your installation, while respecting the limit of 50,000 URLs per file. Dataverse will automatically detect whether you need to create a single ``sitemap.xml`` file, or several files. However, you must be careful to use the correct file name corresponding on your situation.
+
+If there are more than 50,000 dataverses and datasets, the sitemap file created or updated will default to the location:
+
+``/usr/local/payara6/glassfish/domains/domain1/docroot/sitemap/sitemap_index.xml``
+
+Moreover, it can also be accessed at ``<YOUR_SITE_URL>/sitemap/sitemap_index.xml`` or ``<YOUR_SITE_URL>/sitemap_index.xml``. In case of "Google Search Console" is used to submit the sitemap file, one of the previous URLs have to be used with the ``sitemap_index.xml`` file name.
 
 Putting Your Dataverse Installation on the Map at dataverse.org
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
