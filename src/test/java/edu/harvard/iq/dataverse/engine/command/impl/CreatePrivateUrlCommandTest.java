@@ -1,10 +1,8 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
@@ -72,6 +70,10 @@ public class CreatePrivateUrlCommandTest {
                     public RoleAssignment save(RoleAssignment assignment) {
                         // no-op
                         return assignment;
+                    }
+                    @Override
+                    public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
+                        return List.of();
                     }
 
                 };
