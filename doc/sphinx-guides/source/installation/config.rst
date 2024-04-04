@@ -792,7 +792,7 @@ Larger installations may want to increase the number of open S3 connections allo
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.connection-pool-size=4096"``
 
-By default, when redirecting an upload to the S3 storage, the Dataverse will place a ``temp`` tag on the file being uploaded for an easier cleanup if the file is not added to the dataset after upload (e.g., if the user cancels the operation).
+By default, when redirecting an upload to the S3 storage, Dataverse will place a ``temp`` tag on the file being uploaded for an easier cleanup if the file is not added to the dataset after upload (e.g., if the user cancels the operation).
 If your S3 store does not support tagging and gives an error when redirecting uploads, you can disable that tag by using the ``dataverse.files.<id>.disable-tagging`` JVM option. For example:
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.disable-tagging=true"``
