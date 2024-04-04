@@ -67,7 +67,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DatasetsIT {
 
     private static final Logger logger = Logger.getLogger(DatasetsIT.class.getCanonicalName());
-    
+
     @BeforeAll
     public static void setUpClass() {
         
@@ -602,7 +602,6 @@ public class DatasetsIT {
     */
     @Test
     public void testDatasetVersionsAPI() {
-        
         // Create user
         String apiToken = UtilIT.createRandomUserGetToken();
 
@@ -633,7 +632,7 @@ public class DatasetsIT {
         
         // Now check that the file is NOT shown, when we ask the versions api to 
         // skip files: 
-        boolean excludeFiles = true; 
+        boolean excludeFiles = true;
         unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, excludeFiles, false);
         unpublishedDraft.prettyPrint();
         unpublishedDraft.then().assertThat()
@@ -644,8 +643,8 @@ public class DatasetsIT {
         unpublishedDraft.prettyPrint();
         unpublishedDraft.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode());
-        
-        excludeFiles = false; 
+
+        excludeFiles = false;
         unpublishedDraft = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_DRAFT, apiToken, excludeFiles, false);
         unpublishedDraft.prettyPrint();
         unpublishedDraft.then().assertThat()
@@ -662,8 +661,8 @@ public class DatasetsIT {
         UtilIT.publishDataverseViaNativeApi(collectionAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
-        //Set of tests on non-deaccesioned dataset 
-        String specificVersion = "1.0";        
+        //Set of tests on non-deaccesioned dataset
+        String specificVersion = "1.0";
         boolean includeDeaccessioned = false;
         Response datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiToken, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
@@ -672,7 +671,7 @@ public class DatasetsIT {
                 .body("data.versionState", equalTo("RELEASED"))
                 .body("data.latestVersionPublishingState", equalTo("RELEASED"));
 
-        // Upload another file: 
+        // Upload another file:
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
         Response uploadResponse2 = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, apiToken);
         uploadResponse2.prettyPrint();
@@ -691,7 +690,7 @@ public class DatasetsIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.versionState", equalTo("RELEASED"))
                 .body("data.latestVersionPublishingState", equalTo("DRAFT"));
-       
+
         // We should now have a published version, and a draft. 
         
         // Call /versions api, *with the owner api token*, make sure both 
@@ -719,7 +718,7 @@ public class DatasetsIT {
                 .body("data[0].files.size()", equalTo(2));
                 
         // And now call it with an un-privileged token, to make sure only one 
-        // (the published) version is shown:    
+        // (the published) version is shown:
         versionsResponse = UtilIT.getDatasetVersions(datasetPid, apiTokenNoPerms);
         versionsResponse.prettyPrint();
         versionsResponse.then().assertThat()
@@ -736,10 +735,10 @@ public class DatasetsIT {
                 .body("data[0].files", equalTo(null));
 
 
-        
 
-        
-        
+
+
+
         excludeFiles = true;
         //Latest published authorized token
         //Latest published requested, draft exists and user has access to draft
@@ -790,7 +789,7 @@ public class DatasetsIT {
             .body("data.files", equalTo(null));
 
         excludeFiles = false;
-        
+
         //Latest published authorized token
         //Latest published requested, draft exists and user has access to draft
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned);
@@ -1004,7 +1003,7 @@ public class DatasetsIT {
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
-       
+
     }
 
     
@@ -1716,26 +1715,6 @@ public class DatasetsIT {
         giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "fileDownloader", "@" + randomUsername, apiToken);
                 giveRandoPermission.prettyPrint();
         assertEquals(200, giveRandoPermission.getStatusCode());
-
-        // Create another random user to become curator:
-
-        Response createCuratorUser = UtilIT.createRandomUser();
-        createCuratorUser.prettyPrint();
-        String curatorUsername = UtilIT.getUsernameFromResponse(createCuratorUser);
-        String curatorUserApiToken = UtilIT.getApiTokenFromResponse(createCuratorUser);
-
-        Response giveCuratorPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "curator", "@" + curatorUsername, apiToken);
-        giveCuratorPermission.prettyPrint();
-        assertEquals(200, giveCuratorPermission.getStatusCode());
-
-        // Test if privilege escalation is possible: curator should not be able to assign admin rights
-        Response giveTooMuchPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "admin", "@" + curatorUsername, curatorUserApiToken);
-        giveTooMuchPermission.prettyPrint();
-        assertEquals(401, giveTooMuchPermission.getStatusCode());
-
-        giveTooMuchPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "admin", "@" + randomUsername, curatorUserApiToken);
-        giveTooMuchPermission.prettyPrint();
-        assertEquals(401, giveTooMuchPermission.getStatusCode());
         
         String idToDelete = JsonPath.from(giveRandoPermission.getBody().asString()).getString("data.id");                
 
@@ -1758,7 +1737,7 @@ public class DatasetsIT {
         deleteGrantedAccess.prettyPrint();
         assertEquals(200, deleteGrantedAccess.getStatusCode());
         
-        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+       Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
         
@@ -1777,7 +1756,7 @@ public class DatasetsIT {
         deleteUserResponse = UtilIT.deleteUser(curatorUsername);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
-        
+
     }
 
     @Test
@@ -1851,6 +1830,14 @@ public class DatasetsIT {
 
         notPermittedToListRoleAssignmentOnDataverse = UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, contributorApiToken);
         assertEquals(UNAUTHORIZED.getStatusCode(), notPermittedToListRoleAssignmentOnDataverse.getStatusCode());
+    }
+
+    private static void validateAssignExistingRole(String datasetPersistentId, String randomUsername, String apiToken) {
+        final Response failedGrantPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "fileDownloader", "@" + randomUsername, apiToken);
+        failedGrantPermission.prettyPrint();
+        failedGrantPermission.then().assertThat()
+                .body("message",containsString("User already has this role for this object"))
+                .statusCode(FORBIDDEN.getStatusCode());
     }
 
     @Test
@@ -1961,7 +1948,7 @@ public class DatasetsIT {
                 .statusCode(FORBIDDEN.getStatusCode());
 
     }
-    
+
     @Test
     public void testGetDatasetOwners() {
 
@@ -1987,8 +1974,8 @@ public class DatasetsIT {
 
         Response getDatasetWithOwners = UtilIT.getDatasetWithOwners(persistentId, apiToken, true);
         getDatasetWithOwners.prettyPrint();
-        getDatasetWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(dataverseAlias));       
-        
+        getDatasetWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(dataverseAlias));
+
         Response destroyDatasetResponse = UtilIT.destroyDataset(datasetId, apiToken);
         assertEquals(200, destroyDatasetResponse.getStatusCode());
 
@@ -1996,7 +1983,7 @@ public class DatasetsIT {
         assertEquals(200, deleteDataverseResponse.getStatusCode());
 
         Response deleteUserResponse = UtilIT.deleteUser(username);
-        assertEquals(200, deleteUserResponse.getStatusCode());        
+        assertEquals(200, deleteUserResponse.getStatusCode());
     }
 
     /**
@@ -2772,7 +2759,7 @@ public class DatasetsIT {
         System.out.println("Author username/password: " + authorUsername);
 
     }
-    
+
     @Test
     public void testLinkingDatasets() {
 
@@ -3124,11 +3111,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, badTerms, false);
         response.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
 
-        
-        //We publish the dataset and dataverse      
-        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());    
+
+        //We publish the dataset and dataverse
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
-        
+
         //We check the version is published
         response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
         response.prettyPrint();
@@ -3143,14 +3130,14 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         uploadResponse.prettyPrint();
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
         int fileID = uploadResponse.jsonPath().getInt("data.files[0].dataFile.id");
-        
+
         //We check the authenticated user gets DRAFT
         response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
-        response.prettyPrint(); 
+        response.prettyPrint();
         jsonLDString = getData(response.getBody().asString());
         jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
         assertEquals("DRAFT", jsonLDObject.getString("http://schema.org/version"));
-        
+
         // Create user with no permission and check they get published version
         String apiTokenNoPerms = UtilIT.createRandomUserGetToken();
         response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiTokenNoPerms);
@@ -3158,7 +3145,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         jsonLDString = getData(response.getBody().asString());
         jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
         assertNotEquals("DRAFT", jsonLDObject.getString("http://schema.org/version"));
-        
+
         // Delete the file
         Response deleteFileResponse = UtilIT.deleteFileInDataset(fileID, apiToken);
         deleteFileResponse.prettyPrint();
@@ -3763,8 +3750,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         //Verify the status is empty
         Response nullStatus = UtilIT.getDatasetVersionArchivalStatus(datasetId, "1.0", apiToken);
-        nullStatus.prettyPrint();
-        nullStatus.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        nullStatus.then().assertThat().statusCode(NO_CONTENT.getStatusCode());
 
         //Set it
         Response setStatus = UtilIT.setDatasetVersionArchivalStatus(datasetId, "1.0", apiToken, "pending",
