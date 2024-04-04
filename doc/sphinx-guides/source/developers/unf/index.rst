@@ -37,7 +37,3 @@ Learn more: Micah Altman and Gary King. 2007. “A Proposed Standard for the Sch
    unf-v3
    unf-v5
    unf-v6
-
-----
-
-Previous: :doc:`/developers/tools` | Next: :doc:`/developers/remote-users`
