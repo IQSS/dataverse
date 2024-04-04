@@ -73,7 +73,6 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
         }
         // TODO make sure the role is defined on the dataverse.
         RoleAssignment roleAssignment = new RoleAssignment(role, grantee, defPoint, privateUrlToken, anonymizedAccess);
-        ctxt.roles().directRoleAssignments(grantee,defPoint);
         return ctxt.roles().save(roleAssignment);
     }
 
