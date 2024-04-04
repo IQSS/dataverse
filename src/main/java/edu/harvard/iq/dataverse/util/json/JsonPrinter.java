@@ -412,15 +412,10 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles) {
-        return json(dsv, null, null, includeFiles, false);
+        return json(dsv, null, includeFiles, false);
     }
 
-    public static JsonObjectBuilder json(DatasetVersion dsv, DatasetVersion latestDsv, boolean includeFiles) {
-        return json(dsv, latestDsv, null, includeFiles, false);
-    }
-
-    public static JsonObjectBuilder json(DatasetVersion dsv, 
-        DatasetVersion latestDsv, List<String> anonymizedFieldTypeNamesList, 
+    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList, 
         boolean includeFiles, boolean returnOwners) {
         Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
@@ -430,6 +425,7 @@ public class JsonPrinter {
                 .add("versionNumber", dsv.getVersionNumber())
                 .add("versionMinorNumber", dsv.getMinorVersionNumber())
                 .add("versionState", dsv.getVersionState().name())
+                .add("latestVersionPublishingState", dataset.getLatestVersion().getVersionState().name())
                 .add("versionNote", dsv.getVersionNote())
                 .add("archiveNote", dsv.getArchiveNote())
                 .add("deaccessionLink", dsv.getDeaccessionLink())
@@ -442,10 +438,6 @@ public class JsonPrinter {
                 .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
                 .add("citationDate", dataset.getCitationDateFormattedYYYYMMDD());
-
-        if(latestDsv != null) {
-            bld.add("latestVersionPublishingState", latestDsv.getVersionState().name());
-        }
 
         License license = DatasetUtil.getLicense(dsv);
         if (license != null) {
