@@ -67,9 +67,21 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
                 throw new IllegalCommandException("User " + user.getUserIdentifier() + " is deactivated and cannot be given a role.", this);
             }
         }
+        if(isExistingRole(ctxt)){
+            throw new IllegalCommandException("User already has this role for this object", this);
+        }
         // TODO make sure the role is defined on the dataverse.
         RoleAssignment roleAssignment = new RoleAssignment(role, grantee, defPoint, privateUrlToken, anonymizedAccess);
+        ctxt.roles().directRoleAssignments(grantee,defPoint);
         return ctxt.roles().save(roleAssignment);
+    }
+
+    private boolean isExistingRole(CommandContext ctxt) {
+        return ctxt.roles()
+                .directRoleAssignments(grantee, defPoint)
+                .stream()
+                .map(RoleAssignment::getRole)
+                .anyMatch(it -> it.equals(role));
     }
 
     @Override

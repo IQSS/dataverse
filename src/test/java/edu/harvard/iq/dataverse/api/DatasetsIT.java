@@ -1434,7 +1434,9 @@ public class DatasetsIT {
         giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "fileDownloader", "@" + randomUsername, apiToken);
                 giveRandoPermission.prettyPrint();
         assertEquals(200, giveRandoPermission.getStatusCode());
-        
+
+        validateAssignExistingRole(datasetPersistentId, randomUsername, apiToken);
+
         String idToDelete = JsonPath.from(giveRandoPermission.getBody().asString()).getString("data.id");                
 
         giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "designatedHitter", "@" + randomUsername, apiToken);
@@ -1468,6 +1470,14 @@ public class DatasetsIT {
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
         
+    }
+
+    private static void validateAssignExistingRole(String datasetPersistentId, String randomUsername, String apiToken) {
+        final Response failedGrantPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "fileDownloader", "@" + randomUsername, apiToken);
+        failedGrantPermission.prettyPrint();
+        failedGrantPermission.then().assertThat()
+                .body("message",containsString("User already has this role for this object"))
+                .statusCode(FORBIDDEN.getStatusCode());
     }
 
     @Test
@@ -2352,7 +2362,7 @@ public class DatasetsIT {
         System.out.println("Author username/password: " + authorUsername);
 
     }
-    
+
     @Test
     public void testLinkingDatasets() {
 

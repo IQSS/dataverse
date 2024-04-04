@@ -1,0 +1,1 @@
+Fixing unhandled exception when trying to create a role that already exists for a dataset object
