@@ -399,16 +399,11 @@ public abstract class AbstractApiBean {
     }
 
     protected DatasetVersion findDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
-        boolean bypassAccessCheck = false;
-        return findDatasetVersionOrDie(req,versionNumber,ds, includeDeaccessioned, checkPermsWhenDeaccessioned, bypassAccessCheck);
-    }
-
-    protected DatasetVersion findDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned, boolean bypassAccessCheck) throws WrappedResponse {
         DatasetVersion dsv = execCommand(handleVersion(versionNumber, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
 
             @Override
             public Command<DatasetVersion> handleLatest() {
-                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned, bypassAccessCheck);
+                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
             }
 
             @Override

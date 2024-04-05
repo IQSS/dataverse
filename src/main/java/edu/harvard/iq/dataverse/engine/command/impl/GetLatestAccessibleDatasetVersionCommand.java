@@ -26,24 +26,22 @@ public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<Da
     private final Dataset ds;
     private final boolean includeDeaccessioned;
     private boolean checkPermsWhenDeaccessioned;
-    private boolean bypassAccessCheck;
 
     public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset) {
-        this(aRequest, anAffectedDataset,false, false, false);
+        this(aRequest, anAffectedDataset,false, false);
     }
 
-    public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned, boolean bypassAccessCheck) {
+    public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) {
         super(aRequest, anAffectedDataset);
         ds = anAffectedDataset;
         this.includeDeaccessioned = includeDeaccessioned;
         this.checkPermsWhenDeaccessioned = checkPermsWhenDeaccessioned;
-        this.bypassAccessCheck = bypassAccessCheck;
     }
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         if (ds.getLatestVersion().isDraft() && 
-            (ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset) || bypassAccessCheck)) {
+            ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)) {
             return ctxt.engine().submit(new GetDraftDatasetVersionCommand(getRequest(), ds));
         }
         return ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(getRequest(), ds, includeDeaccessioned, checkPermsWhenDeaccessioned));
