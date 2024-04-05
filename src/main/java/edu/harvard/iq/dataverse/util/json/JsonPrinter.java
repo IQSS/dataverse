@@ -580,10 +580,10 @@ public class JsonPrinter {
         return blockBld;
     }
 
-    public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes, boolean onlyDisplayedOnCreate) {
+    public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes, boolean printOnlyDisplayedOnCreateDatasetFieldTypes) {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         for (MetadataBlock metadataBlock : metadataBlocks) {
-            arrayBuilder.add(returnDatasetFieldTypes ? json(metadataBlock, onlyDisplayedOnCreate) : brief.json(metadataBlock));
+            arrayBuilder.add(returnDatasetFieldTypes ? json(metadataBlock, printOnlyDisplayedOnCreateDatasetFieldTypes) : brief.json(metadataBlock));
         }
         return arrayBuilder;
     }
@@ -614,7 +614,7 @@ public class JsonPrinter {
         return json(metadataBlock, false);
     }
 
-    public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean onlyDisplayedOnCreate) {
+    public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes) {
         JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder();
         jsonObjectBuilder.add("id", metadataBlock.getId());
         jsonObjectBuilder.add("name", metadataBlock.getName());
@@ -623,7 +623,7 @@ public class JsonPrinter {
 
         JsonObjectBuilder fieldsBuilder = jsonObjectBuilder();
         for (DatasetFieldType datasetFieldType : new TreeSet<>(metadataBlock.getDatasetFieldTypes())) {
-            if (!onlyDisplayedOnCreate || datasetFieldType.isDisplayOnCreate()) {
+            if (!printOnlyDisplayedOnCreateDatasetFieldTypes || datasetFieldType.isDisplayOnCreate()) {
                 fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType));
             }
         }
