@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -24,28 +23,26 @@ public class ListMetadataBlocksCommand extends AbstractCommand<List<MetadataBloc
 
     private final Dataverse dataverse;
     private final boolean onlyDisplayedOnCreate;
-    private final MetadataBlockServiceBean metadataBlockService;
 
-    public ListMetadataBlocksCommand(DataverseRequest request, Dataverse dataverse, boolean onlyDisplayedOnCreate, MetadataBlockServiceBean metadataBlockService) {
+    public ListMetadataBlocksCommand(DataverseRequest request, Dataverse dataverse, boolean onlyDisplayedOnCreate) {
         super(request, dataverse);
         this.dataverse = dataverse;
         this.onlyDisplayedOnCreate = onlyDisplayedOnCreate;
-        this.metadataBlockService = metadataBlockService;
     }
 
     @Override
     public List<MetadataBlock> execute(CommandContext ctxt) throws CommandException {
         if (onlyDisplayedOnCreate) {
-            return listMetadataBlocksDisplayedOnCreate(dataverse);
+            return listMetadataBlocksDisplayedOnCreate(ctxt, dataverse);
         }
         return dataverse.getMetadataBlocks();
     }
 
-    private List<MetadataBlock> listMetadataBlocksDisplayedOnCreate(Dataverse dataverse) {
+    private List<MetadataBlock> listMetadataBlocksDisplayedOnCreate(CommandContext ctxt, Dataverse dataverse) {
         if (dataverse.isMetadataBlockRoot() || dataverse.getOwner() == null) {
-            return metadataBlockService.listMetadataBlocksDisplayedOnCreate(dataverse);
+            return ctxt.metadataBlocks().listMetadataBlocksDisplayedOnCreate(dataverse);
         }
-        return listMetadataBlocksDisplayedOnCreate(dataverse.getOwner());
+        return listMetadataBlocksDisplayedOnCreate(ctxt, dataverse.getOwner());
     }
 
     @Override

@@ -719,8 +719,7 @@ public class Dataverses extends AbstractApiBean {
                     new ListMetadataBlocksCommand(
                             createDataverseRequest(getRequestUser(crc)),
                             findDataverseOrDie(dvIdtf),
-                            onlyDisplayedOnCreate,
-                            metadataBlockSvc
+                            onlyDisplayedOnCreate
                     )
             );
             return ok(json(metadataBlocks, returnDatasetFieldTypes, onlyDisplayedOnCreate));
