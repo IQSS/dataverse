@@ -2743,7 +2743,7 @@ public class Datasets extends AbstractApiBean {
             boolean bypassAccessCheck)
             throws WrappedResponse {
 
-        DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, checkPermsWhenDeaccessioned, bypassAccessCheck);
+        DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
 
         if (dsv == null || dsv.getId() == null) {
             throw new WrappedResponse(

@@ -59,7 +59,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.apache.commons.lang3.StringUtils.isNumeric;
-import static org.apache.commons.lang3.StringUtils.reverse;
 
 /**
  * Base class for API beans
