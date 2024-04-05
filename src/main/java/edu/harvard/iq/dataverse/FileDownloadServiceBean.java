@@ -427,13 +427,13 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("text/xml");
         response.setHeader("Content-Disposition", fileNameString);
-
         try {
             ServletOutputStream out = response.getOutputStream();
             citation.writeAsEndNoteCitation(out);
             out.flush();
             ctx.responseComplete();
         } catch (IOException e) {
+
         }
     }
     
