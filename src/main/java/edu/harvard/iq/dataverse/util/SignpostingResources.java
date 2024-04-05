@@ -19,6 +19,8 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
+import org.apache.commons.validator.routines.UrlValidator;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -164,12 +166,11 @@ public class SignpostingResources {
         for (DatasetAuthor da : workingDatasetVersion.getDatasetAuthors()) {
             logger.fine(String.format("idtype: %s; idvalue: %s, affiliation: %s; identifierUrl: %s", da.getIdType(),
                     da.getIdValue(), da.getAffiliation(), da.getIdentifierAsUrl()));
-            String authorURL = "";
-            authorURL = getAuthorUrl(da);
+            String authorURL = getAuthorUrl(da);
             if (authorURL != null && !authorURL.isBlank()) {
                 // return empty if number of visible author more than max allowed
                 // >= since we're comparing before incrementing visibleAuthorCounter
-                if (visibleAuthorCounter >= maxAuthors) {
+                if (limit && visibleAuthorCounter >= maxAuthors) {
                     authorURLs.clear();
                     break;
                 }
@@ -211,15 +212,22 @@ public class SignpostingResources {
      * 
      */
     private String getAuthorUrl(DatasetAuthor da) {
-        String authorURL = "";
-        //If no type and there's a value, assume it is a URL (is this reasonable?)
-        //Otherise, get the URL using the type and value
-        if (da.getIdType() != null && !da.getIdType().isBlank() && da.getIdValue()!=null) {
-            authorURL = da.getIdValue();
-        } else {
-            authorURL = da.getIdentifierAsUrl();
+
+        final String identifierAsUrl = da.getIdentifierAsUrl();
+        // First, try to get URL using the type and value
+        if(identifierAsUrl != null) {
+            return identifierAsUrl;
         }
-        return authorURL;
+
+        final String idValue = da.getIdValue();
+        UrlValidator urlValidator = new UrlValidator(new String[]{"http", "https"});
+        // Otherwise, try to use idValue as url if it's valid
+        if(urlValidator.isValid(idValue)) {
+            return idValue;
+        }
+
+        // No url found
+        return null;
     }
 
     private JsonArrayBuilder getJsonAuthors(List<String> datasetAuthorURLs) {
