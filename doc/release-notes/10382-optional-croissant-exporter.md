@@ -1,1 +1,0 @@
-When a Dataverse installation is configured to use a metadata exporter for the [Croissant](https://github.com/mlcommons/croissant) format, the content of the JSON-LD in the `<head>` of dataset landing pages will be replaced with that format. However, both JSON-LD and Croissant will still be available for download from the dataset page and API.
