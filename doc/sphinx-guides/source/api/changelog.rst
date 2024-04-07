@@ -29,4 +29,4 @@ v6.0
 v5.6
 ----
 
-- **/api/dataverses/$PARENT/datasets**: The "create dataset" API endpoint now requires the header ``Content-type:application/json`` to be passed. The error can be confusing, saying something about validation, such as ``'{"status":"ERROR","message":"Validation Failed: Title is required. (Invalid value:edu.harvard.iq.dataverse.DatasetField[ id=null ])...``.  See :ref:`create-dataset-command`.
+- **/api/dataverses/$PARENT/datasets**: The "create dataset" API endpoint now requires the header ``Content-type:application/json`` to be passed. The error can be confusing, saying something about validation, such as ``'{"status":"ERROR","message":"Validation Failed: Title is required. (Invalid value:edu.harvard.iq.dataverse.DatasetField[ id=null ])...``. See :ref:`create-dataset-command`.
