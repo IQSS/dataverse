@@ -415,18 +415,25 @@ public class JsonPrinter {
         return json(dsv, null, includeFiles, false);
     }
 
-    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList, boolean includeFiles, boolean returnOwners) {
+    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList, 
+        boolean includeFiles, boolean returnOwners) {
         Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
                 .add("datasetPersistentId", dataset.getGlobalId().asString())
                 .add("storageIdentifier", dataset.getStorageIdentifier())
-                .add("versionNumber", dsv.getVersionNumber()).add("versionMinorNumber", dsv.getMinorVersionNumber())
-                .add("versionState", dsv.getVersionState().name()).add("versionNote", dsv.getVersionNote())
-                .add("archiveNote", dsv.getArchiveNote()).add("deaccessionLink", dsv.getDeaccessionLink())
-                .add("distributionDate", dsv.getDistributionDate()).add("productionDate", dsv.getProductionDate())
+                .add("versionNumber", dsv.getVersionNumber())
+                .add("versionMinorNumber", dsv.getMinorVersionNumber())
+                .add("versionState", dsv.getVersionState().name())
+                .add("latestVersionPublishingState", dataset.getLatestVersion().getVersionState().name())
+                .add("versionNote", dsv.getVersionNote())
+                .add("archiveNote", dsv.getArchiveNote())
+                .add("deaccessionLink", dsv.getDeaccessionLink())
+                .add("distributionDate", dsv.getDistributionDate())
+                .add("productionDate", dsv.getProductionDate())
                 .add("UNF", dsv.getUNF()).add("archiveTime", format(dsv.getArchiveTime()))
-                .add("lastUpdateTime", format(dsv.getLastUpdateTime())).add("releaseTime", format(dsv.getReleaseTime()))
+                .add("lastUpdateTime", format(dsv.getLastUpdateTime()))
+                .add("releaseTime", format(dsv.getReleaseTime()))
                 .add("createTime", format(dsv.getCreateTime()))
                 .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
