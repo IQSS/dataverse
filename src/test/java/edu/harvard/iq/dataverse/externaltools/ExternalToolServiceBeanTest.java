@@ -8,17 +8,21 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
-import edu.harvard.iq.dataverse.dataaccess.AbstractRemoteOverlayAccessIO;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 
-import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class ExternalToolServiceBeanTest {
 
@@ -146,7 +150,7 @@ public class ExternalToolServiceBeanTest {
         assertEquals("explorer", externalTool.getToolName());
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
-        dataFile.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.5072","FK2/RMQT6J/G9F1A1", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
+        dataFile.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.5072", "FK2/RMQT6J/G9F1A1", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
         FileMetadata fmd = new FileMetadata();
         fmd.setId(2L);
         DatasetVersion dv = new DatasetVersion();
@@ -356,13 +360,13 @@ public class ExternalToolServiceBeanTest {
         job.add("toolUrl", "http://awesometool.com");
 
         job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
-                        .add("fileid", "{fileId}")
+                        .add(Json.createObjectBuilder()
+                                .add("fileid", "{fileId}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("key", "{apiToken}")
+                                .build())
                         .build())
-                .add(Json.createObjectBuilder()
-                        .add("key", "{apiToken}")
-                        .build())
-                .build())
                 .build());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
@@ -388,10 +392,10 @@ public class ExternalToolServiceBeanTest {
         job.add("toolUrl", "http://awesometool.com");
 
         job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
-                        .add("key", "{apiToken}")
+                        .add(Json.createObjectBuilder()
+                                .add("key", "{apiToken}")
+                                .build())
                         .build())
-                .build())
                 .build());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
@@ -417,13 +421,49 @@ public class ExternalToolServiceBeanTest {
         job.add("hasPreviewMode", "true");
 
         job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
-                        .add("datasetId", "{datasetId}")
+                        .add(Json.createObjectBuilder()
+                                .add("datasetId", "{datasetId}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("key", "{apiToken}")
+                                .build())
                         .build())
-                .add(Json.createObjectBuilder()
-                        .add("key", "{apiToken}")
+                .build());
+        String tool = job.build().toString();
+        System.out.println("tool: " + tool);
+
+        ExternalTool externalTool = null;
+        try {
+            externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        assertNotNull(externalTool);
+        assertNull(externalTool.getContentType());
+    }
+
+    @Test
+    public void testParsePathParams() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("toolName", "explorer");
+        job.add("description", "This tool is awesome.");
+        job.add("types", Json.createArrayBuilder().add("explore"));
+        job.add("scope", "dataset");
+        job.add("toolUrl", "http://awesometool.com/{datasetId}");
+        job.add("hasPreviewMode", "true");
+
+        job.add("toolParameters", Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("key", "{apiToken}")
+                                .build())
                         .build())
-                .build())
+                .add("pathParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("datasetId", "{datasetId}")
+                                .build())
+                        .build())
                 .build());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
@@ -450,13 +490,13 @@ public class ExternalToolServiceBeanTest {
         job.add("toolUrl", "http://awesometool.com");
 
         job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
-                        .add("datasetPid", "{datasetPid}")
+                        .add(Json.createObjectBuilder()
+                                .add("datasetPid", "{datasetPid}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("key", "{apiToken}")
+                                .build())
                         .build())
-                .add(Json.createObjectBuilder()
-                        .add("key", "{apiToken}")
-                        .build())
-                .build())
                 .build());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
@@ -487,13 +527,13 @@ public class ExternalToolServiceBeanTest {
         job.add("hasPreviewMode", "true");
 
         job.add("toolParameters", Json.createObjectBuilder().add("queryParameters", Json.createArrayBuilder()
-                .add(Json.createObjectBuilder()
-                        .add("datasetId", "{datasetId}")
+                        .add(Json.createObjectBuilder()
+                                .add("datasetId", "{datasetId}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("key", "{apiToken}")
+                                .build())
                         .build())
-                .add(Json.createObjectBuilder()
-                        .add("key", "{apiToken}")
-                        .build())
-                .build())
                 .build());
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
@@ -510,7 +550,7 @@ public class ExternalToolServiceBeanTest {
 
     @Test
     public void testParseAddDatasetToolAllowedApiCalls() {
- 
+
         ExternalTool externalTool = null;
         try {
             externalTool = getAllowedApiCallsTool();
@@ -535,17 +575,17 @@ public class ExternalToolServiceBeanTest {
                 .add("httpMethod", "GET")
                 .add("queryParameters",
                         Json.createArrayBuilder()
-                    .add(Json.createObjectBuilder()
-                        .add("datasetId", "{datasetId}")
-                    )
+                                .add(Json.createObjectBuilder()
+                                        .add("datasetId", "{datasetId}")
+                                )
                 )
-            ).add("allowedApiCalls", Json.createArrayBuilder()
+        ).add("allowedApiCalls", Json.createArrayBuilder()
                 .add(Json.createObjectBuilder()
-                .add("name", "getDataset")
-                .add("httpMethod", "GET")
-                .add("urlTemplate", "/api/v1/datasets/{datasetId}")
-                .add("timeOut", 10))
-            );
+                        .add("name", "getDataset")
+                        .add("httpMethod", "GET")
+                        .add("urlTemplate", "/api/v1/datasets/{datasetId}")
+                        .add("timeOut", 10))
+        );
         String tool = job.build().toString();
         System.out.println("tool: " + tool);
 

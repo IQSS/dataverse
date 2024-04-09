@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import java.util.Arrays;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -319,6 +320,13 @@ public class URLTokenUtil {
         @Override
         public String toString() {
             return text;
+        }
+
+        public static Set<ReservedWord> fileRequiredWords(){
+            return Set.of(FILE_ID,FILE_PID);
+        }
+        public static Set<ReservedWord> dataSetRequiredWords(){
+            return Set.of(DATASET_ID,DATASET_PID);
         }
     }
 }
