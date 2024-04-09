@@ -3,7 +3,6 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -71,7 +70,7 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
             }
         }
         if(isExistingRole(ctxt)){
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("externalTools.error.roleAlreadyExistent"), this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error"), this);
         }
         // TODO make sure the role is defined on the dataverse.
         RoleAssignment roleAssignment = new RoleAssignment(role, grantee, defPoint, privateUrlToken, anonymizedAccess);

@@ -1859,7 +1859,7 @@ public class DatasetsIT {
         final Response failedGrantPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, role, "@" + randomUsername, apiToken);
         failedGrantPermission.prettyPrint();
         failedGrantPermission.then().assertThat()
-                .body("message", containsString("User already has this role for this object"))
+                .body("message", containsString("User already has this role for this dataset"))
                 .statusCode(FORBIDDEN.getStatusCode());
     }
 
