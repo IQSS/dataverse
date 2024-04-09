@@ -1,1 +1,1 @@
-Fixing unhandled exception when trying to create a role that already exists for a dataset object
+An error is now correctly reported when an attempt is made to assign an identical role to the same collection, dataset, or file. #9729 #10465
