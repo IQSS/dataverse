@@ -180,6 +180,7 @@ public class HarvestingClientsIT {
 
     private void harvestingClientRun(boolean allowHarvestingMissingCVV)  throws InterruptedException {
         int expectedNumberOfSetsHarvested = allowHarvestingMissingCVV ? DATASETS_IN_CONTROL_SET : DATASETS_IN_CONTROL_SET - 1;
+
         // This test will create a client and attempt to perform an actual 
         // harvest and validate the resulting harvested content. 
         
