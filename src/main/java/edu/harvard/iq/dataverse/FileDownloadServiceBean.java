@@ -382,35 +382,26 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
-    public void downloadDatasetCitationXML(Dataset dataset) {
-        downloadCitationXML(null, dataset, false);
-    }
-
     public void downloadDatasetCitationXML(DatasetVersion version) {
         // DatasetVersion-level citation: 
         DataCitation citation=null;
         citation = new DataCitation(version);
-
         String fileNameString;
         fileNameString = "attachment;filename=" + getFileNameFromPid(citation.getPersistentId()) + ".xml";
         downloadXML(citation, fileNameString);
     }
 
     public void downloadDatafileCitationXML(FileMetadata fileMetadata) {
-        downloadCitationXML(fileMetadata, null, false);
+        downloadCitationXML(fileMetadata, false);
     }
     
     public void downloadDirectDatafileCitationXML(FileMetadata fileMetadata) {
-        downloadCitationXML(fileMetadata, null, true);
+        downloadCitationXML(fileMetadata,  true);
     }
 
-    public void downloadCitationXML(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
+    public void downloadCitationXML(FileMetadata fileMetadata, boolean direct) {
         DataCitation citation=null;
-        if (dataset != null){
-            citation = new DataCitation(dataset.getLatestVersion());
-        } else {
-            citation= new DataCitation(fileMetadata, direct);
-        }
+        citation= new DataCitation(fileMetadata, direct);
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
@@ -436,12 +427,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } catch (IOException e) {
         }
     }
-    
-    public void downloadDatasetCitationRIS(Dataset dataset) {
-
-        downloadCitationRIS(null, dataset, false);
-
-    }
 
     public void downloadDatasetCitationRIS(DatasetVersion version) {
         // DatasetVersion-level citation: 
@@ -454,21 +439,17 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public void downloadDatafileCitationRIS(FileMetadata fileMetadata) {
-        downloadCitationRIS(fileMetadata, null, false);
+        downloadCitationRIS(fileMetadata, false);
     }
     
     public void downloadDirectDatafileCitationRIS(FileMetadata fileMetadata) {
-        downloadCitationRIS(fileMetadata, null, true);
+        downloadCitationRIS(fileMetadata, true);
     }
 
-    public void downloadCitationRIS(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
+    public void downloadCitationRIS(FileMetadata fileMetadata, boolean direct) {
         DataCitation citation=null;
-        if (dataset != null){
-            citation = new DataCitation(dataset.getLatestVersion());
-        } else {
-            citation= new DataCitation(fileMetadata, direct);
-        }
-
+        citation= new DataCitation(fileMetadata, direct);
+        
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
@@ -501,11 +482,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         return id.asString();
     }
 
-    public void downloadDatasetCitationBibtex(Dataset dataset) {
-
-        downloadCitationBibtex(null, dataset, false);
-
-    }
 
     public void downloadDatasetCitationBibtex(DatasetVersion version) {
         // DatasetVersion-level citation: 
@@ -518,21 +494,17 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public void downloadDatafileCitationBibtex(FileMetadata fileMetadata) {
-        downloadCitationBibtex(fileMetadata, null, false);
+        downloadCitationBibtex(fileMetadata, false);
     }
 
     public void downloadDirectDatafileCitationBibtex(FileMetadata fileMetadata) {
-        downloadCitationBibtex(fileMetadata, null, true);
+        downloadCitationBibtex(fileMetadata, true);
     }
     
-    public void downloadCitationBibtex(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
+    public void downloadCitationBibtex(FileMetadata fileMetadata, boolean direct) {
         DataCitation citation=null;
-        if (dataset != null){
-            citation = new DataCitation(dataset.getLatestVersion());
-        } else {
-            citation= new DataCitation(fileMetadata, direct);
-        }
-
+        citation= new DataCitation(fileMetadata, direct);
+        
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation:
