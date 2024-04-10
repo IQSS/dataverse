@@ -460,7 +460,6 @@ As root, change to the Counter Processor directory you just created, download th
         <download or move the GeoLite2-Country.tar.gz to the /usr/local/counter-processor-1.05 directory>
         tar xvfz GeoLite2-Country.tar.gz
         cp GeoLite2-Country_*/GeoLite2-Country.mmdb maxmind_geoip
-        Note: GeoLite2-Country_20191217 is already included in the installation. You can skip the download and untar if you use this version. Simply 'cp maxmind_geoip/GeoLite2-Country_20191217/GeoLite2-Country.mmdb maxmind_geoip
 
 Creating a counter User
 =======================
