@@ -45,15 +45,18 @@ jobs:
         permissions:
             contents: read
             packages: read
+        needs: discover
         strategy:
             matrix:
-                jdk: [ '17' ]
+                branch: ${{ fromJson(needs.discover.outputs.branches) }}
         # Only run in upstream repo - avoid unnecessary runs in forks
         if: ${{ github.repository_owner == 'IQSS' }}
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ matrix.branch }}
 
             - name: Set up JDK ${{ matrix.jdk }}
               uses: actions/setup-java@v3
