@@ -74,12 +74,6 @@ jobs:
                   cache-dependency-path: |
                       modules/container-base/pom.xml
 
-            - name: Stop on purpose for testing
-              uses: actions/github-script@v3
-              with:
-                script: |
-                    core.setFailed('Stopped on purpose.')
-
             # Note: Accessing, pushing tags etc. to DockerHub will only succeed in upstream and
             #       on events in context of upstream because secrets. PRs run in context of forks by default!
 
@@ -91,7 +85,7 @@ jobs:
             - name: Set up QEMU for multi-arch builds
               uses: docker/setup-qemu-action@v2
             - name: Deploy multi-arch base container image to Docker Hub
-              run: mvn -f modules/container-base -Pct deploy -Ddocker.platforms=${{ env.PLATFORMS }}
+              run: mvn -f modules/container-base -Pct deploy -Ddocker.skip.push -Ddocker.platforms=${{ env.PLATFORMS }}
 
             - if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
               name: Push description to DockerHub
