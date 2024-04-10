@@ -100,7 +100,7 @@ jobs:
             # TODO: remove when feature branch is done
             - name: Skip all but feature-branch
               if: ${{ matrix.branch != '10478-version-base-img' }}
-              uses: actions/github-script@v3
+              uses: actions/github-script@v7
               with:
                   script: |
                       core.setFailed('Stopping on purpose to avoid mayhem')
