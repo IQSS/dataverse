@@ -34,11 +34,11 @@ jobs:
               id: matrix
               run: |
                   # Get last three releases and include develop branch as matrix elements
-                  if [[ "${{ github.event_name }}" == "schedule" ]]; then
+                  #if [[ "${{ github.event_name }}" == "schedule" ]]; then
                     echo "branches=$(curl -f -sS https://api.github.com/repos/IQSS/dataverse/releases | jq '[ .[0:3] | .[].tag_name, "develop" ]')" | tee -a "$GITHUB_OUTPUT"
-                  else
-                    echo "branches=['develop']" | tee -a "$GITHUB_OUTPUT"
-                  fi
+                  #else
+                  #  echo "branches=['develop']" | tee -a "$GITHUB_OUTPUT"
+                  #fi
 
     build:
         name: Build image
