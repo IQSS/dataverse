@@ -249,7 +249,7 @@
 	language	Nauru		108	nau	na
 	language	Navajo, Navaho		109	nav	nv
 	language	Northern Ndebele		110	nde	nd
-	language	Nepali (macrolanguage)		111	nep	ne
+	language	Nepali		111	nep	ne
 	language	Ndonga		112	ndo	ng
 	language	Norwegian Bokmål		113	nob	nb
 	language	Norwegian Nynorsk		114	nno	nn
@@ -289,7 +289,7 @@
 	language	Southern Sotho		148	sot	st
 	language	Spanish, Castilian		149	spa	es
 	language	Sundanese		150	sun	su
-	language	Swahili (macrolanguage)		151	swa	sw
+	language	Swahili		151	swa	sw
 	language	Swati		152	ssw	ss
 	language	Swedish		153	swe	sv
 	language	Tamil		154	tam	ta
