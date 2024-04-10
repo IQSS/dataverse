@@ -50,6 +50,7 @@ jobs:
             packages: read
         needs: discover
         strategy:
+            fail-fast: false
             matrix:
                 branch: ${{ fromJson(needs.discover.outputs.branches) }}
         # Only run in upstream repo - avoid unnecessary runs in forks
