@@ -316,7 +316,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             Long fileMetadataId) {
         String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten,
                 fileMetadataId);
-        if (downloadType.equals("GlobusTransfer")) {
+        if ("GlobusTransfer".equals(downloadType)) {
             PrimeFaces.current().executeScript(URLTokenUtil.getScriptForUrl(fileDownloadUrl));
         } else {
             logger.fine("Redirecting to file download url: " + fileDownloadUrl);

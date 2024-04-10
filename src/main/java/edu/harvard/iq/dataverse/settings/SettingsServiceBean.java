@@ -45,6 +45,7 @@ public class SettingsServiceBean {
      * over your shoulder when typing strings in various places of a large app. 
      * So there.
      */
+    @SuppressWarnings("java:S115")
     public enum Key {
         AllowApiTokenLookupViaApi,
         /**
@@ -87,6 +88,15 @@ public class SettingsServiceBean {
          * StorageSite database table.
          */
         LocalDataAccessPath,
+        /**
+         * The algorithm used to generate PIDs, randomString (default) or
+         * storedProcedure
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,
@@ -189,24 +199,51 @@ public class SettingsServiceBean {
         SignUpUrl,
         /** Key for whether we allow users to sign up */
         AllowSignUp,
-        /** protocol for global id */
+        /**
+         * protocol for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Protocol,
-        /** authority for global id */
+        /**
+         * authority for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Authority,
-        /** DoiProvider for global id */
+        /**
+         * DoiProvider for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         DoiProvider,
-        /** Shoulder for global id - used to create a common prefix on identifiers */
+        /**
+         * Shoulder for global id - used to create a common prefix on identifiers
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Shoulder,
-        /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
-        DoiUsername,
-        DoiPassword,
-        DoiBaseurlstring,
-        */
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
 
         CVocConf,
 
+        // Default calls per hour for each tier. csv format (30,60,...)
+        RateLimitingDefaultCapacityTiers,
+        // json defined list of capacities by tier and action list. See RateLimitSetting.java
+        RateLimitingCapacityByTierAndAction,
         /**
          * A link to an installation of https://github.com/IQSS/miniverse or
          * some other metrics app.
@@ -227,7 +264,12 @@ public class SettingsServiceBean {
         /* the number of files the GUI user is allowed to upload in one batch, 
             via drag-and-drop, or through the file select dialog */
         MultipleUploadFilesLimit,
-        /* return email address for system emails such as notifications */
+        /**
+         * Return email address for system emails such as notifications
+         * @deprecated Please replace usages with {@link edu.harvard.iq.dataverse.MailServiceBean#getSystemAddress},
+         *             which is backward compatible with this setting.
+         */
+        @Deprecated(since = "6.2", forRemoval = true)
         SystemEmail, 
         /* size limit for Tabular data file ingests */
         /* (can be set separately for specific ingestable formats; in which 
@@ -347,10 +389,16 @@ public class SettingsServiceBean {
          */
         PVCustomPasswordResetAlertMessage,
         /*
-        String to describe DOI format for data files. Default is DEPENDENT. 
-        'DEPENEDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
-        'INDEPENDENT' means a new global id, completely independent from the dataset-level global id.
-        */
+         * String to describe DOI format for data files. Default is DEPENDENT.
+         * 'DEPENDENT' means the DOI will be the Dataset DOI plus a file DOI with a
+         * slash in between. 'INDEPENDENT' means a new global id, completely independent
+         * from the dataset-level global id.
+         *
+         * @deprecated New installations should not use this database setting, but use
+         * the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         DataFilePIDFormat, 
         /* Json array of supported languages
         */
@@ -358,7 +406,7 @@ public class SettingsServiceBean {
         /*
         Number for the minimum number of files to send PID registration to asynchronous workflow
         */
-        PIDAsynchRegFileCount,
+        //PIDAsynchRegFileCount,
         /**
          * 
          */
@@ -366,12 +414,22 @@ public class SettingsServiceBean {
 
         /**
          * Indicates if the Handle service is setup to work 'independently' (No communication with the Global Handle Registry)
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
          */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         IndependentHandleService,
 
         /**
         Handle to use for authentication if the default is not being used
-        */
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         HandleAuthHandle,
 
         /**
@@ -598,7 +656,12 @@ public class SettingsServiceBean {
          * Allows an instance admin to disable Solr search facets on the collection
          * and dataset pages instantly
          */
-        DisableSolrFacets
+        DisableSolrFacets,
+        /**
+         * When ingesting tabular data files, store the generated tab-delimited 
+         * files *with* the variable names line up top. 
+         */
+        StoreIngestedTabularFilesWithVarHeaders
         ;
 
         @Override

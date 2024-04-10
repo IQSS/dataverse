@@ -14,11 +14,11 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
@@ -97,6 +97,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
@@ -136,46 +137,48 @@ public class Admin extends AbstractApiBean {
 
 	private static final Logger logger = Logger.getLogger(Admin.class.getName());
 
-        @EJB
-        AuthenticationProvidersRegistrationServiceBean authProvidersRegistrationSvc;
-	@EJB
-	BuiltinUserServiceBean builtinUserService;
-	@EJB
-	ShibServiceBean shibService;
-	@EJB
-	AuthTestDataServiceBean authTestDataService;
-	@EJB
-	UserServiceBean userService;
-	@EJB
-	IngestServiceBean ingestService;
-	@EJB
-	DataFileServiceBean fileService;
-	@EJB
-	DatasetServiceBean datasetService;
-        @EJB
-	DataverseServiceBean dataverseService;
-	@EJB
-	DatasetVersionServiceBean datasetversionService;
-        @Inject
-        DataverseRequestServiceBean dvRequestService;
-        @EJB
-        EjbDataverseEngine commandEngine;
-        @EJB
-        GroupServiceBean groupService;
-        @EJB
-        SettingsServiceBean settingsService;
-        @EJB
-        DatasetVersionServiceBean datasetVersionService;
-        @EJB
-        ExplicitGroupServiceBean explicitGroupService;
-        @EJB
-        BannerMessageServiceBean bannerMessageService;
-        @EJB
-        TemplateServiceBean templateService;
+    @EJB
+    AuthenticationProvidersRegistrationServiceBean authProvidersRegistrationSvc;
+    @EJB
+    BuiltinUserServiceBean builtinUserService;
+    @EJB
+    ShibServiceBean shibService;
+    @EJB
+    AuthTestDataServiceBean authTestDataService;
+    @EJB
+    UserServiceBean userService;
+    @EJB
+    IngestServiceBean ingestService;
+    @EJB
+    DataFileServiceBean fileService;
+    @EJB
+    DatasetServiceBean datasetService;
+    @EJB
+    DataverseServiceBean dataverseService;
+    @EJB
+    DvObjectServiceBean dvObjectService;
+    @EJB
+    DatasetVersionServiceBean datasetversionService;
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
+    @EJB
+    EjbDataverseEngine commandEngine;
+    @EJB
+    GroupServiceBean groupService;
+    @EJB
+    SettingsServiceBean settingsService;
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
+    @EJB
+    ExplicitGroupServiceBean explicitGroupService;
+    @EJB
+    BannerMessageServiceBean bannerMessageService;
+    @EJB
+    TemplateServiceBean templateService;
 
-	// Make the session available
-	@Inject
-	DataverseSession session;
+    // Make the session available
+    @Inject
+    DataverseSession session;
 
 	public static final String listUsersPartialAPIPath = "list-users";
 	public static final String listUsersFullAPIPath = "/api/admin/" + listUsersPartialAPIPath;
@@ -1474,10 +1477,7 @@ public class Admin extends AbstractApiBean {
     public Response reregisterHdlToPID(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
         try {
-            if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(HandlenetServiceBean.HDL_PROTOCOL)) {
-                logger.info("Bad Request protocol set to handle  " );
-                return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
-            }
+
             
             User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
@@ -1487,7 +1487,12 @@ public class Admin extends AbstractApiBean {
 
             DataverseRequest r = createDataverseRequest(u);
             Dataset ds = findDatasetOrDie(id);
-            if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(HandlenetServiceBean.HDL_PROTOCOL)) {
+            
+            if (HandlePidProvider.HDL_PROTOCOL.equals(dvObjectService.getEffectivePidGenerator(ds).getProtocol())) {
+                logger.info("Bad Request protocol set to handle  " );
+                return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
+            }
+            if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(HandlePidProvider.HDL_PROTOCOL)) {
                 execCommand(new RegisterDvObjectCommand(r, ds, true));
             } else {
                 return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.hdl.dataset"));
