@@ -190,7 +190,7 @@
 	language	Galician		49	glg	gl
 	language	Georgian		50	kat	geo	ka
 	language	German		51	deu	ger	de
-	language	Greek (modern)		52	gre	ell	el	Greek
+	language	Greek (modern)		52	ell	gre	el	Greek
 	language	Guaraní		53	grn	gn
 	language	Gujarati		54	guj	gu
 	language	Haitian, Haitian Creole		55	hat	ht	Haitian	Haitian Creole
@@ -238,10 +238,10 @@
 	language	Manx		97	glv	gv
 	language	Macedonian		98	mkd	mac	mk
 	language	Malagasy		99	mlg	mg
-	language	Malay		100	may	msa	ms
+	language	Malay		100	msa	may	ms
 	language	Malayalam		101	mal	ml
 	language	Maltese		102	mlt	mt
-	language	Māori		103	mao	mri	mi
+	language	Māori		103	mri	mao	mi	Maori
 	language	Marathi (Marāṭhī)		104	mar	mr
 	language	Marshallese		105	mah	mh
 	language	Mixtepec Mixtec		106	mix
@@ -264,7 +264,7 @@
 	language	Ossetian, Ossetic		123	oss	os	Ossetian	Ossetic
 	language	Panjabi, Punjabi		124	pan	pa	Panjabi		Punjabi
 	language	Pāli		125	pli	pi
-	language	Persian (Farsi)		126	per	fas	fa
+	language	Persian (Farsi)		126	fas	per	fa
 	language	Polish		127	pol	pl
 	language	Pashto, Pushto		128	pus	ps	Pashto	Pushto
 	language	Portuguese		129	por	pt
@@ -297,7 +297,7 @@
 	language	Tajik		156	tgk	tg
 	language	Thai		157	tha	th
 	language	Tigrinya		158	tir	ti
-	language	Tibetan Standard, Tibetan, Central		159	tib	bod	bo	Tibetan Standard	Tibetan Central
+	language	Tibetan Standard, Tibetan, Central		159	bod	tib	bo	Tibetan Standard	Tibetan Central
 	language	Turkmen		160	tuk	tk
 	language	Tagalog		161	tgl	tl
 	language	Tswana		162	tsn	tn
