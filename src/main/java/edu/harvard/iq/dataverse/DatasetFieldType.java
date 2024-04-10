@@ -37,7 +37,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
      */
     public enum FieldType {
         TEXT, TEXTBOX, DATE, EMAIL, URL, FLOAT, INT, BOOLEAN, NONE
-    };    
+    }
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

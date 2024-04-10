@@ -147,7 +147,7 @@ Each of the three main sections own sets of properties:
 |                           |                                                        |                                                          | \• url                |
 |                           |                                                        |                                                          | \• int                |
 |                           |                                                        |                                                          | \• float              |
-|                           |                                                        |                                                          | \• Boolean            |
+|                           |                                                        |                                                          | \• boolean            |
 |                           |                                                        |                                                          | \• See below for      |
 |                           |                                                        |                                                          | fieldtype definitions |
 +---------------------------+--------------------------------------------------------+----------------------------------------------------------+-----------------------+
@@ -316,8 +316,13 @@ FieldType definitions
 | float         | A floating point number destined   |
 |               | for a numeric field.               |
 +---------------+------------------------------------+
-| Boolean       | A boolean value intended for a     |
-|               | boolean field.                     |
+| boolean       | A boolean value destined for a     |
+|               | boolean field. "true", "1", "yes", |
+|               | "Y", and "On" values represent     |
+|               | True boolean. "false", "0", "no",  |
+|               | "N", and "Off" values represent    |
+|               | False boolean. All values are      |
+|               | case insensitive.                  |
 +---------------+------------------------------------+
 
 displayFormat variables

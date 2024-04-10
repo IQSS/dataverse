@@ -11,6 +11,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import jakarta.validation.ConstraintValidatorContext.ConstraintViolationBuilder;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,6 +45,9 @@ public class DatasetFieldValueValidatorTest {
         value.setValue("asdfg");
         final ConstraintValidatorContext ctx =
             Mockito.mock(ConstraintValidatorContext.class);
+        final ConstraintViolationBuilder ctb = Mockito.mock(ConstraintViolationBuilder.class);
+        Mockito.when(ctx.buildConstraintViolationWithTemplate(Mockito.anyString())).thenReturn(ctb);
+        Mockito.when(ctb.addConstraintViolation()).thenReturn(ctx);
         DatasetFieldValueValidator instance = new DatasetFieldValueValidator();
         boolean expResult = true;
         boolean result = instance.isValid(value, ctx);
@@ -111,27 +115,39 @@ public class DatasetFieldValueValidatorTest {
         assertEquals(false, result); 
         
         //BOOLEAN
-        dft.setFieldType(DatasetFieldType.FieldType.BOOLEAN); 
+        dft.setFieldType(DatasetFieldType.FieldType.BOOLEAN);
         value.setValue("TRUE");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result);
-        
-        value.setValue("true");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result);
-        
-        value.setValue("FALSE");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
+        assertEquals(true, instance.isValid(value, ctx));
 
         value.setValue("false");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
+        assertEquals(true, instance.isValid(value, ctx));
 
         value.setValue(" ");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
-        
+        assertEquals(true, instance.isValid(value, ctx));
+
+        value.setValue("N/A");
+        assertEquals(true, instance.isValid(value, ctx));
+
+        value.setValue(null);
+        assertEquals(true, instance.isValid(value, ctx));
+
+        value.setValue("0");
+        assertEquals(true, instance.isValid(value, ctx));
+
+        value.setValue("N");
+        assertEquals(true, instance.isValid(value, ctx));
+
+        value.setValue("On");
+        assertEquals(true, instance.isValid(value, ctx));
+
+        value.setValue("2");
+        assertEquals(false, instance.isValid(value, ctx));
+
+        value.setValue("4.44");
+        assertEquals(false, instance.isValid(value, ctx));
+
+        value.setValue("🗽");
+        assertEquals(false, instance.isValid(value, ctx));
     }
 
     @Test

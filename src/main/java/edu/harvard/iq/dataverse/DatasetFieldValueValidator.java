@@ -214,17 +214,16 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         }
 
         if (fieldType.equals(FieldType.BOOLEAN) && !lengthOnly) {
-            boolean validBoolean = isValidBoolean(value.getValue());
-            if (!validBoolean) {
-                try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidBoolean")).addConstraintViolation();
-                } catch (NullPointerException e) {
-                    return false;
-                }
+            final boolean isValidBoolean = Arrays.asList("true", "1", "yes", "Y", "On", "false", "0", "no", "N", "Off")
+                    .stream().anyMatch(value.getValue()::equalsIgnoreCase);
+            if (!isValidBoolean) {
+                logger.fine(
+                        "Boolean value failed validation: " + value.getValue() + " (" + dsfType.getDisplayName() + ")");
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  "
+                        + BundleUtil.getStringFromBundle("dataset.metadata.invalidBoolean")).addConstraintViolation();
                 return false;
             }
         }
-
 
         return true;
     }
@@ -316,9 +315,4 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         return returnVal;
     }
 
-    private boolean isValidBoolean(String value) {
-        return Optional.ofNullable(value)
-                       .map(v -> v.equalsIgnoreCase("true") || v.equalsIgnoreCase("false"))
-                       .orElse(false);
-    }
 }
