@@ -86,11 +86,20 @@ jobs:
               uses: docker/setup-qemu-action@v3
               with:
                   platforms: ${{ env.PLATFORMS }}
+            - name: Add additional tags as options
+              run: |
+                  # For the development branch, update the latest tag in addition
+                  if [[ "${{ matrix.branch }}" == "develop" ]]; then
+                    echo "DOCKER_TAGS=-Ddocker.tags.develop=latest" | tee -a "${GITHUB_ENV}"
+                  # In case of releases <=6.2, we still need to provide backward compatible names "alpha" and "unstable"
+                  elif [[ "${{ matrix.branch }}" == "v6.2" ]]; then
+                    echo "DOCKER_TAGS=-Ddocker.tags.additional=alpha" | tee -a "${GITHUB_ENV}"
+                  fi
 
             - name: Deploy multi-arch base container image to Docker Hub
               # Do not build for v6.0 and v6.1. We can simply reuse the one from v6.2.
               if: ${{ matrix.branch != 'v6.0' && matrix.branch != 'v6.1' }}
-              run: mvn -f modules/container-base -Pct deploy -Ddocker.skip.push -Ddocker.platforms=${{ env.PLATFORMS }}
+              run: mvn -f modules/container-base -Pct deploy -Ddocker.skip.push ${DOCKER_TAGS} -Ddocker.platforms=${{ env.PLATFORMS }}
 
             - if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
               name: Push description to DockerHub
