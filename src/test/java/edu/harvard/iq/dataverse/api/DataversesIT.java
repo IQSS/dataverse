@@ -18,17 +18,14 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response.Status;
-import static jakarta.ws.rs.core.Response.Status.OK;
-import static jakarta.ws.rs.core.Response.Status.CREATED;
-import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
-import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
-import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
-import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -692,6 +689,68 @@ public class DataversesIT {
         Response deleteCollectionResponse = UtilIT.deleteDataverse(newCollectionAlias, apiToken);
         deleteCollectionResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), deleteCollectionResponse.getStatusCode());
+    }
+
+    @Test
+    public void testListMetadataBlocks() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
+        setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Dataverse not found
+        Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks("-1", false, false, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // Existent dataverse and no optional params
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, false, false, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", equalTo(null))
+                .body("data.size()", equalTo(2));
+
+        // Existent dataverse and onlyDisplayedOnCreate=true
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, false, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", equalTo(null))
+                .body("data[0].displayName", equalTo("Citation Metadata"))
+                .body("data.size()", equalTo(1));
+
+        // Existent dataverse and returnDatasetFieldTypes=true
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, false, true, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data.size()", equalTo(2));
+
+        // Existent dataverse and onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data[0].displayName", equalTo("Citation Metadata"))
+                .body("data.size()", equalTo(1));
+
+        // User has no permissions on the requested dataverse
+        Response createSecondUserResponse = UtilIT.createRandomUser();
+        String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+
+        createDataverseResponse = UtilIT.createRandomDataverse(secondApiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String secondDataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(secondDataverseAlias, true, true, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
     }
     
     @Test
