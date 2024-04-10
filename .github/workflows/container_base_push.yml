@@ -32,11 +32,12 @@ jobs:
         steps:
             - name: Build branch matrix options
               id: matrix
+              # TODO: remove the feature branch and re-enable the if/else!
               run: |
                   # Get last three releases and include develop branch as matrix elements
                   #if [[ "${{ github.event_name }}" == "schedule" ]]; then
                     echo "branches=$(curl -f -sS https://api.github.com/repos/IQSS/dataverse/releases | \
-                    jq '[ .[0:3] | .[].tag_name, "develop" ]')" | tr -d "\n" | tr -s " " | \
+                    jq '[ .[0:3] | .[].tag_name, "develop", "10478-version-base-img" ]')" | tr -d "\n" | tr -s " " | \
                     tee -a "$GITHUB_OUTPUT"
                   #else
                   #  echo "branches=['develop']" | tee -a "$GITHUB_OUTPUT"
@@ -87,19 +88,28 @@ jobs:
               with:
                   platforms: ${{ env.PLATFORMS }}
             - name: Add additional tags as options
+              # TODO: remove the feature branch and re-enable the if/else!
               run: |
                   # For the development branch, update the latest tag in addition
-                  if [[ "${{ matrix.branch }}" == "develop" ]]; then
+                  if [[ "${{ matrix.branch }}" == "develop" || "${{ matrix.branch }}" == "10478-version-base-img" ]]; then
                     echo "DOCKER_TAGS=-Ddocker.tags.develop=latest" | tee -a "${GITHUB_ENV}"
                   # In case of releases <=6.2, we still need to provide backward compatible names "alpha" and "unstable"
                   elif [[ "${{ matrix.branch }}" == "v6.2" ]]; then
                     echo "DOCKER_TAGS=-Ddocker.tags.additional=alpha" | tee -a "${GITHUB_ENV}"
                   fi
+            # TODO: remove when feature branch is done
+            - name: Skip all but feature-branch
+              if: ${{ matrix.branch != '10478-version-base-img' }}
+              uses: actions/github-script@v3
+              with:
+                  script: |
+                      core.setFailed('Stopping on purpose to avoid mayhem')
+
 
             - name: Deploy multi-arch base container image to Docker Hub
               # Do not build for v6.0 and v6.1. We can simply reuse the one from v6.2.
               if: ${{ matrix.branch != 'v6.0' && matrix.branch != 'v6.1' }}
-              run: mvn -f modules/container-base -Pct deploy -Ddocker.skip.push ${DOCKER_TAGS} -Ddocker.platforms=${{ env.PLATFORMS }}
+              run: mvn -f modules/container-base -Pct deploy ${DOCKER_TAGS} -Ddocker.platforms=${{ env.PLATFORMS }}
 
             - if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
               name: Push description to DockerHub
