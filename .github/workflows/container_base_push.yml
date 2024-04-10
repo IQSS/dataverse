@@ -61,9 +61,9 @@ jobs:
               uses: actions/checkout@v4
               with:
                   ref: ${{ matrix.branch }}
-            - name: Determine Java version from package
+            - name: Determine Java version from Parent POM
               run: |
-                  echo "JAVA_VERSION=$(mvn -f modules/container-base -Pct help:evaluate -Dexpression=target.java.version -q -DforceStdout)" >> ${GITHUB_ENV}
+                  echo "JAVA_VERSION=$(grep '<target.java.version>' modules/dataverse-parent/pom.xml | cut -f2 -d'>' | cut -f1 -d'<')" >> ${GITHUB_ENV}
 
             - name: Set up JDK ${{ env.JAVA_VERSION }}
               uses: actions/setup-java@v4
