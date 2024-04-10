@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Version 1.0 - Created 2011-01-13 - FZ, TIB, Germany
+     2013-05 v3.0: Addition of ID to simpleType element; addition of value "Collected"; deleted "StartDate" & "EndDate"
+     2017-10-23 v4.1: Addition of value "Other"
+     2019-02-14 v4.2: Addition of value "Withdrawn"-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://datacite.org/schema/kernel-4" targetNamespace="http://datacite.org/schema/kernel-4" elementFormDefault="qualified">
+  <xs:simpleType name="dateType" id="dateType">
+    <xs:annotation>
+      <xs:documentation>The type of date. Use RKMS‐ISO8601 standard for depicting date ranges.To indicate the end of an embargo period, use Available. To indicate the start of an embargo period, use Submitted or Accepted, as appropriate.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Accepted" />
+      <xs:enumeration value="Available" />
+      <xs:enumeration value="Collected" />
+      <xs:enumeration value="Copyrighted" />
+      <xs:enumeration value="Created" />
+      <xs:enumeration value="Issued" />
+      <xs:enumeration value="Other" />
+      <xs:enumeration value="Submitted" />
+      <xs:enumeration value="Updated" />
+      <xs:enumeration value="Valid" />
+      <xs:enumeration value="Withdrawn" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

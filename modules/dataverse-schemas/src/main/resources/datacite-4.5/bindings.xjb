@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jaxb:bindings
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	jaxb:version="3.0">
+
+	<jaxb:bindings schemaLocation="schema.xsd">
+		<jaxb:schemaBindings>
+			<!-- Define the target name of the package -->
+			<jaxb:package name="io.gdcc.schemas.datacite45"/>
+		</jaxb:schemaBindings>
+	</jaxb:bindings>
+</jaxb:bindings>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Version 1.0 - Created 2011-01-13 - FZ, TIB, Germany
+   2013-05 v3.0: Addition of ID to simpleType element, added values "ResearchGroup" & "Other"
+   2014-08-20 v3.1: Addition of value "DataCurator"
+   2015-05-14 v4.0 dropped value "Funder", use new "funderReference" -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://datacite.org/schema/kernel-4" targetNamespace="http://datacite.org/schema/kernel-4" elementFormDefault="qualified">
+  <xs:simpleType name="contributorType" id="contributorType">
+    <xs:annotation>
+      <xs:documentation>The type of contributor of the resource.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ContactPerson" />
+      <xs:enumeration value="DataCollector" />
+      <xs:enumeration value="DataCurator" />
+      <xs:enumeration value="DataManager" />
+      <xs:enumeration value="Distributor" />
+      <xs:enumeration value="Editor" />
+      <xs:enumeration value="HostingInstitution" />
+      <xs:enumeration value="Other" />
+      <xs:enumeration value="Producer" />
+      <xs:enumeration value="ProjectLeader" />
+      <xs:enumeration value="ProjectManager" />
+      <xs:enumeration value="ProjectMember" />
+      <xs:enumeration value="RegistrationAgency" />
+      <xs:enumeration value="RegistrationAuthority" />
+      <xs:enumeration value="RelatedPerson" />
+      <xs:enumeration value="ResearchGroup" />
+      <xs:enumeration value="RightsHolder" />
+      <xs:enumeration value="Researcher" />
+      <xs:enumeration value="Sponsor" />
+      <xs:enumeration value="Supervisor" />
+      <xs:enumeration value="WorkPackageLeader" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

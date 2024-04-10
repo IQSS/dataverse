@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Version 1.0 - Created 2011-01-13 - FZ, TIB, Germany
+  2013-05 v3.0: Addition of ID to simpleType element
+  2015-02-12 v4.0 Added value "Other" -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://datacite.org/schema/kernel-4" targetNamespace="http://datacite.org/schema/kernel-4" elementFormDefault="qualified">
+  <xs:simpleType name="titleType" id="titleType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="AlternativeTitle" />
+      <xs:enumeration value="Subtitle" />
+      <xs:enumeration value="TranslatedTitle" />
+      <xs:enumeration value="Other" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

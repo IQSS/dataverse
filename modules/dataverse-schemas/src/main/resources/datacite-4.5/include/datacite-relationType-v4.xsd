@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  2011-01-13 v1.0 - FZ, TIB, Germany
+  2013-05 v3.0: Addition of ID to simpleType element, addition of values "IsIdenticalTo", "HasMetadata" & "IsMetadataFor"
+  2014-08-20 v3.1: Addition of values "Reviews" & "IsReviewedBy" and "IsDerivedFrom" & "IsSourceOf"
+  2017-10-23 v.4.1: Addition of values "Describes", "IsDescribedBy", "HasVersion", "IsVersionOf", "Requires", "IsRequiredBy"
+  2019-02-14 v.4.2: Addition of values "Obsoletes", "IsObsoletedBy"
+  2021-03-05 v.4.4: Addition of value "IsPublishedIn" -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://datacite.org/schema/kernel-4" targetNamespace="http://datacite.org/schema/kernel-4" elementFormDefault="qualified">
+  <xs:simpleType name="relationType" id="relationType">
+    <xs:annotation>
+      <xs:documentation>Description of the relationship of the resource being registered (A) and the related resource (B).</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="IsCitedBy" />
+      <xs:enumeration value="Cites" />
+      <xs:enumeration value="IsSupplementTo" />
+      <xs:enumeration value="IsSupplementedBy" />
+      <xs:enumeration value="IsContinuedBy" />
+      <xs:enumeration value="Continues" />
+      <xs:enumeration value="IsNewVersionOf" />
+      <xs:enumeration value="IsPreviousVersionOf" />
+      <xs:enumeration value="IsPartOf" />
+      <xs:enumeration value="HasPart" />
+      <xs:enumeration value="IsPublishedIn" />
+      <xs:enumeration value="IsReferencedBy" />
+      <xs:enumeration value="References" />
+      <xs:enumeration value="IsDocumentedBy" />
+      <xs:enumeration value="Documents" />
+      <xs:enumeration value="IsCompiledBy" />
+      <xs:enumeration value="Compiles" />
+      <xs:enumeration value="IsVariantFormOf" />
+      <xs:enumeration value="IsOriginalFormOf" />
+      <xs:enumeration value="IsIdenticalTo" />
+      <xs:enumeration value="HasMetadata" />
+      <xs:enumeration value="IsMetadataFor" />
+      <xs:enumeration value="Reviews" />
+      <xs:enumeration value="IsReviewedBy" />
+      <xs:enumeration value="IsDerivedFrom" />
+      <xs:enumeration value="IsSourceOf" />
+      <xs:enumeration value="Describes" />
+      <xs:enumeration value="IsDescribedBy" />
+      <xs:enumeration value="HasVersion" />
+      <xs:enumeration value="IsVersionOf" />
+      <xs:enumeration value="Requires" />
+      <xs:enumeration value="IsRequiredBy" />
+      <xs:enumeration value="Obsoletes" />
+      <xs:enumeration value="IsObsoletedBy" />
+      <xs:enumeration value="Collects" />
+      <xs:enumeration value="IsCollectedBy" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

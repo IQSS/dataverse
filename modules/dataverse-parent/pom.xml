@@ -15,6 +15,7 @@
         <module>../../scripts/zipdownload</module>
         <module>../container-base</module>
         <module>../dataverse-spi</module>
+        <module>../dataverse-schemas</module>
     </modules>
     
     <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
