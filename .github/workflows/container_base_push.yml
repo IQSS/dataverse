@@ -16,7 +16,6 @@ on:
         - cron: '23 3 * * 0' # Run for 'develop' every Sunday at 03:23 UTC
 
 env:
-    IMAGE_TAG: unstable
     PLATFORMS: linux/amd64,linux/arm64
 
 jobs:
