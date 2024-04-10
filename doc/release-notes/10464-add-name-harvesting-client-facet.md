@@ -1,3 +1,3 @@
-The Metadata Source facet has been updated to show the name of the import client rather than grouping all under 'harvested'
+The Metadata Source facet has been updated to show the name of the harvesting client rather than grouping all such datasets under 'harvested'
 
-TODO: Please add notes to re-index http://localhost:8080/api/admin/index guides at: https://guides.dataverse.org/en/latest/admin/solr-search-index.html
+TODO: for the v6.13 release note: Please add a full re-index using http://localhost:8080/api/admin/index to the upgrade instructions. 
