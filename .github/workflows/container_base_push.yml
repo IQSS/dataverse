@@ -27,6 +27,8 @@ jobs:
             packages: read
         # Only run in upstream repo - avoid unnecessary runs in forks and only for scheduled
         if: ${{ github.repository_owner == 'IQSS' }}
+        outputs:
+            branches: ${{ steps.matrix.outputs.branches }}
         steps:
             - name: Build branch matrix options
               id: matrix
