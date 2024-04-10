@@ -588,7 +588,7 @@ Note: you must have "Add Dataset" permission in the given collection to invoke t
 List Featured Collections for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Lists the aliases of the featured collections of a given Dataverse collection identified by ``id``:
+The response is a JSON array of the alias strings of the featured collections of a given Dataverse collection identified by ``id``:
 
 .. code-block:: bash
 
