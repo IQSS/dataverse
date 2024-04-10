@@ -92,10 +92,10 @@ jobs:
               run: |
                   # For the development branch, update the latest tag in addition
                   if [[ "${{ matrix.branch }}" == "develop" || "${{ matrix.branch }}" == "10478-version-base-img" ]]; then
-                    echo "DOCKER_TAGS=-Ddocker.tags.develop=latest" | tee -a "${GITHUB_ENV}"
+                    echo "DOCKER_TAGS=-Ddocker.imagePropertyConfiguration=override -Ddocker.tags.develop=latest" | tee -a "${GITHUB_ENV}"
                   # In case of releases <=6.2, we still need to provide backward compatible names "alpha" and "unstable"
                   elif [[ "${{ matrix.branch }}" == "v6.2" ]]; then
-                    echo "DOCKER_TAGS=-Ddocker.tags.additional=alpha" | tee -a "${GITHUB_ENV}"
+                    echo "DOCKER_TAGS=-Ddocker.imagePropertyConfiguration=override -Ddocker.tags.additional=alpha" | tee -a "${GITHUB_ENV}"
                   fi
             # TODO: remove when feature branch is done
             - name: Skip all but feature-branch
