@@ -163,7 +163,7 @@
 	language	Breton		22	bre	br
 	language	Bulgarian		23	bul	bg
 	language	Burmese		24	mya	bur	my
-	language	Catalan,Valencian		25	cat ca	Catalan	Valencian
+	language	Catalan,Valencian		25	cat	ca	Catalan	Valencian
 	language	Chamorro		26	cha	ch
 	language	Chechen		27	che	ce
 	language	Chichewa, Chewa, Nyanja		28	nya	ny	Chichewa	Chewa	Nyanja
@@ -193,7 +193,7 @@
 	language	Greek (modern)		52	gre	ell	el	Greek
 	language	Guaraní		53	grn	gn
 	language	Gujarati		54	guj	gu
-	language	Haitian, Haitian Creole		55	hat ht	Haitian	Haitian Creole
+	language	Haitian, Haitian Creole		55	hat	ht	Haitian	Haitian Creole
 	language	Hausa		56	hau	ha
 	language	Hebrew (modern)		57	heb	he
 	language	Herero		58	her	hz
@@ -254,7 +254,7 @@
 	language	Norwegian Bokmål		113	nob	nb
 	language	Norwegian Nynorsk		114	nno	nn
 	language	Norwegian		115	nor	no
-	language	Nuosu		116											
+	language	Nuosu		116	iii	ii
 	language	Southern Ndebele		117	nbl	nr
 	language	Occitan		118	oci	oc
 	language	Ojibwe, Ojibwa		119	oji	oj	Ojibwe	Ojibwa
