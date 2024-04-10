@@ -37,7 +37,7 @@ Windows is gaining support through Docker as described in the :doc:`windows` sec
 Install Java
 ~~~~~~~~~~~~
 
-The Dataverse Software requires Java 11.
+The Dataverse Software requires Java 17.
 
 We suggest downloading OpenJDK from https://adoptopenjdk.net
 

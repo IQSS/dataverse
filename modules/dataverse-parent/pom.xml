@@ -131,7 +131,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.1</revision>
+        <revision>6.2</revision>
     
         <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -168,11 +168,11 @@
         <gdcc.xoai.version>5.2.0</gdcc.xoai.version>
     
         <!-- Testing dependencies -->
-        <testcontainers.version>1.19.0</testcontainers.version>
-        <smallrye-mpconfig.version>2.10.1</smallrye-mpconfig.version>
-        <junit.jupiter.version>5.10.0</junit.jupiter.version>
-        <mockito.version>5.4.0</mockito.version>
-        <maven-jacoco-plugin.version>0.8.10</maven-jacoco-plugin.version>
+        <testcontainers.version>1.19.7</testcontainers.version>
+        <smallrye-mpconfig.version>3.7.1</smallrye-mpconfig.version>
+        <junit.jupiter.version>5.10.2</junit.jupiter.version>
+        <mockito.version>5.11.0</mockito.version>
+        <maven-jacoco-plugin.version>0.8.11</maven-jacoco-plugin.version>
         
         <checkstyle.version>9.3</checkstyle.version>
         
@@ -182,8 +182,8 @@
         <maven-war-plugin.version>3.3.2</maven-war-plugin.version>
         <maven-dependency-plugin.version>3.5.0</maven-dependency-plugin.version>
         <maven-install-plugin.version>3.1.1</maven-install-plugin.version>
-        <maven-surefire-plugin.version>3.1.0</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>3.1.0</maven-failsafe-plugin.version>
+        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.2.5</maven-failsafe-plugin.version>
         <maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
         <maven-release-plugin.version>3.0.0-M7</maven-release-plugin.version>
