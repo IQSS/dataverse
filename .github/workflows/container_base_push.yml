@@ -3,17 +3,11 @@ name: Base Container Image
 
 on:
     push:
+        tags:
+            - 'v[6-9].*'
         branches:
             - 'develop'
-            - 'master'
-        paths:
-            - 'modules/container-base/**'
-            - 'modules/dataverse-parent/pom.xml'
-            - '.github/workflows/container_base_push.yml'
-    pull_request:
-        branches:
-            - 'develop'
-            - 'master'
+            - '10478-version-base-img'
         paths:
             - 'modules/container-base/**'
             - 'modules/dataverse-parent/pom.xml'
