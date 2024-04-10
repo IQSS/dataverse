@@ -20,6 +20,25 @@ env:
     PLATFORMS: linux/amd64,linux/arm64
 
 jobs:
+    discover:
+        name: Discover Release Matrix
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: read
+        # Only run in upstream repo - avoid unnecessary runs in forks and only for scheduled
+        if: ${{ github.repository_owner == 'IQSS' }}
+        steps:
+            - name: Build branch matrix options
+              id: matrix
+              run: |
+                  # Get last three releases and include develop branch as matrix elements
+                  if [[ "${{ github.event_name }}" == "schedule" ]]; then
+                    echo "branches=$(curl -f -sS https://api.github.com/repos/IQSS/dataverse/releases | jq '[ .[0:3] | .[].tag_name, "develop" ]')" | tee -a "$GITHUB_OUTPUT"
+                  else
+                    echo "branches=['develop']" | tee -a "$GITHUB_OUTPUT"
+                  fi
+
     build:
         name: Build image
         runs-on: ubuntu-latest
