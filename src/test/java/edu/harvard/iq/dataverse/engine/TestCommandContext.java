@@ -224,6 +224,11 @@ public class TestCommandContext implements CommandContext {
     public ActionLogServiceBean actionLog() {
         return null;
     }
+
+    @Override
+    public MetadataBlockServiceBean metadataBlocks() {
+        return null;
+    }
     
     @Override
     public StorageUseServiceBean storageUse() {

@@ -897,7 +897,8 @@ public class IndexServiceBean {
 
         if (dataset.isHarvested()) {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, true);
-            solrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
+            solrInputDocument.addField(SearchFields.METADATA_SOURCE,
+                                        dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getName() : HARVESTED);
         } else {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName); //rootDataverseName);
@@ -1016,7 +1017,7 @@ public class IndexServiceBean {
                              */
                             if (dsf.getControlledVocabularyValues().isEmpty()) {
                                 for (DatasetFieldValue dfv : dsf.getDatasetFieldValues()) {
-                                    if (dfv.getValue().equals(DatasetField.NA_VALUE)) {
+                                    if (dfv.getValue() == null || dfv.getValue().equals(DatasetField.NA_VALUE)) {
                                         continue;
                                     }
                                     solrInputDocument.addField(solrFieldSearchable, dfv.getValue());

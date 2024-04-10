@@ -15,9 +15,7 @@ import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This class tests Harvesting Client functionality. 
@@ -272,6 +270,12 @@ public class HarvestingClientsIT {
         } while (i<maxWait); 
         
         System.out.println("Waited " + i + " seconds for the harvest to complete.");
+
+        Response searchHarvestedDatasets = UtilIT.search("metadataSource:" + nickName, normalUserAPIKey);
+        searchHarvestedDatasets.prettyPrint();
+        searchHarvestedDatasets.then().assertThat()
+                                .statusCode(OK.getStatusCode())
+                                .body("data.total_count", equalTo(expectedNumberOfSetsHarvested));
         
         // Fail if it hasn't completed in maxWait seconds
         assertTrue(i < maxWait);
