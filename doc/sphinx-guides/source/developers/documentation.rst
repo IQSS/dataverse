@@ -159,7 +159,3 @@ A few notes about the command above:
 Also, as of this writing we have enabled PDF builds from the "develop" branch. You download the PDF from http://preview.guides.gdcc.io/_/downloads/en/develop/pdf/
 
 If you would like to help improve the PDF version of the guides, please get in touch! Please see :ref:`getting-help-developers` for ways to contact the developer community.
-
-----
-
-Previous: :doc:`testing` | Next: :doc:`dependencies`

@@ -2,22 +2,20 @@ package edu.harvard.iq.dataverse.api;
 
 import java.util.logging.Logger;
 
-import org.junit.jupiter.api.Test;
-
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.BeforeAll;
 
 /**
  * This class tests Harvesting Client functionality. 
@@ -37,11 +35,12 @@ public class HarvestingClientsIT {
     private static final String ARCHIVE_URL = "https://demo.dataverse.org";
     private static final String HARVEST_METADATA_FORMAT = "oai_dc";
     private static final String ARCHIVE_DESCRIPTION = "RestAssured harvesting client test";
-    private static final String CONTROL_OAI_SET = "controlTestSet";
-    private static final int DATASETS_IN_CONTROL_SET = 7;
+    private static final String CONTROL_OAI_SET = "controlTestSet2";
+    private static final int DATASETS_IN_CONTROL_SET = 8;
     private static String normalUserAPIKey;
     private static String adminUserAPIKey;
-    private static String harvestCollectionAlias; 
+    private static String harvestCollectionAlias;
+    String clientApiPath = null;
     
     @BeforeAll
     public static void setUpClass() {
@@ -53,6 +52,16 @@ public class HarvestingClientsIT {
         // Create a collection that we will use to harvest remote content into: 
         setupCollection();
         
+    }
+    @AfterEach
+    public void cleanup() {
+        if (clientApiPath != null) {
+            Response deleteResponse = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
+                    .delete(clientApiPath);
+            clientApiPath = null;
+            System.out.println("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
+        }
     }
 
     private static void setupUsers() {
@@ -157,9 +166,19 @@ public class HarvestingClientsIT {
         logger.info("rDelete.getStatusCode(): " + rDelete.getStatusCode());
         assertEquals(OK.getStatusCode(), rDelete.getStatusCode());
     }
-    
+
     @Test
-    public void testHarvestingClientRun()  throws InterruptedException {
+    public void testHarvestingClientRun_AllowHarvestingMissingCVV_False()  throws InterruptedException {
+        harvestingClientRun(false);
+    }
+    @Test
+    public void testHarvestingClientRun_AllowHarvestingMissingCVV_True()  throws InterruptedException {
+        harvestingClientRun(true);
+    }
+
+    private void harvestingClientRun(boolean allowHarvestingMissingCVV)  throws InterruptedException {
+        int expectedNumberOfSetsHarvested = allowHarvestingMissingCVV ? DATASETS_IN_CONTROL_SET : DATASETS_IN_CONTROL_SET - 1;
+
         // This test will create a client and attempt to perform an actual 
         // harvest and validate the resulting harvested content. 
         
@@ -170,14 +189,15 @@ public class HarvestingClientsIT {
         
         String nickName = "h" + UtilIT.getRandomString(6);
 
-        String clientApiPath = String.format(HARVEST_CLIENTS_API+"%s", nickName);
+        clientApiPath = String.format(HARVEST_CLIENTS_API+"%s", nickName);
         String clientJson = String.format("{\"dataverseAlias\":\"%s\","
                 + "\"type\":\"oai\","
                 + "\"harvestUrl\":\"%s\","
                 + "\"archiveUrl\":\"%s\","
                 + "\"set\":\"%s\","
+                + "\"allowHarvestingMissingCVV\":%s,"
                 + "\"metadataFormat\":\"%s\"}", 
-                harvestCollectionAlias, HARVEST_URL, ARCHIVE_URL, CONTROL_OAI_SET, HARVEST_METADATA_FORMAT);
+                harvestCollectionAlias, HARVEST_URL, ARCHIVE_URL, CONTROL_OAI_SET, allowHarvestingMissingCVV, HARVEST_METADATA_FORMAT);
         
         Response createResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
@@ -242,7 +262,7 @@ public class HarvestingClientsIT {
                 assertEquals(harvestTimeStamp, responseJsonPath.getString("data.lastNonEmpty"));
                 
                 // d) Confirm that the correct number of datasets have been harvested:
-                assertEquals(DATASETS_IN_CONTROL_SET, responseJsonPath.getInt("data.lastDatasetsHarvested"));
+                assertEquals(expectedNumberOfSetsHarvested, responseJsonPath.getInt("data.lastDatasetsHarvested"));
                 
                 // ok, it looks like the harvest has completed successfully.
                 break;
@@ -250,6 +270,12 @@ public class HarvestingClientsIT {
         } while (i<maxWait); 
         
         System.out.println("Waited " + i + " seconds for the harvest to complete.");
+
+        Response searchHarvestedDatasets = UtilIT.search("metadataSource:" + nickName, normalUserAPIKey);
+        searchHarvestedDatasets.prettyPrint();
+        searchHarvestedDatasets.then().assertThat()
+                                .statusCode(OK.getStatusCode())
+                                .body("data.total_count", equalTo(expectedNumberOfSetsHarvested));
         
         // Fail if it hasn't completed in maxWait seconds
         assertTrue(i < maxWait);
@@ -258,15 +284,6 @@ public class HarvestingClientsIT {
         // datasets have been harvested. This may or may not be necessary, seeing 
         // how we have already confirmed the number of successfully harvested 
         // datasets from the control set; somewhat hard to imagine a practical 
-        // situation where that would not be enough (?).  
-        
-        // Cleanup: delete the client 
-        
-        Response deleteResponse = given()
-                .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
-                .delete(clientApiPath);
-        System.out.println("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
-        assertEquals(OK.getStatusCode(), deleteResponse.getStatusCode());
-        
+        // situation where that would not be enough (?).
     }
 }

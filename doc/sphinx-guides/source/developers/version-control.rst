@@ -117,10 +117,9 @@ As described at :ref:`write-release-notes`, at release time we compile together 
 Here's how to add a release note snippet to your pull request:
 
 - Create a Markdown file under ``doc/release-notes``. You can reuse the name of your branch and append ".md" to it, e.g. ``3728-doc-apipolicy-fix.md``
-- Edit the snippet to include anything you think should be mentioned in the release notes, such as:
+- Edit the snippet to include anything you think should be mentioned in the release notes. Please include the following if they apply:
 
-  - Descriptions of new features
-  - Explanations of bugs fixed
+  - Descriptions of new features or bug fixed, including a link to the HTML preview of the docs you wrote (e.g. https://dataverse-guide--9939.org.readthedocs.build/en/9939/installation/config.html#smtp-email-configuration ) and the phrase "For more information, see #3728" (the issue number). If you know the PR number, you can add that too.
   - New configuration settings
   - Upgrade instructions
   - Etc.
@@ -286,7 +285,3 @@ GitHub documents how to make changes to a fork at https://help.github.com/articl
         vim path/to/file.txt
         git commit
         git push OdumInstitute 4709-postgresql_96
-
-----
-
-Previous: :doc:`troubleshooting` | Next: :doc:`sql-upgrade-scripts`
