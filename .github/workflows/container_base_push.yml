@@ -69,13 +69,11 @@ jobs:
                   cache-dependency-path: |
                       modules/container-base/pom.xml
 
+            - name: Stop on purpose for testing
+              uses: actions/github-script@v3
               with:
-                  path: ~/.m2
-                  key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-                  restore-keys: ${{ runner.os }}-m2
-
-            - name: Build base container image with local architecture
-              run: mvn -f modules/container-base -Pct package
+                script: |
+                    core.setFailed('Stopped on purpose.')
 
             # Note: Accessing, pushing tags etc. to DockerHub will only succeed in upstream and
             #       on events in context of upstream because secrets. PRs run in context of forks by default!
