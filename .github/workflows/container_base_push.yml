@@ -85,6 +85,8 @@ jobs:
             - name: Set up QEMU for multi-arch builds
               uses: docker/setup-qemu-action@v2
             - name: Deploy multi-arch base container image to Docker Hub
+              # Do not build for v6.0 and v6.1. We can simply reuse the one from v6.2.
+              if: ${{ matrix.branch != 'v6.0' && matrix.branch != 'v6.1' }}
               run: mvn -f modules/container-base -Pct deploy -Ddocker.skip.push -Ddocker.platforms=${{ env.PLATFORMS }}
 
             - if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
