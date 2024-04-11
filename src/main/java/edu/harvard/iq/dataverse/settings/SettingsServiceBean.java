@@ -45,6 +45,7 @@ public class SettingsServiceBean {
      * over your shoulder when typing strings in various places of a large app. 
      * So there.
      */
+    @SuppressWarnings("java:S115")
     public enum Key {
         AllowApiTokenLookupViaApi,
         /**
@@ -263,7 +264,12 @@ public class SettingsServiceBean {
         /* the number of files the GUI user is allowed to upload in one batch, 
             via drag-and-drop, or through the file select dialog */
         MultipleUploadFilesLimit,
-        /* return email address for system emails such as notifications */
+        /**
+         * Return email address for system emails such as notifications
+         * @deprecated Please replace usages with {@link edu.harvard.iq.dataverse.MailServiceBean#getSystemAddress},
+         *             which is backward compatible with this setting.
+         */
+        @Deprecated(since = "6.2", forRemoval = true)
         SystemEmail, 
         /* size limit for Tabular data file ingests */
         /* (can be set separately for specific ingestable formats; in which 
