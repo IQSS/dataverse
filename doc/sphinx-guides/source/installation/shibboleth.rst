@@ -159,9 +159,9 @@ One of the benefits of using ``shibd`` is that it can be configured to periodica
 
 Once you've joined a federation the list of IdPs in the dropdown can be quite long! If you're curious how many are in the list you could try something like this: ``curl https://dataverse.example.edu/Shibboleth.sso/DiscoFeed | jq '.[].entityID' | wc -l``
 
-.. _shibboleth-attributes:
-
 Joining the federation alone is not enough. For the InCommon Federation, one must `apply for Research and Scholarship entity category approval <https://spaces.at.internet2.edu/display/federation/Service+provider+-+apply+for+Research+and+Scholarship+category>` and minimally your identity management group must release the attributes listed below to either the service provider (Dataverse instance) or optimally to all R&S service providers.
+
+.. _shibboleth-attributes:
 
 Shibboleth Attributes
 ~~~~~~~~~~~~~~~~~~~~~
