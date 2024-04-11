@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -11,6 +10,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.sql.Timestamp;
@@ -46,31 +47,31 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
             //the single dataset update api checks for drafts before calling the command
             return;
         }
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(target.getProtocol(), ctxt);
+        PidProvider pidProvider = PidUtil.getPidProvider(target.getGlobalId().getProviderId());
+        
         try {
-            Boolean doiRetString = idServiceBean.publicizeIdentifier(target);
+            Boolean doiRetString = pidProvider.publicizeIdentifier(target);
             if (doiRetString) {
                 target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 ctxt.em().merge(target);
                 ctxt.em().flush();
                 // When updating, we want to traverse through files even if the dataset itself
                 // didn't need updating.
-                String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
-                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
                 boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabledForCollection(target.getOwner());
                 // We will skip trying to update the global identifiers for datafiles if they
                 // aren't being used.
                 // If they are, we need to assure that there's an existing PID or, as when
-                // creating PIDs, that the protocol matches that of the dataset DOI if
-                // we're going to create a DEPENDENT file PID.
-                String protocol = target.getProtocol();
+                // creating PIDs, that it's possible.
+                
+                boolean canCreatePidsForFiles = 
+                                isFilePIDsEnabled && ctxt.dvObjects().getEffectivePidGenerator(target).canCreatePidsLike(target.getGlobalId());
+                
                 for (DataFile df : target.getFiles()) {
                     if (isFilePIDsEnabled && // using file PIDs and
                             (!(df.getIdentifier() == null || df.getIdentifier().isEmpty()) || // identifier exists, or
-                                    currentGlobalIdProtocol.equals(protocol) || // right protocol to create dependent DOIs, or
-                                    dataFilePIDFormat.equals("INDEPENDENT"))// or independent. TODO(pm) - check authority too
+                                     canCreatePidsForFiles) // we can create PIDs for files
                     ) {
-                        doiRetString = idServiceBean.publicizeIdentifier(df);
+                        doiRetString = pidProvider.publicizeIdentifier(df);
                         if (doiRetString) {
                             df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                             ctxt.em().merge(df);

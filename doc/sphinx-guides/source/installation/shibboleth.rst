@@ -408,6 +408,8 @@ Rather than looking up the user's id in the ``authenticateduser`` database table
 
 Per above, you now need to tell the user to use the password reset feature to set a password for their local account.
 
+.. _shib-groups:
+
 Institution-Wide Shibboleth Groups
 ----------------------------------
 

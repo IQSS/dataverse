@@ -3,11 +3,11 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -94,8 +94,8 @@ public class GlobusOverlayAccessIOTest {
     void testGlobusOverlayIdentifiers() throws IOException {
 
         dataset = MocksFactory.makeDataset();
-        dataset.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL, authority, identifier, "/",
-                DOIServiceBean.DOI_RESOLVER_URL, null));
+        dataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, authority, identifier, "/",
+                AbstractDOIProvider.DOI_RESOLVER_URL, null));
         mDatafile = MocksFactory.makeDataFile();
         mDatafile.setOwner(dataset);
         mDatafile.setStorageIdentifier("globusm://" + baseStoreId1);
