@@ -5,6 +5,11 @@ on:
     # We are deliberately *not* running on push events here to avoid double runs.
     # Instead, push events will trigger from the base image and maven unit tests via workflow_call.
     workflow_call:
+        inputs:
+            branch:
+                type: string
+                description: "A tag or branch to checkout for building the image"
+                required: true
     pull_request:
         branches:
             - develop

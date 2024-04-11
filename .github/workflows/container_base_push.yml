@@ -107,6 +107,7 @@ jobs:
 
 
             - name: Deploy multi-arch base container image to Docker Hub
+              id: build
               # Do not build for v6.0 and v6.1. We can simply reuse the one from v6.2.
               if: ${{ matrix.branch != 'v6.0' && matrix.branch != 'v6.1' }}
               run: mvn -f modules/container-base -Pct deploy ${DOCKER_TAGS} -Ddocker.platforms=${{ env.PLATFORMS }}
@@ -120,14 +121,27 @@ jobs:
                   repository: gdcc/base
                   short-description: "Dataverse Base Container image providing Payara application server and optimized configuration"
                   readme-filepath: ./modules/container-base/README.md
+
+            # - if: always()
+            #   name: Save status (workaround for matrix outputs)
+            #  run: |
+            #      # steps.build.outcome is the status BEFORE continue-on-error
+            #      echo "STATUS_$( echo "${{ matrix.branch }}" | tr ".:;,-/ " "_" )=${{ steps.build.outcome }}" | tee -a "${GITHUB_ENV}"
+
     push-app-img:
         name: "Rebase & Publish App Image"
         permissions:
             contents: read
             packages: write
             pull-requests: write
-        needs: build
-        # We do not release a new base image for pull requests, so do not trigger.
-        # if: ${{ github.event_name != 'pull_request' }}
+        needs:
+            - discover
+            - build
+        strategy:
+            fail-fast: false
+            matrix:
+                branch: ${{ fromJson(needs.discover.outputs.branches) }}
         uses: ./.github/workflows/container_app_push.yml
-        secrets: inherit
+        with:
+           branch: ${{ matrix.branch }}
+
