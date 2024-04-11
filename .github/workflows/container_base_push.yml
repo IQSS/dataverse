@@ -135,6 +135,7 @@ jobs:
             contents: read
             packages: write
             pull-requests: write
+        secrets: inherit
         needs:
             - discover
             - build
