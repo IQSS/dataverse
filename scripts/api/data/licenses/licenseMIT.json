@@ -1,7 +1,7 @@
 {
-  "name": "MIT License",
-  "uri": "https://spdx.org/licenses/MIT.html",
-  "shortDescription": "Massachusetts Institute of Technology License (MIT).",
+  "name": "MIT",
+  "uri": "https://opensource.org/license/mit",
+  "shortDescription": "MIT License",
   "active": true,
   "sortOrder": 8
 }
