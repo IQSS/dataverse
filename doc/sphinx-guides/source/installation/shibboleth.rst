@@ -161,6 +161,8 @@ Once you've joined a federation the list of IdPs in the dropdown can be quite lo
 
 .. _shibboleth-attributes:
 
+Joining the federation alone is not enough. For the InCommon Federation, one must `apply for Research and Scholarship entity category approval <https://spaces.at.internet2.edu/display/federation/Service+provider+-+apply+for+Research+and+Scholarship+category>` and minimally your identity management group must release the attributes listed below to either the service provider (Dataverse instance) or optimally to all R&S service providers.
+
 Shibboleth Attributes
 ~~~~~~~~~~~~~~~~~~~~~
 
