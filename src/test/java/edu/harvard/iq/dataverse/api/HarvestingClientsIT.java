@@ -279,11 +279,19 @@ public class HarvestingClientsIT {
         
         // Fail if it hasn't completed in maxWait seconds
         assertTrue(i < maxWait);
-        
-        // TODO(?) use the native Dataverses/Datasets apis to verify that the expected
-        // datasets have been harvested. This may or may not be necessary, seeing 
-        // how we have already confirmed the number of successfully harvested 
-        // datasets from the control set; somewhat hard to imagine a practical 
-        // situation where that would not be enough (?).
+
+        // cleanup datasets so other tests can run
+        Response deleteResponse = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
+                .delete(clientApiPath);
+        clientApiPath = null;
+        System.out.println("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
+
+        i = 0;
+        maxWait=20;
+        do {
+            Thread.sleep(1000L);
+            searchHarvestedDatasets = UtilIT.search("metadataSource:" + nickName, adminUserAPIKey);
+        } while (i++<maxWait && !searchHarvestedDatasets.prettyPrint().contains("count_in_response\": 0"));
     }
 }
