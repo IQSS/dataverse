@@ -9,11 +9,40 @@ services:
     restart: on-failure
     user: payara
     environment:
-      - DATAVERSE_DB_HOST=postgres
-      - DATAVERSE_DB_PASSWORD=secret
-      - DATAVERSE_DB_USER=${DATAVERSE_DB_USER}
-      - ENABLE_JDWP=1
-      - DATAVERSE_FEATURE_API_BEARER_AUTH=1
+      DATAVERSE_DB_HOST: postgres
+      DATAVERSE_DB_PASSWORD: secret
+      DATAVERSE_DB_USER: ${DATAVERSE_DB_USER}
+      ENABLE_JDWP: "1"
+      DATAVERSE_FEATURE_API_BEARER_AUTH: "1"
+      DATAVERSE_AUTH_OIDC_ENABLED: "1"
+      DATAVERSE_AUTH_OIDC_CLIENT_ID: test
+      DATAVERSE_AUTH_OIDC_CLIENT_SECRET: 94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8
+      DATAVERSE_AUTH_OIDC_AUTH_SERVER_URL: http://keycloak.mydomain.com:8090/realms/test
+      DATAVERSE_JSF_REFRESH_PERIOD: "1"
+      JVM_ARGS: -Ddataverse.files.storage-driver-id=file1
+        -Ddataverse.files.file1.type=file
+        -Ddataverse.files.file1.label=Filesystem
+        -Ddataverse.files.file1.directory=${STORAGE_DIR}/store
+        -Ddataverse.files.localstack1.type=s3
+        -Ddataverse.files.localstack1.label=LocalStack
+        -Ddataverse.files.localstack1.custom-endpoint-url=http://localstack:4566
+        -Ddataverse.files.localstack1.custom-endpoint-region=us-east-2
+        -Ddataverse.files.localstack1.bucket-name=mybucket
+        -Ddataverse.files.localstack1.path-style-access=true
+        -Ddataverse.files.localstack1.upload-redirect=true
+        -Ddataverse.files.localstack1.download-redirect=true
+        -Ddataverse.files.localstack1.access-key=default
+        -Ddataverse.files.localstack1.secret-key=default
+        -Ddataverse.files.minio1.type=s3
+        -Ddataverse.files.minio1.label=MinIO
+        -Ddataverse.files.minio1.custom-endpoint-url=http://minio:9000
+        -Ddataverse.files.minio1.custom-endpoint-region=us-east-1
+        -Ddataverse.files.minio1.bucket-name=mybucket
+        -Ddataverse.files.minio1.path-style-access=true
+        -Ddataverse.files.minio1.upload-redirect=false
+        -Ddataverse.files.minio1.download-redirect=false
+        -Ddataverse.files.minio1.access-key=4cc355_k3y
+        -Ddataverse.files.minio1.secret-key=s3cr3t_4cc355_k3y
     ports:
       - "8080:8080" # HTTP (Dataverse Application)
       - "4848:4848" # HTTP (Payara Admin Console)
@@ -24,9 +53,13 @@ services:
     depends_on:
       - dev_postgres
       - dev_solr
+      - dev_dv_initializer
     volumes:
       - ./docker-dev-volumes/app/data:/dv
       - ./docker-dev-volumes/app/secrets:/secrets
+      # Uncomment for changes to xhtml to be deployed immediately (if supported your IDE or toolchain).
+      # Replace 6.0 with the current version.
+      # - ./target/dataverse-6.0:/opt/payara/deployments/dataverse
     tmpfs:
       - /dumps:mode=770,size=2052M,uid=1000,gid=1000
       - /tmp:mode=770,size=2052M,uid=1000,gid=1000
@@ -43,6 +76,17 @@ services:
       - dev
     networks:
       - dataverse
+
+  dev_dv_initializer:
+    container_name: "dev_dv_initializer"
+    image: gdcc/configbaker:unstable
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - "fix-fs-perms.sh dv"
+    volumes:
+      - ./docker-dev-volumes/app/data:/dv
 
   dev_postgres:
     container_name: "dev_postgres"
@@ -109,8 +153,8 @@ services:
       - /mail:mode=770,size=128M,uid=1000,gid=1000
 
   dev_keycloak:
-    container_name: "dev_keycloack"
-    image: 'quay.io/keycloak/keycloak:19.0'
+    container_name: "dev_keycloak"
+    image: 'quay.io/keycloak/keycloak:21.0'
     hostname: keycloak
     environment:
       - KEYCLOAK_ADMIN=kcadmin
@@ -125,7 +169,51 @@ services:
     ports:
       - "8090:8090"
     volumes:
-      - './conf/keycloak/oidc-realm.json:/opt/keycloak/data/import/oidc-realm.json'
+      - './conf/keycloak/test-realm.json:/opt/keycloak/data/import/test-realm.json'
+
+  dev_nginx:
+    container_name: dev_nginx
+    image: gdcc/dev_nginx:unstable
+    ports:
+      - "4849:4849"
+    restart: always
+    networks:
+      - dataverse
+
+  dev_localstack:
+    container_name: "dev_localstack"
+    hostname: "localstack"
+    image: localstack/localstack:2.3.2
+    restart: on-failure
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      - DEBUG=${DEBUG-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOSTNAME_EXTERNAL=localstack
+    networks:
+      - dataverse
+    volumes:
+      - ./conf/localstack:/etc/localstack/init/ready.d
+    tmpfs:
+      - /localstack:mode=770,size=128M,uid=1000,gid=1000
+
+  dev_minio:
+    container_name: "dev_minio"
+    hostname: "minio"
+    image: minio/minio
+    restart: on-failure
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - dataverse
+    volumes:
+      - minio_storage:/data
+    environment:
+      MINIO_ROOT_USER: 4cc355_k3y
+      MINIO_ROOT_PASSWORD: s3cr3t_4cc355_k3y
+    command: server /data
 
 networks:
   dataverse:

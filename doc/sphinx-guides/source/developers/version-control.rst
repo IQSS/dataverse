@@ -24,7 +24,7 @@ The goals of the Dataverse Software branching strategy are:
 - allow for concurrent development
 - only ship stable code
 
-We follow a simplified "git flow" model described at http://nvie.com/posts/a-successful-git-branching-model/ involving a "master" branch, a "develop" branch, and feature branches such as "1234-bug-fix".
+We follow a simplified "git flow" model described at https://nvie.com/posts/a-successful-git-branching-model/ involving a "master" branch, a "develop" branch, and feature branches such as "1234-bug-fix".
 
 Branches
 ~~~~~~~~

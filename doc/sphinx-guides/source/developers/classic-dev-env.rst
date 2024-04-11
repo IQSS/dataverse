@@ -46,7 +46,7 @@ On Linux, you are welcome to use the OpenJDK available from package managers.
 Install Netbeans or Maven
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-NetBeans IDE is recommended, and can be downloaded from http://netbeans.org . Developers may use any editor or IDE. We recommend NetBeans because it is free, works cross platform, has good support for Jakarta EE projects, and includes a required build tool, Maven.
+NetBeans IDE is recommended, and can be downloaded from https://netbeans.org . Developers may use any editor or IDE. We recommend NetBeans because it is free, works cross platform, has good support for Jakarta EE projects, and includes a required build tool, Maven.
 
 Below we describe how to build the Dataverse Software war file with Netbeans but if you prefer to use only Maven, you can find installation instructions in the :doc:`tools` section.
 
@@ -86,7 +86,7 @@ On Mac, run this command:
 
 ``brew install jq``
 
-On Linux, install ``jq`` from your package manager or download a binary from http://stedolan.github.io/jq/
+On Linux, install ``jq`` from your package manager or download a binary from https://stedolan.github.io/jq/
 
 Install Payara
 ~~~~~~~~~~~~~~
@@ -134,7 +134,7 @@ On Linux, you should just install PostgreSQL using your favorite package manager
 Install Solr
 ^^^^^^^^^^^^
 
-`Solr <http://lucene.apache.org/solr/>`_ 9.3.0 is required.
+`Solr <https://lucene.apache.org/solr/>`_ 9.3.0 is required.
 
 To install Solr, execute the following commands:
 
@@ -144,7 +144,7 @@ To install Solr, execute the following commands:
 
 ``cd /usr/local/solr``
 
-``curl -O http://archive.apache.org/dist/solr/solr/9.3.0/solr-9.3.0.tgz``
+``curl -O https://archive.apache.org/dist/solr/solr/9.3.0/solr-9.3.0.tgz``
 
 ``tar xvfz solr-9.3.0.tgz``
 

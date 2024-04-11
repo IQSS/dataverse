@@ -137,7 +137,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
             .getSingleResult();
     }
-
+    
     public List<Dataset> findByOwnerId(Long ownerId) {
         return findByOwnerId(ownerId, false);
     }
@@ -788,13 +788,13 @@ public class DatasetServiceBean implements java.io.Serializable {
                 }
             }
         }
-        
+
     }
 
     //get a string to add to save success message
     //depends on page (dataset/file) and user privleges
     public String getReminderString(Dataset dataset, boolean canPublishDataset, boolean filePage, boolean isValid) {
-       
+
         String reminderString;
 
         if (canPublishDataset) {
@@ -1126,5 +1126,5 @@ public class DatasetServiceBean implements java.io.Serializable {
             hdLogger.warning("Failed to destroy the dataset");
         }
     }
-
+    
 }

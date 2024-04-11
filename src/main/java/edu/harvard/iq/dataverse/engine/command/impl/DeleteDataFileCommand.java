@@ -235,6 +235,20 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
+        // Adjust the storage use for the parent containers: 
+        if (!doomed.isHarvested()) {
+            long storedSize = doomed.getFilesize();
+            // ingested tabular data files also have saved originals that 
+            // are counted as "storage use"
+            Long savedOriginalSize = doomed.getOriginalFileSize(); 
+            if (savedOriginalSize != null) {
+                // Note that DataFile.getFilesize() can return -1 (for "unknown"):
+                storedSize = storedSize > 0 ? storedSize + savedOriginalSize : savedOriginalSize; 
+            }
+            if (storedSize > 0) {
+                ctxt.storageUse().incrementStorageSizeRecursively(doomed.getOwner().getId(), (0L - storedSize));
+            }
+        }
         /**
          * We *could* re-index the entire dataset but it's more efficient to
          * target individual files for deletion, which should always be drafts.

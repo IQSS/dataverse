@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CuratePublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetLinkingDataverseCommand;
@@ -65,6 +66,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -89,14 +91,16 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 
+import static edu.harvard.iq.dataverse.api.ApiConstants.*;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -106,10 +110,10 @@ import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
+import edu.harvard.iq.dataverse.globus.GlobusUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.net.URI;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
@@ -236,6 +240,9 @@ public class Datasets extends AbstractApiBean {
     @Inject
     PrivateUrlServiceBean privateUrlService;
 
+    @Inject
+    DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
+
     /**
      * Used to consolidate the way we parse and handle dataset versions.
      * @param <T> 
@@ -260,7 +267,7 @@ public class Datasets extends AbstractApiBean {
                 MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, retrieved);
                 mdcLogService.logEntry(entry);
             }
-            return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
+            return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest, true) : null));
         }, getRequestUser(crc));
     }
     
@@ -272,7 +279,7 @@ public class Datasets extends AbstractApiBean {
     
     @GET
     @Path("/export")
-    @Produces({"application/xml", "application/json", "application/html" })
+    @Produces({"application/xml", "application/json", "application/html", "application/ld+json" })
     public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         try {
@@ -387,8 +394,8 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versions/{versionId}")
     public Response deleteDraftVersion(@Context ContainerRequestContext crc, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
-        if ( ! ":draft".equals(versionId) ) {
-            return badRequest("Only the :draft version can be deleted");
+        if (!DS_VERSION_DRAFT.equals(versionId)) {
+            return badRequest("Only the " + DS_VERSION_DRAFT + " version can be deleted");
         }
 
         return response( req -> {
@@ -466,33 +473,121 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions")
-    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id ) {
-        return response( req ->
-             ok( execCommand( new ListVersionsCommand(req, findDatasetOrDie(id)) )
-                                .stream()
-                                .map( d -> json(d) )
-                                .collect(toJsonArray())), getRequestUser(crc));
-    }
-    
-    @GET
-    @AuthRequired
-    @Path("{id}/versions/{versionId}")
-    public Response getVersion(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("includeFiles") Boolean includeFiles, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
+
         return response( req -> {
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                    : ok(json(dsv));
+            Dataset dataset = findDatasetOrDie(id);
+
+            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, (includeFiles == null ? true : includeFiles)) )
+                                .stream()
+                                .map( d -> json(d, includeFiles == null ? true : includeFiles) )
+                                .collect(toJsonArray()));
         }, getRequestUser(crc));
     }
     
     @GET
     @AuthRequired
-    @Path("{id}/versions/{versionId}/files")
-    public Response getVersionFiles(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return response( req -> ok( jsonFileMetadatas(
-                         getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas())), getRequestUser(crc));
+    @Path("{id}/versions/{versionId}")
+    public Response getVersion(@Context ContainerRequestContext crc,
+                               @PathParam("id") String datasetId,
+                               @PathParam("versionId") String versionId,
+                               @QueryParam("includeFiles") Boolean includeFiles,
+                               @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                               @Context UriInfo uriInfo,
+                               @Context HttpHeaders headers) {
+        return response( req -> {
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned);
+
+            if (dsv == null || dsv.getId() == null) {
+                return notFound("Dataset version not found");
+            }
+
+            if (includeFiles == null ? true : includeFiles) {
+                dsv = datasetversionService.findDeep(dsv.getId());
+            }
+            return ok(json(dsv, includeFiles == null ? true : includeFiles));
+        }, getRequestUser(crc));
     }
-    
+
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/files")
+    public Response getVersionFiles(@Context ContainerRequestContext crc,
+                                    @PathParam("id") String datasetId,
+                                    @PathParam("versionId") String versionId,
+                                    @QueryParam("limit") Integer limit,
+                                    @QueryParam("offset") Integer offset,
+                                    @QueryParam("contentType") String contentType,
+                                    @QueryParam("accessStatus") String accessStatus,
+                                    @QueryParam("categoryName") String categoryName,
+                                    @QueryParam("tabularTagName") String tabularTagName,
+                                    @QueryParam("searchText") String searchText,
+                                    @QueryParam("orderCriteria") String orderCriteria,
+                                    @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                    @Context UriInfo uriInfo,
+                                    @Context HttpHeaders headers) {
+        return response(req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned);
+            DatasetVersionFilesServiceBean.FileOrderCriteria fileOrderCriteria;
+            try {
+                fileOrderCriteria = orderCriteria != null ? DatasetVersionFilesServiceBean.FileOrderCriteria.valueOf(orderCriteria) : DatasetVersionFilesServiceBean.FileOrderCriteria.NameAZ;
+            } catch (IllegalArgumentException e) {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.order.criteria", List.of(orderCriteria)));
+            }
+            FileSearchCriteria fileSearchCriteria;
+            try {
+                fileSearchCriteria = new FileSearchCriteria(
+                        contentType,
+                        accessStatus != null ? FileSearchCriteria.FileAccessStatus.valueOf(accessStatus) : null,
+                        categoryName,
+                        tabularTagName,
+                        searchText
+                );
+            } catch (IllegalArgumentException e) {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(accessStatus)));
+            }
+            return ok(jsonFileMetadatas(datasetVersionFilesServiceBean.getFileMetadatas(datasetVersion, limit, offset, fileSearchCriteria, fileOrderCriteria)));
+        }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/files/counts")
+    public Response getVersionFileCounts(@Context ContainerRequestContext crc,
+                                         @PathParam("id") String datasetId,
+                                         @PathParam("versionId") String versionId,
+                                         @QueryParam("contentType") String contentType,
+                                         @QueryParam("accessStatus") String accessStatus,
+                                         @QueryParam("categoryName") String categoryName,
+                                         @QueryParam("tabularTagName") String tabularTagName,
+                                         @QueryParam("searchText") String searchText,
+                                         @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                         @Context UriInfo uriInfo,
+                                         @Context HttpHeaders headers) {
+        return response(req -> {
+            FileSearchCriteria fileSearchCriteria;
+            try {
+                fileSearchCriteria = new FileSearchCriteria(
+                        contentType,
+                        accessStatus != null ? FileSearchCriteria.FileAccessStatus.valueOf(accessStatus) : null,
+                        categoryName,
+                        tabularTagName,
+                        searchText
+                );
+            } catch (IllegalArgumentException e) {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(accessStatus)));
+            }
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned);
+            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+            jsonObjectBuilder.add("total", datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion, fileSearchCriteria));
+            jsonObjectBuilder.add("perContentType", json(datasetVersionFilesServiceBean.getFileMetadataCountPerContentType(datasetVersion, fileSearchCriteria)));
+            jsonObjectBuilder.add("perCategoryName", json(datasetVersionFilesServiceBean.getFileMetadataCountPerCategoryName(datasetVersion, fileSearchCriteria)));
+            jsonObjectBuilder.add("perTabularTagName", jsonFileCountPerTabularTagNameMap(datasetVersionFilesServiceBean.getFileMetadataCountPerTabularTagName(datasetVersion, fileSearchCriteria)));
+            jsonObjectBuilder.add("perAccessStatus", jsonFileCountPerAccessStatusMap(datasetVersionFilesServiceBean.getFileMetadataCountPerAccessStatus(datasetVersion, fileSearchCriteria)));
+            return ok(jsonObjectBuilder);
+        }, getRequestUser(crc));
+    }
+
     @GET
     @AuthRequired
     @Path("{id}/dirindex")
@@ -500,7 +595,7 @@ public class Datasets extends AbstractApiBean {
     public Response getFileAccessFolderView(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @QueryParam("version") String versionId, @QueryParam("folder") String folderName, @QueryParam("original") Boolean originals, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         folderName = folderName == null ? "" : folderName;
-        versionId = versionId == null ? ":latest-published" : versionId;
+        versionId = versionId == null ? DS_VERSION_LATEST_PUBLISHED : versionId;
         
         DatasetVersion version;
         try {
@@ -574,24 +669,26 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/linkset")
-    public Response getLinkset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        if ( ":draft".equals(versionId) ) {
-            return badRequest("Signposting is not supported on the :draft version");
+    public Response getLinkset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, 
+           @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        if (DS_VERSION_DRAFT.equals(versionId)) {
+            return badRequest("Signposting is not supported on the " + DS_VERSION_DRAFT + " version");
         }
-        User user = getRequestUser(crc);
-        return response(req -> {
+        DataverseRequest req = createDataverseRequest(getRequestUser(crc));
+        try {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            return ok(Json.createObjectBuilder().add(
-                    "linkset",
-                    new SignpostingResources(
-                            systemConfig,
-                            dsv,
-                            JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
-                            JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse("")
-                    ).getJsonLinkset()
-            )
-            );
-        }, user);
+            return Response
+                    .ok(Json.createObjectBuilder()
+                            .add("linkset",
+                                    new SignpostingResources(systemConfig, dsv,
+                                            JvmSettings.SIGNPOSTING_LEVEL1_AUTHOR_LIMIT.lookupOptional().orElse(""),
+                                            JvmSettings.SIGNPOSTING_LEVEL1_ITEM_LIMIT.lookupOptional().orElse(""))
+                                                    .getJsonLinkset())
+                            .build())
+                    .type(MediaType.APPLICATION_JSON).build();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 
     @GET
@@ -661,16 +758,15 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versions/{versionId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateDraftVersion(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id,  @PathParam("versionId") String versionId){
-      
-        if ( ! ":draft".equals(versionId) ) {
-            return error( Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
+    public Response updateDraftVersion(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id, @PathParam("versionId") String versionId) {
+        if (!DS_VERSION_DRAFT.equals(versionId)) {
+            return error( Response.Status.BAD_REQUEST, "Only the " + DS_VERSION_DRAFT + " version can be updated");
         }
         
-        try ( StringReader rdr = new StringReader(jsonBody) ) {
+        try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             Dataset ds = findDatasetOrDie(id);
-            JsonObject json = Json.createReader(rdr).readObject();
+            JsonObject json = JsonUtil.getJsonObject(jsonBody);
             DatasetVersion incomingVersion = jsonParser().parseDatasetVersion(json);
             
             // clear possibly stale fields from the incoming dataset version.
@@ -708,7 +804,7 @@ public class Datasets extends AbstractApiBean {
                 }
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, incomingVersion));
             }
-            return ok( json(managedVersion) );
+            return ok( json(managedVersion, true) );
                     
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
@@ -747,7 +843,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/metadata")
     @Produces("application/ld+json, application/json-ld")
     public Response getVersionJsonLDMetadata(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return getVersionJsonLDMetadata(crc, id, ":draft", uriInfo, headers);
+        return getVersionJsonLDMetadata(crc, id, DS_VERSION_DRAFT, uriInfo, headers);
     }
 
     @PUT
@@ -826,10 +922,10 @@ public class Datasets extends AbstractApiBean {
     }
 
     private Response processDatasetFieldDataDelete(String jsonBody, String id, DataverseRequest req) {
-        try (StringReader rdr = new StringReader(jsonBody)) {
+        try {
 
             Dataset ds = findDatasetOrDie(id);
-            JsonObject json = Json.createReader(rdr).readObject();
+            JsonObject json = JsonUtil.getJsonObject(jsonBody);
             //Get the current draft or create a new version to update
             DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
@@ -943,7 +1039,7 @@ public class Datasets extends AbstractApiBean {
 
 
             DatasetVersion managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getLatestVersion();
-            return ok(json(managedVersion));
+            return ok(json(managedVersion, true));
 
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
@@ -983,10 +1079,10 @@ public class Datasets extends AbstractApiBean {
     
     
     private Response processDatasetUpdate(String jsonBody, String id, DataverseRequest req, Boolean replaceData){
-        try (StringReader rdr = new StringReader(jsonBody)) {
+        try {
            
             Dataset ds = findDatasetOrDie(id);
-            JsonObject json = Json.createReader(rdr).readObject();
+            JsonObject json = JsonUtil.getJsonObject(jsonBody);
             //Get the current draft or create a new version to update
             DatasetVersion dsv = ds.getOrCreateEditVersion();
             dsv.getTermsOfUseAndAccess().setDatasetVersion(dsv);
@@ -1092,7 +1188,7 @@ public class Datasets extends AbstractApiBean {
             }
             DatasetVersion managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getLatestVersion();
 
-            return ok(json(managedVersion));
+            return ok(json(managedVersion, true));
 
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
@@ -1433,8 +1529,7 @@ public class Datasets extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "No Embargoes allowed");
         }
 
-        StringReader rdr = new StringReader(jsonBody);
-        JsonObject json = Json.createReader(rdr).readObject();
+        JsonObject json = JsonUtil.getJsonObject(jsonBody);
 
         Embargo embargo = new Embargo();
 
@@ -1577,8 +1672,7 @@ public class Datasets extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "No Embargoes allowed");
         }
 
-        StringReader rdr = new StringReader(jsonBody);
-        JsonObject json = Json.createReader(rdr).readObject();
+        JsonObject json = JsonUtil.getJsonObject(jsonBody);
 
         List<DataFile> datasetFiles = dataset.getFiles();
         List<DataFile> embargoFilesToUnset = new LinkedList<>();
@@ -1681,7 +1775,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Status.NOT_FOUND, "This Dataset has no custom license");
             }
             persistentId = getRequestParameter(":persistentId".substring(1));
-            if (versionId.equals(":draft")) {
+            if (versionId.equals(DS_VERSION_DRAFT)) {
                 versionId = "DRAFT";
             }
         } catch (WrappedResponse wrappedResponse) {
@@ -1877,6 +1971,22 @@ public class Datasets extends AbstractApiBean {
             return Response.ok(is).build();
         } catch (WrappedResponse wr) {
             return notFound("Thumbnail not available");
+        }
+    }
+
+    @GET
+    @Produces({ "image/png" })
+    @Path("{id}/logo")
+    public Response getDatasetLogo(@PathParam("id") String idSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            InputStream is = DatasetUtil.getLogoAsInputStream(dataset);
+            if (is == null) {
+                return notFound("Logo not available");
+            }
+            return Response.ok(is).build();
+        } catch (WrappedResponse wr) {
+            return notFound("Logo not available");
         }
     }
 
@@ -2093,8 +2203,7 @@ public class Datasets extends AbstractApiBean {
         if (jsonBody == null || jsonBody.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "You must supply JSON to this API endpoint and it must contain a reason for returning the dataset (field: reasonForReturn).");
         }
-        StringReader rdr = new StringReader(jsonBody);
-        JsonObject json = Json.createReader(rdr).readObject();
+        JsonObject json = JsonUtil.getJsonObject(jsonBody);
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             String reasonForReturn = null;
@@ -2346,9 +2455,7 @@ public class Datasets extends AbstractApiBean {
             List<PartETag> eTagList = new ArrayList<PartETag>();
             logger.info("Etags: " + partETagBody);
             try {
-                JsonReader jsonReader = Json.createReader(new StringReader(partETagBody));
-                JsonObject object = jsonReader.readObject();
-                jsonReader.close();
+                JsonObject object = JsonUtil.getJsonObject(partETagBody);
                 for (String partNo : object.keySet()) {
                     eTagList.add(new PartETag(Integer.parseInt(partNo), object.getString(partNo)));
                 }
@@ -2642,11 +2749,11 @@ public class Datasets extends AbstractApiBean {
     public static <T> T handleVersion(String versionId, DsVersionHandler<T> hdl)
             throws WrappedResponse {
         switch (versionId) {
-            case ":latest":
+            case DS_VERSION_LATEST:
                 return hdl.handleLatest();
-            case ":draft":
+            case DS_VERSION_DRAFT:
                 return hdl.handleDraft();
-            case ":latest-published":
+            case DS_VERSION_LATEST_PUBLISHED:
                 return hdl.handleLatestPublished();
             default:
                 try {
@@ -2666,11 +2773,15 @@ public class Datasets extends AbstractApiBean {
     }
 
     private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers) throws WrappedResponse {
+        return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, false);
+    }
+
+    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned) throws WrappedResponse {
         DatasetVersion dsv = execCommand(handleVersion(versionNumber, new DsVersionHandler<Command<DatasetVersion>>() {
 
             @Override
             public Command<DatasetVersion> handleLatest() {
-                return new GetLatestAccessibleDatasetVersionCommand(req, ds);
+                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned);
             }
 
             @Override
@@ -2680,12 +2791,12 @@ public class Datasets extends AbstractApiBean {
 
             @Override
             public Command<DatasetVersion> handleSpecific(long major, long minor) {
-                return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor);
+                return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor, includeDeaccessioned);
             }
 
             @Override
             public Command<DatasetVersion> handleLatestPublished() {
-                return new GetLatestPublishedDatasetVersionCommand(req, ds);
+                return new GetLatestPublishedDatasetVersionCommand(req, ds, includeDeaccessioned);
             }
         }));
         if (dsv == null || dsv.getId() == null) {
@@ -2898,25 +3009,58 @@ public class Datasets extends AbstractApiBean {
         String nullCurrentMonth = null;
         return getMakeDataCountMetric(idSupplied, metricSupplied, nullCurrentMonth, country);
     }
-    
+
     @GET
     @AuthRequired
     @Path("{identifier}/storagesize")
-    public Response getStorageSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached,
-                                   @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
-
+    public Response getStorageSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached) {
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.storage"),
                 execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), includeCached, GetDatasetStorageSizeCommand.Mode.STORAGE, null)))), getRequestUser(crc));
     }
-    
+
     @GET
     @AuthRequired
     @Path("{identifier}/versions/{versionId}/downloadsize")
-    public Response getDownloadSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @PathParam("versionId") String version,
-                                    @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+    public Response getDownloadSize(@Context ContainerRequestContext crc,
+                                    @PathParam("identifier") String dvIdtf,
+                                    @PathParam("versionId") String version,
+                                    @QueryParam("contentType") String contentType,
+                                    @QueryParam("accessStatus") String accessStatus,
+                                    @QueryParam("categoryName") String categoryName,
+                                    @QueryParam("tabularTagName") String tabularTagName,
+                                    @QueryParam("searchText") String searchText,
+                                    @QueryParam("mode") String mode,
+                                    @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                    @Context UriInfo uriInfo,
+                                    @Context HttpHeaders headers) {
 
-        return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"),
-                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), false, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, getDatasetVersionOrDie(req, version, findDatasetOrDie(dvIdtf), uriInfo, headers))))), getRequestUser(crc));
+        return response(req -> {
+            FileSearchCriteria fileSearchCriteria;
+            try {
+                fileSearchCriteria = new FileSearchCriteria(
+                        contentType,
+                        accessStatus != null ? FileSearchCriteria.FileAccessStatus.valueOf(accessStatus) : null,
+                        categoryName,
+                        tabularTagName,
+                        searchText
+                );
+            } catch (IllegalArgumentException e) {
+                return badRequest(BundleUtil.getStringFromBundle("datasets.api.version.files.invalid.access.status", List.of(accessStatus)));
+            }
+            DatasetVersionFilesServiceBean.FileDownloadSizeMode fileDownloadSizeMode;
+            try {
+                fileDownloadSizeMode = mode != null ? DatasetVersionFilesServiceBean.FileDownloadSizeMode.valueOf(mode) : DatasetVersionFilesServiceBean.FileDownloadSizeMode.All;
+            } catch (IllegalArgumentException e) {
+                return error(Response.Status.BAD_REQUEST, "Invalid mode: " + mode);
+            }
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, version, findDatasetOrDie(dvIdtf), uriInfo, headers, includeDeaccessioned);
+            long datasetStorageSize = datasetVersionFilesServiceBean.getFilesDownloadSize(datasetVersion, fileSearchCriteria, fileDownloadSizeMode);
+            String message = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"), datasetStorageSize);
+            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+            jsonObjectBuilder.add("message", message);
+            jsonObjectBuilder.add("storageSize", datasetStorageSize);
+            return ok(jsonObjectBuilder);
+        }, getRequestUser(crc));
     }
 
     @GET
@@ -3317,15 +3461,246 @@ public class Datasets extends AbstractApiBean {
     }
 
 
+/****************************
+ * Globus Support Section:
+ * 
+ * Globus transfer in (upload) and out (download) involve three basic steps: The
+ * app is launched and makes a callback to the
+ * globusUploadParameters/globusDownloadParameters method to get all of the info
+ * needed to set up it's display.
+ * 
+ * At some point after that, the user will make a selection as to which files to
+ * transfer and the app will call requestGlobusUploadPaths/requestGlobusDownload
+ * to indicate a transfer is about to start. In addition to providing the
+ * details of where to transfer the files to/from, Dataverse also grants the
+ * Globus principal involved the relevant rw or r permission for the dataset.
+ * 
+ * Once the transfer is started, the app records the task id and sends it to
+ * Dataverse in the addGlobusFiles/monitorGlobusDownload call. Dataverse then
+ * monitors the transfer task and when it ultimately succeeds for fails it
+ * revokes the principal's permission and, for the transfer in case, adds the
+ * files to the dataset. (The dataset is locked until the transfer completes.)
+ * 
+ * (If no transfer is started within a specified timeout, permissions will
+ * automatically be revoked - see the GlobusServiceBean for details.)
+ *
+ * The option to reference a file at a remote endpoint (rather than transfer it)
+ * follows the first two steps of the process above but completes with a call to
+ * the normal /addFiles endpoint (as there is no transfer to monitor and the
+ * files can be added to the dataset immediately.)
+ */
+
+    /**
+     * Retrieve the parameters and signed URLs required to perform a globus
+     * transfer. This api endpoint is expected to be called as a signed callback
+     * after the globus-dataverse app/other app is launched, but it will accept
+     * other forms of authentication.
+     * 
+     * @param crc
+     * @param datasetId
+     */
+    @GET
+    @AuthRequired
+    @Path("{id}/globusUploadParameters")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getGlobusUploadParams(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
+            @QueryParam(value = "locale") String locale) {
+        // -------------------------------------
+        // (1) Get the user from the ContainerRequestContext
+        // -------------------------------------
+        AuthenticatedUser authUser;
+        try {
+            authUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        // -------------------------------------
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        String storeId = dataset.getEffectiveStorageDriverId();
+        // acceptsGlobusTransfers should only be true for an S3 or globus store
+        if (!GlobusAccessibleStore.acceptsGlobusTransfers(storeId)
+                && !GlobusAccessibleStore.allowsGlobusReferences(storeId)) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.globusuploaddisabled"));
+        }
+
+        URLTokenUtil tokenUtil = new URLTokenUtil(dataset, authSvc.findApiTokenByUser(authUser), locale);
+
+        boolean managed = GlobusAccessibleStore.isDataverseManaged(storeId);
+        String transferEndpoint = null;
+        JsonArray referenceEndpointsWithPaths = null;
+        if (managed) {
+            transferEndpoint = GlobusAccessibleStore.getTransferEndpointId(storeId);
+        } else {
+            referenceEndpointsWithPaths = GlobusAccessibleStore.getReferenceEndpointsWithPaths(storeId);
+        }
+
+        JsonObjectBuilder queryParams = Json.createObjectBuilder();
+        queryParams.add("queryParameters",
+                Json.createArrayBuilder().add(Json.createObjectBuilder().add("datasetId", "{datasetId}"))
+                        .add(Json.createObjectBuilder().add("siteUrl", "{siteUrl}"))
+                        .add(Json.createObjectBuilder().add("datasetVersion", "{datasetVersion}"))
+                        .add(Json.createObjectBuilder().add("dvLocale", "{localeCode}"))
+                        .add(Json.createObjectBuilder().add("datasetPid", "{datasetPid}")));
+        JsonObject substitutedParams = tokenUtil.getParams(queryParams.build());
+        JsonObjectBuilder params = Json.createObjectBuilder();
+        substitutedParams.keySet().forEach((key) -> {
+            params.add(key, substitutedParams.get(key));
+        });
+        params.add("managed", Boolean.toString(managed));
+        if (transferEndpoint != null) {
+            params.add("endpoint", transferEndpoint);
+        } else {
+            params.add("referenceEndpointsWithPaths", referenceEndpointsWithPaths);
+        }
+        int timeoutSeconds = JvmSettings.GLOBUS_CACHE_MAXAGE.lookup(Integer.class);
+        JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
+        String requestCallName = managed ? "requestGlobusTransferPaths" : "requestGlobusReferencePaths";
+        allowedApiCalls.add(
+                Json.createObjectBuilder().add(URLTokenUtil.NAME, requestCallName).add(URLTokenUtil.HTTP_METHOD, "POST")
+                        .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/requestGlobusUploadPaths")
+                        .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
+        if(managed) {
+        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "addGlobusFiles")
+                .add(URLTokenUtil.HTTP_METHOD, "POST")
+                .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/addGlobusFiles")
+                .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
+        } else {
+            allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "addFiles")
+                    .add(URLTokenUtil.HTTP_METHOD, "POST")
+                    .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/addFiles")
+                    .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
+        }
+        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata")
+                .add(URLTokenUtil.HTTP_METHOD, "GET")
+                .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}")
+                .add(URLTokenUtil.TIMEOUT, 5));
+        allowedApiCalls.add(
+                Json.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
+                        .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}/files")
+                        .add(URLTokenUtil.TIMEOUT, 5));
+
+        return ok(tokenUtil.createPostBody(params.build(), allowedApiCalls.build()));
+    }
+
+    /**
+     * Provides specific storageIdentifiers to use for each file amd requests permissions for a given globus user to upload to the dataset
+     * 
+     * @param crc
+     * @param datasetId
+     * @param jsonData - an object that must include the id of the globus "principal" involved and the "numberOfFiles" that will be transferred.
+     * @return
+     * @throws IOException
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
     @POST
     @AuthRequired
-    @Path("{id}/addglobusFiles")
+    @Path("{id}/requestGlobusUploadPaths")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response requestGlobusUpload(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
+            String jsonBody) throws IOException, ExecutionException, InterruptedException {
+
+        logger.info(" ====  (api allowGlobusUpload) jsonBody   ====== " + jsonBody);
+
+        if (!systemConfig.isGlobusUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE,
+                    BundleUtil.getStringFromBundle("datasets.api.globusdownloaddisabled"));
+        }
+
+        // -------------------------------------
+        // (1) Get the user from the ContainerRequestContext
+        // -------------------------------------
+        AuthenticatedUser authUser;
+        try {
+            authUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        // -------------------------------------
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        if (permissionSvc.requestOn(createDataverseRequest(authUser), dataset)
+                .canIssue(UpdateDatasetVersionCommand.class)) {
+
+            JsonObject params = JsonUtil.getJsonObject(jsonBody);
+            if (!GlobusAccessibleStore.isDataverseManaged(dataset.getEffectiveStorageDriverId())) {
+                try {
+                    JsonArray referencedFiles = params.getJsonArray("referencedFiles");
+                    if (referencedFiles == null || referencedFiles.size() == 0) {
+                        return badRequest("No referencedFiles specified");
+                    }
+                    JsonObject fileMap = globusService.requestReferenceFileIdentifiers(dataset, referencedFiles);
+                    return (ok(fileMap));
+                } catch (Exception e) {
+                    return badRequest(e.getLocalizedMessage());
+                }
+            } else {
+                try {
+                    String principal = params.getString("principal");
+                    int numberOfPaths = params.getInt("numberOfFiles");
+                    if (numberOfPaths <= 0) {
+                        return badRequest("numberOfFiles must be positive");
+                    }
+
+                    JsonObject response = globusService.requestAccessiblePaths(principal, dataset, numberOfPaths);
+                    switch (response.getInt("status")) {
+                    case 201:
+                        return ok(response.getJsonObject("paths"));
+                    case 400:
+                        return badRequest("Unable to grant permission");
+                    case 409:
+                        return conflict("Permission already exists");
+                    default:
+                        return error(null, "Unexpected error when granting permission");
+                    }
+
+                } catch (NullPointerException | ClassCastException e) {
+                    return badRequest("Error retrieving principal and numberOfFiles from JSON request body");
+
+                }
+            }
+        } else {
+            return forbidden("User doesn't have permission to upload to this dataset");
+        }
+
+    }
+
+    /** A method analogous to /addFiles that must also include the taskIdentifier of the transfer-in-progress to monitor
+     * 
+     * @param crc
+     * @param datasetId
+     * @param jsonData - see /addFiles documentation, aditional "taskIdentifier" key in the main object is required.
+     * @param uriInfo
+     * @return
+     * @throws IOException
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    @POST
+    @AuthRequired
+    @Path("{id}/addGlobusFiles")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response addGlobusFilesToDataset(@Context ContainerRequestContext crc,
                                             @PathParam("id") String datasetId,
                                             @FormDataParam("jsonData") String jsonData,
-                                            @Context UriInfo uriInfo,
-                                            @Context HttpHeaders headers
+                                            @Context UriInfo uriInfo
     ) throws IOException, ExecutionException, InterruptedException {
 
         logger.info(" ====  (api addGlobusFilesToDataset) jsonData   ====== " + jsonData);
@@ -3354,6 +3729,15 @@ public class Datasets extends AbstractApiBean {
             dataset = findDatasetOrDie(datasetId);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        }
+        
+        JsonObject jsonObject = null;
+        try {
+            jsonObject = JsonUtil.getJsonObject(jsonData);
+        } catch (Exception ex) {
+            logger.fine("Error parsing json: " + jsonData + " " + ex.getMessage());
+            return badRequest("Error parsing json body");
+
         }
 
         //------------------------------------
@@ -3385,32 +3769,279 @@ public class Datasets extends AbstractApiBean {
         }
 
 
-        String requestUrl = headers.getRequestHeader("origin").get(0);
-
-        if(requestUrl.contains("localhost")){
-            requestUrl = "http://localhost:8080";
-        }
-
+        String requestUrl = SystemConfig.getDataverseSiteUrlStatic();
+        
         // Async Call
-        globusService.globusUpload(jsonData, token, dataset, requestUrl, authUser);
+        globusService.globusUpload(jsonObject, token, dataset, requestUrl, authUser);
 
         return ok("Async call to Globus Upload started ");
 
     }
+    
+/**
+ * Retrieve the parameters and signed URLs required to perform a globus
+ * transfer/download. This api endpoint is expected to be called as a signed
+ * callback after the globus-dataverse app/other app is launched, but it will
+ * accept other forms of authentication.
+ * 
+ * @param crc
+ * @param datasetId
+ * @param locale
+ * @param downloadId - an id to a cached object listing the files involved. This is generated via Dataverse and provided to the dataverse-globus app in a signedURL.
+ * @return - JSON containing the parameters and URLs needed by the dataverse-globus app. The format is analogous to that for external tools. 
+ */
+    @GET
+    @AuthRequired
+    @Path("{id}/globusDownloadParameters")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getGlobusDownloadParams(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
+            @QueryParam(value = "locale") String locale, @QueryParam(value = "downloadId") String downloadId) {
+        // -------------------------------------
+        // (1) Get the user from the ContainerRequestContext
+        // -------------------------------------
+        AuthenticatedUser authUser;
+        try {
+            authUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        // -------------------------------------
+        Dataset dataset;
 
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        String storeId = dataset.getEffectiveStorageDriverId();
+        // acceptsGlobusTransfers should only be true for an S3 or globus store
+        if (!(GlobusAccessibleStore.acceptsGlobusTransfers(storeId)
+                || GlobusAccessibleStore.allowsGlobusReferences(storeId))) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.globusdownloaddisabled"));
+        }
+
+        JsonObject files = globusService.getFilesForDownload(downloadId);
+        if (files == null) {
+            return notFound(BundleUtil.getStringFromBundle("datasets.api.globusdownloadnotfound"));
+        }
+
+        URLTokenUtil tokenUtil = new URLTokenUtil(dataset, authSvc.findApiTokenByUser(authUser), locale);
+
+        boolean managed = GlobusAccessibleStore.isDataverseManaged(storeId);
+        String transferEndpoint = null;
+
+        JsonObjectBuilder queryParams = Json.createObjectBuilder();
+        queryParams.add("queryParameters",
+                Json.createArrayBuilder().add(Json.createObjectBuilder().add("datasetId", "{datasetId}"))
+                        .add(Json.createObjectBuilder().add("siteUrl", "{siteUrl}"))
+                        .add(Json.createObjectBuilder().add("datasetVersion", "{datasetVersion}"))
+                        .add(Json.createObjectBuilder().add("dvLocale", "{localeCode}"))
+                        .add(Json.createObjectBuilder().add("datasetPid", "{datasetPid}")));
+        JsonObject substitutedParams = tokenUtil.getParams(queryParams.build());
+        JsonObjectBuilder params = Json.createObjectBuilder();
+        substitutedParams.keySet().forEach((key) -> {
+            params.add(key, substitutedParams.get(key));
+        });
+        params.add("managed", Boolean.toString(managed));
+        if (managed) {
+            transferEndpoint = GlobusAccessibleStore.getTransferEndpointId(storeId);
+            params.add("endpoint", transferEndpoint);
+        }
+        params.add("files", files);
+        int timeoutSeconds = JvmSettings.GLOBUS_CACHE_MAXAGE.lookup(Integer.class);
+        JsonArrayBuilder allowedApiCalls = Json.createArrayBuilder();
+        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "monitorGlobusDownload")
+                .add(URLTokenUtil.HTTP_METHOD, "POST")
+                .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/monitorGlobusDownload")
+                .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
+        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "requestGlobusDownload")
+                .add(URLTokenUtil.HTTP_METHOD, "POST")
+                .add(URLTokenUtil.URL_TEMPLATE,
+                        "/api/v1/datasets/{datasetId}/requestGlobusDownload?downloadId=" + downloadId)
+                .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
+        allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "getDatasetMetadata")
+                .add(URLTokenUtil.HTTP_METHOD, "GET")
+                .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}")
+                .add(URLTokenUtil.TIMEOUT, 5));
+        allowedApiCalls.add(
+                Json.createObjectBuilder().add(URLTokenUtil.NAME, "getFileListing").add(URLTokenUtil.HTTP_METHOD, "GET")
+                        .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/versions/{datasetVersion}/files")
+                        .add(URLTokenUtil.TIMEOUT, 5));
+
+        return ok(tokenUtil.createPostBody(params.build(), allowedApiCalls.build()));
+    }
+
+    /**
+     * Requests permissions for a given globus user to download the specified files
+     * the dataset and returns information about the paths to transfer from.
+     * 
+     * When called directly rather than in response to being given a downloadId, the jsonData can include a "fileIds" key with an array of file ids to transfer.
+     * 
+     * @param crc
+     * @param datasetId
+     * @param jsonData - a JSON object that must include the id of the  Globus "principal" that will be transferring the files in the case where Dataverse manages the Globus endpoint. For remote endpoints, the principal is not required.
+     * @return - a JSON object containing a map of file ids to Globus endpoint/path
+     * @throws IOException
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
     @POST
     @AuthRequired
-    @Path("{id}/deleteglobusRule")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response deleteglobusRule(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,@FormDataParam("jsonData") String jsonData
-    ) throws IOException, ExecutionException, InterruptedException {
+    @Path("{id}/requestGlobusDownload")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response requestGlobusDownload(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
+            @QueryParam(value = "downloadId") String downloadId, String jsonBody)
+            throws IOException, ExecutionException, InterruptedException {
 
+        logger.info(" ====  (api allowGlobusDownload) jsonBody   ====== " + jsonBody);
+
+        if (!systemConfig.isGlobusDownload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE,
+                    BundleUtil.getStringFromBundle("datasets.api.globusdownloaddisabled"));
+        }
+
+        // -------------------------------------
+        // (1) Get the user from the ContainerRequestContext
+        // -------------------------------------
+        User user = getRequestUser(crc);
+
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        // -------------------------------------
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        JsonObject body = null;
+        if (jsonBody != null) {
+            body = JsonUtil.getJsonObject(jsonBody);
+        }
+        Set<String> fileIds = null;
+        if (downloadId != null) {
+            JsonObject files = globusService.getFilesForDownload(downloadId);
+            if (files != null) {
+                fileIds = files.keySet();
+            }
+        } else {
+            if ((body!=null) && body.containsKey("fileIds")) {
+                Collection<JsonValue> fileVals = body.getJsonArray("fileIds").getValuesAs(JsonValue.class);
+                fileIds = new HashSet<String>(fileVals.size());
+                for (JsonValue fileVal : fileVals) {
+                    String id = null;
+                    switch (fileVal.getValueType()) {
+                    case STRING:
+                        id = ((JsonString) fileVal).getString();
+                        break;
+                    case NUMBER:
+                        id = ((JsonNumber) fileVal).toString();
+                        break;
+                    default:
+                        return badRequest("fileIds must be numeric or string (ids/PIDs)");
+                    }
+                    ;
+                    fileIds.add(id);
+                }
+            } else {
+                return badRequest("fileIds JsonArray of file ids/PIDs required in POST body");
+            }
+        }
+
+        if (fileIds.isEmpty()) {
+            return notFound(BundleUtil.getStringFromBundle("datasets.api.globusdownloadnotfound"));
+        }
+        ArrayList<DataFile> dataFiles = new ArrayList<DataFile>(fileIds.size());
+        for (String id : fileIds) {
+            boolean published = false;
+            logger.info("File id: " + id);
+
+            DataFile df = null;
+            try {
+                df = findDataFileOrDie(id);
+            } catch (WrappedResponse wr) {
+                return wr.getResponse();
+            }
+            if (!df.getOwner().equals(dataset)) {
+                return badRequest("All files must be in the dataset");
+            }
+            dataFiles.add(df);
+
+            for (FileMetadata fm : df.getFileMetadatas()) {
+                if (fm.getDatasetVersion().isPublished()) {
+                    published = true;
+                    break;
+                }
+            }
+
+            if (!published) {
+                // If the file is not published, they can still download the file, if the user
+                // has the permission to view unpublished versions:
+
+                if (!permissionService.hasPermissionsFor(user, df.getOwner(),
+                        EnumSet.of(Permission.ViewUnpublishedDataset))) {
+                    return forbidden("User doesn't have permission to download file: " + id);
+                }
+            } else { // published and restricted and/or embargoed
+                if (df.isRestricted() || FileUtil.isActivelyEmbargoed(df))
+                    // This line also handles all three authenticated session user, token user, and
+                    // guest cases.
+                    if (!permissionService.hasPermissionsFor(user, df, EnumSet.of(Permission.DownloadFile))) {
+                        return forbidden("User doesn't have permission to download file: " + id);
+                    }
+
+            }
+        }
+        // Allowed to download all requested files
+        JsonObject files = GlobusUtil.getFilesMap(dataFiles, dataset);
+        if (GlobusAccessibleStore.isDataverseManaged(dataset.getEffectiveStorageDriverId())) {
+            // If managed, give the principal read permissions
+            int status = globusService.setPermissionForDownload(dataset, body.getString("principal"));
+            switch (status) {
+            case 201:
+                return ok(files);
+            case 400:
+                return badRequest("Unable to grant permission");
+            case 409:
+                return conflict("Permission already exists");
+            default:
+                return error(null, "Unexpected error when granting permission");
+            }
+
+        }
+
+        return ok(files);
+    }
+
+    /**
+     * Monitors a globus download and removes permissions on the dir/dataset when
+     * the specified transfer task is completed.
+     * 
+     * @param crc
+     * @param datasetId
+     * @param jsonData  - a JSON Object containing the key "taskIdentifier" with the
+     *                  Globus task to monitor.
+     * @return
+     * @throws IOException
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    @POST
+    @AuthRequired
+    @Path("{id}/monitorGlobusDownload")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response monitorGlobusDownload(@Context ContainerRequestContext crc, @PathParam("id") String datasetId,
+            String jsonData) throws IOException, ExecutionException, InterruptedException {
 
         logger.info(" ====  (api deleteglobusRule) jsonData   ====== " + jsonData);
 
-
-        if (!systemConfig.isHTTPUpload()) {
-            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+        if (!systemConfig.isGlobusDownload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE,
+                    BundleUtil.getStringFromBundle("datasets.api.globusdownloaddisabled"));
         }
 
         // -------------------------------------
@@ -3437,7 +4068,6 @@ public class Datasets extends AbstractApiBean {
 
     }
 
-
     /**
      * Add multiple Files to an existing Dataset
      *
@@ -3449,9 +4079,8 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/addFiles")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response addFilesToDataset(@Context ContainerRequestContext crc,
-                                      @PathParam("id") String idSupplied,
-                                      @FormDataParam("jsonData") String jsonData) {
+    public Response addFilesToDataset(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied,
+            @FormDataParam("jsonData") String jsonData) {
 
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
@@ -3805,13 +4434,10 @@ public class Datasets extends AbstractApiBean {
             }
             ApiToken apiToken = null;
             User u = getRequestUser(crc);
-            if (u instanceof AuthenticatedUser) {
-                apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) u);
-            }
-            
+            apiToken = authSvc.getValidApiTokenForUser(u);
 
-            ExternalToolHandler eth = new ExternalToolHandler(externalTool, target.getDataset(), apiToken, locale);
-            return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters()))));
+            URLTokenUtil eth = new ExternalToolHandler(externalTool, target.getDataset(), apiToken, locale);
+            return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters())), JsonUtil.getJsonArray(externalTool.getAllowedApiCalls())));
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -3848,9 +4474,9 @@ public class Datasets extends AbstractApiBean {
         JsonObjectBuilder responseJson;
         if (isAnonymizedAccess) {
             List<String> anonymizedFieldTypeNamesList = new ArrayList<>(Arrays.asList(anonymizedFieldTypeNames.split(",\\s")));
-            responseJson = json(dsv, anonymizedFieldTypeNamesList);
+            responseJson = json(dsv, anonymizedFieldTypeNamesList, true);
         } else {
-            responseJson = json(dsv);
+            responseJson = json(dsv, true);
         }
         return ok(responseJson);
     }
@@ -3870,8 +4496,146 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/versions/{versionId}/citation")
-    public Response getDatasetVersionCitation(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response getDatasetVersionCitation(@Context ContainerRequestContext crc,
+                                              @PathParam("id") String datasetId,
+                                              @PathParam("versionId") String versionId,
+                                              @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
+                                              @Context UriInfo uriInfo,
+                                              @Context HttpHeaders headers) {
         return response(req -> ok(
-                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getCitation(true, false)), getRequestUser(crc));
+                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned).getCitation(true, false)), getRequestUser(crc));
+    }
+
+    @POST
+    @AuthRequired
+    @Path("{id}/versions/{versionId}/deaccession")
+    public Response deaccessionDataset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, String jsonBody, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        if (DS_VERSION_DRAFT.equals(versionId) || DS_VERSION_LATEST.equals(versionId)) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.deaccessionDataset.invalid.version.identifier.error", List.of(DS_VERSION_LATEST_PUBLISHED)));
+        }
+        return response(req -> {
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, false);
+            try {
+                JsonObject jsonObject = JsonUtil.getJsonObject(jsonBody);
+                datasetVersion.setVersionNote(jsonObject.getString("deaccessionReason"));
+                String deaccessionForwardURL = jsonObject.getString("deaccessionForwardURL", null);
+                if (deaccessionForwardURL != null) {
+                    try {
+                        datasetVersion.setArchiveNote(deaccessionForwardURL);
+                    } catch (IllegalArgumentException iae) {
+                        return badRequest(BundleUtil.getStringFromBundle("datasets.api.deaccessionDataset.invalid.forward.url", List.of(iae.getMessage())));
+                    }
+                }
+                execCommand(new DeaccessionDatasetVersionCommand(req, datasetVersion, false));
+                return ok("Dataset " + datasetId + " deaccessioned for version " + versionId);
+            } catch (JsonParsingException jpe) {
+                return error(Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
+            }
+        }, getRequestUser(crc));
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/guestbookEntryAtRequest")
+    public Response getGuestbookEntryOption(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+                                            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        String gbAtRequest = dataset.getGuestbookEntryAtRequest();
+        if(gbAtRequest == null || gbAtRequest.equals(DvObjectContainer.UNDEFINED_CODE)) {
+            return ok("Not set on dataset, using the default: " + dataset.getEffectiveGuestbookEntryAtRequest());
+        }
+        return ok(dataset.getEffectiveGuestbookEntryAtRequest());
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/guestbookEntryAtRequest")
+    public Response setguestbookEntryAtRequest(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+                                               boolean gbAtRequest,
+                                               @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        Optional<Boolean> gbAtRequestOpt = JvmSettings.GUESTBOOK_AT_REQUEST.lookupOptional(Boolean.class);
+        if (!gbAtRequestOpt.isPresent()) {
+            return error(Response.Status.FORBIDDEN, "Guestbook Entry At Request cannot be set. This server is not configured to allow it.");
+        }
+        String choice = Boolean.valueOf(gbAtRequest).toString();
+        dataset.setGuestbookEntryAtRequest(choice);
+        datasetService.merge(dataset);
+        return ok("Guestbook Entry At Request set to: " + choice);
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("{identifier}/guestbookEntryAtRequest")
+    public Response resetGuestbookEntryAtRequest(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,
+                                                 @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+
+        dataset.setGuestbookEntryAtRequest(DvObjectContainer.UNDEFINED_CODE);
+        datasetService.merge(dataset);
+        return ok("Guestbook Entry At Request reset to default: " + dataset.getEffectiveGuestbookEntryAtRequest());
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{id}/userPermissions")
+    public Response getUserPermissionsOnDataset(@Context ContainerRequestContext crc, @PathParam("id") String datasetId) {
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        User requestUser = getRequestUser(crc);
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("canViewUnpublishedDataset", permissionService.userOn(requestUser, dataset).has(Permission.ViewUnpublishedDataset));
+        jsonObjectBuilder.add("canEditDataset", permissionService.userOn(requestUser, dataset).has(Permission.EditDataset));
+        jsonObjectBuilder.add("canPublishDataset", permissionService.userOn(requestUser, dataset).has(Permission.PublishDataset));
+        jsonObjectBuilder.add("canManageDatasetPermissions", permissionService.userOn(requestUser, dataset).has(Permission.ManageDatasetPermissions));
+        jsonObjectBuilder.add("canDeleteDatasetDraft", permissionService.userOn(requestUser, dataset).has(Permission.DeleteDatasetDraft));
+        return ok(jsonObjectBuilder);
     }
 }

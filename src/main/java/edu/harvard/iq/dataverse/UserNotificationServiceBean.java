@@ -131,6 +131,7 @@ public class UserNotificationServiceBean {
             save(userNotification);
         }
     }
+    
 
     public boolean isEmailMuted(UserNotification userNotification) {
         final Type type = userNotification.getType();

@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse.globus;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Scheduler;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
 import edu.harvard.iq.dataverse.*;
-
 import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -15,8 +17,13 @@ import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonPatch;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue.ValueType;
+import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.HttpMethod;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
@@ -29,6 +36,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -40,17 +49,26 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.codec.binary.StringUtils;
+import org.primefaces.PrimeFaces;
+
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
+import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 @Stateless
@@ -59,197 +77,243 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     @EJB
     protected DatasetServiceBean datasetSvc;
-
     @EJB
     protected SettingsServiceBean settingsSvc;
-
     @Inject
     DataverseSession session;
-
     @EJB
     protected AuthenticationServiceBean authSvc;
-
     @EJB
     EjbDataverseEngine commandEngine;
-
     @EJB
     UserNotificationServiceBean userNotificationService;
+    @EJB
+    PrivateUrlServiceBean privateUrlService;
+    @EJB
+    FileDownloadServiceBean fileDownloadService;
+    @EJB
+    DataFileServiceBean dataFileService;
 
     private static final Logger logger = Logger.getLogger(GlobusServiceBean.class.getCanonicalName());
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
-    private String code;
-    private String userTransferToken;
-    private String state;
+    private String getRuleId(GlobusEndpoint endpoint, String principal, String permissions)
+            throws MalformedURLException {
 
-    public String getState() {
-        return state;
-    }
+        String principalType = "identity";
 
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getUserTransferToken() {
-        return userTransferToken;
-    }
-
-    public void setUserTransferToken(String userTransferToken) {
-        this.userTransferToken = userTransferToken;
-    }
-
-    ArrayList<String> checkPermisions(AccessToken clientTokenUser, String directory, String globusEndpoint,
-            String principalType, String principal) throws MalformedURLException {
-        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access_list");
-        MakeRequestResponse result = makeRequest(url, "Bearer",
-                clientTokenUser.getOtherTokens().get(0).getAccessToken(), "GET", null);
-        ArrayList<String> ids = new ArrayList<String>();
+        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access_list");
+        MakeRequestResponse result = makeRequest(url, "Bearer", endpoint.getClientToken(), "GET", null);
         if (result.status == 200) {
             AccessList al = parseJson(result.jsonResponse, AccessList.class, false);
 
             for (int i = 0; i < al.getDATA().size(); i++) {
                 Permissions pr = al.getDATA().get(i);
-                if ((pr.getPath().equals(directory + "/") || pr.getPath().equals(directory))
+
+                if ((pr.getPath().equals(endpoint.getBasePath() + "/") || pr.getPath().equals(endpoint.getBasePath()))
                         && pr.getPrincipalType().equals(principalType)
-                        && ((principal == null) || (principal != null && pr.getPrincipal().equals(principal)))) {
-                    ids.add(pr.getId());
+                        && ((principal == null) || (principal != null && pr.getPrincipal().equals(principal)))
+                        && pr.getPermissions().equals(permissions)) {
+                    return pr.getId();
                 } else {
-                    logger.info(pr.getPath() + " === " + directory + " == " + pr.getPrincipalType());
+                    logger.fine(pr.getPath() + " === " + endpoint.getBasePath() + " == " + pr.getPrincipalType());
                     continue;
                 }
             }
         }
-
-        return ids;
+        return null;
     }
 
-    public void updatePermision(AccessToken clientTokenUser, String directory, String principalType, String perm)
-            throws MalformedURLException {
-        if (directory != null && !directory.equals("")) {
-            directory = directory + "/";
-        }
-        logger.info("Start updating permissions." + " Directory is " + directory);
-        String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
-        ArrayList<String> rules = checkPermisions(clientTokenUser, directory, globusEndpoint, principalType, null);
-        logger.info("Size of rules " + rules.size());
-        int count = 0;
-        while (count < rules.size()) {
-            logger.info("Start removing rules " + rules.get(count));
-            Permissions permissions = new Permissions();
-            permissions.setDATA_TYPE("access");
-            permissions.setPermissions(perm);
-            permissions.setPath(directory);
-
-            Gson gson = new GsonBuilder().create();
-            URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access/"
-                    + rules.get(count));
-            logger.info("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access/"
-                    + rules.get(count));
-            MakeRequestResponse result = makeRequest(url, "Bearer",
-                    clientTokenUser.getOtherTokens().get(0).getAccessToken(), "PUT", gson.toJson(permissions));
-            if (result.status != 200) {
-                logger.warning("Cannot update access rule " + rules.get(count));
-            } else {
-                logger.info("Access rule " + rules.get(count) + " was updated");
-            }
-            count++;
-        }
-    }
-
-    public void deletePermision(String ruleId, Logger globusLogger) throws MalformedURLException {
-
+    /**
+     * Call to delete a globus rule related to the specified dataset.
+     * 
+     * @param ruleId       - Globus rule id - assumed to be associated with the
+     *                     dataset's file path (should not be called with a user
+     *                     specified rule id w/o further checking)
+     * @param datasetId    - the id of the dataset associated with the rule
+     * @param globusLogger - a separate logger instance, may be null
+     */
+    public void deletePermission(String ruleId, Dataset dataset, Logger globusLogger) {
+        globusLogger.info("Start deleting rule " + ruleId + " for dataset " + dataset.getId());
         if (ruleId.length() > 0) {
-            AccessToken clientTokenUser = getClientToken();
-            globusLogger.info("Start deleting permissions.");
-            String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
-
-            URL url = new URL(
-                    "https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access/" + ruleId);
-            MakeRequestResponse result = makeRequest(url, "Bearer",
-                    clientTokenUser.getOtherTokens().get(0).getAccessToken(), "DELETE", null);
-            if (result.status != 200) {
-                globusLogger.warning("Cannot delete access rule " + ruleId);
-            } else {
-                globusLogger.info("Access rule " + ruleId + " was deleted successfully");
+            if (dataset != null) {
+                GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
+                if (endpoint != null) {
+                    String accessToken = endpoint.getClientToken();
+                    globusLogger.info("Start deleting permissions.");
+                    try {
+                        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId()
+                                + "/access/" + ruleId);
+                        MakeRequestResponse result = makeRequest(url, "Bearer", accessToken, "DELETE", null);
+                        if (result.status != 200) {
+                            globusLogger.warning("Cannot delete access rule " + ruleId);
+                        } else {
+                            globusLogger.info("Access rule " + ruleId + " was deleted successfully");
+                        }
+                    } catch (MalformedURLException ex) {
+                        logger.log(Level.WARNING,
+                                "Failed to delete access rule " + ruleId + " on endpoint " + endpoint.getId(), ex);
+                    }
+                }
             }
         }
-
     }
 
-    public int givePermission(String principalType, String principal, String perm, AccessToken clientTokenUser,
-            String directory, String globusEndpoint) throws MalformedURLException {
+    /**
+     * Request read/write access for the specified principal and generate a list of
+     * accessible paths for new files for the specified dataset.
+     * 
+     * @param principal     - the id of the Globus principal doing the transfer
+     * @param dataset
+     * @param numberOfPaths - how many files are to be transferred
+     * @return
+     */
+    public JsonObject requestAccessiblePaths(String principal, Dataset dataset, int numberOfPaths) {
 
-        ArrayList<?> rules = checkPermisions(clientTokenUser, directory, globusEndpoint, principalType, principal);
+        GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
+        String principalType = "identity";
 
         Permissions permissions = new Permissions();
         permissions.setDATA_TYPE("access");
         permissions.setPrincipalType(principalType);
         permissions.setPrincipal(principal);
-        permissions.setPath(directory + "/");
-        permissions.setPermissions(perm);
+        permissions.setPath(endpoint.getBasePath() + "/");
+        permissions.setPermissions("rw");
 
+        JsonObjectBuilder response = Json.createObjectBuilder();
+        response.add("status", requestPermission(endpoint, dataset, permissions));
+        String driverId = dataset.getEffectiveStorageDriverId();
+        JsonObjectBuilder paths = Json.createObjectBuilder();
+        for (int i = 0; i < numberOfPaths; i++) {
+            String storageIdentifier = DataAccess.getNewStorageIdentifier(driverId);
+            int lastIndex = Math.max(storageIdentifier.lastIndexOf("/"), storageIdentifier.lastIndexOf(":"));
+            paths.add(storageIdentifier, endpoint.getBasePath() + "/" + storageIdentifier.substring(lastIndex + 1));
+
+        }
+        response.add("paths", paths.build());
+        return response.build();
+    }
+
+    private int requestPermission(GlobusEndpoint endpoint, Dataset dataset, Permissions permissions) {
         Gson gson = new GsonBuilder().create();
         MakeRequestResponse result = null;
-        if (rules.size() == 0) {
-            logger.info("Start creating the rule");
-            URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access");
-            result = makeRequest(url, "Bearer", clientTokenUser.getOtherTokens().get(0).getAccessToken(), "POST",
-                    gson.toJson(permissions));
+        logger.info("Start creating the rule");
 
-            if (result.status == 400) {
+        try {
+            URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access");
+            result = makeRequest(url, "Bearer", endpoint.getClientToken(), "POST", gson.toJson(permissions));
+
+            switch (result.status) {
+            case 404:
+                logger.severe("Endpoint " + endpoint.getId() + " was not found");
+                break;
+            case 400:
                 logger.severe("Path " + permissions.getPath() + " is not valid");
-            } else if (result.status == 409) {
+                break;
+            case 409:
                 logger.warning("ACL already exists or Endpoint ACL already has the maximum number of access rules");
+                break;
+            case 201:
+                JsonObject globusResponse = JsonUtil.getJsonObject(result.jsonResponse);
+                if (globusResponse != null && globusResponse.containsKey("access_id")) {
+                    permissions.setId(globusResponse.getString("access_id"));
+                    monitorTemporaryPermissions(permissions.getId(), dataset.getId());
+                    logger.info("Access rule " + permissions.getId() + " was created successfully");
+                } else {
+                    // Shouldn't happen!
+                    logger.warning("Access rule id not returned for dataset " + dataset.getId());
+                }
             }
-
             return result.status;
-        } else {
-            logger.info("Start Updating the rule");
-            URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access/"
-                    + rules.get(0));
-            result = makeRequest(url, "Bearer", clientTokenUser.getOtherTokens().get(0).getAccessToken(), "PUT",
-                    gson.toJson(permissions));
+        } catch (MalformedURLException ex) {
+            // Misconfiguration
+            logger.warning("Failed to create access rule URL for " + endpoint.getId());
+            return 500;
+        }
+    }
 
-            if (result.status == 400) {
-                logger.severe("Path " + permissions.getPath() + " is not valid");
-            } else if (result.status == 409) {
-                logger.warning("ACL already exists or Endpoint ACL already has the maximum number of access rules");
+    /**
+     * Given an array of remote files to be referenced in the dataset, create a set
+     * of valid storage identifiers and return a map of the remote file paths to
+     * storage identifiers.
+     * 
+     * @param dataset
+     * @param referencedFiles - a JSON array of remote files to be referenced in the
+     *                        dataset - each should be a string with the <Globus
+     *                        endpoint>/path/to/file
+     * @return - a map of supplied paths to valid storage identifiers
+     */
+    public JsonObject requestReferenceFileIdentifiers(Dataset dataset, JsonArray referencedFiles) {
+        String driverId = dataset.getEffectiveStorageDriverId();
+        JsonArray endpoints = GlobusAccessibleStore.getReferenceEndpointsWithPaths(driverId);
+
+        JsonObjectBuilder fileMap = Json.createObjectBuilder();
+        referencedFiles.forEach(value -> {
+            if (value.getValueType() != ValueType.STRING) {
+                throw new JsonParsingException("ReferencedFiles must be strings", null);
             }
-            logger.info("Result status " + result.status);
-        }
-
-        return result.status;
+            String referencedFile = ((JsonString) value).getString();
+            boolean valid = false;
+            for (int i = 0; i < endpoints.size(); i++) {
+                if (referencedFile.startsWith(((JsonString) endpoints.get(i)).getString())) {
+                    valid = true;
+                }
+            }
+            if (!valid) {
+                throw new IllegalArgumentException(
+                        "Referenced file " + referencedFile + " is not in an allowed endpoint/path");
+            }
+            String storageIdentifier = DataAccess.getNewStorageIdentifier(driverId);
+            fileMap.add(referencedFile, storageIdentifier + "//" + referencedFile);
+        });
+        return fileMap.build();
     }
 
-    public boolean getSuccessfulTransfers(AccessToken clientTokenUser, String taskId) throws MalformedURLException {
+    /**
+     * A cache of temporary permission requests - for upload (rw) and download (r)
+     * access. When a temporary permission request is created, it is added to the
+     * cache. After GLOBUS_CACHE_MAXAGE minutes, if a transfer has not been started,
+     * the permission will be revoked/deleted. (If a transfer has been started, the
+     * permission will not be revoked/deleted until the transfer is complete. This
+     * is handled in other methods.)
+     */
+    // ToDo - nominally this doesn't need to be as long as the allowed time for the
+    // downloadCache so there could be two separate settings.
+    // Single cache of open rules/permission requests
+    private final Cache<String, Long> rulesCache = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.of(JvmSettings.GLOBUS_CACHE_MAXAGE.lookup(Integer.class), ChronoUnit.MINUTES))
+            .scheduler(Scheduler.systemScheduler()).evictionListener((ruleId, datasetId, cause) -> {
+                // Delete rules that expire
+                logger.fine("Rule " + ruleId + " expired");
+                Dataset dataset = datasetSvc.find(datasetId);
+                deletePermission((String) ruleId, dataset, logger);
+            })
 
-        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint_manager/task/" + taskId
-                + "/successful_transfers");
+            .build();
 
-        MakeRequestResponse result = makeRequest(url, "Bearer",
-                clientTokenUser.getOtherTokens().get(0).getAccessToken(), "GET", null);
-
-        if (result.status == 200) {
-            logger.info(" SUCCESS ====== ");
-            return true;
-        }
-        return false;
+    // Convenience method to add a temporary permission request to the cache -
+    // allows logging of temporary permission requests
+    private void monitorTemporaryPermissions(String ruleId, long datasetId) {
+        logger.fine("Adding rule " + ruleId + " for dataset " + datasetId);
+        rulesCache.put(ruleId, datasetId);
     }
 
-    public GlobusTask getTask(AccessToken clientTokenUser, String taskId, Logger globusLogger) throws MalformedURLException {
+    /**
+     * Call the Globus API to get info about the transfer.
+     * 
+     * @param accessToken
+     * @param taskId       - the Globus task id supplied by the user
+     * @param globusLogger - the transaction-specific logger to use (separate log
+     *                     files are created in general, some calls may use the
+     *                     class logger)
+     * @return
+     * @throws MalformedURLException
+     */
+    public GlobusTask getTask(String accessToken, String taskId, Logger globusLogger) throws MalformedURLException {
 
         URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint_manager/task/" + taskId);
 
-        MakeRequestResponse result = makeRequest(url, "Bearer",
-                clientTokenUser.getOtherTokens().get(0).getAccessToken(), "GET", null);
+        MakeRequestResponse result = makeRequest(url, "Bearer", accessToken, "GET", null);
 
         GlobusTask task = null;
 
@@ -264,49 +328,34 @@ public class GlobusServiceBean implements java.io.Serializable {
         return task;
     }
 
-    public AccessToken getClientToken() throws MalformedURLException {
-        String globusBasicToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, "");
-        URL url = new URL(
-                "https://auth.globus.org/v2/oauth2/token?scope=openid+email+profile+urn:globus:auth:scope:transfer.api.globus.org:all&grant_type=client_credentials");
-
-        MakeRequestResponse result = makeRequest(url, "Basic", globusBasicToken, "POST", null);
+    /**
+     * Globus call to get an access token for the user using the long-term token we
+     * hold.
+     * 
+     * @param globusBasicToken - the base64 encoded Globus Basic token comprised of
+     *                         the <Globus user id>:<key>
+     * @return - a valid Globus access token
+     */
+    public static AccessToken getClientToken(String globusBasicToken) {
+        URL url;
         AccessToken clientTokenUser = null;
-        if (result.status == 200) {
-            clientTokenUser = parseJson(result.jsonResponse, AccessToken.class, true);
+
+        try {
+            url = new URL(
+                    "https://auth.globus.org/v2/oauth2/token?scope=openid+email+profile+urn:globus:auth:scope:transfer.api.globus.org:all&grant_type=client_credentials");
+
+            MakeRequestResponse result = makeRequest(url, "Basic", globusBasicToken, "POST", null);
+            if (result.status == 200) {
+                clientTokenUser = parseJson(result.jsonResponse, AccessToken.class, true);
+            }
+        } catch (MalformedURLException e) {
+            // On a statically defined URL...
+            e.printStackTrace();
         }
         return clientTokenUser;
     }
 
-    public AccessToken getAccessToken(HttpServletRequest origRequest, String globusBasicToken)
-            throws UnsupportedEncodingException, MalformedURLException {
-        String serverName = origRequest.getServerName();
-        if (serverName.equals("localhost")) {
-            logger.severe("Changing localhost to utoronto");
-            serverName = "utl-192-123.library.utoronto.ca";
-        }
-
-        String redirectURL = "https://" + serverName + "/globus.xhtml";
-
-        redirectURL = URLEncoder.encode(redirectURL, "UTF-8");
-
-        URL url = new URL("https://auth.globus.org/v2/oauth2/token?code=" + code + "&redirect_uri=" + redirectURL
-                + "&grant_type=authorization_code");
-        logger.info(url.toString());
-
-        MakeRequestResponse result = makeRequest(url, "Basic", globusBasicToken, "POST", null);
-        AccessToken accessTokenUser = null;
-
-        if (result.status == 200) {
-            logger.info("Access Token: \n" + result.toString());
-            accessTokenUser = parseJson(result.jsonResponse, AccessToken.class, true);
-            logger.info(accessTokenUser.getAccessToken());
-        }
-
-        return accessTokenUser;
-
-    }
-
-    public MakeRequestResponse makeRequest(URL url, String authType, String authCode, String method,
+    private static MakeRequestResponse makeRequest(URL url, String authType, String authCode, String method,
             String jsonString) {
         String str = null;
         HttpURLConnection connection = null;
@@ -314,8 +363,8 @@ public class GlobusServiceBean implements java.io.Serializable {
         try {
             connection = (HttpURLConnection) url.openConnection();
             // Basic
-            // NThjMGYxNDQtN2QzMy00ZTYzLTk3MmUtMjljNjY5YzJjNGJiOktzSUVDMDZtTUxlRHNKTDBsTmRibXBIbjZvaWpQNGkwWVVuRmQyVDZRSnc9
             logger.info(authType + " " + authCode);
+            logger.fine("For URL: " + url.toString());
             connection.setRequestProperty("Authorization", authType + " " + authCode);
             // connection.setRequestProperty("Content-Type",
             // "application/x-www-form-urlencoded");
@@ -323,32 +372,30 @@ public class GlobusServiceBean implements java.io.Serializable {
             if (jsonString != null) {
                 connection.setRequestProperty("Content-Type", "application/json");
                 connection.setRequestProperty("Accept", "application/json");
-                logger.info(jsonString);
+                logger.fine(jsonString);
                 connection.setDoOutput(true);
+
                 OutputStreamWriter wr = new OutputStreamWriter(connection.getOutputStream());
                 wr.write(jsonString);
                 wr.flush();
             }
 
             status = connection.getResponseCode();
-            logger.info("Status now " + status);
+            logger.fine("Status now " + status);
             InputStream result = connection.getInputStream();
             if (result != null) {
-                logger.info("Result is not null");
                 str = readResultJson(result).toString();
-                logger.info("str is ");
-                logger.info(result.toString());
+                logger.fine("str is " + result.toString());
             } else {
-                logger.info("Result is null");
+                logger.fine("Result is null");
                 str = null;
             }
 
-            logger.info("status: " + status);
+            logger.fine("status: " + status);
         } catch (IOException ex) {
-            logger.info("IO");
             logger.severe(ex.getMessage());
-            logger.info(ex.getCause().toString());
-            logger.info(ex.getStackTrace().toString());
+            logger.fine(ex.getCause().toString());
+            logger.fine(ex.getStackTrace().toString());
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -359,18 +406,16 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     }
 
-    private StringBuilder readResultJson(InputStream in) {
+    private static StringBuilder readResultJson(InputStream in) {
         StringBuilder sb = null;
-        try {
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
             sb = new StringBuilder();
             String line;
             while ((line = br.readLine()) != null) {
                 sb.append(line + "\n");
             }
             br.close();
-            logger.info(sb.toString());
+            logger.fine(sb.toString());
         } catch (IOException e) {
             sb = null;
             logger.severe(e.getMessage());
@@ -378,7 +423,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         return sb;
     }
 
-    private <T> T parseJson(String sb, Class<T> jsonParserClass, boolean namingPolicy) {
+    private static <T> T parseJson(String sb, Class<T> jsonParserClass, boolean namingPolicy) {
         if (sb != null) {
             Gson gson = null;
             if (namingPolicy) {
@@ -395,32 +440,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
     }
 
-    public String getDirectory(String datasetId) {
-        Dataset dataset = null;
-        String directory = null;
-        try {
-            dataset = datasetSvc.find(Long.parseLong(datasetId));
-            if (dataset == null) {
-                logger.severe("Dataset not found " + datasetId);
-                return null;
-            }
-            String storeId = dataset.getStorageIdentifier();
-            storeId.substring(storeId.indexOf("//") + 1);
-            directory = storeId.substring(storeId.indexOf("//") + 1);
-            logger.info(storeId);
-            logger.info(directory);
-            logger.info("Storage identifier:" + dataset.getIdentifierForFileStorage());
-            return directory;
-
-        } catch (NumberFormatException nfe) {
-            logger.severe(nfe.getMessage());
-
-            return null;
-        }
-
-    }
-
-    class MakeRequestResponse {
+    static class MakeRequestResponse {
         public String jsonResponse;
         public int status;
 
@@ -431,81 +451,61 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     }
 
-    private MakeRequestResponse findDirectory(String directory, AccessToken clientTokenUser, String globusEndpoint)
-            throws MalformedURLException {
-        URL url = new URL(" https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/ls?path="
-                + directory + "/");
+    /**
+     * Cache of open download Requests This cache keeps track of the set of files
+     * selected for transfer out (download) via Globus. It is a means of
+     * transferring the list from the DatasetPage, where it is generated via user UI
+     * actions, and the Datasets/globusDownloadParameters API.
+     * 
+     * Nominally, the dataverse-globus app will call that API endpoint and then
+     * /requestGlobusDownload, at which point the cached info is sent to the app. If
+     * the app doesn't call within 5 minutes (the time allowed to call
+     * /globusDownloadParameters) + GLOBUS_CACHE_MAXAGE minutes (a ~longer period
+     * giving the user time to make choices in the app), the cached info is deleted.
+     * 
+     */
+    private final Cache<String, JsonObject> downloadCache = Caffeine.newBuilder()
+            .expireAfterWrite(
+                    Duration.of(JvmSettings.GLOBUS_CACHE_MAXAGE.lookup(Integer.class) + 5, ChronoUnit.MINUTES))
+            .scheduler(Scheduler.systemScheduler()).evictionListener((downloadId, datasetId, cause) -> {
+                // Delete downloads that expire
+                logger.fine("Download for " + downloadId + " expired");
+            })
 
-        MakeRequestResponse result = makeRequest(url, "Bearer",
-                clientTokenUser.getOtherTokens().get(0).getAccessToken(), "GET", null);
-        logger.info("find directory status:" + result.status);
+            .build();
 
-        return result;
+    public JsonObject getFilesForDownload(String downloadId) {
+        return downloadCache.getIfPresent(downloadId);
     }
 
-    public boolean giveGlobusPublicPermissions(String datasetId)
-            throws UnsupportedEncodingException, MalformedURLException {
+    public int setPermissionForDownload(Dataset dataset, String principal) {
+        GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
+        String principalType = "identity";
 
-        String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
-        String globusBasicToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, "");
-        if (globusEndpoint.equals("") || globusBasicToken.equals("")) {
-            return false;
-        }
-        AccessToken clientTokenUser = getClientToken();
-        if (clientTokenUser == null) {
-            logger.severe("Cannot get client token ");
-            return false;
-        }
+        Permissions permissions = new Permissions();
+        permissions.setDATA_TYPE("access");
+        permissions.setPrincipalType(principalType);
+        permissions.setPrincipal(principal);
+        permissions.setPath(endpoint.getBasePath() + "/");
+        permissions.setPermissions("r");
 
-        String directory = getDirectory(datasetId);
-        logger.info(directory);
-
-        MakeRequestResponse status = findDirectory(directory, clientTokenUser, globusEndpoint);
-
-        if (status.status == 200) {
-
-            /*
-             * FilesList fl = parseJson(status.jsonResponse, FilesList.class, false);
-             * ArrayList<FileG> files = fl.getDATA(); if (files != null) { for (FileG file:
-             * files) { if (!file.getName().contains("cached") &&
-             * !file.getName().contains(".thumb")) { int perStatus =
-             * givePermission("all_authenticated_users", "", "r", clientTokenUser, directory
-             * + "/" + file.getName(), globusEndpoint); logger.info("givePermission status "
-             * + perStatus + " for " + file.getName()); if (perStatus == 409) {
-             * logger.info("Permissions already exist or limit was reached for " +
-             * file.getName()); } else if (perStatus == 400) {
-             * logger.info("No file in Globus " + file.getName()); } else if (perStatus !=
-             * 201) { logger.info("Cannot get permission for " + file.getName()); } } } }
-             */
-
-            int perStatus = givePermission("all_authenticated_users", "", "r", clientTokenUser, directory,
-                    globusEndpoint);
-            logger.info("givePermission status " + perStatus);
-            if (perStatus == 409) {
-                logger.info("Permissions already exist or limit was reached");
-            } else if (perStatus == 400) {
-                logger.info("No directory in Globus");
-            } else if (perStatus != 201 && perStatus != 200) {
-                logger.info("Cannot give read permission");
-                return false;
-            }
-
-        } else if (status.status == 404) {
-            logger.info("There is no globus directory");
-        } else {
-            logger.severe("Cannot find directory in globus, status " + status);
-            return false;
-        }
-
-        return true;
+        return requestPermission(endpoint, dataset, permissions);
     }
 
-    // Generates the URL to launch the Globus app
+    // Generates the URL to launch the Globus app for upload
     public String getGlobusAppUrlForDataset(Dataset d) {
         return getGlobusAppUrlForDataset(d, true, null);
     }
 
-    public String getGlobusAppUrlForDataset(Dataset d, boolean upload, DataFile df) {
+    /**
+     * Generated the App URl for upload (in) or download (out)
+     * 
+     * @param d         - the dataset involved
+     * @param upload    - boolean, true for upload, false for download
+     * @param dataFiles - a list of the DataFiles to be downloaded
+     * @return
+     */
+    public String getGlobusAppUrlForDataset(Dataset d, boolean upload, List<DataFile> dataFiles) {
         String localeCode = session.getLocaleCode();
         ApiToken apiToken = null;
         User user = session.getUser();
@@ -518,46 +518,53 @@ public class GlobusServiceBean implements java.io.Serializable {
                 apiToken = authSvc.generateApiTokenForUser((AuthenticatedUser) user);
             }
         }
-        String storePrefix = "";
         String driverId = d.getEffectiveStorageDriverId();
         try {
-            storePrefix = DataAccess.getDriverPrefix(driverId);
         } catch (Exception e) {
             logger.warning("GlobusAppUrlForDataset: Failed to get storePrefix for " + driverId);
         }
-        //Use URLTokenUtil for params currently in common with external tools. 
-        URLTokenUtil tokenUtil = new URLTokenUtil(d, df, apiToken, localeCode);
-        String appUrl;
+
+        // Use URLTokenUtil for params currently in common with external tools.
+        URLTokenUtil tokenUtil = new URLTokenUtil(d, null, apiToken, localeCode);
+        String appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost");
+        String callback = null;
         if (upload) {
-            appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost")
-                    + "/upload?datasetPid={datasetPid}&siteUrl={siteUrl}&apiToken={apiToken}&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}";
+            appUrl = appUrl + "/upload?dvLocale={localeCode}";
+            callback = SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/datasets/" + d.getId()
+                    + "/globusUploadParameters?locale=" + localeCode;
         } else {
-            if (df == null) {
-                appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost")
-                        + "/download?datasetPid={datasetPid}&siteUrl={siteUrl}"
-                        + ((apiToken != null) ? "&apiToken={apiToken}" : "")
-                        + "&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}";
-            } else {
-                String rawStorageId = df.getStorageIdentifier();
-                rawStorageId=rawStorageId.substring(rawStorageId.lastIndexOf(":")+1);
-                appUrl = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusAppUrl, "http://localhost")
-                        + "/download-file?datasetPid={datasetPid}&siteUrl={siteUrl}"
-                        + ((apiToken != null) ? "&apiToken={apiToken}" : "")
-                        + "&datasetId={datasetId}&datasetVersion={datasetVersion}&dvLocale={localeCode}&fileId={fileId}&storageIdentifier="
-                        + rawStorageId + "&fileName=" + df.getCurrentName();
-            }
+            // Download
+            JsonObject files = GlobusUtil.getFilesMap(dataFiles, d);
+
+            String downloadId = UUID.randomUUID().toString();
+            downloadCache.put(downloadId, files);
+            appUrl = appUrl + "/download?dvLocale={localeCode}";
+            callback = SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/datasets/" + d.getId()
+                    + "/globusDownloadParameters?locale=" + localeCode + "&downloadId=" + downloadId;
+
         }
-        return tokenUtil.replaceTokensWithValues(appUrl) + "&storePrefix=" + storePrefix;
+        if (apiToken != null) {
+            callback = UrlSignerUtil.signUrl(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(),
+                    HttpMethod.GET,
+                    JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + apiToken.getTokenString());
+        } else {
+            // Shouldn't happen
+            logger.warning("Unable to get api token for user: " + user.getIdentifier());
+        }
+        appUrl = appUrl + "&callback=" + Base64.getEncoder().encodeToString(StringUtils.getBytesUtf8(callback));
+
+        String finalUrl = tokenUtil.replaceTokensWithValues(appUrl);
+        logger.fine("Calling app: " + finalUrl);
+        return finalUrl;
     }
 
-    public String getGlobusDownloadScript(Dataset dataset, ApiToken apiToken) {
-        return URLTokenUtil.getScriptForUrl(getGlobusAppUrlForDataset(dataset, false, null));
-        
+    private String getGlobusDownloadScript(Dataset dataset, ApiToken apiToken, List<DataFile> downloadDFList) {
+        return URLTokenUtil.getScriptForUrl(getGlobusAppUrlForDataset(dataset, false, downloadDFList));
     }
-    
+
     @Asynchronous
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void globusUpload(String jsonData, ApiToken token, Dataset dataset, String httpRequestUrl,
+    public void globusUpload(JsonObject jsonData, ApiToken token, Dataset dataset, String httpRequestUrl,
             AuthenticatedUser authUser) throws ExecutionException, InterruptedException, MalformedURLException {
 
         Integer countAll = 0;
@@ -585,40 +592,34 @@ public class GlobusServiceBean implements java.io.Serializable {
             globusLogger = logger;
         }
 
-        globusLogger.info("Starting an globusUpload ");
+        logger.fine("json: " + JsonUtil.prettyPrint(jsonData));
 
-        String datasetIdentifier = dataset.getStorageIdentifier();
+        String taskIdentifier = jsonData.getString("taskIdentifier");
 
-        // ToDo - use DataAccess methods?
-        String storageType = datasetIdentifier.substring(0, datasetIdentifier.indexOf("://") + 3);
-        datasetIdentifier = datasetIdentifier.substring(datasetIdentifier.indexOf("://") + 3);
+        GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
+        GlobusTask task = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+        String ruleId = getRuleId(endpoint, task.getOwner_id(), "rw");
+        logger.fine("Found rule: " + ruleId);
+        if (ruleId != null) {
+            Long datasetId = rulesCache.getIfPresent(ruleId);
+            if (datasetId != null) {
+                // Will not delete rule
+                rulesCache.invalidate(ruleId);
+            }
+        }
 
+        // Wait before first check
         Thread.sleep(5000);
-
-        JsonObject jsonObject = null;
-        try (StringReader rdr = new StringReader(jsonData)) {
-            jsonObject = Json.createReader(rdr).readObject();
-        } catch (Exception jpe) {
-            jpe.printStackTrace();
-            logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}");
-        }
-        logger.info("json: " + JsonUtil.prettyPrint(jsonObject));
-
-        String taskIdentifier = jsonObject.getString("taskIdentifier");
-
-        String ruleId = "";
-        try {
-            ruleId = jsonObject.getString("ruleId");
-        } catch (NullPointerException npe) {
-            logger.warning("NPE for jsonData object");
-        }
-
         // globus task status check
-        GlobusTask task = globusStatusCheck(taskIdentifier, globusLogger);
+        task = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
         String taskStatus = getTaskStatus(task);
 
-        if (ruleId.length() > 0) {
-            deletePermision(ruleId, globusLogger);
+        globusLogger.info("Starting a globusUpload ");
+
+        if (ruleId != null) {
+            // Transfer is complete, so delete rule
+            deletePermission(ruleId, dataset, globusLogger);
+
         }
 
         // If success, switch to an EditInProgress lock - do this before removing the
@@ -660,21 +661,30 @@ public class GlobusServiceBean implements java.io.Serializable {
                 //
 
                 List<String> inputList = new ArrayList<String>();
-                JsonArray filesJsonArray = jsonObject.getJsonArray("files");
+                JsonArray filesJsonArray = jsonData.getJsonArray("files");
 
                 if (filesJsonArray != null) {
+                    String datasetIdentifier = dataset.getAuthorityForFileStorage() + "/"
+                            + dataset.getIdentifierForFileStorage();
 
                     for (JsonObject fileJsonObject : filesJsonArray.getValuesAs(JsonObject.class)) {
 
                         // storageIdentifier s3://gcs5-bucket1:1781cfeb8a7-748c270a227c from
                         // externalTool
                         String storageIdentifier = fileJsonObject.getString("storageIdentifier");
-                        String[] bits = storageIdentifier.split(":");
-                        String bucketName = bits[1].replace("/", "");
+                        String[] parts = DataAccess.getDriverIdAndStorageLocation(storageIdentifier);
+                        String storeId = parts[0];
+                        // If this is an S3 store, we need to split out the bucket name
+                        String[] bits = parts[1].split(":");
+                        String bucketName = "";
+                        if (bits.length > 1) {
+                            bucketName = bits[0];
+                        }
                         String fileId = bits[bits.length - 1];
 
                         // fullpath s3://gcs5-bucket1/10.5072/FK2/3S6G2E/1781cfeb8a7-4ad9418a5873
-                        String fullPath = storageType + bucketName + "/" + datasetIdentifier + "/" + fileId;
+                        // or globus:///10.5072/FK2/3S6G2E/1781cfeb8a7-4ad9418a5873
+                        String fullPath = storeId + "://" + bucketName + "/" + datasetIdentifier + "/" + fileId;
                         String fileName = fileJsonObject.getString("fileName");
 
                         inputList.add(fileId + "IDsplit" + fullPath + "IDsplit" + fileName);
@@ -683,7 +693,8 @@ public class GlobusServiceBean implements java.io.Serializable {
                     // calculateMissingMetadataFields: checksum, mimetype
                     JsonObject newfilesJsonObject = calculateMissingMetadataFields(inputList, globusLogger);
                     JsonArray newfilesJsonArray = newfilesJsonObject.getJsonArray("files");
-
+                    logger.fine("Size: " + newfilesJsonArray.size());
+                    logger.fine("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
                     JsonArrayBuilder jsonDataSecondAPI = Json.createArrayBuilder();
 
                     for (JsonObject fileJsonObject : filesJsonArray.getValuesAs(JsonObject.class)) {
@@ -691,29 +702,33 @@ public class GlobusServiceBean implements java.io.Serializable {
                         countAll++;
                         String storageIdentifier = fileJsonObject.getString("storageIdentifier");
                         String fileName = fileJsonObject.getString("fileName");
-                        String directoryLabel = fileJsonObject.getString("directoryLabel");
-                        String[] bits = storageIdentifier.split(":");
+                        String[] parts = DataAccess.getDriverIdAndStorageLocation(storageIdentifier);
+                        // If this is an S3 store, we need to split out the bucket name
+                        String[] bits = parts[1].split(":");
+                        if (bits.length > 1) {
+                        }
                         String fileId = bits[bits.length - 1];
 
                         List<JsonObject> newfileJsonObject = IntStream.range(0, newfilesJsonArray.size())
                                 .mapToObj(index -> ((JsonObject) newfilesJsonArray.get(index)).getJsonObject(fileId))
                                 .filter(Objects::nonNull).collect(Collectors.toList());
-
                         if (newfileJsonObject != null) {
-                            if (!newfileJsonObject.get(0).getString("hash").equalsIgnoreCase("null")) {
-                                JsonPatch path = Json.createPatchBuilder()
-                                        .add("/md5Hash", newfileJsonObject.get(0).getString("hash")).build();
-                                fileJsonObject = path.apply(fileJsonObject);
-                                path = Json.createPatchBuilder()
-                                        .add("/mimeType", newfileJsonObject.get(0).getString("mime")).build();
-                                fileJsonObject = path.apply(fileJsonObject);
-                                jsonDataSecondAPI.add(fileJsonObject);
-                                countSuccess++;
-                            } else {
-                                globusLogger.info(fileName
-                                        + " will be skipped from adding to dataset by second API due to missing values ");
-                                countError++;
-                            }
+                            logger.info("List Size: " + newfileJsonObject.size());
+                            // if (!newfileJsonObject.get(0).getString("hash").equalsIgnoreCase("null")) {
+                            JsonPatch path = Json.createPatchBuilder()
+                                    .add("/md5Hash", newfileJsonObject.get(0).getString("hash")).build();
+                            fileJsonObject = path.apply(fileJsonObject);
+                            path = Json.createPatchBuilder()
+                                    .add("/mimeType", newfileJsonObject.get(0).getString("mime")).build();
+                            fileJsonObject = path.apply(fileJsonObject);
+                            jsonDataSecondAPI.add(fileJsonObject);
+                            countSuccess++;
+                            // } else {
+                            // globusLogger.info(fileName
+                            // + " will be skipped from adding to dataset by second API due to missing
+                            // values ");
+                            // countError++;
+                            // }
                         } else {
                             globusLogger.info(fileName
                                     + " will be skipped from adding to dataset by second API due to missing values ");
@@ -729,6 +744,9 @@ public class GlobusServiceBean implements java.io.Serializable {
                             + httpRequestUrl + "/api/datasets/:persistentId/addFiles?persistentId=doi:"
                             + datasetIdentifier + " -F jsonData='" + newjsonData + "'";
                     System.out.println("*******====command ==== " + command);
+
+                    // ToDo - refactor to call AddReplaceFileHelper.addFiles directly instead of
+                    // calling API
 
                     String output = addFilesAsync(command, globusLogger);
                     if (output.equalsIgnoreCase("ok")) {
@@ -756,16 +774,19 @@ public class GlobusServiceBean implements java.io.Serializable {
                 globusLogger.info("Files failures: " + countError.toString());
                 globusLogger.info("Finished upload via Globus job.");
 
-                if (fileHandlerSuceeded) {
-                    fileHandler.close();
-                }
-
             } catch (Exception e) {
                 logger.info("Exception from globusUpload call ");
                 e.printStackTrace();
                 globusLogger.info("Exception from globusUpload call " + e.getMessage());
                 datasetSvc.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
             }
+        }
+        if (ruleId != null) {
+            deletePermission(ruleId, dataset, globusLogger);
+            globusLogger.info("Removed upload permission: " + ruleId);
+        }
+        if (fileHandlerSuceeded) {
+            fileHandler.close();
         }
     }
 
@@ -808,17 +829,16 @@ public class GlobusServiceBean implements java.io.Serializable {
                 sb.append(line);
             globusLogger.info(" API Output :  " + sb.toString());
             JsonObject jsonObject = null;
-            try (StringReader rdr = new StringReader(sb.toString())) {
-                jsonObject = Json.createReader(rdr).readObject();
-            } catch (Exception jpe) {
-                jpe.printStackTrace();
-                globusLogger.log(Level.SEVERE, "Error parsing dataset json.");
-            }
+            jsonObject = JsonUtil.getJsonObject(sb.toString());
 
             status = jsonObject.getString("status");
         } catch (Exception ex) {
-            globusLogger.log(Level.SEVERE,
-                    "******* Unexpected Exception while executing api/datasets/:persistentId/add call ", ex);
+            if (ex instanceof JsonParsingException) {
+                globusLogger.log(Level.SEVERE, "Error parsing dataset json.");
+            } else {
+                globusLogger.log(Level.SEVERE,
+                        "******* Unexpected Exception while executing api/datasets/:persistentId/add call ", ex);
+            }
         }
 
         return status;
@@ -850,31 +870,47 @@ public class GlobusServiceBean implements java.io.Serializable {
             globusLogger = logger;
         }
 
-        globusLogger.info("Starting an globusDownload ");
+        globusLogger.info("Starting a globusDownload ");
 
         JsonObject jsonObject = null;
-        try (StringReader rdr = new StringReader(jsonData)) {
-            jsonObject = Json.createReader(rdr).readObject();
+        try {
+            jsonObject = JsonUtil.getJsonObject(jsonData);
         } catch (Exception jpe) {
             jpe.printStackTrace();
-            globusLogger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}");
+            globusLogger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", jsonData);
+            // TODO: stop the process after this parsing exception.
         }
 
         String taskIdentifier = jsonObject.getString("taskIdentifier");
-        String ruleId = "";
 
-        try {
-            jsonObject.getString("ruleId");
-        } catch (NullPointerException npe) {
+        GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
+        logger.info("Endpoint path: " + endpoint.getBasePath());
 
-        }
-
+        // If the rules_cache times out, the permission will be deleted. Presumably that
+        // doesn't affect a
         // globus task status check
-        GlobusTask task = globusStatusCheck(taskIdentifier, globusLogger);
+        GlobusTask task = getTask(endpoint.getClientToken(), taskIdentifier, globusLogger);
+        String ruleId = getRuleId(endpoint, task.getOwner_id(), "r");
+        if (ruleId != null) {
+            logger.info("Found rule: " + ruleId);
+            Long datasetId = rulesCache.getIfPresent(ruleId);
+            if (datasetId != null) {
+                logger.info("Deleting from cache: rule: " + ruleId);
+                // Will not delete rule
+                rulesCache.invalidate(ruleId);
+            }
+        } else {
+            // Something is wrong - the rule should be there (a race with the cache timing
+            // out?)
+            logger.warning("ruleId not found for taskId: " + taskIdentifier);
+        }
+        task = globusStatusCheck(endpoint, taskIdentifier, globusLogger);
         String taskStatus = getTaskStatus(task);
 
-        if (ruleId.length() > 0) {
-            deletePermision(ruleId, globusLogger);
+        // Transfer is done (success or failure) so delete the rule
+        if (ruleId != null) {
+            logger.info("Deleting: rule: " + ruleId);
+            deletePermission(ruleId, dataset, globusLogger);
         }
 
         if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
@@ -899,18 +935,18 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     Executor executor = Executors.newFixedThreadPool(10);
 
-    private GlobusTask globusStatusCheck(String taskId, Logger globusLogger) throws MalformedURLException {
+    private GlobusTask globusStatusCheck(GlobusEndpoint endpoint, String taskId, Logger globusLogger)
+            throws MalformedURLException {
         boolean taskCompletion = false;
         String status = "";
         GlobusTask task = null;
-        int pollingInterval = SystemConfig.getIntLimitFromStringOrDefault(settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusPollingInterval), 50);
+        int pollingInterval = SystemConfig.getIntLimitFromStringOrDefault(
+                settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusPollingInterval), 50);
         do {
             try {
                 globusLogger.info("checking globus transfer task   " + taskId);
                 Thread.sleep(pollingInterval * 1000);
-                AccessToken clientTokenUser = getClientToken();
-                // success = globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskId);
-                task = getTask(clientTokenUser, taskId, globusLogger);
+                task = getTask(endpoint.getClientToken(), taskId, globusLogger);
                 if (task != null) {
                     status = task.getStatus();
                     if (status != null) {
@@ -953,7 +989,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         if (task != null) {
             status = task.getStatus();
             if (status != null) {
-                // The task is in progress.
+                // The task is in progress but is not ok or queued
                 if (status.equalsIgnoreCase("ACTIVE")) {
                     status = "FAILED" + "#" + task.getNice_status() + "#" + task.getNice_status_short_description();
                 } else {
@@ -983,7 +1019,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                     .collect(Collectors.toList());
         });
 
-        CompletableFuture completableFuture = allCompletableFuture.thenApply(files -> {
+        CompletableFuture<?> completableFuture = allCompletableFuture.thenApply(files -> {
             return files.stream().map(d -> json(d)).collect(toJsonArray());
         });
 
@@ -1024,7 +1060,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         String fullPath = id.split("IDsplit")[1];
         String fileName = id.split("IDsplit")[2];
 
-        // ToDo: what if the file doesnot exists in s3
+        // ToDo: what if the file does not exist in s3
         // ToDo: what if checksum calculation failed
 
         do {
@@ -1036,8 +1072,8 @@ public class GlobusServiceBean implements java.io.Serializable {
             } catch (IOException ioex) {
                 count = 3;
                 logger.info(ioex.getMessage());
-                globusLogger.info("S3AccessIO: DataFile (fullPAth " + fullPath
-                        + ") does not appear to be an S3 object associated with driver: ");
+                globusLogger.info(
+                        "DataFile (fullPath " + fullPath + ") does not appear to be accessible within Dataverse: ");
             } catch (Exception ex) {
                 count = count + 1;
                 ex.printStackTrace();
@@ -1048,7 +1084,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         } while (count < 3);
 
         if (checksumVal.length() == 0) {
-            checksumVal = "NULL";
+            checksumVal = "Not available in Dataverse";
         }
 
         String mimeType = calculatemime(fileName);
@@ -1064,7 +1100,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         String finalType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
         String type = FileUtil.determineFileTypeByNameAndExtension(fileName);
 
-        if (type!=null && !type.isBlank()) {
+        if (type != null && !type.isBlank()) {
             if (FileUtil.useRecognizedType(finalType, type)) {
                 finalType = type;
             }
@@ -1072,194 +1108,106 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         return finalType;
     }
-    /*
-     * public boolean globusFinishTransfer(Dataset dataset, AuthenticatedUser user)
-     * throws MalformedURLException {
-     * 
-     * logger.info("=====Tasklist == dataset id :" + dataset.getId()); String
-     * directory = null;
-     * 
-     * try {
-     * 
-     * List<FileMetadata> fileMetadatas = new ArrayList<>();
-     * 
-     * StorageIO<Dataset> datasetSIO = DataAccess.getStorageIO(dataset);
-     * 
-     * 
-     * 
-     * DatasetVersion workingVersion = dataset.getEditVersion();
-     * 
-     * if (workingVersion.getCreateTime() != null) {
-     * workingVersion.setCreateTime(new Timestamp(new Date().getTime())); }
-     * 
-     * directory = dataset.getAuthorityForFileStorage() + "/" +
-     * dataset.getIdentifierForFileStorage();
-     * 
-     * System.out.println("======= directory ==== " + directory +
-     * " ====  datasetId :" + dataset.getId()); Map<String, Integer> checksumMapOld
-     * = new HashMap<>();
-     * 
-     * Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
-     * 
-     * while (fmIt.hasNext()) { FileMetadata fm = fmIt.next(); if (fm.getDataFile()
-     * != null && fm.getDataFile().getId() != null) { String chksum =
-     * fm.getDataFile().getChecksumValue(); if (chksum != null) {
-     * checksumMapOld.put(chksum, 1); } } }
-     * 
-     * List<DataFile> dFileList = new ArrayList<>(); boolean update = false; for
-     * (S3ObjectSummary s3ObjectSummary : datasetSIO.listAuxObjects("")) {
-     * 
-     * String s3ObjectKey = s3ObjectSummary.getKey();
-     * 
-     * 
-     * String t = s3ObjectKey.replace(directory, "");
-     * 
-     * if (t.indexOf(".") > 0) { long totalSize = s3ObjectSummary.getSize(); String
-     * filePath = s3ObjectKey; String fileName =
-     * filePath.split("/")[filePath.split("/").length - 1]; String fullPath =
-     * datasetSIO.getStorageLocation() + "/" + fileName;
-     * 
-     * logger.info("Full path " + fullPath); StorageIO<DvObject> dataFileStorageIO =
-     * DataAccess.getDirectStorageIO(fullPath); InputStream in =
-     * dataFileStorageIO.getInputStream();
-     * 
-     * String checksumVal = FileUtil.calculateChecksum(in,
-     * DataFile.ChecksumType.MD5); //String checksumVal = s3ObjectSummary.getETag();
-     * logger.info("The checksum is " + checksumVal); if
-     * ((checksumMapOld.get(checksumVal) != null)) { logger.info("datasetId :" +
-     * dataset.getId() + "======= filename ==== " + filePath +
-     * " == file already exists "); } else if (filePath.contains("cached") ||
-     * filePath.contains(".thumb")) { logger.info(filePath + " is ignored"); } else
-     * { update = true; logger.info("datasetId :" + dataset.getId() +
-     * "======= filename ==== " + filePath + " == new file   "); try {
-     * 
-     * DataFile datafile = new DataFile(DataFileServiceBean.MIME_TYPE_GLOBUS_FILE);
-     * //MIME_TYPE_GLOBUS datafile.setModificationTime(new Timestamp(new
-     * Date().getTime())); datafile.setCreateDate(new Timestamp(new
-     * Date().getTime())); datafile.setPermissionModificationTime(new Timestamp(new
-     * Date().getTime()));
-     * 
-     * FileMetadata fmd = new FileMetadata();
-     * 
-     * 
-     * fmd.setLabel(fileName); fmd.setDirectoryLabel(filePath.replace(directory,
-     * "").replace(File.separator + fileName, ""));
-     * 
-     * fmd.setDataFile(datafile);
-     * 
-     * datafile.getFileMetadatas().add(fmd);
-     * 
-     * FileUtil.generateS3PackageStorageIdentifierForGlobus(datafile);
-     * logger.info("====  datasetId :" + dataset.getId() + "======= filename ==== "
-     * + filePath + " == added to datafile, filemetadata   ");
-     * 
-     * try { // We persist "SHA1" rather than "SHA-1".
-     * //datafile.setChecksumType(DataFile.ChecksumType.SHA1);
-     * datafile.setChecksumType(DataFile.ChecksumType.MD5);
-     * datafile.setChecksumValue(checksumVal); } catch (Exception cksumEx) {
-     * logger.info("====  datasetId :" + dataset.getId() +
-     * "======Could not calculate  checksumType signature for the new file "); }
-     * 
-     * datafile.setFilesize(totalSize);
-     * 
-     * dFileList.add(datafile);
-     * 
-     * } catch (Exception ioex) { logger.info("datasetId :" + dataset.getId() +
-     * "======Failed to process and/or save the file " + ioex.getMessage()); return
-     * false;
-     * 
-     * } } } } if (update) {
-     * 
-     * List<DataFile> filesAdded = new ArrayList<>();
-     * 
-     * if (dFileList != null && dFileList.size() > 0) {
-     * 
-     * // Dataset dataset = version.getDataset();
-     * 
-     * for (DataFile dataFile : dFileList) {
-     * 
-     * if (dataFile.getOwner() == null) { dataFile.setOwner(dataset);
-     * 
-     * workingVersion.getFileMetadatas().add(dataFile.getFileMetadata());
-     * dataFile.getFileMetadata().setDatasetVersion(workingVersion);
-     * dataset.getFiles().add(dataFile);
-     * 
-     * }
-     * 
-     * filesAdded.add(dataFile);
-     * 
-     * }
-     * 
-     * logger.info("====  datasetId :" + dataset.getId() +
-     * " ===== Done! Finished saving new files to the dataset."); }
-     * 
-     * fileMetadatas.clear(); for (DataFile addedFile : filesAdded) {
-     * fileMetadatas.add(addedFile.getFileMetadata()); } filesAdded = null;
-     * 
-     * if (workingVersion.isDraft()) {
-     * 
-     * logger.info("Async: ====  datasetId :" + dataset.getId() +
-     * " ==== inside draft version ");
-     * 
-     * Timestamp updateTime = new Timestamp(new Date().getTime());
-     * 
-     * workingVersion.setLastUpdateTime(updateTime);
-     * dataset.setModificationTime(updateTime);
-     * 
-     * 
-     * for (FileMetadata fileMetadata : fileMetadatas) {
-     * 
-     * if (fileMetadata.getDataFile().getCreateDate() == null) {
-     * fileMetadata.getDataFile().setCreateDate(updateTime);
-     * fileMetadata.getDataFile().setCreator((AuthenticatedUser) user); }
-     * fileMetadata.getDataFile().setModificationTime(updateTime); }
-     * 
-     * 
-     * } else { logger.info("datasetId :" + dataset.getId() +
-     * " ==== inside released version ");
-     * 
-     * for (int i = 0; i < workingVersion.getFileMetadatas().size(); i++) { for
-     * (FileMetadata fileMetadata : fileMetadatas) { if
-     * (fileMetadata.getDataFile().getStorageIdentifier() != null) {
-     * 
-     * if (fileMetadata.getDataFile().getStorageIdentifier().equals(workingVersion.
-     * getFileMetadatas().get(i).getDataFile().getStorageIdentifier())) {
-     * workingVersion.getFileMetadatas().set(i, fileMetadata); } } } }
-     * 
-     * 
-     * }
-     * 
-     * 
-     * try { Command<Dataset> cmd; logger.info("Async: ====  datasetId :" +
-     * dataset.getId() +
-     * " ======= UpdateDatasetVersionCommand START in globus function "); cmd = new
-     * UpdateDatasetVersionCommand(dataset, new DataverseRequest(user,
-     * (HttpServletRequest) null)); ((UpdateDatasetVersionCommand)
-     * cmd).setValidateLenient(true); //new DataverseRequest(authenticatedUser,
-     * (HttpServletRequest) null) //dvRequestService.getDataverseRequest()
-     * commandEngine.submit(cmd); } catch (CommandException ex) {
-     * logger.log(Level.WARNING, "====  datasetId :" + dataset.getId() +
-     * "======CommandException updating DatasetVersion from batch job: " +
-     * ex.getMessage()); return false; }
-     * 
-     * logger.info("====  datasetId :" + dataset.getId() +
-     * " ======= GLOBUS  CALL COMPLETED SUCCESSFULLY ");
-     * 
-     * //return true; }
-     * 
-     * } catch (Exception e) { String message = e.getMessage();
-     * 
-     * logger.info("====  datasetId :" + dataset.getId() +
-     * " ======= GLOBUS  CALL Exception ============== " + message);
-     * e.printStackTrace(); return false; //return
-     * error(Response.Status.INTERNAL_SERVER_ERROR,
-     * "Uploaded files have passed checksum validation but something went wrong while attempting to move the files into Dataverse. Message was '"
-     * + message + "'."); }
-     * 
-     * String globusBasicToken =
-     * settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusBasicToken, "");
-     * AccessToken clientTokenUser = getClientToken(globusBasicToken);
-     * updatePermision(clientTokenUser, directory, "identity", "r"); return true; }
-     * 
-     */
+
+    private GlobusEndpoint getGlobusEndpoint(DvObject dvObject) {
+        Dataset dataset = null;
+        if (dvObject instanceof Dataset) {
+            dataset = (Dataset) dvObject;
+        } else if (dvObject instanceof DataFile) {
+            dataset = (Dataset) dvObject.getOwner();
+        } else {
+            throw new IllegalArgumentException("Unsupported DvObject type: " + dvObject.getClass().getName());
+        }
+        String driverId = dataset.getEffectiveStorageDriverId();
+        GlobusEndpoint endpoint = null;
+
+        String directoryPath = GlobusAccessibleStore.getTransferPath(driverId);
+
+        if (GlobusAccessibleStore.isDataverseManaged(driverId) && (dataset != null)) {
+            directoryPath = directoryPath + "/" + dataset.getAuthorityForFileStorage() + "/"
+                    + dataset.getIdentifierForFileStorage();
+        } else {
+            // remote store - may have path in file storageidentifier
+            String relPath = dvObject.getStorageIdentifier()
+                    .substring(dvObject.getStorageIdentifier().lastIndexOf("//") + 2);
+            int filenameStart = relPath.lastIndexOf("/") + 1;
+            if (filenameStart > 0) {
+                directoryPath = directoryPath + relPath.substring(0, filenameStart);
+            }
+        }
+        logger.fine("directoryPath finally: " + directoryPath);
+
+        String endpointId = GlobusAccessibleStore.getTransferEndpointId(driverId);
+
+        logger.fine("endpointId: " + endpointId);
+
+        String globusToken = GlobusAccessibleStore.getGlobusToken(driverId);
+
+        AccessToken accessToken = GlobusServiceBean.getClientToken(globusToken);
+        String clientToken = accessToken.getOtherTokens().get(0).getAccessToken();
+        endpoint = new GlobusEndpoint(endpointId, clientToken, directoryPath);
+
+        return endpoint;
+    }
+
+    // This helper method is called from the Download terms/guestbook/etc. popup,
+    // when the user clicks the "ok" button. We use it, instead of calling
+    // downloadServiceBean directly, in order to differentiate between single
+    // file downloads and multiple (batch) downloads - since both use the same
+    // terms/etc. popup.
+    public void writeGuestbookAndStartTransfer(GuestbookResponse guestbookResponse,
+            boolean doNotSaveGuestbookResponse) {
+        PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
+        guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
+
+        ApiToken apiToken = null;
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            apiToken = authSvc.findApiTokenByUser((AuthenticatedUser) user);
+        } else if (user instanceof PrivateUrlUser) {
+            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+            PrivateUrl privUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+            apiToken = new ApiToken();
+            apiToken.setTokenString(privUrl.getToken());
+        }
+
+        DataFile df = guestbookResponse.getDataFile();
+        if (df != null) {
+            logger.fine("Single datafile case for writeGuestbookAndStartTransfer");
+            List<DataFile> downloadDFList = new ArrayList<DataFile>(1);
+            downloadDFList.add(df);
+            if (!doNotSaveGuestbookResponse) {
+                fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
+            }
+            PrimeFaces.current().executeScript(getGlobusDownloadScript(df.getOwner(), apiToken, downloadDFList));
+        } else {
+            // Following FileDownloadServiceBean writeGuestbookAndStartBatchDownload
+            List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
+            List<DataFile> selectedFiles = new ArrayList<DataFile>();
+            for (String idAsString : list) {
+                try {
+                    Long fileId = Long.parseLong(idAsString);
+                    // If we need to create a GuestBookResponse record, we have to
+                    // look up the DataFile object for this file:
+                    if (!doNotSaveGuestbookResponse) {
+                        df = dataFileService.findCheapAndEasy(fileId);
+                        guestbookResponse.setDataFile(df);
+                        fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
+                        selectedFiles.add(df);
+                    }
+                } catch (NumberFormatException nfe) {
+                    logger.warning(
+                            "A file id passed to the writeGuestbookAndStartTransfer method as a string could not be converted back to Long: "
+                                    + idAsString);
+                    return;
+                }
+
+            }
+            if (!selectedFiles.isEmpty()) {
+                // Use dataset from one file - files should all be from the same dataset
+                PrimeFaces.current().executeScript(getGlobusDownloadScript(df.getOwner(), apiToken, selectedFiles));
+            }
+        }
+    }
+
 }

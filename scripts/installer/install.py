@@ -413,7 +413,7 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
 
    # 3e. set permissions:
 
-   conn_cmd = "GRANT CREATE PRIVILEGES on DATABASE "+pgDb+" to "+pgUser+";"
+   conn_cmd = "GRANT ALL PRIVILEGES on DATABASE "+pgDb+" to "+pgUser+";"
    try:
       cur.execute(conn_cmd)
    except:
@@ -422,7 +422,7 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
    conn.close()
 
    if int(pg_major_version) >= 15:
-      conn_cmd = "GRANT ALL ON SCHEMA public TO "+pgUser+";"
+      conn_cmd = "GRANT CREATE ON SCHEMA public TO "+pgUser+";"
       print("PostgreSQL 15 or higher detected. Running " + conn_cmd)
       try:
          cur.execute(conn_cmd)

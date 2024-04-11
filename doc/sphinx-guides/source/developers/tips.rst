@@ -238,6 +238,8 @@ with the following code in ``SettingsWrapper.java``:
 
 A more serious example would be direct calls to PermissionServiceBean methods used in render logic expressions. This is something that has happened and caused some problems in real life. A simple permission service lookup (for example, whether a user is authorized to create a dataset in the current dataverse) can easily take 15 database queries. Repeated multiple times, this can quickly become a measurable delay in rendering the page. PermissionsWrapper must be used exclusively for any such lookups from JSF pages.
 
+See also :doc:`performance`.
+
 ----
 
 Previous: :doc:`dev-environment` | Next: :doc:`troubleshooting`

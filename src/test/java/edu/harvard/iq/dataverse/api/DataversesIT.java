@@ -17,11 +17,13 @@ import java.util.logging.Logger;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import static jakarta.ws.rs.core.Response.Status.CREATED;
-import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import jakarta.ws.rs.core.Response.Status;
-import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -142,6 +144,44 @@ public class DataversesIT {
         Response deleteDataverse = UtilIT.deleteDataverse("science", apiToken);
         deleteDataverse.prettyPrint();
         deleteDataverse.then().assertThat().statusCode(OK.getStatusCode());
+    }
+
+    /**
+     * A regular user can create a Dataverse Collection and access its
+     * GuestbookResponses by DV alias or ID.
+     * A request for a non-existent Dataverse's GuestbookResponses returns
+     * Not Found.
+     * A regular user cannot access the guestbook responses for a Dataverse
+     * that they do not have permissions for, like the root Dataverse.
+     */
+    @Test
+    public void testGetGuestbookResponses() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response create = UtilIT.createRandomDataverse(apiToken);
+        create.prettyPrint();
+        create.then().assertThat().statusCode(CREATED.getStatusCode());
+        String alias = UtilIT.getAliasFromResponse(create);
+        Integer dvId = UtilIT.getDataverseIdFromResponse(create);
+
+        logger.info("Request guestbook responses for non-existent Dataverse");
+        Response getResponsesByBadAlias = UtilIT.getGuestbookResponses("-1", null, apiToken);
+        getResponsesByBadAlias.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        logger.info("Request guestbook responses for existent Dataverse by alias");
+        Response getResponsesByAlias = UtilIT.getGuestbookResponses(alias, null, apiToken);
+        getResponsesByAlias.then().assertThat().statusCode(OK.getStatusCode());
+
+        logger.info("Request guestbook responses for existent Dataverse by ID");
+        Response getResponsesById = UtilIT.getGuestbookResponses(dvId.toString(), null, apiToken);
+        getResponsesById.then().assertThat().statusCode(OK.getStatusCode());
+
+        logger.info("Request guestbook responses for root Dataverse by alias");
+        getResponsesById = UtilIT.getGuestbookResponses("root", null, apiToken);
+        getResponsesById.prettyPrint();
+        getResponsesById.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
     }
 
     @Test

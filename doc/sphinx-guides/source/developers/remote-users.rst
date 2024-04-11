@@ -39,7 +39,7 @@ STOP! ``oidc-keycloak-auth-provider.json`` was changed from http://localhost:809
 
 If you are working on the OpenID Connect (OIDC) user authentication flow, you do not need to connect to a remote provider (as explained in :doc:`/installation/oidc`) to test this feature. Instead, you can use the available configuration that allows you to run a test Keycloak OIDC identity management service locally through a Docker container.
 
-(Please note! The client secret (``ss6gE8mODCDfqesQaSG3gwUwZqZt547E``) is hard-coded in ``oidc-realm.json`` and ``oidc-keycloak-auth-provider.json``. Do not use this config in production! This is only for developers.)
+(Please note! The client secret (``94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8``) is hard-coded in ``test-realm.json`` and ``oidc-keycloak-auth-provider.json``. Do not use this config in production! This is only for developers.)
 
 You can find this configuration in ``conf/keycloak``. There are two options available in this directory to run a Keycloak container: bash script or docker-compose.
 
@@ -55,14 +55,26 @@ Now load the configuration defined in ``oidc-keycloak-auth-provider.json`` into 
 
 You should see the new provider, called "OIDC-Keycloak", under "Other options" on the Log In page.
 
-You should be able to log into Keycloak with the following credentials:
+You should be able to log into Keycloak with the one of the following credentials:
 
-- username: kcuser
-- password: kcpassword
+.. list-table::
+
+  * - Username
+    - Password
+  * - admin
+    - admin
+  * - curator
+    - curator
+  * - user
+    - user
+  * - affiliate
+    - affiliate
 
 In case you want to stop and remove the Keycloak container, just run the other available bash script:
 
 ``./rm-keycloak.sh``
+
+Note: the Keycloak admin to login at the admin console is ``kcadmin:kcpassword``
 
 ----
 

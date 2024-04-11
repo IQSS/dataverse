@@ -52,6 +52,7 @@ import com.apicatalog.jsonld.document.JsonDocument;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
+import jakarta.json.JsonReader;
 
 public class JSONLDUtil {
 
@@ -533,13 +534,11 @@ public class JSONLDUtil {
         try (StringReader rdr = new StringReader(jsonLDString)) {
 
             // Use JsonLd to expand/compact to localContext
-            JsonObject jsonld = Json.createReader(rdr).readObject();
-            JsonDocument doc = JsonDocument.of(jsonld);
-            JsonArray array = null;
-            try {
-                array = JsonLd.expand(doc).get();
-                jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(Json.createObjectBuilder().build()))
-                        .get();
+            try (JsonReader jsonReader = Json.createReader(rdr)) {
+                JsonObject jsonld = jsonReader.readObject();
+                JsonDocument doc = JsonDocument.of(jsonld);
+                JsonArray array = JsonLd.expand(doc).get();
+                jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(Json.createObjectBuilder().build())).get();
                 // jsonld = array.getJsonObject(0);
                 logger.fine("Decontextualized object: " + jsonld);
                 return jsonld;

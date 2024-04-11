@@ -4,14 +4,12 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import edu.harvard.iq.dataverse.util.StringUtil;
-
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -20,7 +18,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -464,18 +461,6 @@ public class SettingsServiceBean {
          */
         ExportInstallationAsDistributorOnlyWhenNotSet,
 
-        /**
-         * Basic Globus Token for Globus Application
-         */
-        GlobusBasicToken,
-        /**
-         * GlobusEndpoint is Globus endpoint for Globus application
-         */
-        GlobusEndpoint,
-        /** 
-         * Comma separated list of Globus enabled stores
-         */
-        GlobusStores,
         /** Globus App URL
          * 
          */
@@ -578,7 +563,16 @@ public class SettingsServiceBean {
         /**
          * The URL for the DvWebLoader tool (see github.com/gdcc/dvwebloader for details)
          */
-        WebloaderUrl,
+        WebloaderUrl, 
+        /**
+         * Enforce storage quotas:
+         */
+        UseStorageQuotas, 
+        /** 
+         * Placeholder storage quota (defines the same quota setting for every user; used to test the concept of a quota.
+         */
+        StorageQuotaSizeInBytes,
+
         /**
          * A comma-separated list of CategoryName in the desired order for files to be
          * sorted in the file table display. If not set, files will be sorted
@@ -599,7 +593,12 @@ public class SettingsServiceBean {
         /*
          * True/false(default) option deciding whether file PIDs can be enabled per collection - using the Dataverse/collection set attribute API call.
          */
-        AllowEnablingFilePIDsPerCollection
+        AllowEnablingFilePIDsPerCollection,
+        /**
+         * Allows an instance admin to disable Solr search facets on the collection
+         * and dataset pages instantly
+         */
+        DisableSolrFacets
         ;
 
         @Override
@@ -687,8 +686,8 @@ public class SettingsServiceBean {
     	   try {
     		   return Long.parseLong(val);
     	   } catch (NumberFormatException ex) {
-    		   try ( StringReader rdr = new StringReader(val) ) {
-    			   JsonObject settings = Json.createReader(rdr).readObject();
+    		   try {
+    			   JsonObject settings = JsonUtil.getJsonObject(val);
     			   if(settings.containsKey(param)) {
     				   return Long.parseLong(settings.getString(param));
     			   } else if(settings.containsKey("default")) {
@@ -721,8 +720,8 @@ public class SettingsServiceBean {
             return null;
         }
 
-        try (StringReader rdr = new StringReader(val)) {
-            JsonObject settings = Json.createReader(rdr).readObject();
+        try {
+            JsonObject settings = JsonUtil.getJsonObject(val);
             if (settings.containsKey(param)) {
                 return Boolean.parseBoolean(settings.getString(param));
             } else if (settings.containsKey("default")) {
@@ -888,8 +887,7 @@ public class SettingsServiceBean {
             if(mlString.isEmpty()) {
                 mlString="[]";
             }
-            JsonReader jsonReader = Json.createReader(new StringReader(mlString));
-            JsonArray languages = jsonReader.readArray();
+            JsonArray languages = JsonUtil.getJsonArray(mlString);
             for(JsonValue jv: languages) {
                 JsonObject lang = (JsonObject) jv;
                 languageMap.put(lang.getString("locale"), lang.getString("title"));

@@ -8,11 +8,11 @@ import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
@@ -83,26 +83,21 @@ public class MakeDataCountApi extends AbstractApiBean {
     @Path("{id}/addUsageMetricsFromSushiReport")
     public Response addUsageMetricsFromSushiReport(@PathParam("id") String id, @QueryParam("reportOnDisk") String reportOnDisk) {
 
-        JsonObject report;
-
-        try (FileReader reader = new FileReader(reportOnDisk)) {
-            report = Json.createReader(reader).readObject();
-            Dataset dataset;
-            try {
-                dataset = findDatasetOrDie(id);
-                List<DatasetMetrics> datasetMetrics = datasetMetricsService.parseSushiReport(report, dataset);
-                if (!datasetMetrics.isEmpty()) {
-                    for (DatasetMetrics dm : datasetMetrics) {
-                        datasetMetricsService.save(dm);
-                    }
+        try {
+            JsonObject report = JsonUtil.getJsonObjectFromFile(reportOnDisk);
+            Dataset dataset = findDatasetOrDie(id);
+            List<DatasetMetrics> datasetMetrics = datasetMetricsService.parseSushiReport(report, dataset);
+            if (!datasetMetrics.isEmpty()) {
+                for (DatasetMetrics dm : datasetMetrics) {
+                    datasetMetricsService.save(dm);
                 }
-            } catch (WrappedResponse ex) {
-                Logger.getLogger(MakeDataCountApi.class.getName()).log(Level.SEVERE, null, ex);
-                return error(Status.BAD_REQUEST, "Wrapped response: " + ex.getLocalizedMessage());
             }
+        } catch (WrappedResponse ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return error(Status.BAD_REQUEST, "Wrapped response: " + ex.getLocalizedMessage());
 
         } catch (IOException ex) {
-            System.out.print(ex.getMessage());
+            logger.log(Level.WARNING, ex.getMessage());
             return error(Status.BAD_REQUEST, "IOException: " + ex.getLocalizedMessage());
         }
         String msg = "Dummy Data has been added to dataset " + id;
@@ -113,10 +108,8 @@ public class MakeDataCountApi extends AbstractApiBean {
     @Path("/addUsageMetricsFromSushiReport")
     public Response addUsageMetricsFromSushiReportAll(@PathParam("id") String id, @QueryParam("reportOnDisk") String reportOnDisk) {
 
-        JsonObject report;
-
-        try (FileReader reader = new FileReader(reportOnDisk)) {
-            report = Json.createReader(reader).readObject();
+        try {
+            JsonObject report = JsonUtil.getJsonObjectFromFile(reportOnDisk);
 
             List<DatasetMetrics> datasetMetrics = datasetMetricsService.parseSushiReport(report, null);
             if (!datasetMetrics.isEmpty()) {
@@ -126,7 +119,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             }
 
         } catch (IOException ex) {
-            System.out.print(ex.getMessage());
+            logger.log(Level.WARNING, ex.getMessage());
             return error(Status.BAD_REQUEST, "IOException: " + ex.getLocalizedMessage());
         }
         String msg = "Usage Metrics Data has been added to all datasets from file  " + reportOnDisk;
@@ -135,7 +128,7 @@ public class MakeDataCountApi extends AbstractApiBean {
 
     @POST
     @Path("{id}/updateCitationsForDataset")
-    public Response updateCitationsForDataset(@PathParam("id") String id) throws MalformedURLException, IOException {
+    public Response updateCitationsForDataset(@PathParam("id") String id) throws IOException {
         try {
             Dataset dataset = findDatasetOrDie(id);
             String persistentId = dataset.getGlobalId().toString();
@@ -158,7 +151,10 @@ public class MakeDataCountApi extends AbstractApiBean {
                     logger.warning("Failed to get citations from " + url.toString());
                     return error(Status.fromStatusCode(status), "Failed to get citations from " + url.toString());
                 }
-                JsonObject report = Json.createReader(connection.getInputStream()).readObject();
+                JsonObject report;
+                try (InputStream inStream = connection.getInputStream()) {
+                    report = JsonUtil.getJsonObject(inStream);
+                }
                 JsonObject links = report.getJsonObject("links");
                 JsonArray data = report.getJsonArray("data");
                 Iterator<JsonValue> iter = data.iterator();

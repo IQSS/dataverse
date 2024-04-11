@@ -35,8 +35,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 // Dataverse imports:
@@ -55,6 +53,7 @@ import java.util.ArrayList;
 public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.FileAccessIO");
+    public static final String DIRECTORY = "directory";
 
 
     public FileAccessIO() {
@@ -115,7 +114,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
                 this.setInputStream(fin);
                 setChannel(fin.getChannel());
-                this.setSize(getLocalFileSize());
+                this.setSize(retrieveSizeFromMedia());
 
                 if (dataFile.getContentType() != null
                         && dataFile.getContentType().equals("text/tab-separated-values")
@@ -506,21 +505,6 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     
     // Auxilary helper methods, filesystem access-specific:
     
-    private long getLocalFileSize () {
-        long fileSize = -1;
-
-        try {
-            File testFile = getFileSystemPath().toFile();
-            if (testFile != null) {
-                fileSize = testFile.length();
-            }
-            return fileSize;
-        } catch (IOException ex) {
-            return -1;
-        }
-
-    }
-
     public FileInputStream openLocalFileAsInputStream () {
         FileInputStream in;
 
@@ -595,7 +579,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     
     
     protected String getFilesRootDirectory() {
-        String filesRootDirectory = System.getProperty("dataverse.files." + this.driverId + ".directory", "/tmp/files");
+        String filesRootDirectory = getConfigParam(DIRECTORY, "/tmp/files");
         return filesRootDirectory;
     }
     
@@ -740,6 +724,20 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             this.deleteFile(f);
         }
         return toDelete;
+    }
+
+    @Override
+    public long retrieveSizeFromMedia() {
+        long fileSize = -1;
+        try {
+            File testFile = getFileSystemPath().toFile();
+            if (testFile != null) {
+                fileSize = testFile.length();
+            }
+            return fileSize;
+        } catch (IOException ex) {
+            return -1;
+        }
     }
 
 }

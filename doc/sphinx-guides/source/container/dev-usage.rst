@@ -141,26 +141,46 @@ Alternatives:
   Options are the same.
 
 
-Re-Deploying
-------------
+Redeploying
+-----------
 
-Currently, the only safe and tested way to re-deploy the Dataverse application after you applied code changes is
-by recreating the container(s). In the future, more options may be added here.
+Rebuild and Running Images
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you started your containers in foreground, just stop them and follow the steps for building and running again.
-The same goes for using Maven to start the containers in the background.
+The safest way to redeploy code is to stop the running containers (with Ctrl-c if you started them in the foreground) and then build and run them again with ``mvn -Pct clean package docker:run``.
 
-In case of using Docker Compose and starting the containers in the background, you can use a workaround to only
-restart the application container:
+IntelliJ IDEA Ultimate and Payara Platform Tools
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block::
+If you have IntelliJ IDEA Ultimate (note that `free educational licenses <https://www.jetbrains.com/community/education/>`_ are available), you can install `Payara Platform Tools <https://plugins.jetbrains.com/plugin/15114-payara-platform-tools>`_ which can dramatically improve your feedback loop when iterating on code.
 
-  # First rebuild the container (will complain about an image still in use, this is fine.)
-  mvn -Pct package
-  # Then re-create the container (will automatically restart the container for you)
-  docker compose -f docker-compose-dev.yml create dev_dataverse
+The following steps are suggested:
 
-Using ``docker container inspect dev_dataverse | grep Image`` you can verify the changed checksums.
+- Go to the Payara admin console (either at https://localhost:4848 or http://localhost:4849) and undeploy the dataverse application under "Applications".
+- Install Payara Platform Tools.
+- Under "Server":
+
+  - Click "Run" then "Edit Configurations".
+  - Click the plus sign and scroll down to Payara Server and click "Remote".
+  - For "Name" put "Payara in Docker" or something reasonable.
+  - Under "Application server" select a local directory that has the same version of Payara used in the container. This should match the version of Payara mentioned in the Installation Guide under :ref:`payara`.
+  - Change "Admin Server Port" to 4849.
+  - For username, put "admin".
+  - For password, put "admin".
+
+- Under "Deployment":
+
+  - Click the plus button and clien "Artifact" then "dataverse:war".
+
+- Under "Startup/Connection":
+
+  - Click "Debug" and change the port to 9009.
+
+- Click "Run" and then "Debug Payara in Docker". This initial deployment will take some time.
+- Go to http://localhost:8080/api/info/version and make sure the API is responding.
+- Edit ``Info.java`` and make a small change to the ``/api/info/version`` code.
+- Click "Run" then "Debugging Actions" then "Reload Changed Classes". The deployment should only take a few seconds.
+- Go to http://localhost:8080/api/info/version and verify the change you made.
 
 Using a Debugger
 ----------------

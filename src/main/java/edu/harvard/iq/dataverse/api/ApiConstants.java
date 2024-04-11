@@ -12,4 +12,9 @@ public final class ApiConstants {
 
     // Authentication
     public static final String CONTAINER_REQUEST_CONTEXT_USER = "user";
+
+    // Dataset
+    public static final String DS_VERSION_LATEST = ":latest";
+    public static final String DS_VERSION_DRAFT = ":draft";
+    public static final String DS_VERSION_LATEST_PUBLISHED = ":latest-published";
 }

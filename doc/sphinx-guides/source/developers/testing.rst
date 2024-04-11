@@ -5,7 +5,7 @@ Testing
 In order to keep our codebase healthy, the Dataverse Project encourages developers to write automated tests in the form of unit tests and integration tests. We also welcome ideas for how to improve our automated testing.
 
 .. contents:: |toctitle|
-	:local:
+    :local:
 
 The Health of a Codebase
 ------------------------
@@ -46,7 +46,7 @@ The main takeaway should be that we care about unit testing enough to measure th
 Writing Unit Tests with JUnit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We are aware that there are newer testing tools such as TestNG, but we use `JUnit <http://junit.org>`_ because it's tried and true.
+We are aware that there are newer testing tools such as TestNG, but we use `JUnit <https://junit.org>`_ because it's tried and true.
 We support JUnit 5 based testing and require new tests written with it.
 (Since Dataverse 6.0, we migrated all of our tests formerly based on JUnit 4.)
 
@@ -89,22 +89,35 @@ JUnit 5 Test Helper Extensions
 Our codebase provides little helpers to ease dealing with state during tests.
 Some tests might need to change something which should be restored after the test ran.
 
-For unit tests, the most interesting part is to set a JVM setting just for the current test.
-Please use the ``@JvmSetting(key = JvmSettings.XXX, value = "")`` annotation on a test method or
-a test class to set and clear the property automatically.
+For unit tests, the most interesting part is to set a JVM setting just for the current test or a whole test class.
+(Which might be an inner class, too!). Please make use of the ``@JvmSetting(key = JvmSettings.XXX, value = "")``
+annotation and also make sure to annotate the test class with ``@LocalJvmSettings``.
 
-To set arbitrary system properties for the current test, a similar extension
-``@SystemProperty(key = "", value = "")`` has been added.
+Inspired by JUnit's ``@MethodSource`` annotation, you may use ``@JvmSetting(key = JvmSettings.XXX, method = "zzz")``
+to reference a static method located in the same test class by name (i. e. ``private static String zzz() {}``) to allow
+retrieving dynamic data instead of String constants only. (Note the requirement for a *static* method!)
+
+If you want to delete a setting, simply provide a ``null`` value. This can be used to override a class-wide setting
+or some other default that is present for some reason.
+
+To set arbitrary system properties for the current test, a similar extension ``@SystemProperty(key = "", value = "")``
+has been added. (Note: it does not support method references.)
 
 Both extensions will ensure the global state of system properties is non-interfering for
 test executions. Tests using these extensions will be executed in serial.
+
+This settings helper may be extended at a later time to manipulate settings in a remote instance during integration
+or end-to-end testing. Stay tuned!
 
 Observing Changes to Code Coverage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Once you've written some tests, you're probably wondering how much you've helped to increase the code coverage. In Netbeans, do a "clean and build." Then, under the "Projects" tab, right-click "dataverse" and click "Code Coverage" -> "Show Report". For each Java file you have open, you should be able to see the percentage of code that is covered by tests and every line in the file should be either green or red. Green indicates that the line is being exercised by a unit test and red indicates that it is not.
 
-In addition to seeing code coverage in Netbeans, you can also see code coverage reports by opening ``target/site/jacoco/index.html`` in your browser.
+In addition to seeing code coverage in Netbeans, you can also see code coverage reports by opening ``target/site/jacoco-X-test-coverage-report/index.html`` in your browser.
+Depending on the report type you want to look at, let ``X`` be one of ``unit``, ``integration`` or ``merged``.
+"Merged" will display combined coverage of both unit and integration test, but does currently not cover API tests.
+
 
 Testing Commands
 ^^^^^^^^^^^^^^^^
@@ -177,42 +190,38 @@ Finally, run the script:
 
   $ ./ec2-create-instance.sh -g jenkins.yml -l log_dir
 
-Running the full API test suite using Docker
+Running the Full API Test Suite Using Docker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To run the full suite of integration tests on your laptop, running Dataverse and its dependencies in Docker, as explained in the :doc:`/container/dev-usage` section of the Container Guide.
+To run the full suite of integration tests on your laptop, we recommend running Dataverse and its dependencies in Docker, as explained in the :doc:`/container/dev-usage` section of the Container Guide. This environment provides additional services (such as S3) that are used in testing.
 
-Alternatively, you can run tests against the app server running on your laptop by following the "getting set up" steps below.
+Running the APIs Without Docker (Classic Dev Env)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Getting Set Up to Run REST Assured Tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+While it is possible to run a good number of API tests without using Docker in our :doc:`classic-dev-env`, we are transitioning toward including additional services (such as S3) in our Dockerized development environment (:doc:`/container/dev-usage`), so you will probably find it more convenient to it instead.
 
-Unit tests are run automatically on every build, but dev environments and servers require special setup to run REST Assured tests. In short, the Dataverse Software needs to be placed into an insecure mode that allows arbitrary users and datasets to be created and destroyed. This differs greatly from the out-of-the-box behavior of the Dataverse Software, which we strive to keep secure for sysadmins installing the software for their institutions in a production environment.
-
-The :doc:`dev-environment` section currently refers developers here for advice on getting set up to run REST Assured tests, but we'd like to add some sort of "dev" flag to the installer to put the Dataverse Software in "insecure" mode, with lots of scary warnings that this dev mode should not be used in production.
-
-The instructions below assume a relatively static dev environment on a Mac. There is a newer "all in one" Docker-based approach documented in the :doc:`/developers/containers` section under "Docker" that you may like to play with as well.
+Unit tests are run automatically on every build, but dev environments and servers require special setup to run API (REST Assured) tests. In short, the Dataverse software needs to be placed into an insecure mode that allows arbitrary users and datasets to be created and destroyed (this is done automatically in the Dockerized environment, as well as the steps described below). This differs greatly from the out-of-the-box behavior of the Dataverse software, which we strive to keep secure for sysadmins installing the software for their institutions in a production environment.
 
 The Burrito Key
 ^^^^^^^^^^^^^^^
 
-For reasons that have been lost to the mists of time, the Dataverse Software really wants you to to have a burrito. Specifically, if you're trying to run REST Assured tests and see the error "Dataverse config issue: No API key defined for built in user management", you must run the following curl command (or make an equivalent change to your database):
+For reasons that have been lost to the mists of time, the Dataverse software really wants you to to have a burrito. Specifically, if you're trying to run REST Assured tests and see the error "Dataverse config issue: No API key defined for built in user management", you must run the following curl command (or make an equivalent change to your database):
 
 ``curl -X PUT -d 'burrito' http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
 
-Without this "burrito" key in place, REST Assured will not be able to create users. We create users to create objects we want to test, such as Dataverse collections, datasets, and files.
+Without this "burrito" key in place, REST Assured will not be able to create users. We create users to create objects we want to test, such as collections, datasets, and files.
 
-Root Dataverse Collection Permissions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Root Collection Permissions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In your browser, log in as dataverseAdmin (password: admin) and click the "Edit" button for your root Dataverse collection. Navigate to Permissions, then the Edit Access button. Under "Who can add to this Dataverse collection?" choose "Anyone with a Dataverse installation account can add sub Dataverse collections and datasets" if it isn't set to this already.
+In your browser, log in as dataverseAdmin (password: admin) and click the "Edit" button for your root collection. Navigate to Permissions, then the Edit Access button. Under "Who can add to this collection?" choose "Anyone with a Dataverse installation account can add sub collections and datasets" if it isn't set to this already.
 
 Alternatively, this same step can be done with this script: ``scripts/search/tests/grant-authusers-add-on-root``
 
-Publish Root Dataverse Collection
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Publish Root Collection
+^^^^^^^^^^^^^^^^^^^^^^^
 
-The root Dataverse collection must be published for some of the REST Assured tests to run.
+The root collection must be published for some of the REST Assured tests to run.
 
 dataverse.siteUrl
 ^^^^^^^^^^^^^^^^^
@@ -224,6 +233,20 @@ When run locally (as opposed to a remote server), some of the REST Assured tests
 If ``dataverse.siteUrl`` is absent, you can add it with:
 
 ``./asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8080"``
+
+dataverse.oai.server.maxidentifiers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The OAI Harvesting tests require that the paging limit for ListIdentifiers must be set to 2, in order to be able to trigger this paging behavior without having to create and export too many datasets:
+
+``./asadmin create-jvm-options "-Ddataverse.oai.server.maxidentifiers=2"``
+
+dataverse.oai.server.maxrecords
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The OAI Harvesting tests require that the paging limit for ListRecords must be set to 2, in order to be able to trigger this paging behavior without having to create and export too many datasets:
+
+``./asadmin create-jvm-options "-Ddataverse.oai.server.maxrecords=2"``
 
 Identifier Generation
 ^^^^^^^^^^^^^^^^^^^^^
@@ -245,17 +268,22 @@ Remember, it’s only a test (and it's not graded)! Some guidelines to bear in m
 - Map out which logical functions you want to test
 - Understand what’s being tested and ensure it’s repeatable
 - Assert the conditions of success / return values for each operation
-  * A useful resource would be `HTTP status codes <http://www.restapitutorial.com/httpstatuscodes.html>`_
+  * A useful resource would be `HTTP status codes <https://www.restapitutorial.com/httpstatuscodes.html>`_
 - Let the code do the labor; automate everything that happens when you run your test file.
+- If you need to test an optional service (S3, etc.), add it to our docker compose file. See :doc:`/container/dev-usage`.
 - Just as with any development, if you’re stuck: ask for help!
 
-To execute existing integration tests on your local Dataverse installation, a helpful command line tool to use is `Maven <http://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <http://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it’s easily done via Homebrew: ``brew install maven``.
+To execute existing integration tests on your local Dataverse installation, a helpful command line tool to use is `Maven <https://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <https://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it’s easily done via Homebrew: ``brew install maven``.
 
 Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)>]``.
 
-+ If you want to run just one particular API test, it’s as easy as you think:
++ If you want to run just one particular API test class:
 
-  ``mvn test -Dtest=FileRecordJobIT``
+  ``mvn test -Dtest=UsersIT``
+
++ If you want to run just one particular API test method,
+
+  ``mvn test -Dtest=UsersIT#testMergeAccounts``
 
 + To run more than one test at a time, separate by commas:
 
@@ -284,33 +312,37 @@ To run a test with Testcontainers, you will need to write a JUnit 5 test.
 Please make sure to:
 
 1. End your test class with ``IT``
-2. Provide a ``@Tag("testcontainers")`` to be picked up during testing.
+2. Annotate the test class with two tags:
 
-.. code:: java
+   .. code:: java
 
-   /** A very minimal example for a Testcontainers integration test class. */
-   @Testcontainers
-   @Tag("testcontainers")
-   class MyExampleIT { /* ... */ }
+       /** A very minimal example for a Testcontainers integration test class. */
+       @Testcontainers(disabledWithoutDocker = true)
+       @Tag(edu.harvard.iq.dataverse.util.testing.Tags.INTEGRATION_TEST)
+       @Tag(edu.harvard.iq.dataverse.util.testing.Tags.USES_TESTCONTAINERS)
+       class MyExampleIT { /* ... */ }
 
-If using upstream Modules, e.g. for PostgreSQL or similar, you will need to add
+If using upstream modules, e.g. for PostgreSQL or similar, you will need to add
 a dependency to ``pom.xml`` if not present. `See the PostgreSQL module example. <https://www.testcontainers.org/modules/databases/postgres/>`_
 
 To run these tests, simply call out to Maven:
 
 .. code::
 
-	 mvn -P tc verify
+    mvn verify
 
-.. note::
+Notes:
 
-	 1. Remember to have Docker ready to serve or tests will fail.
-	 2. This will not run any unit tests or API tests.
+1. Remember to have Docker ready to serve or tests will fail.
+2. You can skip running unit tests by adding ``-DskipUnitTests``
+3. You can choose to ignore test with Testcontainers by adding ``-Dit.groups='integration & !testcontainers'``
+   Learn more about `filter expressions in the JUnit 5 guide <https://junit.org/junit5/docs/current/user-guide/#running-tests-tag-expressions>`_.
 
-Measuring Coverage of Integration Tests
----------------------------------------
 
-Measuring the code coverage of integration tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara6" as the Payara directory and "dataverse" as the Payara Unix user.
+Measuring Coverage of API Tests
+-------------------------------
+
+Measuring the code coverage of API tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara6" as the Payara directory and "dataverse" as the Payara Unix user.
 
 Please note that this was tested under Glassfish 4 but it is hoped that the same steps will work with Payara.
 
@@ -360,8 +392,8 @@ Run this as the "dataverse" user.
 
 Note that after deployment the file "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
 
-Run Integration Tests
-~~~~~~~~~~~~~~~~~~~~~
+Run API Tests
+~~~~~~~~~~~~~
 
 Note that even though you see "docker-aio" in the command below, we assume you are not necessarily running the test suite within Docker. (Some day we'll probably move this script to another directory.) For this reason, we pass the URL with the normal port (8080) that app servers run on to the ``run-test-suite.sh`` script.
 
@@ -394,6 +426,8 @@ target/coverage-it/index.html is the place to start reading the code coverage re
 
 Load/Performance Testing
 ------------------------
+
+.. _locust:
 
 Locust
 ~~~~~~
@@ -494,7 +528,7 @@ Future Work on Integration Tests
 - Automate testing of dataverse-client-python: https://github.com/IQSS/dataverse-client-python/issues/10
 - Work with @leeper on testing the R client: https://github.com/IQSS/dataverse-client-r
 - Review and attempt to implement "API Test Checklist" from @kcondon at https://docs.google.com/document/d/199Oq1YwQ4pYCguaeW48bIN28QAitSk63NbPYxJHCCAE/edit?usp=sharing
-- Generate code coverage reports for **integration** tests: https://github.com/pkainulainen/maven-examples/issues/3 and http://www.petrikainulainen.net/programming/maven/creating-code-coverage-reports-for-unit-and-integration-tests-with-the-jacoco-maven-plugin/
+- Generate code coverage reports for **integration** tests: https://github.com/pkainulainen/maven-examples/issues/3 and https://www.petrikainulainen.net/programming/maven/creating-code-coverage-reports-for-unit-and-integration-tests-with-the-jacoco-maven-plugin/
 - Consistent logging of API Tests. Show test name at the beginning and end and status codes returned.
 - expected passing and known/expected failing integration tests: https://github.com/IQSS/dataverse/issues/4438
 

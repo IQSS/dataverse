@@ -27,7 +27,7 @@ separately, in a relational database, so that it can be accessed
 efficiently by the application. For the purposes of archival
 preservation it can be exported, in plain text XML files, using a
 standardized, open `DDI Codebook
-<http://www.ddialliance.org/Specification/DDI-Codebook/2.5/>`_
+<https://www.ddialliance.org/Specification/DDI-Codebook/2.5/>`_
 format. (more info below)
 
 
@@ -53,6 +53,6 @@ Tabular Metadata in the Dataverse Software
 
 The structure of the metadata defining tabular data variables used in
 the Dataverse Software was originally based on the `DDI Codebook
-<http://www.ddialliance.org/Specification/DDI-Codebook/2.5/>`_ format.
+<https://www.ddialliance.org/Specification/DDI-Codebook/2.5/>`_ format.
 
 You can see an example of DDI output under the :ref:`data-variable-metadata-access` section of the :doc:`/api/dataaccess` section of the API Guide.

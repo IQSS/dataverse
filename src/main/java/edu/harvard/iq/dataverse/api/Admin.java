@@ -96,7 +96,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeactivateUserCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
@@ -105,8 +104,10 @@ import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -122,6 +123,7 @@ import jakarta.persistence.Query;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
+import java.nio.file.Paths;
 
 /**
  * Where the secure, setup API calls live.
@@ -2418,12 +2420,60 @@ public class Admin extends AbstractApiBean {
         }
         
         String baseUrl = urlInfo.getString("url");
-        int timeout = urlInfo.getInt(ExternalToolHandler.TIMEOUT, 10);
-        String method = urlInfo.getString(ExternalToolHandler.HTTP_METHOD, "GET");
+        int timeout = urlInfo.getInt(URLTokenUtil.TIMEOUT, 10);
+        String method = urlInfo.getString(URLTokenUtil.HTTP_METHOD, "GET");
         
         String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, key); 
         
-        return ok(Json.createObjectBuilder().add(ExternalToolHandler.SIGNED_URL, signedUrl));
+        return ok(Json.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }
  
+    @DELETE
+    @Path("/clearThumbnailFailureFlag")
+    public Response clearThumbnailFailureFlag() {
+        em.createNativeQuery("UPDATE dvobject SET previewimagefail = FALSE").executeUpdate();
+        return ok("Thumbnail Failure Flags cleared.");
+    }
+    
+    @DELETE
+    @Path("/clearThumbnailFailureFlag/{id}")
+    public Response clearThumbnailFailureFlagByDatafile(@PathParam("id") String fileId) {
+        try {
+            DataFile df = findDataFileOrDie(fileId);
+            Query deleteQuery = em.createNativeQuery("UPDATE dvobject SET previewimagefail = FALSE where id = ?");
+            deleteQuery.setParameter(1, df.getId());
+            deleteQuery.executeUpdate();
+            return ok("Thumbnail Failure Flag cleared for file id=: " + df.getId() + ".");
+        } catch (WrappedResponse r) {
+            logger.info("Could not find file with the id: " + fileId);
+            return error(Status.BAD_REQUEST, "Could not find file with the id: " + fileId);
+        }
+    }
+
+    /**
+     * For testing only. Download a file from /tmp.
+     */
+    @GET
+    @AuthRequired
+    @Path("/downloadTmpFile")
+    public Response downloadTmpFile(@Context ContainerRequestContext crc, @QueryParam("fullyQualifiedPathToFile") String fullyQualifiedPathToFile) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        java.nio.file.Path normalizedPath = Paths.get(fullyQualifiedPathToFile).normalize();
+        if (!normalizedPath.toString().startsWith("/tmp")) {
+            return error(Status.BAD_REQUEST, "Path must begin with '/tmp' but after normalization was '" + normalizedPath +"'.");
+        }
+        try {
+            return ok(new FileInputStream(fullyQualifiedPathToFile));
+        } catch (IOException ex) {
+            return error(Status.BAD_REQUEST, ex.toString());
+        }
+    }
+
 }
