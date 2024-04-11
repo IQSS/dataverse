@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
@@ -36,12 +39,12 @@ public class HarvestingClientsIT {
     private static final String HARVEST_METADATA_FORMAT = "oai_dc";
     private static final String ARCHIVE_DESCRIPTION = "RestAssured harvesting client test";
     private static final String CONTROL_OAI_SET = "controlTestSet2";
-    private static final String CONTROL_OAI_SET_IDS = "doi:10.5072/FK2";
     private static final int DATASETS_IN_CONTROL_SET = 8;
     private static String normalUserAPIKey;
     private static String adminUserAPIKey;
     private static String harvestCollectionAlias;
     String clientApiPath = null;
+    List<String> globalIdList = new ArrayList();
     
     @BeforeAll
     public static void setUpClass() {
@@ -65,13 +68,15 @@ public class HarvestingClientsIT {
 
             int i = 0;
             int maxWait = 20;
+            String query = "dsPersistentId:" + globalIdList.stream().map(s -> "\""+s+"\"").collect(Collectors.joining(","));
             do {
-                if (UtilIT.search("dsPersistentId:" + CONTROL_OAI_SET_IDS, normalUserAPIKey).prettyPrint().contains("count_in_response\": 0")) {
+                if (UtilIT.search(query, normalUserAPIKey).prettyPrint().contains("count_in_response\": 0")) {
                     break;
                 }
                 Thread.sleep(1000L);
             } while (i++ < maxWait);
         }
+        globalIdList.clear();
     }
 
     private static void setupUsers() {
@@ -282,10 +287,16 @@ public class HarvestingClientsIT {
         System.out.println("Waited " + i + " seconds for the harvest to complete.");
 
         Response searchHarvestedDatasets = UtilIT.search("metadataSource:" + nickName, normalUserAPIKey);
+        searchHarvestedDatasets.then().assertThat().statusCode(OK.getStatusCode());
         searchHarvestedDatasets.prettyPrint();
-        searchHarvestedDatasets.then().assertThat()
-                                .statusCode(OK.getStatusCode())
-                                .body("data.total_count", equalTo(expectedNumberOfSetsHarvested));
+        // Get all global ids for cleanup
+        JsonPath jsonPath = searchHarvestedDatasets.getBody().jsonPath();
+        int sz = jsonPath.getInt("data.items.size()");
+        for(int idx = 0; idx < sz; idx++) {
+            globalIdList.add(jsonPath.getString("data.items["+idx+"].global_id"));
+        }
+        // verify count after collecting global ids
+        assertEquals(expectedNumberOfSetsHarvested, jsonPath.getInt("data.total_count"));
         
         // Fail if it hasn't completed in maxWait seconds
         assertTrue(i < maxWait);
