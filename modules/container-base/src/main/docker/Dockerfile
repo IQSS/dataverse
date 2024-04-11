@@ -221,7 +221,7 @@ RUN <<EOF
 EOF
 
 USER root
-# Prepare domaindir to be writeable when running on OpenShift (arbitrary UIDs)
+# Prepare domain directory to be writeable when running on OpenShift (arbitrary UIDs)
 # https://docs.openshift.com/container-platform/4.14/openshift_images/create-images.html#use-uid_create-images
 RUN true && \
     chgrp -R 0 "${DOMAIN_DIR}" && \
