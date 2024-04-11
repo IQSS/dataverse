@@ -35,7 +35,7 @@ jobs:
             packages: write
             pull-requests: write
         # Only run in upstream repo - avoid unnecessary runs in forks
-        if: ${{ github.repository_owner == 'IQSS' }}
+        if: ${{ github.repository_owner == 'IQSS' && inputs.branch == '10478-version-base-img' }}
 
         steps:
             - name: Checkout repository
