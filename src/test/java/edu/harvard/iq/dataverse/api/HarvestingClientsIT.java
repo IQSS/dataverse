@@ -36,6 +36,7 @@ public class HarvestingClientsIT {
     private static final String HARVEST_METADATA_FORMAT = "oai_dc";
     private static final String ARCHIVE_DESCRIPTION = "RestAssured harvesting client test";
     private static final String CONTROL_OAI_SET = "controlTestSet2";
+    private static final String CONTROL_OAI_SET_IDS = "doi:10.5072/FK2";
     private static final int DATASETS_IN_CONTROL_SET = 8;
     private static String normalUserAPIKey;
     private static String adminUserAPIKey;
@@ -54,13 +55,22 @@ public class HarvestingClientsIT {
         
     }
     @AfterEach
-    public void cleanup() {
+    public void cleanup() throws InterruptedException {
         if (clientApiPath != null) {
             Response deleteResponse = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                     .delete(clientApiPath);
             clientApiPath = null;
             System.out.println("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
+
+            int i = 0;
+            int maxWait = 20;
+            do {
+                if (UtilIT.search("dsPersistentId:" + CONTROL_OAI_SET_IDS, normalUserAPIKey).prettyPrint().contains("count_in_response\": 0")) {
+                    break;
+                }
+                Thread.sleep(1000L);
+            } while (i++ < maxWait);
         }
     }
 
@@ -279,19 +289,5 @@ public class HarvestingClientsIT {
         
         // Fail if it hasn't completed in maxWait seconds
         assertTrue(i < maxWait);
-
-        // cleanup datasets so other tests can run
-        Response deleteResponse = given()
-                .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
-                .delete(clientApiPath);
-        clientApiPath = null;
-        System.out.println("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
-
-        i = 0;
-        maxWait=20;
-        do {
-            Thread.sleep(1000L);
-            searchHarvestedDatasets = UtilIT.search("metadataSource:" + nickName, adminUserAPIKey);
-        } while (i++<maxWait && !searchHarvestedDatasets.prettyPrint().contains("count_in_response\": 0"));
     }
 }
