@@ -203,7 +203,7 @@ RUN <<EOF
     ${ASADMIN} create-network-listener --protocol=http-listener-1 --listenerport=8009 --jkenabled=true jk-connector
     ${ASADMIN} set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled=true
     ${ASADMIN} create-system-properties javax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl
-    # Always disable phoning home...
+    # Always disable phoning home
     ${ASADMIN} disable-phone-home
 
     ### CLEANUP
