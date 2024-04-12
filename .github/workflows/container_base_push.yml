@@ -4,7 +4,7 @@ name: Base Container Image
 on:
     push:
         tags:
-            - 'v[6-9].*'
+            - 'v[6-9].**'
         branches:
             - 'develop'
             - '10478-version-base-img'
