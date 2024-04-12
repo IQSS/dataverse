@@ -142,7 +142,7 @@ jobs:
               id: build
               # Do not build for v6.0 and v6.1. We can simply reuse the one from v6.2.
               if: ${{ matrix.branch != 'v6.0' && matrix.branch != 'v6.1' }}
-              run: mvn -f modules/container-base -Pct deploy ${DOCKER_TAGS} -Ddocker.platforms=${{ env.PLATFORMS }}
+              run: mvn -f modules/container-base -Pct deploy -Ddocker.noCache ${DOCKER_TAGS} -Ddocker.platforms=${{ env.PLATFORMS }}
 
             - if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
               name: Push description to DockerHub
