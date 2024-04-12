@@ -1059,9 +1059,9 @@ public class Admin extends AbstractApiBean {
 
     @Path("superuser/{identifier}")
     @PUT
-    //using string instead of boolean so user doesnt need to add Content type header in their request
+    // Using string instead of boolean so user doesn't need to add a Content-type header in their request
     public Response setSuperuserStatus(@PathParam("identifier") String identifier, String isSuperuser) {
-        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "changeSuperUserStatus")
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "setSuperuserStatus")
                 .setInfo(identifier + ":" + isSuperuser);
         try {
             return setSuperuserStatus(authSvc.getAuthenticatedUser(identifier), StringUtil.isTrue(isSuperuser));
