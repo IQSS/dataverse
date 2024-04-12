@@ -86,17 +86,21 @@ jobs:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-            # This is replaced by adding a remote ARM64 build host in addition to the local AMD64
-            # - name: Set up QEMU for multi-arch builds
-            #   uses: docker/setup-qemu-action@v3
-            #   with:
-            #       platforms: ${{ env.PLATFORMS }}
-            # Setup SSH access to ARM64 builder node
+            # In case of scheduled maintenance, we don't care about buildtime: use QEMU for AMD64 + ARM64
+            - name: Set up QEMU for multi-arch builds
+              if: ${{ github.event_name == 'schedule' }}
+              uses: docker/setup-qemu-action@v3
+              with:
+                  platforms: ${{ env.PLATFORMS }}
+            # In case this is a push to develop, we care about buildtime.
+            # Configure a remote ARM64 build host in addition to the local AMD64 in two steps.
             - name: Setup SSH agent
+              if: ${{ github.event_name != 'schedule' }}
               uses: webfactory/ssh-agent@v0.9.0
               with:
                   ssh-private-key: ${{ secrets.BUILDER_ARM64_SSH_PRIVATE_KEY }}
             - name: Provide the known hosts key and the builder config
+              if: ${{ github.event_name != 'schedule' }}
               run: |
                   echo "${{ secrets.BUILDER_ARM64_SSH_HOST_KEY }}" > ~/.ssh/known_hosts
                   mkdir -p modules/container-base/target/buildx-state/buildx/instances
