@@ -1030,49 +1030,49 @@ public class Admin extends AbstractApiBean {
         }, getRequestUser(crc));
     }
 
-	@Path("superuser/{identifier}")
-	@Deprecated
-	@POST
-	public Response toggleSuperuser(@PathParam("identifier") String identifier) {
-		ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "toggleSuperuser")
-				.setInfo(identifier);
-		try {
-			final AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
-			return setSuperuserStatus(user, !user.isSuperuser());
-		} catch (Exception e) {
-			alr.setActionResult(ActionLogRecord.Result.InternalError);
-			alr.setInfo(alr.getInfo() + "// " + e.getMessage());
-			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
-		} finally {
-			actionLogSvc.log(alr);
-		}
-	}
+    @Path("superuser/{identifier}")
+    @Deprecated
+    @POST
+    public Response toggleSuperuser(@PathParam("identifier") String identifier) {
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "toggleSuperuser")
+                .setInfo(identifier);
+        try {
+            final AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+            return setSuperuserStatus(user, !user.isSuperuser());
+        } catch (Exception e) {
+            alr.setActionResult(ActionLogRecord.Result.InternalError);
+            alr.setInfo(alr.getInfo() + "// " + e.getMessage());
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        } finally {
+            actionLogSvc.log(alr);
+        }
+    }
 
-	private Response setSuperuserStatus(AuthenticatedUser user, Boolean isSuperuser) {
-		if (user.isDeactivated()) {
-			return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
-		}
-		user.setSuperuser(isSuperuser);
-		return ok("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set" : "removed")
-				+ " as a superuser.");
-	}
+    private Response setSuperuserStatus(AuthenticatedUser user, Boolean isSuperuser) {
+        if (user.isDeactivated()) {
+            return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
+        }
+        user.setSuperuser(isSuperuser);
+        return ok("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set" : "removed")
+                + " as a superuser.");
+    }
 
-	@Path("superuser/{identifier}")
-	@PUT
-	//using string instead of boolean so user doesnt need to add Content type header in their request
-	public Response setSuperuserStatus(@PathParam("identifier") String identifier, String isSuperuser) {
-		ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "changeSuperUserStatus")
-				.setInfo(identifier + ":" + isSuperuser);
-		try {
+    @Path("superuser/{identifier}")
+    @PUT
+    //using string instead of boolean so user doesnt need to add Content type header in their request
+    public Response setSuperuserStatus(@PathParam("identifier") String identifier, String isSuperuser) {
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "changeSuperUserStatus")
+                .setInfo(identifier + ":" + isSuperuser);
+        try {
             return setSuperuserStatus(authSvc.getAuthenticatedUser(identifier), StringUtil.isTrue(isSuperuser));
-		} catch (Exception e) {
-			alr.setActionResult(ActionLogRecord.Result.InternalError);
-			alr.setInfo(alr.getInfo() + "// " + e.getMessage());
-			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
-		} finally {
-			actionLogSvc.log(alr);
-		}
-	}
+        } catch (Exception e) {
+            alr.setActionResult(ActionLogRecord.Result.InternalError);
+            alr.setInfo(alr.getInfo() + "// " + e.getMessage());
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        } finally {
+            actionLogSvc.log(alr);
+        }
+    }
 
     @GET
     @Path("validate/datasets")
