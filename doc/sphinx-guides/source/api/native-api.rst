@@ -5433,13 +5433,13 @@ Specify the superuser status of a user with a boolean value.
   export SERVER_URL=http://localhost:8080
   export USERNAME=jdoe
   export IS_SUPERUSER=true
-  curl -X PUT "$SERVER/api/admin/superuser/$USERNAME" -H "Content-Type: application/json" --data "$IS_SUPERUSER"
+  curl -X PUT "$SERVER/api/admin/superuser/$USERNAME" -d "$IS_SUPERUSER"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -X PUT "http://localhost:8080/api/admin/superuser/jdoe" -H "Content-Type: text/plain" -d "true"
+  curl -X PUT "http://localhost:8080/api/admin/superuser/jdoe"  -d "true"
 
 .. _delete-a-user:
 
