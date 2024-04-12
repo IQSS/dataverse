@@ -100,17 +100,17 @@ jobs:
               run: |
                   echo "${{ secrets.BUILDER_ARM64_SSH_HOST_KEY }}" > ~/.ssh/known_hosts
                   mkdir -p modules/container-base/target/buildx-state/buildx/instances
-                  cat > modules/container-base/target/buildx-state/buildx/instances/dataverse << EOF
-                  { "Name": "dataverse",
+                  cat > modules/container-base/target/buildx-state/buildx/instances/maven << EOF
+                  { "Name": "maven",
                     "Driver": "docker-container",
                     "Dynamic": false,
-                    "Nodes": [{"Name": "dataverse0",
+                    "Nodes": [{"Name": "maven0",
                                "Endpoint": "unix:///var/run/docker.sock",
                                "Platforms": [{"os": "linux", "architecture": "amd64"}],
                                "DriverOpts": null,
                                "Flags": ["--allow-insecure-entitlement=network.host"],
                                "Files": null},
-                              {"Name": "dataverse1",
+                              {"Name": "maven1",
                                "Endpoint": "ssh://${{ secrets.BUILDER_ARM64_SSH_CONNECTION }}",
                                "Platforms": [{"os": "linux", "architecture": "arm64"}],
                                "DriverOpts": null,
