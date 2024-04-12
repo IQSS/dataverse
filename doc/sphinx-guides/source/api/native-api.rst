@@ -5439,7 +5439,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -X PUT "http://localhost:8080/api/admin/superuser/jdoe" -H "Content-Type: application/json" -d "true"
+  curl -X PUT "http://localhost:8080/api/admin/superuser/jdoe" -H "Content-Type: text/plain" -d "true"
 
 .. _delete-a-user:
 
