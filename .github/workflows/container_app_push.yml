@@ -52,6 +52,7 @@ jobs:
               if: ${{ steps.setup-java.outputs.cache-hit != 'true' }}
               uses: actions/cache/restore@v4
               with:
+                  path: ~/.m2/repository
                   key: dataverse-maven-cache
 
 
@@ -130,6 +131,7 @@ jobs:
               if: ${{ steps.setup-java.outputs.cache-hit != 'true' }}
               uses: actions/cache/restore@v4
               with:
+                  path: ~/.m2/repository
                   key: dataverse-maven-cache
 
             # Depending on context, we push to different targets. Login accordingly.
