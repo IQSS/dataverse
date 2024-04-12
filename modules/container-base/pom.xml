@@ -97,7 +97,6 @@
                                     <build>
                                         <buildx>
                                             <platforms>
-                                                <!-- Will be empty by default, deactivating buildx -->
                                                 <platform>${docker.platforms}</platform>
                                             </platforms>
                                             <dockerStateDir>${project.build.directory}/buildx-state</dockerStateDir>
