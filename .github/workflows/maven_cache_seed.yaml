@@ -31,6 +31,8 @@ jobs:
               uses: prantlf/delete-cache-action@v2
               with:
                   key: ${{ env.COMMON_CACHE_NAME }}
+            # NOTE: It is vital here to remember that only caches with the scope of the default branch are
+            #       available to other branches. We use the v2 action here to save it anyway.
             - name: Save the cache
               uses: actions/cache@v2
               with:
