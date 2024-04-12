@@ -18,13 +18,15 @@ import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
@@ -44,15 +46,15 @@ public class RestrictFileCommandTest {
     public RestrictFileCommandTest() {
     }
     
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
     
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
     }
     
-    @Before
+    @BeforeEach
     public void setUp() {
         dataset = makeDataset();
         file = makeDataFile();
@@ -74,7 +76,7 @@ public class RestrictFileCommandTest {
             
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
     }
         
@@ -108,7 +110,7 @@ public class RestrictFileCommandTest {
         //asserts
         assertTrue(!file.isRestricted());
         boolean fileFound = false;
-        for (FileMetadata fmw : dataset.getEditVersion().getFileMetadatas()) {
+        for (FileMetadata fmw : dataset.getOrCreateEditVersion().getFileMetadatas()) {
             if (file.equals(fmw.getDataFile())) {
                 fileFound=true;
                 //If it worked fmw is for the draft version and file.getFileMetadata() is for the published version
@@ -193,7 +195,7 @@ public class RestrictFileCommandTest {
         //asserts
         assertTrue(file.isRestricted());
         boolean fileFound = false;
-        for (FileMetadata fmw : dataset.getEditVersion().getFileMetadatas()) {
+        for (FileMetadata fmw : dataset.getOrCreateEditVersion().getFileMetadatas()) {
             if (file.equals(fmw.getDataFile())) {
                 fileFound = true;
                 assertTrue(!fmw.isRestricted());
@@ -247,7 +249,7 @@ public class RestrictFileCommandTest {
         
     }
 
-    @Test 
+    @Test
     public void testPublicInstall() throws CommandException {
         file.setOwner(dataset);
         String expected = "Restricting files is not permitted on a public installation.";

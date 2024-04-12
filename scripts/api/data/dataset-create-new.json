@@ -4,6 +4,10 @@
   "persistentUrl": "http://dx.doi.org/10.5072/FK2/9",
   "protocol": "chadham-house-rule",
   "datasetVersion": {
+    "license": {
+      "name": "CC0 1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+    },
     "metadataBlocks": {
       "citation": {
         "displayName": "Citation Metadata",

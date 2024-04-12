@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
@@ -19,32 +20,28 @@ import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.io.StringWriter;
 import java.net.URI;
-import java.net.URL;
 import java.sql.Timestamp;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-import javax.json.JsonWriter;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ServiceUnavailableException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.EJB;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonWriter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ServiceUnavailableException;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 
-import org.apache.commons.httpclient.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -115,7 +112,7 @@ public class LDNInbox extends AbstractApiBean {
             String itemType = null;
             JsonLDNamespace activityStreams = JsonLDNamespace.defineNamespace("as",
                     "https://www.w3.org/ns/activitystreams#");
-            JsonLDNamespace ietf = JsonLDNamespace.defineNamespace("ietf", "http://www.iana.org/assignments/relation/");
+            //JsonLDNamespace ietf = JsonLDNamespace.defineNamespace("ietf", "http://www.iana.org/assignments/relation/");
             String objectKey = new JsonLDTerm(activityStreams, "object").getUrl();
             if (jsonld.containsKey(objectKey)) {
                 JsonObject msgObject = jsonld.getJsonObject(objectKey);
@@ -167,10 +164,10 @@ public class LDNInbox extends AbstractApiBean {
                         logger.info("Found # at " + index + " in " + relationshipId);
                         String relationship = relationshipId.substring(index + 1);
                         // Parse the URI as a PID and see if this Dataverse instance has this dataset
-                        String pid = GlobalId.getInternalFormOfPID(objectId);
-                        Optional<GlobalId> id = GlobalId.parse(pid);
+                        Optional<GlobalId> id = PidProvider.parse(objectId);
                         if (id.isPresent()) {
-                            Dataset dataset = datasetSvc.findByGlobalId(pid);
+                            //ToDo - avoid reparsing GlobalId by making a findByGlobalId(GlobalId) method?
+                            Dataset dataset = datasetSvc.findByGlobalId(objectId);
                             if (dataset != null) {
                                 JsonObjectBuilder citingResourceBuilder = Json.createObjectBuilder().add("@id", subjectId)
                                         .add("relationship", relationship);
@@ -187,7 +184,7 @@ public class LDNInbox extends AbstractApiBean {
                                 }
                                 String jsonstring = sw.toString();
                                 logger.info("Storing: " + jsonstring);
-                                Set<RoleAssignment> ras = roleService.rolesAssignments(dataset);
+                                //Set<RoleAssignment> ras = roleService.rolesAssignments(dataset);
 
                                 roleService.rolesAssignments(dataset).stream()
                                         .filter(ra -> ra.getRole().permissions().contains(Permission.PublishDataset))

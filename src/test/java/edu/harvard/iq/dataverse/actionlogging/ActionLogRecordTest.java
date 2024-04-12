@@ -1,13 +1,13 @@
 package edu.harvard.iq.dataverse.actionlogging;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Date;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord.ActionType;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord.Result;
@@ -16,7 +16,7 @@ public class ActionLogRecordTest {
 
     private ActionLogRecord referenceRecord;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.referenceRecord = new ActionLogRecord(ActionType.Admin, "subType1");
         this.referenceRecord.setEndTime(new Date());
@@ -25,7 +25,7 @@ public class ActionLogRecordTest {
         this.referenceRecord.setInfo("info1");
     }
 
-    @After
+    @AfterEach
     public void tearDwon() {
         this.referenceRecord = null;
     }

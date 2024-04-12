@@ -1,21 +1,28 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.response.Response;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountProcessState;
+import io.restassured.path.json.JsonPath;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import java.io.File;
 import java.io.IOException;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import org.apache.commons.io.FileUtils;
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class MakeDataCountApiIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
@@ -171,6 +178,60 @@ public class MakeDataCountApiIT {
 
     }
 
+    @Test
+    public void testGetUpdateDeleteProcessingState() {
+        String yearMonth = "2000-01";
+        // make sure it isn't in the DB
+        Response deleteState = UtilIT.makeDataCountDeleteProcessingState(yearMonth);
+        deleteState.then().assertThat().statusCode(anyOf(equalTo(200), equalTo(404)));
+
+        Response getState = UtilIT.makeDataCountGetProcessingState(yearMonth);
+        getState.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        Response updateState = UtilIT.makeDataCountUpdateProcessingState(yearMonth, MakeDataCountProcessState.MDCProcessState.PROCESSING.toString());
+        updateState.then().assertThat().statusCode(OK.getStatusCode());
+        getState = UtilIT.makeDataCountGetProcessingState(yearMonth);
+        getState.then().assertThat().statusCode(OK.getStatusCode());
+        JsonPath stateJson = JsonPath.from(getState.body().asString());
+        stateJson.prettyPrint();
+        String state1 = stateJson.getString("data.state");
+        assertThat(state1, Matchers.equalTo(MakeDataCountProcessState.MDCProcessState.PROCESSING.name()));
+        String updateTimestamp1 = stateJson.getString("data.stateChangeTimestamp");
+
+        updateState = UtilIT.makeDataCountUpdateProcessingState(yearMonth, MakeDataCountProcessState.MDCProcessState.DONE.toString());
+        updateState.then().assertThat().statusCode(OK.getStatusCode());
+        stateJson = JsonPath.from(updateState.body().asString());
+        stateJson.prettyPrint();
+        String state2 = stateJson.getString("data.state");
+        String updateTimestamp2 = stateJson.getString("data.stateChangeTimestamp");
+        assertThat(state2, Matchers.equalTo(MakeDataCountProcessState.MDCProcessState.DONE.name()));
+
+        assertThat(updateTimestamp2, Matchers.is(Matchers.greaterThan(updateTimestamp1)));
+
+        deleteState = UtilIT.makeDataCountDeleteProcessingState(yearMonth);
+        deleteState.then().assertThat().statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testUpdateProcessingStateWithInvalidState() {
+        String yearMonth = "2000-02";
+        // make sure it isn't in the DB
+        Response deleteState = UtilIT.makeDataCountDeleteProcessingState(yearMonth);
+        deleteState.then().assertThat().statusCode(anyOf(equalTo(200), equalTo(404)));
+
+        Response stateResponse = UtilIT.makeDataCountUpdateProcessingState(yearMonth, "InvalidState");
+        stateResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        stateResponse = UtilIT.makeDataCountUpdateProcessingState(yearMonth, "new");
+        stateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        stateResponse = UtilIT.makeDataCountUpdateProcessingState(yearMonth, "InvalidState");
+        stateResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        stateResponse = UtilIT.makeDataCountGetProcessingState(yearMonth);
+        stateResponse.then().assertThat().statusCode(OK.getStatusCode());
+        JsonPath stateJson = JsonPath.from(stateResponse.body().asString());
+        String state = stateJson.getString("data.state");
+        assertThat(state, Matchers.equalTo(MakeDataCountProcessState.MDCProcessState.NEW.name()));
+    }
+
     /**
      * Ignore is set on this test because it requires database edits to pass.
      * There are currently two citions for doi:10.7910/DVN/HQZOOB but you have
@@ -181,7 +242,7 @@ public class MakeDataCountApiIT {
      *
      * update dvobject set authority = '10.7910' where id = 10;
      */
-    @Ignore
+    @Disabled
     @Test
     public void testMakeDataCountDownloadCitation() {
         String idOrPersistentIdOfDataset = "doi:10.7910/DVN/HQZOOB";

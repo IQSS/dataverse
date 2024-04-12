@@ -29,6 +29,9 @@ public class JsonLDTerm {
     public static JsonLDTerm studyCompletion = JsonLDTerm.DVCore("studyCompletion");
 
     public static JsonLDTerm restricted = JsonLDTerm.DVCore("restricted");
+    public static JsonLDTerm embargoed = JsonLDTerm.DVCore("embargoed");
+    public static JsonLDTerm embargoDateAvailable = JsonLDTerm.DVCore("dateAvailable");
+    public static JsonLDTerm embargoReason = JsonLDTerm.DVCore("reason");
     public static JsonLDTerm directoryLabel = JsonLDTerm.DVCore("directoryLabel");
     public static JsonLDTerm datasetVersionId = JsonLDTerm.DVCore("datasetVersionId");
     public static JsonLDTerm categories = JsonLDTerm.DVCore("categories");

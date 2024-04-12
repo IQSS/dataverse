@@ -1,3 +1,0 @@
-## New DB Settings
-
-- :ControlledVocabularyCustomJavaScript

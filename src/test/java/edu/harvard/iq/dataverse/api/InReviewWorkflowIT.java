@@ -1,31 +1,29 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.path.xml.XmlPath;
-import com.jayway.restassured.response.Response;
-import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.path.xml.XmlPath;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.Assert;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class InReviewWorkflowIT {
 
     private static final Logger logger = Logger.getLogger(DatasetsIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 
@@ -170,7 +168,7 @@ public class InReviewWorkflowIT {
                 .statusCode(OK.getStatusCode());
         String citation = XmlPath.from(atomEntry.body().asString()).getString("bibliographicCitation");
         System.out.println("citation: " + citation);
-        Assert.assertTrue(citation.contains("A Better Title"));
+        assertTrue(citation.contains("A Better Title"));
 
         // The author tries to update the title while the dataset is in review via native.
         String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
@@ -186,7 +184,7 @@ public class InReviewWorkflowIT {
         String citationAuthorNative = XmlPath.from(atomEntryAuthorNative.body().asString()).getString("bibliographicCitation");
         System.out.println("citation: " + citationAuthorNative);
         // The author was unable to change the title.
-        Assert.assertTrue(citationAuthorNative.contains("A Better Title"));
+        assertTrue(citationAuthorNative.contains("A Better Title"));
 
         // The author remembers she forgot to add a file and tries to upload it while
         // the dataset is in review via native API but this fails.
@@ -239,7 +237,7 @@ public class InReviewWorkflowIT {
                 // because the dataset is still locked when we try to edit it, 
                 // a few lines down. -- L.A. Oct. 2018  
                 // Changes to test for ingest lock and 3 seconds duration SEK 09/2019 #6128
-                assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest , UtilIT.sleepForLock(datasetId, "Ingest", curatorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+                assertTrue(UtilIT.sleepForLock(datasetId, "Ingest", curatorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest);
                // Thread.sleep(10000);
             }
         }
@@ -273,7 +271,7 @@ public class InReviewWorkflowIT {
                 .statusCode(OK.getStatusCode());
         String citationCuratorNative = XmlPath.from(atomEntryCuratorNative.body().asString()).getString("bibliographicCitation");
         System.out.println("citation: " + citationCuratorNative);
-        Assert.assertTrue(citationCuratorNative.contains("newTitle"));
+        assertTrue(citationCuratorNative.contains("newTitle"));
         // END https://github.com/IQSS/dataverse/issues/4139
 
         // TODO: test where curator neglecting to leave a comment. Should fail with "reason for return" required.

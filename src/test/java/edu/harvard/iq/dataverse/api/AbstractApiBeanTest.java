@@ -1,24 +1,22 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.util.MockResponse;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonWriter;
-import javax.json.JsonWriterFactory;
-import javax.json.stream.JsonGenerator;
-import javax.ws.rs.core.Response;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.Test;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
+import jakarta.ws.rs.core.Response;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AbstractApiBeanTest {
 
@@ -26,7 +24,7 @@ public class AbstractApiBeanTest {
 
     AbstractApiBeanImpl sut;
 
-    @Before
+    @BeforeEach
     public void before() {
         sut = new AbstractApiBeanImpl();
     }
@@ -40,15 +38,15 @@ public class AbstractApiBeanTest {
         assertFalse(sut.parseBooleanOrDie("0"));
         assertFalse(sut.parseBooleanOrDie("no"));
     }
-
-    @Test(expected = Exception.class)
-    public void testParseBooleanOrDie_invalid() throws Exception {
-        sut.parseBooleanOrDie("I'm not a boolean value!");
+    
+    @Test
+    void testParseBooleanOrDie_invalid() {
+        assertThrows(Exception.class, () -> sut.parseBooleanOrDie("I'm not a boolean value!"));
     }
 
     @Test
-    public void testFailIfNull_ok() throws Exception {
-        sut.failIfNull(sut, "");
+    void testFailIfNull_ok() {
+        assertDoesNotThrow(() -> sut.failIfNull(sut, ""));
     }
 
     @Test

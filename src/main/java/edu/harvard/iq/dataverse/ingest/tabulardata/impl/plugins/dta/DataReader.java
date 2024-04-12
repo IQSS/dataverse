@@ -281,6 +281,20 @@ public class DataReader {
         }
         return ret;
     }
+    
+    /* 
+     * Same, but expecting potential Unicode characters.
+     */
+    public String readUtfString(int n) throws IOException {
+
+        String ret = new String(readBytes(n), "UTF8");
+
+        // Remove the terminating and/or padding zero bytes:
+        if (ret.indexOf(0) > -1) {
+            return ret.substring(0, ret.indexOf(0));
+        }
+        return ret;
+    }
 
     /* 
      * More complex helper methods for reading NewDTA "sections" ...

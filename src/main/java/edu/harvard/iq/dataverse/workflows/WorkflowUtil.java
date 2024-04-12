@@ -3,17 +3,15 @@ package edu.harvard.iq.dataverse.workflows;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.api.Util;
 
-import java.io.StringReader;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import edu.harvard.iq.dataverse.workflow.internalspi.PauseWithMessageStep;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -43,8 +41,8 @@ public class WorkflowUtil {
     }
 
     public static WorkflowStepResult parseResponse(String externalData) {
-        try (StringReader reader = new StringReader(externalData)) {
-            JsonObject response = Json.createReader(reader).readObject();
+        try {
+            JsonObject response = JsonUtil.getJsonObject(externalData);
             String status = null;
             //Lower case is documented, upper case is deprecated
             if(response.containsKey("status")) {

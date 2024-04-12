@@ -7,7 +7,6 @@ JHOVE_SCHEMA=${INSTALLER_ZIP_DIR}/jhoveConfig.xsd
 SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml ${INSTALLER_ZIP_DIR}/update-fields.sh
 SOLR_CONFIG=${INSTALLER_ZIP_DIR}/solrconfig.xml
 PYTHON_FILES=${INSTALLER_ZIP_DIR}/README_python.txt ${INSTALLER_ZIP_DIR}/installConfig.py ${INSTALLER_ZIP_DIR}/installUtils.py ${INSTALLER_ZIP_DIR}/install.py ${INSTALLER_ZIP_DIR}/installAppServer.py ${INSTALLER_ZIP_DIR}/requirements.txt ${INSTALLER_ZIP_DIR}/default.config ${INSTALLER_ZIP_DIR}/interactive.config
-INSTALL_SCRIPT=${INSTALLER_ZIP_DIR}/install
 
 installer:	dvinstall.zip
 
@@ -56,13 +55,13 @@ ${JHOVE_SCHEMA}:	../../conf/jhove/jhoveConfig.xsd ${INSTALLER_ZIP_DIR}
 	@echo copying jhove schema file
 	/bin/cp ../../conf/jhove/jhoveConfig.xsd ${INSTALLER_ZIP_DIR}
 
-${SOLR_SCHEMA}:		../../conf/solr/8.11.1/schema.xml ../../conf/solr/8.11.1/update-fields.sh ${INSTALLER_ZIP_DIR}
+${SOLR_SCHEMA}:		../../conf/solr/9.3.0/schema.xml ../../conf/solr/9.3.0/update-fields.sh ${INSTALLER_ZIP_DIR}
 	@echo copying Solr schema file
-	/bin/cp ../../conf/solr/8.11.1/schema.xml ../../conf/solr/8.11.1/update-fields.sh ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/9.3.0/schema.xml ../../conf/solr/9.3.0/update-fields.sh ${INSTALLER_ZIP_DIR}
 
-${SOLR_CONFIG}:		../../conf/solr/8.11.1/solrconfig.xml ${INSTALLER_ZIP_DIR}
+${SOLR_CONFIG}:		../../conf/solr/9.3.0/solrconfig.xml ${INSTALLER_ZIP_DIR}
 	@echo copying Solr config file
-	/bin/cp ../../conf/solr/8.11.1/solrconfig.xml ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/9.3.0/solrconfig.xml ${INSTALLER_ZIP_DIR}
 
 ${PYTHON_FILES}: README_python.txt install.py installConfig.py installAppServer.py installUtils.py requirements.txt default.config interactive.config ${INSTALLER_ZIP_DIR}
 	@echo copying Python installer files

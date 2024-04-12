@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee  http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
     <display-name>Dataverse</display-name>
     <!-- Error page -->
     <error-page>
         <error-code>404</error-code>
-        <location>/404.xhtml</location>
+        <location>/404static.xhtml</location>
     </error-page>
     <error-page>
         <error-code>500</error-code>
@@ -27,7 +30,7 @@
         See also dev guide: https://guides.dataverse.org/en/latest/developers/debugging.html
      -->
     <context-param>
-        <param-name>javax.faces.PROJECT_STAGE</param-name>
+        <param-name>jakarta.faces.PROJECT_STAGE</param-name>
         <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.project-stage:Production}</param-value>
     </context-param>
@@ -43,23 +46,23 @@
     <!-- /context-param -->
     <context-param>
         <param-name>
-            javax.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL
+            jakarta.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL
         </param-name>
         <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.empty-string-null:true}</param-value>
     </context-param>
     <context-param>
-        <param-name>javax.faces.FACELETS_SKIP_COMMENTS</param-name>
+        <param-name>jakarta.faces.FACELETS_SKIP_COMMENTS</param-name>
         <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.skip-comments:true}</param-value>
     </context-param>
     <context-param>
-        <param-name>javax.faces.FACELETS_BUFFER_SIZE</param-name>
+        <param-name>jakarta.faces.FACELETS_BUFFER_SIZE</param-name>
         <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.buffer-size:102400}</param-value>
     </context-param>
     <context-param>
-        <param-name>javax.faces.FACELETS_REFRESH_PERIOD</param-name>
+        <param-name>jakarta.faces.FACELETS_REFRESH_PERIOD</param-name>
         <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.refresh-period:-1}</param-value>
     </context-param>
@@ -86,13 +89,8 @@
     </filter-mapping>
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
-        <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+        <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
-    </servlet>
-    <servlet>
-        <servlet-name>Push Servlet</servlet-name>
-        <servlet-class>org.primefaces.push.PushServlet</servlet-class>
-        <async-supported>true</async-supported>
     </servlet>
     <!-- Map these files with JSF -->
     <servlet>
@@ -127,10 +125,6 @@
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>*.xhtml</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>Push Servlet</servlet-name>
-        <url-pattern>/primepush/*</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>OAIServlet</servlet-name>
@@ -274,5 +268,13 @@
         <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2ContainerServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/edit/*</url-pattern>
     </servlet-mapping>
+    <filter>
+        <filter-name>edu.harvard.iq.dataverse.api.datadeposit.SwordFilter</filter-name>
+        <filter-class>edu.harvard.iq.dataverse.api.datadeposit.SwordFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>edu.harvard.iq.dataverse.api.datadeposit.SwordFilter</filter-name>
+        <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/edit-media/*</url-pattern>
+    </filter-mapping>
     <!-- END Data Deposit API (SWORD v2) -->
 </web-app>

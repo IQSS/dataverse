@@ -3,9 +3,12 @@ package edu.harvard.iq.dataverse.locality;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.util.ArrayList;
 import java.util.List;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import org.junit.Test;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class StorageSiteUtilTest {
 
@@ -22,44 +25,47 @@ public class StorageSiteUtilTest {
         System.out.println("output: " + output);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testMissingHostname() throws Exception {
+    @Test
+    void testMissingHostname() {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add(StorageSite.NAME, "myName");
         job.add(StorageSite.PRIMARY_STORAGE, true);
         job.add(StorageSite.TRANSFER_PROTOCOLS, "rsync");
-        StorageSiteUtil.parse(job.build());
+        JsonObject sut = job.build();
+        assertThrows(IllegalArgumentException.class, () -> StorageSiteUtil.parse(sut));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testBadProtocol() throws Exception {
+    @Test
+    void testBadProtocol() {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add(StorageSite.HOSTNAME, "myHostname");
         job.add(StorageSite.NAME, "myName");
         job.add(StorageSite.PRIMARY_STORAGE, true);
         job.add(StorageSite.TRANSFER_PROTOCOLS, "junk");
-        StorageSiteUtil.parse(job.build());
+        JsonObject sut = job.build();
+        assertThrows(IllegalArgumentException.class, () -> StorageSiteUtil.parse(sut));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testNonBoolean() throws Exception {
+    @Test
+    void testNonBoolean() {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add(StorageSite.HOSTNAME, "myHostname");
         job.add(StorageSite.NAME, "myName");
         job.add(StorageSite.PRIMARY_STORAGE, "not a boolean");
         job.add(StorageSite.TRANSFER_PROTOCOLS, "rsync");
-        StorageSiteUtil.parse(job.build());
+        JsonObject sut = job.build();
+        assertThrows(IllegalArgumentException.class, () -> StorageSiteUtil.parse(sut));
     }
 
-    @Test(expected = Exception.class)
-    public void testSecondPrimaryNotAllowed() throws Exception {
+    @Test
+    void testSecondPrimaryNotAllowed() {
         StorageSite newStorageSite = new StorageSite();
         newStorageSite.setPrimaryStorage(true);
         List<StorageSite> exitingSites = new ArrayList<>();
         StorageSite existingSite1 = new StorageSite();
         existingSite1.setPrimaryStorage(true);
         exitingSites.add(existingSite1);
-        StorageSiteUtil.ensureOnlyOnePrimary(newStorageSite, exitingSites);
+        assertThrows(Exception.class, () -> StorageSiteUtil.ensureOnlyOnePrimary(newStorageSite, exitingSites));
     }
 
     @Test

@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.MissingResourceException;
-import javax.faces.model.SelectItem;
-import javax.persistence.*;
+import jakarta.faces.model.SelectItem;
+import jakarta.persistence.*;
 
 /**
  * Defines the meaning and constraints of a metadata field and its values.
@@ -284,7 +284,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     public boolean isControlledVocabulary() {
-        return controlledVocabularyValues != null && !controlledVocabularyValues.isEmpty();
+        return allowControlledVocabulary;
     }
 
     /**

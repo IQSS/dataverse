@@ -2,7 +2,7 @@
 Troubleshooting
 ===============
 
-Over in the :doc:`dev-environment` section we described the "happy path" of when everything goes right as you set up your Dataverse Software development environment. Here are some common problems and solutions for when things go wrong.
+Over in the :doc:`classic-dev-env` section we described the "happy path" of when everything goes right as you set up your Dataverse Software development environment. Here are some common problems and solutions for when things go wrong.
 
 .. contents:: |toctitle|
 	:local:
@@ -41,7 +41,7 @@ This command helps verify what host your domain is using to send mail. Even if i
 2. From the left-side panel, select **JavaMail Sessions**
 3. You should see one session named **mail/notifyMailSession** -- click on that.
 
-From this window you can modify certain fields of your Dataverse installation's notifyMailSession, which is the JavaMail session for outgoing system email (such as on user signup or data publication). Two of the most important fields we need are:
+From this window you can modify certain fields of your Dataverse installation's notifyMailSession, which is the JavaMail session for outgoing system email (such as on user sign up or data publication). Two of the most important fields we need are:
 
 - **Mail Host:** The DNS name of the default mail server (e.g. smtp.gmail.com)
 - **Default User:** The username provided to your Mail Host when you connect to it (e.g. johndoe@gmail.com)
@@ -110,7 +110,3 @@ If you are seeing ``Response code: 400, [url] domain of URL is not allowed`` it'
 ``./asadmin delete-jvm-options '-Ddataverse.siteUrl=http\://localhost\:8080'``
 
 ``./asadmin create-jvm-options '-Ddataverse.siteUrl=http\://demo.dataverse.org'``
-
-----
-
-Previous: :doc:`tips` | Next: :doc:`version-control`

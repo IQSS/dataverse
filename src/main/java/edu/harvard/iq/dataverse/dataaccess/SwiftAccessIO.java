@@ -22,7 +22,10 @@ import java.util.Collection;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.javaswift.joss.client.factory.AccountFactory;
@@ -47,6 +50,17 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     private String swiftLocation; 
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO");
+    private static final String IS_PUBLIC_CONTAINER = "isPublicContainer";
+    private static final String FOLDER_PATH_SEPARATOR = "folderPathSeparator";
+    private static final String DEFAULT_ENDPOINT = "defaultEndpoint";
+    private static final String TEMPORARY_URL_EXPIRY_TIME = "temporaryUrlExpiryTime";
+    private static final String AUTH_URL = "authUrl";
+    private static final String USERNAME = "username";
+    private static final String PASSWORD = "password";
+    private static final String TENANT = "tenant";
+    private static final String AUTH_TYPE = "authType";
+    private static final String HASH_KEY = "hashKey";
+    private static final String ENDPOINT = "endpoint";
 
 	public SwiftAccessIO() {
 		//Partially functional StorageIO object - constructor only for testing
@@ -67,10 +81,10 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     private void readSettings() {
-    	isPublicContainer = Boolean.parseBoolean(System.getProperty("dataverse.files." + this.driverId + ".isPublicContainer", "true"));
-        swiftFolderPathSeparator = System.getProperty("dataverse.files." + this.driverId + ".folderPathSeparator", "_");
-        swiftDefaultEndpoint = System.getProperty("dataverse.files." + this.driverId + ".defaultEndpoint");
-        tempUrlExpires = Integer.parseInt(System.getProperty("dataverse.files." + this.driverId + ".temporaryUrlExpiryTime", "60"));
+    	isPublicContainer = Boolean.parseBoolean(getConfigParam(IS_PUBLIC_CONTAINER, "true"));
+        swiftFolderPathSeparator = getConfigParam(FOLDER_PATH_SEPARATOR, "_");
+        swiftDefaultEndpoint = getConfigParam(DEFAULT_ENDPOINT);
+        tempUrlExpires = Integer.parseInt(getConfigParam(TEMPORARY_URL_EXPIRY_TIME, "60"));
 		
 	}
 
@@ -128,7 +142,8 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                         && dataFile.getContentType().equals("text/tab-separated-values")
                         && dataFile.isTabularData()
                         && dataFile.getDataTable() != null
-                        && (!this.noVarHeader())) {
+                        && (!this.noVarHeader())
+                        && (!dataFile.getDataTable().isStoredWithVariableHeader())) {
 
                     List<DataVariable> datavariables = dataFile.getDataTable().getDataVariables();
                     String varHeaderLine = generateVariableHeader(datavariables);
@@ -737,12 +752,12 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     Account authenticateWithSwift(String swiftEndPoint) throws IOException {
-        String swiftEndPointAuthUrl = System.getProperty("dataverse.files." + this.driverId + ".authUrl." + swiftEndPoint);
-        String swiftEndPointUsername = System.getProperty("dataverse.files." + this.driverId + ".username." + swiftEndPoint);
-        String swiftEndPointSecretKey = System.getProperty("dataverse.files." + this.driverId + ".password." + swiftEndPoint);
-        String swiftEndPointTenantName = System.getProperty("dataverse.files." + this.driverId + ".tenant." + swiftEndPoint);
-        String swiftEndPointAuthMethod = System.getProperty("dataverse.files." + this.driverId + ".authType." + swiftEndPoint);
-        String swiftEndPointTenantId = System.getProperty("dataverse.files." + this.driverId + ".tenant." + swiftEndPoint);
+        String swiftEndPointAuthUrl = getConfigParam(AUTH_URL + "." + swiftEndPoint);
+        String swiftEndPointUsername = getConfigParam(USERNAME + "." + swiftEndPoint);
+        String swiftEndPointSecretKey = getConfigParam(PASSWORD + "." + swiftEndPoint);
+        String swiftEndPointTenantName = getConfigParam(TENANT + "." + swiftEndPoint);
+        String swiftEndPointAuthMethod = getConfigParam(AUTH_TYPE + "." + swiftEndPoint);
+        String swiftEndPointTenantId = getConfigParam(TENANT + "." + swiftEndPoint);
 
         if (swiftEndPointAuthUrl == null || swiftEndPointUsername == null || swiftEndPointSecretKey == null
                 || "".equals(swiftEndPointAuthUrl) || "".equals(swiftEndPointUsername) || "".equals(swiftEndPointSecretKey)) {
@@ -811,7 +826,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
     private String hmac = null;
     public String generateTempUrlSignature(String swiftEndPoint, String containerName, String objectName, int duration) throws IOException {
         if (hmac == null || isExpiryExpired(generateTempUrlExpiry(duration, System.currentTimeMillis()), duration, System.currentTimeMillis())) {
-            String secretKey = System.getProperty("dataverse.files." + this.driverId + ".hashKey." + swiftEndPoint);
+            String secretKey = getConfigParam(HASH_KEY + "." + swiftEndPoint);
             if (secretKey == null) {
                 throw new IOException("Please input a hash key under dataverse.files." + this.driverId + ".hashKey." + swiftEndPoint);
             }
@@ -838,7 +853,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
     private String temporaryUrl = null;
     private String generateTemporarySwiftUrl(String swiftEndPoint, String containerName, String objectName, int duration) throws IOException {
-        String baseUrl = System.getProperty("dataverse.files." + this.driverId + ".endpoint." + swiftEndPoint);
+        String baseUrl = getConfigParam(ENDPOINT + "." + swiftEndPoint);
         String path = "/v1/" + containerName + "/" + objectName;
         
         if (temporaryUrl == null || isExpiryExpired(generateTempUrlExpiry(duration, System.currentTimeMillis()), duration, System.currentTimeMillis())) {
@@ -864,13 +879,16 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
+    private String getSwiftContainerName(Dataset dataset) {
+        String authorityNoSlashes = dataset.getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
+        return dataset.getProtocolForFileStorage() + swiftFolderPathSeparator + authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
+                swiftFolderPathSeparator + dataset.getIdentifierForFileStorage();
+    }
+
     @Override
     public String getSwiftContainerName() {
         if (dvObject instanceof DataFile) {
-            String authorityNoSlashes = this.getDataFile().getOwner().getAuthorityForFileStorage().replace("/", swiftFolderPathSeparator);
-            return this.getDataFile().getOwner().getProtocolForFileStorage() + swiftFolderPathSeparator
-                   +            authorityNoSlashes.replace(".", swiftFolderPathSeparator) +
-                swiftFolderPathSeparator + this.getDataFile().getOwner().getIdentifierForFileStorage();
+            return getSwiftContainerName(this.getDataFile().getOwner());
         }
         return null;
      }
@@ -893,5 +911,64 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         mac.init(signingKey);
         return toHexString(mac.doFinal(data.getBytes()));
     }
-     
+
+    private List<String> listAllFiles() throws IOException {
+        if (!this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This SwiftAccessIO object hasn't been properly initialized.");
+        }
+        String prefix = getSwiftContainerName(dataset) + swiftFolderPathSeparator;
+        
+        Collection<StoredObject> items; 
+        String lastItemName = null; 
+        List<String> ret = new ArrayList<>();
+
+        while ((items = this.swiftContainer.list(prefix, lastItemName, LIST_PAGE_LIMIT)) != null && items.size() > 0) {
+            for (StoredObject item : items) {
+                lastItemName = item.getName().substring(prefix.length());
+                ret.add(lastItemName);
+            }
+        }
+
+        return ret;
+    }
+
+    private void deleteFile(String fileName) throws IOException {
+        if (!this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+        Dataset dataset = this.getDataset();
+        if (dataset == null) {
+            throw new IOException("This SwiftAccessIO object hasn't been properly initialized.");
+        }
+        String prefix = getSwiftContainerName(dataset) + swiftFolderPathSeparator;
+        
+        StoredObject fileObject = this.swiftContainer.getObject(prefix + fileName);
+
+        if (!fileObject.exists()) {
+            throw new FileNotFoundException("SwiftAccessIO/Direct Access: " + fileName + " does not exist");
+        }
+
+        fileObject.delete();
+    }
+
+    @Override
+    public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
+        List<String> toDelete = this.listAllFiles().stream().filter(filter).collect(Collectors.toList());
+        if (dryRun) {
+            return toDelete;
+        }
+        for (String f : toDelete) {
+            this.deleteFile(f);
+        }
+        return toDelete;
+    }
+
+    @Override
+    public long retrieveSizeFromMedia() throws IOException {
+        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver."); 
+    }
 }
