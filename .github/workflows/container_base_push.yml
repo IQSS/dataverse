@@ -85,10 +85,39 @@ jobs:
               with:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
-            - name: Set up QEMU for multi-arch builds
-              uses: docker/setup-qemu-action@v3
+
+            # This is replaced by adding a remote ARM64 build host in addition to the local AMD64
+            # - name: Set up QEMU for multi-arch builds
+            #   uses: docker/setup-qemu-action@v3
+            #   with:
+            #       platforms: ${{ env.PLATFORMS }}
+            # Setup SSH access to ARM64 builder node
+            - name: Setup SSH agent
+              uses: webfactory/ssh-agent@v0.9.0
               with:
-                  platforms: ${{ env.PLATFORMS }}
+                  ssh-private-key: ${{ secrets.BUILDER_ARM64_SSH_PRIVATE_KEY }}
+            - name: Provide the known hosts key and the builder config
+              run: |
+                  echo "${{ secrets.BUILDER_ARM64_SSH_HOST_KEY }}" > ~/.ssh/known_hosts
+                  mkdir -p modules/container-base/target/buildx-state/buildx/instances
+                  cat modules/container-base/target/buildx-state/buildx/instances/dataverse << EOF
+                  { "Name": "dataverse",
+                    "Driver": "docker-container",
+                    "Dynamic": false,
+                    "Nodes": [{"Name": "dataverse0",
+                               "Endpoint": "unix:///var/run/docker.sock",
+                               "Platforms": [{"os": "linux", "architecture": "amd64"}],
+                               "DriverOpts": null,
+                               "Flags": ["--allow-insecure-entitlement=network.host"],
+                               "Files": null},
+                              {"Name": "dataverse1",
+                               "Endpoint": "ssh://${{ secret.BUILDER_ARM64_SSH_CONNECTION }}",
+                               "Platforms": [{"os": "linux", "architecture": "arm64"}],
+                               "DriverOpts": null,
+                               "Flags": ["--allow-insecure-entitlement=network.host"],
+                               "Files": null}]}
+                  EOF
+
             - name: Add additional tags as options
               # TODO: remove the feature branch and re-enable the if/else!
               run: |
