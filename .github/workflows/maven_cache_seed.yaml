@@ -14,11 +14,6 @@ jobs:
         runs-on: ubuntu-latest
         if: ${{ github.event_name == 'push' }}
         steps:
-            - name: Drop common cache
-              continue-on-error: true # we don't care if the cache is not around
-              uses: prantlf/delete-cache-action@v2
-              with:
-                key: ${{ env.COMMON_CACHE_NAME }}
             - name: Checkout repository
               uses: actions/checkout@v4
             - name: Set up JDK
@@ -26,9 +21,16 @@ jobs:
               with:
                   java-version: "17"
                   distribution: temurin
-            - name: Re-Seed common cache
+            - name: Seed common cache
               run: |
                   mvn -B -f modules/dataverse-parent dependency:go-offline dependency:resolve-plugins
+            # This non-obvious order is due to the fact that the download via Maven will take a very long time.
+            # Jobs should not be left without a cache. Deleting and saving in one go leaves only a small chance for a cache miss.
+            - name: Drop common cache
+              continue-on-error: true # we don't care if the cache is not around
+              uses: prantlf/delete-cache-action@v2
+              with:
+                  key: ${{ env.COMMON_CACHE_NAME }}
             - name: Save the cache
               uses: actions/cache/save@v4
               with:
