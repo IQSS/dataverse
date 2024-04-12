@@ -100,7 +100,7 @@ jobs:
               run: |
                   echo "${{ secrets.BUILDER_ARM64_SSH_HOST_KEY }}" > ~/.ssh/known_hosts
                   mkdir -p modules/container-base/target/buildx-state/buildx/instances
-                  cat modules/container-base/target/buildx-state/buildx/instances/dataverse << EOF
+                  cat > modules/container-base/target/buildx-state/buildx/instances/dataverse << EOF
                   { "Name": "dataverse",
                     "Driver": "docker-container",
                     "Dynamic": false,
