@@ -41,7 +41,8 @@ jobs:
                     jq '[ .[0:${{ env.NUM_PAST_RELEASES }}] | .[].tag_name, "develop", "10478-version-base-img" ]')" | tr -d "\n" | tr -s " " | \
                     tee -a "$GITHUB_OUTPUT"
                   #else
-                  #  echo "branches=['develop']" | tee -a "$GITHUB_OUTPUT"
+                  #  # Note: github.ref_name will be the name of the branch or the tag pushed
+                  #  echo "branches=['${{ github.ref_name }}']" | tee -a "$GITHUB_OUTPUT"
                   #fi
 
     build:
