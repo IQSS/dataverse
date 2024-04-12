@@ -1,0 +1,37 @@
+name: Maven Cache Seeding
+
+on:
+    push:
+        branches:
+            - develop
+            - 10478-version-base-img
+
+env:
+    COMMON_CACHE_NAME: dataverse-maven-cache
+
+jobs:
+    preseed:
+        name: Drop and Re-Seed Local Repository
+        runs-on: ubuntu-latest
+        if: ${{ github.event_name == 'push' }}
+        steps:
+            - name: Drop common cache
+              uses: prantlf/delete-cache-action@v2
+              with:
+                key: ${{ env.COMMON_CACHE_NAME }}
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - name: Set up JDK
+              uses: actions/setup-java@v4
+              with:
+                  java-version: "17"
+                  distribution: temurin
+            - name: Re-Seed common cache
+              run: |
+                  mvn -B -f modules/dataverse-parent dependency:go-offline dependency:resolve-plugins
+            - name: Save the cache
+              uses: actions/cache/save@v4
+              with:
+                  path: ~/.m2/repository
+                  key: ${{ env.COMMON_CACHE_NAME }}
+
