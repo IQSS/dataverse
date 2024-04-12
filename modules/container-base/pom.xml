@@ -100,6 +100,7 @@
                                                 <!-- Will be empty by default, deactivating buildx -->
                                                 <platform>${docker.platforms}</platform>
                                             </platforms>
+                                            <builderName>dataverse</builderName>
                                             <dockerStateDir>${project.build.directory}/buildx-state</dockerStateDir>
                                         </buildx>
                                         <dockerFile>Dockerfile</dockerFile>
