@@ -33,7 +33,7 @@ jobs:
               with:
                   key: ${{ env.COMMON_CACHE_NAME }}
             - name: Save the cache
-              uses: actions/cache/save@v4
+              uses: actions/cache@v2
               with:
                   path: ~/.m2/repository
                   key: ${{ env.COMMON_CACHE_NAME }}
