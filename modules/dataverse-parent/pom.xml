@@ -199,7 +199,7 @@
         <pomchecker-maven-plugin.version>1.7.0</pomchecker-maven-plugin.version>
         
         <!-- Container related -->
-        <fabric8-dmp.version>0.44.0</fabric8-dmp.version>
+        <fabric8-dmp.version>0.45-SNAPSHOT</fabric8-dmp.version>
     </properties>
     
     <pluginRepositories>
@@ -214,6 +214,14 @@
             <releases>
                 <updatePolicy>never</updatePolicy>
             </releases>
+        </pluginRepository>
+        <pluginRepository>
+            <id>oss.sonatype.org</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
         </pluginRepository>
     </pluginRepositories>
     
