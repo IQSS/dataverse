@@ -17,6 +17,7 @@ on:
 
 env:
     PLATFORMS: linux/amd64,linux/arm64
+    NUM_PAST_RELEASES: 3
 
 jobs:
     discover:
@@ -37,7 +38,7 @@ jobs:
                   # Get last three releases and include develop branch as matrix elements
                   #if [[ "${{ github.event_name }}" == "schedule" ]]; then
                     echo "branches=$(curl -f -sS https://api.github.com/repos/IQSS/dataverse/releases | \
-                    jq '[ .[0:3] | .[].tag_name, "develop", "10478-version-base-img" ]')" | tr -d "\n" | tr -s " " | \
+                    jq '[ .[0:${{ env.NUM_PAST_RELEASES }}] | .[].tag_name, "develop", "10478-version-base-img" ]')" | tr -d "\n" | tr -s " " | \
                     tee -a "$GITHUB_OUTPUT"
                   #else
                   #  echo "branches=['develop']" | tee -a "$GITHUB_OUTPUT"
