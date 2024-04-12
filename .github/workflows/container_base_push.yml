@@ -111,7 +111,7 @@ jobs:
                                "Flags": ["--allow-insecure-entitlement=network.host"],
                                "Files": null},
                               {"Name": "dataverse1",
-                               "Endpoint": "ssh://${{ secret.BUILDER_ARM64_SSH_CONNECTION }}",
+                               "Endpoint": "ssh://${{ secrets.BUILDER_ARM64_SSH_CONNECTION }}",
                                "Platforms": [{"os": "linux", "architecture": "arm64"}],
                                "DriverOpts": null,
                                "Flags": ["--allow-insecure-entitlement=network.host"],
