@@ -4,6 +4,7 @@ on:
     push:
         branches:
             - develop
+            - 10478-version-base-img
 
 env:
     COMMON_CACHE_NAME: dataverse-maven-cache
