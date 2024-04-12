@@ -871,26 +871,31 @@ public class Dataverses extends AbstractApiBean {
      */
     public Response setFeaturedDataverses(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,  String dvAliases) {
         List<Dataverse> dvsFromInput = new LinkedList<>();
-
-        for (JsonString dvAlias : Util.asJsonArray(dvAliases).getValuesAs(JsonString.class)) {
-            
-            Dataverse dvToBeFeatured = dataverseService.findByAlias(dvAlias.getString());
-            if (dvToBeFeatured == null) {
-                return error(Response.Status.BAD_REQUEST, "Can't find dataverse collection with alias '" + dvAlias + "'");
-            } 
-            dvsFromInput.add(dvToBeFeatured);
-        }
+        
   
         try {
+
+            for (JsonString dvAlias : Util.asJsonArray(dvAliases).getValuesAs(JsonString.class)) {
+                Dataverse dvToBeFeatured = dataverseService.findByAlias(dvAlias.getString());
+                if (dvToBeFeatured == null) {
+                    return error(Response.Status.BAD_REQUEST, "Can't find dataverse collection with alias '" + dvAlias + "'");
+                }
+                dvsFromInput.add(dvToBeFeatured);
+            }
+
+            if (dvsFromInput.isEmpty()) {
+                return error(Response.Status.BAD_REQUEST, "Please provide a valid Json array of dataverse collection aliases to be featured.");
+            }
+            
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             List<Dataverse> featuredSource = new ArrayList<>();
             List<Dataverse> featuredTarget = new ArrayList<>();
             featuredSource.addAll(dataverseService.findAllPublishedByOwnerId(dataverse.getId()));
             featuredSource.addAll(linkingService.findLinkedDataverses(dataverse.getId()));
             List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
-            
-            if(featuredSource.isEmpty()){
-               return error(Response.Status.BAD_REQUEST, "There are no collections avaialble to be featured in Dataverse collection '" + dataverse.getDisplayName() + "'."); 
+
+            if (featuredSource.isEmpty()) {
+                return error(Response.Status.BAD_REQUEST, "There are no collections avaialble to be featured in Dataverse collection '" + dataverse.getDisplayName() + "'.");
             }
 
             for (DataverseFeaturedDataverse dfd : featuredList) {
@@ -914,9 +919,11 @@ public class Dataverses extends AbstractApiBean {
             // by passing null for Facets and DataverseFieldTypeInputLevel, those are not changed
             execCommand(new UpdateDataverseCommand(dataverse, null, featuredTarget, createDataverseRequest(getRequestUser(crc)), null));
             return ok("Featured Dataverses of dataverse " + dvIdtf + " updated.");
-
+            
         } catch (WrappedResponse ex) {
             return ex.getResponse();
+        } catch (JsonParsingException jpe){
+            return error(Response.Status.BAD_REQUEST, "Please provide a valid Json array of dataverse collection aliases to be featured.");
         }
 
     }
