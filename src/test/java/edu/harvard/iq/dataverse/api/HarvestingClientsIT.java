@@ -286,6 +286,8 @@ public class HarvestingClientsIT {
         
         System.out.println("Waited " + i + " seconds for the harvest to complete.");
 
+        // Let's give the asynchronous indexing an extra sec. to finish:
+        Thread.sleep(1000L); 
         Response searchHarvestedDatasets = UtilIT.search("metadataSource:" + nickName, normalUserAPIKey);
         searchHarvestedDatasets.then().assertThat().statusCode(OK.getStatusCode());
         searchHarvestedDatasets.prettyPrint();
