@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.Template;
@@ -1058,11 +1059,12 @@ public class Admin extends AbstractApiBean {
 
 	@Path("superuser/{identifier}")
 	@PUT
-	public Response setSuperuserStatus(@PathParam("identifier") String identifier, Boolean isSuperUser) {
+	//using string instead of boolean so user doesnt need to add Content type header in their request
+	public Response setSuperuserStatus(@PathParam("identifier") String identifier, String isSuperUser) {
 		ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "changeSuperUserStatus")
 				.setInfo(identifier + ":" + isSuperUser);
 		try {
-            return setSuperuserStatus(authSvc.getAuthenticatedUser(identifier), isSuperUser);
+            return setSuperuserStatus(authSvc.getAuthenticatedUser(identifier), StringUtil.isTrue(isSuperUser));
 		} catch (Exception e) {
 			alr.setActionResult(ActionLogRecord.Result.InternalError);
 			alr.setInfo(alr.getInfo() + "// " + e.getMessage());
