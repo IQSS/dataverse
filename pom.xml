@@ -956,7 +956,8 @@
                 <app.image.tag>unstable</app.image.tag>
                 <app.skipDeploy>false</app.skipDeploy>
                 <base.image>gdcc/base:${base.image.tag}</base.image>
-                <base.image.tag>unstable</base.image.tag>
+                <!-- Remember to keep this aligned with the version in modules/container-base -->
+                <base.image.tag>rev1</base.image.tag>
                 <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
                 <conf.image.tag>${app.image.tag}</conf.image.tag>
     
