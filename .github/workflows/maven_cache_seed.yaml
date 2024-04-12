@@ -4,6 +4,10 @@ on:
     push:
         branches:
             - develop
+    # According to https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#usage-limits-and-eviction-policy
+    # all caches are depleted after 7 days of no access. Make sure we rejuvenate every 7 days to keep it available.
+    schedule:
+        - cron: '23 2 * * 0' # Run for 'develop' every Sunday at 02:23 UTC
 
 env:
     COMMON_CACHE_NAME: dataverse-maven-cache
@@ -12,7 +16,6 @@ jobs:
     preseed:
         name: Drop and Re-Seed Local Repository
         runs-on: ubuntu-latest
-        if: ${{ github.event_name == 'push' }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
