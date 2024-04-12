@@ -42,11 +42,18 @@ jobs:
               uses: actions/checkout@v3
 
             - name: Set up JDK
+              id: setup-java
               uses: actions/setup-java@v3
               with:
                   java-version: "17"
                   distribution: temurin
                   cache: maven
+            - name: Download common cache on branch cache miss
+              if: ${{ steps.setup-java.outputs.cache-hit != 'true' }}
+              uses: actions/cache/restore@v4
+              with:
+                  key: dataverse-maven-cache
+
 
             - name: Build app and configbaker container image with local architecture and submodules (profile will skip tests)
               run: >
@@ -111,11 +118,19 @@ jobs:
         if: needs.check-secrets.outputs.available == 'true' &&
             ( github.event_name != 'push' || ( github.event_name == 'push' && contains(fromJSON('["develop", "master"]'), github.ref_name)))
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-java@v3
+            - uses: actions/checkout@v4
+            - name: Set up JDK
+              id: setup-java
+              uses: actions/setup-java@v3
               with:
                   java-version: "17"
                   distribution: temurin
+                  cache: maven
+            - name: Download common cache on branch cache miss
+              if: ${{ steps.setup-java.outputs.cache-hit != 'true' }}
+              uses: actions/cache/restore@v4
+              with:
+                  key: dataverse-maven-cache
 
             # Depending on context, we push to different targets. Login accordingly.
             - if: github.event_name != 'pull_request'
