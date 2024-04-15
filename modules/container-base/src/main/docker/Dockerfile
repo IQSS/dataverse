@@ -93,8 +93,9 @@ RUN <<EOF
 
 EOF
 
-ARG JATTACH_VERSION="v2.1"
-ARG JATTACH_CHECKSUM="07885fdc782e02e7302c6d190f54c3930afa10a38140365adf54076ec1086a8e"
+ARG JATTACH_VERSION="v2.2"
+ARG JATTACH_TGZ_CHECKSUM_AMD64="acd9e17f15749306be843df392063893e97bfecc5260eef73ee98f06e5cfe02f"
+ARG JATTACH_TGZ_CHECKSUM_ARM64="288ae5ed87ee7fe0e608c06db5a23a096a6217c9878ede53c4e33710bdcaab51"
 ARG WAIT4X_VERSION="v2.14.0"
 ARG PKGS="jq imagemagick curl unzip wget acl dirmngr gpg lsof procps netcat dumb-init"
 
@@ -105,10 +106,15 @@ RUN <<EOF
     apt-get install -qqy --no-install-recommends ${PKGS}
     rm -rf "/var/lib/apt/lists/*"
 
-    # Install jattach
-    curl -sSfL -o /usr/bin/jattach "https://github.com/apangin/jattach/releases/download/${JATTACH_VERSION}/jattach"
-    echo "${JATTACH_CHECKSUM} /usr/bin/jattach" | sha256sum -c -
-    chmod +x /usr/bin/jattach
+    # Install jattach & wait4x
+    if [ "${TARGETARCH}" = "amd64" ]; then
+      curl -sSfL -o /usr/bin/jattach.tgz "https://github.com/jattach/jattach/releases/download/${JATTACH_VERSION}/jattach-linux-x64.tgz"
+      echo "${JATTACH_TGZ_CHECKSUM_AMD64} /usr/bin/jattach.tgz" | sha256sum -c -
+    elif [ "${TARGETARCH}" = "arm64" ]; then
+      curl -sSfL -o /usr/bin/jattach.tgz "https://github.com/jattach/jattach/releases/download/${JATTACH_VERSION}/jattach-linux-arm64.tgz"
+      echo "${JATTACH_TGZ_CHECKSUM_ARM64} /usr/bin/jattach.tgz" | sha256sum -c -
+    fi
+    tar -xzf /usr/bin/jattach.tgz -C /usr/bin && chmod +x /usr/bin/jattach
 
     # Install wait4x
     curl -sSfL -o /usr/bin/wait4x.tar.gz "https://github.com/atkrad/wait4x/releases/download/${WAIT4X_VERSION}/wait4x-linux-${TARGETARCH}.tar.gz"
