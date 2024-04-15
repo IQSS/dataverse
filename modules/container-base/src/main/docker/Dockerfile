@@ -69,6 +69,9 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin:${SCRIPT_DIR}" \
 ### PART 1: SYSTEM ###
 ARG UID=1000
 ARG GID=1000
+# Auto-populated by BuildKit / buildx
+#ARG TARGETARCH="amd64"
+ARG TARGETARCH
 USER root
 WORKDIR /
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
