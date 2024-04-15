@@ -386,18 +386,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <!-- This repository is about to being phased out. See https://github.com/payara/Payara_PatchedProjects/issues/366 -->
-        <repository>
-            <id>payara-patched-externals</id>
-            <name>Payara Patched Externals</name>
-            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
         <repository>
             <id>central-repo</id>
             <name>Central Repository</name>
