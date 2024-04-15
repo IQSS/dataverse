@@ -647,6 +647,21 @@ public class UtilIT {
                 .post("/api/dataverses/" + dataverseAlias + "/metadatablocks");
     }
 
+    static Response listMetadataBlocks(String dataverseAlias, boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("onlyDisplayedOnCreate", onlyDisplayedOnCreate)
+                .queryParam("returnDatasetFieldTypes", returnDatasetFieldTypes)
+                .get("/api/dataverses/" + dataverseAlias + "/metadatablocks");
+    }
+
+    static Response listMetadataBlocks(boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes) {
+        return given()
+                .queryParam("onlyDisplayedOnCreate", onlyDisplayedOnCreate)
+                .queryParam("returnDatasetFieldTypes", returnDatasetFieldTypes)
+                .get("/api/metadatablocks");
+    }
+
     static Response getMetadataBlock(String block) {
         return given()
                 .get("/api/metadatablocks/" + block);
@@ -3133,6 +3148,19 @@ public class UtilIT {
         RequestSpecification requestSpecification = given();
 
         return requestSpecification.post("/api/admin/makeDataCount/" + idInPath + "/updateCitationsForDataset"+ optionalQueryParam);
+    }
+
+    static Response makeDataCountGetProcessingState(String yearMonth) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.get("/api/admin/makeDataCount/" + yearMonth + "/processingState");
+    }
+    static Response makeDataCountUpdateProcessingState(String yearMonth, String state) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.post("/api/admin/makeDataCount/" + yearMonth + "/processingState?state=" + state);
+    }
+    static Response makeDataCountDeleteProcessingState(String yearMonth) {
+        RequestSpecification requestSpecification = given();
+        return requestSpecification.delete("/api/admin/makeDataCount/" + yearMonth + "/processingState");
     }
 
     static Response editDDI(String body, String fileId, String apiToken) {

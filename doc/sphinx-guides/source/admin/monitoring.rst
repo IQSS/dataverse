@@ -150,3 +150,11 @@ Tips:
 - It's possible to view and act on **RDS Events** such as snapshots, parameter changes, etc. See `Working with Amazon RDS events <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.access-control.html>`_ for details.
 - RDS monitoring is available via API and the ``aws`` command line tool. For example, see `Retrieving metrics with the Performance Insights API <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.API.html>`_.
 - To play with monitoring RDS using a server configured by `dataverse-ansible <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible>`_ set ``use_rds`` to true to skip some steps that aren't necessary when using RDS. See also the :doc:`/developers/deployment` section of the Developer Guide.
+
+MicroProfile Metrics endpoint
+-----------------------------
+
+Payara provides the metrics endpoint: <https://docs.payara.fish/community/docs/6.2023.9/Technical%20Documentation/MicroProfile/Metrics/Metrics%20Rest%20Endpoint.html>_
+The metrics you can retrieve that way:
+- `index_permit_wait_time_seconds_mean` displays how long does it take to receive a permit to index a dataset.
+- `index_time_seconds` displays how long does it take to index a dataset.
