@@ -113,19 +113,19 @@
                                                         <li>
                                                             <h:commandLink
                                                                 id="endNoteLink-2" value="#{bundle['dataset.cite.downloadBtn.xml']}"
-                                                                action="#{FilePage.fileDownloadService.downloadCitationXML(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}"
+                                                                action="#{FilePage.fileDownloadService.downloadCitationXML(FilePage.fileMetadata, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}"
                                                             />
                                                         </li>
                                                         <li>
                                                             <h:commandLink
                                                                 id="risLink-2" value="#{bundle['dataset.cite.downloadBtn.ris']}"
-                                                                action="#{FilePage.fileDownloadService.downloadCitationRIS(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}"
+                                                                action="#{FilePage.fileDownloadService.downloadCitationRIS(FilePage.fileMetadata, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}"
                                                             />
                                                         </li>
                                                         <li>
                                                             <h:commandLink
                                                                 id="bibLink-2" value="#{bundle['dataset.cite.downloadBtn.bib']}" target="_blank"
-                                                                action="#{FilePage.fileDownloadService.downloadCitationBibtex(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}"
+                                                                action="#{FilePage.fileDownloadService.downloadCitationBibtex(FilePage.fileMetadata, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}"
                                                             />
                                                         </li>
                                                     </ul>
@@ -162,19 +162,19 @@
                                                         <li>
                                                             <h:commandLink
                                                                 id="endNoteLink" value="#{bundle['dataset.cite.downloadBtn.xml']}"
-                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}"
+                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion)}"
                                                             />
                                                         </li>
                                                         <li>
                                                             <h:commandLink
                                                                 id="risLink" value="#{bundle['dataset.cite.downloadBtn.ris']}"
-                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion.dataset)}"
+                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion)}"
                                                             />
                                                         </li>
                                                         <li>
                                                             <h:commandLink
                                                                 id="bibLink" value="#{bundle['dataset.cite.downloadBtn.bib']}" target="_blank"
-                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion.dataset)}"
+                                                                action="#{FilePage.fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion)}"
                                                             />
                                                         </li>
                                                     </ul>

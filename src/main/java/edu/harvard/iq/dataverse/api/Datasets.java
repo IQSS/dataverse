@@ -39,12 +39,14 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.*;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import edu.harvard.iq.dataverse.util.*;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.*;
@@ -430,21 +432,32 @@ public class Datasets extends AbstractApiBean {
                                @Context HttpHeaders headers) {
         return response( req -> {
             
-           
             //If excludeFiles is null the default is to provide the files and because of this we need to check permissions. 
             boolean checkPerms = excludeFiles == null ? true : !excludeFiles;
+            
+            Dataset dataset = findDatasetOrDie(datasetId);
+            DatasetVersion requestedDatasetVersion = getDatasetVersionOrDie(req, 
+                                                                            versionId, 
+                                                                            dataset, 
+                                                                            uriInfo, 
+                                                                            headers, 
+                                                                            includeDeaccessioned,
+                                                                            checkPerms);
 
-            Dataset dst = findDatasetOrDie(datasetId);
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, dst, uriInfo, headers, includeDeaccessioned, checkPerms);
-
-            if (dsv == null || dsv.getId() == null) {
+            if (requestedDatasetVersion == null || requestedDatasetVersion.getId() == null) {
                 return notFound("Dataset version not found");
             }
 
             if (excludeFiles == null ? true : !excludeFiles) {
-                dsv = datasetversionService.findDeep(dsv.getId());
+                requestedDatasetVersion = datasetversionService.findDeep(requestedDatasetVersion.getId());
             }
-            return ok(json(dsv, null, excludeFiles == null ? true : !excludeFiles, returnOwners));
+
+            JsonObjectBuilder jsonBuilder = json(requestedDatasetVersion,
+                                                 null, 
+                                                 excludeFiles == null ? true : !excludeFiles, 
+                                                 returnOwners);
+            return ok(jsonBuilder);
+
         }, getRequestUser(crc));
     }
 
@@ -2479,42 +2492,6 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @AuthRequired
-    @Path("{id}/uploadsid")
-    @Deprecated
-    public Response getUploadUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
-        try {
-            Dataset dataset = findDatasetOrDie(idSupplied);
-
-            boolean canUpdateDataset = false;
-            canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(getRequestUser(crc)), dataset).canIssue(UpdateDatasetVersionCommand.class);
-            if (!canUpdateDataset) {
-                return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
-            }
-            S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
-            if (s3io == null) {
-                return error(Response.Status.NOT_FOUND, "Direct upload not supported for files in this dataset: " + dataset.getId());
-            }
-            String url = null;
-            String storageIdentifier = null;
-            try {
-                url = s3io.generateTemporaryS3UploadUrl();
-                storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
-            } catch (IOException io) {
-                logger.warning(io.getMessage());
-                throw new WrappedResponse(io, error(Response.Status.INTERNAL_SERVER_ERROR, "Could not create process direct upload request"));
-            }
-
-            JsonObjectBuilder response = Json.createObjectBuilder()
-                    .add("url", url)
-                    .add("storageIdentifier", storageIdentifier);
-            return ok(response);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-    }
-
-    @GET
-    @AuthRequired
     @Path("{id}/uploadurls")
     public Response getMPUploadUrls(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @QueryParam("size") long fileSize) {
         try {
@@ -2530,6 +2507,22 @@ public class Datasets extends AbstractApiBean {
             if (s3io == null) {
                 return error(Response.Status.NOT_FOUND,
                         "Direct upload not supported for files in this dataset: " + dataset.getId());
+            }
+            Long maxSize = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+            if (maxSize != null) {
+                if(fileSize > maxSize) {
+                    return error(Response.Status.BAD_REQUEST,
+                            "The file you are trying to upload is too large to be uploaded to this dataset. " +
+                                    "The maximum allowed file size is " + maxSize + " bytes.");
+                }
+            }
+            UploadSessionQuotaLimit limit = fileService.getUploadSessionQuotaLimit(dataset);
+            if (limit != null) {
+                if(fileSize > limit.getRemainingQuotaInBytes()) {
+                    return error(Response.Status.BAD_REQUEST,
+                            "The file you are trying to upload is too large to be uploaded to this dataset. " +
+                                    "The remaing file size quota is " + limit.getRemainingQuotaInBytes() + " bytes.");
+                }
             }
             JsonObjectBuilder response = null;
             String storageIdentifier = null;
@@ -2969,25 +2962,49 @@ public class Datasets extends AbstractApiBean {
      * includeDeaccessioned default to false and checkPermsWhenDeaccessioned to false. Use it only when you are sure that the you don't need to work with
      * a deaccessioned dataset.
      */
-    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers) throws WrappedResponse {
+    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, 
+                                                  String versionNumber, 
+                                                  final Dataset ds,
+                                                  UriInfo uriInfo, 
+                                                  HttpHeaders headers) throws WrappedResponse {
         //The checkPerms was added to check the permissions ONLY when the dataset is deaccessioned.
-        return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, false, false);
+        boolean checkFilePerms = false;
+        boolean includeDeaccessioned = false;
+        return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, includeDeaccessioned, checkFilePerms);
     }
     
     /*
      * checkPermsWhenDeaccessioned default to true. Be aware that the version will be only be obtainable if the user has edit permissions.
      */
-    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned) throws WrappedResponse{
-        return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, includeDeaccessioned, true);
+    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds,
+            UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned) throws WrappedResponse {
+        boolean checkPermsWhenDeaccessioned = true;
+        boolean bypassAccessCheck = false;
+        return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, includeDeaccessioned, checkPermsWhenDeaccessioned, bypassAccessCheck);
+    }
+
+    /*
+     * checkPermsWhenDeaccessioned default to true. Be aware that the version will be only be obtainable if the user has edit permissions.
+     */
+    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds,
+                                                  UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
+        boolean bypassAccessCheck = false;
+        return getDatasetVersionOrDie(req, versionNumber, ds, uriInfo, headers, includeDeaccessioned, checkPermsWhenDeaccessioned, bypassAccessCheck);
     }
 
     /*
      * Will allow to define when the permissions should be checked when a deaccesioned dataset is requested. If the user doesn't have edit permissions will result in an error.
      */
-    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
+    private DatasetVersion getDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds,
+            UriInfo uriInfo, HttpHeaders headers, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned,
+            boolean bypassAccessCheck)
+            throws WrappedResponse {
+
         DatasetVersion dsv = findDatasetVersionOrDie(req, versionNumber, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
+
         if (dsv == null || dsv.getId() == null) {
-            throw new WrappedResponse(notFound("Dataset version " + versionNumber + " of dataset " + ds.getId() + " not found"));
+            throw new WrappedResponse(
+                    notFound("Dataset version " + versionNumber + " of dataset " + ds.getId() + " not found"));
         }
         if (dsv.isReleased()&& uriInfo!=null) {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, ds);
@@ -2995,7 +3012,7 @@ public class Datasets extends AbstractApiBean {
         }
         return dsv;
     }
-    
+ 
     @GET
     @Path("{identifier}/locks")
     public Response getLocksForDataset(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
@@ -3742,6 +3759,16 @@ public class Datasets extends AbstractApiBean {
             params.add(key, substitutedParams.get(key));
         });
         params.add("managed", Boolean.toString(managed));
+        if (managed) {
+            Long maxSize = systemConfig.getMaxFileUploadSizeForStore(storeId);
+            if (maxSize != null) {
+                params.add("fileSizeLimit", maxSize);
+            }
+            UploadSessionQuotaLimit limit = fileService.getUploadSessionQuotaLimit(dataset);
+            if (limit != null) {
+                params.add("remainingQuota", limit.getRemainingQuotaInBytes());
+            }
+        }
         if (transferEndpoint != null) {
             params.add("endpoint", transferEndpoint);
         } else {
@@ -4689,8 +4716,11 @@ public class Datasets extends AbstractApiBean {
                                               @QueryParam("includeDeaccessioned") boolean includeDeaccessioned,
                                               @Context UriInfo uriInfo,
                                               @Context HttpHeaders headers) {
+        boolean checkFilePerms = false;
         return response(req -> ok(
-                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers, includeDeaccessioned, false).getCitation(true, false)), getRequestUser(crc));
+                getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers,
+                        includeDeaccessioned, checkFilePerms).getCitation(true, false)),
+                getRequestUser(crc));
     }
 
     @POST
@@ -4841,6 +4871,12 @@ public class Datasets extends AbstractApiBean {
         }, getRequestUser(crc));
     }
     
+    /**
+     * Get the PidProvider that will be used for generating new DOIs in this dataset
+     *
+     * @return - the id of the effective PID generator for the given dataset
+     * @throws WrappedResponse
+     */
     @GET
     @AuthRequired
     @Path("{identifier}/pidGenerator")
@@ -4854,7 +4890,12 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
-        String pidGeneratorId = dataset.getPidGeneratorId();
+        PidProvider pidProvider = dataset.getEffectivePidGenerator();
+        if(pidProvider == null) {
+            //This is basically a config error, e.g. if a valid pid provider was removed after this dataset used it
+            return error(Response.Status.NOT_FOUND, BundleUtil.getStringFromBundle("datasets.api.pidgenerator.notfound"));
+        }
+        String pidGeneratorId = pidProvider.getId();
         return ok(pidGeneratorId);
     }
 

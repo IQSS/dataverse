@@ -187,19 +187,11 @@ public class SearchServiceBean {
         SolrQuery solrQuery = new SolrQuery();
         query = SearchUtil.sanitizeQuery(query);
         solrQuery.setQuery(query);
-//        SortClause foo = new SortClause("name", SolrQuery.ORDER.desc);
-//        if (query.equals("*") || query.equals("*:*")) {
-//            solrQuery.setSort(new SortClause(SearchFields.NAME_SORT, SolrQuery.ORDER.asc));
         if (sortField != null) {
             // is it ok not to specify any sort? - there are cases where we 
             // don't care, and it must cost some extra cycles -- L.A.
             solrQuery.setSort(new SortClause(sortField, sortOrder));
         }
-//        } else {
-//            solrQuery.setSort(sortClause);
-//        }
-//        solrQuery.setSort(sortClause);
-
         
         solrQuery.setParam("fl", "*,score");
         solrQuery.setParam("qt", "/select");
@@ -224,6 +216,9 @@ public class SearchServiceBean {
         List<DataverseMetadataBlockFacet> metadataBlockFacets = new LinkedList<>();
 
         if (addFacets) {
+
+            
+
             // -----------------------------------
             // Facets to Retrieve
             // -----------------------------------
@@ -231,6 +226,13 @@ public class SearchServiceBean {
             solrQuery.addFacetField(SearchFields.DATAVERSE_CATEGORY);
             solrQuery.addFacetField(SearchFields.METADATA_SOURCE);
             solrQuery.addFacetField(SearchFields.PUBLICATION_YEAR);
+            /*
+            * We talked about this in slack on 2021-09-14, Users can see objects on draft/unpublished 
+            *  if the owner gives permissions to all users so it makes sense to expose this facet 
+            *  to all users. The request of this change started because the order of the facets were 
+            *  changed with the PR #9635 and this was unintended.
+            */
+            solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
             solrQuery.addFacetField(SearchFields.DATASET_LICENSE);
             /**
              * @todo when a new method on datasetFieldService is available
@@ -251,6 +253,7 @@ public class SearchServiceBean {
                             DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
                             solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
                         }
+
                         // Get all metadata block facets configured to be displayed
                         metadataBlockFacets.addAll(dataverse.getMetadataBlockFacets());
                     }
@@ -1032,11 +1035,11 @@ public class SearchServiceBean {
 
         AuthenticatedUser au = (AuthenticatedUser) user;
 
-        if (addFacets) {
-            // Logged in user, has publication status facet
-            //
-            solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
-        }
+        // if (addFacets) {
+        //     // Logged in user, has publication status facet
+        //     //
+        //     solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
+        // }
 
         // ----------------------------------------------------
         // (3) Is this a Super User?
