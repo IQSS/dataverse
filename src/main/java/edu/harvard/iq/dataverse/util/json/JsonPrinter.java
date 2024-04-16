@@ -626,11 +626,11 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse) {
-        JsonObjectBuilder metadataBlockJson = Json.createObjectBuilder()
-                .add("id", metadataBlock.getId())
-                .add("name", metadataBlock.getName())
-                .add("displayName", metadataBlock.getDisplayName())
-                .add("displayOnCreate", metadataBlock.isDisplayOnCreate());
+        JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder();
+        jsonObjectBuilder.add("id", metadataBlock.getId());
+        jsonObjectBuilder.add("name", metadataBlock.getName());
+        jsonObjectBuilder.add("displayName", metadataBlock.getDisplayName());
+        jsonObjectBuilder.add("displayOnCreate", metadataBlock.isDisplayOnCreate());
 
         JsonObjectBuilder fieldsBuilder = Json.createObjectBuilder();
         Set<DatasetFieldType> sortedFieldTypes = new TreeSet<>(metadataBlock.getDatasetFieldTypes());
@@ -643,9 +643,9 @@ public class JsonPrinter {
             }
         }
 
-        metadataBlockJson.add("fields", fieldsBuilder);
+        jsonObjectBuilder.add("fields", fieldsBuilder);
 
-        return metadataBlockJson;
+        return jsonObjectBuilder;
     }
 
     public static JsonObjectBuilder json(DatasetFieldType fld) {
