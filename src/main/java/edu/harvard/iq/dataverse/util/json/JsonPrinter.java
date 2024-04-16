@@ -635,11 +635,12 @@ public class JsonPrinter {
         JsonObjectBuilder fieldsBuilder = Json.createObjectBuilder();
         Set<DatasetFieldType> datasetFieldTypes = new TreeSet<>(metadataBlock.getDatasetFieldTypes());
         for (DatasetFieldType datasetFieldType : datasetFieldTypes) {
+            boolean requiredInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldType.getId());
             boolean displayCondition = !printOnlyDisplayedOnCreateDatasetFieldTypes ||
                     datasetFieldType.isDisplayOnCreate() ||
-                    (ownerDataverse != null && ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldType.getId()));
+                    requiredInOwnerDataverse;
             if (displayCondition) {
-                fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType));
+                fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
             }
         }
 
@@ -649,6 +650,10 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DatasetFieldType fld) {
+        return json(fld, null);
+    }
+
+    public static JsonObjectBuilder json(DatasetFieldType fld, Dataverse ownerDataverse) {
         JsonObjectBuilder fieldsBld = jsonObjectBuilder();
         fieldsBld.add("name", fld.getName());
         fieldsBld.add("displayName", fld.getDisplayName());
@@ -661,8 +666,11 @@ public class JsonPrinter {
         fieldsBld.add("multiple", fld.isAllowMultiples());
         fieldsBld.add("isControlledVocabulary", fld.isControlledVocabulary());
         fieldsBld.add("displayFormat", fld.getDisplayFormat());
-        fieldsBld.add("isRequired", fld.isRequired());
         fieldsBld.add("displayOrder", fld.getDisplayOrder());
+
+        boolean requiredInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(fld.getId());
+        fieldsBld.add("isRequired", requiredInOwnerDataverse || fld.isRequired());
+
         if (fld.isControlledVocabulary()) {
             // If the field has a controlled vocabulary,
             // add all values to the resulting JSON
@@ -672,10 +680,11 @@ public class JsonPrinter {
             }
             fieldsBld.add("controlledVocabularyValues", jab);
         }
+
         if (!fld.getChildDatasetFieldTypes().isEmpty()) {
             JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
             for (DatasetFieldType subFld : fld.getChildDatasetFieldTypes()) {
-                subFieldsBld.add(subFld.getName(), JsonPrinter.json(subFld));
+                subFieldsBld.add(subFld.getName(), JsonPrinter.json(subFld, ownerDataverse));
             }
             fieldsBld.add("childFields", subFieldsBld);
         }
