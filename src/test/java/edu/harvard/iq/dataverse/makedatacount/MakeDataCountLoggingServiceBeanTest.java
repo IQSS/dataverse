@@ -21,7 +21,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -45,8 +44,8 @@ public class MakeDataCountLoggingServiceBeanTest {
         GlobalId id = dataset.getGlobalId();
         dataset.setGlobalId(id);
         dvVersion.setDataset(dataset);
-        dvVersion.setAuthorsStr("OneAuthor;TwoAuthor");
-        dvVersion.setTitle("Title");
+        dvVersion.setAuthorsStr("OneAuthor;\tTwoAuthor");
+        dvVersion.setTitle("Title\tWith Tab");
         dvVersion.setVersionNumber(1L);
         dvVersion.setReleaseTime(new Date());
         
@@ -64,7 +63,13 @@ public class MakeDataCountLoggingServiceBeanTest {
         
         //lastly setting attributes we don't actually use currently in our logging/constructors, just in case
         entry.setUserCookieId("UserCookId");
-        entry.setOtherId("OtherId");
+        entry.setOtherId(null); // null pointer check for sanitize method
+        assertThat(entry.getOtherId(), is("-"));
+        entry.setOtherId("OtherId\t\r\nX");
+        // escape sequences get replaced with a space in sanitize method
+        assertThat(entry.getOtherId(), is("OtherId X"));
+        // check other replacements for author list ";" becomes "|"
+        assertThat(entry.getAuthors(), is("OneAuthor| TwoAuthor"));
         
         //And test. "-" is the default
         assertThat(entry.getEventTime(), is(not("-")));

@@ -483,7 +483,7 @@ span.search-term-match {font-weight: bold;}
 [id$='resultsTable'] div.card-title-icon-block span.label {vertical-align:15%}
 [id$='resultsTable'] div.card-preview-icon-block {width:48px; float:left; margin:4px 12px 6px 0;}
 [id$='resultsTable'] div.card-preview-icon-block a {display:block; height:48px; line-height:48px;}
-[id$='resultsTable'] div.card-preview-icon-block img {vertical-align:middle;}
+[id$='resultsTable'] div.card-preview-icon-block img {vertical-align:middle; max-width: 64px; max-height: 48px; padding-right: 10px;}
 [id$='resultsTable'] div.card-preview-icon-block span[class^='icon'],
 [id$='resultsTable'] div.card-preview-icon-block span[class^='glyphicon'] {font-size:2.8em;}
 

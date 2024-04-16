@@ -501,24 +501,15 @@ public class FileUtil implements java.io.Serializable  {
 
         if ("application/x-gzip".equals(fileType)) {
             logger.fine("we'll run additional checks on this gzipped file.");
-            // We want to be able to support gzipped FITS files, same way as
-            // if they were just regular FITS files:
-            FileInputStream gzippedIn = new FileInputStream(f);
-            // (new FileInputStream() can throw a "filen not found" exception;
-            // however, if we've made it this far, it really means that the 
-            // file does exist and can be opened)
-            InputStream uncompressedIn = null; 
-            try {
-                uncompressedIn = new GZIPInputStream(gzippedIn);
+            try (FileInputStream gzippedIn = new FileInputStream(f);
+                     InputStream uncompressedIn = new GZIPInputStream(gzippedIn)) {
                 if (isFITSFile(uncompressedIn)) {
                     fileType = "application/fits-gzipped";
                 }
             } catch (IOException ioex) {
-                if (uncompressedIn != null) {
-                    try {uncompressedIn.close();} catch (IOException e) {}
-                }
+                logger.warning("IOException while processing gzipped FITS file: " + ioex.getMessage());
             }
-        } 
+        }
         if ("application/zip".equals(fileType)) {
             
             // Is this a zipped Shapefile?
@@ -1199,34 +1190,12 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static boolean isTermsPopupRequired(DatasetVersion datasetVersion) {
-
-        if (datasetVersion == null) {
-            logger.fine("TermsPopup not required because datasetVersion is null.");
+        Boolean answer = popupDueToStateOrTerms(datasetVersion);
+        if(answer == null) {
+            logger.fine("TermsPopup is not required.");
             return false;
         }
-        //0. if version is draft then Popup "not required"
-        if (!datasetVersion.isReleased()) {
-            logger.fine("TermsPopup not required because datasetVersion has not been released.");
-            return false;
-        }
-        // 1. License and Terms of Use:
-        if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            if (!License.CC0.equals(datasetVersion.getTermsOfUseAndAccess().getLicense())
-                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
-                    || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
-                logger.fine("TermsPopup required because of license or terms of use.");
-                return true;
-            }
-
-            // 2. Terms of Access:
-            if (!(datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
-                logger.fine("TermsPopup required because of terms of access.");
-                return true;
-            }
-        }
-
-        logger.fine("TermsPopup is not required.");
-        return false;
+        return answer;
     }
     
     /**
@@ -1449,6 +1418,17 @@ public class FileUtil implements java.io.Serializable  {
     	return s3io;
     }
     
+    private static InputStream getOriginalFileInputStream(StorageIO<DataFile> storage, boolean isTabularData) throws IOException {
+        storage.open(DataAccessOption.READ_ACCESS);
+        if (!isTabularData) {
+            return storage.getInputStream();
+        } else {
+            // if this is a tabular file, read the preserved original "auxiliary file"
+            // instead:
+            return storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+        }
+    }
+
     public static void validateDataFileChecksum(DataFile dataFile) throws IOException {
         DataFile.ChecksumType checksumType = dataFile.getChecksumType();
         if (checksumType == null) {
@@ -1458,35 +1438,24 @@ public class FileUtil implements java.io.Serializable  {
         }
 
         StorageIO<DataFile> storage = dataFile.getStorageIO();
-        InputStream in = null;
+        String recalculatedChecksum = null;
 
-        try {
-            storage.open(DataAccessOption.READ_ACCESS);
-
-            if (!dataFile.isTabularData()) {
-                in = storage.getInputStream();
-            } else {
-                // if this is a tabular file, read the preserved original "auxiliary file"
-                // instead:
-                in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-            }
+        try (InputStream inputStream = getOriginalFileInputStream(storage, dataFile.isTabularData())) {
+            recalculatedChecksum = FileUtil.calculateChecksum(inputStream, checksumType);
         } catch (IOException ioex) {
-            in = null;
-        }
-
-        if (in == null) {
             String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failRead", Arrays.asList(dataFile.getId().toString()));
             logger.log(Level.INFO, info);
             throw new IOException(info);
+        } catch (RuntimeException rte) {
+            logger.log(Level.SEVERE, "failed to calculated checksum, one retry", rte);
+            recalculatedChecksum = null;
         }
 
-        String recalculatedChecksum = null;
-        try {
-            recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
-        } catch (RuntimeException rte) {
-            recalculatedChecksum = null;
-        } finally {
-            IOUtils.closeQuietly(in);
+        if (recalculatedChecksum == null) { //retry once
+            storage = dataFile.getStorageIO();
+            try (InputStream inputStream = getOriginalFileInputStream(storage, dataFile.isTabularData())) {
+                recalculatedChecksum = FileUtil.calculateChecksum(inputStream, checksumType);
+            }
         }
 
         if (recalculatedChecksum == null) {
@@ -1504,19 +1473,12 @@ public class FileUtil implements java.io.Serializable  {
             boolean fixed = false;
             if (!dataFile.isTabularData() && dataFile.getIngestReport() != null) {
                 // try again, see if the .orig file happens to be there:
-                try {
-                    in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                } catch (IOException ioex) {
-                    in = null;
+                try (InputStream in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION)) {
+                    recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
+                } catch (RuntimeException rte) {
+                    recalculatedChecksum = null;
                 }
-                if (in != null) {
-                    try {
-                        recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
-                    } catch (RuntimeException rte) {
-                        recalculatedChecksum = null;
-                    } finally {
-                        IOUtils.closeQuietly(in);
-                    }
+                if (recalculatedChecksum != null) {
                     // try again:
                     if (recalculatedChecksum.equals(dataFile.getChecksumValue())) {
                         fixed = true;
@@ -1803,6 +1765,12 @@ public class FileUtil implements java.io.Serializable  {
             }
         }
         return false;
+    }
+
+
+    public static String getStorageDriver(DataFile dataFile) {
+        String storageIdentifier = dataFile.getStorageIdentifier();
+        return storageIdentifier.substring(0, storageIdentifier.indexOf(DataAccess.SEPARATOR));
     }
     
 }

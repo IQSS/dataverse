@@ -38,6 +38,8 @@ import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -421,8 +423,9 @@ public class ImportServiceBean {
 
             // For ImportType.NEW, if the user supplies a global identifier, and it's not a protocol
             // we support, it will be rejected.
+            
             if (importType.equals(ImportType.NEW)) {
-                if (ds.getGlobalId().asString() != null && !ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""))) {
+                if (ds.getGlobalId().asString() != null && !PidUtil.getPidProvider(ds.getGlobalId().getProviderId()).canManagePID()) {
                     throw new ImportException("Could not register id " + ds.getGlobalId().asString() + ", protocol not supported");
                 }
             }
