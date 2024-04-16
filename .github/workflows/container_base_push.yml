@@ -86,7 +86,6 @@ jobs:
 
             # Note: Accessing, pushing tags etc. to DockerHub will only succeed in upstream and
             #       on events in context of upstream because secrets. PRs run in context of forks by default!
-
             - name: Log in to the Container registry
               uses: docker/login-action@v3
               with:
