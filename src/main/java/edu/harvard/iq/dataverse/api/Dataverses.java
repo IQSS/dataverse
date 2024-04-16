@@ -715,14 +715,15 @@ public class Dataverses extends AbstractApiBean {
                                        @QueryParam("onlyDisplayedOnCreate") boolean onlyDisplayedOnCreate,
                                        @QueryParam("returnDatasetFieldTypes") boolean returnDatasetFieldTypes) {
         try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
             final List<MetadataBlock> metadataBlocks = execCommand(
                     new ListMetadataBlocksCommand(
                             createDataverseRequest(getRequestUser(crc)),
-                            findDataverseOrDie(dvIdtf),
+                            dataverse,
                             onlyDisplayedOnCreate
                     )
             );
-            return ok(json(metadataBlocks, returnDatasetFieldTypes, onlyDisplayedOnCreate));
+            return ok(json(metadataBlocks, returnDatasetFieldTypes, onlyDisplayedOnCreate, dataverse));
         } catch (WrappedResponse we) {
             return we.getResponse();
         }
