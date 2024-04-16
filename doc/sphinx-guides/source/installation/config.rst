@@ -1189,18 +1189,20 @@ Larger installations may want to increase the number of open S3 connections allo
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.connection-pool-size=4096"``
 
-By default, when redirecting an upload to the S3 storage, Dataverse will place a ``temp`` tag on the file being uploaded for an easier cleanup if the file is not added to the dataset after upload (e.g., if the user cancels the operation).
-If your S3 store does not support tagging and gives an error when redirecting uploads, you can disable that tag by using the ``dataverse.files.<id>.disable-tagging`` JVM option. For example:
+By default, when direct upload to an S3 store is configured, Dataverse will place a ``temp`` tag on the file being uploaded for an easier cleanup in case the file is not added to the dataset after upload (e.g., if the user cancels the operation). (See :ref:`s3-tags`.)
+If your S3 store does not support tagging and gives an error when direct upload is configured, you can disable the tagging by using the ``dataverse.files.<id>.disable-tagging`` JVM option. For example:
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.disable-tagging=true"``
 
-Disabling the ``temp`` tag makes it harder to identify abandoned files that are not used by your Dataverse instance (i.e. one cannot search for the temp tag in a delete script). These should still be removed to avoid wasting storage space. To clean up these files and any other leftover files, regardless of whether the temp tag is applied, you can use the [Cleanup Storage of a Dataset](https://guides.dataverse.org/en/5.13/api/native-api.html#cleanup-storage-of-a-dataset) API endpoint.
+Disabling the ``temp`` tag makes it harder to identify abandoned files that are not used by your Dataverse instance (i.e. one cannot search for the ``temp`` tag in a delete script). These should still be removed to avoid wasting storage space. To clean up these files and any other leftover files, regardless of whether the ``temp`` tag is applied, you can use the :ref:`cleanup-storage-api` API endpoint.
 
 In case you would like to configure Dataverse to use a custom S3 service instead of Amazon S3 services, please
 add the options for the custom URL and region as documented below. Please read above if your desired combination has
 been tested already and what other options have been set for a successful integration.
 
 Lastly, go ahead and restart your Payara server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
+
+.. _list-of-s3-storage-options:
 
 List of S3 Storage Options
 ##########################
@@ -1229,7 +1231,7 @@ List of S3 Storage Options
     dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                                     ``false``
     dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                                   ``true``
     dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                              ``256``
-    dataverse.files.<id>.disable-tagging         ``true``/``false``  Do not place the ``temp`` tag when redirecting the upload to the S3 server           ``false``
+    dataverse.files.<id>.disable-tagging         ``true``/``false``  Do not place the ``temp`` tag when redirecting the upload to the S3 server.          ``false``
     ===========================================  ==================  ===================================================================================  =============
 
 .. table::

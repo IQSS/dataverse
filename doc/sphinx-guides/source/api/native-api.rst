@@ -2013,7 +2013,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. _cleanup-storage-api:
 
-Cleanup storage of a Dataset
+Cleanup Storage of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This is an experimental feature and should be tested on your system before using it in production.
