@@ -633,8 +633,8 @@ public class JsonPrinter {
         jsonObjectBuilder.add("displayOnCreate", metadataBlock.isDisplayOnCreate());
 
         JsonObjectBuilder fieldsBuilder = Json.createObjectBuilder();
-        Set<DatasetFieldType> sortedFieldTypes = new TreeSet<>(metadataBlock.getDatasetFieldTypes());
-        for (DatasetFieldType datasetFieldType : sortedFieldTypes) {
+        Set<DatasetFieldType> datasetFieldTypes = new TreeSet<>(metadataBlock.getDatasetFieldTypes());
+        for (DatasetFieldType datasetFieldType : datasetFieldTypes) {
             boolean displayCondition = !printOnlyDisplayedOnCreateDatasetFieldTypes ||
                     datasetFieldType.isDisplayOnCreate() ||
                     (ownerDataverse != null && ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldType.getId()));
