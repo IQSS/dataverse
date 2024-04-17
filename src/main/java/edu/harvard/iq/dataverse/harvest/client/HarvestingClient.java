@@ -243,6 +243,14 @@ public class HarvestingClient implements Serializable {
     public void setCustomHttpHeaders(String customHttpHeaders) {
         this.customHttpHeaders = customHttpHeaders;
     }
+
+    private boolean allowHarvestingMissingCVV;
+    public boolean getAllowHarvestingMissingCVV() {
+        return allowHarvestingMissingCVV;
+    }
+    public void setAllowHarvestingMissingCVV(boolean allowHarvestingMissingCVV) {
+        this.allowHarvestingMissingCVV = allowHarvestingMissingCVV;
+    }
     
     // TODO: do we need "orphanRemoval=true"? -- L.A. 4.4
     // TODO: should it be @OrderBy("startTime")? -- L.A. 4.4

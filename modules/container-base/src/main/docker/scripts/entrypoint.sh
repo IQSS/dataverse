@@ -10,6 +10,12 @@
 # and zombies under control. If the ENTRYPOINT command is changed, it will still use dumb-init because shebang.
 # dumb-init takes care to send any signals to subshells, too! (Which might run in the background...)
 
+# We do not define these variables within our Dockerfile so the location can be changed when trying to avoid
+# writes to the overlay filesystem. (CONFIG_DIR is defined within the Dockerfile, but might be overridden.)
+${PREBOOT_COMMANDS:="${CONFIG_DIR}/pre-boot-commands.asadmin"}
+export PREBOOT_COMMANDS
+${POSTBOOT_COMMANDS:="${CONFIG_DIR}/post-boot-commands.asadmin"}
+export POSTBOOT_COMMANDS
 
 # Execute any scripts BEFORE the appserver starts
 for f in "${SCRIPT_DIR}"/init_* "${SCRIPT_DIR}"/init.d/*; do

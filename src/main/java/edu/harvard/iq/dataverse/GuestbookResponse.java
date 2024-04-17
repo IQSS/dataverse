@@ -99,7 +99,7 @@ public class GuestbookResponse implements Serializable {
      */
     
     public static final String ACCESS_REQUEST = "AccessRequest";
-    static final String DOWNLOAD = "Download";
+    public static final String DOWNLOAD = "Download";
     static final String SUBSET = "Subset";
     static final String EXPLORE = "Explore";
 
