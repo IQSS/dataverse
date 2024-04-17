@@ -26,10 +26,10 @@ import org.junit.jupiter.api.Test;
 import static jakarta.ws.rs.core.Response.Status.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItemInArray;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.nio.file.Files;
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
@@ -749,5 +749,37 @@ public class DataversesIT {
 
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(secondDataverseAlias, true, true, apiToken);
         listMetadataBlocksResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    public void testUpdateInputLevels() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Update valid input levels
+        String[] testInputLevelNames = {"geographicCoverage", "country"};
+        Response updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, apiToken);
+        updateDataverseInputLevelsResponse.then().assertThat()
+                .body("data.inputLevels[0].required", equalTo(true))
+                .body("data.inputLevels[0].include", equalTo(true))
+                .body("data.inputLevels[1].required", equalTo(true))
+                .body("data.inputLevels[1].include", equalTo(true))
+                .statusCode(OK.getStatusCode());
+        String actualFieldTypeName1 = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
+        String actualFieldTypeName2 = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[1].datasetFieldTypeName");
+        assertNotEquals(actualFieldTypeName1, actualFieldTypeName2);
+        assertThat(testInputLevelNames, hasItemInArray(actualFieldTypeName1));
+        assertThat(testInputLevelNames, hasItemInArray(actualFieldTypeName2));
+
+        // Update invalid input levels
+        String[] testInvalidInputLevelNames = {"geographicCoverage", "invalid1"};
+        updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInvalidInputLevelNames, apiToken);
+        updateDataverseInputLevelsResponse.then().assertThat()
+                .body("message", equalTo("Invalid dataset field type name: invalid1"))
+                .statusCode(BAD_REQUEST.getStatusCode());
     }
 }

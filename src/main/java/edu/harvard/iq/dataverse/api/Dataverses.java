@@ -1,24 +1,10 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseFacet;
-import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.DataverseMetadataBlockFacet;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DataverseMetadataBlockFacetDTO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
-import edu.harvard.iq.dataverse.GuestbookServiceBean;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.RoleAssignment;
 
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
@@ -88,22 +74,15 @@ import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TreeSet;
+
+import java.io.StringReader;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonNumber;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonString;
-import jakarta.json.JsonValue;
+import jakarta.json.*;
 import jakarta.json.JsonValue.ValueType;
 import jakarta.json.stream.JsonParsingException;
 import jakarta.validation.ConstraintViolationException;
@@ -127,10 +106,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.WebApplicationException;
@@ -694,6 +669,43 @@ public class Dataverses extends AbstractApiBean {
         } catch (WrappedResponse e) {
             return e.getResponse();
         }
+    }
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/inputLevels")
+    public Response updateInputLevels(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, String jsonBody) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(identifier);
+            List<DataverseFieldTypeInputLevel> newInputLevels = parseInputLevels(jsonBody, dataverse);
+            execCommand(new UpdateDataverseCommand(dataverse, null, null, createDataverseRequest(getRequestUser(crc)), newInputLevels));
+            return ok(BundleUtil.getStringFromBundle("dataverse.update.success"), JsonPrinter.json(dataverse));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
+    private List<DataverseFieldTypeInputLevel> parseInputLevels(String jsonBody, Dataverse dataverse) throws WrappedResponse {
+        JsonArray inputLevelsArray = Json.createReader(new StringReader(jsonBody)).readArray();
+
+        List<DataverseFieldTypeInputLevel> newInputLevels = new ArrayList<>();
+        for (JsonValue value : inputLevelsArray) {
+            JsonObject inputLevel = (JsonObject) value;
+            String datasetFieldTypeName = inputLevel.getString("datasetFieldTypeName");
+            DatasetFieldType datasetFieldType = datasetFieldSvc.findByName(datasetFieldTypeName);
+
+            if (datasetFieldType == null) {
+                String errorMessage = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.updateinputlevels.error.invalidfieldtypename"), datasetFieldTypeName);
+                throw new WrappedResponse(badRequest(errorMessage));
+            }
+
+            boolean required = inputLevel.getBoolean("required");
+            boolean include = inputLevel.getBoolean("include");
+
+            newInputLevels.add(new DataverseFieldTypeInputLevel(datasetFieldType, dataverse, required, include));
+        }
+
+        return newInputLevels;
     }
 
     @DELETE

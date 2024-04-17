@@ -3877,4 +3877,19 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/requestGlobusUploadPaths");
     }
 
+    static Response updateDataverseInputLevels(String dataverseAlias, String[] inputLevelNames, String apiToken) {
+        JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
+        for(String inputLevelName : inputLevelNames) {
+            contactArrayBuilder.add(Json.createObjectBuilder()
+                    .add("datasetFieldTypeName", inputLevelName)
+                    .add("required", true)
+                    .add("include", true)
+            );
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(contactArrayBuilder.build().toString())
+                .contentType(ContentType.JSON)
+                .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
+    }
 }

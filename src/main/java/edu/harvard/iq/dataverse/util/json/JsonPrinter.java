@@ -273,7 +273,7 @@ public class JsonPrinter {
         }
         if (returnOwners){
             bld.add("isPartOf", getOwnersFromDvObject(dv));
-        }       
+        }
         bld.add("permissionRoot", dv.isPermissionRoot())
                 .add("description", dv.getDescription())
                 .add("dataverseType", dv.getDataverseType().name());
@@ -291,6 +291,11 @@ public class JsonPrinter {
         }
         if (dv.getFilePIDsEnabled() != null) {
             bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
+        }
+
+        List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
+        if(!inputLevels.isEmpty()) {
+            bld.add("inputLevels", JsonPrinter.jsonDataverseFieldTypeInputLevels(inputLevels));
         }
 
         return bld;
@@ -1350,5 +1355,17 @@ public class JsonPrinter {
             licenseJsonObjectBuilder.add("iconUri", licenseIconUri);
         }
         return licenseJsonObjectBuilder;
+    }
+
+    public static JsonArrayBuilder jsonDataverseFieldTypeInputLevels(List<DataverseFieldTypeInputLevel> inputLevels) {
+        JsonArrayBuilder jsonArrayOfInputLevels = Json.createArrayBuilder();
+        for (DataverseFieldTypeInputLevel inputLevel : inputLevels) {
+            NullSafeJsonBuilder inputLevelJsonObject = NullSafeJsonBuilder.jsonObjectBuilder();
+            inputLevelJsonObject.add("datasetFieldTypeName", inputLevel.getDatasetFieldType().getName());
+            inputLevelJsonObject.add("required", inputLevel.isRequired());
+            inputLevelJsonObject.add("include", inputLevel.isInclude());
+            jsonArrayOfInputLevels.add(inputLevelJsonObject);
+        }
+        return jsonArrayOfInputLevels;
     }
 }
