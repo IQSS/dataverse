@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import java.util.logging.Logger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import io.restassured.RestAssured;
