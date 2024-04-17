@@ -393,7 +393,7 @@ public abstract class AbstractApiBean {
             datasetId = dvObjSvc.findIdByGlobalId(globalId, DvObject.DType.Dataset);
             if (datasetId == null) {
                 throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                    notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
             }
         } else {
             try {
