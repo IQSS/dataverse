@@ -33,7 +33,8 @@ public class EditableAccountFieldSets {
 
         public static Set<EditableAccountField> createSecondaryFieldsSet() {
             return Collections.unmodifiableSet(
-                    Stream.of(EditableAccountField.AFFILIATION, EditableAccountField.POSITION, EditableAccountField.NOTIFICATIONS_LANG)
+                    Stream.of(EditableAccountField.AFFILIATION, EditableAccountField.POSITION, EditableAccountField.NOTIFICATIONS_LANG,
+                                    EditableAccountField.ORCID, EditableAccountField.AFFILIATION_ROR)
                             .collect(Collectors.toSet()));
         }
 

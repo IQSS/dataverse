@@ -475,6 +475,19 @@
                                         </p>
                                     </div>
                                 </div>
+                                <!-- ORCID -->
+                                <div class="form-group" jsf:rendered="#{!empty DataverseUserPage.currentUser.orcid}">
+                                    <label for="affiliation" class="col-sm-3 control-label">
+                                        #{bundle['user.orcid']}
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p class="form-control-static">
+                                            <h:outputLink value="https://orcid.org/#{DataverseUserPage.currentUser.orcid}" target="_blank">
+                                                <h:outputText value="#{DataverseUserPage.currentUser.orcid}"/>
+                                            </h:outputLink>
+                                        </p>
+                                    </div>
+                                </div>
                                 <!-- Affiliation -->
                                 <div class="form-group" jsf:rendered="#{!empty DataverseUserPage.currentUser.affiliation}">
                                     <label for="affiliation" class="col-sm-3 control-label">
@@ -482,6 +495,19 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <p class="form-control-static">#{DataverseUserPage.currentUser.affiliation}</p>
+                                    </div>
+                                </div>
+                                <!-- Affiliation ROR -->
+                                <div class="form-group" jsf:rendered="#{!empty DataverseUserPage.currentUser.affiliationROR}">
+                                    <label for="affiliation" class="col-sm-3 control-label">
+                                        #{bundle['user.affiliationror']}
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p class="form-control-static">
+                                            <h:outputLink value="#{DataverseUserPage.currentUser.affiliationROR}" target="_blank">
+                                                <h:outputText value="#{DataverseUserPage.currentUser.affiliationROR}"/>
+                                            </h:outputLink>
+                                        </p>
                                     </div>
                                 </div>
                                 <!-- Position (not populated for Shibboleth users) -->
@@ -671,6 +697,21 @@
                                     </div>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                    <!-- ORCID -->
+                                    <label for="orcid" class="col-sm-3 control-label">
+                                        #{bundle['user.orcid']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.orcid.tip']}"></span>
+                                    </label>
+                                    <div class="col-sm-4">
+                                        <p:inputText id="orcid" styleClass="form-control"
+                                                     value="#{DataverseUserPage.userDisplayInfo.orcid}"
+                                                     validator="#{DataverseUserPage.validateOrcid}"
+                                                     disabled="#{DataverseUserPage.editMode == 'EDIT' and DataverseUserPage.isDisabledForEdit(editableField.ORCID)}"/>
+                                        <p:message for="orcid" display="text" />
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Affiliation -->
                                     <label for="affiliation" class="col-sm-3 control-label">
                                         #{bundle.affiliation}
@@ -682,6 +723,42 @@
                                                      value="#{DataverseUserPage.userDisplayInfo.affiliation}"
                                                      disabled="#{DataverseUserPage.editMode == 'EDIT' and DataverseUserPage.isDisabledForEdit(editableField.AFFILIATION)}"/>
                                         <p:message for="affiliation" display="text" />
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                    <!-- Affiliation ROR -->
+                                    <label for="affiliationror" class="col-sm-3 control-label">
+                                        #{bundle['user.affiliationror']}
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.affiliationror.tip']}"></span>
+                                    </label>
+                                    <div class="col-sm-4">
+                                        <p:autoComplete
+                                                id="affiliationror"
+                                                value="#{DataverseUserPage.userDisplayInfo.affiliationROR}"
+                                                completeMethod="#{DataverseUserPage.processAffiliationRorSuggestions}"
+                                                validator="#{DataverseUserPage.validateAffiliationRor}"
+                                                styleClass="autocomplete-form-control"
+                                                panelStyleClass="autocomplete-panel-maxwidth"
+                                                minQueryLength="2" queryDelay="1000" size="36"
+                                                resultsMessage="#{bundle['common.forms.autocomplete.resultsMessage']}"
+                                                emptyMessage="#{bundle['common.forms.autocomplete.emptySuggestionMessage']}"
+                                                var="suggestion" itemLabel="#{suggestion}" itemValue="#{suggestion.value}"
+                                                autoSelection="false"
+                                                autoHighlight="false"
+                                                disabled="#{DataverseUserPage.editMode == 'EDIT' and DataverseUserPage.isDisabledForEdit(editableField.AFFILIATION_ROR)}"
+                                        >
+                                            <p:column headerText="#{bundle['user.affiliationror.suggestionDisplay.valueHeader']}">
+                                                <h:outputText value="#{suggestion.value}"/>
+                                            </p:column>
+                                            <p:column headerText="#{bundle['user.affiliationror.suggestionDisplay.detailsHeader']}">
+                                                <h:outputText value="#{suggestion.details}"/>
+                                            </p:column>
+
+                                            <p:ajax process="@this" event="itemSelect" />
+                                            <p:ajax process="@this" event="itemUnselect" />
+                                        </p:autoComplete>
+                                        <p:message for="affiliationror" display="text" />
                                     </div>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">

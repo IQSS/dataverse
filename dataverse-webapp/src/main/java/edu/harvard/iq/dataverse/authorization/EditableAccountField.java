@@ -9,6 +9,8 @@ public enum EditableAccountField {
     FAMILY_NAME,
     EMAIL,
     AFFILIATION,
+    AFFILIATION_ROR,
     POSITION,
-    NOTIFICATIONS_LANG
+    NOTIFICATIONS_LANG,
+    ORCID
 }

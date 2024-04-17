@@ -13,15 +13,17 @@ public class RoleAssigneeDisplayInfo implements java.io.Serializable {
     private String title;
     private String emailAddress;
     private String affiliation;
+    private String affiliationROR;
 
     public RoleAssigneeDisplayInfo(String title, String emailAddress) {
-        this(title, emailAddress, null);
+        this(title, emailAddress, null, null);
     }
 
-    public RoleAssigneeDisplayInfo(String title, String emailAddress, String anAffiliation) {
+    public RoleAssigneeDisplayInfo(String title, String emailAddress, String anAffiliation, String affiliationROR) {
         this.title = title;
         this.emailAddress = emailAddress;
-        affiliation = anAffiliation;
+        this.affiliation = anAffiliation;
+        this.affiliationROR = affiliationROR;
     }
 
     public String getTitle() {
@@ -36,6 +38,10 @@ public class RoleAssigneeDisplayInfo implements java.io.Serializable {
         return affiliation;
     }
 
+    public String getAffiliationROR() {
+        return affiliationROR;
+    }
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -48,9 +54,14 @@ public class RoleAssigneeDisplayInfo implements java.io.Serializable {
         this.affiliation = affiliation;
     }
 
+    public void setAffiliationROR(String affiliationROR) {
+        this.affiliationROR = affiliationROR;
+    }
+
     @Override
     public String toString() {
-        return "RoleAssigneeDisplayInfo{" + "title=" + title + ", emailAddress=" + emailAddress + ", affiliation=" + affiliation + '}';
+        return "RoleAssigneeDisplayInfo{" + "title=" + title + ", emailAddress=" + emailAddress +
+                ", affiliation=" + affiliation + ", affiliationROR=" + affiliationROR + '}';
     }
 
     @Override
@@ -78,7 +89,8 @@ public class RoleAssigneeDisplayInfo implements java.io.Serializable {
         if (!Objects.equals(this.emailAddress, other.emailAddress)) {
             return false;
         }
-        return Objects.equals(this.affiliation, other.affiliation);
+        return Objects.equals(this.affiliation, other.affiliation)
+                && Objects.equals(this.affiliationROR, other.affiliationROR);
     }
 
 }

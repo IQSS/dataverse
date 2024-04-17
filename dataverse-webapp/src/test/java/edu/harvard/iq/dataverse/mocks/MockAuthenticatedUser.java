@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 public class MockAuthenticatedUser extends AuthenticatedUser {
     @Override
     public AuthenticatedUserDisplayInfo getDisplayInfo() {
-        return new AuthenticatedUserDisplayInfo("FirstMock", "LastMock", "EmailMock@email.com", "AffilMock", "PositionMock");
+        return new AuthenticatedUserDisplayInfo("FirstMock", "LastMock",
+                "EmailMock@email.com", "0000-0001-2345-6789", "AffilMock",
+                "https://ror.org/04k0tth05", "PositionMock");
     }
 }

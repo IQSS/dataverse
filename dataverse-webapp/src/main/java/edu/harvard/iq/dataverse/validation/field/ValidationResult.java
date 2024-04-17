@@ -4,16 +4,19 @@ import edu.harvard.iq.dataverse.persistence.dataset.ValidatableField;
 import org.apache.commons.lang3.StringUtils;
 
 public class ValidationResult {
-    public static ValidationResult OK = new ValidationResult(true,null, StringUtils.EMPTY);
 
-    private boolean ok;
-    private ValidatableField field;
-    private String message;
+    public static ValidationResult OK = new ValidationResult(true, null, null, StringUtils.EMPTY);
+
+    private final boolean ok;
+    private final String errorCode;
+    private final ValidatableField field;
+    private final String message;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    private ValidationResult(boolean ok, ValidatableField field, String validationMessage) {
+    private ValidationResult(boolean ok, String errorCode, ValidatableField field, String validationMessage) {
         this.ok = ok;
+        this.errorCode = errorCode;
         this.field = field;
         this.message = validationMessage;
     }
@@ -28,14 +31,26 @@ public class ValidationResult {
         return message;
     }
 
+    public String getErrorCode() {
+        return errorCode;
+    }
+
     // -------------------- LOGIC --------------------
+
+    public ValidationResult withInfo(ValidatableField field, String validationMessage) {
+        return new ValidationResult(ok, errorCode, field, validationMessage);
+    }
 
     public static ValidationResult ok() {
         return OK;
     }
 
     public static ValidationResult invalid(ValidatableField field, String message) {
-        return new ValidationResult(false, field, message);
+        return new ValidationResult(false, null, field, message);
+    }
+
+    public static ValidationResult invalid(String errorCode) {
+        return new ValidationResult(false, errorCode, null, StringUtils.EMPTY);
     }
 
     public boolean isOk() {

@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.EditableAccountField;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
+import edu.harvard.iq.dataverse.authorization.providers.common.BaseUserPage;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.consent.ConsentDto;
@@ -60,7 +61,7 @@ import java.util.logging.Logger;
 
 @ViewScoped
 @Named("DataverseUserPage")
-public class DataverseUserPage implements java.io.Serializable {
+public class DataverseUserPage extends BaseUserPage {
 
     private static final Logger logger = Logger.getLogger(DataverseUserPage.class.getCanonicalName());
 

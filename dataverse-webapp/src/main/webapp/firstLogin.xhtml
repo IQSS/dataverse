@@ -117,6 +117,19 @@
                                 </div>
                             </div>
                             <div class="form-group">
+                                <label for="ocrid" class="col-sm-3 control-label">
+                                    #{bundle['user.orcid']}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.orcid.tip']}"></span>
+                                </label>
+                                <div class="col-sm-4">
+                                    <p:inputText id="orcid" styleClass="form-control"
+                                                 value="#{ExternalIdpFirstLoginPage.newUser.displayInfo.orcid}"
+                                                 validator="#{ExternalIdpFirstLoginPage.validateOrcid}"/>
+                                    <p:message for="orcid" display="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
                                 <label for="affiliation" class="col-sm-3 control-label">
                                     #{bundle['affiliation']}
                                     <span class="glyphicon text-danger" title="#{bundle.requiredField}"/>
@@ -125,6 +138,41 @@
                                 </label>
                                 <div class="col-sm-4">
                                     <p:inputText id="affiliation" styleClass="form-control" value="#{ExternalIdpFirstLoginPage.newUser.displayInfo.affiliation}"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <!-- Affiliation ROR -->
+                                <label for="affiliationror" class="col-sm-3 control-label">
+                                    #{bundle['user.affiliationror']}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.affiliationror.tip']}"></span>
+                                </label>
+                                <div class="col-sm-4">
+                                    <p:autoComplete
+                                            id="affiliationror"
+                                            value="#{ExternalIdpFirstLoginPage.newUser.displayInfo.affiliationROR}"
+                                            completeMethod="#{ExternalIdpFirstLoginPage.processAffiliationRorSuggestions}"
+                                            validator="#{ExternalIdpFirstLoginPage.validateAffiliationRor}"
+                                            styleClass="autocomplete-form-control"
+                                            panelStyleClass="autocomplete-panel-maxwidth"
+                                            minQueryLength="2" queryDelay="1000" size="36"
+                                            resultsMessage="#{bundle['common.forms.autocomplete.resultsMessage']}"
+                                            emptyMessage="#{bundle['common.forms.autocomplete.emptySuggestionMessage']}"
+                                            var="suggestion" itemLabel="#{suggestion}" itemValue="#{suggestion.value}"
+                                            autoSelection="false"
+                                            autoHighlight="false"
+                                    >
+                                        <p:column headerText="#{bundle['user.affiliationror.suggestionDisplay.valueHeader']}">
+                                            <h:outputText value="#{suggestion.value}"/>
+                                        </p:column>
+                                        <p:column headerText="#{bundle['user.affiliationror.suggestionDisplay.detailsHeader']}">
+                                            <h:outputText value="#{suggestion.details}"/>
+                                        </p:column>
+
+                                        <p:ajax process="@this" event="itemSelect" />
+                                        <p:ajax process="@this" event="itemUnselect" />
+                                    </p:autoComplete>
+                                    <p:message for="affiliationror" display="text" />
                                 </div>
                             </div>
                             <div class="form-group">

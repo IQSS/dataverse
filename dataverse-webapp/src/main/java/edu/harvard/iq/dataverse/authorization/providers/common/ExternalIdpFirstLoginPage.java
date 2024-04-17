@@ -43,7 +43,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -65,7 +64,7 @@ import java.util.stream.Collectors;
  */
 @Named("ExternalIdpFirstLoginPage")
 @SessionScoped
-public class ExternalIdpFirstLoginPage implements Serializable {
+public class ExternalIdpFirstLoginPage extends BaseUserPage {
 
     private static final Logger logger = Logger.getLogger(ExternalIdpFirstLoginPage.class.getCanonicalName());
 
@@ -235,7 +234,8 @@ public class ExternalIdpFirstLoginPage implements Serializable {
     public String createNewAccount() {
         AuthenticatedUserDisplayInfo displayInfo = newUser.getDisplayInfo();
         AuthenticatedUserDisplayInfo newAuthenticatedUserDisplayInfo = new AuthenticatedUserDisplayInfo(
-                displayInfo.getFirstName(), displayInfo.getLastName(), getSelectedEmail(), displayInfo.getAffiliation(),
+                displayInfo.getFirstName(), displayInfo.getLastName(), getSelectedEmail(), displayInfo.getOrcid(),
+                displayInfo.getAffiliation(), displayInfo.getAffiliationROR(),
                 displayInfo.getPosition());
 
         final AuthenticatedUser user = authenticationSvc.createAuthenticatedUser(newUser.toUserRecordIdentifier(),

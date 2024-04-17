@@ -83,7 +83,9 @@ public class AuthenticatedUser implements User, Serializable, JpaEntity<Long> {
     @NotNull
     @Column(nullable = false, unique = true)
     private String email;
+    private String orcid;
     private String affiliation;
+    private String affiliationROR;
     private String position;
 
     @NotBlank(message = "{user.lastName}")
@@ -148,8 +150,16 @@ public class AuthenticatedUser implements User, Serializable, JpaEntity<Long> {
         return email;
     }
 
+    public String getOrcid() {
+        return orcid;
+    }
+
     public String getAffiliation() {
         return affiliation;
+    }
+
+    public String getAffiliationROR() {
+        return affiliationROR;
     }
 
     public String getPosition() {
@@ -214,7 +224,7 @@ public class AuthenticatedUser implements User, Serializable, JpaEntity<Long> {
 
     @Override
     public AuthenticatedUserDisplayInfo getDisplayInfo() {
-        return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position);
+        return new AuthenticatedUserDisplayInfo(firstName, lastName, email, orcid, affiliation, affiliationROR, position);
     }
 
     /**
@@ -232,6 +242,12 @@ public class AuthenticatedUser implements User, Serializable, JpaEntity<Long> {
         }
         if (StringUtils.isNotBlank(inf.getPosition())) {
             setPosition(inf.getPosition());
+        }
+        if (StringUtils.isNotBlank(inf.getOrcid())) {
+            setOrcid(inf.getOrcid());
+        }
+        if (StringUtils.isNotBlank(inf.getAffiliationROR())) {
+            setAffiliationROR(inf.getAffiliationROR());
         }
     }
 
@@ -277,8 +293,16 @@ public class AuthenticatedUser implements User, Serializable, JpaEntity<Long> {
         this.email = email.trim();
     }
 
+    public void setOrcid(String orcid) {
+        this.orcid = orcid;
+    }
+
     public void setAffiliation(String affiliation) {
         this.affiliation = affiliation;
+    }
+
+    public void setAffiliationROR(String affiliationROR) {
+        this.affiliationROR = affiliationROR;
     }
 
     public void setPosition(String position) {

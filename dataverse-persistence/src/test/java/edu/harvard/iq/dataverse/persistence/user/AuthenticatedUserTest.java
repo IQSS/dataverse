@@ -45,7 +45,8 @@ public class AuthenticatedUserTest {
     @Test
     public void testApplyDisplayInfo() {
         System.out.println("applyDisplayInfo");
-        AuthenticatedUserDisplayInfo inf = new AuthenticatedUserDisplayInfo("Homer", "Simpson", "Homer.Simpson@someU.edu", "UnitTester", "In-Memory user");
+        AuthenticatedUserDisplayInfo inf = new AuthenticatedUserDisplayInfo("Homer", "Simpson", "Homer.Simpson@someU.edu",
+                "0000-0001-2345-6789", "UnitTester", "https://ror.org/04k0tth05", "In-Memory user");
         testUser.applyDisplayInfo(inf);
         assertEquals(inf, testUser.getDisplayInfo());
     }
@@ -53,8 +54,15 @@ public class AuthenticatedUserTest {
     @Test
     public void testGetDisplayInfo() {
         System.out.println("getDisplayInfo");
-        AuthenticatedUserDisplayInfo expResult = new AuthenticatedUserDisplayInfo("Homer", "Simpson", "Homer.Simpson@someU.edu", "UnitTester", "In-Memory user");
+        // given
+        testUser.setOrcid("0000-0001-2345-6789");
+        testUser.setAffiliationROR("https://ror.org/04k0tth05");
+        AuthenticatedUserDisplayInfo expResult = new AuthenticatedUserDisplayInfo("Homer", "Simpson", "Homer.Simpson@someU.edu",
+                "0000-0001-2345-6789", "UnitTester", "https://ror.org/04k0tth05", "In-Memory user");
+        // when
         AuthenticatedUserDisplayInfo result = testUser.getDisplayInfo();
+
+        // then
         assertEquals(expResult, result);
 
     }
