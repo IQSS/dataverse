@@ -552,6 +552,8 @@ Great care must be taken when reloading a metadata block. Matching is done on fi
 
 The ability to reload metadata blocks means that SQL update scripts don't need to be written for these changes. See also the :doc:`/developers/sql-upgrade-scripts` section of the Developer Guide.
 
+.. _using-external-vocabulary-services:
+
 Using External Vocabulary Services
 ----------------------------------
 
