@@ -28,6 +28,7 @@ public class BriefJsonPrinter {
 				? null
 				: jsonObjectBuilder().add("id", blk.getId())
 					.add("displayName", blk.getDisplayName())
+					.add("displayOnCreate", blk.isDisplayOnCreate())
 					.add("name", blk.getName())
 					;
 	}

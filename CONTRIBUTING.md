@@ -56,7 +56,7 @@ If you are interested in working on the main Dataverse code, great! Before you s
 
 Please read http://guides.dataverse.org/en/latest/developers/version-control.html to understand how we use the "git flow" model of development and how we will encourage you to create a GitHub issue (if it doesn't exist already) to associate with your pull request. That page also includes tips on making a pull request.
 
-After making your pull request, your goal should be to help it advance through our kanban board at https://github.com/orgs/IQSS/projects/2 . If no one has moved your pull request to the code review column in a timely manner, please reach out. Note that once a pull request is created for an issue, we'll remove the issue from the board so that we only track one card (the pull request).
+After making your pull request, your goal should be to help it advance through our kanban board at https://github.com/orgs/IQSS/projects/34 . If no one has moved your pull request to the code review column in a timely manner, please reach out. Note that once a pull request is created for an issue, we'll remove the issue from the board so that we only track one card (the pull request).
 
 Thanks for your contribution!
 
@@ -64,4 +64,4 @@ Thanks for your contribution!
 [Community Call]: https://dataverse.org/community-calls
 [dataverse-dev Google Group]: https://groups.google.com/group/dataverse-dev
 [community contributors]: https://docs.google.com/spreadsheets/d/1o9DD-MQ0WkrYaEFTD5rF_NtyL8aUISgURsAXSL7Budk/edit?usp=sharing
-[dev efforts]: https://github.com/orgs/IQSS/projects/2#column-5298405
+[dev efforts]: https://github.com/orgs/IQSS/projects/34/views/6
