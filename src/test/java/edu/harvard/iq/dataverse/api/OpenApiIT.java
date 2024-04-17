@@ -8,8 +8,6 @@ import io.restassured.response.Response;
 
 public class OpenApiIT {
 
-    private static final Logger logger = Logger.getLogger(DatasetsIT.class.getCanonicalName());
-
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -27,7 +25,7 @@ public class OpenApiIT {
         openApi.prettyPrint();
         openApi.then().assertThat()
             .statusCode(200);
-            
+
         openApi = UtilIT.getOpenAPI("", "yaml");
         openApi.prettyPrint();
         openApi.then().assertThat()
