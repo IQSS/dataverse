@@ -250,8 +250,8 @@
                   "typeClass": "primitive",
                   "value": "Keyword Vocabulary"
                 },
-                "keywordVocabularyURL": {
-                  "typeName": "keywordVocabularyURL",
+                "keywordVocabularyURI": {
+                  "typeName": "keywordVocabularyURI",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "http://www.keyword.com/one"
@@ -276,8 +276,8 @@
                   "typeClass": "primitive",
                   "value": "Keyword Vocabulary"
                 },
-                "keywordVocabularyURL": {
-                  "typeName": "keywordVocabularyURL",
+                "keywordVocabularyURI": {
+                  "typeName": "keywordVocabularyURI",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "http://www.keyword.com/one"

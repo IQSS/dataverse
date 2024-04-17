@@ -447,7 +447,7 @@ public class OpenAireExportUtil {
                             String subject = null;
                             String subjectScheme = null;
                             String keywordTermURI = null;
-                            String keywordVocabURL = null;
+                            String keywordVocabURI = null;
 
                             for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
@@ -463,15 +463,15 @@ public class OpenAireExportUtil {
                                     subjectScheme = next.getSinglePrimitive();
                                 }
                                 
-                                if (DatasetFieldConstant.keywordVocabURL.equals(next.getTypeName())) {
-                                    keywordVocabURL = next.getSinglePrimitive();
+                                if (DatasetFieldConstant.keywordVocabURI.equals(next.getTypeName())) {
+                                    keywordVocabURI = next.getSinglePrimitive();
                                 }
                             }
 
                             if (StringUtils.isNotBlank(subject)) {
                                 subject_check = writeOpenTag(xmlw, "subjects", subject_check);
                                 // we prioritize the keywordTermURI metadata to populate schemeURI
-                                writeSubjectElement(xmlw, subjectScheme, StringUtils.isNotBlank(keywordTermURI) ? keywordTermURI : keywordVocabURL, subject, language);
+                                writeSubjectElement(xmlw, subjectScheme, StringUtils.isNotBlank(keywordTermURI) ? keywordTermURI : keywordVocabURI, subject, language);
                             }
                         }
                     }
