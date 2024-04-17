@@ -4478,9 +4478,13 @@ A boolean setting that, if true, will send an email and notification to users wh
 :CVocConf
 +++++++++
 
-A JSON-structured setting that configures Dataverse to associate specific metadatablock fields with external vocabulary services and specific vocabularies/sub-vocabularies managed by that service. More information about this capability is available at :doc:`/admin/metadatacustomization`.
+The ``:CVocConf`` database setting is used to allow metadatablock fields to look up values in external vocabulary services. For example, you could configure the "Author Affiliation" field to look up organizations in the `Research Organization Registry (ROR) <https://ror.org>`_. For a high-level description of this feature, see :ref:`using-external-vocabulary-services` in the Admin Guide.
 
-Scripts that implement this association for specific service protocols are maintained at https://github.com/gdcc/dataverse-external-vocab-support. That repository also includes a json-schema for validating the structure required by this setting along with an example metadatablock and sample :CVocConf setting values associating entries in the example block with ORCID and SKOSMOS based services.
+The expected format for the ``:CVocConf`` database setting is JSON but the details are not documented here. Instead, please refer to `docs/readme.md <https://github.com/gdcc/dataverse-external-vocab-support/blob/main/docs/readme.md>`_ in the https://github.com/gdcc/dataverse-external-vocab-support repo.
+
+That repository also includes scripts that implement the lookup for specific service protocols, a JSON Schema for validating the structure required by this setting, and an example metadatablock with a sample ``:CVocConf`` config that associates fields in the example block with ORCID and SKOSMOS based services.
+
+The commands below should give you an idea of how to load the configuration, but you'll want to study the examples and make decisions about which configuration to use:
 
 ``wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json``
 
