@@ -3,6 +3,12 @@ Direct DataFile Upload/Replace API
 
 The direct Datafile Upload API is used internally to support direct upload of files to S3 storage and by tools such as the DVUploader.
 
+.. contents:: |toctitle|
+	:local:
+
+Overview
+--------
+
 Direct upload involves a series of three activities, each involving interacting with the server for a Dataverse installation:
 
 * Requesting initiation of a transfer from the server
@@ -61,6 +67,8 @@ Multiple URLs: when the file must be uploaded in multiple parts. The part size i
     "storageIdentifier":"s3://demo-dataverse-bucket:177883b000e-49cedef268ac"
   }
 
+The call will return a 400 (BAD REQUEST) response if the file is larger than what is allowed by the :ref:`:MaxFileUploadSizeInBytes`) and/or a quota (see :doc:`/admin/collectionquotas`).
+
 In the example responses above, the URLs, which are very long, have been omitted. These URLs reference the S3 server and the specific object identifier that will be used, starting with, for example, https://demo-dataverse-bucket.s3.amazonaws.com/10.5072/FK2FOQPJS/177883b000e-49cedef268ac?...
 
 The client must then use the URL(s) to PUT the file, or if the file is larger than the specified partSize, parts of the file. 
@@ -91,7 +99,7 @@ If the client is unable to complete the multipart upload, it should call the abo
   
 .. _direct-add-to-dataset-api:
 
-Adding the Uploaded file to the Dataset
+Adding the Uploaded File to the Dataset
 ---------------------------------------
 
 Once the file exists in the s3 bucket, a final API call is needed to add it to the Dataset. This call is the same call used to upload a file to a Dataverse installation but, rather than sending the file bytes, additional metadata is added using the "jsonData" parameter.
@@ -119,7 +127,7 @@ The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.Data
 Note that this API call can be used independently of the others, e.g. supporting use cases in which the file already exists in S3/has been uploaded via some out-of-band method. Enabling out-of-band uploads is described at :ref:`file-storage` in the Configuration Guide.
 With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifier must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
 
-To add multiple Uploaded Files to the Dataset
+To Add Multiple Uploaded Files to the Dataset
 ---------------------------------------------
 
 Once the files exists in the s3 bucket, a final API call is needed to add all the files to the Dataset. In this API call, additional metadata is added using the "jsonData" parameter.
@@ -150,8 +158,7 @@ The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.Data
 Note that this API call can be used independently of the others, e.g. supporting use cases in which the files already exists in S3/has been uploaded via some out-of-band method. Enabling out-of-band uploads is described at :ref:`file-storage` in the Configuration Guide.
 With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifier must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
 
-
-Replacing an existing file in the Dataset
+Replacing an Existing File in the Dataset
 -----------------------------------------
 
 Once the file exists in the s3 bucket, a final API call is needed to register it as a replacement of an existing file. This call is the same call used to replace a file to a Dataverse installation but, rather than sending the file bytes, additional metadata is added using the "jsonData" parameter.
@@ -180,7 +187,7 @@ Note that the API call does not validate that the file matches the hash value su
 Note that this API call can be used independently of the others, e.g. supporting use cases in which the file already exists in S3/has been uploaded via some out-of-band method. Enabling out-of-band uploads is described at :ref:`file-storage` in the Configuration Guide.
 With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifier must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
 
-Replacing multiple existing files in the Dataset
+Replacing Multiple Existing Files in the Dataset
 ------------------------------------------------
 
 Once the replacement files exist in the s3 bucket, a final API call is needed to register them as replacements for existing files. In this API call, additional metadata is added using the "jsonData" parameter.

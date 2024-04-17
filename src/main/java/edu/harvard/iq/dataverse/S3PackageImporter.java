@@ -17,6 +17,7 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.BufferedReader;
@@ -203,35 +204,21 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         fmd.setDatasetVersion(dataset.getLatestVersion());
 
         FileUtil.generateS3PackageStorageIdentifier(packageFile);
-
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
+        PidProvider pidProvider = commandEngine.getContext().dvObjects().getEffectivePidGenerator(dataset);
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
-            String packageIdentifier = idServiceBean.generateDataFileIdentifier(packageFile);
-            packageFile.setIdentifier(packageIdentifier);
-        }
-
-        String nonNullDefaultIfKeyNotFound = "";
-        String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-
-        if (packageFile.getProtocol() == null) {
-            packageFile.setProtocol(protocol);
-        }
-        if (packageFile.getAuthority() == null) {
-            packageFile.setAuthority(authority);
+            pidProvider.generatePid(packageFile);
         }
 
         if (!packageFile.isIdentifierRegistered()) {
             String doiRetString = "";
-            idServiceBean = GlobalIdServiceBean.getBean(commandEngine.getContext());
             try {
-                doiRetString = idServiceBean.createIdentifier(packageFile);
+                doiRetString = pidProvider.createIdentifier(packageFile);
             } catch (Throwable e) {
 
             }
 
             // Check return value to make sure registration succeeded
-            if (!idServiceBean.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
+            if (!pidProvider.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
                 packageFile.setIdentifierRegistered(true);
                 packageFile.setGlobalIdCreateTime(new Date());
             }
