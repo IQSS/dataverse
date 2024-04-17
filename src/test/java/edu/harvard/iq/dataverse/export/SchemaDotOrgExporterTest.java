@@ -324,7 +324,7 @@ public class SchemaDotOrgExporterTest {
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordValue", DatasetFieldType.FieldType.TEXT, false)));
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordTermURI", DatasetFieldType.FieldType.TEXT, false)));
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabulary", DatasetFieldType.FieldType.TEXT, false)));
-        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabularyURL", DatasetFieldType.FieldType.TEXT, false)));
+        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabularyURI", DatasetFieldType.FieldType.TEXT, false)));
         keywordType.setChildDatasetFieldTypes(keywordChildTypes);
     
         DatasetFieldType topicClassificationType = datasetFieldTypeSvc.add(new DatasetFieldType("topicClassification", DatasetFieldType.FieldType.TEXT, true));

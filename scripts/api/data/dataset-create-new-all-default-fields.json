@@ -243,8 +243,8 @@
                   "typeClass": "primitive",
                   "value": "KeywordVocabulary1"
                 },
-                "keywordVocabularyURL": {
-                  "typeName": "keywordVocabularyURL",
+                "keywordVocabularyURI": {
+                  "typeName": "keywordVocabularyURI",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "http://KeywordVocabularyURL1.org"
@@ -269,8 +269,8 @@
                   "typeClass": "primitive",
                   "value": "KeywordVocabulary2"
                 },
-                "keywordVocabularyURL": {
-                  "typeName": "keywordVocabularyURL",
+                "keywordVocabularyURI": {
+                  "typeName": "keywordVocabularyURI",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "http://KeywordVocabularyURL2.org"
