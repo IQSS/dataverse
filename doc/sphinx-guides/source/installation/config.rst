@@ -1189,12 +1189,22 @@ Larger installations may want to increase the number of open S3 connections allo
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.connection-pool-size=4096"``
 
-By default, when direct upload to an S3 store is configured, Dataverse will place a ``temp`` tag on the file being uploaded for an easier cleanup in case the file is not added to the dataset after upload (e.g., if the user cancels the operation). (See :ref:`s3-tags`.)
+.. _s3-tagging:
+
+S3 Tagging
+##########
+
+By default, when direct upload to an S3 store is configured, Dataverse will place a ``temp`` tag on the file being uploaded for an easier cleanup in case the file is not added to the dataset after upload (e.g., if the user cancels the operation). (See :ref:`s3-tags-and-direct-upload`.)
 If your S3 store does not support tagging and gives an error when direct upload is configured, you can disable the tagging by using the ``dataverse.files.<id>.disable-tagging`` JVM option. For example:
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.disable-tagging=true"``
 
 Disabling the ``temp`` tag makes it harder to identify abandoned files that are not used by your Dataverse instance (i.e. one cannot search for the ``temp`` tag in a delete script). These should still be removed to avoid wasting storage space. To clean up these files and any other leftover files, regardless of whether the ``temp`` tag is applied, you can use the :ref:`cleanup-storage-api` API endpoint.
+
+Note that if you disable tagging, you should should omit the ``x-amz-tagging:dv-state=temp`` header when using the :doc:`/developers/s3-direct-upload-api`, as noted in that section.
+
+Finalizing S3 Configuration
+###########################
 
 In case you would like to configure Dataverse to use a custom S3 service instead of Amazon S3 services, please
 add the options for the custom URL and region as documented below. Please read above if your desired combination has
