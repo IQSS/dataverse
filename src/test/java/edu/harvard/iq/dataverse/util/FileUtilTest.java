@@ -372,6 +372,15 @@ public class FileUtilTest {
     }
 
     @Test
+    public void testGZipFile() throws IOException {
+        String path = "src/test/resources/fits/";
+        String pathAndFile = path + "FOSy19g0309t_c2f.fits.gz";
+        File file = new File(pathAndFile);
+        String contentType = FileUtil.determineFileType(file, pathAndFile);
+        assertEquals("application/fits-gzipped", contentType);
+    }
+
+    @Test
     public void testDetermineFileTypeROCrate() {
         final String roCrateContentType = "application/ld+json; profile=\"http://www.w3.org/ns/json-ld#flattened http://www.w3.org/ns/json-ld#compacted https://w3id.org/ro/crate\"";
         final DataFile rocrate = new DataFile(roCrateContentType);

@@ -25,22 +25,25 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     private final Dataset ds;
     private final boolean includeDeaccessioned;
+    private boolean checkPermsWhenDeaccessioned;
 
     public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset) {
-        this(aRequest, anAffectedDataset, false);
+        this(aRequest, anAffectedDataset,false, false);
     }
 
-    public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, boolean includeDeaccessioned) {
+    public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) {
         super(aRequest, anAffectedDataset);
         ds = anAffectedDataset;
         this.includeDeaccessioned = includeDeaccessioned;
+        this.checkPermsWhenDeaccessioned = checkPermsWhenDeaccessioned;
     }
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        if (ds.getLatestVersion().isDraft() && ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)) {
+        if (ds.getLatestVersion().isDraft() && 
+            ctxt.permissions().requestOn(getRequest(), ds).has(Permission.ViewUnpublishedDataset)) {
             return ctxt.engine().submit(new GetDraftDatasetVersionCommand(getRequest(), ds));
         }
-        return ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(getRequest(), ds, includeDeaccessioned));
+        return ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(getRequest(), ds, includeDeaccessioned, checkPermsWhenDeaccessioned));
     }
 }

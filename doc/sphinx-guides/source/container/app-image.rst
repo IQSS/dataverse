@@ -22,20 +22,20 @@ IQSS will not offer you support how to deploy or run it, please reach out to the
 You might be interested in taking a look at :doc:`../developers/containers`, linking you to some (community-based)
 efforts.
 
-
+.. _supported-image-tags-app:
 
 Supported Image Tags
 ++++++++++++++++++++
 
 This image is sourced from the main upstream code `repository of the Dataverse software <https://github.com/IQSS/dataverse>`_.
-Development and maintenance of the `image's code <https://github.com/IQSS/dataverse/tree/develop>`_ happens there
-(again, by the community).
+Development and maintenance of the `image's code <https://github.com/IQSS/dataverse/tree/develop/src/main/docker>`_
+happens there (again, by the community). Community-supported image tags are based on the two most important
+upstream branches:
 
-.. note::
-    Please note that this image is not (yet) available from Docker Hub. You need to build local to use
-    (see below). Follow https://github.com/IQSS/dataverse/issues/9444 for new developments.
-
-
+- The ``unstable`` tag corresponds to the ``develop`` branch, where pull requests are merged.
+  (`Dockerfile <https://github.com/IQSS/dataverse/blob/develop/src/main/docker/Dockerfile>`__)
+- The ``alpha`` tag corresponds to the ``master`` branch, where releases are cut from.
+  (`Dockerfile <https://github.com/IQSS/dataverse/blob/master/src/main/docker/Dockerfile>`__)
 
 Image Contents
 ++++++++++++++
@@ -134,19 +134,6 @@ In addition, the application image provides the following tunables:
 
         1. Simply pick a JVM option from the list and replace any ``.`` with ``_``.
         2. Replace any ``-`` in the option name with ``__``.
-    * - ``DATAVERSE_MAIL_HOST``
-      - ``smtp``
-      - String
-      - A hostname (w/o port!) where to reach a Mail MTA on port 25.
-    * - ``DATAVERSE_MAIL_USER``
-      - ``dataversenotify``
-      - String
-      - A username to use with the Mail MTA
-    * - ``DATAVERSE_MAIL_FROM``
-      - ``dataverse@localhost``
-      - Mail address
-      - The "From" field for all outbound mail. Make sure to set :ref:`systemEmail` to the same value or no mail will
-        be sent.
 
 
 Note that the script ``init_2_configure.sh`` will apply a few very important defaults to enable quick usage

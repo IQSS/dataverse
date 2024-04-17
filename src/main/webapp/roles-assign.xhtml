@@ -31,7 +31,7 @@
                                         styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
                                         var="roleAssignee" itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
                             <p:column>
-                                <h:outputText value="#{roleAssignee.displayInfo.title}"/> 
+                                <h:outputText value="#{roleAssignee.displayInfo.title}"/>
                                 <h:outputText value=" (#{roleAssignee.displayInfo.affiliation})" rendered="#{!empty roleAssignee.displayInfo.affiliation}"/>
                             </p:column>
                             <p:column>

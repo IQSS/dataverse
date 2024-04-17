@@ -32,6 +32,8 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 	private final List<DatasetFieldType> facetList;
         private final List<Dataverse> featuredDataverseList;
         private final List<DataverseFieldTypeInputLevel> inputLevelList;
+        
+        private boolean datasetsReindexRequired = false; 
 
 	public UpdateDataverseCommand(Dataverse editedDv, List<DatasetFieldType> facetList, List<Dataverse> featuredDataverseList, 
                     DataverseRequest aRequest,  List<DataverseFieldTypeInputLevel> inputLevelList ) {
@@ -74,9 +76,13 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
                 }
             }
             
-            DataverseType oldDvType = ctxt.dataverses().find(editedDv.getId()).getDataverseType();
-            String oldDvAlias = ctxt.dataverses().find(editedDv.getId()).getAlias();
-            String oldDvName = ctxt.dataverses().find(editedDv.getId()).getName();
+            Dataverse oldDv = ctxt.dataverses().find(editedDv.getId());
+            
+            DataverseType oldDvType = oldDv.getDataverseType();
+            String oldDvAlias = oldDv.getAlias();
+            String oldDvName = oldDv.getName();
+            oldDv = null; 
+            
             Dataverse result = ctxt.dataverses().save(editedDv);
             
             if ( facetList != null ) {
@@ -101,6 +107,14 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
                 }
             }
             
+            // We don't want to reindex the children datasets unnecessarily: 
+            // When these values are changed we need to reindex all children datasets
+            // This check is not recursive as all the values just report the immediate parent
+            if (!oldDvType.equals(editedDv.getDataverseType())
+                || !oldDvName.equals(editedDv.getName())
+                || !oldDvAlias.equals(editedDv.getAlias())) {
+                datasetsReindexRequired = true;
+            }
             
             return result;
 	}
@@ -110,9 +124,16 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
         
         // first kick of async index of datasets
         // TODO: is this actually needed? Is there a better way to handle
+        // It appears that we at some point lost some extra logic here, where
+        // we only reindex the underlying datasets if one or more of the specific set
+        // of fields have been changed (since these values are included in the 
+        // indexed solr documents for dataasets). So I'm putting that back. -L.A.
         Dataverse result = (Dataverse) r;
-        List<Dataset> datasets = ctxt.datasets().findByOwnerId(result.getId());
-        ctxt.index().asyncIndexDatasetList(datasets, true);
+        
+        if (datasetsReindexRequired) {
+            List<Dataset> datasets = ctxt.datasets().findByOwnerId(result.getId());
+            ctxt.index().asyncIndexDatasetList(datasets, true);
+        }
         
         return ctxt.dataverses().index((Dataverse) r);
     }  
