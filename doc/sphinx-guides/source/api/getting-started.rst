@@ -9,7 +9,7 @@ If you are a researcher or curator who wants to automate parts of your workflow,
 Servers You Can Test With
 -------------------------
 
-Rather than using a production Dataverse installation, API users are welcome to use http://demo.dataverse.org for testing. You can email support@dataverse.org if you have any trouble with this server.  
+Rather than using a production Dataverse installation, API users are welcome to use https://demo.dataverse.org for testing. You can email support@dataverse.org if you have any trouble with this server.  
 
 If you would rather have full control over your own test server, deployments to AWS, Docker, and more are covered in the :doc:`/developers/index` and the :doc:`/installation/index`.
 
@@ -86,7 +86,7 @@ See :ref:`create-dataset-command`.
 Uploading Files
 ~~~~~~~~~~~~~~~
 
-See :ref:`add-file-api`.
+See :ref:`add-file-api`. In addition, when a Dataverse installation is configured to use S3 storage with direct upload enabled, there is API support to send a file directly to S3. This facilitates an efficient method to upload big files, but is more complex. The procedure is described in the :doc:`/developers/s3-direct-upload-api` section of the Developer Guide.
 
 Publishing a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

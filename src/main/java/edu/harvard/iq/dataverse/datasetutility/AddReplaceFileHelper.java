@@ -27,7 +27,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
@@ -61,7 +60,8 @@ import jakarta.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import org.apache.commons.io.IOUtils;
-
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDataFilesCommand;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 
 /**
@@ -1204,17 +1204,24 @@ public class AddReplaceFileHelper{
             clone = workingVersion.cloneDatasetVersion();
         }
         try {
-            CreateDataFileResult result = FileUtil.createDataFiles(workingVersion,
+            /*CreateDataFileResult result = FileUtil.createDataFiles(workingVersion,
                     this.newFileInputStream,
                     this.newFileName,
                     this.newFileContentType,
                     this.newStorageIdentifier,
                     this.newCheckSum,
                     this.newCheckSumType,
-                    this.systemConfig);
-            initialFileList = result.getDataFiles();
+                    this.systemConfig);*/
+            
+            UploadSessionQuotaLimit quota = null; 
+            if (systemConfig.isStorageQuotasEnforced()) {
+                quota = fileService.getUploadSessionQuotaLimit(dataset);
+            }
+            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequest, workingVersion, newFileInputStream, newFileName, newFileContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType);
+            CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
+            initialFileList = createDataFilesResult.getDataFiles();
 
-        } catch (IOException ex) {
+        } catch (CommandException ex) {
             if (ex.getMessage() != null && !ex.getMessage().isEmpty()) {
                 this.addErrorSevere(getBundleErr("ingest_create_file_err") + " " + ex.getMessage());
             } else {

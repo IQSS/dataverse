@@ -243,4 +243,16 @@ public class StorageIOTest {
         assertEquals("Random	Random\n", instance.generateVariableHeader(dvs));
         assertEquals(null, instance.generateVariableHeader(null));
     }
+    
+    @Test
+    public void testGetConfigParam() {
+        System.setProperty("dataverse.files.globus.type", "globus");
+    assertEquals("globus", StorageIO.getConfigParamForDriver("globus", StorageIO.TYPE));
+    System.clearProperty("dataverse.files.globus.type");
+    }
+    
+    @Test
+    public void testGetConfigParamWithDefault() {
+    assertEquals(DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER, StorageIO.getConfigParamForDriver("globus", AbstractRemoteOverlayAccessIO.BASE_STORE, DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER));
+    }
 }

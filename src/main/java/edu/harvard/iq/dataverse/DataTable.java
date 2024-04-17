@@ -112,6 +112,16 @@ public class DataTable implements Serializable {
     @Column( nullable = true )
     private String originalFileName;
     
+    
+    /**
+     * The physical tab-delimited file is in storage with the list of variable
+     * names saved as the 1st line. This means that we do not need to generate 
+     * this line on the fly. (Also means that direct download mechanism can be
+     * used for this file!)
+     */
+    @Column(nullable = false)
+    private boolean storedWithVariableHeader = false;  
+    
     /*
      * Getter and Setter methods:
      */
@@ -204,6 +214,14 @@ public class DataTable implements Serializable {
 
     public void setOriginalFileName(String originalFileName) {
         this.originalFileName = originalFileName;
+    }
+    
+    public boolean isStoredWithVariableHeader() {
+        return storedWithVariableHeader;
+    }
+    
+    public void setStoredWithVariableHeader(boolean storedWithVariableHeader) {
+        this.storedWithVariableHeader = storedWithVariableHeader;
     }
     
     /* 
