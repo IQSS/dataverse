@@ -6404,9 +6404,6 @@ public class DatasetPage implements java.io.Serializable {
         
         boolean validated = validateFilesForDownload(true, true);
         
-        logger.info("SGT valid: " + validated);
-        logger.info("SGT outcome: " + getValidateFilesOutcome());
-        logger.info("SGT popupshown: " + popupShown);
         if (validated) {
             globusTransferRequested = true;
             boolean mixed = "Mixed".equals(getValidateFilesOutcome());
