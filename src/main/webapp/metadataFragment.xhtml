@@ -159,6 +159,17 @@
                                                                       <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('protocol','')}" />
                                                                       <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managedfields').toString()}" />
                                                         </h:outputText>
+                                                        <!-- Cvoc for others fields -->
+                                                        <h:outputText value="#{cvPart.key.value}"
+                                                                      escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"
+                                                                      rendered="#{(cvocOnDsf or cvocOnCvPart) and not (
+                                                                            cvPart.key.datasetFieldType.name.equals(cvocConf.get(cvPart.key.datasetFieldType.id).getString('term-uri-field'))
+                                                                            or cvPart.key.datasetFieldType.name.equals(cvocConf.get(dsf.datasetFieldType.id).getString('term-uri-field')))}"
+                                                                      styleClass="hidden">
+                                                            <f:passThroughAttribute name="hidden" value="hidden" />
+                                                            <f:passThroughAttribute name="data-cvoc-metadata-name"
+                                                                                    value="#{cvPart.key.datasetFieldType.name}" />
+                                                        </h:outputText>
                                                     </ui:repeat>
                                                     <ui:fragment rendered="#{not compoundValuesstatus.last}">
                                                         <br/>
