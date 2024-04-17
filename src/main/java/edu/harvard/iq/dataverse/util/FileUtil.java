@@ -501,24 +501,15 @@ public class FileUtil implements java.io.Serializable  {
 
         if ("application/x-gzip".equals(fileType)) {
             logger.fine("we'll run additional checks on this gzipped file.");
-            // We want to be able to support gzipped FITS files, same way as
-            // if they were just regular FITS files:
-            FileInputStream gzippedIn = new FileInputStream(f);
-            // (new FileInputStream() can throw a "filen not found" exception;
-            // however, if we've made it this far, it really means that the 
-            // file does exist and can be opened)
-            InputStream uncompressedIn = null; 
-            try {
-                uncompressedIn = new GZIPInputStream(gzippedIn);
+            try (FileInputStream gzippedIn = new FileInputStream(f);
+                     InputStream uncompressedIn = new GZIPInputStream(gzippedIn)) {
                 if (isFITSFile(uncompressedIn)) {
                     fileType = "application/fits-gzipped";
                 }
             } catch (IOException ioex) {
-                if (uncompressedIn != null) {
-                    try {uncompressedIn.close();} catch (IOException e) {}
-                }
+                logger.warning("IOException while processing gzipped FITS file: " + ioex.getMessage());
             }
-        } 
+        }
         if ("application/zip".equals(fileType)) {
             
             // Is this a zipped Shapefile?
