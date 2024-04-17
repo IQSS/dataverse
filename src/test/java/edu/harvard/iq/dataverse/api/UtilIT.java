@@ -647,6 +647,21 @@ public class UtilIT {
                 .post("/api/dataverses/" + dataverseAlias + "/metadatablocks");
     }
 
+    static Response listMetadataBlocks(String dataverseAlias, boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("onlyDisplayedOnCreate", onlyDisplayedOnCreate)
+                .queryParam("returnDatasetFieldTypes", returnDatasetFieldTypes)
+                .get("/api/dataverses/" + dataverseAlias + "/metadatablocks");
+    }
+
+    static Response listMetadataBlocks(boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes) {
+        return given()
+                .queryParam("onlyDisplayedOnCreate", onlyDisplayedOnCreate)
+                .queryParam("returnDatasetFieldTypes", returnDatasetFieldTypes)
+                .get("/api/metadatablocks");
+    }
+
     static Response getMetadataBlock(String block) {
         return given()
                 .get("/api/metadatablocks/" + block);
@@ -3262,6 +3277,33 @@ public class UtilIT {
                 .contentType("application/json")
                 .post("/api/roles?dvo="+dvAlias);
         return addBannerMessageResponse;
+    }
+    
+    static Response addFeaturedDataverse (String dvAlias, String featuredDvAlias, String apiToken) {
+        
+        String jsonString = "[\"" + featuredDvAlias + "\"]";
+
+        Response addFeaturedDataverseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/dataverses/"+dvAlias+"/featured/");
+        return addFeaturedDataverseResponse;
+    }
+    
+    static Response deleteFeaturedDataverses (String dvAlias, String apiToken) {
+
+        Response deleteFeaturedDataversesResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/dataverses/"+dvAlias+"/featured/");
+        return deleteFeaturedDataversesResponse;
+    }
+    
+    static Response getFeaturedDataverses (String dvAlias, String apiToken) {
+
+        Response deleteFeaturedDataversesResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"+dvAlias+"/featured/");
+        return deleteFeaturedDataversesResponse;
     }
 
     static Response deleteDataverseRole( String roleAlias, String apiToken) {
