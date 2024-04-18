@@ -1,7 +1,11 @@
-The sitemap file generation can handle more than 50,000 entries if needed with the [sitemapgen4j](https://github.com/gdcc/sitemapgen4j) library, maintained by the Global Dataverse Community Consortium.
+Dataverse can now handle more than 50,000 items when generating sitemap files, splitting the content across multiple files to comply with the Sitemap protocol.
 
-In this case, the Dataverse Admin API `api/admin/sitemap` create a sitemap index file, called `sitemap_index.xml`, in place of the single `sitemap.xml` file. This created file reference multiples simple sitemap file, named ``sitemap1.xml``, ``sitemap2.xml``, etc. This referenced files will be as many files as necessary to contain the URLs of dataverses and datasets presents your installation, while respecting the limit of 50,000 URLs per file. See the [config section of the Installation Guide](https://guides.dataverse.org/en/latest/installation/config.html#creating-a-sitemap-and-submitting-it-to-search-engines) for details.
+For details see https://dataverse-guide--10321.org.readthedocs.build/en/10321/installation/config.html#creating-a-sitemap-and-submitting-it-to-search-engines #8936 and #10321.
 
-A HTML preview can be found [here](https://dataverse-guide--10321.org.readthedocs.build/en/10321/installation/config.html#creating-a-sitemap-and-submitting-it-to-search-engines).
+## Upgrade instructions
 
-For more information, see [#8936](https://github.com/IQSS/dataverse/issues/8936).
+If your installation has more than 50,000 entries, you should re-submit your sitemap URL to Google or other search engines. The file in the URL will change from ``sitemap.xml`` to ``sitemap_index.xml``.
+
+As explained at https://dataverse-guide--10321.org.readthedocs.build/en/10321/installation/config.html#creating-a-sitemap-and-submitting-it-to-search-engines this is the command for regenerating your sitemap:
+
+`curl -X POST http://localhost:8080/api/admin/sitemap`
