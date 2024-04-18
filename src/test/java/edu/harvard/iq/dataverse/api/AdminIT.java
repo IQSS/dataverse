@@ -21,7 +21,8 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
-
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -894,5 +895,16 @@ public class AdminIT {
         Response createUserResponse = UtilIT.createRandomUser();
         createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
         return UtilIT.getApiTokenFromResponse(createUserResponse);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans={true,false})
+    public void testSetSuperUserStatus(Boolean status) {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response toggleSuperuser = UtilIT.setSuperuserStatus(username, status);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 }
