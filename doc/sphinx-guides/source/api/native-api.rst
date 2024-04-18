@@ -904,6 +904,8 @@ Update Collection Input Levels
 
 Updates the dataset field type input levels in a collection.
 
+Please note that this endpoint overwrites all the input levels of the collection page, so if you want to keep the existing ones, you will need to add them to the JSON request body.
+
 If one of the input levels corresponds to a dataset field type belonging to a metadata block that does not exist in the collection, the metadata block will be added to the collection.
 
 This endpoint expects a JSON with the following format::
