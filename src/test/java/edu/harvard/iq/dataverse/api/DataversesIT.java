@@ -701,26 +701,52 @@ public class DataversesIT {
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
         setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
 
+        String[] testInputLevelNames = {"geographicCoverage", "country"};
+        Response updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, apiToken);
+        updateDataverseInputLevelsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
         // Dataverse not found
         Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks("-1", false, false, apiToken);
         listMetadataBlocksResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
         // Existent dataverse and no optional params
+        String[] expectedAllMetadataBlockDisplayNames = {"Astronomy and Astrophysics Metadata", "Citation Metadata", "Geospatial Metadata"};
+
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, false, false, apiToken);
         listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", equalTo(null))
-                .body("data.size()", equalTo(2));
+                .body("data[1].fields", equalTo(null))
+                .body("data[2].fields", equalTo(null))
+                .body("data.size()", equalTo(3));
+
+        String actualMetadataBlockDisplayName1 = listMetadataBlocksResponse.then().extract().path("data[0].displayName");
+        String actualMetadataBlockDisplayName2 = listMetadataBlocksResponse.then().extract().path("data[1].displayName");
+        String actualMetadataBlockDisplayName3 = listMetadataBlocksResponse.then().extract().path("data[2].displayName");
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName2);
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName3);
+        assertNotEquals(actualMetadataBlockDisplayName2, actualMetadataBlockDisplayName3);
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName1));
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName2));
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName3));
 
         // Existent dataverse and onlyDisplayedOnCreate=true
+        String[] expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames = {"Citation Metadata", "Geospatial Metadata"};
+
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, false, apiToken);
         listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", equalTo(null))
-                .body("data[0].displayName", equalTo("Citation Metadata"))
-                .body("data.size()", equalTo(1));
+                .body("data[1].fields", equalTo(null))
+                .body("data.size()", equalTo(2));
+
+        actualMetadataBlockDisplayName1 = listMetadataBlocksResponse.then().extract().path("data[0].displayName");
+        actualMetadataBlockDisplayName2 = listMetadataBlocksResponse.then().extract().path("data[1].displayName");
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName2);
+        assertThat(expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName1));
+        assertThat(expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName2));
 
         // Existent dataverse and returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, false, true, apiToken);
@@ -728,7 +754,19 @@ public class DataversesIT {
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", not(equalTo(null)))
-                .body("data.size()", equalTo(2));
+                .body("data[1].fields", not(equalTo(null)))
+                .body("data[2].fields", not(equalTo(null)))
+                .body("data.size()", equalTo(3));
+
+        actualMetadataBlockDisplayName1 = listMetadataBlocksResponse.then().extract().path("data[0].displayName");
+        actualMetadataBlockDisplayName2 = listMetadataBlocksResponse.then().extract().path("data[1].displayName");
+        actualMetadataBlockDisplayName3 = listMetadataBlocksResponse.then().extract().path("data[2].displayName");
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName2);
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName3);
+        assertNotEquals(actualMetadataBlockDisplayName2, actualMetadataBlockDisplayName3);
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName1));
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName2));
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName3));
 
         // Existent dataverse and onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
@@ -736,8 +774,26 @@ public class DataversesIT {
         listMetadataBlocksResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].fields", not(equalTo(null)))
-                .body("data[0].displayName", equalTo("Citation Metadata"))
-                .body("data.size()", equalTo(1));
+                .body("data[1].fields", not(equalTo(null)))
+                .body("data.size()", equalTo(2));
+
+        actualMetadataBlockDisplayName1 = listMetadataBlocksResponse.then().extract().path("data[0].displayName");
+        actualMetadataBlockDisplayName2 = listMetadataBlocksResponse.then().extract().path("data[1].displayName");
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName2);
+        assertThat(expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName1));
+        assertThat(expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName2));
+
+        // Check dataset fields for the updated input levels are retrieved
+        int geospatialMetadataBlockIndex = actualMetadataBlockDisplayName2.equals("Geospatial Metadata") ? 1 : 0;
+
+        listMetadataBlocksResponse.then().assertThat()
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(2));
+
+        String actualMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
+        String actualMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
+
+        assertNotNull(actualMetadataField1);
+        assertNotNull(actualMetadataField2);
 
         // User has no permissions on the requested dataverse
         Response createSecondUserResponse = UtilIT.createRandomUser();

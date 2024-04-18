@@ -79,4 +79,19 @@ public class MetadataBlockServiceBean {
         TypedQuery<MetadataBlock> typedQuery = em.createQuery(criteriaQuery);
         return typedQuery.getResultList();
     }
+
+    public boolean dataverseHasMetadataBlock(Dataverse dataverse, MetadataBlock metadataBlock) {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+        Root<MetadataBlock> metadataBlockRoot = criteriaQuery.from(MetadataBlock.class);
+        Root<Dataverse> dataverseRoot = criteriaQuery.from(Dataverse.class);
+        criteriaQuery
+                .select(criteriaBuilder.count(metadataBlockRoot))
+                .where(criteriaBuilder.and(
+                        criteriaBuilder.equal(dataverseRoot.get("id"), dataverse.getId()),
+                        criteriaBuilder.equal(metadataBlockRoot.get("id"), metadataBlock.getId()),
+                        metadataBlockRoot.in(dataverseRoot.get("metadataBlocks"))));
+        Long result = em.createQuery(criteriaQuery).getSingleResult();
+        return result != null && result > 0;
+    }
 }
