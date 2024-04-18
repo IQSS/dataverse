@@ -189,10 +189,11 @@ public class UserDataFieldFillerTest {
     }
     
     @Test
-    public void fillUserDataInDatasetFields__FILL_AUTHOR_WITH_ORCID() {
+    public void fillUserDataInDatasetFields__FILL_AUTHOR_WITH_ORCID_AND_ROR() {
         // given
-        user.setAuthenticatedUserLookup(new AuthenticatedUserLookup("orcid_id", "orcid"));
-        
+        user.setOrcid("0000-0001-2345-6789");
+        user.setAffiliationROR("https://ror.org/04k0tth05");
+
         DatasetFieldType authorIdTypeDatasetFieldType = new DatasetFieldType(DatasetFieldConstant.authorIdType, FieldType.TEXT, false);
         Mockito.when(fieldService.findByName(DatasetFieldConstant.authorIdType)).thenReturn(authorIdTypeDatasetFieldType);
         
@@ -209,6 +210,7 @@ public class UserDataFieldFillerTest {
         authorType.getChildDatasetFieldTypes().addAll(Lists.newArrayList(
                 new DatasetFieldType(DatasetFieldConstant.authorName, FieldType.TEXT, false),
                 new DatasetFieldType(DatasetFieldConstant.authorAffiliation, FieldType.TEXT, false),
+                new DatasetFieldType(DatasetFieldConstant.authorAffiliationIdentifier, FieldType.TEXT, false),
                 new DatasetFieldType(DatasetFieldConstant.authorIdValue, FieldType.TEXT, false),
                 authorIdType
                 ));
@@ -222,7 +224,7 @@ public class UserDataFieldFillerTest {
         
         // then
         assertEquals(1, datasetFields.size());
-        assertEquals("Doe, John; Aff; orcid_id; ORCID", datasetFields.get(0).getCompoundRawValue());
+        assertEquals("Doe, John; Aff; https://ror.org/04k0tth05; 0000-0001-2345-6789; ORCID", datasetFields.get(0).getCompoundRawValue());
     }
     
     @Test

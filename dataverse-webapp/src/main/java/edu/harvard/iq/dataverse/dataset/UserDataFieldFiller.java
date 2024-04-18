@@ -36,8 +36,9 @@ public class UserDataFieldFiller {
 
         String userFullName = user.getLastName() + ", " + user.getFirstName();
         String userAffiliation = user.getAffiliation();
+        String userAffiliationROR = user.getAffiliationROR();
         String userEmail = user.getEmail();
-        String userOrcidId = user.getOrcidId();
+        String userOrcidId = user.getOrcid();
         String todayDate = LocalDate.now(clock).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         for (DatasetField dsf : datasetFields) {
@@ -69,6 +70,9 @@ public class UserDataFieldFiller {
                         }
                         if (subField.getTypeName().equals(DatasetFieldConstant.authorAffiliation)) {
                             subField.setFieldValue(userAffiliation);
+                        }
+                        if (subField.getTypeName().equals(DatasetFieldConstant.authorAffiliationIdentifier)) {
+                            subField.setFieldValue(userAffiliationROR);
                         }
                         if (userOrcidId != null) {
                             if (subField.getTypeName().equals(DatasetFieldConstant.authorIdValue)) {

@@ -108,6 +108,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             AuthenticatedUserDisplayInfo orgData = getOrganizationalData(userEndpoint, accessToken.getAccessToken(), service);
             parsed.displayInfo.setAffiliation(orgData.getAffiliation());
             parsed.displayInfo.setPosition(orgData.getPosition());
+            parsed.displayInfo.setOrcid(orcidNumber);
 
             return new ExternalIdpUserRecord(getId(), orcidNumber,
                                         parsed.username,

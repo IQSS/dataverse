@@ -264,12 +264,6 @@ public class AuthenticatedUser implements User, Serializable, JpaEntity<Long> {
         return String.format("%s %s %s", getLastName(), getFirstName(), getUserIdentifier());
     }
 
-    public String getOrcidId() {
-        String authProviderId = getAuthenticatedUserLookup().getAuthenticationProviderId();
-        return AuthenticatedUserLookup.ORCID_PROVIDER_ID_PRODUCTION.equals(authProviderId)
-                ? getAuthenticatedUserLookup().getPersistentUserId() : null;
-    }
-
     // -------------------- SETTERS --------------------
 
     public void setDatasetLocks(List<DatasetLock> datasetLocks) {
