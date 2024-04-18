@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.validation.field.validators.geobox;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.validation.field.FieldValidator;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import edu.harvard.iq.dataverse.persistence.dataset.ValidatableField;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -24,9 +24,9 @@ class GeoboxLatitudeRelationValidator implements FieldValidator {
      * correctly (i.e. value can be safely converted to a number).
      */
     @Override
-    public ValidationResult validate(ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+    public FieldValidationResult validate(ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
         if (!(GeoboxFields.Y1.is(field) || GeoboxFields.Y2.is(field))) {
-            return ValidationResult.ok();
+            return FieldValidationResult.ok();
         }
         GeoboxFields otherCoord = GeoboxFields.Y1.is(field) ? GeoboxFields.Y2 : GeoboxFields.Y1;
         ValidatableField other = field.getParent()
@@ -38,12 +38,12 @@ class GeoboxLatitudeRelationValidator implements FieldValidator {
                 .orElse(null);
         if (other == null || StringUtils.isBlank(other.getSingleValue()) || !NumberUtils.isParsable(other.getSingleValue())
                 || StringUtils.isBlank(field.getSingleValue())) {
-            return ValidationResult.ok();
+            return FieldValidationResult.ok();
         }
         BigDecimal y1 = new BigDecimal(otherCoord == GeoboxFields.Y2 ? field.getSingleValue() : other.getSingleValue());
         BigDecimal y2 = new BigDecimal(otherCoord == GeoboxFields.Y1 ? field.getSingleValue() : other.getSingleValue());
         return y1.compareTo(y2) <= 0
-                ? ValidationResult.ok()
-                : ValidationResult.invalid(field, BundleUtil.getStringFromBundle("geobox.invalid.latitude.relation"));
+                ? FieldValidationResult.ok()
+                : FieldValidationResult.invalid(field, BundleUtil.getStringFromBundle("geobox.invalid.latitude.relation"));
     }
 }

@@ -46,7 +46,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.PrimefacesUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.apache.commons.lang3.StringUtils;
@@ -901,9 +901,9 @@ public class DatasetFilesTab implements Serializable {
     private String save(DatasetVersion updatedVersion, boolean printBannerMessage) {
 
         // Validate
-        List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(updatedVersion);
+        List<FieldValidationResult> fieldValidationResults = fieldValidationService.validateFieldsOfDatasetVersion(updatedVersion);
         Set<ConstraintViolation<FileMetadata>> constraintViolations = updatedVersion.validateFileMetadata();
-        if (!validationResults.isEmpty() || !constraintViolations.isEmpty()) {
+        if (!fieldValidationResults.isEmpty() || !constraintViolations.isEmpty()) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"), "");
             return "";
         }

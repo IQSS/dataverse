@@ -41,9 +41,9 @@ class SearchFormValidationDispatcherTest {
         }
 
         @Override
-        public ValidationResult validate(ValidatableField field, Map<String, Object> params,
-                                         Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
-            return ValidationResult.invalid(field, "message");
+        public FieldValidationResult validate(ValidatableField field, Map<String, Object> params,
+                                              Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+            return FieldValidationResult.invalid(field, "message");
         }
     };
 
@@ -70,10 +70,10 @@ class SearchFormValidationDispatcherTest {
         field.setValues("44.5", "44");
 
         // when
-        List<ValidationResult> results = initDispatcher().executeValidations();
+        List<FieldValidationResult> results = initDispatcher().executeValidations();
 
         // then
-        assertThat(results).extracting(ValidationResult::isOk).containsExactly(false);
+        assertThat(results).extracting(FieldValidationResult::isOk).containsExactly(false);
     }
 
     @Test
@@ -84,7 +84,7 @@ class SearchFormValidationDispatcherTest {
         field.setValues("1024", "2048");
 
         // when
-        List<ValidationResult> results = initDispatcher().executeValidations();
+        List<FieldValidationResult> results = initDispatcher().executeValidations();
 
         // then
         assertThat(results).isEmpty();
@@ -98,11 +98,11 @@ class SearchFormValidationDispatcherTest {
                 "{\"name\":\"standard_input\",\"parameters\":{\"format\":\"[0-9]\"}}]");
         field.setValues("44", "321", "123535");
         // when
-        List<ValidationResult> results = initDispatcher().executeValidations();
+        List<FieldValidationResult> results = initDispatcher().executeValidations();
 
         // then
         assertThat(results)
-                .extracting(ValidationResult::getMessage, ValidationResult::isOk)
+                .extracting(FieldValidationResult::getMessage, FieldValidationResult::isOk)
                 .containsExactly(tuple("testField is not a valid entry.", false));
     }
 
@@ -116,11 +116,11 @@ class SearchFormValidationDispatcherTest {
         field.setValues("abc");
 
         // when
-        List<ValidationResult> results = initDispatcher().executeValidations();
+        List<FieldValidationResult> results = initDispatcher().executeValidations();
 
         // then
         assertThat(results)
-                .extracting(ValidationResult::getMessage, ValidationResult::isOk)
+                .extracting(FieldValidationResult::getMessage, FieldValidationResult::isOk)
                 .containsExactly(tuple("testField is not a valid entry.", false));
     }
 
@@ -136,7 +136,7 @@ class SearchFormValidationDispatcherTest {
         datasetFieldType.setValidation("[{\"name\":\"failing_validator\"}]");
 
         // when
-        List<ValidationResult> results = initDispatcher().executeValidations();
+        List<FieldValidationResult> results = initDispatcher().executeValidations();
 
         // then
         assertThat(results).isEmpty();
@@ -154,11 +154,11 @@ class SearchFormValidationDispatcherTest {
         datasetFieldType.setValidation("[{\"name\":\"failing_validator\", \"parameters\":{\"runOnEmpty\":\"true\"}}]");
 
         // when
-        List<ValidationResult> results = initDispatcher().executeValidations();
+        List<FieldValidationResult> results = initDispatcher().executeValidations();
 
         // then
         assertThat(results)
-                .extracting(ValidationResult::isOk, ValidationResult::getField)
+                .extracting(FieldValidationResult::isOk, FieldValidationResult::getField)
                 .containsExactly(tuple(false, field));
     }
 

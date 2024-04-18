@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.validation;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.ValidatableField;
 import edu.harvard.iq.dataverse.validation.field.DatasetFieldValidationDispatcherFactory;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -25,15 +25,15 @@ public class DatasetFieldValidationService {
 
 // -------------------- LOGIC --------------------
 
-    public List<ValidationResult> validateFieldsOfDatasetVersion(DatasetVersion datasetVersion) {
+    public List<FieldValidationResult> validateFieldsOfDatasetVersion(DatasetVersion datasetVersion) {
         datasetVersion.getFlatDatasetFields()
                 .forEach(f -> f.setValidationMessage(null));
-        List<ValidationResult> validationResults = dispatcherFactory.create(datasetVersion.getFlatDatasetFields())
+        List<FieldValidationResult> fieldValidationResults = dispatcherFactory.create(datasetVersion.getFlatDatasetFields())
                 .executeValidations();
-        validationResults.forEach(r -> {
+        fieldValidationResults.forEach(r -> {
                     ValidatableField field = r.getField();
                     field.setValidationMessage(r.getMessage());
                 });
-        return validationResults;
+        return fieldValidationResults;
     }
 }

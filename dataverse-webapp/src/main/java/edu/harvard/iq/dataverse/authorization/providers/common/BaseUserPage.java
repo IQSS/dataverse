@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.Suggestion;
 import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.suggestion.SuggestionHandler;
 import edu.harvard.iq.dataverse.validation.OrcidValidator;
 import edu.harvard.iq.dataverse.validation.RorValidator;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.ValidationResult;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;

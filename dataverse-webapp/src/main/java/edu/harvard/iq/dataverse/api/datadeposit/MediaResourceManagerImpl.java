@@ -23,7 +23,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
@@ -322,10 +322,10 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: Unknown error");
             }
             if (!dataFiles.isEmpty()) {
-                List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(editVersion);
+                List<FieldValidationResult> fieldValidationResults = fieldValidationService.validateFieldsOfDatasetVersion(editVersion);
                 Set<ConstraintViolation<FileMetadata>> constraintViolations = editVersion.validateFileMetadata();
-                if (!validationResults.isEmpty()) {
-                    ValidationResult firstError = validationResults.get(0);
+                if (!fieldValidationResults.isEmpty()) {
+                    FieldValidationResult firstError = fieldValidationResults.get(0);
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
                             String.format("Unable to add file(s) to dataset: %s The invalid value was \"%s\".", firstError.getMessage(), firstError.getField().getSingleValue()));
                 } else if (!constraintViolations.isEmpty()) {

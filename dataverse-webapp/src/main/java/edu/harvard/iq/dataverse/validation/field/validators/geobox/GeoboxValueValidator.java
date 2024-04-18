@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.validation.field.validators.geobox;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.validation.field.FieldValidator;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import edu.harvard.iq.dataverse.persistence.dataset.ValidatableField;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -22,27 +22,27 @@ class GeoboxValueValidator implements FieldValidator {
     }
 
     @Override
-    public ValidationResult validate(ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+    public FieldValidationResult validate(ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
         if (field.hasNonUniqueValue()) {
-            return ValidationResult.invalid(field, BundleUtil.getStringFromBundle("validation.nonunique"));
+            return FieldValidationResult.invalid(field, BundleUtil.getStringFromBundle("validation.nonunique"));
         }
         String value = field.getSingleValue();
         if (StringUtils.isBlank(value)) {
-            return ValidationResult.ok();
+            return FieldValidationResult.ok();
         }
         if (!NumberUtils.isParsable(value)) {
-            return ValidationResult.invalid(field, BundleUtil.getStringFromBundle("isNotValidNumber",
+            return FieldValidationResult.invalid(field, BundleUtil.getStringFromBundle("isNotValidNumber",
                     field.getDatasetFieldType().getDisplayName()));
         }
         BigDecimal number = new BigDecimal(value);
         if (GeoboxFields.X1.is(field) || GeoboxFields.X2.is(field)) {
             return number.abs().compareTo(MAX_LONGITUDE) <= 0
-                    ? ValidationResult.ok()
-                    : ValidationResult.invalid(field, BundleUtil.getStringFromBundle("geobox.invalid.longitude"));
+                    ? FieldValidationResult.ok()
+                    : FieldValidationResult.invalid(field, BundleUtil.getStringFromBundle("geobox.invalid.longitude"));
         } else {
             return number.abs().compareTo(MAX_LATITUDE) <= 0
-                    ? ValidationResult.ok()
-                    : ValidationResult.invalid(field, BundleUtil.getStringFromBundle("geobox.invalid.latitude"));
+                    ? FieldValidationResult.ok()
+                    : FieldValidationResult.invalid(field, BundleUtil.getStringFromBundle("geobox.invalid.latitude"));
         }
     }
 }

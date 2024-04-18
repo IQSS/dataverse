@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.validation;
 import edu.harvard.iq.dataverse.persistence.dataset.ValidatableField;
 import edu.harvard.iq.dataverse.search.advanced.field.SearchField;
 import edu.harvard.iq.dataverse.validation.field.SearchFormValidationDispatcherFactory;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -26,15 +26,15 @@ public class SearchFormValidationService {
 
     // -------------------- LOGIC --------------------
 
-    public List<ValidationResult> validateSearchForm(Map<String, SearchField> searchFields,
-                                                     Map<String, SearchField> nonSearchFields) {
+    public List<FieldValidationResult> validateSearchForm(Map<String, SearchField> searchFields,
+                                                          Map<String, SearchField> nonSearchFields) {
         searchFields.forEach((k, v) -> v.setValidationMessage(null));
-        List<ValidationResult> validationResults = dispatcherFactory.create(searchFields, nonSearchFields)
+        List<FieldValidationResult> fieldValidationResults = dispatcherFactory.create(searchFields, nonSearchFields)
                 .executeValidations();
-        validationResults.forEach(r -> {
+        fieldValidationResults.forEach(r -> {
             ValidatableField field = r.getField();
             field.setValidationMessage(r.getMessage());
         });
-        return validationResults;
+        return fieldValidationResults;
     }
 }

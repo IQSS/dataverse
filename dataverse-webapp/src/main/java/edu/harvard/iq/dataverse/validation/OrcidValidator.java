@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.validation;
 
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.Stateless;

@@ -23,7 +23,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1081,10 +1081,10 @@ w
     }
 
     public Dataset updateDatasetVersion(DatasetVersion editVersion, List<DataFile> filesToDelete, boolean validateLenient) {
-        List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(editVersion);
+        List<FieldValidationResult> fieldValidationResults = fieldValidationService.validateFieldsOfDatasetVersion(editVersion);
         Set<ConstraintViolation<FileMetadata>> constraintViolations = editVersion.validateFileMetadata();
-        if (!validationResults.isEmpty() || !constraintViolations.isEmpty()) {
-            validationResults.forEach(r -> log.warn(r.getMessage()));
+        if (!fieldValidationResults.isEmpty() || !constraintViolations.isEmpty()) {
+            fieldValidationResults.forEach(r -> log.warn(r.getMessage()));
             constraintViolations.forEach(constraintViolation -> log.warn(constraintViolation.getMessage()));
             throw new ValidationException("There was validation error during updating dataset attempt with id: " + editVersion.getDataset().getId());
         }

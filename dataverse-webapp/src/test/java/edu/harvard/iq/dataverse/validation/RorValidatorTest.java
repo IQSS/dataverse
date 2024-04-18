@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.validation;
 
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 

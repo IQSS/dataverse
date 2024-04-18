@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.validation.field.validators;
 
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.ValidatableField;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import io.vavr.control.Option;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -19,11 +19,11 @@ class MultiValueValidatorBaseTest {
 
     private MultiValueValidatorBase validator = new MultiValueValidatorBase() {
         @Override
-        public ValidationResult validateValue(String value, ValidatableField field, Map<String, Object> params,
-                                              Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+        public FieldValidationResult validateValue(String value, ValidatableField field, Map<String, Object> params,
+                                                   Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
             return !"INVALID".equals(value)
-                    ? ValidationResult.ok()
-                    : ValidationResult.invalid(field, "Invalid value");
+                    ? FieldValidationResult.ok()
+                    : FieldValidationResult.invalid(field, "Invalid value");
         }
 
         @Override
@@ -49,7 +49,7 @@ class MultiValueValidatorBaseTest {
         TestField field = new TestField(l1, l2, l3);
 
         // when
-        ValidationResult result = validator.validate(field, Collections.emptyMap(), Collections.emptyMap());
+        FieldValidationResult result = validator.validate(field, Collections.emptyMap(), Collections.emptyMap());
 
         // then
         assertThat(result.isOk()).isEqualTo(expected);

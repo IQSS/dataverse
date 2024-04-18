@@ -19,7 +19,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionUser;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import io.vavr.control.Try;
 
 import javax.validation.ConstraintViolation;
@@ -108,18 +108,18 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      */
     protected void validateOrDie(DatasetVersion dsv, Boolean lenient, CommandContext context) {
         DatasetFieldValidationService fieldValidationService = context.fieldValidationService();
-        List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(dsv);
-        if (!validationResults.isEmpty()) {
+        List<FieldValidationResult> fieldValidationResults = fieldValidationService.validateFieldsOfDatasetVersion(dsv);
+        if (!fieldValidationResults.isEmpty()) {
             if (lenient) {
                 // populate invalid fields with N/A
-                validationResults.stream()
-                        .map(ValidationResult::getField)
+                fieldValidationResults.stream()
+                        .map(FieldValidationResult::getField)
                         .map(DatasetField.class::cast)
                         .forEach(f -> f.setFieldValue(DatasetField.NA_VALUE));
 
             } else {
                 // explode with a helpful message
-                String validationMessage = validationResults.stream()
+                String validationMessage = fieldValidationResults.stream()
                         .map(r -> String.format("%s (Invalid value:%s)", r.getMessage(), r.getField().getSingleValue()))
                         .collect(joining(", ", "Validation Failed: ", "."));
                 throw new IllegalCommandException(validationMessage, this);

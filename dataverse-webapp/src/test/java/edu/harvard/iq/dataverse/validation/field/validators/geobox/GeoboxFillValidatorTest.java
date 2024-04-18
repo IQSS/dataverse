@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.validation.field.validators.geobox;
 
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.validation.field.FieldValidator;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -31,7 +31,7 @@ class GeoboxFillValidatorTest {
         DatasetField fieldX1 = geoboxUtil.selectFromGeobox(GeoboxFields.X1, geoboxUtil.buildGeobox(x1, y1, x2, y2));
 
         // when
-        ValidationResult result = validator.validate(fieldX1, Collections.emptyMap(), Collections.emptyMap());
+        FieldValidationResult result = validator.validate(fieldX1, Collections.emptyMap(), Collections.emptyMap());
 
         // then
         assertThat(result.isOk()).isEqualTo(expected);

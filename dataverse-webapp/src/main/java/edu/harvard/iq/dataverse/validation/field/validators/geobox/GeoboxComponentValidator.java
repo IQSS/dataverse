@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.validation.field.validators.geobox;
 
 import edu.harvard.iq.dataverse.validation.field.FieldValidator;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import edu.harvard.iq.dataverse.validation.field.validators.FieldValidatorBase;
 import edu.harvard.iq.dataverse.persistence.dataset.ValidatableField;
 import org.omnifaces.cdi.Eager;
@@ -29,13 +29,13 @@ public class GeoboxComponentValidator extends FieldValidatorBase {
     }
 
     @Override
-    public ValidationResult validate(ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+    public FieldValidationResult validate(ValidatableField field, Map<String, Object> params, Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
         for (FieldValidator validator : INTERNAL_VALIDATORS) {
-            ValidationResult intermediateResult = validator.validate(field, params, fieldIndex);
+            FieldValidationResult intermediateResult = validator.validate(field, params, fieldIndex);
             if (!intermediateResult.isOk()) {
                 return intermediateResult;
             }
         }
-        return ValidationResult.ok();
+        return FieldValidationResult.ok();
     }
 }

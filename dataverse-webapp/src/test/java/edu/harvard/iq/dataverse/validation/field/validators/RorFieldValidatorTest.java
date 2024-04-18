@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.validation.field.validators;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.validation.RorValidator;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -33,10 +33,10 @@ public class RorFieldValidatorTest {
         datasetField.setValue(ror);
         datasetField.getDatasetFieldType().setName("ror");
 
-        when(rorValidator.validate(ror)).thenReturn(ValidationResult.ok());
+        when(rorValidator.validate(ror)).thenReturn(FieldValidationResult.ok());
 
         // when
-        ValidationResult result = validator.validateValue(ror, datasetField, Collections.emptyMap(), Collections.emptyMap());
+        FieldValidationResult result = validator.validateValue(ror, datasetField, Collections.emptyMap(), Collections.emptyMap());
 
         // then
         assertThat(result.isOk()).isTrue();
@@ -53,10 +53,10 @@ public class RorFieldValidatorTest {
         datasetField.setValue(ror);
         datasetField.getDatasetFieldType().setName("ror");
 
-        when(rorValidator.validate(ror)).thenReturn(ValidationResult.invalid("INVALID_ROR"));
+        when(rorValidator.validate(ror)).thenReturn(FieldValidationResult.invalid("INVALID_ROR"));
 
         // when
-        ValidationResult result = validator.validateValue(ror, datasetField, Collections.emptyMap(), Collections.emptyMap());
+        FieldValidationResult result = validator.validateValue(ror, datasetField, Collections.emptyMap(), Collections.emptyMap());
 
         // then
         assertThat(result.isOk()).isFalse();

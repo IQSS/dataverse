@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.validation.field.validators;
 
 import edu.harvard.iq.dataverse.search.advanced.field.SearchField;
 import edu.harvard.iq.dataverse.search.advanced.query.QueryPart;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -47,7 +47,7 @@ class DateRangeValidatorTest {
         };
 
         // when
-        ValidationResult result = validator.validate(field, Collections.emptyMap(), Collections.emptyMap());
+        FieldValidationResult result = validator.validate(field, Collections.emptyMap(), Collections.emptyMap());
 
         // then
         assertThat(result.isOk()).isEqualTo(expected);

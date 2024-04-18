@@ -41,9 +41,9 @@ class DatasetFieldValidationDispatcherTest {
         }
 
         @Override
-        public ValidationResult validate(ValidatableField field, Map<String, Object> params,
-                                         Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
-            return ValidationResult.invalid(field, "message");
+        public FieldValidationResult validate(ValidatableField field, Map<String, Object> params,
+                                              Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+            return FieldValidationResult.invalid(field, "message");
         }
     };
 
@@ -78,10 +78,10 @@ class DatasetFieldValidationDispatcherTest {
         datasetField.setValue("44.5");
 
         // when
-        List<ValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
+        List<FieldValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
 
         // then
-        assertThat(results).extracting(ValidationResult::isOk).containsExactly(false);
+        assertThat(results).extracting(FieldValidationResult::isOk).containsExactly(false);
     }
 
     @Test
@@ -92,7 +92,7 @@ class DatasetFieldValidationDispatcherTest {
         datasetField.setValue("1024");
 
         // when
-        List<ValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
+        List<FieldValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
 
         // then
         assertThat(results).isEmpty();
@@ -106,11 +106,11 @@ class DatasetFieldValidationDispatcherTest {
                 "{\"name\":\"standard_input\",\"parameters\":{\"format\":\"[0-9]\"}}]");
         datasetField.setValue("44");
         // when
-        List<ValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
+        List<FieldValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
 
         // then
         assertThat(results)
-                .extracting(ValidationResult::getMessage, ValidationResult::isOk)
+                .extracting(FieldValidationResult::getMessage, FieldValidationResult::isOk)
                 .containsExactly(tuple("testField is not a valid entry.", false));
     }
 
@@ -124,11 +124,11 @@ class DatasetFieldValidationDispatcherTest {
         datasetField.setValue("abc");
 
         // when
-        List<ValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
+        List<FieldValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
 
         // then
         assertThat(results)
-                .extracting(ValidationResult::getMessage, ValidationResult::isOk)
+                .extracting(FieldValidationResult::getMessage, FieldValidationResult::isOk)
                 .containsExactly(tuple("testField is not a valid entry.", false));
     }
 
@@ -138,11 +138,11 @@ class DatasetFieldValidationDispatcherTest {
         datasetFieldType.setRequired(true);
 
         // when
-        List<ValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
+        List<FieldValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
 
         // then
         assertThat(results)
-                .extracting(ValidationResult::getMessage, ValidationResult::isOk)
+                .extracting(FieldValidationResult::getMessage, FieldValidationResult::isOk)
                 .containsExactly(tuple("testField is required.", false));
     }
 
@@ -154,7 +154,7 @@ class DatasetFieldValidationDispatcherTest {
         datasetFieldType.setValidation("[]");
 
         // when
-        List<ValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
+        List<FieldValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
 
         // then
         assertThat(results).isEmpty();
@@ -172,7 +172,7 @@ class DatasetFieldValidationDispatcherTest {
         datasetFieldType.setValidation("[{\"name\":\"failing_validator\"}]");
 
         // when
-        List<ValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
+        List<FieldValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
 
         // then
         assertThat(results).isEmpty();
@@ -190,11 +190,11 @@ class DatasetFieldValidationDispatcherTest {
         datasetFieldType.setValidation("[{\"name\":\"failing_validator\", \"parameters\":{\"runOnEmpty\":\"true\"}}]");
 
         // when
-        List<ValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
+        List<FieldValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
 
         // then
         assertThat(results)
-                .extracting(ValidationResult::isOk, ValidationResult::getField)
+                .extracting(FieldValidationResult::isOk, FieldValidationResult::getField)
                 .containsExactly(tuple(false, datasetField));
     }
 
@@ -207,7 +207,7 @@ class DatasetFieldValidationDispatcherTest {
         datasetField.setTemplate(new Template());
 
         // when
-        List<ValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
+        List<FieldValidationResult> results = dispatcher.init(Collections.singletonList(datasetField)).executeValidations();
 
         // then
         assertThat(results).isEmpty();

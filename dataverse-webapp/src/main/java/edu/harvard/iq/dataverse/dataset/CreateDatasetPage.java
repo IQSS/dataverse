@@ -31,7 +31,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import io.vavr.control.Try;
 import org.apache.commons.lang3.StringUtils;
 import org.omnifaces.cdi.ViewScoped;
@@ -194,9 +194,9 @@ public class CreateDatasetPage implements Serializable {
     public String save() {
         workingVersion.setDatasetFields(DatasetFieldUtil.flattenDatasetFieldsFromBlocks(metadataBlocksForEdit));
 
-        List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(workingVersion);
+        List<FieldValidationResult> fieldValidationResults = fieldValidationService.validateFieldsOfDatasetVersion(workingVersion);
         Set<ConstraintViolation<FileMetadata>> constraintViolations = workingVersion.validateFileMetadata();
-        if (!validationResults.isEmpty() || !constraintViolations.isEmpty()) {
+        if (!fieldValidationResults.isEmpty() || !constraintViolations.isEmpty()) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"),
                     BundleUtil.getStringFromBundle("dataset.message.validationErrorDetails"));
             return StringUtils.EMPTY;

@@ -9,7 +9,7 @@ public interface FieldValidator {
 
     String getName();
 
-    ValidationResult validate(ValidatableField field, Map<String, Object> params,
-                              Map<String, ? extends List<? extends ValidatableField>> fieldIndex);
+    FieldValidationResult validate(ValidatableField field, Map<String, Object> params,
+                                   Map<String, ? extends List<? extends ValidatableField>> fieldIndex);
 
 }

@@ -45,7 +45,7 @@ public class SearchFormValidationDispatcher {
         return this;
     }
 
-    public List<ValidationResult> executeValidations() {
+    public List<FieldValidationResult> executeValidations() {
         return fieldsToValidate.values().stream()
                 .flatMap(Collection::stream)
                 .map(this::validateField)
@@ -55,7 +55,7 @@ public class SearchFormValidationDispatcher {
 
     // -------------------- PRIVATE --------------------
 
-    private ValidationResult validateField(ValidatableField field) {
+    private FieldValidationResult validateField(ValidatableField field) {
         boolean effectivelyEmptyValue = field.getValidatableValues().stream()
                 .allMatch(StringUtils::isBlank);
         for (ValidationDescriptor descriptor : retrieveDescriptors(field)) {
@@ -66,12 +66,12 @@ public class SearchFormValidationDispatcher {
                 continue;
             }
             FieldValidator validator = registry.getOrThrow(descriptor.getName());
-            ValidationResult result = validator.validate(field, parameters, fieldIndex);
+            FieldValidationResult result = validator.validate(field, parameters, fieldIndex);
             if (!result.isOk()) {
                 return result;
             }
         }
-        return ValidationResult.ok();
+        return FieldValidationResult.ok();
     }
 
     private List<ValidationDescriptor> retrieveDescriptors(ValidatableField field) {

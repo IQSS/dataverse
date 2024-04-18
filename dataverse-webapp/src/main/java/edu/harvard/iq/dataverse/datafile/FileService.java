@@ -16,7 +16,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
@@ -75,11 +75,11 @@ public class FileService {
         Dataset datasetFileOwner = fileToDelete.getDataFile().getOwner();
 
         DatasetVersion versionToValidate = fileToDelete.getDatasetVersion();
-        List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(versionToValidate);
+        List<FieldValidationResult> fieldValidationResults = fieldValidationService.validateFieldsOfDatasetVersion(versionToValidate);
         Set<ConstraintViolation<FileMetadata>> constraintViolations = versionToValidate.validateFileMetadata();
 
-        if (!validationResults.isEmpty() || !constraintViolations.isEmpty()) {
-            validationResults.forEach(r -> logger.warn(r.getMessage()));
+        if (!fieldValidationResults.isEmpty() || !constraintViolations.isEmpty()) {
+            fieldValidationResults.forEach(r -> logger.warn(r.getMessage()));
             constraintViolations.forEach(constraintViolation -> logger.warn(constraintViolation.getMessage()));
             throw new ValidationException("There was validation error during deletion attempt with the dataFile id: " + fileToDelete.getDataFile().getId());
 
@@ -112,11 +112,11 @@ public class FileService {
         .getOrElseThrow(throwable -> new RuntimeException("There was a problem with persisting provenance file", throwable));
 
         DatasetVersion versionToValidate = editedFile.getDatasetVersion();
-        List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(versionToValidate);
+        List<FieldValidationResult> fieldValidationResults = fieldValidationService.validateFieldsOfDatasetVersion(versionToValidate);
         Set<ConstraintViolation<FileMetadata>> constraintViolations = versionToValidate.validateFileMetadata();
 
-        if (!validationResults.isEmpty() || !constraintViolations.isEmpty()) {
-            validationResults.forEach(r -> logger.warn(r.getMessage()));
+        if (!fieldValidationResults.isEmpty() || !constraintViolations.isEmpty()) {
+            fieldValidationResults.forEach(r -> logger.warn(r.getMessage()));
             constraintViolations.forEach(constraintViolation -> logger.warn(constraintViolation.getMessage()));
             throw new ValidationException("There was validation error during deletion attempt with the dataFile id: " + editedFile.getDataFile().getId());
         }

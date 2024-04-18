@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.validation.field.validators;
 
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -28,7 +28,7 @@ class StandardInputValidatorTest {
         datasetField.setValue(value);
 
         // when
-        ValidationResult result =
+        FieldValidationResult result =
                 validator.validate(datasetField,
                         StringUtils.isNotBlank(format)
                                 ? Collections.singletonMap("format", format)

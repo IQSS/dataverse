@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.validation.field.validators;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.ValidatableField;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import org.omnifaces.cdi.Eager;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -19,13 +19,13 @@ public class StandardIntegerValidator extends MultiValueValidatorBase {
     }
 
     @Override
-    public ValidationResult validateValue(String value, ValidatableField field, Map<String, Object> params,
-                                          Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+    public FieldValidationResult validateValue(String value, ValidatableField field, Map<String, Object> params,
+                                               Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
         try {
             Integer.parseInt(value);
-            return ValidationResult.ok();
+            return FieldValidationResult.ok();
         } catch (NumberFormatException nfe) {
-            return ValidationResult.invalid(field, BundleUtil.getStringFromBundle("isNotValidInteger",
+            return FieldValidationResult.invalid(field, BundleUtil.getStringFromBundle("isNotValidInteger",
                     field.getDatasetFieldType().getDisplayName()));
         }
     }

@@ -37,7 +37,7 @@ public class DatasetFieldValidationDispatcher {
         return this;
     }
 
-    public List<ValidationResult> executeValidations() {
+    public List<FieldValidationResult> executeValidations() {
         return fieldIndex.values().stream()
                 .flatMap(Collection::stream)
                 .filter(this::isNotTemplateField)
@@ -52,10 +52,10 @@ public class DatasetFieldValidationDispatcher {
         return field.getTopParentDatasetField().getTemplate() == null;
     }
 
-    private ValidationResult validateField(DatasetField field) {
+    private FieldValidationResult validateField(DatasetField field) {
         DatasetFieldType fieldType = field.getDatasetFieldType();
         if (StringUtils.isBlank(field.getValue()) && fieldType.isPrimitive() && isRequiredInDataverse(field)) {
-            return ValidationResult.invalid(field,
+            return FieldValidationResult.invalid(field,
                     BundleUtil.getStringFromBundle("isrequired", fieldType.getDisplayName()));
         }
         boolean effectivelyEmptyValue = StringUtils.isBlank(field.getValue())
@@ -68,12 +68,12 @@ public class DatasetFieldValidationDispatcher {
                 continue;
             }
             FieldValidator validator = registry.getOrThrow(descriptor.getName());
-            ValidationResult result = validator.validate(field, parameters, fieldIndex);
+            FieldValidationResult result = validator.validate(field, parameters, fieldIndex);
             if (!result.isOk()) {
                 return result;
             }
         }
-        return ValidationResult.ok();
+        return FieldValidationResult.ok();
     }
 
     private boolean isRequiredInDataverse(DatasetField field) {

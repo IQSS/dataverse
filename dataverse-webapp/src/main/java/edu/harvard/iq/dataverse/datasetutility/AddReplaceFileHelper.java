@@ -18,7 +18,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
@@ -1007,13 +1007,13 @@ public class AddReplaceFileHelper {
         //  Gather all error messages
         // -----------------------------------------------------------
         DatasetFieldValidationService fieldValidationService = commandEngine.getContext().fieldValidationService();
-        List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(workingVersion);
+        List<FieldValidationResult> fieldValidationResults = fieldValidationService.validateFieldsOfDatasetVersion(workingVersion);
         Set<ConstraintViolation<FileMetadata>> constraintViolations = workingVersion.validateFileMetadata();
 
         // -----------------------------------------------------------
         // No violations found
         // -----------------------------------------------------------
-        if (validationResults.isEmpty() && constraintViolations.isEmpty()) {
+        if (fieldValidationResults.isEmpty() && constraintViolations.isEmpty()) {
             return true;
         }
 
@@ -1021,7 +1021,7 @@ public class AddReplaceFileHelper {
         // violations found: gather all error messages
         // -----------------------------------------------------------
         Stream.concat(
-                validationResults.stream().map(ValidationResult::getMessage),
+                fieldValidationResults.stream().map(FieldValidationResult::getMessage),
                 constraintViolations.stream().map(ConstraintViolation::getMessage))
                 .forEach(this::addError);
         return this.hasError();

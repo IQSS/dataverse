@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.validation.field.validators;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.ValidatableField;
-import edu.harvard.iq.dataverse.validation.field.ValidationResult;
+import edu.harvard.iq.dataverse.validation.field.FieldValidationResult;
 import org.omnifaces.cdi.Eager;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -32,16 +32,16 @@ public class StandardDateValidator extends MultiValueValidatorBase {
     }
 
     @Override
-    public ValidationResult validateValue(String value, ValidatableField field, Map<String, Object> params,
-                                          Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
+    public FieldValidationResult validateValue(String value, ValidatableField field, Map<String, Object> params,
+                                               Map<String, ? extends List<? extends ValidatableField>> fieldIndex) {
         value = value.startsWith("-") ? value.substring(1) : value;
 
         for (DateTimeFormatter parser : PARSERS) {
             if (isValidDate(value, parser)) {
-                return ValidationResult.ok();
+                return FieldValidationResult.ok();
             }
         }
-        return ValidationResult.invalid(field, BundleUtil.getStringFromBundle("isNotValidDate",
+        return FieldValidationResult.invalid(field, BundleUtil.getStringFromBundle("isNotValidDate",
                 field.getDatasetFieldType().getDisplayName(), YYYY_MM_DD_FORMAT, YYYY_MM_FORMAT, YYYY_FORMAT));
     }
 
