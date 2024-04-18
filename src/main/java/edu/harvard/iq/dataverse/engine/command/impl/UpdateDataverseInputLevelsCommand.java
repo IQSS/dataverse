@@ -29,18 +29,22 @@ public class UpdateDataverseInputLevelsCommand extends AbstractCommand<Dataverse
         if (inputLevelList == null) {
             throw new CommandException("Exception while updating dataverse input levels: Input level list cannot be null", this);
         }
-        addInputLevelMetadataBlocks(ctxt);
+        addInputLevelMetadataBlocks();
         return ctxt.engine().submit(new UpdateDataverseCommand(dataverse, null, null, getRequest(), inputLevelList));
     }
 
-    private void addInputLevelMetadataBlocks(CommandContext ctxt) {
+    private void addInputLevelMetadataBlocks() {
         List<MetadataBlock> dataverseMetadataBlocks = dataverse.getMetadataBlocks();
         for (DataverseFieldTypeInputLevel inputLevel : inputLevelList) {
             MetadataBlock inputLevelMetadataBlock = inputLevel.getDatasetFieldType().getMetadataBlock();
-            if (!ctxt.metadataBlocks().dataverseHasMetadataBlock(dataverse, inputLevelMetadataBlock)) {
+            if (!dataverseHasMetadataBlock(dataverseMetadataBlocks, inputLevelMetadataBlock)) {
                 dataverseMetadataBlocks.add(inputLevelMetadataBlock);
             }
         }
         dataverse.setMetadataBlocks(dataverseMetadataBlocks);
+    }
+
+    private boolean dataverseHasMetadataBlock(List<MetadataBlock> dataverseMetadataBlocks, MetadataBlock metadataBlock) {
+        return dataverseMetadataBlocks.stream().anyMatch(block -> block.getId().equals(metadataBlock.getId()));
     }
 }
