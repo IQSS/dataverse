@@ -912,12 +912,12 @@ This endpoint expects a JSON with the following format::
     {
       "datasetFieldTypeName": "datasetFieldTypeName1",
       "required": true,
-      "include": false
+      "include": true
     },
     {
       "datasetFieldTypeName": "datasetFieldTypeName2",
-      "required": false,
-      "include": false
+      "required": true,
+      "include": true
     }
   ]
 
@@ -926,7 +926,7 @@ This endpoint expects a JSON with the following format::
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
-  export JSON='[{"datasetFieldTypeName":"geographicCoverage", "required":true, "include":false}, {"datasetFieldTypeName":"country", "required":true, "include":false}]'
+  export JSON='[{"datasetFieldTypeName":"geographicCoverage", "required":true, "include":true}, {"datasetFieldTypeName":"country", "required":true, "include":true}]'
 
   curl -X PUT -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type:application/json" "$SERVER_URL/api/dataverses/$ID/inputLevels" -d "$JSON"
 
