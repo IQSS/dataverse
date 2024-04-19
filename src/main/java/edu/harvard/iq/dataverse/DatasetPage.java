@@ -1234,8 +1234,17 @@ public class DatasetPage implements java.io.Serializable {
             canDownloadFiles = false;
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 if (fileDownloadHelper.canDownloadFile(fmd)) {
-                    canDownloadFiles = true;
-                    break;
+                    if (isVersionHasGlobus()) {
+                        String driverId = DataAccess
+                                .getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
+                        if (StorageIO.isDataverseAccessible(driverId)) {
+                            canDownloadFiles = true;
+                            break;
+                        }
+                    } else {
+                        canDownloadFiles = true;
+                        break;
+                    }
                 }
             }
         }
@@ -3260,7 +3269,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private void startDownload(boolean downloadOriginal){
         boolean guestbookRequired = isDownloadPopupRequired();
-        boolean validate = validateFilesForDownload(downloadOriginal);
+        boolean validate = validateFilesForDownload(downloadOriginal, false);
         if (validate) {
             updateGuestbookResponse(guestbookRequired, downloadOriginal, false);
             if(!guestbookRequired && !getValidateFilesOutcome().equals("Mixed")){
@@ -3283,7 +3292,7 @@ public class DatasetPage implements java.io.Serializable {
         this.validateFilesOutcome = validateFilesOutcome;
     }
 
-    public boolean validateFilesForDownload(boolean downloadOriginal){ 
+    public boolean validateFilesForDownload(boolean downloadOriginal, boolean isGlobusTransfer){ 
         if (this.selectedFiles.isEmpty()) {
             PrimeFaces.current().executeScript("PF('selectFilesForDownload').show()");
             return false;
@@ -3300,33 +3309,39 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
 
-        for (FileMetadata fmd : getSelectedDownloadableFiles()) {
-            DataFile dataFile = fmd.getDataFile();
-            if (downloadOriginal && dataFile.isTabularData()) {
-                bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
-            } else {
-                bytes += dataFile.getFilesize();
+        if (!isGlobusTransfer) {
+            for (FileMetadata fmd : getSelectedDownloadableFiles()) {
+                DataFile dataFile = fmd.getDataFile();
+                if (downloadOriginal && dataFile.isTabularData()) {
+                    bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
+                } else {
+                    bytes += dataFile.getFilesize();
+                }
+            }
+
+            // if there are two or more files, with a total size
+            // over the zip limit, post a "too large" popup
+            if (bytes > settingsWrapper.getZipDownloadLimit() && selectedDownloadableFiles.size() > 1) {
+                setValidateFilesOutcome("FailSize");
+                return false;
             }
         }
-
-        //if there are two or more files, with a total size
-        //over the zip limit, post a "too large" popup
-        if (bytes > settingsWrapper.getZipDownloadLimit() && selectedDownloadableFiles.size() > 1) {
-            setValidateFilesOutcome("FailSize");
-            return false;
-        }
-
+        
         // If some of the files were restricted and we had to drop them off the
         // list, and NONE of the files are left on the downloadable list
-        // - we show them a "you're out of luck" popup:
-        if (getSelectedDownloadableFiles().isEmpty() && getSelectedGlobusTransferableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()) {
+        // - we show them a "you're out of luck" popup
+        // Same for globus transfer
+        if ((!isGlobusTransfer
+                && (getSelectedDownloadableFiles().isEmpty() && !getSelectedNonDownloadableFiles().isEmpty()))
+                || (isGlobusTransfer && (getSelectedGlobusTransferableFiles().isEmpty()
+                        && !getSelectedNonGlobusTransferableFiles().isEmpty()))) {
             setValidateFilesOutcome("FailRestricted");
             return false;
         }
 
-        //Some are selected and there are non-downloadable ones or there are both downloadable and globus transferable files
-        if ((!(getSelectedDownloadableFiles().isEmpty() && getSelectedGlobusTransferableFiles().isEmpty())
-                && (!getSelectedNonDownloadableFiles().isEmpty()) || (!getSelectedDownloadableFiles().isEmpty() && !getSelectedGlobusTransferableFiles().isEmpty()))) {
+        //For download or transfer, there are some that can be downloaded/transferred and some that can't
+        if ((!isGlobusTransfer && (!getSelectedNonDownloadableFiles().isEmpty() && !getSelectedDownloadableFiles().isEmpty())) ||
+                (isGlobusTransfer && (!getSelectedNonGlobusTransferableFiles().isEmpty() && !getSelectedGlobusTransferableFiles().isEmpty()))) {
             setValidateFilesOutcome("Mixed");
             return true;
         }
@@ -6284,11 +6299,17 @@ public class DatasetPage implements java.io.Serializable {
         PrimeFaces.current().resetInputs("datasetForm:embargoInputs");
     }
 
-    public boolean isCantDownloadDueToEmbargo() {
+    public boolean isCantDownloadDueToEmbargoOrDVAccess() {
         if (getSelectedNonDownloadableFiles() != null) {
             for (FileMetadata fmd : getSelectedNonDownloadableFiles()) {
                 if (FileUtil.isActivelyEmbargoed(fmd)) {
                     return true;
+                }
+                if (isVersionHasGlobus()) {
+                    if (StorageIO.isDataverseAccessible(
+                            DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier()))) {
+                        return true;
+                    }
                 }
             }
         }
@@ -6381,7 +6402,8 @@ public class DatasetPage implements java.io.Serializable {
         }
         boolean guestbookRequired = isDownloadPopupRequired();
         
-        boolean validated = validateFilesForDownload(true);
+        boolean validated = validateFilesForDownload(true, true);
+        
         if (validated) {
             globusTransferRequested = true;
             boolean mixed = "Mixed".equals(getValidateFilesOutcome());
