@@ -1792,6 +1792,7 @@ Adding Software Licenses
 JSON files for software licenses are provided below.
 
 - :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
+- :download:`licenseApache-2.0.json <../../../../scripts/api/data/licenses/licenseApache-2.0.json>`
 
 Contributing to the Collection of Standard Licenses Above
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1801,10 +1802,10 @@ If you do not find the license JSON you need above, you are encouraged to contri
 - Look for the license at https://spdx.org/licenses/
 - ``cd scripts/api/data/licenses``
 - Copy an existing license as a starting point.
-- Name your file using the SPDX identifier. For example, if the identifier is ``MIT``, you should name your file ``licenseMIT.json``.
-- For the ``name`` field, use the "short identifier" from the SPDX landing page (e.g. ``MIT``).
-- For the ``description`` field, use the "full name" from the SPDX landing page (e.g. ``MIT License``).
-- For the ``uri`` field, go to the SPDX landing page for the license and click on the link under "other web pages for this license". Let any redirection happen and then copy the URL (e.g. ``https://opensource.org/license/mit``) into the ``uri`` field.
+- Name your file using the SPDX identifier. For example, if the identifier is ``Apache-2.0``, you should name your file ``licenseApache-2.0.json``.
+- For the ``name`` field, use the "short identifier" from the SPDX landing page (e.g. ``Apache-2.0``).
+- For the ``description`` field, use the "full name" from the SPDX landing page (e.g. ``Apache License 2.0``).
+- For the ``uri`` field, go to the SPDX landing page for the license and remove the extension ``.html`` from your browser and then copy the URL (e.g. ``https://spdx.org/licenses/Apache-2.0``) into the ``uri`` field.
 - For the ``active`` field, put ``true``.
 - For the ``sortOrder`` field, put the next sequention number after checking previous files with ``grep sortOrder scripts/api/data/licenses/*``.
 
