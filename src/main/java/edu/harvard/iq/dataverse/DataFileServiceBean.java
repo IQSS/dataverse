@@ -959,6 +959,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             return true;
         }
         file.setPreviewImageFail(true);
+        file.setPreviewImageAvailable(false);
         this.save(file);
         return false;
     }

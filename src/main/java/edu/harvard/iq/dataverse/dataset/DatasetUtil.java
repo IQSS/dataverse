@@ -12,6 +12,8 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
+
+import edu.harvard.iq.dataverse.dataaccess.InputStreamIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -293,7 +295,7 @@ public class DatasetUtil {
              dataAccess = DataAccess.getStorageIO(dataset);
         }
         catch(IOException ioex){
-            //TODO: Add a suitable waing message
+            //TODO: Add a suitable warning message
             logger.warning("Failed to save the file, storage id " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
         }
         
@@ -355,23 +357,35 @@ public class DatasetUtil {
         // We'll try to pre-generate the rescaled versions in both the 
         // DEFAULT_DATASET_LOGO (currently 140) and DEFAULT_CARDIMAGE_SIZE (48)
         String thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE, tmpFileForResize.toPath().toString());
-        logger.fine("thumbFileLocation = " + thumbFileLocation);
-        logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
-        //now we must save the updated thumbnail 
-        try {
-            dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail+thumbExtension+ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
-        } catch (IOException ex) {
-            logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+        if (thumbFileLocation == null) {
+            logger.warning("Rescale Thumbnail Image to logo failed");
+            dataset.setPreviewImageAvailable(false);
+            dataset.setUseGenericThumbnail(true);
+        } else {
+            logger.fine("thumbFileLocation = " + thumbFileLocation);
+            logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
+            //now we must save the updated thumbnail
+            try {
+                dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail + thumbExtension + ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
+            } catch (IOException ex) {
+                logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+            }
         }
         
         thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFileForResize.toPath().toString());
-        logger.fine("thumbFileLocation = " + thumbFileLocation);
-        logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
-        //now we must save the updated thumbnail 
-        try {
-            dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail+thumbExtension+ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-        } catch (IOException ex) {
-            logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+        if (thumbFileLocation == null) {
+            logger.warning("Rescale Thumbnail Image to card failed");
+            dataset.setPreviewImageAvailable(false);
+            dataset.setUseGenericThumbnail(true);
+        } else {
+            logger.fine("thumbFileLocation = " + thumbFileLocation);
+            logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
+            //now we must save the updated thumbnail
+            try {
+                dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail + thumbExtension + ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            } catch (IOException ex) {
+                logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+            }
         }
         
         //This deletes the tempfiles created for rescaling and encoding
@@ -463,8 +477,9 @@ public class DatasetUtil {
             }
 
             try {
-                in = ImageThumbConverter.getImageThumbnailAsInputStream(thumbnailFile.getStorageIO(),
-                        ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE).getInputStream();
+                InputStreamIO isIO = ImageThumbConverter.getImageThumbnailAsInputStream(thumbnailFile.getStorageIO(),
+                        ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
+                in = isIO != null ? isIO.getInputStream() : null;
             } catch (IOException ioex) {
                 logger.warning("getLogo(): Failed to get logo from DataFile for " + dataset.getStorageIdentifier()
                         + " (" + ioex.getMessage() + ")");
