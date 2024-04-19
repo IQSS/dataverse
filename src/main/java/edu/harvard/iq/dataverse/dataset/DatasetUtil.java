@@ -392,7 +392,9 @@ public class DatasetUtil {
         boolean tmpFileWasDeleted = tmpFile.delete();
         boolean originalTempFileWasDeleted = tmpFileForResize.delete();
         try {
-            Files.delete(Paths.get(thumbFileLocation));
+            if (thumbFileLocation != null) {
+                Files.delete(Paths.get(thumbFileLocation));
+            }
         } catch (IOException ioex) {
             logger.fine("Failed to delete temporary thumbnail file");
         }

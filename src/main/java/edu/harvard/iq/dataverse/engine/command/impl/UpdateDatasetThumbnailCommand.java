@@ -107,12 +107,14 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                     Logger.getLogger(UpdateDatasetThumbnailCommand.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 Dataset datasetWithNewThumbnail = ctxt.datasets().setNonDatasetFileAsThumbnail(dataset, fileAsStream);
-		IOUtils.closeQuietly(fileAsStream);
+                IOUtils.closeQuietly(fileAsStream);
                 if (datasetWithNewThumbnail != null) {
-                    return datasetWithNewThumbnail.getDatasetThumbnail(ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-                } else {
-                    return null;
+                    DatasetThumbnail thumbnail = datasetWithNewThumbnail.getDatasetThumbnail(ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                    if (thumbnail != null) {
+                        return thumbnail;
+                    }
                 }
+                throw new IllegalCommandException("In setNonDatasetFileAsThumbnail could not generate thumbnail from uploaded file.", this);
 
             case removeThumbnail:
                 Dataset ds2 = ctxt.datasets().removeDatasetThumbnail(dataset);
