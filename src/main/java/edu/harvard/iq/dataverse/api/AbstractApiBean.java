@@ -392,6 +392,9 @@ public abstract class AbstractApiBean {
             }
             datasetId = dvObjSvc.findIdByGlobalId(globalId, DvObject.DType.Dataset);
             if (datasetId == null) {
+                datasetId = dvObjSvc.findIdByAltGlobalId(globalId, DvObject.DType.Dataset);
+            }
+            if (datasetId == null) {
                 throw new WrappedResponse(
                     notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
             }
