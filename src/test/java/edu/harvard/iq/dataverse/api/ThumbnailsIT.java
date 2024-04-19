@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.hamcrest.CoreMatchers;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -95,12 +97,14 @@ public class ThumbnailsIT {
         Response uploadLogoResponse = UtilIT.uploadDatasetLogo(datasetPersistentId, badTiff, apiToken);
         uploadLogoResponse.prettyPrint();
         uploadLogoResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
-        uploadLogoResponse.then().assertThat().body("message", equalTo("In setNonDatasetFileAsThumbnail could not generate thumbnail from uploaded file."));
+        uploadLogoResponse.then().assertThat().body("message", equalTo(
+            BundleUtil.getStringFromBundle("datasets.api.thumbnail.nonDatasetFailed")));
 
         uploadLogoResponse = UtilIT.uploadDatasetLogo(datasetPersistentId, goodTiff, apiToken);
         uploadLogoResponse.prettyPrint();
         uploadLogoResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
-        uploadLogoResponse.then().assertThat().body("message", equalTo("File is larger than maximum size: 500000."));
+        uploadLogoResponse.then().assertThat().body("message", containsString(
+            BundleUtil.getStringFromBundle("datasets.api.thumbnail.fileToLarge", List.of(""))));
 
     }
 }
