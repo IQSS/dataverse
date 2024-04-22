@@ -26,10 +26,11 @@ public class UpdateDataverseInputLevelsCommand extends AbstractCommand<Dataverse
 
     @Override
     public Dataverse execute(CommandContext ctxt) throws CommandException {
-        if (inputLevelList == null) {
-            throw new CommandException("Exception while updating dataverse input levels: Input level list cannot be null", this);
+        if (inputLevelList == null || inputLevelList.isEmpty()) {
+            throw new CommandException("Error while updating dataverse input levels: Input level list cannot be null or empty", this);
         }
         addInputLevelMetadataBlocks();
+        dataverse.setMetadataBlockRoot(true);
         return ctxt.engine().submit(new UpdateDataverseCommand(dataverse, null, null, getRequest(), inputLevelList));
     }
 

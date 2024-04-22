@@ -910,11 +910,19 @@ public class DataversesIT {
         assertThat(testInputLevelNames, hasItemInArray(actualFieldTypeName1));
         assertThat(testInputLevelNames, hasItemInArray(actualFieldTypeName2));
 
-        // Update invalid input levels
+        // Update input levels with an invalid field type name
         String[] testInvalidInputLevelNames = {"geographicCoverage", "invalid1"};
         updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInvalidInputLevelNames, apiToken);
         updateDataverseInputLevelsResponse.then().assertThat()
                 .body("message", equalTo("Invalid dataset field type name: invalid1"))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Update invalid empty input levels
+        testInputLevelNames = new String[]{};
+        updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, apiToken);
+        updateDataverseInputLevelsResponse.prettyPrint();
+        updateDataverseInputLevelsResponse.then().assertThat()
+                .body("message", equalTo("Error while updating dataverse input levels: Input level list cannot be null or empty"))
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
 }
