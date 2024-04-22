@@ -1535,8 +1535,14 @@ public class UtilIT {
                 .get("/api/datasets/:persistentId/versions/" + DS_VERSION_LATEST_PUBLISHED + "/metadata/citation?persistentId=" + persistentId);
     }
 
+    @Deprecated
     static Response makeSuperUser(String username) {
         Response response = given().post("/api/admin/superuser/" + username);
+        return response;
+    }
+
+    static Response setSuperuserStatus(String username, Boolean isSuperUser) {
+        Response response = given().body(isSuperUser).put("/api/admin/superuser/" + username);
         return response;
     }
 
@@ -2512,6 +2518,21 @@ public class UtilIT {
         return requestSpecification.get("/api/datasets/" + idInPath + "/uploadurls?size=" + sizeInBytes + optionalQueryParam);
     }
 
+    /**
+     * If you set dataverse.files.localstack1.disable-tagging=true you will see
+     * an error like below.
+     *
+     * To avoid it, don't send the x-amz-tagging header.
+     */
+    /*
+    <Error>
+      <Code>AccessDenied</Code>
+      <Message>There were headers present in the request which were not signed</Message>
+      <RequestId>25ff2bb0-13c7-420e-8ae6-3d92677e4bd9</RequestId>
+      <HostId>9Gjjt1m+cjU4OPvX9O9/8RuvnG41MRb/18Oux2o5H5MY7ISNTlXN+Dz9IG62/ILVxhAGI0qyPfg=</HostId>
+      <HeadersNotSigned>x-amz-tagging</HeadersNotSigned>
+    </Error>
+     */
     static Response uploadFileDirect(String url, InputStream inputStream) {
         return given()
                 .header("x-amz-tagging", "dv-state=temp")
