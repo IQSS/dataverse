@@ -390,14 +390,10 @@ public class FileUtilTest {
         assertEquals("Metadata", FileUtil.getIndexableFacetFileType(rocrate));
 
         final File roCrateFile = new File("src/test/resources/fileutil/ro-crate-metadata.json");
-        if (roCrateFile.exists()) {
-            try {
-                assertEquals(roCrateContentType, FileUtil.determineFileType(roCrateFile, "ro-crate-metadata.json"));
-            } catch (IOException ex) {
-                Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } else {
-            fail("File does not exist: " + roCrateFile.toPath().toString());
+        try {
+            assertEquals(roCrateContentType, FileUtil.determineFileType(roCrateFile, "ro-crate-metadata.json"));
+        } catch (IOException ex) {
+            fail(ex);
         }
 
         // test ";" removal
