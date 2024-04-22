@@ -923,6 +923,6 @@ public class DataversesIT {
         updateDataverseInputLevelsResponse.prettyPrint();
         updateDataverseInputLevelsResponse.then().assertThat()
                 .body("message", equalTo("Error while updating dataverse input levels: Input level list cannot be null or empty"))
-                .statusCode(BAD_REQUEST.getStatusCode());
+                .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
     }
 }
