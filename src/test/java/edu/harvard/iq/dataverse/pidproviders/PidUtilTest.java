@@ -499,7 +499,7 @@ public class PidUtilTest {
                       .getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "random");
               String dataFilePidFormat = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat,
                       "DEPENDENT");
-              String baseUrl = JvmSettings.LEGACY_PERMALINK_BASEURL.lookup();
+              String baseUrl = JvmSettings.LEGACY_PERMALINK_BASEURL.lookupOptional().orElse(SystemConfig.getDataverseSiteUrlStatic());
               legacy = new PermaLinkPidProvider("legacy", "legacy", authority, shoulder,
                       identifierGenerationStyle, dataFilePidFormat, "", "", baseUrl,
                       PermaLinkPidProvider.SEPARATOR);
