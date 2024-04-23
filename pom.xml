@@ -108,6 +108,12 @@
             <groupId>io.gdcc</groupId>
             <artifactId>sword2-server</artifactId>
             <version>2.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Dependency to use sword2-server in our codebase -->
         <dependency>
@@ -235,7 +241,7 @@
         <dependency>
             <groupId>org.eclipse.parsson</groupId>
             <artifactId>jakarta.json</artifactId>
-            <scope>provided</scope>
+            <scope>test</scope>
         </dependency>
         
         <!-- JSON-B -->
@@ -557,6 +563,12 @@
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers-standard-package</artifactId>
             <version>${tika.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Named Entity Recognition -->
         <dependency>
