@@ -220,4 +220,4 @@ Your feedback is extremely valuable to us! To let us know what you think, please
 Getting Help
 ------------
 
-Please do not be shy about reaching out for help. We very much want you to have a pleasant demo or evaluation experience. For ways to contact us, please see See :ref:`getting-help-containers`.
+Please do not be shy about reaching out for help. We very much want you to have a pleasant demo or evaluation experience. For ways to contact us, please see :ref:`getting-help-containers`.

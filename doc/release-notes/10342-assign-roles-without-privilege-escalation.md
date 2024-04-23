@@ -1,1 +1,0 @@
-The permissions required to assign a role have been fixed. It is no longer possible to assign a role that includes permissions that the assigning user doesn't have.
