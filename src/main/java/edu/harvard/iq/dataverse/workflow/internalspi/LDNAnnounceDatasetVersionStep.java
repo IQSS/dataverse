@@ -35,6 +35,7 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -177,7 +178,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
             Map<String, String> localContext) {
         String id = getBestId(dft, jval);
         return Json.createObjectBuilder().add("object", id).add("relationship", dft.getJsonLDTerm().getUrl())
-                .add("subject", d.getGlobalId().toURL().toString()).add("id", "urn:uuid:" + UUID.randomUUID().toString()).add("type","Relationship").build();
+                .add("subject", d.getGlobalId().asURL().toString()).add("id", "urn:uuid:" + UUID.randomUUID().toString()).add("type","Relationship").build();
     }
 
     HttpPost buildAnnouncement(Dataset d, JsonObject rel, JsonObject target) throws URISyntaxException {
