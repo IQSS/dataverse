@@ -433,12 +433,10 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static String determineFileType(File f, String fileName) throws IOException{
-        final ResourceBundle bundle = BundleUtil.getResourceBundle("MimeTypeDetectionByFileName");
-        if (bundle.keySet().contains(fileName)) {
-            return bundle.getString(fileName);
+        String fileType = lookupFileTypeByFileName(fileName);
+        if (fileType != null) {
+            return fileType;
         }
-
-        String fileType = null;
         String fileExtension = getFileExtension(fileName);
         
         
@@ -497,17 +495,17 @@ public class FileUtil implements java.io.Serializable  {
                 if (fileType != null && fileType.startsWith("text/plain") && STATISTICAL_FILE_EXTENSION.containsKey(fileExtension)) {
                     fileType = STATISTICAL_FILE_EXTENSION.get(fileExtension);
                 } else {
-                    fileType = determineFileTypeByNameAndExtension(fileName);
+                    fileType = lookupFileTypeByExtension(fileName);
                 }
 
                 logger.fine("mime type recognized by extension: "+fileType);
             }
         } else {
             logger.fine("fileExtension is null");
-            String fileTypeByName = lookupFileTypeFromPropertiesFile(fileName);
-            if(!StringUtil.isEmpty(fileTypeByName)) {
-                logger.fine(String.format("mime type: %s recognized by filename: %s", fileTypeByName, fileName));
-                fileType = fileTypeByName;
+            final String fileTypeByExtension = lookupFileTypeByExtensionFromPropertiesFile(fileName);
+            if(!StringUtil.isEmpty(fileTypeByExtension)) {
+                logger.fine(String.format("mime type: %s recognized by extension: %s", fileTypeByExtension, fileName));
+                fileType = fileTypeByExtension;
             }
         }
         
@@ -552,38 +550,41 @@ public class FileUtil implements java.io.Serializable  {
         return fileType;
     }
 
-    public static String determineFileTypeByNameAndExtension(String fileName) {
-        final ResourceBundle bundle = BundleUtil.getResourceBundle("MimeTypeDetectionByFileName");
-        if (bundle.keySet().contains(fileName)) {
-            return bundle.getString(fileName);
+    public static String determineFileTypeByNameAndExtension(final String fileName) {
+        final String fileType = lookupFileTypeByFileName(fileName);
+        if (fileType != null) {
+            return fileType;
         }
-        
-        String mimetypesFileTypeMapResult = MIME_TYPE_MAP.getContentType(fileName);
-        logger.fine("MimetypesFileTypeMap type by extension, for " + fileName + ": " + mimetypesFileTypeMapResult);
-        if (mimetypesFileTypeMapResult != null) {
-            if ("application/octet-stream".equals(mimetypesFileTypeMapResult)) {
-                return lookupFileTypeFromPropertiesFile(fileName);
-            } else {
-                return mimetypesFileTypeMapResult;
-            }
-        } else {
-            return null;
-        }
+        return lookupFileTypeByExtension(fileName);
     }
 
-    public static String lookupFileTypeFromPropertiesFile(String fileName) {
-        String fileKey = FilenameUtils.getExtension(fileName);
-        String propertyFileName = "MimeTypeDetectionByFileExtension";
-        if(fileKey == null || fileKey.isEmpty()) {
-            fileKey = fileName;
-            propertyFileName = "MimeTypeDetectionByFileName";
-
+    private static String lookupFileTypeByExtension(final String fileName) {
+        final String mimetypesFileTypeMapResult = MIME_TYPE_MAP.getContentType(fileName);
+        logger.fine("MimetypesFileTypeMap type by extension, for " + fileName + ": " + mimetypesFileTypeMapResult);
+        if (mimetypesFileTypeMapResult == null) {
+            return null;
         }
-        String propertyFileNameOnDisk = propertyFileName + ".properties";
+        if ("application/octet-stream".equals(mimetypesFileTypeMapResult)) {
+            return lookupFileTypeByExtensionFromPropertiesFile(fileName);
+        }
+        return mimetypesFileTypeMapResult;
+    }
+
+    private static String lookupFileTypeByFileName(final String fileName) {
+        return lookupFileTypeFromPropertiesFile("MimeTypeDetectionByFileName", fileName);
+    }
+
+    private static String lookupFileTypeByExtensionFromPropertiesFile(final String fileName) {
+        final String fileKey = FilenameUtils.getExtension(fileName);
+        return lookupFileTypeFromPropertiesFile("MimeTypeDetectionByFileExtension", fileKey);
+    }
+
+    private static String lookupFileTypeFromPropertiesFile(final String propertyFileName, final String fileKey) {
+        final String propertyFileNameOnDisk =  propertyFileName + ".properties";
         try {
             logger.fine("checking " + propertyFileNameOnDisk + " for file key " + fileKey);
             return BundleUtil.getStringFromPropertyFile(fileKey, propertyFileName);
-        } catch (MissingResourceException ex) {
+        } catch (final MissingResourceException ex) {
             logger.info(fileKey + " is a filename/extension Dataverse doesn't know about. Consider adding it to the " + propertyFileNameOnDisk + " file.");
             return null;
         }
