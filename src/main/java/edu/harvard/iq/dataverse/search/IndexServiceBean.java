@@ -897,7 +897,8 @@ public class IndexServiceBean {
 
         if (dataset.isHarvested()) {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, true);
-            solrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
+            solrInputDocument.addField(SearchFields.METADATA_SOURCE,
+                                        dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getName() : HARVESTED);
         } else {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName); //rootDataverseName);

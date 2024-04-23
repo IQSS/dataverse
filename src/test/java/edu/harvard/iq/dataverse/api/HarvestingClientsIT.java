@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
@@ -15,9 +18,7 @@ import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This class tests Harvesting Client functionality. 
@@ -43,6 +44,7 @@ public class HarvestingClientsIT {
     private static String adminUserAPIKey;
     private static String harvestCollectionAlias;
     String clientApiPath = null;
+    List<String> globalIdList = new ArrayList();
     
     @BeforeAll
     public static void setUpClass() {
@@ -56,14 +58,25 @@ public class HarvestingClientsIT {
         
     }
     @AfterEach
-    public void cleanup() {
+    public void cleanup() throws InterruptedException {
         if (clientApiPath != null) {
             Response deleteResponse = given()
                     .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                     .delete(clientApiPath);
             clientApiPath = null;
             System.out.println("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
+
+            int i = 0;
+            int maxWait = 20;
+            String query = "dsPersistentId:" + globalIdList.stream().map(s -> "\""+s+"\"").collect(Collectors.joining(","));
+            do {
+                if (UtilIT.search(query, normalUserAPIKey).prettyPrint().contains("count_in_response\": 0")) {
+                    break;
+                }
+                Thread.sleep(1000L);
+            } while (i++ < maxWait);
         }
+        globalIdList.clear();
     }
 
     private static void setupUsers() {
@@ -227,11 +240,11 @@ public class HarvestingClientsIT {
         int i = 0;
         int maxWait=20; // a very conservative interval; this harvest has no business taking this long
         do {
-            // Give it an initial 1 sec. delay, to make sure the client state 
+            // Give it an initial 2 sec. delay, to make sure the client state
             // has been updated in the database, which can take some appreciable 
             // amount of time on a heavily-loaded server running a full suite of
             // tests:
-            Thread.sleep(1000L);
+            Thread.sleep(2000L);
             // keep checking the status of the client with the GET api:
             Response getClientResponse = given()
                 .get(clientApiPath);
@@ -272,14 +285,22 @@ public class HarvestingClientsIT {
         } while (i<maxWait); 
         
         System.out.println("Waited " + i + " seconds for the harvest to complete.");
+
+        // Let's give the asynchronous indexing an extra sec. to finish:
+        Thread.sleep(1000L); 
+        Response searchHarvestedDatasets = UtilIT.search("metadataSource:" + nickName, normalUserAPIKey);
+        searchHarvestedDatasets.then().assertThat().statusCode(OK.getStatusCode());
+        searchHarvestedDatasets.prettyPrint();
+        // Get all global ids for cleanup
+        JsonPath jsonPath = searchHarvestedDatasets.getBody().jsonPath();
+        int sz = jsonPath.getInt("data.items.size()");
+        for(int idx = 0; idx < sz; idx++) {
+            globalIdList.add(jsonPath.getString("data.items["+idx+"].global_id"));
+        }
+        // verify count after collecting global ids
+        assertEquals(expectedNumberOfSetsHarvested, jsonPath.getInt("data.total_count"));
         
         // Fail if it hasn't completed in maxWait seconds
         assertTrue(i < maxWait);
-        
-        // TODO(?) use the native Dataverses/Datasets apis to verify that the expected
-        // datasets have been harvested. This may or may not be necessary, seeing 
-        // how we have already confirmed the number of successfully harvested 
-        // datasets from the control set; somewhat hard to imagine a practical 
-        // situation where that would not be enough (?).
     }
 }

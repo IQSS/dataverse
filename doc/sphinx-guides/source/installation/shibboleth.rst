@@ -148,6 +148,8 @@ When configuring the ``MetadataProvider`` section of ``shibboleth2.xml`` you sho
 
 Most Dataverse installations will probably only want to authenticate users via Shibboleth using their home institution's Identity Provider (IdP).  The configuration above in ``shibboleth2.xml`` looks for the metadata for the Identity Providers (IdPs) in a file at ``/etc/shibboleth/dataverse-idp-metadata.xml``.  You can download a :download:`sample dataverse-idp-metadata.xml file <../_static/installation/files/etc/shibboleth/dataverse-idp-metadata.xml>` and that includes the SAMLtest IdP from https://samltest.id but you will want to edit this file to include the metadata from the Identity Provider you care about. The identity people at your institution will be able to provide you with this metadata and they will very likely ask for a list of attributes that the Dataverse Software requires, which are listed at :ref:`shibboleth-attributes`.
 
+.. _identity-federation:
+
 Identity Federation
 ^^^^^^^^^^^^^^^^^^^
 
@@ -158,6 +160,10 @@ The details of how to register with an identity federation are out of scope for 
 One of the benefits of using ``shibd`` is that it can be configured to periodically poll your identity federation for updates as new Identity Providers (IdPs) join the federation you've registered with. For the InCommon federation, `this page describes how to download and verify signed InCommon metadata every hour <https://spaces.at.internet2.edu/display/federation/Download+InCommon+metadata>`_. You can also see an example of this as ``maxRefreshDelay="3600"`` in the commented out section of the ``shibboleth2.xml`` file above.
 
 Once you've joined a federation the list of IdPs in the dropdown can be quite long! If you're curious how many are in the list you could try something like this: ``curl https://dataverse.example.edu/Shibboleth.sso/DiscoFeed | jq '.[].entityID' | wc -l``
+
+Joining the federation alone is not enough. For the InCommon Federation, one must `apply for Research and Scholarship entity category approval <https://spaces.at.internet2.edu/display/federation/Service+provider+-+apply+for+Research+and+Scholarship+category>`_ and minimally your identity management group must release the attributes listed below to either the service provider (Dataverse instance) or optimally to all R&S service providers. See also https://refeds.org/category/research-and-scholarship
+
+When Dataverse does not receive :ref:`shibboleth-attributes` it needs, users see a confusing message. In the User Guide there is a section called :ref:`fix-shib-login` that attempts to explain the R&S situation as simply as possible and also links back here for more technical detail.
 
 .. _shibboleth-attributes:
 

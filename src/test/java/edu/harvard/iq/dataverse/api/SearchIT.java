@@ -862,7 +862,7 @@ public class SearchIT {
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+        UtilIT.sleepForReindex(datasetPid, apiToken, 5);
         Response searchPublishedSubtreeWDS = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
         searchPublishedSubtreeWDS.prettyPrint();
         searchPublishedSubtreeWDS.then().assertThat()
