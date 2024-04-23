@@ -111,11 +111,11 @@ APIs to manage the states include GET, POST, and DELETE (for testing), as shown 
 
 Note: ``yearMonth`` must be in the format ``yyyymm`` or ``yyyymmdd``.
 
-``curl -X GET http://localhost:8080/api/admin/{yearMonth}/processingState``
+``curl -X GET http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState``
 
-``curl -X POST http://localhost:8080/api/admin/{yearMonth}/processingState?state=done``
+``curl -X POST http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState?state=done``
 
-``curl -X DELETE http://localhost:8080/api/admin/{yearMonth}/processingState``
+``curl -X DELETE http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState``
 
 Resources
 ---------
