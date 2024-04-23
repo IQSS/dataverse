@@ -742,9 +742,9 @@ Versioning is important for long-term research data management where metadata an
 
 |image3|
 
-Once you edit your published dataset a new draft version of this dataset will be created. To publish this new version of your dataset, select the "Publish Dataset" button on the top right side of the page. If you were at version 1 of your dataset, depending on the types of changes you had made, you would be asked to publish your draft as either version 1.1 or version 2.0.
+Once you edit your published dataset, a draft version will be created. To publish this draft version, use the “Publish Dataset” button at the top right side of the page.
 
-**Important Note:** If you add a file, your dataset will automatically be bumped up to a major version (e.g., if you were at 1.0 you will go to 2.0).
+If files were added or removed, or if your dataset's previous version was deaccessioned, you must agree to publish the draft as a major version, such as version 2.0. Otherwise, you can choose to publish the draft as a major version or as a minor version, such as version 1.1.
 
 On the Versions tab of a dataset page, there is a versions table that displays the version history of the dataset. You can use the version number links in this table to navigate between the different versions of the dataset, including the unpublished draft version, if you have permission to access it.
 
