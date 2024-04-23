@@ -292,6 +292,7 @@ public class JsonPrinter {
         if (dv.getFilePIDsEnabled() != null) {
             bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
         }
+        bld.add("isReleased", dv.isReleased());
 
         List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
         if(!inputLevels.isEmpty()) {
