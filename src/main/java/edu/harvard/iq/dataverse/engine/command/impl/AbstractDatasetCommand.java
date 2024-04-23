@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionDifference;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -12,17 +13,21 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
-import javax.validation.ConstraintViolation;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
+
+import jakarta.validation.ConstraintViolation;
+import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 
 /**
  *
@@ -101,6 +106,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
             if (lenient) {
                 // populate invalid fields with N/A
                 constraintViolations.stream()
+                    .filter(cv -> cv.getRootBean() instanceof DatasetField)
                     .map(cv -> ((DatasetField) cv.getRootBean()))
                     .forEach(f -> f.setSingleValue(DatasetField.NA_VALUE));
 
@@ -109,33 +115,23 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                 String validationMessage = constraintViolations.stream()
                     .map(cv -> cv.getMessage() + " (Invalid value:" + cv.getInvalidValue() + ")")
                     .collect(joining(", ", "Validation Failed: ", "."));
+                
+                validationMessage  += constraintViolations.stream()
+                    .filter(cv -> cv.getRootBean() instanceof TermsOfUseAndAccess)
+                    .map(cv -> cv.toString());
+                
+                for (ConstraintViolation cv : constraintViolations){
+                    if (cv.getRootBean() instanceof TermsOfUseAndAccess){
+                        throw new IllegalCommandException(validationMessage,  this);
+                    }
+                }
 
                 throw new IllegalCommandException(validationMessage, this);
             }
         }
     }
 
-    /**
-     * Removed empty fields, sets field value display order.
-     *
-     * @param dsv the dataset version show fields we want to tidy up.
-     */
-    protected void tidyUpFields(DatasetVersion dsv) {
-        Iterator<DatasetField> dsfIt = dsv.getDatasetFields().iterator();
-        while (dsfIt.hasNext()) {
-            if (dsfIt.next().removeBlankDatasetFieldValues()) {
-                dsfIt.remove();
-            }
-        }
-        Iterator<DatasetField> dsfItSort = dsv.getDatasetFields().iterator();
-        while (dsfItSort.hasNext()) {
-            dsfItSort.next().setValueDisplayOrder();
-        }
-        Iterator<DatasetField> dsfItTrim = dsv.getDatasetFields().iterator();
-        while (dsfItTrim.hasNext()) {
-            dsfItTrim.next().trimTrailingSpaces();
-        }
-    }
+
 
     /**
      * Whether it's EZID or DataCite, if the registration is refused because the
@@ -155,39 +151,34 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      * @param ctxt
      * @throws CommandException
      */
-    protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt) throws CommandException {
+    protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt, boolean retry) throws CommandException {
         if (!theDataset.isIdentifierRegistered()) {
-            GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(theDataset.getProtocol(), ctxt);
-            if ( globalIdServiceBean != null ) {
-                if (globalIdServiceBean instanceof FakePidProviderServiceBean) {
-                    try {
-                        globalIdServiceBean.createIdentifier(theDataset);
-                    } catch (Throwable ex) {
-                        logger.warning("Problem running createIdentifier for FakePidProvider: " + ex);
-                    }
-                    theDataset.setGlobalIdCreateTime(getTimestamp());
-                    theDataset.setIdentifierRegistered(true);
-                    return;
-                }
+            PidProvider pidProvider = PidUtil.getPidProvider(theDataset.getGlobalId().getProviderId());
+            if ( pidProvider != null ) {
                 try {
-                    if (globalIdServiceBean.alreadyExists(theDataset)) {
+                    if (pidProvider.alreadyRegistered(theDataset)) {
                         int attempts = 0;
-
-                        while (globalIdServiceBean.alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
-                            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, globalIdServiceBean));
-                            logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
-                                new Object[]{theDataset.getId(), theDataset.getIdentifier()});
-                            attempts++;
+                        if(retry) {
+                            do  {
+                                pidProvider.generatePid(theDataset);
+                                logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
+                                    new Object[]{theDataset.getId(), theDataset.getIdentifier()});
+                                attempts++;
+                            } while (pidProvider.alreadyRegistered(theDataset) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
                         }
-
-                        if (globalIdServiceBean.alreadyExists(theDataset)) {
+                        if(!retry) {
+                            logger.warning("Reserving PID for: "  + getDataset().getId() + " during publication failed.");
+                            throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.pidNotReserved"), this);
+                        }
+                        if(attempts > FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+                            //Didn't work - we existed the loop with too many tries
                             throw new CommandExecutionException("This dataset may not be published because its identifier is already in use by another dataset; "
                                 + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
                         }
                     }
                     // Invariant: Dataset identifier does not exist in the remote registry
                     try {
-                        globalIdServiceBean.createIdentifier(theDataset);
+                        pidProvider.createIdentifier(theDataset);
                         theDataset.setGlobalIdCreateTime(getTimestamp());
                         theDataset.setIdentifierRegistered(true);
                     } catch (Throwable ex) {
@@ -195,7 +186,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                     }
 
                 } catch (Throwable e) {
-                    throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", globalIdServiceBean.getProviderInformation()), this);
+                    throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", pidProvider.getProviderInformation()), this);
                 }
             } else {
                 throw new IllegalCommandException("This dataset may not be published because its id registry service is not supported.", this);
@@ -222,5 +213,22 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      */
     protected Timestamp getTimestamp() {
         return timestamp;
+    }
+
+    protected void checkSystemMetadataKeyIfNeeded(DatasetVersion newVersion, DatasetVersion persistedVersion) throws IllegalCommandException {
+        Set<MetadataBlock> changedMDBs = DatasetVersionDifference.getBlocksWithChanges(newVersion, persistedVersion);
+        for (MetadataBlock mdb : changedMDBs) {
+            logger.fine(mdb.getName() + " has been changed");
+            String smdbString = JvmSettings.MDB_SYSTEM_KEY_FOR.lookupOptional(mdb.getName())
+                    .orElse(null);
+            if (smdbString != null) {
+                logger.fine("Found key: " + smdbString);
+                String mdKey = getRequest().getSystemMetadataBlockKeyFor(mdb.getName());
+                logger.fine("Found supplied key: " + mdKey);
+                if (mdKey == null || !mdKey.equalsIgnoreCase(smdbString)) {
+                    throw new IllegalCommandException("Updating system metadata in block " + mdb.getName() + " requires a valid key", this);
+                }
+            }
+        }
     }
 }

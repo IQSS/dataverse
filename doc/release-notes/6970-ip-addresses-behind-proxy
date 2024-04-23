@@ -1,6 +1,0 @@
-### Tracking users' IP addresses behind an address-masking proxy
-
-It is now possible to collect real user IP addresses in MDC logs 
-and/or set up an IP group on a system running behind a proxy/load balancer 
-that hides the addresses of incoming requests. See "Recording User IP 
-Addresses" in the Configuration section of the Installation Guide.

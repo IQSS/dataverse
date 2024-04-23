@@ -1,7 +1,7 @@
 API Tokens and Authentication 
 =============================
 
-An API token is similar to a password and allows you to authenticate to Dataverse APIs to perform actions as you. Many Dataverse APIs require the use of an API token.
+An API token is similar to a password and allows you to authenticate to Dataverse Software APIs to perform actions as you. Many Dataverse Software APIs require the use of an API token.
 
 .. contents:: |toctitle|
     :local:
@@ -21,9 +21,11 @@ Anyone who has your API Token can add and delete data as you so you should treat
 Passing Your API Token as an HTTP Header (Preferred) or a Query Parameter
 -------------------------------------------------------------------------
 
+Note: The SWORD API uses a different way of passing the API token. Please see :ref:`sword-auth` for details.
+
 See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
-There are two ways to pass your API token to Dataverse APIs. The preferred method is to send the token in the ``X-Dataverse-key`` HTTP header, as in the following curl example.
+There are two ways to pass your API token to Dataverse Software APIs. The preferred method is to send the token in the ``X-Dataverse-key`` HTTP header, as in the following curl example.
 
 .. code-block:: bash
 
@@ -60,4 +62,26 @@ Use of the ``X-Dataverse-key`` HTTP header form is preferred to passing ``key`` 
 Resetting Your API Token
 ------------------------
 
-You can reset your API Token from your account page in Dataverse as described in the :doc:`/user/account` section of the User Guide.
+You can reset your API Token from your account page in your Dataverse installation as described in the :doc:`/user/account` section of the User Guide.
+
+.. _bearer-tokens:
+
+Bearer Tokens
+-------------
+
+Bearer tokens are defined in `RFC 6750`_ and can be used as an alternative to API tokens if your installation has been set up to use them (see :ref:`bearer-token-auth` in the Installation Guide).
+
+.. _RFC 6750: https://tools.ietf.org/html/rfc6750
+
+To test if bearer tokens are working, you can try something like the following (using the :ref:`User Information` API endpoint), substituting in parameters for your installation and user.
+
+.. code-block:: bash
+
+  export TOKEN=`curl -s -X POST --location "http://keycloak.mydomain.com:8090/realms/test/protocol/openid-connect/token" -H "Content-Type: application/x-www-form-urlencoded" -d "username=user&password=user&grant_type=password&client_id=test&client_secret=94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8" | jq '.access_token' -r | tr -d "\n"`
+  
+  curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/users/:me
+
+Signed URLs
+-----------
+
+See :ref:`signed-urls`.

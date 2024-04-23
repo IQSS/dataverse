@@ -12,7 +12,7 @@
                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                 </label>
                 <div class="col-sm-6">
-                    <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfUse}</textarea>
+                    <textarea id="guestbook_tou" class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfUse}</textarea>
                 </div>
             </div>
             <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfAccess}">
@@ -20,7 +20,7 @@
                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                 </label>
                 <div class="col-sm-6">
-                    <textarea class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfAccess}</textarea>
+                    <textarea id="guestbook_toa" class="form-control" rows="4" readonly="readonly">#{DatasetPage.workingVersion.termsOfAccess}</textarea>
                 </div>
             </div>
             <ui:fragment rendered="#{DatasetPage.dataset.guestbook != null}">
@@ -30,7 +30,7 @@
                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.nameRequired}" />
                     </label>
                     <div class="col-sm-6">
-                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.name}"/>
+                        <h:inputText id="guestbookuser_name" styleClass="form-control" value="#{DatasetPage.guestbookResponse.name}"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -39,7 +39,7 @@
                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.emailRequired}" />
                     </label>
                     <div class="col-sm-6">
-                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.email}"/>
+                        <h:inputText id="guestbookuser_email" styleClass="form-control" value="#{DatasetPage.guestbookResponse.email}"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -48,7 +48,7 @@
                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.institutionRequired}" />
                     </label>
                     <div class="col-sm-6">
-                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.institution}"/>
+                        <h:inputText id="guestbookuser_institution" styleClass="form-control" value="#{DatasetPage.guestbookResponse.institution}"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -57,11 +57,11 @@
                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{DatasetPage.dataset.guestbook.positionRequired}" />
                     </label>
                     <div class="col-sm-6">
-                        <h:inputText styleClass="form-control" value="#{DatasetPage.guestbookResponse.position}"/>
+                        <h:inputText id="guestbookuser_position" styleClass="form-control" value="#{DatasetPage.guestbookResponse.position}"/>
                     </div>
                 </div>
                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.dataset.guestbook.customQuestions}">
-                    <label class="col-sm-3 control-label" for="guestbookuser_questions">
+                    <label class="col-sm-3 control-label">
                         #{bundle['dataset.guestbookResponse.guestbook.additionalQuestions']}
                     </label>
                     <div class="col-sm-6">

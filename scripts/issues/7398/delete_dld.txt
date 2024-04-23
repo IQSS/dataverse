@@ -1,0 +1,21 @@
+-- these queries will delete linked objects identified using the query in dld_for_deletion
+
+begin;
+
+delete from datasetlinkingdataverse where id in (
+select dld.id
+from datasetlinkingdataverse dld, dvobject dvo, dataverselinkingdataverse dvld
+where dld.dataset_id = dvo.id
+and dld.linkingdataverse_id = dvld.linkingdataverse_id
+and dvo.owner_id = dvld.dataverse_id
+);
+
+delete from dataverselinkingdataverse where id in (
+select dld.id
+from dataverselinkingdataverse dld, dvobject dvo, dataverselinkingdataverse dvld
+where dld.dataverse_id = dvo.id
+and dld.linkingdataverse_id = dvld.linkingdataverse_id
+and dvo.owner_id = dvld.dataverse_id
+);
+
+commit;

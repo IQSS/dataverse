@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Map;
 import java.util.HashMap;
-import javax.faces.context.FacesContext;
+import jakarta.faces.context.FacesContext;
 
 public class BundleUtil {
 
@@ -23,7 +23,19 @@ public class BundleUtil {
     private static final Map<String, ClassLoader> classLoaderCache = new HashMap<String, ClassLoader>();
 
     public static String getStringFromBundle(String key) {
-        return getStringFromBundle(key, null);
+        return getStringFromBundle(key, (List<String>)null);
+    }
+    
+    public static String getStringFromBundle(String key, Locale locale) {
+        return getStringFromBundle(key, null, locale);
+    }
+
+    private static String getStringFromBundle(String key, List<String> arguments, Locale locale) {
+        ResourceBundle bundle = getResourceBundle(defaultBundleFile, locale);
+        if (bundle == null) {
+            return null;
+        }
+        return getStringFromBundle(key, arguments, bundle);
     }
 
     public static String getStringFromBundle(String key, List<String> arguments) {
@@ -67,8 +79,12 @@ public class BundleUtil {
         }
     }
 
-    public static String getStringFromPropertyFile(String key, String propertyFileName  ) throws MissingResourceException {
-        ResourceBundle bundle = getResourceBundle(propertyFileName);
+    public static String getStringFromPropertyFile(String key, String propertyFileName) throws MissingResourceException {
+        return getStringFromPropertyFile(key, propertyFileName, null);
+    }
+    
+    public static String getStringFromPropertyFile(String key, String propertyFileName, Locale locale) throws MissingResourceException {
+        ResourceBundle bundle = getResourceBundle(propertyFileName,locale);
         if (bundle == null) {
             return null;
         }
@@ -89,10 +105,16 @@ public class BundleUtil {
         }
 
         if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
-            bundle = ResourceBundle.getBundle("propertyFiles/" +propertyFileName, currentLocale);
+            bundle = ResourceBundle.getBundle("propertyFiles/" + propertyFileName, currentLocale);
         } else {
-            ClassLoader loader = getClassLoader(filesRootDirectory);
-            bundle = ResourceBundle.getBundle(propertyFileName, currentLocale, loader);
+            try {
+                ClassLoader loader = getClassLoader(filesRootDirectory);
+                bundle = ResourceBundle.getBundle(propertyFileName, currentLocale, loader);
+            } catch (MissingResourceException mre) {
+                logger.warning("No property file named " + propertyFileName + "_" + currentLocale.getLanguage()
+                        + " found in " + filesRootDirectory + ", using untranslated values");
+                bundle = ResourceBundle.getBundle("propertyFiles/" + propertyFileName, currentLocale);
+            }
         }
 
         return bundle ;

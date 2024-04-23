@@ -111,12 +111,6 @@ config=read_config_file(configFile)
 # expected dataverse defaults
 apiUrl = "http://localhost:8080/api"
 
-# there's now a single driver that works for all supported versions:
-# jodbc.postgresql.org recommends 4.2 for Java 8.
-# updated drivers may be obtained from
-#  https://jdbc.postgresql.org/download.html
-pgJdbcDriver = "postgresql-42.2.12.jar"
-
 # 0. A few preliminary checks:                                                                                   
 # 0a. OS flavor:
  
@@ -233,9 +227,9 @@ if not pgOnly:
    warfileVersion = ""
    if not os.path.isfile(warfile):
       # get dataverse version from pom.xml
-      tree = ET.ElementTree(file='../../pom.xml')
+      tree = ET.ElementTree(file='../../modules/dataverse-parent/pom.xml')
       for elem in tree.iter("*"):
-         if elem.tag == '{http://maven.apache.org/POM/4.0.0}version':
+         if elem.tag == '{http://maven.apache.org/POM/4.0.0}revision':
             warfileVersion = elem.text
          # only want the first, the rest are dependencies
             break
@@ -244,17 +238,6 @@ if not pgOnly:
       if not os.path.isfile(warfile):
          sys.exit("Sorry, I can't seem to find an appropriate warfile.\nAre you running the installer from the right directory?")
    print(warfile+" available to deploy. Good.")
-
-   # 1b. check for reference_data.sql
-   referenceData = '../database/reference_data.sql'
-   if not os.path.isfile(referenceData):
-      # if it's not there, then we're probably running out of the 
-      # unzipped installer bundle, so it should be right here in the current directory:
-      referenceData = 'reference_data.sql'
-      if not os.path.isfile(referenceData):
-         sys.exit("Can't find reference_data.sql!\nAre you running the installer from the right directory?")
-
-   print("found "+referenceData+"... good")
 
    # 1c. check if jq is available
    # (but we're only doing it if it's not that weird "pod name" mode)
@@ -269,8 +252,8 @@ if not pgOnly:
    # 1d. check java version
    java_version = subprocess.check_output(["java", "-version"], stderr=subprocess.STDOUT).decode()
    print("Found java version "+java_version)
-   if not re.search("1.8", java_version):
-      sys.exit("Dataverse requires Java 1.8. Please install it, or make sure it's in your PATH, and try again")
+   if not re.search('(17)', java_version):
+      sys.exit("Dataverse requires OpenJDK 17. Please make sure it's in your PATH, and try again.")
 
    # 1e. check if the setup scripts - setup-all.sh, are available as well, maybe?
    # @todo (?)
@@ -331,7 +314,7 @@ else:
                   gfDir = config.get('glassfish', 'GLASSFISH_DIRECTORY')
                   while not test_appserver_directory(gfDir):
                      print("\nInvalid Payara directory!")
-                     gfDir = read_user_input("Enter the root directory of your Payara5 installation:\n(Or ctrl-C to exit the installer): ")
+                     gfDir = read_user_input("Enter the root directory of your Payara installation:\n(Or ctrl-C to exit the installer): ")
                   config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
                elif option == "mail_server":
                   mailServer = config.get('system', 'MAIL_SERVER')
@@ -397,12 +380,13 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       print("Can't connect to PostgresQL as the admin user.\n")
       sys.exit("Is the server running, have you adjusted pg_hba.conf, etc?")
 
-   # 3b. get the Postgres version (do we need it still?)
+   # 3b. get the Postgres version for new permissions model in versions 15+
    try:
-      pg_full_version = conn.server_version
-      print("PostgresQL version: "+str(pg_full_version))
+      pg_full_version = str(conn.server_version)
+      pg_major_version = pg_full_version[0:2]
+      print("PostgreSQL version: "+pg_major_version)
    except:
-      print("Warning: Couldn't determine PostgresQL version.")
+      print("Warning: Couldn't determine PostgreSQL version.")
    conn.close()
 
    # 3c. create role:
@@ -427,6 +411,8 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       else:
          sys.exit("Couldn't create database or database already exists.\n")
 
+   # 3e. set permissions:
+
    conn_cmd = "GRANT ALL PRIVILEGES on DATABASE "+pgDb+" to "+pgUser+";"
    try:
       cur.execute(conn_cmd)
@@ -434,6 +420,23 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       sys.exit("Couldn't grant privileges on "+pgDb+" to "+pgUser)
    cur.close()
    conn.close()
+
+   if int(pg_major_version) >= 15:
+      admin_conn_string = "dbname='"+pgDb+"' user='postgres' password='"+pgAdminPassword+"' host='"+pgHost+"'"
+      conn = psycopg2.connect(admin_conn_string)
+      conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+      cur = conn.cursor()
+      conn_cmd = "GRANT CREATE ON SCHEMA public TO "+pgUser+";"
+      try:
+         print("PostgreSQL 15 or higher detected. Running " + conn_cmd)
+         cur.execute(conn_cmd)
+      except:
+         if force:
+            print("WARNING: failed to grant permissions on schema public - continuing, since the --force option was specified")
+         else:
+            sys.exit("Couldn't grant privileges on schema public to "+pgUser)
+      cur.close()
+      conn.close()
 
    print("Database and role created!")
    if pgOnly:
@@ -451,15 +454,6 @@ else:
    gfHeap = int(linux_ram() / 2)
 print("Setting App. Server heap size (Xmx) to "+str(gfHeap)+" Megabytes")
 config.set('glassfish','GLASSFISH_HEAP', str(gfHeap))
-
-# 4b1. PostgresQL driver:
-pg_driver_jarpath = "pgdriver/"+pgJdbcDriver
-
-try:
-   copy2(pg_driver_jarpath, gfJarPath)
-   print("Copied "+pgJdbcDriver+" into "+gfJarPath)
-except:
-   print("Couldn't copy "+pgJdbcDriver+" into "+gfJarPath+". Check its permissions?")
 
 # 4c. create payara admin credentials file
 
@@ -501,7 +495,9 @@ if re.match(gfDomain+" not running", domain_status):
 
 # 4e. check if asadmin login works
 #gf_adminpass_status = subprocess.check_output([asadmincmd, "login", "--user="+gfAdminUser, "--passwordfile "+gfClientFile])
-gfAdminLoginStatus = subprocess.call([asadmincmd, "login", "--user="+gfAdminUser])
+
+if not nonInteractive:
+   gfAdminLoginStatus = subprocess.call([asadmincmd, "login", "--user="+gfAdminUser])
 
 # 4f. configure glassfish by running the standalone shell script that executes the asadmin commands as needed.
 
@@ -535,12 +531,12 @@ print("\nInstalling additional configuration files (Jhove)... ")
 try: 
    copy2(jhoveConfigSchemaDist, gfConfigDir)
    # The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
-   # and may need to be adjusted, if Payara is installed anywhere other than /usr/local/payara5:
-   if gfDir == "/usr/local/payara5":
+   # and may need to be adjusted, if Payara is installed anywhere other than /usr/local/payara6:
+   if gfDir == "/usr/local/payara6":
       copy2(jhoveConfigDist, gfConfigDir)
    else:
-      # use sed to replace /usr/local/payara5 in the distribution copy with the real gfDir:
-      sedCommand = "sed 's:/usr/local/payara5:"+gfDir+":g' < " + jhoveConfigDist + " > " + gfConfigDir + "/" + jhoveConfig
+      # use sed to replace /usr/local/payara6 in the distribution copy with the real gfDir:
+      sedCommand = "sed 's:/usr/local/payara6:"+gfDir+":g' < " + jhoveConfigDist + " > " + gfConfigDir + "/" + jhoveConfig
       subprocess.call(sedCommand, shell=True)
 
    print("done.")
@@ -555,22 +551,6 @@ if returnCode != 0:
    sys.exit("Failed to deploy the application!")
 # @todo: restart/try to deploy again if it failed?
 # @todo: if asadmin deploy says it was successful, verify that the application is running... if not - repeat the above?
-
-# 6. Import reference data
-print("importing reference data...")
-# open the new postgresQL connection (as the application user):
-conn_string="dbname='"+pgDb+"' user='"+pgUser+"' password='"+pgPassword+"' host='"+pgHost+"'"
-conn = psycopg2.connect(conn_string)
-conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-cur = conn.cursor()
-try:
-   cur.execute(open(referenceData, "r").read())
-   print("done.")
-except: 
-   print("WARNING: failed to import reference data!")
-
-cur.close()
-conn.close()
 
 # 7. RUN SETUP SCRIPTS AND CONFIGURE EXTRA SETTINGS
 # (note that we may need to change directories, depending on whether this is a dev., or release installer)
@@ -588,14 +568,6 @@ try:
 except:
    sys.exit("Failure to execute setup-all.sh! aborting.")
 
-# 7b. configure admin email in the application settings
-print("configuring system email address...")
-returnCode = subprocess.call(["curl", "-X", "PUT", "-d", adminEmail, apiUrl+"/admin/settings/:SystemEmail"])
-if returnCode != 0:
-   print("\nWARNING: failed to configure the admin email in the Dataverse settings!")
-else:
-   print("\ndone.")
-
 # 8c. configure remote Solr location, if specified
 if solrLocation != "LOCAL":
    print("configuring remote Solr location... ("+solrLocation+")")
@@ -611,15 +583,14 @@ if solrLocation != "LOCAL":
 print("\n\nYou should now have a running Dataverse instance at")
 print("  http://" + hostName + ":8080\n\n")
 
-# DataCite instructions: 
+# PID instructions: 
 
-print("\nYour Dataverse has been configured to use DataCite, to register DOI global identifiers in the ")
+print("\nYour Dataverse has been configured to use a Fake DOI Provider, registering (non-resolvable) DOI global identifiers in the ")
 print("test name space \"10.5072\" with the \"shoulder\" \"FK2\"")
-print("However, you have to contact DataCite (support\@datacite.org) and request a test account, before you ")
-print("can publish datasets. Once you receive the account name and password, add them to your domain.xml,")
-print("as the following two JVM options:")
-print("\t<jvm-options>-Ddoi.username=...</jvm-options>")
-print("\t<jvm-options>-Ddoi.password=...</jvm-options>")
+print("You can reconfigure to use additional/alternative providers.")
+print("If you intend to use DOIs, you should contact DataCite (support\@datacite.org) or GDCC (see https://www.gdcc.io/about.html) and request a test account.")
+print("Once you receive the account information (name, password, authority, shoulder), add them to your configuration ")
+print("as described in the Dataverse Guides (see https://guides.dataverse.org/en/latest/installation/config.html#persistent-identifiers-and-publishing-datasets),")
 print("and restart payara")
 print("If this is a production Dataverse and you are planning to register datasets as ")
 print("\"real\", non-test DOIs or Handles, consult the \"Persistent Identifiers and Publishing Datasets\"")

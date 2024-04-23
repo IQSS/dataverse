@@ -7,10 +7,11 @@ import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -22,7 +23,7 @@ public class UpdatePermissionRootCommandTest {
     TestCommandContext testCommandContext;
     boolean serviceBeanCalled;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         mockBean = new DataverseServiceBean() {
             @Override
@@ -30,6 +31,11 @@ public class UpdatePermissionRootCommandTest {
                 serviceBeanCalled = true;
                 return dv;
             }
+            @Override
+            public boolean index(Dataverse dataverse, boolean indexPermisions) {
+                    // no-op. The superclass accesses databases which we don't have.
+                    return true;
+            }            
         };
         testCommandContext = new TestCommandContext() {
             @Override

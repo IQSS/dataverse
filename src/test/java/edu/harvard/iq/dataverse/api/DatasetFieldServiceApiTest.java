@@ -1,12 +1,12 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DatasetFieldServiceApiTest {
 
@@ -43,7 +43,7 @@ public class DatasetFieldServiceApiTest {
     @Test
     public void testGetArrayIndexOutOfBoundMessage() {
         DatasetFieldServiceApi api = new DatasetFieldServiceApi();
-        String message = api.getArrayIndexOutOfBoundMessage(DatasetFieldServiceApi.HeaderType.DATASETFIELD, 5, new ArrayIndexOutOfBoundsException("4"));
+        String message = api.getArrayIndexOutOfBoundMessage(DatasetFieldServiceApi.HeaderType.DATASETFIELD, 5, 4);
         assertEquals(
             "Error parsing metadata block in DATASETFIELD part, line #5: missing 'watermark' column (#5)",
             message

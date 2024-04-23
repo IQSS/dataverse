@@ -3,59 +3,49 @@ package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
 
-import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
-import edu.harvard.iq.dataverse.DataCitation;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.spi.export.ExportDataProvider;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.util.Map;
-import javax.json.JsonObject;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+import java.util.Optional;
 
 /**
  *
  * @author qqmyers
  */
 @AutoService(Exporter.class)
-public class DataCiteExporter implements Exporter {
+public class DataCiteExporter implements XMLExporter {
 
     private static String DEFAULT_XML_NAMESPACE = "http://datacite.org/schema/kernel-3";
     private static String DEFAULT_XML_SCHEMALOCATION = "http://datacite.org/schema/kernel-3 http://schema.datacite.org/meta/kernel-3/metadata.xsd";
     private static String DEFAULT_XML_VERSION = "3.0";
 
     public static final String NAME = "Datacite";
+
     @Override
-    public String getProviderName() {
+    public String getFormatName() {
         return NAME;
     }
 
     @Override
-    public String getDisplayName() {
-        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.datacite") != null
-                ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.datacite")
-                : "DataCite";
+    public String getDisplayName(Locale locale) {
+        String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.datacite", locale);
+        return Optional.ofNullable(displayName).orElse("DataCite");
     }
 
     @Override
-    public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream)
-            throws ExportException {
+    public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
         try {
-            DataCitation dc = new DataCitation(version);
-            
-            Map<String, String> metadata = dc.getDataCiteMetadata();
-            String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(
-                    version.getDataset().getGlobalId().asString(), metadata, version.getDataset());
-            outputStream.write(xml.getBytes(Charset.forName("utf-8")));
+            String xml = dataProvider.getDataCiteXml();
+            outputStream.write(xml.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-            throw new ExportException("Caught IOException performing DataCite export");
+            throw new ExportException("Caught IOException performing DataCite export", e);
         }
-    }
-
-    @Override
-    public Boolean isXMLFormat() {
-        return true;
     }
 
     @Override
@@ -69,23 +59,18 @@ public class DataCiteExporter implements Exporter {
     }
 
     @Override
-    public String getXMLNameSpace() throws ExportException {
+    public String getXMLNameSpace() {
         return DataCiteExporter.DEFAULT_XML_NAMESPACE;
     }
 
     @Override
-    public String getXMLSchemaLocation() throws ExportException {
+    public String getXMLSchemaLocation() {
         return DataCiteExporter.DEFAULT_XML_SCHEMALOCATION;
     }
 
     @Override
-    public String getXMLSchemaVersion() throws ExportException {
+    public String getXMLSchemaVersion() {
         return DataCiteExporter.DEFAULT_XML_VERSION;
-    }
-
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter does not uses or supports any parameters as of now.
     }
 
 }

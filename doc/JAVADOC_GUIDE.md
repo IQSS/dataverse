@@ -88,7 +88,7 @@ Here's a better approach:
     /** The dataverse we move the dataset <em>from</em> */
     private Dataverse sourceDataverse;
 
-    /** The dataverse we movet the dataset <em>to</em> */
+    /** The dataverse we move the dataset <em>to</em> */
     private Dataverse destinationDataverse;
 
 

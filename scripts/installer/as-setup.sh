@@ -32,8 +32,8 @@
 # DOI_PASSWORD
 # DOI_BASEURL
 #
-# Base URL the Make Data Count: 
-# DOI_MDCBASEURL
+# Base URL the DataCite REST API (Make Data Count, /pids API): 
+# DOI_DATACITERESTAPIURL
 #
 # other local configuration:
 # HOST_ADDRESS
@@ -56,15 +56,15 @@ function preliminary_setup()
 
   # avoid OutOfMemoryError: PermGen per http://eugenedvorkin.com/java-lang-outofmemoryerror-permgen-space-error-during-deployment-to-glassfish/
   #./asadmin $ASADMIN_OPTS list-jvm-options
-  # Note that these JVM options are different for Payara5 and Glassfish4:
+  # Note that these JVM options are different for Payara and Glassfish4:
   # old Glassfish4 options: (commented out)
   #./asadmin $ASADMIN_OPTS delete-jvm-options "-XX\:MaxPermSize=192m"
   #./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MaxPermSize=512m"
   #./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:PermSize=256m"
-  # payara5 ships with the "-server" option already in domain.xml, so no need:
+  # Payara ships with the "-server" option already in domain.xml, so no need:
   #./asadmin $ASADMIN_OPTS delete-jvm-options -client
 
-  # new Payara5 options: (thanks to donsizemore@unc.edu)
+  # new Payara options: (thanks to donsizemore@unc.edu)
   ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MaxMetaspaceSize=512m"
   ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MetaspaceSize=256m"
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Dfish.payara.classloading.delegate=false"
@@ -73,7 +73,7 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:+DisableExplicitGC"
 
   # alias passwords
-  for alias in "rserve_password_alias ${RSERVE_PASS}" "doi_password_alias ${DOI_PASSWORD}" "db_password_alias ${DB_PASS}"
+  for alias in "rserve_password_alias ${RSERVE_PASS}" "doi_password_alias ${DOI_PASSWORD}" "dataverse.db.password ${DB_PASS}"
   do
       set -- $alias
       echo "AS_ADMIN_ALIASPASSWORD=$2" > /tmp/$1.txt
@@ -102,45 +102,29 @@ function preliminary_setup()
   # password reset token timeout in minutes
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.auth.password-reset-timeout-in-minutes=60"
 
-  # DataCite DOI Settings
+  # Fake DOI Settings
   # (we can no longer offer EZID with their shared test account)
   # jvm-options use colons as separators, escape as literal
   DOI_BASEURL_ESC=`echo $DOI_BASEURL | sed -e 's/:/\\\:/'`
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=${DOI_USERNAME}"
-  ./asadmin $ASADMIN_OPTS create-jvm-options '\-Ddoi.password=${ALIAS=doi_password_alias}'
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=$DOI_BASEURL_ESC"
-
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.providers=fake"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.fake.type=FAKE"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.fake.label=Fake DOI Provider"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.fake.authority=10.5072"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.fake.shoulder=FK2/"
   # jvm-options use colons as separators, escape as literal
-  DOI_MDCBASEURL_ESC=`echo $DOI_MDCBASEURL | sed -e 's/:/\\\:/'`
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.mdcbaseurlstring=$DOI_MDCBASEURL_ESC"
+  #DOI_DATACITERESTAPIURL_ESC=`echo $DOI_DATACITERESTAPIURL | sed -e 's/:/\\\:/'`
+  #./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.testDC.datacite.rest-api-url=$DOI_DATACITERESTAPIURL_ESC"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
+
+  # Workaround for FISH-7722: Failed to deploy war with @Stateless https://github.com/payara/Payara/issues/6337
+  ./asadmin $ASADMIN_OPTS create-jvm-options --add-opens=java.base/java.io=ALL-UNNAMED
 
   # enable comet support
   ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
 
   # bump the http-listener timeout from 900 to 3600
   ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds="${GLASSFISH_REQUEST_TIMEOUT}"
-
-  ./asadmin $ASADMIN_OPTS delete-connector-connection-pool --cascade=true jms/__defaultConnectionFactory-Connection-Pool 
-
-  # no need to explicitly delete the connector resource for the connection pool deleted in the step 
-  # above - the cascade delete takes care of it.
-  #./asadmin $ASADMIN_OPTS delete-connector-resource jms/__defaultConnectionFactory-Connection-Pool
-
-  # http://docs.oracle.com/cd/E19798-01/821-1751/gioce/index.html
-  ./asadmin $ASADMIN_OPTS create-connector-connection-pool --steadypoolsize 1 --maxpoolsize 250 --poolresize 2 --maxwait 60000 --raname jmsra --connectiondefinition javax.jms.QueueConnectionFactory jms/IngestQueueConnectionFactoryPool
-
-  # http://docs.oracle.com/cd/E18930_01/html/821-2416/abllx.html#giogt
-  ./asadmin $ASADMIN_OPTS create-connector-resource --poolname jms/IngestQueueConnectionFactoryPool --description "ingest connector resource" jms/IngestQueueConnectionFactory
-
-  # http://docs.oracle.com/cd/E18930_01/html/821-2416/ablmc.html#giolr
-  ./asadmin $ASADMIN_OPTS create-admin-object --restype javax.jms.Queue --raname jmsra --description "sample administered object" --property Name=DataverseIngest jms/DataverseIngest
-
-  # no need to explicitly create the resource reference for the connection factory created above -
-  # the "create-connector-resource" creates the reference automatically.
-  #./asadmin $ASADMIN_OPTS create-resource-ref --target Cluster1 jms/IngestQueueConnectionFactory
-
 
   # so we can front with apache httpd ( ProxyPass / ajp://localhost:8009/ )
   ./asadmin $ASADMIN_OPTS create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector
@@ -150,22 +134,11 @@ function final_setup(){
         ./asadmin $ASADMIN_OPTS delete-jvm-options -Xmx512m
         ./asadmin $ASADMIN_OPTS create-jvm-options "-Xmx${MEM_HEAP_SIZE}m"
 
-
-        ./asadmin $ASADMIN_OPTS create-jdbc-connection-pool --restype javax.sql.DataSource \
-                                        --datasourceclassname org.postgresql.ds.PGPoolingDataSource \
-                                        --property create=true:User=$DB_USER:PortNumber=$DB_PORT:databaseName=$DB_NAME:ServerName=$DB_HOST \
-                                        dvnDbPool
-
-       ./asadmin $ASADMIN_OPTS set resources.jdbc-connection-pool.dvnDbPool.property.password='${ALIAS=db_password_alias}'
-
-        ###
-        # Create data sources
-        ./asadmin $ASADMIN_OPTS create-jdbc-resource --connectionpoolid dvnDbPool jdbc/VDCNetDS
-
-        ###
-        # Set up the data source for the timers
-
-        ./asadmin $ASADMIN_OPTS set configs.config.server-config.ejb-container.ejb-timer-service.timer-datasource=jdbc/VDCNetDS
+         # Set up the database connection properties
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.user=${DB_USER}"
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.host=${DB_HOST}"
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.port=${DB_PORT}"
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.name=${DB_NAME}"
 
         ./asadmin $ASADMIN_OPTS create-jvm-options "\-Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl"
 
@@ -174,30 +147,28 @@ function final_setup(){
 	# delete any existing mail/notifyMailSession; configure port, if provided:
 
 	./asadmin delete-javamail-resource mail/notifyMailSession
-
-	if [ $SMTP_SERVER_PORT"x" != "x" ]
-	then
-            ./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost "$SMTP_SERVER" --mailuser "dataversenotify" --fromaddress "do-not-reply@${HOST_ADDRESS}" --property mail.smtp.port="${SMTP_SERVER_PORT}" mail/notifyMailSession
-	else
-	    ./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost "$SMTP_SERVER" --mailuser "dataversenotify" --fromaddress "do-not-reply@${HOST_ADDRESS}" mail/notifyMailSession
+	./asadmin $ASADMIN_OPTS create-system-properties "dataverse.mail.system-email='${ADMIN_EMAIL}'"
+  ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.mail.mta.host='${SMTP_SERVER}'"
+	if [ "x${SMTP_SERVER_PORT}" != "x" ]; then
+    ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.mail.mta.port='${SMTP_SERVER_PORT}'"
 	fi
 
 }
 
 if [ "$DOCKER_BUILD" = "true" ]
   then
-    FILES_DIR="/usr/local/payara5/glassfish/domains/domain1/files"
+    FILES_DIR="/usr/local/payara6/glassfish/domains/domain1/files"
     RSERVE_HOST="localhost"
     RSERVE_PORT="6311"
     RSERVE_USER="rserve"
     RSERVE_PASS="rserve"
     HOST_ADDRESS="localhost\:8080"
-    pushd /usr/local/payara5/glassfish/bin/
+    pushd /usr/local/payara6/glassfish/bin/
     ./asadmin start-domain domain1
     preliminary_setup
-    chmod -R 777 /usr/local/payara5/
-    rm -rf /usr/local/payara5/glassfish/domains/domain1/generated 
-    rm -rf /usr/local/payara5/glassfish/domains/domain1/applications
+    chmod -R 777 /usr/local/payara6/
+    rm -rf /usr/local/payara6/glassfish/domains/domain1/generated
+    rm -rf /usr/local/payara6/glassfish/domains/domain1/applications
     popd
     exit 0
 fi
@@ -307,7 +278,13 @@ if [ ! -d "$DOMAIN_DIR" ]
     exit 2
 fi
 
-echo "Setting up your app. server (Payara5) to support Dataverse"
+if [ -z "$ADMIN_EMAIL" ]
+ then
+  echo "You must specify the system admin email address (ADMIN_EMAIL)."
+  exit 1
+fi
+
+echo "Setting up your app. server (Payara) to support Dataverse"
 echo "Payara directory: "$GLASSFISH_ROOT
 echo "Domain directory:    "$DOMAIN_DIR
 

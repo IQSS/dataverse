@@ -1,9 +1,14 @@
 package edu.harvard.iq.dataverse;
 
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.time.Instant;
+import java.util.Date;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -35,7 +40,7 @@ public class FileMetadataTest {
     datafile.setPublicationDate(null);
     datafile.setCreateDate(Timestamp.valueOf("2019-01-01 00:00:00"));
     metadata.setDataFile(datafile);
-    assertEquals("Jan 1, 2019", metadata.getFileDateToDisplay());
+    assertEquals(DateFormat.getDateInstance(DateFormat.DEFAULT, BundleUtil.getCurrentLocale()).format(Date.from(Instant.parse("2019-01-01T00:00:00.00Z"))), metadata.getFileDateToDisplay());
   }
 
   @Test
@@ -44,6 +49,6 @@ public class FileMetadataTest {
     datafile.setPublicationDate(Timestamp.valueOf("2019-02-02 00:00:00"));
     datafile.setCreateDate(Timestamp.valueOf("2019-01-02 00:00:00"));
     metadata.setDataFile(datafile);
-    assertEquals("Feb 2, 2019", metadata.getFileDateToDisplay());
+    assertEquals(DateFormat.getDateInstance(DateFormat.DEFAULT, BundleUtil.getCurrentLocale()).format(Date.from(Instant.parse("2019-02-02T00:00:00.00Z"))), metadata.getFileDateToDisplay());
   }
 }

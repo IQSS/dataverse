@@ -6,11 +6,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
-import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
-import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecord;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISet;
@@ -26,16 +21,18 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import org.apache.commons.lang.StringUtils;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIInput;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ActionEvent;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -249,7 +246,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         newOaiSet.setDefinition(getNewSetQuery());
         
         boolean success = false;
-        
+        //TODO: Consider putting this in a command that could be used by api as well
         try {
             oaiSetService.save(newOaiSet);
             configuredHarvestingSets = oaiSetService.findAll();  
@@ -292,7 +289,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         
         // will try to save it now:
         boolean success = false; 
-        
+        //TODO: Consider putting this in a command that could be used by api as well
         try {
             oaiSetService.save(oaiSet);
             configuredHarvestingSets = oaiSetService.findAll(); 
@@ -318,6 +315,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
     }
     
     public void deleteSet() {
+        //TODO: Consider putting this in a command that could be used by api as well
         if (selectedSet != null) {
             logger.info("proceeding to delete harvesting set "+ selectedSet.getSpec());
             try {
@@ -434,9 +432,19 @@ public class HarvestingSetsPage implements java.io.Serializable {
         return false;
     }
     
+    // The numbers of datasets and deleted/exported records below are used 
+    // in rendering rules on the page. They absolutely need to be cached
+    // on the first lookup. 
+    
+    Map<String, Integer> cachedSetInfoNumDatasets = new HashMap<>();
+    
     public int getSetInfoNumOfDatasets(OAISet oaiSet) {
         if (oaiSet.isDefaultSet()) {
             return getSetInfoNumOfExported(oaiSet);
+        }
+        
+        if (cachedSetInfoNumDatasets.get(oaiSet.getSpec()) != null) {
+            return cachedSetInfoNumDatasets.get(oaiSet.getSpec());
         }
         
         String query = oaiSet.getDefinition();
@@ -444,34 +452,72 @@ public class HarvestingSetsPage implements java.io.Serializable {
         try {
             int num = oaiSetService.validateDefinitionQuery(query);
             if (num > -1) {
+                cachedSetInfoNumDatasets.put(oaiSet.getSpec(), num);
                 return num;
             }
         } catch (OaiSetException ose) {
-            // do notghin - will return zero.
+            // do nothing - will return zero.
         }
+        cachedSetInfoNumDatasets.put(oaiSet.getSpec(), 0);
         return 0;
     }
     
+    Map<String, Integer> cachedSetInfoNumExported = new HashMap<>();
+    Integer defaultSetNumExported = null; 
+    
     public int getSetInfoNumOfExported(OAISet oaiSet) {
+        if (oaiSet.isDefaultSet() && defaultSetNumExported != null) {
+            return defaultSetNumExported;
+        } else if (cachedSetInfoNumExported.get(oaiSet.getSpec()) != null) {
+            return cachedSetInfoNumExported.get(oaiSet.getSpec());
+        }
+        
         List<OAIRecord> records = oaiRecordService.findActiveOaiRecordsBySetName(oaiSet.getSpec());
         
+        int num; 
+        
         if (records == null || records.isEmpty()) {
-            return 0; 
+            num = 0; 
+        } else {
+            num = records.size();
         }
         
-        return records.size();
+        if (oaiSet.isDefaultSet()) {
+            defaultSetNumExported = num;
+        } else {
+            cachedSetInfoNumExported.put(oaiSet.getSpec(), num);
+        }
         
+        return num;
     }
     
+    Map<String, Integer> cachedSetInfoNumDeleted = new HashMap<>();
+    Integer defaultSetNumDeleted = null;
+    
     public int getSetInfoNumOfDeleted(OAISet oaiSet) {
-        List<OAIRecord> records = oaiRecordService.findDeletedOaiRecordsBySetName(oaiSet.getSpec());
-        
-        if (records == null || records.isEmpty()) {
-            return 0; 
+        if (oaiSet.isDefaultSet() && defaultSetNumDeleted != null) {
+            return defaultSetNumDeleted;
+        } else if (cachedSetInfoNumDeleted.get(oaiSet.getSpec()) != null) {
+            return cachedSetInfoNumDeleted.get(oaiSet.getSpec());
         }
         
-        return records.size();
+        List<OAIRecord> records = oaiRecordService.findDeletedOaiRecordsBySetName(oaiSet.getSpec());
         
+        int num; 
+        
+        if (records == null || records.isEmpty()) {
+            num = 0; 
+        } else {
+            num = records.size();
+        }
+        
+        if (oaiSet.isDefaultSet()) {
+            defaultSetNumDeleted = num;
+        } else {
+            cachedSetInfoNumDeleted.put(oaiSet.getSpec(), num);
+        }
+        
+        return num;
     }
     
     public void validateSetQuery() {

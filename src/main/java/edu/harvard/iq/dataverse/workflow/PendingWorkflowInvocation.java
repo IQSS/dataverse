@@ -9,14 +9,14 @@ import edu.harvard.iq.dataverse.workflow.step.Pending;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToOne;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToOne;
 
 /**
  * A workflow whose current step waits for an external system to complete a
@@ -51,7 +51,11 @@ public class PendingWorkflowInvocation implements Serializable {
     String ipAddress;
     int typeOrdinal;
     boolean datasetExternallyReleased;
+    
+    long lockid;
 
+    public static final String AUTHORIZED= "authorized";
+                
     /** Empty constructor for JPA */
     public PendingWorkflowInvocation(){
         
@@ -68,13 +72,13 @@ public class PendingWorkflowInvocation implements Serializable {
         localData = new HashMap<>(result.getData());
         typeOrdinal = ctxt.getType().ordinal();
         datasetExternallyReleased=ctxt.getDatasetExternallyReleased();
+        lockid=ctxt.getLockId();
     }
     
     public WorkflowContext reCreateContext(RoleAssigneeServiceBean roleAssignees) {
         DataverseRequest aRequest = new DataverseRequest((User)roleAssignees.getRoleAssignee(userId), IpAddress.valueOf(ipAddress));
         final WorkflowContext workflowContext = new WorkflowContext(aRequest, dataset, nextVersionNumber, 
-                nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], null, null, datasetExternallyReleased);
-        workflowContext.setInvocationId(invocationId);
+                nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], null, null, datasetExternallyReleased, invocationId, lockid);
         return workflowContext;
     }
     
@@ -156,5 +160,12 @@ public class PendingWorkflowInvocation implements Serializable {
 
     public void setTypeOrdinal(int typeOrdinal) {
         this.typeOrdinal = typeOrdinal;
+    }
+    
+    public long getLockId() {
+        return lockid;
+    }
+    public void setLockId(long lockId) {
+        this.lockid = lockId;
     }
 }

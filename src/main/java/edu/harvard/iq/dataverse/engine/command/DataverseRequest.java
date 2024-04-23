@@ -1,15 +1,16 @@
 package edu.harvard.iq.dataverse.engine.command;
 
-import edu.harvard.iq.dataverse.api.batchjob.FileRecordJobResource;
+import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * 
@@ -22,8 +23,12 @@ public class DataverseRequest {
 
     private final User user;
     private final IpAddress sourceAddress;
+    private final String invocationId;
+    private final HttpServletRequest httpServletRequest;
     
     private final static String undefined = "0.0.0.0";
+    
+    private final static String MDKEY_PREFIX="mdkey.";
     
     private static final Logger logger = Logger.getLogger(DataverseRequest.class.getName());
     
@@ -53,11 +58,12 @@ public class DataverseRequest {
     
     public DataverseRequest(User aUser, HttpServletRequest aHttpServletRequest) {
         this.user = aUser;
-
+        httpServletRequest = aHttpServletRequest;
+        
         IpAddress address = null;
 
         if (aHttpServletRequest != null) {
-
+           
             if (headerToUse != null) {
                 /*
                  * The optional case of using a header to determine the IP address is discussed
@@ -91,6 +97,7 @@ public class DataverseRequest {
                     if (index >= 0) {
                         ip = ip.substring(index + 1);
                     }
+                    ip=ip.trim();
                     /*
                      * We should have a valid, single IP address string here. The IpAddress.valueOf
                      * call will throw an exception if it can't be parsed into a valid address (e.g.
@@ -131,14 +138,24 @@ public class DataverseRequest {
                     }
                 }
             }
+            
+            String headerParamWFKey = aHttpServletRequest.getHeader(AbstractApiBean.DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME);
+            String queryParamWFKey = aHttpServletRequest.getParameter("invocationId");
+                    
+            invocationId = headerParamWFKey!=null ? headerParamWFKey : queryParamWFKey;
 
+        } else {
+            invocationId=null;
         }
+        
         sourceAddress = address;
     }
 
     public DataverseRequest( User aUser, IpAddress aSourceAddress ) {
         user = aUser;
         sourceAddress = aSourceAddress;
+        invocationId=null;
+        httpServletRequest=null;
     }
     
     public User getUser() {
@@ -169,6 +186,27 @@ public class DataverseRequest {
             return (AuthenticatedUser)authUser;
         }
         return null;
+    }
+
+    public String getWFInvocationId() {
+        return invocationId;
+    }
+    
+    public HttpServletRequest getHttpServletRequest() {
+        return httpServletRequest;
+    }
+    
+    public String getSystemMetadataBlockKeyFor(String blockName) {
+        String key = null;
+        if (httpServletRequest != null) {
+            key = httpServletRequest.getHeader(MDKEY_PREFIX + blockName);
+            logger.log(Level.FINE, ((key==null)? "Didn't find": "Found") + "system metadata block key for " + blockName + " in header");
+            if (key == null) {
+                key = httpServletRequest.getParameter(MDKEY_PREFIX + blockName);
+                logger.log(Level.FINE, ((key==null)? "Didn't find": "Found") + "system metadata block key for " + blockName + " in query parameter");
+            }
+        }
+        return key;
     }
     
 }

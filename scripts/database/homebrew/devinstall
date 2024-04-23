@@ -15,6 +15,5 @@ export FILES_DIR=$HOME/dataverse/files
 export MEM_HEAP_SIZE=2048
 export GLASSFISH_DOMAIN=domain1
 export GLASSFISH_ROOT=/Applications/NetBeans/glassfish4
-cp pgdriver/postgresql-9.1-902.jdbc4.jar $GLASSFISH_ROOT/glassfish/lib
 cp ../../conf/jhove/jhove.conf $GLASSFISH_ROOT/glassfish/domains/$GLASSFISH_DOMAIN/config/jhove.conf
 ./glassfish-setup.sh

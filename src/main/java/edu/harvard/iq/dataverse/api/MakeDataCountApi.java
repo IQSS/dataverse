@@ -2,32 +2,43 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
-import java.io.FileReader;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountProcessState;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountProcessStateServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteDOIProvider;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ejb.EJB;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * Note that there are makeDataCount endpoints in Datasets.java as well.
@@ -40,9 +51,13 @@ public class MakeDataCountApi extends AbstractApiBean {
     @EJB
     DatasetMetricsServiceBean datasetMetricsService;
     @EJB
+    MakeDataCountProcessStateServiceBean makeDataCountProcessStateService;
+    @EJB
     DatasetExternalCitationsServiceBean datasetExternalCitationsService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    SystemConfig systemConfig;
 
     /**
      * TODO: For each dataset, send the following:
@@ -78,26 +93,21 @@ public class MakeDataCountApi extends AbstractApiBean {
     @Path("{id}/addUsageMetricsFromSushiReport")
     public Response addUsageMetricsFromSushiReport(@PathParam("id") String id, @QueryParam("reportOnDisk") String reportOnDisk) {
 
-        JsonObject report;
-
-        try (FileReader reader = new FileReader(reportOnDisk)) {
-            report = Json.createReader(reader).readObject();
-            Dataset dataset;
-            try {
-                dataset = findDatasetOrDie(id);
-                List<DatasetMetrics> datasetMetrics = datasetMetricsService.parseSushiReport(report, dataset);
-                if (!datasetMetrics.isEmpty()) {
-                    for (DatasetMetrics dm : datasetMetrics) {
-                        datasetMetricsService.save(dm);
-                    }
+        try {
+            JsonObject report = JsonUtil.getJsonObjectFromFile(reportOnDisk);
+            Dataset dataset = findDatasetOrDie(id);
+            List<DatasetMetrics> datasetMetrics = datasetMetricsService.parseSushiReport(report, dataset);
+            if (!datasetMetrics.isEmpty()) {
+                for (DatasetMetrics dm : datasetMetrics) {
+                    datasetMetricsService.save(dm);
                 }
-            } catch (WrappedResponse ex) {
-                Logger.getLogger(MakeDataCountApi.class.getName()).log(Level.SEVERE, null, ex);
-                return error(Status.BAD_REQUEST, "Wrapped response: " + ex.getLocalizedMessage());
             }
+        } catch (WrappedResponse ex) {
+            logger.log(Level.SEVERE, null, ex);
+            return error(Status.BAD_REQUEST, "Wrapped response: " + ex.getLocalizedMessage());
 
         } catch (IOException ex) {
-            System.out.print(ex.getMessage());
+            logger.log(Level.WARNING, ex.getMessage());
             return error(Status.BAD_REQUEST, "IOException: " + ex.getLocalizedMessage());
         }
         String msg = "Dummy Data has been added to dataset " + id;
@@ -106,12 +116,10 @@ public class MakeDataCountApi extends AbstractApiBean {
 
     @POST
     @Path("/addUsageMetricsFromSushiReport")
-    public Response addUsageMetricsFromSushiReportAll(@PathParam("id") String id, @QueryParam("reportOnDisk") String reportOnDisk) {
+    public Response addUsageMetricsFromSushiReportAll(@QueryParam("reportOnDisk") String reportOnDisk) {
 
-        JsonObject report;
-
-        try (FileReader reader = new FileReader(reportOnDisk)) {
-            report = Json.createReader(reader).readObject();
+        try {
+            JsonObject report = JsonUtil.getJsonObjectFromFile(reportOnDisk);
 
             List<DatasetMetrics> datasetMetrics = datasetMetricsService.parseSushiReport(report, null);
             if (!datasetMetrics.isEmpty()) {
@@ -121,7 +129,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             }
 
         } catch (IOException ex) {
-            System.out.print(ex.getMessage());
+            logger.log(Level.WARNING, ex.getMessage());
             return error(Status.BAD_REQUEST, "IOException: " + ex.getLocalizedMessage());
         }
         String msg = "Usage Metrics Data has been added to all datasets from file  " + reportOnDisk;
@@ -130,19 +138,24 @@ public class MakeDataCountApi extends AbstractApiBean {
 
     @POST
     @Path("{id}/updateCitationsForDataset")
-    public Response updateCitationsForDataset(@PathParam("id") String id) throws MalformedURLException, IOException {
+    public Response updateCitationsForDataset(@PathParam("id") String id) throws IOException {
         try {
             Dataset dataset = findDatasetOrDie(id);
-            String persistentId = dataset.getGlobalId().toString();
+            GlobalId pid = dataset.getGlobalId();
+            PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
+            // Only supported for DOIs and for DataCite DOI providers
+            if(!DataCiteDOIProvider.TYPE.equals(pidProvider.getProviderType())) {
+                return error(Status.BAD_REQUEST, "Only DataCite DOI providers are supported");
+            }
+            String persistentId = pid.toString();
+
             // DataCite wants "doi=", not "doi:".
             String authorityPlusIdentifier = persistentId.replaceFirst("doi:", "");
-            String baseUrl = System.getProperty("doi.mdcbaseurlstring");
-            if (null == baseUrl) {
-                // Backward compatible default to the production server
-                baseUrl = "https://api.datacite.org";
-            }
             // Request max page size and then loop to handle multiple pages
-            URL url = new URL(baseUrl + "/events?doi=" + authorityPlusIdentifier + "&source=crossref&page[size]=1000");
+            URL url = new URL(JvmSettings.DATACITE_REST_API_URL.lookup() +
+                              "/events?doi=" +
+                              authorityPlusIdentifier +
+                              "&source=crossref&page[size]=1000");
             logger.fine("Retrieving Citations from " + url.toString());
             boolean nextPage = true;
             JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
@@ -154,7 +167,10 @@ public class MakeDataCountApi extends AbstractApiBean {
                     logger.warning("Failed to get citations from " + url.toString());
                     return error(Status.fromStatusCode(status), "Failed to get citations from " + url.toString());
                 }
-                JsonObject report = Json.createReader(connection.getInputStream()).readObject();
+                JsonObject report;
+                try (InputStream inStream = connection.getInputStream()) {
+                    report = JsonUtil.getJsonObject(inStream);
+                }
                 JsonObject links = report.getJsonObject("links");
                 JsonArray data = report.getJsonArray("data");
                 Iterator<JsonValue> iter = data.iterator();
@@ -170,7 +186,13 @@ public class MakeDataCountApi extends AbstractApiBean {
             } while (nextPage == true);
             JsonArray allData = dataBuilder.build();
             List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
-
+            /*
+             * ToDo: If this is the only source of citations, we should remove all the existing ones for the dataset and repopuate them.
+             * As is, this call doesn't remove old citations if there are now none (legacy issue if we decide to stop counting certain types of citation
+             * as we've done for 'hasPart').
+             * If there are some, this call individually checks each one and if a matching item exists, it removes it and adds it back. Faster and better to delete all and
+             * add the new ones.
+             */
             if (!datasetExternalCitations.isEmpty()) {
                 for (DatasetExternalCitations dm : datasetExternalCitations) {
                     datasetExternalCitationsService.save(dm);
@@ -184,5 +206,51 @@ public class MakeDataCountApi extends AbstractApiBean {
             return wr.getResponse();
         }
     }
+    @GET
+    @Path("{yearMonth}/processingState")
+    public Response getProcessingState(@PathParam("yearMonth") String yearMonth) {
+        MakeDataCountProcessState mdcps;
+        try {
+            mdcps = makeDataCountProcessStateService.getMakeDataCountProcessState(yearMonth);
+        } catch (IllegalArgumentException e) {
+            return error(Status.BAD_REQUEST,e.getMessage());
+        }
+        if (mdcps != null) {
+            JsonObjectBuilder output = Json.createObjectBuilder();
+            output.add("yearMonth", mdcps.getYearMonth());
+            output.add("state", mdcps.getState().name());
+            output.add("stateChangeTimestamp", mdcps.getStateChangeTime().toString());
+            return ok(output);
+        } else {
+            return error(Status.NOT_FOUND, "Could not find an existing process state for " + yearMonth);
+        }
+    }
 
+    @POST
+    @Path("{yearMonth}/processingState")
+    public Response updateProcessingState(@PathParam("yearMonth") String yearMonth, @QueryParam("state") String state) {
+        MakeDataCountProcessState mdcps;
+        try {
+            mdcps = makeDataCountProcessStateService.setMakeDataCountProcessState(yearMonth, state);
+        } catch (Exception e) {
+            return badRequest(e.getMessage());
+        }
+
+        JsonObjectBuilder output = Json.createObjectBuilder();
+        output.add("yearMonth", mdcps.getYearMonth());
+        output.add("state", mdcps.getState().name());
+        output.add("stateChangeTimestamp", mdcps.getStateChangeTime().toString());
+        return ok(output);
+    }
+
+    @DELETE
+    @Path("{yearMonth}/processingState")
+    public Response deleteProcessingState(@PathParam("yearMonth") String yearMonth) {
+        boolean deleted = makeDataCountProcessStateService.deleteMakeDataCountProcessState(yearMonth);
+        if (deleted) {
+            return ok("Processing State deleted for " + yearMonth);
+        } else {
+            return notFound("Processing State not found for " + yearMonth);
+        }
+    }
 }

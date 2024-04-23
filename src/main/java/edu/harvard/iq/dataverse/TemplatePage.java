@@ -3,25 +3,24 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCommand;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Set;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import java.util.List;
+import java.util.logging.Logger;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  *
@@ -51,10 +50,18 @@ public class TemplatePage implements java.io.Serializable {
     
     @Inject
     DataverseSession session;
+    
+    @Inject
+    LicenseServiceBean licenseServiceBean;
+    
+    @Inject
+    SettingsWrapper settingsWrapper;
+    
+    private static final Logger logger = Logger.getLogger(TemplatePage.class.getCanonicalName());
 
     public enum EditMode {
 
-        CREATE, METADATA, LICENSE, LICENSEADD
+        CREATE, METADATA, LICENSE, LICENSEADD, CLONE
     };
 
     private Template template;
@@ -126,14 +133,11 @@ public class TemplatePage implements java.io.Serializable {
 
             template = templateService.find(templateId);
             template.setDataverse(dataverse);
-            template.setMetadataValueBlocks();
-            
-            if (template.getTermsOfUseAndAccess() != null) {
+            template.setMetadataValueBlocks(settingsWrapper.getSystemMetadataBlocks());
 
-            } else {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+            if (template.getTermsOfUseAndAccess() != null) {
+                TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
                 terms.setTemplate(template);
-                terms.setLicense(TermsOfUseAndAccess.License.CC0);
                 template.setTermsOfUseAndAccess(terms);
             }
 
@@ -142,10 +146,11 @@ public class TemplatePage implements java.io.Serializable {
             // create mode for a new template
 
             editMode = TemplatePage.EditMode.CREATE;
-            template = new Template(this.dataverse);
+            template = new Template(this.dataverse, settingsWrapper.getSystemMetadataBlocks());
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+            terms.setFileAccessRequest(true);
             terms.setTemplate(template);
-            terms.setLicense(TermsOfUseAndAccess.License.CC0);
+            terms.setLicense(licenseServiceBean.getDefault());
             template.setTermsOfUseAndAccess(terms);
             updateDatasetFieldInputLevels();
         } else {
@@ -162,7 +167,7 @@ public class TemplatePage implements java.io.Serializable {
         
         for (DatasetField dsf: template.getFlatDatasetFields()){ 
            DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dvIdForInputLevel, dsf.getDatasetFieldType().getId());
-           if (dsfIl != null){              
+           if (dsfIl != null){
                dsf.setInclude(dsfIl.isInclude());
            } else {
                dsf.setInclude(true);
@@ -175,14 +180,17 @@ public class TemplatePage implements java.io.Serializable {
     }
 
     public String save(String redirectPage) {
-
-        //SEK - removed dead code 1/6/2015
         
         boolean create = false;
         Command<Void> cmd;
         Long createdId = new Long(0);
         Template created;
         try {
+
+            DatasetFieldUtil.tidyUpFields( template.getDatasetFields(), false );
+
+            template.updateInstructions();
+            
             if (editMode == EditMode.CREATE) {
                 template.setCreateTime(new Timestamp(new Date().getTime()));
                 template.setUsageCount(new Long(0));
@@ -207,20 +215,13 @@ public class TemplatePage implements java.io.Serializable {
                 error.append(cause).append(" ");
                 error.append(cause.getMessage()).append(" ");
             }
-            //
-            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Template Save Failed", " - " + error.toString()));
-            System.out.print("dataverse " + dataverse.getName());
-            System.out.print("Ejb exception");
-            System.out.print(error.toString());
+            logger.warning("Template Save failed - Ejb exception " + error.toString());
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.save.fail"));
             return null;
         } catch (CommandException ex) {
-            System.out.print("command exception");
-            System.out.print(ex.toString());
-            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Template Save Failed", " - " + ex.toString()));
+            logger.severe("Template Save failed - Ejb exception " + ex.toString());
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.save.fail"));
             return null;
-            //logger.severe(ex.getMessage());
         }
         editMode = null;       
         String msg = (create)? BundleUtil.getStringFromBundle("template.create"): BundleUtil.getStringFromBundle("template.save");
@@ -236,6 +237,27 @@ public class TemplatePage implements java.io.Serializable {
 
     public void cancel() {
         editMode = null;
+    }
+    
+    public String deleteTemplate(Long templateId) {
+        List <Dataverse> dataverseWDefaultTemplate = null;
+        Template doomed = templateService.find(templateId);
+        dataverse.getTemplates().remove(doomed);  
+        dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
+        try {
+            commandEngine.submit(new DeleteTemplateCommand(dvRequestService.getDataverseRequest(), getDataverse(), doomed, dataverseWDefaultTemplate  ));
+            JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.delete"));//("The template has been deleted");
+        } catch (CommandException ex) {
+            String failMessage = BundleUtil.getStringFromBundle("template.delete.error");//"The dataset template cannot be deleted.";
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+        }
+        return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true"; 
+    }
+    
+    //Get the cutstom instructions defined for a give fieldType
+    public String getInstructionsLabelFor(String fieldType) {
+        String fieldInstructions = template.getInstructionsMap().get(fieldType);
+        return (fieldInstructions!=null && !fieldInstructions.isBlank()) ? fieldInstructions : BundleUtil.getStringFromBundle("template.instructions.empty.label");
     }
 
 }

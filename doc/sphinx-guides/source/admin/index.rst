@@ -14,6 +14,7 @@ This guide documents the functionality only available to superusers (such as "da
 
    dashboard
    external-tools
+   discoverability
    harvestclients
    harvestserver
    metadatacustomization
@@ -21,12 +22,12 @@ This guide documents the functionality only available to superusers (such as "da
    timers
    make-data-count
    integrations
-   geoconnect-worldmap
    user-administration
    dataverses-datasets
    solr-search-index
    ip-groups
    mail-groups
+   collectionquotas
    monitoring
    reporting-tools-and-queries
    maintenance

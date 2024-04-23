@@ -2,7 +2,7 @@
 Coding Style
 ============
 
-Like all development teams, the `Dataverse developers at IQSS <https://dataverse.org/about>`_ have their habits and styles when it comes to writing code. Let's attempt to get on the same page. :)
+Like all development teams, the `Dataverse  Project developers at IQSS <https://dataverse.org/about>`_ have their habits and styles when it comes to writing code. Let's attempt to get on the same page. :)
 
 .. contents:: |toctitle|
 	:local:
@@ -57,12 +57,12 @@ Place curly braces according to the style below, which is an example you can see
 Format Code You Changed with Netbeans
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As you probably gathered from the :doc:`dev-environment` section, IQSS has standardized on Netbeans. It is much appreciated when you format your code (but only the code you touched!) using the out-of-the-box Netbeans configuration. If you have created an entirely new Java class, you can just click Source -> Format. If you are adjusting code in an existing class, highlight the code you changed and then click Source -> Format. Keeping the "diff" in your pull requests small makes them easier to code review.
+IQSS has standardized on Netbeans. It is much appreciated when you format your code (but only the code you touched!) using the out-of-the-box Netbeans configuration. If you have created an entirely new Java class, you can just click Source -> Format. If you are adjusting code in an existing class, highlight the code you changed and then click Source -> Format. Keeping the "diff" in your pull requests small makes them easier to code review.
 
 Checking Your Formatting With Checkstyle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The easiest way to adopt Dataverse coding style is to use Netbeans as your IDE, avoid change the default Netbeans formatting settings, and only reformat code you've changed, as described above.
+The easiest way to adopt the Dataverse Project coding style is to use Netbeans as your IDE, avoid change the default Netbeans formatting settings, and only reformat code you've changed, as described above.
 
 If you do not use Netbeans, you are encouraged to check the formatting of your code using Checkstyle.
 
@@ -97,7 +97,7 @@ Special strings should be defined as public constants. For example, ``DatasetFie
 Avoid Hard-Coding User-Facing Messaging in English
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There is an ongoing effort to translate Dataverse into various languages. Look for "lang" or "languages" in the :doc:`/installation/config` section of the Installation Guide for details if you'd like to help or play around with this feature.
+There is an ongoing effort to translate the Dataverse Software into various languages. Look for "lang" or "languages" in the :doc:`/installation/config` section of the Installation Guide for details if you'd like to help or play around with this feature.
 
 The translation effort is hampered if you hard code user-facing messages in English in the Java code. Put English strings in ``Bundle.properties`` and use ``BundleUtil`` to pull them out. This is especially important for messages that appear in the UI. We are aware that the API has many, many hard coded English strings in it. If you touch a method in the API and notice English strings, you are strongly encouraged to use that opportunity to move the English to ``Bundle.properties``.
 
@@ -131,7 +131,3 @@ Bike Shedding
 What color should the `bike shed <https://en.wiktionary.org/wiki/bikeshedding>`_ be? :)
 
 Come debate with us about coding style in this Google doc that has public comments enabled: https://docs.google.com/document/d/1KTd3FpM1BI3HlBofaZjMmBiQEJtFf11jiiGpQeJzy7A/edit?usp=sharing
-
-----
-
-Previous: :doc:`debugging` | Next: :doc:`deployment`

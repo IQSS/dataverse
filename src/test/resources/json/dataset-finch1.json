@@ -64,7 +64,8 @@
             "typeName": "subject"
           }
         ],
-        "displayName": "Citation Metadata"
+        "displayName": "Citation Metadata",
+        "name":"citation"
       }
     }
   }

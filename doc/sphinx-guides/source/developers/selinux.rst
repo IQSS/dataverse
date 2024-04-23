@@ -44,7 +44,7 @@ Use ``semodule -l | grep shibboleth`` to see if the ``shibboleth.te`` rules are 
 Exercising SELinux denials
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As of this writing, there are two optional components of Dataverse that are known not to work with SELinux out of the box with SELinux: Shibboleth and rApache.
+As of this writing, the only component of the Dataverse Software which is known not to work with SELinux out of the box is Shibboleth.
 
 We will be exercising SELinux denials with Shibboleth, and the SELinux-related issues are expected out the box:
 
@@ -109,7 +109,3 @@ Once your updated SELinux rules are in place, try logging in with Shibboleth aga
 Keep iterating until it works and then create a pull request based on your updated file. Good luck!
 
 Many thanks to Bill Horka from IQSS for his assistance in explaining how to construct a SELinux Type Enforcement (TE) file!
-
-----
-
-Previous: :doc:`geospatial`

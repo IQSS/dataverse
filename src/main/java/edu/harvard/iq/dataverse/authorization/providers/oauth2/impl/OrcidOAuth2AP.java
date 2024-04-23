@@ -23,10 +23,10 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.joining;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.validation.constraints.NotNull;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.validation.constraints.NotNull;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -55,7 +55,13 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     public static final String PROVIDER_ID_SANDBOX = "orcid-sandbox";
     
     public OrcidOAuth2AP(String clientId, String clientSecret, String userEndpoint) {
-        scope = Arrays.asList("/read-limited");
+    
+        if(userEndpoint != null && userEndpoint.startsWith("https://pub")) {
+            this.scope = Arrays.asList("/authenticate");
+        } else {
+            this.scope = Arrays.asList("/read-limited");
+        }
+        
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.baseUserEndpoint = userEndpoint;

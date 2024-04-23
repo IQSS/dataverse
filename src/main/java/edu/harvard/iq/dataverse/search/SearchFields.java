@@ -206,6 +206,7 @@ public class SearchFields {
      * A dataverse, a dataset, or a file.
      */
     public static final String TYPE = "dvObjectType";
+    public static final String METADATA_TYPES = "metadata_type_ss";
     public static final String NAME_SORT = "nameSort";
     // PUBLICATION_YEAR used to be called PUBLICATION_DATE.
     public static final String PUBLICATION_YEAR = "publicationDate";
@@ -220,6 +221,8 @@ public class SearchFields {
      * i.e. "Unpublished", "Draft" (multivalued)
      */
     public static final String PUBLICATION_STATUS = "publicationStatus";
+    
+    public static final String EXTERNAL_STATUS = "externalStatus";
     /**
      * @todo reconcile different with Solr schema.xml where type is Long rather
      * than String.
@@ -263,5 +266,16 @@ public class SearchFields {
 
 
     public static final String FULL_TEXT = "_text_";
+    public static final String EMBARGO_END_DATE = "embargoEndDate";
+
+    
+    // SpatialRecursivePrefixTreeFieldType: https://solr.apache.org/guide/8_11/spatial-search.html#rpt
+    public static final String GEOLOCATION = "geolocation";
+    // BBoxField (bounding box): https://solr.apache.org/guide/8_11/spatial-search.html#bboxfield
+    public static final String BOUNDING_BOX = "boundingBox";
+
+    public static final String DATASET_VALID = "datasetValid";
+
+    public static final String DATASET_LICENSE = "license";
 
 }

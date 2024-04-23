@@ -2,17 +2,19 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 
 /**
  *
@@ -22,6 +24,16 @@ import javax.persistence.TemporalType;
 @Table(indexes = {
         @Index(columnList = "dataset_id"),
     @Index(columnList = "linkingDataverse_id")
+})
+@NamedQueries({
+    @NamedQuery(name = "DatasetLinkingDataverse.findByDatasetId",
+               query = "select object(o) from DatasetLinkingDataverse as o where o.dataset.id =:datasetId order by o.id"),
+    @NamedQuery(name = "DatasetLinkingDataverse.findByLinkingDataverseId",
+               query = "SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId order by o.id"),    
+    @NamedQuery(name = "DatasetLinkingDataverse.findByDatasetIdAndLinkingDataverseId",
+               query = "SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId AND o.dataset.id = :datasetId"),
+    @NamedQuery(name = "DatasetLinkingDataverse.findIdsByLinkingDataverseId",
+               query = "SELECT o.dataset.id FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId")
 })
 public class DatasetLinkingDataverse implements Serializable {
     private static final long serialVersionUID = 1L;

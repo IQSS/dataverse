@@ -14,7 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 
 /**
  *
@@ -38,6 +38,10 @@ public class GrantSuperuserStatusCommand extends AbstractVoidCommand  {
         if (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser()) {
             throw new PermissionException("Revoke Superuser status command can only be called by superusers.",
                     this, null, null);
+        }
+
+        if (targetUser.isDeactivated()) {
+            throw new CommandException("User " + targetUser.getIdentifier() + " has been deactivated and cannot become a superuser.", this);
         }
 
         try {

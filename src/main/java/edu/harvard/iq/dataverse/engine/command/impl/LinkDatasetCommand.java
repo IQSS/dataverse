@@ -50,6 +50,9 @@ public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse>
         if (linkedDataset.getOwner().getOwners().contains(linkingDataverse)) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.to.parent.dataverse"), this);
         }
+        if (ctxt.dsLinking().alreadyLinked(linkingDataverse, linkedDataset)) {
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.already.linked"), this);
+        }
        
         DatasetLinkingDataverse datasetLinkingDataverse = new DatasetLinkingDataverse();
         datasetLinkingDataverse.setDataset(linkedDataset);
@@ -66,14 +69,7 @@ public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse>
         boolean retVal = true;
         DatasetLinkingDataverse dld = (DatasetLinkingDataverse) r;
 
-        try {
-            ctxt.index().indexDataset(dld.getDataset(), true);
-        } catch (IOException | SolrServerException e) {
-            String failureLogText = "Post link dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dld.getDataset().getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dld.getDataset());
-            retVal = false;
-        }
+        ctxt.index().asyncIndexDataset(dld.getDataset(), true);
 
         return retVal;
     }

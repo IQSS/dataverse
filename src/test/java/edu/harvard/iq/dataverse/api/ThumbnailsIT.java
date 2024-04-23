@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ThumbnailsIT {
 

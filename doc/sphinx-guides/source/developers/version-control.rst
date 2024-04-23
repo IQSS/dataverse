@@ -2,16 +2,16 @@
 Version Control
 ==================
 
-The Dataverse Project uses git for version control and GitHub for hosting. On this page we'll explain where to find the code, our branching strategey, advice on how to make a pull request, and other git tips.
+The Dataverse Project uses git for version control and GitHub for hosting. On this page we'll explain where to find the code, our branching strategy, advice on how to make a pull request, and other git tips.
 
 .. contents:: |toctitle|
 	:local:
 
 
-Where to Find the Dataverse Code
---------------------------------
+Where to Find the Dataverse Software Code
+-----------------------------------------
 
-The main Dataverse code at https://github.com/IQSS/dataverse but as explained in the :doc:`intro` section under "Related Projects", there are many other code bases you can hack on if you wish!
+The main Dataverse Software code is available at https://github.com/IQSS/dataverse but as explained in the :doc:`intro` section under "Related Projects", there are many other code bases you can hack on if you wish!
 
 Branching Strategy
 ------------------
@@ -19,12 +19,12 @@ Branching Strategy
 Goals
 ~~~~~
 
-The goals of the Dataverse branching strategy are:
+The goals of the Dataverse Software branching strategy are:
 
 - allow for concurrent development
 - only ship stable code
 
-We follow a simplified "git flow" model described at http://nvie.com/posts/a-successful-git-branching-model/ involving a "master" branch, a "develop" branch, and feature branches such as "1234-bug-fix".
+We follow a simplified "git flow" model described at https://nvie.com/posts/a-successful-git-branching-model/ involving a "master" branch, a "develop" branch, and feature branches such as "1234-bug-fix".
 
 Branches
 ~~~~~~~~
@@ -32,7 +32,9 @@ Branches
 The "master" Branch
 *******************
 
-The "`master <https://github.com/IQSS/dataverse/tree/master>`_" branch represents released versions of Dataverse. As mentioned in the :doc:`making-releases` section, at release time we update the master branch to include all the code for that release. Commits are never made directly to master. Rather, master is updated only when we merge code into it from the "develop" branch.
+The "`master <https://github.com/IQSS/dataverse/tree/master>`_" branch represents released versions of the Dataverse Software. As mentioned in the :doc:`making-releases` section, at release time we update the master branch to include all the code for that release. Commits are never made directly to master. Rather, master is updated only when we merge code into it from the "develop" branch.
+
+.. _develop-branch:
 
 The "develop" Branch
 ********************
@@ -46,6 +48,13 @@ Feature branches are used for both developing features and fixing bugs. They are
 
 "3728-doc-apipolicy-fix" is an example of a fine name for your feature branch. It tells us that you are addressing https://github.com/IQSS/dataverse/issues/3728 and the "slug" is short, descriptive, and starts with the issue number.
 
+Hotfix Branches
+***************
+
+Hotfix branches are described under :doc:`making-releases`.
+
+.. _how-to-make-a-pull-request:
+
 How to Make a Pull Request
 --------------------------
 
@@ -58,48 +67,94 @@ The example of creating a pull request below has to do with fixing an important 
 Find or Create a GitHub Issue
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For guidance on which issue to work on, please ask! Also, see https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md
+An issue represents a bug (unexpected behavior) or a new feature in Dataverse. We'll use the issue number in the branch we create for our pull request.
 
-Let's say you want to tackle https://github.com/IQSS/dataverse/issues/3728 which points out a typo in a page of Dataverse's documentation.
+Finding GitHub Issues to Work On
+********************************
+
+Assuming this is your first contribution to Dataverse, you should start with something small. The following issue labels might be helpful in your search:
+
+- `good first issue <https://github.com/IQSS/dataverse/labels/good%20first%20issue>`_ (these appear at https://github.com/IQSS/dataverse/contribute )
+- `hacktoberfest <https://github.com/IQSS/dataverse/labels/hacktoberfest>`_
+- `Help Wanted: Code <https://github.com/IQSS/dataverse/labels/Help%20Wanted%3A%20Code>`_
+- `Help Wanted: Documentation <https://github.com/IQSS/dataverse/labels/Help%20Wanted%3A%20Documentation>`_
+
+For guidance on which issue to work on, please ask! :ref:`getting-help-developers` explains how to get in touch.
+
+Creating GitHub Issues to Work On
+*********************************
+
+You are very welcome to create a GitHub issue to work on. However, for significant changes, please reach out (see :ref:`getting-help-developers`) to make sure the team and community agree with the proposed change.
+
+For small changes and especially typo fixes, please don't worry about reaching out first.
+
+Communicate Which Issue You Are Working On
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the issue you can simply leave a comment to say you're working on it.
 
 If you tell us your GitHub username we are happy to add you to the "read only" team at https://github.com/orgs/IQSS/teams/dataverse-readonly/members so that we can assign the issue to you while you're working on it. You can also tell us if you'd like to be added to the `Dataverse Community Contributors spreadsheet <https://docs.google.com/spreadsheets/d/1o9DD-MQ0WkrYaEFTD5rF_NtyL8aUISgURsAXSL7Budk/edit?usp=sharing>`_.
 
-Create a New Branch off the develop Branch
+Create a New Branch Off the develop Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "3728-doc-apipolicy-fix" that starts with the issue number you are addressing, and ends with a short, descriptive name. Dashes ("-") and underscores ("_") in your branch name are ok, but please try to avoid other special characters such as ampersands ("&") than have special meaning in Unix shells.
+Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "3728-doc-apipolicy-fix" that starts with the issue number you are addressing (e.g. `#3728 <https://github.com/IQSS/dataverse/issues/3728>`_) and ends with a short, descriptive name. Dashes ("-") and underscores ("_") in your branch name are ok, but please try to avoid other special characters such as ampersands ("&") that have special meaning in Unix shells.
 
 Commit Your Change to Your New Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Making a commit (or several commits) to that branch. Ideally the first line of your commit message includes the number of the issue you are addressing, such as ``Fixed BlockedApiPolicy #3728``.
+For each commit to that branch, try to include the issue number along with a summary in the first line of the commit message, such as ``Fixed BlockedApiPolicy #3728``. You are welcome to write longer descriptions in the body as well!
+
+.. _writing-release-note-snippets:
+
+Writing a Release Note Snippet
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We highly value your insight as a contributor when in comes to describing your work in our release notes. Not every pull request will be mentioned in release notes but most are.
+
+As described at :ref:`write-release-notes`, at release time we compile together release note "snippets" into the final release notes.
+
+Here's how to add a release note snippet to your pull request:
+
+- Create a Markdown file under ``doc/release-notes``. You can reuse the name of your branch and append ".md" to it, e.g. ``3728-doc-apipolicy-fix.md``
+- Edit the snippet to include anything you think should be mentioned in the release notes. Please include the following if they apply:
+
+  - Descriptions of new features or bug fixed, including a link to the HTML preview of the docs you wrote (e.g. https://dataverse-guide--9939.org.readthedocs.build/en/9939/installation/config.html#smtp-email-configuration ) and the phrase "For more information, see #3728" (the issue number). If you know the PR number, you can add that too.
+  - New configuration settings
+  - Upgrade instructions
+  - Etc.
+
+Release note snippets do not need to be long. For a new feature, a single line description might be enough. Please note that your release note will likely be edited (expanded or shortened) when the final release notes are being created.
 
 Push Your Branch to GitHub
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Push your feature branch to your fork of Dataverse. Your git command may look something like ``git push origin 3728-doc-apipolicy-fix``.
+Push your feature branch to your fork of the Dataverse Software. Your git command may look something like ``git push origin 3728-doc-apipolicy-fix``.
 
 Make a Pull Request
 ~~~~~~~~~~~~~~~~~~~
 
-Make a pull request to get approval to merge your changes into the develop branch. Note that once a pull request is created, we'll remove the corresponding issue from our kanban board so that we're only tracking one card.
+Make a pull request to get approval to merge your changes into the develop branch.
+If the pull request notes indicate that release notes are necessary, the workflow can then verify the existence of a corresponding file and respond with a 'thank you!' message. On the other hand, if no release notes are detected, the contributor can be gently reminded of their absence. Please see :doc:`making-releases` for guidance on writing release notes.
+Note that once a pull request is created, we'll remove the corresponding issue from our kanban board so that we're only tracking one card.
 
 Feedback on the pull request template we use is welcome! Here's an example of a pull request for issue #3827: https://github.com/IQSS/dataverse/pull/3827
 
 Make Sure Your Pull Request Has Been Advanced to Code Review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now that you've made your pull request, your goal is to make sure it appears in the "Code Review" column at https://github.com/orgs/IQSS/projects/2. 
+Now that you've made your pull request, your goal is to make sure it appears in the "Code Review" column at https://github.com/orgs/IQSS/projects/34.
 
 Look at https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for various ways to reach out to developers who have enough access to the GitHub repo to move your issue and pull request to the "Code Review" column.
 
 Summary of Git commands
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-This section provides sequences of Git commands for two scenarios:
+This section provides sequences of Git commands for three scenarios:
 
-* preparing the first request, when the IQSS Dataverse repository and the forked repository are identical
-* creating an additional request after some time, when the IQSS Dataverse repository is ahead of the forked repository
+* preparing the first request, when the IQSS Dataverse Software repository and the forked repository are identical
+* creating an additional request after some time, when the IQSS Dataverse Software repository is ahead of the forked repository
+* while your pull requests are in review the develop branch has been updated, so you have to keep your code base synchronized with the current state of develop branch
 
 In the examples we use 123-COOL-FEATURE as the name of the feature branch, and https://github.com/YOUR_NAME/dataverse.git as your forked repository's URL. In practice modify both accordingly.
 
@@ -133,7 +188,7 @@ In the examples we use 123-COOL-FEATURE as the name of the feature branch, and h
 
         git checkout develop
 
-        # update local develop banch from https://github.com/IQSS/dataverse
+        # update local develop branch from https://github.com/IQSS/dataverse
         git fetch upstream develop
         git rebase upstream/develop
 
@@ -152,12 +207,41 @@ In the examples we use 123-COOL-FEATURE as the name of the feature branch, and h
         # ... then create pull request at github.com/YOUR_NAME/dataverse
 
 
+**3rd scenario: synchronize your branch with develop branch**
+
+.. code-block:: bash
+
+        git checkout develop
+
+        # update local develop branch from https://github.com/IQSS/dataverse
+        git fetch upstream develop
+        git rebase upstream/develop
+
+        # update remote develop branch at https://github.com/YOUR_NAME/dataverse
+        git push
+
+        # change to the already existing feature branch
+        git checkout 123-COOL-FEATURE
+
+        # merge changes of develop to the feature branch
+        git merge develop
+
+        # check if there are conflicts, if there are follow the next command, otherwise skip to next block
+        # 1. fix the relevant files (including testing)
+        # 2. commit changes
+        git add <fixed files>
+        git commit
+
+        # update remote feature branch at https://github.com/YOUR_NAME/dataverse
+        git push
+
+
 How to Resolve Conflicts in Your Pull Request
 ---------------------------------------------
 
 Unfortunately, pull requests can quickly become "stale" and unmergable as other pull requests are merged into the develop branch ahead of you. This is completely normal, and often occurs because other developers made their pull requests before you did.
 
-The Dataverse team may ping you to ask you to merge the latest from the develop branch into your branch and resolve merge conflicts. If this sounds daunting, please just say so and we will assist you.
+The Dataverse Project team may ping you to ask you to merge the latest from the develop branch into your branch and resolve merge conflicts. If this sounds daunting, please just say so and we will assist you.
 
 If you'd like to resolve the merge conflicts yourself, here are some steps to do so that make use of GitHub Desktop and Netbeans.
 
@@ -169,7 +253,7 @@ If you'd like to resolve the merge conflicts yourself, here are some steps to do
 
 **In Netbeans:**
 
-4. Click Window -> Favorites and open your local Dataverse project folder in the Favorites panel.
+4. Click Window -> Favorites and open your local Dataverse Software project folder in the Favorites panel.
 5. In this file browser, you can follow the red cylinder icon to find files with merge conflicts.
 6. Double click the red merge conflicted file.
 7. Right click on the red tab for that file and select Git -> Resolve Conflicts.
@@ -182,14 +266,14 @@ If you'd like to resolve the merge conflicts yourself, here are some steps to do
 
 **In GitHub Issues:**
 
-11. Leave a comment for the Dataverse team that you have resolved the merge conflicts.
+11. Leave a comment for the Dataverse Project team that you have resolved the merge conflicts.
 
 Adding Commits to a Pull Request from a Fork 
 --------------------------------------------
 
 By default, when a pull request is made from a fork, "Allow edits from maintainers" is checked as explained at https://help.github.com/articles/allowing-changes-to-a-pull-request-branch-created-from-a-fork/
 
-This is a nice feature of GitHub because it means that the core dev team for Dataverse can make small (or even large) changes to a pull request from a contributor to help the pull request along on its way to QA and being merged.
+This is a nice feature of GitHub because it means that the core dev team for the Dataverse Project can make small (or even large) changes to a pull request from a contributor to help the pull request along on its way to QA and being merged.
 
 GitHub documents how to make changes to a fork at https://help.github.com/articles/committing-changes-to-a-pull-request-branch-created-from-a-fork/ but as of this writing the steps involve making a new clone of the repo. This works but you might find it more convenient to add a "remote" to your existing clone. The example below uses the fork at https://github.com/OdumInstitute/dataverse and the branch ``4709-postgresql_96`` but the technique can be applied to any fork and branch:
 
@@ -201,7 +285,3 @@ GitHub documents how to make changes to a fork at https://help.github.com/articl
         vim path/to/file.txt
         git commit
         git push OdumInstitute 4709-postgresql_96
-
-----
-
-Previous: :doc:`troubleshooting` | Next: :doc:`sql-upgrade-scripts`

@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
@@ -24,22 +23,22 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.lang.StringUtils;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIInput;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ActionEvent;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -78,7 +77,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     private Dataverse dataverse;
     private Long dataverseId = null;
     private HarvestingClient selectedClient;
-    private boolean setListTruncated = false; 
+    private boolean setListTruncated = false;
     
     //private static final String solrDocIdentifierDataset = "dataset_";
     
@@ -244,6 +243,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         
         this.newNickname = harvestingClient.getName();
         this.newHarvestingUrl = harvestingClient.getHarvestingUrl();
+        this.customHeader = harvestingClient.getCustomHttpHeaders();
         this.initialSettingsValidated = false;
         
         // TODO: do we want to try and contact the server, again, to make 
@@ -339,6 +339,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         getSelectedDestinationDataverse().getHarvestingClientConfigs().add(newHarvestingClient);
         
         newHarvestingClient.setHarvestingUrl(newHarvestingUrl);
+        newHarvestingClient.setCustomHttpHeaders(customHeader);
         if (!StringUtils.isEmpty(newOaiSet)) {
             newHarvestingClient.setHarvestingSet(newOaiSet);
         }
@@ -425,6 +426,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         // nickname is not editable for existing clients:
         //harvestingClient.setName(newNickname);
         harvestingClient.setHarvestingUrl(newHarvestingUrl);
+        harvestingClient.setCustomHttpHeaders(customHeader);
         harvestingClient.setHarvestingSet(newOaiSet);
         harvestingClient.setMetadataPrefix(newMetadataFormat);
         harvestingClient.setHarvestStyle(newHarvestingStyle);
@@ -553,6 +555,9 @@ public class HarvestingClientsPage implements java.io.Serializable {
         if (!StringUtils.isEmpty(getNewHarvestingUrl())) {
 
             OaiHandler oaiHandler = new OaiHandler(getNewHarvestingUrl());
+            if (getNewCustomHeader() != null) {
+                oaiHandler.setCustomHeaders(oaiHandler.makeCustomHeaders(getNewCustomHeader()));
+            }
             boolean success = true;
             String message = null;
 
@@ -634,6 +639,23 @@ public class HarvestingClientsPage implements java.io.Serializable {
         return false;
     }
     
+    public boolean validateCustomHeader() {
+        if (!StringUtils.isEmpty(getNewCustomHeader())) {
+            // TODO: put this method somewhere else as a static utility
+            
+            // check that it's looking like "{header-name}: {header value}" at least
+            if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+:.*",getNewCustomHeader())) {
+                FacesContext.getCurrentInstance().addMessage(getNewClientCustomHeaderInputField().getClientId(),
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.customHeader.invalid")));
+
+                return false; 
+            }
+        }
+        
+        // this setting is optional
+        return true;
+    }
+    
     public void validateInitialSettings() {
         if (isHarvestTypeOAI()) {
             boolean nicknameValidated = true; 
@@ -643,9 +665,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
                 destinationDataverseValidated = validateSelectedDataverse();
             }
             boolean urlValidated = validateServerUrlOAI();
+            boolean customHeaderValidated = validateCustomHeader();
             
-            if (nicknameValidated && destinationDataverseValidated && urlValidated) {
-                // In Create mode we want to run all 3 validation tests; this is why 
+            if (nicknameValidated && destinationDataverseValidated && urlValidated && customHeaderValidated) {
+                // In Create mode we want to run all 4 validation tests; this is why 
                 // we are not doing "if ((validateNickname() && validateServerUrlOAI())"
                 // in the line above. -- L.A. 4.4 May 2016.
                 
@@ -687,6 +710,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     UIInput newClientNicknameInputField;
     UIInput newClientUrlInputField;
+    UIInput newClientCustomHeaderInputField; 
     UIInput hiddenInputField; 
     /*UISelectOne*/ UIInput metadataFormatMenu;
     UIInput remoteArchiveStyleMenu;
@@ -694,6 +718,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     private String newNickname = "";
     private String newHarvestingUrl = "";
+    private String customHeader = null; 
     private boolean initialSettingsValidated = false;
     private String newOaiSet = "";
     private String newMetadataFormat = ""; 
@@ -717,6 +742,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         //this.selectedClient = new HarvestingClient();
         this.newNickname = "";
         this.newHarvestingUrl = "";
+        this.customHeader = null; 
         this.initialSettingsValidated = false;
         this.newOaiSet = "";
         this.newMetadataFormat = "";
@@ -759,6 +785,14 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     public void setNewHarvestingUrl(String newHarvestingUrl) {
         this.newHarvestingUrl = newHarvestingUrl;
+    }
+    
+    public String getNewCustomHeader() {
+        return customHeader; 
+    }
+    
+    public void setNewCustomHeader(String customHeader) {
+        this.customHeader = customHeader;
     }
     
     public int getHarvestTypeRadio() {
@@ -870,6 +904,14 @@ public class HarvestingClientsPage implements java.io.Serializable {
         this.newClientUrlInputField = newClientInputField;
     }
     
+    public UIInput getNewClientCustomHeaderInputField() {
+        return newClientCustomHeaderInputField;
+    }
+
+    public void setNewClientCustomHeaderInputField(UIInput newClientInputField) {
+        this.newClientCustomHeaderInputField = newClientInputField;
+    }
+    
     public UIInput getHiddenInputField() {
         return hiddenInputField;
     }
@@ -915,6 +957,12 @@ public class HarvestingClientsPage implements java.io.Serializable {
     private void createOaiSetsSelectItems(List<String> setNames) {
         setOaiSetsSelectItems(new ArrayList<>());
         if (setNames != null) {
+            
+            // Let's sort the list - otherwise, if the list is long enough, 
+            // using this pulldown menu may be very difficult:
+            
+            Collections.sort(setNames, String.CASE_INSENSITIVE_ORDER);
+            
             for (String set: setNames) {
                 if (!StringUtils.isEmpty(set)) {
                     getOaiSetsSelectItems().add(new SelectItem(set, set));

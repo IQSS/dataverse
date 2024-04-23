@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.util.DatasetFieldUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -25,15 +27,26 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
     
     final DatasetVersion newVersion;
     final Dataset dataset;
+    final boolean validate;
     
     public CreateDatasetVersionCommand(DataverseRequest aRequest, Dataset theDataset, DatasetVersion aVersion) {
+        this(aRequest, theDataset, aVersion, true);
+    }
+
+    public CreateDatasetVersionCommand(DataverseRequest aRequest, Dataset theDataset, DatasetVersion aVersion, boolean validate) {
         super(aRequest, theDataset);
         dataset = theDataset;
         newVersion = aVersion;
+        this.validate = validate;
     }
     
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
+        /*
+         * CreateDatasetVersionCommand assumes you have not added your new version to
+         * the dataset you send. Use UpdateDatasetVersionCommand if you created the new
+         * version via Dataset.getOrCreateEditVersion() and just want to persist it.
+         */
         DatasetVersion latest = dataset.getLatestVersion();
         if ( latest.isWorkingCopy() ) {
             // A dataset can only have a single draft, which has to be the latest.
@@ -43,8 +56,10 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
             }
         }
         
-        prepareDatasetAndVersion();
-        
+        //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
+        checkSystemMetadataKeyIfNeeded(newVersion, latest);
+
+                
         List<FileMetadata> newVersionMetadatum = new ArrayList<>(latest.getFileMetadatas().size());
         for ( FileMetadata fmd : latest.getFileMetadatas() ) {
             FileMetadata fmdCopy = fmd.createCopy();
@@ -53,10 +68,17 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         }
         newVersion.setFileMetadatas(newVersionMetadatum);
         
-        // TODO make async
-        // ctxt.index().indexDataset(dataset);
-        return ctxt.datasets().storeVersion(newVersion);
+        //moving prepare Dataset here
+        //because it includes validation and we need the validation
+        //to happen after file metdata is added to return a 
+        //good wrapped response if the TOA/Request Access not in compliance
+        prepareDatasetAndVersion();
         
+        DatasetVersion version = ctxt.datasets().storeVersion(newVersion);
+        if (ctxt.index() != null) {
+            ctxt.index().asyncIndexDataset(dataset, true);
+        }
+        return version;
     }
     
     /**
@@ -71,9 +93,14 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         newVersion.setDatasetFields(newVersion.initDatasetFields());
         newVersion.setCreateTime(getTimestamp());
         newVersion.setLastUpdateTime(getTimestamp());
-        
-        tidyUpFields(newVersion);
-        validateOrDie(newVersion, false);
+        //Switching the order of validate and tidy up
+        //originally missing/empty required fields were not
+        //throwing constraint violations because they
+        //had been stripped from the dataset fields prior to validation 
+        if (this.validate) {
+            validateOrDie(newVersion, false);
+        }
+        DatasetFieldUtil.tidyUpFields(newVersion.getDatasetFields(), true);
         
         final List<DatasetVersion> currentVersions = dataset.getVersions();
         ArrayList<DatasetVersion> dsvs = new ArrayList<>(currentVersions.size());

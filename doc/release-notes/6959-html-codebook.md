@@ -1,1 +1,0 @@
-A small correction has been made to the stylesheet that generates the DDI HTML Codebook metadata export to remove a hard-coded reference to ICPSR. In order for previously published and exported datasets to reflect this correction, run ReExportAll as part of the upgrade process with `curl http://localhost:8080/api/admin/metadata/reExportAll`.

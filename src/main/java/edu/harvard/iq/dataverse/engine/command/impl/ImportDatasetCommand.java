@@ -7,13 +7,16 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
-import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * Imports a dataset from a different system. This command validates that the PID
@@ -55,8 +58,8 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
             throw new IllegalCommandException("Imported datasets must have a persistent global identifier.", this);
         }
         
-        if ( ! ctxt.datasets().isIdentifierLocallyUnique(ds) ) {
-            throw new IllegalCommandException("Persistent identifier " + ds.getGlobalIdString() + " already exists in this Dataverse installation.", this);
+        if ( ! ctxt.dvObjects().isGlobalIdLocallyUnique(ds.getGlobalId()) ) {
+            throw new IllegalCommandException("Persistent identifier " + ds.getGlobalId().asString() + " already exists in this Dataverse installation.", this);
         }
         
         String pid = ds.getPersistentURL();
@@ -68,15 +71,31 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
         try {
             int responseStatus = client.executeMethod(httpGet);
 
-            if ( responseStatus == 404 ) {
-                throw new CommandExecutionException("Provided PID does not exist. Status code for GET '" + pid + "' is 404." , this);
+            if (responseStatus == 404) {
+                /*
+                 * Using test DOIs from DataCite, we'll get a 404 when trying to resolve the DOI
+                 * to a landing page, but the DOI may already exist. An extra check here allows
+                 * use of DataCite test DOIs. It also changes import slightly in allowing PIDs
+                 * that exist (and accessible in the PID provider account configured in
+                 * Dataverse) but aren't findable to be used. That could be the case if, for
+                 * example, someone was importing a draft dataset from elsewhere.
+                 */
+                PidProvider pidProvider = PidUtil.getPidProvider(ds.getGlobalId().getProviderId());
+                if (pidProvider != null) {
+                    if (pidProvider.alreadyRegistered(ds.getGlobalId(), true)) {
+                        return;
+                    }
+                }
+                throw new CommandExecutionException(
+                        "Provided PID does not exist. Status code for GET '" + pid + "' is 404.", this);
             }
 
-        } catch ( IOException ex ) {
-            logger.log(Level.WARNING, "Error while validating PID at '"+pid+"' for an imported dataset: "+ ex.getMessage(), ex);
-            throw new CommandExecutionException("Cannot validate PID due to a connection error: " + ex.getMessage() , this);
+        } catch (Exception ex) {
+            logger.log(Level.WARNING,
+                    "Error while validating PID at '" + pid + "' for an imported dataset: " + ex.getMessage(), ex);
+            throw new CommandExecutionException("Cannot validate PID due to an error: " + ex.getMessage(), this);
         }
-                
+
     }
     
     @Override

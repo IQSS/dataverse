@@ -106,6 +106,13 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
     }
     
     /**
+     * Enable triggering an update of groups from the database. Used in the API to refresh after changes.
+     */
+    public void updateGroups() {
+        emailGroupSvc.updateGroups();
+    }
+    
+    /**
      * Sets the provider of the passed explicit group to {@code this}.
      * @param eg the collection
      * @return the passed group, updated.

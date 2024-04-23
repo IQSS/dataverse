@@ -10,10 +10,12 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Date;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 
 /**
  *
@@ -36,15 +38,15 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
             throw new PermissionException("Update Target URL can only be called by superusers.",
                     this, Collections.singleton(Permission.EditDataset), target);
         }
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(target.getProtocol(), ctxt);
+        PidProvider pidProvider = PidUtil.getPidProvider(target.getGlobalId().getProviderId());
         try {
-            String doiRetString = idServiceBean.modifyIdentifierTargetURL(target);
+            String doiRetString = pidProvider.modifyIdentifierTargetURL(target);
             if (doiRetString != null && doiRetString.contains(target.getIdentifier())) {
                 target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 ctxt.em().merge(target);
                 ctxt.em().flush();
                 for (DataFile df : target.getFiles()) {
-                    doiRetString = idServiceBean.modifyIdentifierTargetURL(df);
+                    doiRetString = pidProvider.modifyIdentifierTargetURL(df);
                     if (doiRetString != null && doiRetString.contains(df.getIdentifier())) {
                         df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                         ctxt.em().merge(df);

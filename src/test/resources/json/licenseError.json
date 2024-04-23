@@ -1,0 +1,9 @@
+{
+  "id": 6,
+  "name": "License Number 6",
+  "uri": "http://dataverse..org/licenses/test/ln6",
+  "iconUrl": "http://dataverse.org/licenses/test/ln6/icon.png",
+  "shortDescription": "A License that must have id 6.",
+  "active": true,
+  "sortOrder": 1
+}

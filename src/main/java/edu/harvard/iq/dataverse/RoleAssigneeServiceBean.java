@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.mydata.MyDataFilterParams;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
@@ -21,13 +22,13 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import org.apache.commons.lang.StringUtils;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * The place to obtain {@link RoleAssignee}s, based on their identifiers.
@@ -96,18 +97,18 @@ public class RoleAssigneeServiceBean {
         if (identifier == null || identifier.isEmpty()) {
             throw new IllegalArgumentException("Identifier cannot be null or empty string.");
         }
-        switch (identifier.charAt(0)) {
-            case ':':
+        switch (identifier.substring(0,1)) {
+            case ":":
                 return predefinedRoleAssignees.get(identifier);
-            case '@':
+            case AuthenticatedUser.IDENTIFIER_PREFIX:
                 if (!augmented){
                     return authSvc.getAuthenticatedUser(identifier.substring(1));
                 } else {
                     return authSvc.getAuthenticatedUserWithProvider(identifier.substring(1));
-                }                
-            case '&':
+                }
+            case Group.IDENTIFIER_PREFIX:
                 return groupSvc.getGroup(identifier.substring(1));
-            case '#':
+            case PrivateUrlUser.PREFIX:
                 return PrivateUrlUtil.identifier2roleAssignee(identifier);
             default:
                 throw new IllegalArgumentException("Unsupported assignee identifier '" + identifier + "'");
@@ -376,7 +377,9 @@ public class RoleAssigneeServiceBean {
                 .getResultList().stream()
                 .filter(ra -> roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))
                 .forEach((ra) -> {
-                    roleAssigneeList.add(ra);
+                    if (!ra.isDeactivated()) {
+                        roleAssigneeList.add(ra);
+                    }
                 });
 
         // now we add groups to the list, both global and explicit

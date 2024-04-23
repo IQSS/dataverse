@@ -15,7 +15,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import org.apache.commons.lang.StringUtils;
+import edu.harvard.iq.dataverse.validation.EMailValidator;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -23,16 +24,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 
 @ViewScoped
 @Named("Shib")
@@ -61,7 +63,7 @@ public class Shib implements java.io.Serializable {
     HttpServletRequest request;
 
     private String userPersistentId;
-    private String internalUserIdentifer;
+    private String internalUserIdentifier;
     AuthenticatedUserDisplayInfo displayInfo;
     /**
      * @todo Remove this boolean some day? Now the mockups show a popup. Should
@@ -190,12 +192,12 @@ public class Shib implements java.io.Serializable {
             }
         }
 
-        if (!EMailValidator.isEmailValid(emailAddressInAssertion, null)) {
+        if (!EMailValidator.isEmailValid(emailAddressInAssertion)) {
             String msg = "The SAML assertion contained an invalid email address: \"" + emailAddressInAssertion + "\".";
             logger.info(msg);
             msg=BundleUtil.getStringFromBundle("shib.invalidEmailAddress",   Arrays.asList(emailAddressInAssertion));
             String singleEmailAddress = ShibUtil.findSingleValue(emailAddressInAssertion);
-            if (EMailValidator.isEmailValid(singleEmailAddress, null)) {
+            if (EMailValidator.isEmailValid(singleEmailAddress)) {
                 msg = "Multiple email addresses were asserted by the Identity Provider (" + emailAddressInAssertion + " ). These were sorted and the first was chosen: " + singleEmailAddress;
                 logger.info(msg);
                 emailAddress = singleEmailAddress;
@@ -209,15 +211,34 @@ public class Shib implements java.io.Serializable {
         }
 
         String usernameAssertion = getValueFromAssertion(ShibUtil.usernameAttribute);
-        internalUserIdentifer = ShibUtil.generateFriendlyLookingUserIdentifer(usernameAssertion, emailAddress);
-        logger.fine("friendly looking identifer (backend will enforce uniqueness):" + internalUserIdentifer);
+        internalUserIdentifier = ShibUtil.generateFriendlyLookingUserIdentifier(usernameAssertion, emailAddress);
+        logger.log(Level.FINE, "friendly looking identifier (backend will enforce uniqueness): {0}", internalUserIdentifier);
 
         String shibAffiliationAttribute = settingsService.getValueForKey(SettingsServiceBean.Key.ShibAffiliationAttribute);
         String affiliation = (StringUtils.isNotBlank(shibAffiliationAttribute))
             ? getValueFromAssertion(shibAffiliationAttribute)
             : shibService.getAffiliation(shibIdp, shibService.getDevShibAccountType());
 
+
         if (affiliation != null) {
+            String ShibAffiliationSeparator = settingsService.getValueForKey(SettingsServiceBean.Key.ShibAffiliationSeparator);
+            if (ShibAffiliationSeparator == null) {
+                ShibAffiliationSeparator = ";";
+            }
+            String ShibAffiliationOrder = settingsService.getValueForKey(SettingsServiceBean.Key.ShibAffiliationOrder);
+            if (ShibAffiliationOrder != null) {
+                if (ShibAffiliationOrder.equals("lastAffiliation")) {
+                    affiliation = affiliation.substring(affiliation.lastIndexOf(ShibAffiliationSeparator) + 1); //patch for affiliation array returning last part
+                }
+                else if (ShibAffiliationOrder.equals("firstAffiliation")) {
+                    try{
+                        affiliation = affiliation.substring(0,affiliation.indexOf(ShibAffiliationSeparator)); //patch for affiliation array returning first part
+                    }
+                    catch (Exception e){
+                        logger.info("Affiliation does not contain \"" + ShibAffiliationSeparator + "\"");
+                    }
+                }
+            }
             affiliationToDisplayAtConfirmation = affiliation;
             friendlyNameForInstitution = affiliation;
         }
@@ -306,7 +327,7 @@ public class Shib implements java.io.Serializable {
         AuthenticatedUser au = null;
         try {
             au = authSvc.createAuthenticatedUser(
-                    new UserRecordIdentifier(shibAuthProvider.getId(), lookupStringPerAuthProvider), internalUserIdentifer, displayInfo, true);
+                    new UserRecordIdentifier(shibAuthProvider.getId(), lookupStringPerAuthProvider), internalUserIdentifier, displayInfo, true);
         } catch (EJBException ex) {
             /**
              * @todo Show the ConstraintViolationException, if any.
@@ -334,10 +355,14 @@ public class Shib implements java.io.Serializable {
         visibleTermsOfUse = false;
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         String lookupStringPerAuthProvider = userPersistentId;
-        UserIdentifier userIdentifier = new UserIdentifier(lookupStringPerAuthProvider, internalUserIdentifer);
+        UserIdentifier userIdentifier = new UserIdentifier(lookupStringPerAuthProvider, internalUserIdentifier);
         logger.fine("builtin username: " + builtinUsername);
         AuthenticatedUser builtInUserToConvert = authSvc.canLogInAsBuiltinUser(builtinUsername, builtinPassword);
         if (builtInUserToConvert != null) {
+            if (builtInUserToConvert.isDeactivated()) {
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("shib.convert.fail.deactivated"));
+                return null;
+            }
             // TODO: Switch from authSvc.convertBuiltInToShib to authSvc.convertBuiltInUserToRemoteUser
             AuthenticatedUser au = authSvc.convertBuiltInToShib(builtInUserToConvert, shibAuthProvider.getId(), userIdentifier);
             if (au != null) {
@@ -358,8 +383,8 @@ public class Shib implements java.io.Serializable {
 
     private void logInUserAndSetShibAttributes(AuthenticatedUser au) {
         au.setShibIdentityProvider(shibIdp);
+        // setUser checks for deactivated users.
         session.setUser(au);
-        session.configureSessionTimeout();
         logger.fine("Groups for user " + au.getId() + " (" + au.getIdentifier() + "): " + getGroups(au));
     }
 

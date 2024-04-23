@@ -9,27 +9,27 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 
-import javax.ejb.Stateless;
-import javax.interceptor.Interceptors;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.Stateless;
+import jakarta.interceptor.Interceptors;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import javax.annotation.PostConstruct;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonString;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.PathParam;
-import static org.apache.commons.lang.StringUtils.isNumeric;
+import jakarta.annotation.PostConstruct;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.PathParam;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
  *
@@ -231,6 +231,7 @@ public class Groups extends AbstractApiBean {
     public Response createMailDomainGroup(JsonObject dto) throws JsonParseException {
         MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
         mailDomainGroupPrv.saveOrUpdate(Optional.empty(), grp);
+        mailDomainGroupPrv.updateGroups();
 
         return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp) );
     }
@@ -254,6 +255,7 @@ public class Groups extends AbstractApiBean {
         
         MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
         mailDomainGroupPrv.saveOrUpdate(Optional.of(groupAlias), grp);
+        mailDomainGroupPrv.updateGroups();
         
         return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp) );
     }
@@ -276,6 +278,7 @@ public class Groups extends AbstractApiBean {
     @Path("domain/{groupAlias}")
     public Response deleteMailDomainGroup(@PathParam("groupAlias") String groupAlias) {
         mailDomainGroupPrv.delete(groupAlias);
+        mailDomainGroupPrv.updateGroups();
         return ok("Group " + groupAlias + " deleted.");
     }
 

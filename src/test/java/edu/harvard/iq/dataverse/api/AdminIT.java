@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
@@ -15,46 +15,45 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import org.junit.Test;
-import org.junit.BeforeClass;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import static junit.framework.Assert.assertEquals;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertTrue;
-import org.junit.Ignore;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AdminIT {
 
     private static final Logger logger = Logger.getLogger(AdminIT.class.getCanonicalName());
 
-    @BeforeClass
+    private final String testNonSuperuserApiToken = createTestNonSuperuserApiToken();
+
+    @BeforeAll
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
     @Test
     public void testListAuthenticatedUsers() throws Exception {
-        Response anon = UtilIT.listAuthenticatedUsers("");
+        Response anon = UtilIT.listAuthenticatedUsers(testNonSuperuserApiToken);
         anon.prettyPrint();
         anon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
-        Response createNonSuperuser = UtilIT.createRandomUser();
-        
-        String nonSuperuserUsername = UtilIT.getUsernameFromResponse(createNonSuperuser);
-        String nonSuperuserApiToken = UtilIT.getApiTokenFromResponse(createNonSuperuser);
-
-        Response nonSuperuser = UtilIT.listAuthenticatedUsers(nonSuperuserApiToken);
+        Response nonSuperuser = UtilIT.listAuthenticatedUsers(testNonSuperuserApiToken);
         nonSuperuser.prettyPrint();
         nonSuperuser.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
         
@@ -69,14 +68,15 @@ public class AdminIT {
         superuser.prettyPrint();
         superuser.then().assertThat().statusCode(OK.getStatusCode());
 
+        Response createNonSuperuser = UtilIT.createRandomUser();
+        String nonSuperuserUsername = UtilIT.getUsernameFromResponse(createNonSuperuser);
+
         Response deleteNonSuperuser = UtilIT.deleteUser(nonSuperuserUsername);
         assertEquals(200, deleteNonSuperuser.getStatusCode());
 
         Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
         assertEquals(200, deleteSuperuser.getStatusCode());
-
     }
-
     
     @Test
     public void testFilterAuthenticatedUsersForbidden() throws Exception {
@@ -86,7 +86,7 @@ public class AdminIT {
         // --------------------------------------------
         Response anon = UtilIT.filterAuthenticatedUsers("", null, null, null, null);
         anon.prettyPrint();
-        anon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        anon.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
 
         // --------------------------------------------
         // Forbidden: Try with a regular user--*not a superuser*
@@ -154,10 +154,10 @@ public class AdminIT {
                 .body("data.pagination.pageCount", equalTo(1))
                 .body("data.pagination.numResults", equalTo(numResults));
         
-        String userIdentifer;
+        String userIdentifier;
         for (int i=0; i < numResults; i++){
-            userIdentifer = JsonPath.from(filterReponse01.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
-            assertEquals(randomUsernames.contains(userIdentifer), true);
+            userIdentifier = JsonPath.from(filterReponse01.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
+            assertTrue(randomUsernames.contains(userIdentifier));
         }
 
         List<Object> userList1 = JsonPath.from(filterReponse01.body().asString()).getList("data.users");
@@ -178,10 +178,10 @@ public class AdminIT {
                 .body("data.pagination.pageCount", equalTo(3))
                 .body("data.pagination.numResults", equalTo(numResults));
         
-        String userIdentifer2;
+        String userIdentifier2;
         for (int i=0; i < numUsersReturned; i++){
-            userIdentifer2 = JsonPath.from(filterReponse02.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
-            assertEquals(randomUsernames.contains(userIdentifer2), true);
+            userIdentifier2 = JsonPath.from(filterReponse02.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
+            assertTrue(randomUsernames.contains(userIdentifier2));
         }
         
         List<Object> userList2 = JsonPath.from(filterReponse02.body().asString()).getList("data.users");
@@ -287,7 +287,7 @@ public class AdminIT {
         String newEmailAddressToUse = "builtin2shib." + UUID.randomUUID().toString().substring(0, 8) + "@mailinator.com";
         String data = emailOfUserToConvert + ":" + password + ":" + newEmailAddressToUse;
 
-        Response builtinToShibAnon = UtilIT.migrateBuiltinToShib(data, "");
+        Response builtinToShibAnon = UtilIT.migrateBuiltinToShib(data, testNonSuperuserApiToken);
         builtinToShibAnon.prettyPrint();
         builtinToShibAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
@@ -317,11 +317,11 @@ public class AdminIT {
          * the Shib user has an invalid email address:
          * https://github.com/IQSS/dataverse/issues/2998
          */
-        Response shibToBuiltinAnon = UtilIT.migrateShibToBuiltin(Long.MAX_VALUE, "", "");
+        Response shibToBuiltinAnon = UtilIT.migrateShibToBuiltin(Long.MAX_VALUE, "", testNonSuperuserApiToken);
         shibToBuiltinAnon.prettyPrint();
         shibToBuiltinAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
-        Response nonSuperuser = UtilIT.migrateShibToBuiltin(Long.MAX_VALUE, "", "");
+        Response nonSuperuser = UtilIT.migrateShibToBuiltin(Long.MAX_VALUE, "", testNonSuperuserApiToken);
         nonSuperuser.prettyPrint();
         nonSuperuser.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
@@ -358,6 +358,63 @@ public class AdminIT {
 
     }
 
+    /**
+     * Here we are asserting that deactivated users cannot be converted into
+     * shib users.
+     */
+    @Test
+    public void testConvertDeactivateUserToShib() {
+
+        Response createUserToConvert = UtilIT.createRandomUser();
+        createUserToConvert.then().assertThat().statusCode(OK.getStatusCode());
+        createUserToConvert.prettyPrint();
+
+        long idOfUserToConvert = createUserToConvert.body().jsonPath().getLong("data.authenticatedUser.id");
+        String emailOfUserToConvert = createUserToConvert.body().jsonPath().getString("data.authenticatedUser.email");
+        String usernameOfUserToConvert = UtilIT.getUsernameFromResponse(createUserToConvert);
+
+        Response deactivateUser = UtilIT.deactivateUser(usernameOfUserToConvert);
+        deactivateUser.prettyPrint();
+        deactivateUser.then().assertThat().statusCode(OK.getStatusCode());
+
+        String password = usernameOfUserToConvert;
+        String newEmailAddressToUse = "builtin2shib." + UUID.randomUUID().toString().substring(0, 8) + "@mailinator.com";
+        String data = emailOfUserToConvert + ":" + password + ":" + newEmailAddressToUse;
+
+        Response builtinToShibAnon = UtilIT.migrateBuiltinToShib(data, testNonSuperuserApiToken);
+        builtinToShibAnon.prettyPrint();
+        builtinToShibAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response getAuthProviders = UtilIT.getAuthProviders(superuserApiToken);
+        getAuthProviders.prettyPrint();
+        if (!getAuthProviders.body().asString().contains(BuiltinAuthenticationProvider.PROVIDER_ID)) {
+            System.out.println("Can't proceed with test without builtin provider.");
+            return;
+        }
+
+        Response makeShibUser = UtilIT.migrateBuiltinToShib(data, superuserApiToken);
+        makeShibUser.prettyPrint();
+        makeShibUser.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("[\"builtin account has been deactivated\"]"));
+
+        Response userIsStillBuiltin = UtilIT.getAuthenticatedUser(usernameOfUserToConvert, superuserApiToken);
+        userIsStillBuiltin.prettyPrint();
+        userIsStillBuiltin.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.id", equalTo(Long.valueOf(idOfUserToConvert).intValue()))
+                .body("data.identifier", equalTo("@" + usernameOfUserToConvert))
+                .body("data.authenticationProviderId", equalTo("builtin"));
+
+    }
+
     @Test
     public void testConvertOAuthUserToBuiltin() throws Exception {
 
@@ -379,7 +436,7 @@ public class AdminIT {
         String data = emailOfUserToConvert + ":" + password + ":" + newEmailAddressToUse + ":" + providerIdToConvertTo + ":" + newPersistentUserIdInLookupTable;
 
         System.out.println("data: " + data);
-        Response builtinToOAuthAnon = UtilIT.migrateBuiltinToOAuth(data, "");
+        Response builtinToOAuthAnon = UtilIT.migrateBuiltinToOAuth(data, testNonSuperuserApiToken);
         builtinToOAuthAnon.prettyPrint();
         builtinToOAuthAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
@@ -410,11 +467,7 @@ public class AdminIT {
          * the OAuth user has an invalid email address:
          * https://github.com/IQSS/dataverse/issues/2998
          */
-        Response oauthToBuiltinAnon = UtilIT.migrateOAuthToBuiltin(Long.MAX_VALUE, "", "");
-        oauthToBuiltinAnon.prettyPrint();
-        oauthToBuiltinAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
-
-        Response nonSuperuser = UtilIT.migrateOAuthToBuiltin(Long.MAX_VALUE, "", "");
+        Response nonSuperuser = UtilIT.migrateOAuthToBuiltin(Long.MAX_VALUE, "", testNonSuperuserApiToken);
         nonSuperuser.prettyPrint();
         nonSuperuser.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
@@ -553,7 +606,7 @@ public class AdminIT {
         String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
         UtilIT.makeSuperUser(superuserUsername);
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + origFileId, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", superuserApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", superuserApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + origFileId);
 
         //Bad file id         
         Response computeDataFileHashResponse = UtilIT.computeDataFileHashValue("BadFileId", DataFile.ChecksumType.MD5.toString(), superuserApiToken);
@@ -618,7 +671,7 @@ public class AdminIT {
     }
     
     @Test
-    @Ignore
+    @Disabled
     public void testMigrateHDLToDOI() {
         /*
         This test is set to ignore because it requires a setup that will
@@ -682,6 +735,13 @@ public class AdminIT {
                 .statusCode(OK.getStatusCode());
     }
 
+    /**
+     * Disabled because once there are new fields in the database that Solr
+     * doesn't know about, dataset creation could be prevented, or at least
+     * subsequent search operations could fail because the dataset can't be
+     * indexed.
+     */
+    @Disabled
     @Test
     public void testLoadMetadataBlock_NoErrorPath() {
         Response createUser = UtilIT.createRandomUser();
@@ -689,11 +749,12 @@ public class AdminIT {
 
         byte[] updatedContent = null;
         try {
-            updatedContent = Files.readAllBytes(Paths.get("src/test/resources/tsv/citation.tsv"));
+            updatedContent = Files.readAllBytes(Paths.get("scripts/api/data/metadatablocks/citation.tsv"));
         } catch (IOException e) {
             logger.warning(e.getMessage());
             assertEquals(0,1);
         }
+
         Response response = UtilIT.loadMetadataBlock(apiToken, updatedContent);
         assertEquals(200, response.getStatusCode());
         response.then().assertThat().statusCode(OK.getStatusCode());
@@ -705,7 +766,8 @@ public class AdminIT {
         Map<String, List<Map<String, String>>> data = JsonPath.from(body).getMap("data");
         assertEquals(1, data.size());
         List<Map<String, String>> addedElements = data.get("added");
-        assertEquals(321, addedElements.size());
+        //Note -test depends on the number of elements in the production citation block, so any changes to the # of elements there can break this test
+        assertEquals(323, addedElements.size());
 
         Map<String, Integer> statistics = new HashMap<>();
         for (Map<String, String> unit : addedElements) {
@@ -721,9 +783,16 @@ public class AdminIT {
         assertEquals(3, statistics.size());
         assertEquals(1, (int) statistics.get("MetadataBlock"));
         assertEquals(78, (int) statistics.get("DatasetField"));
-        assertEquals(242, (int) statistics.get("Controlled Vocabulary"));
+        assertEquals(244, (int) statistics.get("Controlled Vocabulary"));
     }
 
+    /**
+     * Disabled because once there are new fields in the database that Solr
+     * doesn't know about, dataset creation could be prevented, or at least
+     * subsequent search operations could fail because the dataset can't be
+     * indexed.
+     */
+    @Disabled
     @Test
     public void testLoadMetadataBlock_ErrorHandling() {
         Response createUser = UtilIT.createRandomUser();
@@ -749,5 +818,93 @@ public class AdminIT {
           "Error parsing metadata block in DATASETFIELD part, line #5: missing 'watermark' column (#5)",
           message
         );
+    }
+    @Test
+    public void testClearThumbnailFailureFlag(){
+        Response nonExistentFile = UtilIT.clearThumbnailFailureFlag(Long.MAX_VALUE);
+        nonExistentFile.prettyPrint();
+        nonExistentFile.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        
+        Response clearAllFlags = UtilIT.clearThumbnailFailureFlags();
+        clearAllFlags.prettyPrint();
+        clearAllFlags.then().assertThat().statusCode(OK.getStatusCode());
+    }
+    
+    @Test
+    public void testBannerMessages(){
+        
+        String pathToJsonFile = "scripts/api/data/bannerMessageError.json";
+        Response addBannerMessageErrorResponse = UtilIT.addBannerMessage(pathToJsonFile);
+        addBannerMessageErrorResponse.prettyPrint();
+        String body = addBannerMessageErrorResponse.getBody().asString();
+        String status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+        
+        pathToJsonFile = "scripts/api/data/bannerMessageTest.json";
+        
+        Response addBannerMessageResponse = UtilIT.addBannerMessage(pathToJsonFile);
+        addBannerMessageResponse.prettyPrint();
+        body = addBannerMessageResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        Response getBannerMessageResponse = UtilIT.getBannerMessages();
+        getBannerMessageResponse.prettyPrint();
+        body = getBannerMessageResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        String deleteId = UtilIT.getBannerMessageIdFromResponse(getBannerMessageResponse.getBody().asString());
+         
+        System.out.print("delete id: " + deleteId);
+        
+        Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(new Long (deleteId));
+        deleteBannerMessageResponse.prettyPrint();
+        body = deleteBannerMessageResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+    }
+
+    /**
+     * For a successful download from /tmp, see BagIT. Here we are doing error
+     * checking.
+     */
+    @Test
+    public void testDownloadTmpFile() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response tryToDownloadAsNonSuperuser = UtilIT.downloadTmpFile("/tmp/foo", apiToken);
+        tryToDownloadAsNonSuperuser.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+
+        Response toggleSuperuser = UtilIT.makeSuperUser(username);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response tryToDownloadEtcPasswd = UtilIT.downloadTmpFile("/etc/passwd", apiToken);
+        tryToDownloadEtcPasswd.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("Path must begin with '/tmp' but after normalization was '/etc/passwd'."));
+    }
+
+    private String createTestNonSuperuserApiToken() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
+        return UtilIT.getApiTokenFromResponse(createUserResponse);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans={true,false})
+    public void testSetSuperUserStatus(Boolean status) {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response toggleSuperuser = UtilIT.setSuperuserStatus(username, status);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 }

@@ -40,14 +40,11 @@ node "DatabaseServer2" {
 }
 
 node "RserveServer1" {
-  component "rApache" {
-  }
   database "Rserve" {
   }
 } 
 
 Clients --> LoadBalancer
-Clients --> rApache
 
 LoadBalancer --> Apache1
 LoadBalancer --> Apache2

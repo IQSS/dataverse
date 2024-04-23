@@ -3,11 +3,12 @@ import subprocess
 
 def runAsadminScript(config):
    # We are going to run a standalone shell script with a bunch of asadmin                                      
-   # commands to set up all the app. server (payara5) components for the application.                                       
+   # commands to set up all the app. server (payara6) components for the application.
    # All the parameters must be passed to that script as environmental                                          
    # variables:
-   os.environ['GLASSFISH_DOMAIN'] = "domain1";
-   os.environ['ASADMIN_OPTS'] = "";
+   os.environ['GLASSFISH_DOMAIN'] = "domain1"
+   os.environ['ASADMIN_OPTS'] = ""
+   os.environ['ADMIN_EMAIL'] = config.get('system','ADMIN_EMAIL')
 
    os.environ['HOST_ADDRESS'] = config.get('glassfish','HOST_DNS_ADDRESS')
    os.environ['GLASSFISH_ROOT'] = config.get('glassfish','GLASSFISH_DIRECTORY')
@@ -28,7 +29,7 @@ def runAsadminScript(config):
    os.environ['DOI_BASEURL'] = config.get('doi','DOI_BASEURL')
    os.environ['DOI_USERNAME'] = config.get('doi','DOI_USERNAME')
    os.environ['DOI_PASSWORD'] = config.get('doi','DOI_PASSWORD')
-   os.environ['DOI_MDCBASEURL'] = config.get('doi','DOI_MDCBASEURL')
+   os.environ['DOI_DATACITERESTAPIURL'] = config.get('doi','DOI_DATACITERESTAPIURL')
 
    mailServerEntry = config.get('system','MAIL_SERVER')
 

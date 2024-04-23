@@ -33,20 +33,21 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
-import javax.annotation.PostConstruct;
-import javax.batch.api.BatchProperty;
-import javax.batch.api.chunk.AbstractItemWriter;
-import javax.batch.operations.JobOperator;
-import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.context.JobContext;
-import javax.batch.runtime.context.StepContext;
-import javax.ejb.EJB;
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.annotation.PostConstruct;
+import jakarta.batch.api.BatchProperty;
+import jakarta.batch.api.chunk.AbstractItemWriter;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.batch.runtime.context.JobContext;
+import jakarta.batch.runtime.context.StepContext;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.io.File;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -57,8 +58,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Named
 @Dependent
@@ -358,34 +358,24 @@ public class FileRecordWriter extends AbstractItemWriter {
         dataset.getLatestVersion().getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(dataset.getLatestVersion());
         
-	String isFilePIDsEnabled = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.FilePIDsEnabled, "true"); //default value for file PIDs is 'true'
-	if ("true".contentEquals( isFilePIDsEnabled )) {
-	
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
+    if (commandEngine.getContext().systemConfig().isFilePIDsEnabledForCollection(dataset.getOwner())) {
+
+        PidProvider pidProvider = commandEngine.getContext().dvObjects().getEffectivePidGenerator(dataset);
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
-            packageFile.setIdentifier(dataFileServiceBean.generateDataFileIdentifier(packageFile, idServiceBean));
-        }
-        String nonNullDefaultIfKeyNotFound = "";
-        String protocol = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
-        String authority = commandEngine.getContext().settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        if (packageFile.getProtocol() == null) {
-            packageFile.setProtocol(protocol);
-        }
-        if (packageFile.getAuthority() == null) {
-            packageFile.setAuthority(authority);
+            pidProvider.generatePid(packageFile);
         }
 
         if (!packageFile.isIdentifierRegistered()) {
             String doiRetString = "";
-            idServiceBean = GlobalIdServiceBean.getBean(commandEngine.getContext());
+
             try {
-                doiRetString = idServiceBean.createIdentifier(packageFile);
+                doiRetString = pidProvider.createIdentifier(packageFile);
             } catch (Throwable e) {
                 
             }
 
             // Check return value to make sure registration succeeded
-            if (!idServiceBean.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
+            if (!pidProvider.registerWhenPublished() && doiRetString.contains(packageFile.getIdentifier())) {
                 packageFile.setIdentifierRegistered(true);
                 packageFile.setGlobalIdCreateTime(new Date());
             }

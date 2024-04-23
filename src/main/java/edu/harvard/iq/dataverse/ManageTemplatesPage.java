@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateRootCommand;
+import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
@@ -13,15 +14,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.event.ActionEvent;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.event.ActionEvent;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import jakarta.faces.event.AbortProcessingException;
+import jakarta.faces.event.AjaxBehaviorEvent;
 /**
  *
  * @author skraffmiller
@@ -56,6 +59,12 @@ public class ManageTemplatesPage implements java.io.Serializable {
     
     @Inject
     PermissionsWrapper permissionsWrapper;
+    
+    @Inject
+    LicenseServiceBean licenseServiceBean;
+    
+    @Inject
+    SettingsWrapper settingsWrapper;
 
     private List<Template> templates;
     private Dataverse dataverse;
@@ -114,15 +123,17 @@ public class ManageTemplatesPage implements java.io.Serializable {
         newOne.setName(name);
         newOne.setUsageCount(new Long(0));
         newOne.setCreateTime(new Timestamp(new Date().getTime()));
-        dataverse.getTemplates().add(newOne);
-        templates.add(newOne);
+        newOne.setDataverse(dataverse);
+
         Template created;
         try {
             created = engineService.submit(new CreateTemplateCommand(newOne, dvRequestService.getDataverseRequest(), dataverse));
+            dataverse.getTemplates().add(created);
+            templates.add(created);
             saveDataverse("");
             String msg =  BundleUtil.getStringFromBundle("template.clone");//"The template has been copied";
             JsfHelper.addFlashMessage(msg);
-            return "/template.xhtml?id=" + created.getId() + "&ownerId=" + dataverse.getId() + "&editMode=METADATA&faces-redirect=true";
+            return "/template.xhtml?id=" + created.getId() + "&ownerId=" + dataverse.getId() + "&editMode=CLONE&faces-redirect=true";
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.clone.error"));//"Template could not be copied. " 
         }
@@ -224,11 +235,11 @@ public class ManageTemplatesPage implements java.io.Serializable {
 
     public void viewSelectedTemplate(Template selectedTemplate) {
         this.selectedTemplate = selectedTemplate;
-        this.selectedTemplate.setMetadataValueBlocks();
+        this.selectedTemplate.setMetadataValueBlocks(settingsWrapper.getSystemMetadataBlocks());
         tempPage.setTemplate(selectedTemplate);
     }
 
-    public String updateTemplatesRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
+    public String updateTemplatesRoot(AjaxBehaviorEvent event) throws AbortProcessingException {
         try {
             if (dataverse.getOwner() != null) {
                 if (isInheritTemplatesValue() && dataverse.getDefaultTemplate() == null && dataverse.getOwner().getDefaultTemplate() != null) {
