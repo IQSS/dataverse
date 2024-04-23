@@ -456,7 +456,7 @@
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
                     </button>
                     <ul jsf:id="downloadDropdownOptions" class="dropdown-menu multi-level pull-right text-left">
-                        <li>
+                        <li jsf:rendered="#{DatasetPage.canDownloadFiles()}">
                             <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
                                            update="@form" oncomplete="showPopup(false);"
@@ -467,7 +467,7 @@
                                 #{bundle.downloadOriginal}
                             </p:commandLink>
                         </li>
-                        <li jsf:rendered="#{DatasetPage.isVersionHasTabular()}">
+                        <li jsf:rendered="#{DatasetPage.isVersionHasTabular() and DatasetPage.canDownloadFiles()}">
                             <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
                                            update="@form" oncomplete="showPopup(false);"

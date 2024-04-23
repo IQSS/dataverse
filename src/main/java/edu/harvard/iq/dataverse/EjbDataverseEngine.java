@@ -124,6 +124,9 @@ public class EjbDataverseEngine {
     
     @EJB
     GuestbookResponseServiceBean responses;
+
+    @EJB
+    MetadataBlockServiceBean metadataBlockService;
     
     @EJB
     DataverseLinkingServiceBean dvLinking;
@@ -585,6 +588,11 @@ public class EjbDataverseEngine {
                 @Override
                 public ActionLogServiceBean actionLog() {
                     return logSvc;
+                }
+
+                @Override
+                public MetadataBlockServiceBean metadataBlocks() {
+                    return metadataBlockService;
                 }
 
                 @Override
