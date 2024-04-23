@@ -178,6 +178,9 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     recalculateUNF = true;
                 }
             }
+            
+            theDataset.getOrCreateEditVersion().setLastUpdateTime(getTimestamp());
+            
             // we have to merge to update the database but not flush because
             // we don't want to create two draft versions!
             // Although not completely tested, it looks like this merge handles the
@@ -256,7 +259,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getOrCreateEditVersion());
             }
 
-            theDataset.getOrCreateEditVersion().setLastUpdateTime(getTimestamp());
+
             theDataset.setModificationTime(getTimestamp());
 
             savedDataset = ctxt.em().merge(theDataset);
