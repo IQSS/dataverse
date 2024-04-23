@@ -3756,11 +3756,11 @@ public class Datasets extends AbstractApiBean {
         // -------------------------------------
         // (1) Get the user from the ContainerRequestContext
         // -------------------------------------
-        AuthenticatedUser authUser;
+        AuthenticatedUser authUser = null;
         try {
             authUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse e) {
-            return e.getResponse();
+            logger.fine("guest user globus download");
         }
         // -------------------------------------
         // (2) Get the Dataset Id
