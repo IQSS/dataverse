@@ -39,6 +39,13 @@ enter search terms for Dataverse collections, dataset metadata (citation and dom
 metadata. If you are searching for tabular data files you can also search at the variable level for name and label. To find 
 out more about what each field searches, hover over the field name for a detailed description of the field.
 
+.. _geospatial-search:
+
+Geospatial Search
+-----------------
+
+Geospatial search is available from the :doc:`/api/search` (look for "geo" parameters). The metadata fields that are geospatially indexed are "West Longitude", "East Longitude", "North Latitude", and "South Latitude" from the "Geographic Bounding Box" field in the "Geospatial Metadata" block.
+
 Browsing a Dataverse Installation
 ---------------------------------
 
@@ -64,7 +71,7 @@ View Files
 
 Files in a Dataverse installation each have their own landing page that can be reached through the search results or through the Files table on their parent dataset's page. The dataset page and file page offer much the same functionality in terms of viewing and editing files, with a few small exceptions. 
 
-- In installations that have enabled support for persistent identifers (PIDs) at the file level, the file page includes the file's DOI or handle, which can be found in the file citation and also under the Metadata tab.
+- In installations that have enabled support for persistent identifiers (PIDs) at the file level, the file page includes the file's DOI or handle, which can be found in the file citation and also under the Metadata tab.
 - Previewers for several common file types are available and can be added by installation administrators.
 - The file page's Versions tab gives you a version history that is more focused on the individual file rather than the dataset as a whole. 
 
@@ -152,6 +159,19 @@ Explore Data
 ------------
 
 Some file types and datasets offer data exploration options if external tools have been installed. The tools are described in the :doc:`/admin/external-tools` section of the Admin Guide.
+
+Exploratory Data Analysis Using Differentially Private Metadata (Experimental)
+------------------------------------------------------------------------------
+
+Through an integration with tools from the OpenDP Project (opendp.org), the Dataverse Software offers an experimental workflow that allows a data depositor to create and deposit Differentially Private (DP) Metadata files, which can then be used for exploratory data analysis. This workflow allows researchers to view the DP metadata for a tabular file, determine whether or not the file contains useful information, and then make an informed decision about whether or not to request access to the original file.
+
+If the data depositor has made available DP metadata for one or more files in their dataset, these access options will appear on the access dropdown on both the Dataset Page and the File Page. These access options will be available even if a file is restricted. Three types of DP metadata will be available:
+
+- .PDF
+- .XML
+- .JSON
+  
+For more information about how data depositors can enable access using the OpenDP tool, visit the :doc:`/user/dataset-management` section of the User Guide.
 
 .. |image-file-tree-view| image:: ./img/file-tree-view.png
    :class: img-responsive

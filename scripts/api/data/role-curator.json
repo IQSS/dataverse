@@ -9,6 +9,7 @@
         "DeleteDatasetDraft",
         "PublishDataset",
         "ManageDatasetPermissions",
+        "ManageFilePermissions",
         "AddDataverse",
         "AddDataset",
         "ViewUnpublishedDataverse" 

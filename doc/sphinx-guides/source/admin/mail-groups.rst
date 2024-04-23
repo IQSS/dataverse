@@ -1,18 +1,18 @@
 Mail Domain Groups
 ==================
 
-Groups can be defined based on the domain part of users (verified) email addresses. Email addresses that match
-one or more groups configuration will add the user to them.
+Groups can be defined based on the domain part of users (verified) email addresses. Email addresses that match one or more groups configuration will add the user to them.
 
-Within the scientific community, in many cases users will use a institutional email address for their account in a
-Dataverse installation. This might offer a simple solution for building groups of people, as the domain part can be
-seen as a selector for group membership.
+Within the scientific community, in many cases users will use a institutional email address for their account in a Dataverse installation. This might offer a simple solution for building groups of people, as the domain part can be seen as a selector for group membership.
 
 Some use cases: installations that like to avoid Shibboleth, enable self sign up, offer multi-tenancy or can't use
 :doc:`ip-groups` plus many more.
 
 .. hint:: Please be aware that non-verified mail addresses will exclude the user even if matching. This is to avoid
           privilege escalation.
+
+.. contents:: Contents:
+	:local:
 
 Listing Mail Domain Groups
 --------------------------

@@ -1,143 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd;">
     <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>edu.harvard.iq</groupId>
+        <artifactId>dataverse-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>modules/dataverse-parent</relativePath>
+    </parent>
+    
     <!--
     If you are doing more than bumping the version number, please read
     doc/sphinx-guides/source/developers/dependencies.rst
     -->
-    <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>5.4.1</version>
-    <packaging>war</packaging>
+    <packaging>${packaging.type}</packaging>
     <name>dataverse</name>
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <additionalparam>-Xdoclint:none</additionalparam>
-        <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
-        <compilerArgument></compilerArgument>
-        <project.timezone>UTC</project.timezone>
-        <project.language>en</project.language>
-        <project.region>US</project.region>
-        <!--
-            Moving this from plugin config to global config, because of GH-5122.
-            This seems to play well with NetBeans 8.2, IDEA 2018.1 and mvn including compatibility with JaCoCo.
-        -->
-        <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
         <skipUnitTests>false</skipUnitTests>
-    
-        <jakartaee-api.version>8.0.0</jakartaee-api.version>
-        <payara.version>5.2020.6</payara.version>
-        <postgresql.version>42.2.19</postgresql.version>
-        <aws.version>1.11.762</aws.version>
-        <commons.logging.version>1.2</commons.logging.version>
-        <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
-        <junit.version>4.13.1</junit.version>
-        <junit.jupiter.version>5.7.0</junit.jupiter.version>
-        <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
-        <testcontainers.version>1.15.0</testcontainers.version>
-        <microbean-mpconfig.version>0.4.1</microbean-mpconfig.version>
-        <mockito.version>2.28.2</mockito.version>
-        <flyway.version>5.2.4</flyway.version>
+        <skipIntegrationTests>false</skipIntegrationTests>
+        <it.groups>integration</it.groups>
+        
+        <!-- By default, this module will produce a WAR file. -->
+        <!-- This will be switched within the container profile! -->
+        <packaging.type>war</packaging.type>
+        
+        <reload4j.version>1.2.18.4</reload4j.version>
+        <flyway.version>9.22.1</flyway.version>
         <jhove.version>1.20.1</jhove.version>
-        <jacoco.version>0.8.6</jacoco.version>
+        <poi.version>5.2.1</poi.version>
+        <tika.version>2.4.1</tika.version>
+        <netcdf.version>5.5.3</netcdf.version>
     </properties>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>central</id>
-            <name>Central Repository</name>
-            <url>https://repo.maven.apache.org/maven2</url>
-            <layout>default</layout>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-        </pluginRepository>
-    </pluginRepositories>
-    <!--Maven checks for dependencies from these repos in the order shown in the pom.xml
-        This isn't well documented and seems to change between maven versions -MAD 4.9.4 -->
-    <repositories>
-        <repository>
-            <id>payara-patched-externals</id>
-            <name>Payara Patched Externals</name>
-            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>central-repo</id>
-            <name>Central Repository</name>
-            <url>https://repo1.maven.org/maven2</url>
-            <layout>default</layout>
-        </repository>
-        <repository>
-            <id>prime-repo</id>
-            <name>PrimeFaces Maven Repository</name>
-            <url>https://repository.primefaces.org</url>
-            <layout>default</layout>
-        </repository>
-        <repository>
-            <id>dataone.org</id>
-            <url>https://maven.dataone.org</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>dvn.private</id>
-            <name>Local repository for hosting jars not available from network repositories.</name>
-            <url>file://${project.basedir}/local_lib</url>
-        </repository>
-    </repositories>
-    <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
-         versions of dependencies used both directly and transitive are managed here. -->
+    
+    <!-- Versions of dependencies used both directly and transitive are managed here.
+         REMEMBER: only manage things here that are going to be used ONLY for this module.
+                   Anything else should go into the parent POM!
+    -->
     <dependencyManagement>
         <dependencies>
+            <!-- Dependency of sword2-server and used in our codebase -->
             <dependency>
-                <groupId>fish.payara.api</groupId>
-                <artifactId>payara-bom</artifactId>
-                <version>${payara.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
+                <groupId>org.apache.abdera</groupId>
+                <artifactId>abdera-core</artifactId>
+                <version>1.1.3</version>
             </dependency>
             <dependency>
-                <groupId>com.amazonaws</groupId>
-                <artifactId>aws-java-sdk-bom</artifactId>
-                <version>${aws.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
+                <groupId>org.apache.abdera</groupId>
+                <artifactId>abdera-i18n</artifactId>
+                <version>1.1.3</version>
             </dependency>
             <dependency>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-                <version>${commons.logging.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>${httpcomponents.client.version}</version>
-            </dependency>
-            <dependency>
-              <groupId>com.google.cloud</groupId>
-              <artifactId>google-cloud-bom</artifactId>
-              <version>0.115.0-alpha</version>
-              <type>pom</type>
-              <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers-bom</artifactId>
-                <version>${testcontainers.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
+                <groupId>org.apache.abdera</groupId>
+                <artifactId>abdera-parser</artifactId>
+                <version>1.1.3</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>geronimo-javamail_1.4_spec</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -145,101 +68,86 @@
          In case the dependency is both transitive and direct (e. g. some common lib for logging),
          manage the version above and add the direct dependency here WITHOUT version tag, too.
     -->
-    <!-- TODO: Housekeeping is utterly needed. -->
+    <!-- TODO: Housekeeping is utterly needed! -->
     <dependencies>
+
+        <!-- This dependency ensures the lib is on the classpath. That way, anything coming from
+             SLF4J should flow through our usual ways of using java.util.logging.
+             (Which makes it also configurable using those mechanisms.) No direct use intended. -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        
         <dependency>
             <groupId>org.passay</groupId>
             <artifactId>passay</artifactId>
-            <version>1.1.0</version>
+            <version>1.6.0</version>
         </dependency>
+        
+        <!-- TECHNICAL DEBT
+             For a very long time, in a lots of places people used org.apache.commons.httpclient to access
+             HTTP resources, wrap responses in exceptions etc.
+             
+             This library had been used via an transitive dependency of sword2-server. During its recent updates,
+             the dependency was dropped, went missing, eventually breaking our code. Re-adding this 2007 goodie here
+             as a direct dependency.
+             
+             There is a lot of technical debt in the codebase regarding HTTP client calls. Sometimes
+             java.net.HttpUrlConnection is used, sometimes Apache, sometimes Unirest and what not.
+             A big pile of historically grown mess. Some poor dev should take a Kleenex and call for "payback time". -->
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
-            <version>1.0.4</version>
-            <scope>test</scope>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-            <version>4.4.9</version>
-        </dependency>
+    
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
         <dependency>
-            <groupId>org.swordapp</groupId>
+            <groupId>io.gdcc</groupId>
             <artifactId>sword2-server</artifactId>
-            <version>1.0</version>
-            <type>jar</type>
-            <classifier>classes</classifier>
+            <version>2.0.0</version>
         </dependency>
+        <!-- Dependency to use sword2-server in our codebase -->
         <dependency>
-            <groupId>org.swordapp</groupId>
-            <artifactId>sword2-server</artifactId>
-            <!--
-            Built from https://github.com/IQSS/swordv2-java-server-library
-            to return a proper SWORD error message rather than a Glassfish
-            Exception per https://github.com/IQSS/dataverse/issues/893
-            If the fix is merged upstream at
-            https://github.com/swordapp/JavaServer2.0/issues/6
-            we can switch back to the official SWORD library.
-            -->
-            <version>1.1-SNAPSHOT</version>
-            <type>war</type>
+            <groupId>org.apache.abdera</groupId>
+            <artifactId>abdera-core</artifactId>
+            <!-- no version here as managed in <dependencyManagement> above for convergence! -->
             <exclusions>
                 <exclusion>
-                    <groupId>xerces</groupId>
-                    <artifactId>xercesImpl</artifactId>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-stax-api_1.0_spec</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- Dependency to use sword2-server in our codebase -->
+        <dependency>
+            <groupId>org.apache.abdera</groupId>
+            <artifactId>abdera-i18n</artifactId>
+            <!-- no version here as managed in <dependencyManagement> above for convergence! -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-stax-api_1.0_spec</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
             <!-- no version here as managed by BOM above! -->
         </dependency>
         <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>org.apache.abdera</groupId>
-            <artifactId>abdera-core</artifactId>
-            <version>1.1.3</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-stax-api_1.0_spec</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>org.apache.abdera</groupId>
-            <artifactId>abdera-parser</artifactId>
-            <version>1.1.3</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-stax-api_1.0_spec</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <version>1.3.3</version>
-        </dependency>
-        <dependency>
-            <!-- a dependency of commons-fileupload, but newer version required by tika -->
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.6</version>
+          <groupId>com.apicatalog</groupId>
+          <artifactId>titanium-json-ld</artifactId>
+          <version>1.3.2</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.2.4</version>
+            <version>2.8.9</version>
             <scope>compile</scope>
         </dependency>
         <!-- Should be refactored and moved to transitive section above once on Java EE 8 (makes WAR smaller) -->
@@ -255,13 +163,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>com.io7m.xom</groupId>
-            <artifactId>xom</artifactId>
-            <version>1.2.10</version>
-        </dependency>
-        <!-- END Data Deposit API v1 (SWORD v2) -->
-        <dependency>
             <!-- There are later versions of this lib available at jitpack.io,
                  but it seemed better to not add another repo. -->
             <groupId>org.everit.json</groupId>
@@ -271,35 +172,85 @@
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
-            <version>0.3m</version>
+            <version>0.4</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>${postgresql.version}</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
             <version>${flyway.version}</version>
         </dependency>
+        <!-- Enable resolution of the JPA provider in persistence.xml -->
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.jpa</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>29.0-jre</version>
+            <version>32.1.2-jre</version>
             <type>jar</type>
         </dependency>
+        
+        <!-- Jakarta EE & Eclipse MicroProfile base dependencies -->
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>${jakartaee-api.version}</version>
+            <groupId>org.eclipse.microprofile.metrics</groupId>
+            <artifactId>microprofile-metrics-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        
+        <!-- Jakarta Activation, MIME support etc -->
+        <!-- Runtime implementation here only, as necessary for testing. -->
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-activation</artifactId>
+            <scope>provided</scope>
+            <!-- no version here as managed by Payara BOM above! -->
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
+            <scope>provided</scope>
+            <!-- Note: The version was provided by Payara BOM till 6.2023.7, when they removed the Core BOM from it as
+                       meant for internal use only. Simply referencing the version property here solves the problem. -->
+            <version>${payara.version}</version>
+        </dependency>
+        
+        <!-- JSON-P -->
+        <!-- Runtime implementation here only, as necessary for testing. -->
+        <dependency>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        
+        <!-- JSON-B -->
+        <dependency>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
+        </dependency>
+        <!-- Rope in an implementation for unit tests - is provided at runtime by appserver -->
+        <dependency>
+            <groupId>org.eclipse</groupId>
+            <artifactId>yasson</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- Jakarta Faces & related -->
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.faces</artifactId>
@@ -308,7 +259,8 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>8.0</version>
+            <version>11.0.0</version>
+            <classifier>jakarta</classifier>
         </dependency>
         <dependency>
             <groupId>org.primefaces.themes</groupId>
@@ -318,26 +270,44 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>3.8</version> <!-- Or 1.8-SNAPSHOT -->
+            <version>4.0-M13</version>
+        </dependency>
+        
+        <!-- Jakarta Validation API & runtime -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
-        </dependency>
-      <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
             <scope>provided</scope>
         </dependency>
+    
+        <!-- Jakarta Expression Language -->
+        <!-- Runtime implementation here only, as necessary for testing. -->
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <!-- no version here as managed in <dependencyManagement> of parent for convergence! -->
         </dependency>
         <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-solrj</artifactId>
-            <version>8.8.1</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <!-- no version here as managed in <dependencyManagement> of parent for convergence! -->
+        </dependency>
+        <!-- Some utils from commons.lang have been moved to commons-text (especially escapeHtml()) -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -347,29 +317,29 @@
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>1.6</version>
+            <version>1.7</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-solrj</artifactId>
+            <version>9.4.1</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
             <artifactId>colt</artifactId>
             <version>1.2.0</version>
         </dependency>
-        <!-- fits.jar, not available from network repos, supplied in local_lib -->
+        <!-- FITS -->
         <dependency>
-            <groupId>nom.tam.fits</groupId>
-            <artifactId>fits</artifactId>
-            <version>2012-10-25-generated</version>
+            <groupId>gov.nasa.gsfc.heasarc</groupId>
+            <artifactId>nom-tam-fits</artifactId>
+            <version>1.12.0</version>
         </dependency>
         <dependency>
             <groupId>net.handle</groupId>
-            <artifactId>handle</artifactId>
-            <version>8.1.1</version>
-        </dependency>
-        <!-- UNF v5 (buggy), (temporarily) added for testing ingest against DVN v3  - L.A. -->
-        <dependency>
-            <groupId>edu.harvard.iq.dvn</groupId>
-            <artifactId>unf5</artifactId>
-            <version>5.0</version>
+            <artifactId>handle-client</artifactId>
+            <version>9.3.1</version>
         </dependency>
         <!-- (new) UNF v6: -->
         <dependency>
@@ -393,17 +363,17 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>4.1.1</version>
+            <version>${poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>4.1.1</version>
+            <version>${poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-scratchpad</artifactId>
-            <version>4.1.1</version>
+            <version>${poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openpreservation.jhove</groupId>
@@ -429,44 +399,30 @@
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-servlet</artifactId>
-            <version>3.4.2.Final</version>
+            <version>10.0.0.Final</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-config-prettyfaces</artifactId>
-            <version>3.4.2.Final</version>
+            <version>10.0.0.Final</version>
         </dependency>
         <dependency>
             <groupId>edu.ucsb.nceas</groupId>
             <artifactId>ezid</artifactId>
             <version>1.0.0</version>
             <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.11.3</version>
+            <version>1.15.3</version>
         </dependency>
-        <!-- Added specific versionf of SLF4J jars; otherwise we end up with
-        conflicting versions of slf4j-api and slf4j-log4j12, loaded as
-        dependencies for different packages; which was causing some incompatibility
-        issues -L.A. 4.3 -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.7</version>
-        </dependency>
-        <!-- Added for DataCite -->
-        <!--dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.6.1</version>
-        </dependency -->
         <dependency>
             <groupId>io.searchbox</groupId>
             <artifactId>jest</artifactId>
@@ -475,7 +431,7 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.9</version>
+            <version>1.15</version>
         </dependency>
         <!-- JavaSwift/JOSS: for accessing OpenStack cloud storage -->
         <dependency>
@@ -498,18 +454,13 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>6.18</version>
+            <version>10.13.2</version>
         </dependency>
-        <!-- EXPERIMENTAL: -->
-        <!-- lyncode xoai OAI-PMH implementation: -->
-        <!-- unfortunately, their 4.10 version -->
-        <!-- is still buggy. As an experiment, I'm using -->
-        <!-- a patched version I built locally. -->
-        <!-- (pull requests pending - L.A. -->
+        <!-- Caching library, current main use case is for OIDC authentication -->
         <dependency>
-            <groupId>com.lyncode</groupId>
-            <artifactId>xoai-common</artifactId>
-            <version>4.1.0-header-patch</version>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>3.1.8</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.xml.stream</groupId>
@@ -521,15 +472,17 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        
+        <!-- New and Improved GDCC XOAI library! -->
         <dependency>
-            <groupId>com.lyncode</groupId>
+            <groupId>io.gdcc</groupId>
             <artifactId>xoai-data-provider</artifactId>
-            <version>4.1.0-header-patch</version>
+            <version>${gdcc.xoai.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.lyncode</groupId>
+            <groupId>io.gdcc</groupId>
             <artifactId>xoai-service-provider</artifactId>
-            <version>4.1.0-header-patch</version>
+            <version>${gdcc.xoai.version}</version>
         </dependency>
         <!-- Added for AutoService -->
         <dependency>
@@ -541,15 +494,13 @@
         </dependency>
         <!-- For API File Upload: 1 of 2 -->
         <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet</artifactId>
-            <version>2.23.2</version>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
         </dependency>
         <!-- For API File Upload: 2 of 2 -->
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
-            <version>2.23.2</version>
         </dependency>
         <dependency>
             <groupId>com.mashape.unirest</groupId>
@@ -560,12 +511,12 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.19</version>
+            <!-- no version here as managed by <dependencyManagement> above! -->
         </dependency>
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>common</artifactId>
-            <version>4.4.6</version>
+            <version>8.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -580,7 +531,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>storeclient</artifactId>
-            <version>4.4.6</version>
+            <version>8.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -596,16 +547,16 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>commons-cli</groupId>
-            <artifactId>commons-cli</artifactId>
-            <version>1.2</version>
-        </dependency>
         <!--  Full text indexing -->
         <dependency>
             <groupId>org.apache.tika</groupId>
-            <artifactId>tika-parsers</artifactId>
-            <version>1.24.1</version>
+            <artifactId>tika-core</artifactId>
+            <version>${tika.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers-standard-package</artifactId>
+            <version>${tika.version}</version>
         </dependency>
         <!-- Named Entity Recognition -->
         <dependency>
@@ -616,27 +567,40 @@
         <dependency>
           <groupId>com.google.cloud</groupId>
           <artifactId>google-cloud-storage</artifactId>
-          <version>1.97.0</version>
+          <!-- no version here as managed in <dependencyManagement> of parent for convergence! -->
         </dependency>
-        
-        
+        <!-- JWT support, currently in DRSSubmitToArchiveCommand-->
+        <!-- https://mvnrepository.com/artifact/com.auth0/java-jwt -->
+        <dependency>
+          <groupId>com.auth0</groupId>
+          <artifactId>java-jwt</artifactId>
+          <version>3.19.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.github.erdtman/java-json-canonicalization -->
+        <dependency>
+          <groupId>io.github.erdtman</groupId>
+          <artifactId>java-json-canonicalization</artifactId>
+          <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-core</artifactId>
+            <version>${netcdf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.gdcc</groupId>
+            <artifactId>dataverse-spi</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.cache</groupId>
+            <artifactId>cache-api</artifactId>
+        </dependency>
         <!-- TESTING DEPENDENCIES -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <version>${junit.vintage.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -646,15 +610,45 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.jayway.restassured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <version>2.4.0</version>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.20.2</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-assertj3</artifactId>
+            <version>2.8.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>5.3.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
+            <version>1.5.0</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin.external.google</groupId>
+                    <artifactId>android-json</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -666,6 +660,29 @@
             <artifactId>postgresql</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.dasniko</groupId>
+            <artifactId>testcontainers-keycloak</artifactId>
+            <version>3.0.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>localstack</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!--
+            Brute force solution until we are on Jakarta EE 10.
+            Otherwise, we get very cryptic errors about missing bundle files on test runs.
+            See also https://github.com/jakartaee/jakartaee-api/issues/61
+        -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>4.0.4</version>
+            <scope>test</scope>
+        </dependency>
+        
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -679,29 +696,33 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.microbean</groupId>
-            <artifactId>microbean-microprofile-config</artifactId>
-            <version>${microbean-mpconfig.version}</version>
+            <groupId>io.smallrye.config</groupId>
+            <artifactId>smallrye-config</artifactId>
+            <version>${smallrye-mpconfig.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+            <version>3.9.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
-        <!--        <testResources>
+        <testResources>
             <testResource>
-                <directory>${project.basedir}/src/main/resources</directory>
-            </testResource>
-        </testResources>-->
-        <!--        <testResources>
-            <testResource>
-              <directory>${project.basedir}/src/test/java</directory>
-              <excludes>
-                  <exclude>**/*.java</exclude>
-              </excludes>
+                <directory>${project.basedir}/src/test/resources</directory>
             </testResource>
             <testResource>
-              <directory>${project.basedir}/src/test/resources</directory>
+                <directory>${project.basedir}/conf/keycloak</directory>
+                <targetPath>keycloak</targetPath>
             </testResource>
-          </testResources>-->
+        </testResources>
         <resources>
             <resource>
                 <directory>src/main/java</directory>
@@ -719,16 +740,32 @@
                     <include>**/*.xml</include>
                     <include>**/firstNames/*.*</include>
                     <include>**/*.xsl</include>
-                    <include>**/*.properties</include>
                     <include>**/services/*</include>
+                    <include>**/*.map</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!-- Filter files matching here for Maven properties and replace -->
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.properties</include>
                 </includes>
             </resource>
         </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>${target.java.version}</release>
+                    <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                    <compilerArgument>${compilerArgument}</compilerArgument>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -741,10 +778,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.3</version>
                 <configuration>
                     <attachClasses>true</attachClasses>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <webappDirectory>${project.build.directory}/${project.artifactId}</webappDirectory>
                     <archive>
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
@@ -752,11 +789,6 @@
                         </manifest>
                     </archive>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.1</version>
             </plugin>
             <plugin>
                 <groupId>de.qaware.maven</groupId>
@@ -770,46 +802,144 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.version}</version>
-                <configuration>
-                    <destfile>${basedir}/target/coverage-reports/jacoco-unit.exec</destfile>
-                    <datafile>${basedir}/target/coverage-reports/jacoco-unit.exec</datafile>
-                </configuration>
                 <executions>
                     <execution>
                         <id>jacoco-initialize</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/coverage-reports/jacoco-unit.exec</destFile>
+                            <propertyName>surefire.jacoco.args</propertyName>
+                            <skip>${skipUnitTests}</skip>
+                            <includes>
+                                <include>edu/harvard/iq/dataverse/*</include>
+                                <include>io/gdcc/*</include>
+                                <include>org/dataverse/*</include>
+                            </includes>
+                        </configuration>
                     </execution>
                     <execution>
-                        <id>jacoco-site</id>
-                        <phase>package</phase>
+                        <id>jacoco-after-unit</id>
+                        <phase>test</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/coverage-reports/jacoco-unit.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-unit-test-coverage-report</outputDirectory>
+                            <skip>${skipUnitTests}</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-initialize-it</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/coverage-reports/jacoco-integration.exec</destFile>
+                            <propertyName>failsafe.jacoco.args</propertyName>
+                            <skip>${skipIntegrationTests}</skip>
+                            <includes>
+                                <include>edu/harvard/iq/dataverse/*</include>
+                                <include>io/gdcc/*</include>
+                                <include>org/dataverse/*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-after-it</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/coverage-reports/jacoco-integration.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-integration-test-coverage-report</outputDirectory>
+                            <skip>${skipIntegrationTests}</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-merge-unit-and-it</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>merge</goal>
+                        </goals>
+                        <configuration>
+                            <fileSets>
+                                <fileSet>
+                                    <directory>${project.build.directory}/coverage-reports/</directory>
+                                    <includes>
+                                        <include>*.exec</include>
+                                    </includes>
+                                </fileSet>
+                            </fileSets>
+                            <destFile>${project.build.directory}/coverage-reports/merged.exec</destFile>
+                            <skip>${skipIntegrationTests}</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-report</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/coverage-reports/merged.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report</outputDirectory>
+                            <skip>${skipIntegrationTests}</skip>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
-                <version>4.0.0</version>
-            </plugin>
-            <plugin>
-                <!-- https://stackoverflow.com/questions/46177921/how-to-run-unit-tests-in-excludedgroups-in-maven -->
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
+                <version>4.3.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                        <version>2.3.1</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
-                    <!-- testsToExclude come from the profile-->
-                    <excludedGroups>${testsToExclude}</excludedGroups>
-                    <skip>${skipUnitTests}</skip>
+                    <jacocoReports>${project.reporting.outputDirectory}/jacoco-merged-test-coverage-report/jacoco.xml</jacocoReports>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- https://stackoverflow.com/questions/46177921/how-to-run-unit-tests-in-excludedgroups-in-maven -->
+                    <!-- testsToExclude come from the profile-->
+                    <excludedGroups>${testsToExclude}</excludedGroups>
+                    <skip>${skipUnitTests}</skip>
+                    <argLine>${surefire.jacoco.args} ${argLine}</argLine>
+                </configuration>
+            </plugin>
+            <!-- Run mvn verify to execute these Testcontainers based integration tests. Needs Docker! -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <groups>${it.groups}</groups>
+                    <argLine>${failsafe.jacoco.args} ${argLine}</argLine>
+                    <skip>${skipIntegrationTests}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.0.0</version>
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
                     <encoding>UTF-8</encoding>
@@ -827,50 +957,138 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <testsToExclude>edu.harvard.iq.dataverse.NonEssentialTests</testsToExclude>
+                <testsToExclude>not-essential-unittests</testsToExclude>
             </properties>
         </profile>
         <profile>
             <id>all-unit-tests</id>
         </profile>
         <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
-      <profile>
-        <id>Java9Plus</id>
-        <activation>
-          <jdk>[1.9</jdk>
-        </activation>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>3.8.0</version>
-              <configuration>
-                <release>11</release>
-                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
-                <compilerArgument>${compilerArgument}</compilerArgument>
-              </configuration>
-            </plugin>
-          </plugins>
-        </build>
-      </profile>
         <profile>
-            <id>tc</id>
+            <id>ct</id>
             <properties>
+                <!-- Let's go FAST here - building the image should be quick to do by default. -->
                 <skipUnitTests>true</skipUnitTests>
-                <postgresql.server.version>9.6</postgresql.server.version>
+                <skipIntegrationTests>true</skipIntegrationTests>
+                <!-- Once we truly run tests with Testcontainers, this should be switch to "docker", activating ITs -->
+                <packaging.type>docker-build</packaging.type>
+                <postgresql.server.version>16</postgresql.server.version>
+            
+                <app.image>gdcc/dataverse:${app.image.tag}</app.image>
+                <app.image.tag>unstable</app.image.tag>
+                <app.skipDeploy>false</app.skipDeploy>
+                <base.image>gdcc/base:${base.image.tag}</base.image>
+                <base.image.tag>unstable</base.image.tag>
+                <conf.image>gdcc/configbaker:${conf.image.tag}</conf.image>
+                <conf.image.tag>${app.image.tag}</conf.image.tag>
+    
+                <docker.platforms></docker.platforms>
+            
+                <!-- Variables as used in docker-compose.yml -->
+                <APP_IMAGE>${app.image}</APP_IMAGE>
+                <POSTGRES_VERSION>${postgresql.server.version}</POSTGRES_VERSION>
+                <SOLR_VERSION>${solr.version}</SOLR_VERSION>
+                <DATAVERSE_DB_USER>dataverse</DATAVERSE_DB_USER>
+                <SKIP_DEPLOY>${app.skipDeploy}</SKIP_DEPLOY>
             </properties>
+        
             <build>
                 <plugins>
+                    <!-- Build the exploded WAR target directory -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>exploded</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                        </configuration>
+                    </plugin>
+                
+                    <!-- Build image via Docker Maven Plugin -->
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <images>
+                                <!-- Dataverse Application image -->
+                                <image>
+                                    <alias>dev_dataverse</alias>
+                                    <name>${app.image}</name>
+                                    <build>
+                                        <buildx>
+                                            <platforms>
+                                                <platform>${docker.platforms}</platform>
+                                            </platforms>
+                                        </buildx>
+                                        <dockerFile>Dockerfile</dockerFile>
+                                        <args>
+                                            <BASE_IMAGE>${base.image}</BASE_IMAGE>
+                                        </args>
+                                        <filter>@</filter>
+                                        <assembly>
+                                            <descriptor>assembly.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                    
+                                    <run>
+                                    </run>
+                                    
+                                    <external>
+                                        <type>compose</type>
+                                        <basedir>${project.basedir}</basedir>
+                                        <composeFile>docker-compose-dev.yml</composeFile>
+                                    </external>
+                                </image>
+                                
+                                <image>
+                                    <alias>dev_bootstrap</alias>
+                                    <name>${conf.image}</name>
+                                    <build>
+                                        <buildx>
+                                            <platforms>
+                                                <platform>${docker.platforms}</platform>
+                                            </platforms>
+                                        </buildx>
+                                        <dockerFile>${project.basedir}/modules/container-configbaker/Dockerfile</dockerFile>
+                                        <args>
+                                            <SOLR_VERSION>${SOLR_VERSION}</SOLR_VERSION>
+                                        </args>
+                                        <filter>@</filter>
+                                        <assembly>
+                                            <descriptor>${project.basedir}/modules/container-configbaker/assembly.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                    
+                                    <!--
+                                        We skip the run here as it is already included in the external run config
+                                        above for the main image via the docker-compose file. Even if using
+                                        -Ddocker.filter=dev_bootstrap, the run config from above is still enforced.
+                                    -->
+                                    <run>
+                                        <skip>true</skip>
+                                    </run>
+                                </image>
+                            </images>
+                            <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>2.22.2</version>
+                        <version>${maven-failsafe-plugin.version}</version>
                         <configuration>
-                            <groups>testcontainers</groups>
+                            <groups>end2end</groups>
                             <systemPropertyVariables>
                                 <postgresql.server.version>${postgresql.server.version}</postgresql.server.version>
                             </systemPropertyVariables>
+                            <skip>${skipIntegrationTests}</skip>
                         </configuration>
                         <executions>
                             <execution>

@@ -73,10 +73,10 @@ Note that before we were asking `isGuest` and now we ask `isAuthenticated`, so t
 ## Other Added Things
 
 ### Settings bean
-Settings (in `edu.harvard.iq.dataverse.settings`) are where the application stores its more complex, admin-editable configuration. Technically, its a persistent `Map<String,String>`, that can be accessed via API (`edu.harvard.iq.dataverse.api.Admin`, on path `{server}/api/s/settings`). Currenly used for the signup mechanism.
+Settings (in `edu.harvard.iq.dataverse.settings`) are where the application stores its more complex, admin-editable configuration. Technically, its a persistent `Map<String,String>`, that can be accessed via API (`edu.harvard.iq.dataverse.api.Admin`, on path `{server}/api/s/settings`). Currently used for the signup mechanism.
 
 ### Admin API
-Accessible under url `{server}/api/s/`, API calls to this bean should be editing confugurations, allowing full indexing and more. The idea behing putting all of them under the `/s/` path is that we can later block these calls using a filter. This way, we could, say, allow access from localhost only. Or, we could block this completely based on some environemnt variable.
+Accessible under url `{server}/api/s/`, API calls to this bean should be editing configurations, allowing full indexing and more. The idea behind putting all of them under the `/s/` path is that we can later block these calls using a filter. This way, we could, say, allow access from localhost only. Or, we could block this completely based on some environment variable.
 
 ### `setup-all.sh` script
 A new script that sets up the users and the dataverses, sets the system up for built-in signup, and then indexes the dataverses using solr. Requires the [jq utility](http://stedolan.github.io/jq/). On Macs with [homebrew](http://brew.sh) installed, getting this utility is a `brew install jq` command away.

@@ -20,15 +20,12 @@
 package edu.harvard.iq.dataverse.ingest;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.util.FileUtil;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -36,9 +33,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;
 
@@ -57,7 +54,7 @@ public class IngestUtil {
      *
      * @param version the dataset version
      * @param newFiles the list of new data files to add to it
-     * @param fileToReplace 
+     * @param fileToReplace
      */
     public static void checkForDuplicateFileNamesFinal(DatasetVersion version, List<DataFile> newFiles, DataFile fileToReplace) {
 
@@ -257,7 +254,7 @@ public class IngestUtil {
         // #6942 added proxy for existing files to a boolean set when dataset version copy is done
         for (Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator(); fmIt.hasNext();) {
             FileMetadata fm = fmIt.next();
-            if((fm.isInPriorVersion() || fm.getId() != null) && (replacedFmd==null) || (!fm.getDataFile().equals(replacedFmd.getDataFile()))) {
+            if((fm.isInPriorVersion() || fm.getId() != null) && (replacedFmd==null || !fm.getDataFile().equals(replacedFmd.getDataFile()))) {
                 String existingName = fm.getLabel();
                 String existingDir = fm.getDirectoryLabel();
 
@@ -350,7 +347,7 @@ public class IngestUtil {
             return false;
         }
         List<String> values = getUnfValuesOfFiles(version);
-        logger.fine("UNF values for files from Dataset version " + version.getSemanticVersion() + " from " + version.getDataset().getGlobalIdString() + ": " + values);
+        logger.fine("UNF values for files from Dataset version " + version.getSemanticVersion() + " from " + version.getDataset().getGlobalId().asString() + ": " + values);
         if (values.size() > 0) {
             return true;
         } else {

@@ -25,7 +25,6 @@
     configureTools - for single file, list of configureTools for the file
     bean - the named value of the backing bean for the below method(s), also used by isFilePg param
     unrestrictFileAction - name of the method on the above bean to call for unrestrict (method must take a boolean)    
-    editFileAction - for selected files, name of method on the above bean to send for edit metadata
     refreshTagsPopoupAction - for selected files, name of method on the above bean to refresh tags popup
     -->            
     </ui:remove>
@@ -38,18 +37,18 @@
         <p:commandLink onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                     return false;"                        
                        oncomplete="if(#{fileMetadata!=null}) window.location.assign('/editdatafiles.xhtml?selectedFileIds=#{fileMetadata.dataFile.id}&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}#{isFilePg?'&#38;referrer=FILE':''}&#38;version=#{fileMetadata.datasetVersion.version}')"
-                       action="#{bean[editFileAction]()}">
+                       action="#{bean.editFileMetadata()}">
             <h:outputText value="#{bundle['file.metadata']}"/>
         </p:commandLink>
     </li>
 
-    <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
+    <ui:fragment rendered="#{!bean.hasPublicStore}">
         <ui:fragment rendered="#{fileMetadata == null or !fileMetadata.restricted}">
             <li>
                 <p:commandLink  onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                                             return false;" 
                                 update="@([id$=accessPopup])"            
-                                oncomplete="PF('accessPopup').show();bind_bsui_components();">
+                                oncomplete="PF('accessPopup').show();">
                     <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                     <f:setPropertyActionListener target="#{bean.termsOfAccess}" value="#{datasetVersion.termsOfUseAndAccess.termsOfAccess}" />
                     <f:setPropertyActionListener target="#{bean.fileAccessRequest}" value="#{datasetVersion.termsOfUseAndAccess.fileAccessRequest}" />                     
@@ -78,26 +77,53 @@
             </h:outputLink>
         </li>
     </ui:fragment>
+    
+    <!-- Single file uningest/reingest -->
+    <ui:fragment rendered="#{isFilePg and (dataverseSession.user.superuser and FilePage.fileMetadata.dataFile.isTabularData()) or (FilePage.fileMetadata.dataFile.isIngestProblem() and FilePage.canPublishDataset())}">
+        <li>
+            <p:commandLink update="@form,:messagePanel" action="#{FilePage.uningestFile()}">
+                <h:outputText value="#{bundle['file.uningest']}"/>
+            </p:commandLink>
+        </li>
+    </ui:fragment>
+    <ui:fragment rendered="#{isFilePg and dataverseSession.user.superuser and FilePage.isIngestable()}">
+        <li>
+            <p:commandLink update="@form,:messagePanel" actionListener="#{FilePage.ingestFile()}">
+                <h:outputText value="#{bundle['file.ingest']}"/>
+            </p:commandLink>
+        </li>
+    </ui:fragment>
 
     <!-- TO-DO #3488 - ADD FILE TAGS FOR FILE PG AND SINGLE FILE-->    
     <ui:fragment rendered="#{fileMetadata==null}">    
         <li>
             <p:commandLink      update="@([id$=fileTagsPopup])" 
-                                onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
-                                            return false;" 
-                                oncomplete="PF('fileTagsPopup').show();"
+                                onclick="if (!testTermsOfAccess() || !(#{fileMetadata!=null} || testFilesSelected()))
+                                            return false;"                                 
                                 action="#{bean[refreshTagsPopoupAction]()}">            
                 <h:outputText value="#{bundle['file.tags']}"/>
             </p:commandLink>    
         </li>  
     </ui:fragment> 
+    
+    <ui:fragment rendered="#{settingsWrapper.embargoAllowed}">
+        <li>
+            <p:commandLink      update="@([id$=fileEmbargoPopup])" 
+                                onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
+                                            return false;" 
+                                oncomplete="PF('fileEmbargoPopup').show();">
+                                <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
+                <h:outputText value="#{bundle['file.embargo']}"/>
+            </p:commandLink> 
+        </li>
+    </ui:fragment>
 
     <!-- TO-DO #7342 - ADD PROVENANCE FOR SINGLE FILE-->    
     <ui:fragment rendered="#{isFilePg and systemConfig.provCollectionEnabled}">
         <li>
             <p:commandLink
                 update="@([id$=editProvenancePopup])"
-                oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
+                oncomplete="PF('editProvenancePopup').show();">
                 <f:actionListener binding="#{provPopupFragmentBean.updatePopupState(fileMetadata, true)}" /> <!--clearProvenanceUpdates() -->
                 #{bundle['file.provenance']} 
             </p:commandLink>

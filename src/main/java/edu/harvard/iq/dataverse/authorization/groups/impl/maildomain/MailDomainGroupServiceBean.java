@@ -9,14 +9,14 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.ejb.*;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.ws.rs.NotFoundException;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.*;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.ws.rs.NotFoundException;
 
 /**
  * A bean providing the {@link MailDomainGroupProvider}s with container services, such as database connectivity.
@@ -37,7 +37,7 @@ public class MailDomainGroupServiceBean {
     ConfirmEmailServiceBean confirmEmailSvc;
     @Inject
     ActionLogServiceBean actionLogSvc;
-	
+    
     MailDomainGroupProvider provider;
     List<MailDomainGroup> simpleGroups = Collections.EMPTY_LIST;
     Map<MailDomainGroup, Pattern> regexGroups = new HashMap<>();
@@ -78,7 +78,9 @@ public class MailDomainGroupServiceBean {
     public Set<MailDomainGroup> findAllWithDomain(AuthenticatedUser user) {
         
         // if the mail address is not verified, escape...
-        if (!confirmEmailSvc.hasVerifiedEmail(user)) { return Collections.emptySet(); }
+        if (!confirmEmailSvc.hasVerifiedEmail(user)) {
+            return Collections.emptySet();
+        }
         
         // otherwise start to bisect the mail and lookup groups.
         // NOTE: the email from the user has been validated via {@link EMailValidator} when persisted.
@@ -192,7 +194,9 @@ public class MailDomainGroupServiceBean {
      */
     static Optional<String> getDomainFromMail(String email) {
         String[] parts = email.split("@");
-        if (parts.length < 2) { return Optional.empty(); }
+        if (parts.length < 2) {
+            return Optional.empty();
+        }
         return Optional.of(parts[parts.length-1]);
     }
     

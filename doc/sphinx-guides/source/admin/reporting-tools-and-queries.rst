@@ -16,4 +16,6 @@ Reporting tools and queries created by members of the Dataverse community.
 
 * dataverse-metrics (<https://github.com/IQSS/dataverse-metrics>): Aggregates and visualizes metrics for Dataverse installations around the world or a single Dataverse installation.
 
+* Automated Dataverse Metrics Reports (<https://github.com/QualitativeDataRepository/dataverse-metrics>): Create beautiful, customizable reports about your Dataverse installation at the click of a button, using R-Markdown and GitHub Actions.
+
 * Useful queries from the Dataverse Community (<https://docs.google.com/document/d/1-Y_iUduSxdDNeK1yiGUxe7t-Md7Fy965jp4o4m1XEoE/edit#heading=h.avuoo5kf0mdt>): A community-generated and maintained document of postgresql queries for getting information about users and dataverse collections, datasets, and files in your Dataverse installation. If you are trying to find out some information from your Dataverse installation, chances are that someone else has had the same questions and it's now listed in this document. If it's not listed, please feel free to add it to the document.

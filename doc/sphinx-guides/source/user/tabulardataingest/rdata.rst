@@ -6,20 +6,19 @@ Support for R (.RData) files has been introduced in DVN 3.5.
 .. contents:: |toctitle|
     :local:
 
-Overview.
+Overview
 ===========
-
 
 R has been increasingly popular in the research/academic community,
 owing to the fact that it is free and open-source (unlike SPSS and
 STATA). Consequently, there is an increasing amount of data available
 exclusively in R format.  
 
-Data Formatting Requirements.
+Data Formatting Requirements
 ==============================
 
-The data must be formatted as an R dataframe (data.frame()). If an
-.RData file contains multiple dataframes, only the 1st one will be
+The data must be formatted as an R dataframe (``data.frame()``). If an
+.RData file contains multiple dataframes, only the first one will be
 ingested (this may change in the future).
 
 Data Types, compared to other supported formats (Stat, SPSS)
@@ -82,7 +81,7 @@ Boolean values
 R Boolean (logical) values are supported. 
 
 
-Limitations of R, as compared to SPSS and STATA. 
+Limitations of R, as compared to SPSS and STATA
 ------------------------------------------------
 
 Most noticeably, R lacks a standard mechanism for defining descriptive

@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.lang.reflect.Type;
@@ -63,6 +64,9 @@ public class OptionalFileParams {
     
     private boolean restrict = false;
     public static final String RESTRICT_ATTR_NAME = "restrict";
+
+    private boolean tabIngest = true;
+    public static final String TAB_INGEST_ATTR_NAME = "tabIngest";
     
     private String storageIdentifier;
     public static final String STORAGE_IDENTIFIER_ATTR_NAME = "storageIdentifier";
@@ -173,7 +177,15 @@ public class OptionalFileParams {
     public boolean getRestriction(){
         return this.restrict;
     }
-    
+
+    public void setTabIngest(boolean tabIngest) {
+        this.tabIngest = tabIngest;
+    }
+
+    public boolean getTabIngest() {
+        return this.tabIngest;
+    }
+
     public boolean hasCategories(){
         if ((categories == null)||(this.categories.isEmpty())){
             return false;
@@ -347,13 +359,28 @@ public class OptionalFileParams {
             
             this.restrict = Boolean.valueOf(jsonObj.get(RESTRICT_ATTR_NAME).getAsString());
         }
+
+        // -------------------------------
+        // get tabIngest as boolean
+        // -------------------------------
+        if ((jsonObj.has(TAB_INGEST_ATTR_NAME)) && (!jsonObj.get(TAB_INGEST_ATTR_NAME).isJsonNull())){
+
+            this.tabIngest = Boolean.valueOf(jsonObj.get(TAB_INGEST_ATTR_NAME).getAsString());
+        }
         
         // -------------------------------
         // get storage identifier as string
         // -------------------------------
         if ((jsonObj.has(STORAGE_IDENTIFIER_ATTR_NAME)) && (!jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).isJsonNull())){
+            // Basic sanity check that driver specified is defined and the overall
+            // identifier is consistent with that store's config. Note that being able to
+            // specify a driver that does not support direct uploads is currently used with
+            // out-of-band uploads, e.g. for bulk migration.
+            String storageId = jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).getAsString();
+            if (DataAccess.isValidDirectStorageIdentifier(storageId)) {
+                this.storageIdentifier = storageId;
+            }
 
-            this.storageIdentifier = jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).getAsString();
         }
         
         // -------------------------------
@@ -377,7 +404,7 @@ public class OptionalFileParams {
         // -------------------------------
         if ((jsonObj.has(LEGACY_CHECKSUM_ATTR_NAME)) && (!jsonObj.get(LEGACY_CHECKSUM_ATTR_NAME).isJsonNull())){
 
-            this.checkSumValue = jsonObj.get(LEGACY_CHECKSUM_ATTR_NAME).getAsString();
+            this.checkSumValue = jsonObj.get(LEGACY_CHECKSUM_ATTR_NAME).getAsString().toLowerCase();
             this.checkSumType= ChecksumType.MD5;
         }
         // -------------------------------
@@ -385,7 +412,7 @@ public class OptionalFileParams {
         // -------------------------------
         else if ((jsonObj.has(CHECKSUM_OBJECT_NAME)) && (!jsonObj.get(CHECKSUM_OBJECT_NAME).isJsonNull())){
 
-            this.checkSumValue = ((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_VALUE).getAsString();
+            this.checkSumValue = ((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_VALUE).getAsString().toLowerCase();
             this.checkSumType = ChecksumType.fromString(((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_TYPE).getAsString());
 
         }

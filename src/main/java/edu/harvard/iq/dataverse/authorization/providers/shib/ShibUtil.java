@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import edu.harvard.iq.dataverse.EMailValidator;
+import edu.harvard.iq.dataverse.validation.EMailValidator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class ShibUtil {
 
@@ -133,7 +133,24 @@ public class ShibUtil {
         return singleValue;
     }
 
+    /**
+     * @deprecated because of a typo; use {@link #generateFriendlyLookingUserIdentifier(String, String)} instead
+     * @see #generateFriendlyLookingUserIdentifier(String, String)
+     * @param usernameAssertion
+     * @param email
+     * @return a friendly-looking user identifier based on the asserted username or email, or a UUID as fallback
+     */
+    @Deprecated
     public static String generateFriendlyLookingUserIdentifer(String usernameAssertion, String email) {
+        return generateFriendlyLookingUserIdentifier(usernameAssertion, email);
+    }
+
+    /**
+     * @param usernameAssertion
+     * @param email
+     * @return a friendly-looking user identifier based on the asserted username or email, or a UUID as fallback
+     */
+    public static String generateFriendlyLookingUserIdentifier(String usernameAssertion, String email) {
         if (usernameAssertion != null && !usernameAssertion.isEmpty()) {
             return usernameAssertion;
         }
@@ -151,7 +168,7 @@ public class ShibUtil {
                     logger.fine(ex + " parsing " + email);
                 }
             } else {
-                boolean passedValidation = EMailValidator.isEmailValid(email, null);
+                boolean passedValidation = EMailValidator.isEmailValid(email);
                 logger.fine("Odd email address. No @ sign ('" + email + "'). Passed email validation: " + passedValidation);
             }
         } else {
@@ -259,6 +276,28 @@ public class ShibUtil {
         request.setAttribute(ShibUtil.lastNameAttribute, "Required");
         request.setAttribute(ShibUtil.emailAttribute, "missing@mailinator.com");
         request.setAttribute(ShibUtil.usernameAttribute, "missing");
+    }
+
+    static void mutateRequestForDevConstantOneAffiliation(HttpServletRequest request) {
+        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "oneAffiliation");
+        request.setAttribute(ShibUtil.firstNameAttribute, "Lurneen");
+        request.setAttribute(ShibUtil.lastNameAttribute, "Lumpkin");
+        request.setAttribute(ShibUtil.emailAttribute, "oneAffiliaton@mailinator.com");
+        request.setAttribute(ShibUtil.usernameAttribute, "oneAffiliaton");
+        // Affiliation. "ou" is the suggested attribute in :ShibAffiliationAttribute.
+        request.setAttribute("ou", "Beer-N-Brawl");
+    }
+
+    static void mutateRequestForDevConstantTwoAffiliations(HttpServletRequest request) {
+        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "twoAffiliatons");
+        request.setAttribute(ShibUtil.firstNameAttribute, "Lenny");
+        request.setAttribute(ShibUtil.lastNameAttribute, "Leonard");
+        request.setAttribute(ShibUtil.emailAttribute, "twoAffiliatons@mailinator.com");
+        request.setAttribute(ShibUtil.usernameAttribute, "twoAffiliatons");
+        // Affiliation. "ou" is the suggested attribute in :ShibAffiliationAttribute.
+        request.setAttribute("ou", "SNPP;Stonecutters");
     }
 
     public static Map<String, String> getRandomUserStatic() {

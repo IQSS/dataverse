@@ -1,11 +1,14 @@
 package edu.harvard.iq.dataverse.util;
 
 import java.util.Arrays;
-import java.util.Locale;
+import java.util.List;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class BundleUtilTest {
 
@@ -20,7 +23,7 @@ public class BundleUtilTest {
 
     @Test
     public void testGetStringFromBundleWithArguments() {
-        assertEquals(null, BundleUtil.getStringFromBundle(null, null));
+        assertEquals(null, BundleUtil.getStringFromBundle(null, (List<String>) null));
         String actual = BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList("http://guides.dataverse.org/en", "4.0"));
         String expected = "You have successfully created your dataverse! To learn more about what you can do with your dataverse, check out the <a href=\"http://guides.dataverse.org/en/4.0/user/dataverse-management.html\" title=\"Dataverse Management - Dataverse User Guide\" target=\"_blank\">User Guide</a>.";
         assertEquals(expected, actual);
@@ -78,14 +81,14 @@ public class BundleUtilTest {
     }
 
     //To assure that the MissingResourceException bubble up from this call
-    @Test(expected = MissingResourceException.class)
-    public void testStringFromPropertyFileException() {
-        BundleUtil.getStringFromPropertyFile("FAKE","MimeTypeFacets");
+    @Test
+    void testStringFromPropertyFileException() {
+        assertThrows(MissingResourceException.class, () -> BundleUtil.getStringFromPropertyFile("FAKE","MimeTypeFacets"));
     }
     
     //To assure MissingResourceException is caught when calling normal bundle calls
     @Test
-    public void testNoErrorNonExistentStringBundle() {
-        BundleUtil.getStringFromBundle("FAKE", null, BundleUtil.getResourceBundle("MimeTypeFacets")); 
+    void testNoErrorNonExistentStringBundle() {
+        assertDoesNotThrow(() -> BundleUtil.getStringFromBundle("FAKE", null, BundleUtil.getResourceBundle("MimeTypeFacets")));
     }
 }

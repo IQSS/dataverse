@@ -8,10 +8,10 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -46,13 +46,6 @@ public class RolePermissionHelperPage implements java.io.Serializable {
         List<DataverseRole> roleList = dataverseRoleService.findAll();
         rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
 
-        
-        List<String> dtypes = MyDataFilterParams.defaultDvObjectTypes;
-        //List<String> dtypes = Arrays.asList(DvObject.DATAFILE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING);
-        //DvObject.DATAFILE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING, DvObject.DATAVERSE_DTYPE_STRING
-        
-        //List<String> dtypes = new ArrayList<>();
-        
         return null;
     }
     

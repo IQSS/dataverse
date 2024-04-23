@@ -20,8 +20,8 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata;
 
 import java.util.*;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 /**
  * A class that stores information about a variables' invalid data.
  * Akio Sone's original DVN v.2.* implementation, virtually unchanged. 

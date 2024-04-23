@@ -2,11 +2,11 @@ package edu.harvard.iq.dataverse.api.errorhandlers;
 
 import edu.harvard.iq.dataverse.api.util.JsonResponseBuilder;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,12 +27,11 @@ public class ThrowableHandler implements ExceptionMapper<Throwable>{
     
     @Override
     public Response toResponse(Throwable ex){
-        ex.printStackTrace();
         return JsonResponseBuilder.error(Response.Status.INTERNAL_SERVER_ERROR)
             .randomIncidentId()
             .internalError(ex)
             .request(request)
-            .log(logger, Level.SEVERE, Optional.of(ex))
+            .log(logger, Level.SEVERE, Optional.of(ex), true)
             .build();
     }
 }

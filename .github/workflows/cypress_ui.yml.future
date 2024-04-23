@@ -1,0 +1,42 @@
+###############################################################################
+#
+#   THIS IS AN OLD TRAVIS-CI.ORG JOB FILE
+#   To be used with Github Actions, it would be necessary to refactor it.
+#   In addition, it needs to be rewritten to use our modern containers.
+#   Keeping it as the future example it has been before.
+#   See also #5846
+#
+###############################################################################
+
+services:
+  - docker
+
+jobs:
+  include:
+    # Execute Cypress for UI testing
+    # see https://docs.cypress.io/guides/guides/continuous-integration.html
+    - stage: test
+      language: node_js
+      node_js:
+        - "10"
+      addons:
+        apt:
+          packages:
+            # Ubuntu 16+ does not install this dependency by default, so we need to install it ourselves
+            - libgconf-2-4
+      cache:
+        # Caches $HOME/.npm when npm ci is default script command
+        # Caches node_modules in all other cases
+        npm: true
+        directories:
+          # we also need to cache folder with Cypress binary
+          - ~/.cache
+      before_install:
+        - cd tests
+      install:
+        - npm ci
+      before_script:
+        - ./run_docker_dataverse.sh
+      script:
+        # --key needs to be injected using CYPRESS_RECORD_KEY to keep it secret
+        - $(npm bin)/cypress run --record

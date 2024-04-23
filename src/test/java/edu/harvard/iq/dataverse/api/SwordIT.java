@@ -1,32 +1,39 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
-import edu.harvard.iq.dataverse.GlobalId;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.startsWith;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * In all these tests you should never see something like "[long string exposing
@@ -44,8 +51,11 @@ public class SwordIT {
     private static String superuser;
     private static final String rootDataverseAlias = "root";
     private static String apiTokenSuperuser;
+    
+    private static final String rootDvNotPublished = "Many of these SWORD tests require that the root dataverse collection has been published. Publish the root dataverse and then re-run these tests.";
+    private static final String rootDvLackPermissions = "Many of these SWORD tests require you set permissions for the root dataverse collection: \"Anyone with a Dataverse account can add sub dataverses and datasets\" + curator role for new datasets. Please set and re-run these tests.";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
         boolean testAgainstDev1 = false;
@@ -53,20 +63,32 @@ public class SwordIT {
             RestAssured.baseURI = "https://dev1.dataverse.org";
         }
         Response createUser = UtilIT.createRandomUser();
-        createUser.prettyPrint();
+        //createUser.prettyPrint();
         superuser = UtilIT.getUsernameFromResponse(createUser);
         apiTokenSuperuser = UtilIT.getApiTokenFromResponse(createUser);
         String apitoken = UtilIT.getApiTokenFromResponse(createUser);
         UtilIT.makeSuperUser(superuser).then().assertThat().statusCode(OK.getStatusCode());
+        
+        // check that root dataverse has been released
         Response checkRootDataverse = UtilIT.listDatasetsViaSword(rootDataverseAlias, apitoken);
-        checkRootDataverse.prettyPrint();
-        checkRootDataverse.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        boolean rootDataverseHasBeenReleased = checkRootDataverse.getBody().xmlPath().getBoolean("feed.dataverseHasBeenReleased");
-        if (!rootDataverseHasBeenReleased) {
-            logger.info("Many of these SWORD tests require that the root dataverse has been published. Publish the root dataverse and then re-run these tests.");
-            System.exit(666);
+        //checkRootDataverse.prettyPrint();
+        checkRootDataverse.then().assertThat().statusCode(OK.getStatusCode());
+        assumeTrue(checkRootDataverse.getBody().xmlPath().getBoolean("feed.dataverseHasBeenReleased"), rootDvNotPublished);
+        
+        // check that root dataverse has permissions for any user set to dataverse + dataset creator (not admin, not curator!)
+        checkRootDataverse = UtilIT.getRoleAssignmentsOnDataverse(rootDataverseAlias, apiTokenSuperuser);
+        //checkRootDataverse.prettyPrint();
+        checkRootDataverse.then().assertThat().statusCode(OK.getStatusCode());
+        List<Map<String, String>> rootDatavereRoles = checkRootDataverse.getBody().jsonPath().getList("data");
+        boolean properPermissionsSet = false;
+        for (Map assignment : rootDatavereRoles) {
+            if (assignment.get("assignee").equals(":authenticated-users") &&
+                assignment.get("_roleAlias").equals("fullContributor")) {
+                properPermissionsSet = true;
+                break;
+            }
         }
+        assumeTrue(properPermissionsSet, rootDvLackPermissions);
 
     }
 
@@ -176,6 +198,13 @@ public class SwordIT {
         assertEquals(CREATED.getStatusCode(), createDatasetResponse.getStatusCode());
         String persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDatasetResponse);
         logger.info("persistent id: " + persistentId);
+
+        Response getJson = UtilIT.nativeGetUsingPersistentId(persistentId, apiToken);
+        getJson.prettyPrint();
+        getJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.license.name", equalTo("CC0 1.0"))
+                .body("data.latestVersion.license.uri", equalTo("http://creativecommons.org/publicdomain/zero/1.0"));
 
         Response atomEntryUnAuth = UtilIT.getSwordAtomEntry(persistentId, apiTokenNoPrivs);
         atomEntryUnAuth.prettyPrint();
@@ -360,21 +389,19 @@ public class SwordIT {
 
         String persistentId = null;
         Integer datasetId = null;
-        String protocol;
-        String authority;
-        String identifier = null;
 
         Response createDataset = UtilIT.createDatasetViaSwordApi(rootDataverseAlias, datasetTitle, apiTokenContributor);
-        createDataset.prettyPrint();
+        String createResponse = createDataset.prettyPrint();
         createDataset.then().assertThat()
                 .statusCode(CREATED.getStatusCode())
                 .body("entry.treatment", equalTo("no treatment information available"));
 
         persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
-        GlobalId globalId = new GlobalId(persistentId);
-        protocol = globalId.getProtocol();
-        authority = globalId.getAuthority();
-        identifier = globalId.getIdentifier();
+        //previsouly the test parsed the persistentID but this is now done via PIDProviderBeans
+        //Instead, verify it starts with the protocol and the rest was what was returned in the createDataset call
+        assertTrue(persistentId.startsWith("doi:"));
+        String identifier = persistentId.substring(4);
+        assertTrue(createResponse.contains(identifier));
 
         Response listDatasetsAtRoot = UtilIT.listDatasetsViaSword(rootDataverseAlias, apiTokenContributor);
         listDatasetsAtRoot.prettyPrint();
@@ -620,6 +647,120 @@ public class SwordIT {
 
     }
 
+
+    @Test
+    public void testLicenses() {
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        String title = "License to Kill";
+        String description = "Spies in 1989";
+        String license = "NONE";
+        Response failToCreateDataset1 = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, apiToken);
+        failToCreateDataset1.prettyPrint();
+        // As of 5.10 and PR #7920, you cannot pass NONE as a license.
+        failToCreateDataset1.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        String rights = "Call me";
+        Response failToCreateDataset2 = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, rights, apiToken);
+        failToCreateDataset2.prettyPrint();
+        // You can't pass both license and rights
+        failToCreateDataset2.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        license = "CC0 1.0";
+        Response createDataset = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
+
+        Response getJson = UtilIT.nativeGetUsingPersistentId(persistentId, apiToken);
+        getJson.prettyPrint();
+        getJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.license.name", equalTo("CC0 1.0"))
+                .body("data.latestVersion.license.uri", equalTo("http://creativecommons.org/publicdomain/zero/1.0"))
+                .body("data.latestVersion.termsOfUse", equalTo(null));
+    }
+
+    @Test
+    public void testCustomTerms() {
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        String title = "Terms of Endearment";
+        String description = "Aurora, etc.";
+        String license = null;
+        String rights = "Call me";
+        Response createDataset = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, rights, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
+
+        Response getJson = UtilIT.nativeGetUsingPersistentId(persistentId, apiToken);
+        getJson.prettyPrint();
+        getJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.termsOfUse", equalTo("Call me"))
+                .body("data.latestVersion.license", equalTo(null));
+
+        UtilIT.setSetting(SettingsServiceBean.Key.AllowCustomTermsOfUse, "false")
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDatasetCustomTermsDisabled = UtilIT.createDatasetViaSwordApi(dataverseAlias, title, description, license, rights, apiToken);
+        createDatasetCustomTermsDisabled.prettyPrint();
+        createDatasetCustomTermsDisabled.then().assertThat()
+                //  <summary>Custom Terms (dcterms:rights) are not allowed.</summary>
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // cleanup, allow custom terms again (delete because it defaults to true)
+        UtilIT.deleteSetting(SettingsServiceBean.Key.AllowCustomTermsOfUse);
+
+    }
+
+    @Test
+    public void testXmlExampleInGuides() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        File exampleFile = new File("doc/sphinx-guides/source/api/sword-atom-entry.xml");
+        String xmlIn = new String(java.nio.file.Files.readAllBytes(Paths.get(exampleFile.getAbsolutePath())));
+        Response createDataset = UtilIT.createDatasetViaSwordApiFromXML(dataverseAlias, xmlIn, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+    }
+
     /**
      * This test requires the root dataverse to have been published already.
      *
@@ -714,7 +855,7 @@ public class SwordIT {
         List<String> oneFileLeftInV2Draft = statement3.getBody().xmlPath().getList("feed.entry.id");
         logger.info("Number of files remaining in this post version 1 draft:" + oneFileLeftInV2Draft.size());
         assertEquals(1, oneFileLeftInV2Draft.size());
-
+        UtilIT.sleepForLock(datasetPersistentId, "EditInProgress", apiToken, UtilIT.MAXIMUM_PUBLISH_LOCK_DURATION);
         Response deleteIndex1b = UtilIT.deleteFile(Integer.parseInt(index1b), apiToken);
         deleteIndex1b.then().assertThat()
                 .statusCode(NO_CONTENT.getStatusCode());
@@ -827,8 +968,10 @@ public class SwordIT {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
+        // cleanup, allow custom terms again (delete because it defaults to true)
+        UtilIT.deleteSetting(SettingsServiceBean.Key.AllowCustomTermsOfUse);
         UtilIT.deleteUser(superuser);
     }
 

@@ -20,29 +20,30 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.apache.commons.lang.StringUtils;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
+import org.apache.commons.lang3.StringUtils;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.persistence.NoResultException;
-import javax.persistence.TypedQuery;
-import javax.ws.rs.core.Response.Status;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.TypedQuery;
+import jakarta.ws.rs.core.Response.Status;
 
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
@@ -108,18 +109,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 sb.append(cause.getClass().getCanonicalName()).append(" ");
                 sb.append(cause.getMessage()).append(" ");
                 if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append("(invalid value: <<<")
-                                .append(violation.getInvalidValue())
-                                .append(">>> for ")
-                                .append(violation.getPropertyPath())
-                                .append(" at ")
-                                .append(violation.getLeafBean())
-                                .append(" - ")
-                                .append(violation.getMessage())
-                                .append(")");
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                 }
             }
             return error(Status.INTERNAL_SERVER_ERROR, sb.toString());
@@ -137,6 +127,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             String solrFieldSearchable = dsf.getSolrField().getNameSearchable();
             String solrFieldFacetable = dsf.getSolrField().getNameFacetable();
             String metadataBlock = dsf.getMetadataBlock().getName();
+            String uri=dsf.getUri();
             boolean hasParent = dsf.isHasParent();
             boolean allowsMultiples = dsf.isAllowMultiples();
             boolean isRequired = dsf.isRequired();
@@ -168,7 +159,8 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                     .add("parentAllowsMultiples", parentAllowsMultiplesDisplay)
                     .add("solrFieldSearchable", solrFieldSearchable)
                     .add("solrFieldFacetable", solrFieldFacetable)
-                    .add("isRequired", isRequired));
+                    .add("isRequired", isRequired)
+                    .add("uri", uri));
         
         } catch ( NoResultException nre ) {
             return notFound(name);
@@ -182,10 +174,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 sb.append(cause.getClass().getCanonicalName()).append(" ");
                 sb.append(cause.getMessage()).append(" ");
                 if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append("(invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage()).append(")");
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                 }
             }
             return error( Status.INTERNAL_SERVER_ERROR, sb.toString() );
@@ -218,7 +207,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     @GET
     @Path("loadNAControlledVocabularyValue")
     public Response loadNAControlledVocabularyValue() {
-        // the find will throw a javax.persistence.NoResultException if no values are in db
+        // the find will throw a NoResultException if no values are in db
 //            datasetFieldService.findNAControlledVocabularyValue();
         TypedQuery<ControlledVocabularyValue> naValueFinder = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.datasetFieldType is null AND o.strValue = :strvalue", ControlledVocabularyValue.class);
         naValueFinder.setParameter("strvalue", DatasetField.NA_VALUE);
@@ -356,7 +345,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                                                  int wrongIndex) {
 
         List<String> columns = getColumnsByHeader(header);
-
+        
         String column = columns.get(wrongIndex - 1);
         List<String> arguments = new ArrayList<>();
         arguments.add(header.name());

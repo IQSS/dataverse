@@ -4,6 +4,7 @@
   "persistentUrl": "https://doi.org/10.5072/FK2/PCA2E3",
   "protocol": "doi",
   "authority": "10.5072/FK2",
+  "metadataLanguage": "en",
   "datasetVersion": {
     "id": 2,
     "versionNumber": 1,
@@ -13,15 +14,26 @@
     "lastUpdateTime": "2015-09-24T17:07:57Z",
     "releaseTime": "2015-09-24T17:07:57Z",
     "createTime": "2015-09-24T16:47:51Z",
+    "license": {
+      "name": "CC0 1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+    },
     "metadataBlocks": {
       "citation": {
         "displayName": "Citation Metadata",
+        "name":"citation",
         "fields": [
           {
             "typeName": "title",
             "multiple": false,
             "typeClass": "primitive",
             "value": "Darwin's Finches"
+          },
+          {
+              "typeName": "alternativeTitle",
+              "multiple": true,
+              "typeClass": "primitive",
+              "value": ["Darwin's Finches Alternative Title1", "Darwin's Finches Alternative Title2"]
           },
           {
             "typeName": "author",
@@ -306,6 +318,7 @@
             },
             "geospatial": {
                 "displayName": "Geospatial",
+                "name":"geospatial",
                 "fields": [
                     {
                         "typeName": "geographicCoverage",
@@ -358,14 +371,14 @@
                                     "typeClass": "primitive",
                                     "value": "59.8"
                                 },
-                                "southLongitude": {
-                                    "typeName": "southLongitude",
+                                "southLatitude": {
+                                    "typeName": "southLatitude",
                                     "multiple": false,
                                     "typeClass": "primitive",
                                     "value": "41.6"
                                 },
-                                "northLongitude": {
-                                    "typeName": "northLongitude",
+                                "northLatitude": {
+                                    "typeName": "northLatitude",
                                     "multiple": false,
                                     "typeClass": "primitive",
                                     "value": "43.8"

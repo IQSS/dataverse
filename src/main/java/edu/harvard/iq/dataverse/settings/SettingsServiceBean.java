@@ -1,25 +1,33 @@
 package edu.harvard.iq.dataverse.settings;
 
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
-import java.io.StringReader;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 /**
  * Service bean accessing a persistent hash map, used as settings in the application.
@@ -37,6 +45,7 @@ public class SettingsServiceBean {
      * over your shoulder when typing strings in various places of a large app. 
      * So there.
      */
+    @SuppressWarnings("java:S115")
     public enum Key {
         AllowApiTokenLookupViaApi,
         /**
@@ -79,6 +88,15 @@ public class SettingsServiceBean {
          * StorageSite database table.
          */
         LocalDataAccessPath,
+        /**
+         * The algorithm used to generate PIDs, randomString (default) or
+         * storedProcedure
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,
@@ -163,7 +181,12 @@ public class SettingsServiceBean {
          *
          */
         SearchRespectPermissionRoot,
-        /** Solr hostname and port, such as "localhost:8983". */
+        /**
+         * Solr hostname and port, such as "localhost:8983".
+         * @deprecated New installations should not use this database setting, but use {@link JvmSettings#SOLR_HOST}
+         *             and {@link JvmSettings#SOLR_PORT}.
+         */
+        @Deprecated(forRemoval = true, since = "2022-12-23")
         SolrHostColonPort,
         /** Enable full-text indexing in solr up to max file size */
         SolrFullTextIndexing, //true or false (default)
@@ -176,28 +199,57 @@ public class SettingsServiceBean {
         SignUpUrl,
         /** Key for whether we allow users to sign up */
         AllowSignUp,
-        /** protocol for global id */
+        /**
+         * protocol for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Protocol,
-        /** authority for global id */
+        /**
+         * authority for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Authority,
-        /** DoiProvider for global id */
+        /**
+         * DoiProvider for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         DoiProvider,
-        /** Shoulder for global id - used to create a common prefix on identifiers */
+        /**
+         * Shoulder for global id - used to create a common prefix on identifiers
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Shoulder,
-        /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
-        DoiUsername,
-        DoiPassword,
-        DoiBaseurlstring,
-        */
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
 
+        CVocConf,
+
+        // Default calls per hour for each tier. csv format (30,60,...)
+        RateLimitingDefaultCapacityTiers,
+        // json defined list of capacities by tier and action list. See RateLimitSetting.java
+        RateLimitingCapacityByTierAndAction,
         /**
          * A link to an installation of https://github.com/IQSS/miniverse or
          * some other metrics app.
          */
         MetricsUrl,
-        
+
         /**
          * Number of minutes before a metrics query can be rerun. Otherwise a cached value is returned.
          * Previous month dates always return cache. Only applies to new internal caching system (not miniverse).
@@ -212,13 +264,12 @@ public class SettingsServiceBean {
         /* the number of files the GUI user is allowed to upload in one batch, 
             via drag-and-drop, or through the file select dialog */
         MultipleUploadFilesLimit,
-        /* Size limits for generating thumbnails on the fly */
-        /* (i.e., we'll attempt to generate a thumbnail on the fly if the 
-         * size of the file is less than this)
-        */
-        ThumbnailSizeLimitImage,
-        ThumbnailSizeLimitPDF,
-        /* return email address for system emails such as notifications */
+        /**
+         * Return email address for system emails such as notifications
+         * @deprecated Please replace usages with {@link edu.harvard.iq.dataverse.MailServiceBean#getSystemAddress},
+         *             which is backward compatible with this setting.
+         */
+        @Deprecated(since = "6.2", forRemoval = true)
         SystemEmail, 
         /* size limit for Tabular data file ingests */
         /* (can be set separately for specific ingestable formats; in which 
@@ -228,6 +279,10 @@ public class SettingsServiceBean {
         SPSS/sav format, "RData" for R, etc.
         for example: :TabularIngestSizeLimit:RData */
         TabularIngestSizeLimit,
+        /* Validate physical files in the dataset when publishing, if the dataset size less than the threshold limit */
+        DatasetChecksumValidationSizeLimit,
+        /* Validate physical files in the dataset when publishing, if the datafile size less than the threshold limit */
+        DataFileChecksumValidationSizeLimit,
         /**
          The message added to a popup upon dataset publish
          * 
@@ -334,10 +389,16 @@ public class SettingsServiceBean {
          */
         PVCustomPasswordResetAlertMessage,
         /*
-        String to describe DOI format for data files. Default is DEPENDENT. 
-        'DEPENEDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
-        'INDEPENDENT' means a new global id, completely independent from the dataset-level global id.
-        */
+         * String to describe DOI format for data files. Default is DEPENDENT.
+         * 'DEPENDENT' means the DOI will be the Dataset DOI plus a file DOI with a
+         * slash in between. 'INDEPENDENT' means a new global id, completely independent
+         * from the dataset-level global id.
+         *
+         * @deprecated New installations should not use this database setting, but use
+         * the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         DataFilePIDFormat, 
         /* Json array of supported languages
         */
@@ -345,7 +406,7 @@ public class SettingsServiceBean {
         /*
         Number for the minimum number of files to send PID registration to asynchronous workflow
         */
-        PIDAsynchRegFileCount,
+        //PIDAsynchRegFileCount,
         /**
          * 
          */
@@ -353,8 +414,23 @@ public class SettingsServiceBean {
 
         /**
          * Indicates if the Handle service is setup to work 'independently' (No communication with the Global Handle Registry)
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
          */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         IndependentHandleService,
+
+        /**
+        Handle to use for authentication if the default is not being used
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
+        HandleAuthHandle,
 
         /**
          * Archiving can be configured by providing an Archiver class name (class must extend AstractSubmitToArchiverCommand)
@@ -385,9 +461,10 @@ public class SettingsServiceBean {
          */
         InheritParentRoleAssignments,
         
-        /** Make Data Count Logging and Display */
+        /** Make Data Count Logging, Display, and Start Date */
         MDCLogPath, 
         DisplayMDCMetrics,
+        MDCStartDate,
 
         /**
          * Allow CORS flag (true or false). It is true by default
@@ -410,6 +487,14 @@ public class SettingsServiceBean {
          */
         ShibAttributeCharacterSetConversionEnabled,
         /**
+         *Return the last or first value of an array of affiliation names
+         */
+        ShibAffiliationOrder,
+         /**
+         *Split the affiliation array on given string, default ";"
+         */
+        ShibAffiliationSeparator,
+        /**
          * Validate physical files for all the datafiles in the dataset when publishing
          */
         FileValidationOnPublishEnabled,
@@ -422,8 +507,7 @@ public class SettingsServiceBean {
         /**
          * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
          */
-        ChronologicalDateFacets,
-        
+        ChronologicalDateFacets, 
         /**
          * Used where BrandingUtil.getInstallationBrandName is called, overides the default use of the root Dataverse collection name
          */
@@ -433,7 +517,151 @@ public class SettingsServiceBean {
          * Installation Brand Name is always included (default/false) or is not included
          * when the Distributor field (citation metadatablock) is set (true)
          */
-        ExportInstallationAsDistributorOnlyWhenNotSet
+        ExportInstallationAsDistributorOnlyWhenNotSet,
+
+        /** Globus App URL
+         * 
+         */
+        GlobusAppUrl,
+        /** Globus Polling Interval how long in seconds Dataverse waits between checks on Globus upload status checks
+         * 
+         */
+        GlobusPollingInterval,
+        /**Enable single-file download/transfers for Globus
+         *
+         */
+        GlobusSingleFileTransfer,
+        /**
+         * Optional external executables to run on the metadata for dataverses 
+         * and datasets being published; as an extra validation step, to 
+         * check for spam, etc. 
+         */
+        DataverseMetadataValidatorScript,
+        DatasetMetadataValidatorScript,
+        DataverseMetadataPublishValidationFailureMsg,
+        DataverseMetadataUpdateValidationFailureMsg,
+        DatasetMetadataValidationFailureMsg,
+        ExternalValidationAdminOverride,
+        /**
+         * A comma-separated list of field type names that should be 'withheld' when
+         * dataset access occurs via a Private Url with Anonymized Access (e.g. to
+         * support anonymized review). A suggested minimum includes author,
+         * datasetContact, and contributor, but additional fields such as depositor, grantNumber, and
+         * publication might also need to be included.
+         */
+        AnonymizedFieldTypeNames,
+        /**
+         * A Json array containing key/values corresponding the the allowed languages
+         * for entering metadata. FOrmat matches that of the Languages setting: e.g.
+         * '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]' with
+         * the locale being an ISO-639 code for that language (2 and 3 letter codes from
+         * the 639-2 and 639-3 standards are allowed. These will be used directly in
+         * metadata exports) and the title containing a human readable string. These
+         * values are selectable at the Dataverse level and apply to Dataset metadata.
+         */
+        MetadataLanguages,
+        /**
+         * A boolean setting that, if true will send an email and notification to users
+         * when a Dataset is created. Messages go to those who have the
+         * ability/permission necessary to publish the dataset
+         */
+        SendNotificationOnDatasetCreation,
+        /**
+         * A JSON Object containing named comma separated sets(s) of allowed labels (up
+         * to 32 characters, spaces allowed) that can be set on draft datasets, via API
+         * or UI by users with the permission to publish a dataset. (Set names are
+         * string keys, labels are a JSON array of strings). These should correspond to
+         * the states in an organizations curation process(es) and are intended to help
+         * users/curators track the progress of a dataset through an externally defined
+         * curation process. Only one set of labels are allowed per dataset (defined via
+         * API by a superuser per collection (UI or API) or per dataset (API only)). A
+         * dataset may only have one label at a time and if a label is set, it will be
+         * removed at publication time. This functionality is disabled when this setting
+         * is empty/not set.
+         */
+        AllowedCurationLabels,
+        /** This setting enables Embargo capabilities in Dataverse and sets the maximum Embargo duration allowed.
+         * 0 or not set: new embargoes disabled
+         * -1: embargo enabled, no time limit
+         * n: embargo enabled with n months the maximum allowed duration
+         */
+        MaxEmbargoDurationInMonths,
+        /*
+         * Include "Custom Terms" as an item in the license drop-down or not.
+         */
+        AllowCustomTermsOfUse,
+        /*
+         * Allow users to mute notifications or not.
+         */
+        ShowMuteOptions,
+        /*
+         * List (comma separated, e.g., "ASSIGNROLE,REVOKEROLE", extra whitespaces are trimmed such that "ASSIGNROLE, REVOKEROLE"
+         * would also work) of always muted notifications that cannot be turned on by the users.
+         */
+        AlwaysMuted,
+        /*
+         * List (comma separated, e.g., "ASSIGNROLE,REVOKEROLE", extra whitespaces are trimmed such that "ASSIGNROLE, REVOKEROLE"
+         * would also work) of never muted notifications that cannot be turned off by the users. AlwaysMuted setting overrides
+         * Nevermuted setting warning is logged.
+         */
+        NeverMuted,
+        /**
+         * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
+         */
+        LDNMessageHosts,
+
+        /*
+         * Allow a custom JavaScript to control values of specific fields.
+         */
+        ControlledVocabularyCustomJavaScript, 
+        /**
+         * A compound setting for disabling signup for remote Auth providers:
+         */
+        AllowRemoteAuthSignUp,
+        /**
+         * The URL for the DvWebLoader tool (see github.com/gdcc/dvwebloader for details)
+         */
+        WebloaderUrl, 
+        /**
+         * Enforce storage quotas:
+         */
+        UseStorageQuotas, 
+        /** 
+         * Placeholder storage quota (defines the same quota setting for every user; used to test the concept of a quota.
+         */
+        StorageQuotaSizeInBytes,
+
+        /**
+         * A comma-separated list of CategoryName in the desired order for files to be
+         * sorted in the file table display. If not set, files will be sorted
+         * alphabetically by default. If set, files will be sorted by these categories
+         * and alphabetically within each category.
+         */
+        CategoryOrder,
+        /**
+         * True(default)/false option deciding whether ordering by folder should be applied to the 
+         * dataset listing of datafiles.
+         */
+        OrderByFolder,
+        /**
+         * True/false(default) option deciding whether the dataset file table display should include checkboxes
+         * allowing users to dynamically turn folder and category ordering on/off.
+         */
+        AllowUserManagementOfOrder,
+        /*
+         * True/false(default) option deciding whether file PIDs can be enabled per collection - using the Dataverse/collection set attribute API call.
+         */
+        AllowEnablingFilePIDsPerCollection,
+        /**
+         * Allows an instance admin to disable Solr search facets on the collection
+         * and dataset pages instantly
+         */
+        DisableSolrFacets,
+        /**
+         * When ingesting tabular data files, store the generated tab-delimited 
+         * files *with* the variable names line up top. 
+         */
+        StoreIngestedTabularFilesWithVarHeaders
         ;
 
         @Override
@@ -465,7 +693,7 @@ public class SettingsServiceBean {
     }
     
     /**
-     * Same as {@link #get(java.lang.String)}, but with static checking.
+     * Same as {@link #get(String)}, but with static checking.
      * @param key Enum value of the name.
      * @return The setting, or {@code null}.
      */
@@ -521,8 +749,8 @@ public class SettingsServiceBean {
     	   try {
     		   return Long.parseLong(val);
     	   } catch (NumberFormatException ex) {
-    		   try ( StringReader rdr = new StringReader(val) ) {
-    			   JsonObject settings = Json.createReader(rdr).readObject();
+    		   try {
+    			   JsonObject settings = JsonUtil.getJsonObject(val);
     			   if(settings.containsKey(param)) {
     				   return Long.parseLong(settings.getString(param));
     			   } else if(settings.containsKey("default")) {
@@ -538,7 +766,39 @@ public class SettingsServiceBean {
     	   }
 
        }
+       
+    /**
+     * Same, but with Booleans 
+     * (returns null if not set; up to the calling method to decide what that should
+     * default to in each specific case)
+     * Example:
+     * :AllowRemoteAuthSignUp	{"default":"true","google":"false"}
+     */
     
+    public Boolean getValueForCompoundKeyAsBoolean(Key key, String param) {
+
+        String val = this.getValueForKey(key);
+
+        if (val == null) {
+            return null;
+        }
+
+        try {
+            JsonObject settings = JsonUtil.getJsonObject(val);
+            if (settings.containsKey(param)) {
+                return Boolean.parseBoolean(settings.getString(param));
+            } else if (settings.containsKey("default")) {
+                return Boolean.parseBoolean(settings.getString("default"));
+            } else {
+                return null;
+            }
+
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Incorrect setting.  Could not convert \"{0}\" from setting {1} to boolean: {2}", new Object[]{val, key.toString(), e.getMessage()});
+            return null;
+        }
+
+    }
     /**
      * Return the value stored, or the default value, in case no setting by that
      * name exists. The main difference between this method and the other {@code get()}s
@@ -643,6 +903,15 @@ public class SettingsServiceBean {
     public boolean isFalseForKey( Key key, boolean defaultValue ) {
         return ! isTrue( key.toString(), defaultValue );
     }
+
+    public boolean containsCommaSeparatedValueForKey(Key key, String value) {
+        final String tokens = getValueForKey(key);
+        if (tokens == null || tokens.isEmpty()) {
+            return false;
+        }
+        return Collections.list(new StringTokenizer(tokens, ",")).stream()
+            .anyMatch(token -> ((String) token).trim().equals(value));
+    }
             
     public void deleteValueForKey( Key name ) {
         delete( name.toString() );
@@ -669,5 +938,52 @@ public class SettingsServiceBean {
         return new HashSet<>(em.createNamedQuery("Setting.findAll", Setting.class).getResultList());
     }
     
+    public Map<String, String> getBaseMetadataLanguageMap(Map<String,String> languageMap, boolean refresh) {
+        if (languageMap == null || refresh) {
+            languageMap = new HashMap<String, String>();
+
+            /* If MetadataLanaguages is set, use it.
+             * If not, we can't assume anything and should avoid assuming a metadata language
+             */
+            String mlString = getValueForKey(SettingsServiceBean.Key.MetadataLanguages,"");
+            
+            if(mlString.isEmpty()) {
+                mlString="[]";
+            }
+            JsonArray languages = JsonUtil.getJsonArray(mlString);
+            for(JsonValue jv: languages) {
+                JsonObject lang = (JsonObject) jv;
+                languageMap.put(lang.getString("locale"), lang.getString("title"));
+            }
+        }
+        return languageMap;
+    }
     
+    public void initLocaleSettings(Map<String, String> configuredLocales) {
+        
+        try {
+            JSONArray entries = new JSONArray(getValueForKey(SettingsServiceBean.Key.Languages, "[]"));
+            for (Object obj : entries) {
+                JSONObject entry = (JSONObject) obj;
+                String locale = entry.getString("locale");
+                String title = entry.getString("title");
+
+                configuredLocales.put(locale, title);
+            }
+        } catch (JSONException e) {
+            //e.printStackTrace();
+            // do we want to know? - probably not
+        }
+    }
+    
+
+    public Set<String> getConfiguredLanguages() {
+        Set<String> langs = new HashSet<String>();
+        langs.addAll(getBaseMetadataLanguageMap(new HashMap<String, String>(), true).keySet());
+        Map<String, String> configuredLocales = new LinkedHashMap<>();
+        initLocaleSettings(configuredLocales);
+        langs.addAll(configuredLocales.keySet());
+        return langs;
+    }
+
 }

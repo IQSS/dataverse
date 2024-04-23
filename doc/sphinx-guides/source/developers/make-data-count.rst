@@ -30,15 +30,13 @@ Full Setup
 
 The recommended way to work on the Make Data Count feature is to spin up an EC2 instance that has both the Dataverse Software and Counter Processor installed. Go to the :doc:`deployment` page for details on how to spin up an EC2 instance and make sure that your Ansible file is configured to install Counter Processor before running the "create" script.
 
-(Alternatively, you can try installing Counter Processor in Vagrant. :download:`setup-counter-processor.sh <../../../../scripts/vagrant/setup-counter-processor.sh>` might help you get it installed.)
-
 After you have spun to your EC2 instance, set ``:MDCLogPath`` so that the Dataverse installation creates a log for Counter Processor to operate on. For more on this database setting, see the :doc:`/installation/config` section of the Installation Guide.
 
 Next you need to have the Dataverse installation add some entries to the log that Counter Processor will operate on. To do this, click on some published datasets and download some files.
 
-Next you should run Counter Processor to convert the log into a SUSHI report, which is in JSON format. Before running Counter Processor, you need to put a configuration file into place. As a starting point use :download:`counter-processor-config.yaml <../../../../scripts/vagrant/counter-processor-config.yaml>` and edit the file, paying particular attention to the following settings:
+Next you should run Counter Processor to convert the log into a SUSHI report, which is in JSON format. Before running Counter Processor, you need to put a configuration file into place. As a starting point use :download:`counter-processor-config.yaml <../_static/developers/counter-processor-config.yaml>` and edit the file, paying particular attention to the following settings:
 
-- ``log_name_pattern`` You might want something like ``/usr/local/payara5/glassfish/domains/domain1/logs/counter_(yyyy-mm-dd).log``
+- ``log_name_pattern`` You might want something like ``/usr/local/payara6/glassfish/domains/domain1/logs/counter_(yyyy-mm-dd).log``
 - ``year_month`` You should probably set this to the current month.
 - ``output_file`` This needs to be a directory that the "dataverse" Unix user can read but that the "counter" user can write to. In dev, you can probably get away with "/tmp" as the directory.
 - ``platform`` Out of the box from Counter Processor this is set to ``Dash`` but this should be changed to match the name of your Dataverse installation. Examples are "Harvard Dataverse Repository" for Harvard University or "LibraData" for the University of Virginia.
@@ -51,9 +49,9 @@ Once you are done with your configuration, you can run Counter Processor like th
 
 ``su - counter``
 
-``cd /usr/local/counter-processor-0.0.1``
+``cd /usr/local/counter-processor-0.1.04``
 
-``CONFIG_FILE=counter-processor-config.yaml python36 main.py``
+``CONFIG_FILE=counter-processor-config.yaml python39 main.py``
 
 (Please note that the Counter Processor README says you can also pass in values like ``START_DATE``, ``END_DATE`` etc. at the command line if you find this to be more convenient.)
 
@@ -84,11 +82,40 @@ Second, if you are also sending your SUSHI report to Make Data Count, you will n
 
 ``curl -H "Authorization: Bearer $JSON_WEB_TOKEN" -X DELETE https://$MDC_SERVER/reports/$REPORT_ID``
 
-To get the ``REPORT_ID``, look at the logs generated in ``/usr/local/counter-processor-0.0.1/tmp/datacite_response_body.txt``
+To get the ``REPORT_ID``, look at the logs generated in ``/usr/local/counter-processor-0.1.04/tmp/datacite_response_body.txt``
 
 To read more about the Make Data Count api, see https://github.com/datacite/sashimi
 
 You can compare the MDC metrics display with the Dataverse installation's original by toggling the ``:DisplayMDCMetrics`` setting (true by default to display MDC metrics).
+
+Processing Archived Logs
+------------------------
+
+A new script (release date TBD) will be available for processing archived Dataverse log files. Monthly logs that are zipped, TARed, and copied to an archive can be processed by this script running nightly or weekly.
+
+The script will keep track of the state of each tar file they are processed and will make use of the following "processingState" API endpoints, which allow the state of each file to be checked or modified.
+
+The possible states are new, done, skip, processing, and failed.
+
+Setting the state to "skip" will prevent the file from being processed if the developer needs to analyze the contents.
+
+"failed" files will be re-tried in a later run.
+
+"done" files are successful and will be ignored going forward.
+
+The files currently being processed will have the state "processing".
+
+The script will process the newest set of log files (merging files from multiple nodes) and call Counter Processor.
+
+APIs to manage the states include GET, POST, and DELETE (for testing), as shown below.
+
+Note: ``yearMonth`` must be in the format ``yyyymm`` or ``yyyymmdd``.
+
+``curl -X GET http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState``
+
+``curl -X POST http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState?state=done``
+
+``curl -X DELETE http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState``
 
 Resources
 ---------

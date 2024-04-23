@@ -1,8 +1,5 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class JsonLDTerm {
 
     JsonLDNamespace namespace = null;
@@ -32,13 +29,19 @@ public class JsonLDTerm {
     public static JsonLDTerm studyCompletion = JsonLDTerm.DVCore("studyCompletion");
 
     public static JsonLDTerm restricted = JsonLDTerm.DVCore("restricted");
+    public static JsonLDTerm embargoed = JsonLDTerm.DVCore("embargoed");
+    public static JsonLDTerm embargoDateAvailable = JsonLDTerm.DVCore("dateAvailable");
+    public static JsonLDTerm embargoReason = JsonLDTerm.DVCore("reason");
     public static JsonLDTerm directoryLabel = JsonLDTerm.DVCore("directoryLabel");
     public static JsonLDTerm datasetVersionId = JsonLDTerm.DVCore("datasetVersionId");
     public static JsonLDTerm categories = JsonLDTerm.DVCore("categories");
     public static JsonLDTerm filesize = JsonLDTerm.DVCore("filesize");
     public static JsonLDTerm storageIdentifier = JsonLDTerm.DVCore("storageIdentifier");
+    @Deprecated
     public static JsonLDTerm originalFileFormat = JsonLDTerm.DVCore("originalFileFormat");
+    @Deprecated
     public static JsonLDTerm originalFormatLabel = JsonLDTerm.DVCore("originalFormatLabel");
+    public static JsonLDTerm currentIngestedName= JsonLDTerm.DVCore("currentIngestedName");
     public static JsonLDTerm UNF = JsonLDTerm.DVCore("UNF");
     public static JsonLDTerm rootDataFileId = JsonLDTerm.DVCore("rootDataFileId");
     public static JsonLDTerm previousDataFileId = JsonLDTerm.DVCore("previousDataFileId");

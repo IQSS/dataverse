@@ -1,0 +1,122 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$defs": {
+    "field": {
+        "type": "object",
+        "required": ["typeClass", "multiple", "typeName"],
+        "properties": {
+            "value": {
+                "anyOf": [
+                    {
+                        "type": "array"
+                    },
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "$ref": "#/$defs/field"
+                    }
+                ]
+            },
+            "typeClass": {
+                "type": "string"
+            },
+            "multiple": {
+                "type": "boolean"
+            },
+            "typeName": {
+                "type": "string"
+            }
+        }
+    }
+},
+"type": "object",
+"properties": {
+    "datasetVersion": {
+        "type": "object",
+        "properties": {
+           "license": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "uri": {
+                        "type": "string",
+                        "format": "uri"
+                   }
+                },
+                "required": ["name", "uri"]
+            },
+            "metadataBlocks": {
+                "type": "object",
+               "properties": {
+                           "citation": {
+                            "type": "object",
+                            "properties": {
+                                "fields": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/$defs/field"
+                                    },
+                                    "minItems": 5,
+                                    "allOf": [
+                                        {
+                                            "contains": {
+                                                "properties": {
+                                                    "typeName": {
+                                                        "const": "title"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "contains": {
+                                                "properties": {
+                                                    "typeName": {
+                                                        "const": "author"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "contains": {
+                                                "properties": {
+                                                    "typeName": {
+                                                        "const": "datasetContact"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "contains": {
+                                                "properties": {
+                                                    "typeName": {
+                                                        "const": "dsDescription"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "contains": {
+                                                "properties": {
+                                                    "typeName": {
+                                                        "const": "subject"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "required": ["fields"]
+                        }
+                     },
+                    "required": ["citation"]
+                }
+            },
+            "required": ["metadataBlocks"]
+        }
+    },
+    "required": ["datasetVersion"]
+}

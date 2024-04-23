@@ -12,7 +12,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
  */
 public class PrivateUrlUser implements User {
 
-    public static final String PREFIX = "#";
+    public static final String PREFIX = "!";
 
     /**
      * In the future, this could probably be dvObjectId rather than datasetId,
@@ -20,15 +20,25 @@ public class PrivateUrlUser implements User {
      * is a DvObject.
      */
     private final long datasetId;
+    private final boolean anonymizedAccess; 
 
     public PrivateUrlUser(long datasetId) {
+        this(datasetId, false);
+    }
+    
+    public PrivateUrlUser(long datasetId, boolean anonymizedAccess) {
         this.datasetId = datasetId;
+        this.anonymizedAccess = anonymizedAccess;
     }
 
     public long getDatasetId() {
         return datasetId;
     }
 
+    public boolean hasAnonymizedAccess() {
+        return anonymizedAccess;
+    }
+    
     /**
      * By always returning false for isAuthenticated(), we prevent a
      * name from appearing in the corner as well as preventing an account page

@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.InternetAddress;
 
 public class BrandingUtil {
 
@@ -16,10 +16,9 @@ public class BrandingUtil {
     private static SettingsServiceBean settingsService;
 
     public static String getInstallationBrandName() {
-        
         String brandName = settingsService.getValueForKey(SettingsServiceBean.Key.InstallationName);
-        //Separate if statement simplifies test setup, otherwise could use the getValueForKey method with a default param
-        if(brandName==null) {
+        // Separate if statement simplifies test setup, otherwise could use the getValueForKey method with a default param
+        if (brandName == null) {
             brandName = dataverseService.getRootDataverseName();
         }
         return brandName;
@@ -38,7 +37,7 @@ public class BrandingUtil {
                 return personalName;
             }
         }
-        String rootDataverseName=dataverseService.getRootDataverseName();
+        String rootDataverseName = dataverseService.getRootDataverseName();
         if (rootDataverseName != null && !rootDataverseName.isEmpty()) {
             return rootDataverseName + " " + BundleUtil.getStringFromBundle("contact.support");
         }

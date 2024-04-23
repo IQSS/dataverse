@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -15,6 +16,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import java.io.IOException;
 import java.util.concurrent.Future;
@@ -42,10 +45,15 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
     private static final Logger logger = Logger.getLogger(DestroyDatasetCommand.class.getCanonicalName());
 
     private final Dataset doomed;
+    
+    private List<String> datasetAndFileSolrIdsToDelete; 
+    
+    private Dataverse toReIndex;
 
     public DestroyDatasetCommand(Dataset doomed, DataverseRequest aRequest) {
         super(aRequest, doomed);
         this.doomed = doomed;
+        datasetAndFileSolrIdsToDelete = new ArrayList<>();
     }
 
     @Override
@@ -62,7 +70,6 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         doomed.setThumbnailFile(null);
         final Dataset managedDoomed = ctxt.em().merge(doomed);
         
-        List<String> datasetAndFileSolrIdsToDelete = new ArrayList<>();
         // files need to iterate through and remove 'by hand' to avoid
         // optimistic lock issues... (plus the physical files need to be 
         // deleted too!)
@@ -95,20 +102,23 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         }   
         
         if (!doomed.isHarvested()) {
-            GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
-            try {
-                if (idServiceBean.alreadyExists(doomed)) {
-                    idServiceBean.deleteIdentifier(doomed);
-                    for (DataFile df : doomed.getFiles()) {
-                        idServiceBean.deleteIdentifier(df);
+            GlobalId pid = doomed.getGlobalId();
+            if (pid != null) {
+                PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
+                try {
+                    if (pidProvider.alreadyRegistered(doomed)) {
+                        pidProvider.deleteIdentifier(doomed);
+                        for (DataFile df : doomed.getFiles()) {
+                            pidProvider.deleteIdentifier(df);
+                        }
                     }
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Identifier deletion was not successful:", e.getMessage());
                 }
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "Identifier deletion was not successful:", e.getMessage());
             }
-        } 
+        }
         
-        Dataverse toReIndex = managedDoomed.getOwner();
+        toReIndex = managedDoomed.getOwner();
 
         // dataset
         ctxt.em().remove(managedDoomed);
@@ -118,20 +128,33 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         datasetAndFileSolrIdsToDelete.add(solrIdOfPublishedDatasetVersion);
         String solrIdOfDraftDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + doomed.getId() + IndexServiceBean.draftSuffix;
         datasetAndFileSolrIdsToDelete.add(solrIdOfDraftDatasetVersion);
+        String solrIdOfDraftDatasetVersionPermission = solrIdOfDraftDatasetVersion + IndexServiceBean.discoverabilityPermissionSuffix;
+        datasetAndFileSolrIdsToDelete.add(solrIdOfDraftDatasetVersionPermission);
         String solrIdOfDeaccessionedDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + doomed.getId() + IndexServiceBean.deaccessionedSuffix;
         datasetAndFileSolrIdsToDelete.add(solrIdOfDeaccessionedDatasetVersion);
+    }
+
+    @Override 
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+
+        boolean retVal = true;
+        
+       // all the real Solr work is done here
+       // delete orphaned Solr ids
         IndexResponse resultOfSolrDeletionAttempt = ctxt.solrIndex().deleteMultipleSolrIds(datasetAndFileSolrIdsToDelete);
         logger.log(Level.FINE, "Result of attempt to delete dataset and file IDs from the search index: {0}", resultOfSolrDeletionAttempt.getMessage());
 
-        
+        // reindex
         try {
             ctxt.index().indexDataverse(toReIndex);                   
         } catch (IOException | SolrServerException e) {    
             String failureLogText = "Post-destroy dataset indexing of the owning dataverse failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + toReIndex.getId().toString();
             failureLogText += "\r\n" + e.getLocalizedMessage();
             LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  toReIndex);
+            retVal = false;
         }
         
+        return retVal;
     }
 
 }

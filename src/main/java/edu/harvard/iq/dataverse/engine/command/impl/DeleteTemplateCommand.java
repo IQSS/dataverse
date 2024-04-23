@@ -35,13 +35,17 @@ public class DeleteTemplateCommand extends AbstractCommand<Dataverse> {
 
     @Override
     public Dataverse execute(CommandContext ctxt) throws CommandException {
-        Dataverse merged = ctxt.em().merge(editedDv);
-        if (!dvWDefaultTemplate.isEmpty()){
-            for (Dataverse remove: dvWDefaultTemplate){
-                remove.setDefaultTemplate(null);
-                ctxt.em().merge(remove);
-            }                
+        Dataverse merged = null;
+        if (editedDv != null) {
+            merged = ctxt.em().merge(editedDv);
+            if (!dvWDefaultTemplate.isEmpty()) {
+                for (Dataverse remove : dvWDefaultTemplate) {
+                    remove.setDefaultTemplate(null);
+                    ctxt.em().merge(remove);
+                }
+            }
         }
+
         Template doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
         return merged;

@@ -83,7 +83,9 @@ Create a Dataverse installation account using Institutional Log In
 #. After you put in your institutional credentials successfully, you will be brought back to the Dataverse installation to confirm your account information, and click "Create Account".
 #. A username has been selected for you. You won't use this username to log in but it will appear next to your name when other users search for you to assign permissions within the system. To see what you username is, click on your name in the top right corner and click Account Information.
 
-If you do not find your institution listed, you will need to request that it is added to the Research & Scholarship category of InCommon. Contact support for assistance on how to get this process started with the identity provider support team at your institution.
+If you can't find your institution in a long list, you may need to request for it to be added to the "Research & Scholarship" category of an identity federation. See :ref:`fix-shib-login`.
+
+If your institution is listed but you get login error ("eppn was null" or similar), it may mean your institution has declared itself part of the "Research & Scholarship" category of an identity federation but it is not releasing required attributes (often email) as it should. To resolve this, see :ref:`fix-shib-login`.
 
 Convert your Dataverse installation account to use your Institutional Log In
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -106,10 +108,27 @@ Convert your Dataverse installation account away from your Institutional Log In
 
 If you are leaving your institution and need to convert your Dataverse installation account to the Dataverse Username/Email log in option, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link that will open a popup form to contact support for assistance.
 
+.. _fix-shib-login:
+
+Troubleshooting Federated Institutional Log In
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Dataverse can be configured to allow institutional log in from a worldwide federation (eduGAIN) but for a successful log in, the following Research & Scholarship (R&S) attributes must be released:
+
+- Shib-Identity-Provider
+- eppn
+- givenName
+- sn
+- email
+
+If you have attempted to log in but are seeing an error such as ``The SAML assertion for "eppn" was null``, you will need to contact the people who run the log in system (Identity Provider or IdP) for your organization and explain that the attributes above must be released. You can link them to this document, of course, as well as https://refeds.org/category/research-and-scholarship and :ref:`identity-federation` in the Installation Guide.
+
+Note that while Identity Providers (IdPs) who have joined R&S are required to release the attributes above to all Service Providers (SPs) who have joined R&S (Harvard Dataverse or UNC Dataverse, for example), for a successful login to a Dataverse installation, the IdP could decide to release attributes to just that individual installation.
+
 ORCID Log In
 ~~~~~~~~~~~~~
 
-You can set up your Dataverse installation account to allow you to log in using your ORCID credentials. ORCID® is an independent non-profit effort to provide an open registry of unique researcher identifiers and open services to link research activities and organizations to these identifiers. Learn more at `orcid.org <http://orcid.org>`_. 
+You can set up your Dataverse installation account to allow you to log in using your ORCID credentials. ORCID® is an independent non-profit effort to provide an open registry of unique researcher identifiers and open services to link research activities and organizations to these identifiers. Learn more at `orcid.org <https://orcid.org>`_. 
 
 Create a Dataverse installation account using ORCID
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -146,6 +165,8 @@ Microsoft Azure AD, GitHub, and Google Log In
 
 You can also convert your Dataverse installation account to use authentication provided by GitHub, Microsoft, or Google. These options may be found in the "Other options" section of the log in page, and function similarly to how ORCID is outlined above. If you would like to convert your account away from using one of these services for log in, then you can follow the same steps as listed above for converting away from the ORCID log in.
 
+.. _my-data:
+
 My Data
 -------
 
@@ -155,19 +176,27 @@ The My Data section of your account page displays a listing of all the Dataverse
 
 You can use the Add Data button to create a new Dataverse collection or dataset. By default, the new Dataverse collection or dataset will be created in the root Dataverse collection, but from the create form you can use the Host Dataverse collection dropdown menu to choose a different Dataverse collection, for which you have the proper access privileges. However, you will not be able to change this selection after you create your Dataverse collection or dataset.
 
+.. _account-notifications:
+
 Notifications
 -------------
 
-Notifications appear in the notifications tab on your account page and are also displayed as a number next to your account name.
+Notifications appear in the notifications tab on your account page and are also displayed as a number next to your account name. You also receive notifications via email.
 
-You will receive a notification when:
+If your admin has enabled the option to change the notification settings, you will find an overview of the notification and email settings in the notifications tab. There, you can select which notifications and/or emails you wish to receive. If certain notification or email options are greyed out, you can’t change the setting for this notification because the admin has set these as never to be muted by the user. You control the in-app and the email notifications separately in the two lists.
+
+You will typically receive a notification or email when:
 
 - You've created your account.
 - You've created a Dataverse collection or added a dataset.
-- Another Dataverse installation user has requested access to restricted files in a dataset that you published. (If you submitted your dataset for review and it was published by a curator, the curators of the Dataverse collection that contains your dataset will get a notification about requests to access your restricted files.)
+- Another Dataverse installation user has requested access to restricted files in a dataset that you published. (If you submitted your dataset for review, and it was published by a curator, the curators of the Dataverse collection that contains your dataset will get a notification about requests to access your restricted files.)
 - A file in one of your datasets has finished the ingest process.
 
-Notifications will only be emailed one time even if you haven't read the notification on the Dataverse installation.
+There are other notification types that you can receive, e.g., notification on granted roles, API key generation, etc. These types of notifications are less common and are not described here. Some other notifications are limited to specific roles. For example, if the installation has a curation workflow, reviewers get notified when a new dataset is submitted for review.
+
+Notifications will only be emailed once, even if you haven't read the in-app notification.
+
+It's possible to manage notifications via API. See :ref:`notifications` in the API Guide.
 
 API Token
 ---------

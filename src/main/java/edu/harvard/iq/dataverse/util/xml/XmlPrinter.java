@@ -1,16 +1,14 @@
 package edu.harvard.iq.dataverse.util.xml;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.logging.Logger;
 import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
-import org.xml.sax.InputSource;
+import javax.xml.transform.stream.StreamSource;
 
 public class XmlPrinter {
 
@@ -18,13 +16,25 @@ public class XmlPrinter {
 
     static public String prettyPrintXml(String xml) {
         try {
-            Transformer transformer = SAXTransformerFactory.newInstance().newTransformer();
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            
+            // pretty print by indention
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            // set amount of whitespace during indent
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-            Source source = new SAXSource(new InputSource(new ByteArrayInputStream(xml.getBytes())));
-            StreamResult streamResult = new StreamResult(new ByteArrayOutputStream());
-            transformer.transform(source, streamResult);
-            return new String(((ByteArrayOutputStream) streamResult.getOutputStream()).toByteArray());
+    
+            StreamSource source = new StreamSource(new StringReader(xml));
+            StringWriter output = new StringWriter();
+    
+            transformer.transform(source, new StreamResult(output));
+            
+            // This hacky hack is necessary due to https://bugs.openjdk.java.net/browse/JDK-7150637
+            // which has not been a problem before because of using old xercesImpl 2.8.0 library dated 2006.
+            // That old library contains security flaws, so the change was necessary.
+            return output
+                        .toString()
+                        .replaceFirst("encoding=\"UTF-8\"\\?>",
+                                      "encoding=\"UTF-8\"?>"+System.lineSeparator());
         } catch (IllegalArgumentException | TransformerException ex) {
             logger.info("Returning XML as-is due to problem pretty printing it: " + ex.toString());
             return xml;
