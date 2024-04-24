@@ -2077,7 +2077,7 @@ Once the sitemap has been generated in the location above, it will be served at 
 Multiple Sitemap Files (Sitemap Index File)
 ###########################################
 
-According to the `Sitemaps.org protocol <https://www.sitemaps.org/protocol.html#index>`_, a sitemap file must have no more than 50,000 URLs and must be no larger than 50MiB. In this case, the protocol instructs you to create a sitemap index file called ``sitemap_index.xml`` (instead of ``sitemap.xml``), which references multiple sitemap files. In this case, the created files containing the URLs will be named ``sitemap1.xml``, ``sitemap2.xml``, etc. The referenced files are also generated in the same place as other sitemap files and there will be as many files as necessary to contain the URLs of collections and datasets present in your installation, while respecting the limit of 50,000 URLs per file. Dataverse will automatically detect whether you need to create a single ``sitemap.xml`` file or several files and generate them for you. However, when submitting your sitemap file to Google or other search engines as described below, you must be careful to use the correct file name corresponding to your situation.
+According to the `Sitemaps.org protocol <https://www.sitemaps.org/protocol.html#index>`_, a sitemap file must have no more than 50,000 URLs and must be no larger than 50MiB. In this case, the protocol instructs you to create a sitemap index file called ``sitemap_index.xml`` (instead of ``sitemap.xml``), which references multiple sitemap files named ``sitemap1.xml``, ``sitemap2.xml``, etc. These referenced files are also generated in the same place as other sitemap files (``domain1/docroot/sitemap``) and there will be as many files as necessary to contain the URLs of collections and datasets present in your installation, while respecting the limit of 50,000 URLs per file.
 
 If you have over 50,000 items, a sitemap index file will be generated in the following location (unless you have customized your installation directory for Payara):
 
@@ -2085,10 +2085,14 @@ If you have over 50,000 items, a sitemap index file will be generated in the fol
 
 Once the sitemap has been generated in the location above, it will be served at ``/sitemap_index.xml`` like this: https://demo.dataverse.org/sitemap_index.xml
 
+Note that the sitemap is also available at (for example) https://demo.dataverse.org/sitemap/sitemap_index.xml and in that ``sitemap`` directory you will find the files it references such as ``sitemap1.xml``, ``sitemap2.xml``, etc.
+
 Submitting Your Sitemap to Search Engines
 #########################################
 
-Some search engines will be able to find your sitemap file at ``/sitemap.xml`` or ``sitemap_index.xml``, but others, **including Google**, need to be **specifically instructed** to retrieve it.
+Some search engines will be able to find your sitemap file at ``/sitemap.xml`` or ``/sitemap_index.xml``, but others, **including Google**, need to be **specifically instructed** to retrieve it.
+
+As described above, Dataverse will automatically detect whether you need to create a single sitemap file or several files and generate them for you. However, when submitting your sitemap file to Google or other search engines, you must be careful to supply the correct file name (``sitemap.xml`` or ``sitemap_index.xml``) depending on your situation.
 
 One way to submit your sitemap URL to Google is by using their "Search Console" (https://search.google.com/search-console). In order to use the console, you will need to authenticate yourself as the owner of your Dataverse site. Various authentication methods are provided; but if you are already using Google Analytics, the easiest way is to use that account. Make sure you are logged in on Google with the account that has the edit permission on your Google Analytics property; go to the Search Console and enter the root URL of your Dataverse installation, then choose Google Analytics as the authentication method. Once logged in, click on "Sitemaps" in the menu on the left. Consult `Google's "submit a sitemap" instructions`_ for more information.
 
