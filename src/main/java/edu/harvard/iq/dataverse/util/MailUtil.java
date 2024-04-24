@@ -1,34 +1,17 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
-import static edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key.SystemEmail;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 
 public class MailUtil {
 
     private static final Logger logger = Logger.getLogger(MailUtil.class.getCanonicalName());
-
-    public static InternetAddress parseSystemAddress(String systemEmail) {
-        if (systemEmail != null) {
-            try {
-                InternetAddress parsedSystemEmail = new InternetAddress(systemEmail);
-                logger.fine("parsed system email: " + parsedSystemEmail);
-                return parsedSystemEmail;
-            } catch (AddressException ex) {
-                logger.info("Email will not be sent due to invalid value in " + SystemEmail + " setting: " + ex);
-                return null;
-            }
-        }
-        logger.fine("Email will not be sent because the " + SystemEmail + " setting is null.");
-        return null;
-    }
 
     public static String getSubjectTextBasedOnNotification(UserNotification userNotification, Object objectOfNotification) {
         List<String> rootDvNameAsList = Arrays.asList(BrandingUtil.getInstallationBrandName());
@@ -39,6 +22,8 @@ public class MailUtil {
                 datasetDisplayName = ((Dataset) objectOfNotification).getDisplayName();
             } else if (objectOfNotification instanceof DatasetVersion) {
                 datasetDisplayName = ((DatasetVersion) objectOfNotification).getDataset().getDisplayName();
+            } else if (objectOfNotification instanceof DataFile) {
+                datasetDisplayName = ((DataFile) objectOfNotification).getOwner().getDisplayName();
             }
         }
 
@@ -50,7 +35,9 @@ public class MailUtil {
             case CREATEDV:
                 return BundleUtil.getStringFromBundle("notification.email.create.dataverse.subject", rootDvNameAsList);
             case REQUESTFILEACCESS:
-                return BundleUtil.getStringFromBundle("notification.email.request.file.access.subject", rootDvNameAsList);
+                return BundleUtil.getStringFromBundle("notification.email.request.file.access.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
+            case REQUESTEDFILEACCESS:
+                return BundleUtil.getStringFromBundle("notification.email.requested.file.access.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case GRANTFILEACCESS:
                 return BundleUtil.getStringFromBundle("notification.email.grant.file.access.subject", rootDvNameAsList);
             case REJECTFILEACCESS:

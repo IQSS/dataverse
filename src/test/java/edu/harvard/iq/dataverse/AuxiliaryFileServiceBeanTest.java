@@ -2,16 +2,14 @@ package edu.harvard.iq.dataverse;
 
 import java.util.Arrays;
 import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
-import org.junit.Before;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Matchers;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -26,7 +24,7 @@ public class AuxiliaryFileServiceBeanTest {
     List<String> types;
     DataFile dataFile;
 
-    @Before
+    @BeforeEach
     public void setup() {
         svc = new AuxiliaryFileServiceBean();
         svc.em = mock(EntityManager.class);

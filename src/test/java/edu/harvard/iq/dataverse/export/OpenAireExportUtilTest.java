@@ -6,10 +6,14 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.gson.Gson;
+
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -53,10 +57,10 @@ public class OpenAireExportUtilTest {
         String persistentAgency = "doi";
         String persistentAuthority = "10.123";
         String persistentId = "123";
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
+        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, AbstractDOIProvider.DOI_RESOLVER_URL, null);
 
         // when
-        OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.toURL().toString(), null);
+        OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.asURL(), null);
         xmlWriter.flush();
 
         // then
@@ -73,10 +77,10 @@ public class OpenAireExportUtilTest {
         String persistentAgency = "hdl";
         String persistentAuthority = "1902.1";
         String persistentId = "111012";
-        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
+        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId, null, HandlePidProvider.HDL_RESOLVER_URL, null);
 
         // when
-        OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.toURL().toString(), null);
+        OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.asURL(), null);
         xmlWriter.flush();
 
         // then
@@ -457,23 +461,29 @@ public class OpenAireExportUtilTest {
                 + "<affiliation>ContactAffiliation3</affiliation>"
                 + "</contributor>"
                 + "<contributor contributorType=\"Producer\">"
-                + "<contributorName>LastProducer1, FirstProducer1</contributorName>"
+                + "<contributorName nameType=\"Personal\">LastProducer1, FirstProducer1</contributorName>"
+                + "<givenName>FirstProducer1</givenName><familyName>LastProducer1</familyName>"
                 + "<affiliation>ProducerAffiliation1</affiliation>"
                 + "</contributor><contributor contributorType=\"Producer\">"
-                + "<contributorName>LastProducer2, FirstProducer2</contributorName>"
+                + "<contributorName nameType=\"Personal\">LastProducer2, FirstProducer2</contributorName>"
+                + "<givenName>FirstProducer2</givenName><familyName>LastProducer2</familyName>"
                 + "<affiliation>ProducerAffiliation2</affiliation>"
                 + "</contributor>"
                 + "<contributor contributorType=\"DataCollector\">"
-                + "<contributorName>LastContributor1, FirstContributor1</contributorName>"
+                + "<contributorName nameType=\"Personal\">LastContributor1, FirstContributor1</contributorName>"
+                + "<givenName>FirstContributor1</givenName><familyName>LastContributor1</familyName>"
                 + "</contributor>"
                 + "<contributor contributorType=\"DataCurator\">"
-                + "<contributorName>LastContributor2, FirstContributor2</contributorName>"
+                + "<contributorName nameType=\"Personal\">LastContributor2, FirstContributor2</contributorName>"
+                + "<givenName>FirstContributor2</givenName><familyName>LastContributor2</familyName>"
                 + "</contributor><contributor contributorType=\"Distributor\">"
-                + "<contributorName>LastDistributor1, FirstDistributor1</contributorName>"
+                + "<contributorName nameType=\"Personal\">LastDistributor1, FirstDistributor1</contributorName>"
+                + "<givenName>FirstDistributor1</givenName><familyName>LastDistributor1</familyName>"
                 + "<affiliation>DistributorAffiliation1</affiliation>"
                 + "</contributor>"
                 + "<contributor contributorType=\"Distributor\">"
-                + "<contributorName>LastDistributor2, FirstDistributor2</contributorName>"
+                + "<contributorName nameType=\"Personal\">LastDistributor2, FirstDistributor2</contributorName>"
+                + "<givenName>FirstDistributor2</givenName><familyName>LastDistributor2</familyName>"
                 + "<affiliation>DistributorAffiliation2</affiliation>"
                 + "</contributor>"
                 + "</contributors>",
@@ -918,15 +928,15 @@ public class OpenAireExportUtilTest {
                 + "<geoLocationBox>"
                 + "<westBoundLongitude>10</westBoundLongitude>"
                 + "<eastBoundLongitude>20</eastBoundLongitude>"
-                + "<northBoundLatitude>30</northBoundLatitude>"
                 + "<southBoundLatitude>40</southBoundLatitude>"
+                + "<northBoundLatitude>30</northBoundLatitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation>"
                 + "<geoLocation>"
                 + "<geoLocationBox>"
+                + "<eastBoundLongitude>60</eastBoundLongitude>"
                 + "<southBoundLatitude>80</southBoundLatitude>"
                 + "<northBoundLatitude>70</northBoundLatitude>"
-                + "<eastBoundLongitude>60</eastBoundLongitude>"
                 + "<westBoundLongitude>50</westBoundLongitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation></geoLocations>",
@@ -957,8 +967,8 @@ public class OpenAireExportUtilTest {
                 + "<geoLocationBox>"
                 + "<eastBoundLongitude>23</eastBoundLongitude>"
                 + "<northBoundLatitude>786</northBoundLatitude>"
-                + "<westBoundLongitude>45</westBoundLongitude>"
                 + "<southBoundLatitude>34</southBoundLatitude>"
+                + "<westBoundLongitude>45</westBoundLongitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation></geoLocations>",
                 stringWriter.toString());

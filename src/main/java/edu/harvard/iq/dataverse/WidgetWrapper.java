@@ -5,10 +5,10 @@
  */
 package edu.harvard.iq.dataverse;
 
-import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -62,7 +62,7 @@ public class WidgetWrapper implements java.io.Serializable {
                         case "dataverse": 
                             break; // keep looping
                         case "dataset":
-                            if (((Dataset) dvo).getGlobalIdString().equals(widgetHome)) {
+                            if (((Dataset) dvo).getGlobalId().asString().equals(widgetHome)) {
                                 return true;
                             }   break;
                         default:

@@ -4,23 +4,20 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import edu.harvard.iq.dataverse.util.StringUtil;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,6 +45,7 @@ public class SettingsServiceBean {
      * over your shoulder when typing strings in various places of a large app. 
      * So there.
      */
+    @SuppressWarnings("java:S115")
     public enum Key {
         AllowApiTokenLookupViaApi,
         /**
@@ -90,6 +88,15 @@ public class SettingsServiceBean {
          * StorageSite database table.
          */
         LocalDataAccessPath,
+        /**
+         * The algorithm used to generate PIDs, randomString (default) or
+         * storedProcedure
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,
@@ -192,24 +199,51 @@ public class SettingsServiceBean {
         SignUpUrl,
         /** Key for whether we allow users to sign up */
         AllowSignUp,
-        /** protocol for global id */
+        /**
+         * protocol for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Protocol,
-        /** authority for global id */
+        /**
+         * authority for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Authority,
-        /** DoiProvider for global id */
+        /**
+         * DoiProvider for global id
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         DoiProvider,
-        /** Shoulder for global id - used to create a common prefix on identifiers */
+        /**
+         * Shoulder for global id - used to create a common prefix on identifiers
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         Shoulder,
-        /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
-        DoiUsername,
-        DoiPassword,
-        DoiBaseurlstring,
-        */
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
 
         CVocConf,
 
+        // Default calls per hour for each tier. csv format (30,60,...)
+        RateLimitingDefaultCapacityTiers,
+        // json defined list of capacities by tier and action list. See RateLimitSetting.java
+        RateLimitingCapacityByTierAndAction,
         /**
          * A link to an installation of https://github.com/IQSS/miniverse or
          * some other metrics app.
@@ -230,7 +264,12 @@ public class SettingsServiceBean {
         /* the number of files the GUI user is allowed to upload in one batch, 
             via drag-and-drop, or through the file select dialog */
         MultipleUploadFilesLimit,
-        /* return email address for system emails such as notifications */
+        /**
+         * Return email address for system emails such as notifications
+         * @deprecated Please replace usages with {@link edu.harvard.iq.dataverse.MailServiceBean#getSystemAddress},
+         *             which is backward compatible with this setting.
+         */
+        @Deprecated(since = "6.2", forRemoval = true)
         SystemEmail, 
         /* size limit for Tabular data file ingests */
         /* (can be set separately for specific ingestable formats; in which 
@@ -350,10 +389,16 @@ public class SettingsServiceBean {
          */
         PVCustomPasswordResetAlertMessage,
         /*
-        String to describe DOI format for data files. Default is DEPENDENT. 
-        'DEPENEDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
-        'INDEPENDENT' means a new global id, completely independent from the dataset-level global id.
-        */
+         * String to describe DOI format for data files. Default is DEPENDENT.
+         * 'DEPENDENT' means the DOI will be the Dataset DOI plus a file DOI with a
+         * slash in between. 'INDEPENDENT' means a new global id, completely independent
+         * from the dataset-level global id.
+         *
+         * @deprecated New installations should not use this database setting, but use
+         * the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         DataFilePIDFormat, 
         /* Json array of supported languages
         */
@@ -361,7 +406,7 @@ public class SettingsServiceBean {
         /*
         Number for the minimum number of files to send PID registration to asynchronous workflow
         */
-        PIDAsynchRegFileCount,
+        //PIDAsynchRegFileCount,
         /**
          * 
          */
@@ -369,12 +414,22 @@ public class SettingsServiceBean {
 
         /**
          * Indicates if the Handle service is setup to work 'independently' (No communication with the Global Handle Registry)
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
          */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         IndependentHandleService,
 
         /**
         Handle to use for authentication if the default is not being used
-        */
+         * 
+         * @deprecated New installations should not use this database setting, but use
+         *             the settings within {@link JvmSettings#SCOPE_PID}.
+         * 
+         */
+        @Deprecated(forRemoval = true, since = "2024-02-13")
         HandleAuthHandle,
 
         /**
@@ -406,9 +461,10 @@ public class SettingsServiceBean {
          */
         InheritParentRoleAssignments,
         
-        /** Make Data Count Logging and Display */
+        /** Make Data Count Logging, Display, and Start Date */
         MDCLogPath, 
         DisplayMDCMetrics,
+        MDCStartDate,
 
         /**
          * Allow CORS flag (true or false). It is true by default
@@ -463,18 +519,6 @@ public class SettingsServiceBean {
          */
         ExportInstallationAsDistributorOnlyWhenNotSet,
 
-        /**
-         * Basic Globus Token for Globus Application
-         */
-        GlobusBasicToken,
-        /**
-         * GlobusEndpoint is Globus endpoint for Globus application
-         */
-        GlobusEndpoint,
-        /** 
-         * Comma separated list of Globus enabled stores
-         */
-        GlobusStores,
         /** Globus App URL
          * 
          */
@@ -565,6 +609,7 @@ public class SettingsServiceBean {
          * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
          */
         LDNMessageHosts,
+
         /*
          * Allow a custom JavaScript to control values of specific fields.
          */
@@ -576,8 +621,47 @@ public class SettingsServiceBean {
         /**
          * The URL for the DvWebLoader tool (see github.com/gdcc/dvwebloader for details)
          */
-        WebloaderUrl
+        WebloaderUrl, 
+        /**
+         * Enforce storage quotas:
+         */
+        UseStorageQuotas, 
+        /** 
+         * Placeholder storage quota (defines the same quota setting for every user; used to test the concept of a quota.
+         */
+        StorageQuotaSizeInBytes,
 
+        /**
+         * A comma-separated list of CategoryName in the desired order for files to be
+         * sorted in the file table display. If not set, files will be sorted
+         * alphabetically by default. If set, files will be sorted by these categories
+         * and alphabetically within each category.
+         */
+        CategoryOrder,
+        /**
+         * True(default)/false option deciding whether ordering by folder should be applied to the 
+         * dataset listing of datafiles.
+         */
+        OrderByFolder,
+        /**
+         * True/false(default) option deciding whether the dataset file table display should include checkboxes
+         * allowing users to dynamically turn folder and category ordering on/off.
+         */
+        AllowUserManagementOfOrder,
+        /*
+         * True/false(default) option deciding whether file PIDs can be enabled per collection - using the Dataverse/collection set attribute API call.
+         */
+        AllowEnablingFilePIDsPerCollection,
+        /**
+         * Allows an instance admin to disable Solr search facets on the collection
+         * and dataset pages instantly
+         */
+        DisableSolrFacets,
+        /**
+         * When ingesting tabular data files, store the generated tab-delimited 
+         * files *with* the variable names line up top. 
+         */
+        StoreIngestedTabularFilesWithVarHeaders
         ;
 
         @Override
@@ -665,8 +749,8 @@ public class SettingsServiceBean {
     	   try {
     		   return Long.parseLong(val);
     	   } catch (NumberFormatException ex) {
-    		   try ( StringReader rdr = new StringReader(val) ) {
-    			   JsonObject settings = Json.createReader(rdr).readObject();
+    		   try {
+    			   JsonObject settings = JsonUtil.getJsonObject(val);
     			   if(settings.containsKey(param)) {
     				   return Long.parseLong(settings.getString(param));
     			   } else if(settings.containsKey("default")) {
@@ -699,8 +783,8 @@ public class SettingsServiceBean {
             return null;
         }
 
-        try (StringReader rdr = new StringReader(val)) {
-            JsonObject settings = Json.createReader(rdr).readObject();
+        try {
+            JsonObject settings = JsonUtil.getJsonObject(val);
             if (settings.containsKey(param)) {
                 return Boolean.parseBoolean(settings.getString(param));
             } else if (settings.containsKey("default")) {
@@ -866,8 +950,7 @@ public class SettingsServiceBean {
             if(mlString.isEmpty()) {
                 mlString="[]";
             }
-            JsonReader jsonReader = Json.createReader(new StringReader(mlString));
-            JsonArray languages = jsonReader.readArray();
+            JsonArray languages = JsonUtil.getJsonArray(mlString);
             for(JsonValue jv: languages) {
                 JsonObject lang = (JsonObject) jv;
                 languageMap.put(lang.getString("locale"), lang.getString("title"));

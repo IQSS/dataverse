@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
@@ -46,24 +47,24 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import org.apache.solr.client.solrj.SolrServerException;
 
 @Path("admin/index")
@@ -196,7 +197,7 @@ public class Index extends AbstractApiBean {
                     }
                 }
             }
-            if (sb.toString().equals("javax.ejb.EJBException: Transaction aborted javax.transaction.RollbackException java.lang.IllegalStateException ")) {
+            if (sb.toString().contains("java.lang.IllegalStateException ")) {
                 return ok("indexing went as well as can be expected... got java.lang.IllegalStateException but some indexing may have happened anyway");
             } else {
                 return error(Status.INTERNAL_SERVER_ERROR, sb.toString());
@@ -214,7 +215,7 @@ public class Index extends AbstractApiBean {
             return error(Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
         }
     }
-
+    
     @GET
     @Path("{type}/{id}")
     public Response indexTypeById(@PathParam("type") String type, @PathParam("id") Long id) {
@@ -240,12 +241,7 @@ public class Index extends AbstractApiBean {
                 Dataset dataset = datasetService.find(id);
                 if (dataset != null) {
                     boolean doNormalSolrDocCleanUp = true;
-                    try {
-                        Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
-                    } catch (IOException | SolrServerException e) {
-                        //
-                        return error(Status.BAD_REQUEST, writeFailureToLog(e.getLocalizedMessage(), dataset));
-                    }
+                    indexService.asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
 
                     return ok("starting reindex of dataset " + id);
                 } else {
@@ -263,11 +259,7 @@ public class Index extends AbstractApiBean {
                  * @todo How can we display the result to the user?
                  */
                 boolean doNormalSolrDocCleanUp = true;
-                try {
-                    Future<String> indexDatasetFuture = indexService.indexDataset(datasetThatOwnsTheFile, doNormalSolrDocCleanUp);
-                } catch (IOException | SolrServerException e) {
-                    writeFailureToLog(e.getLocalizedMessage(), datasetThatOwnsTheFile);
-                }
+                indexService.asyncIndexDataset(datasetThatOwnsTheFile, doNormalSolrDocCleanUp);
                 
                 return ok("started reindexing " + type + "/" + id);
             } else {
@@ -315,15 +307,11 @@ public class Index extends AbstractApiBean {
         }
         if (dataset != null) {
             boolean doNormalSolrDocCleanUp = true;
-            try {
-                Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
-            } catch (IOException | SolrServerException e) {
-                writeFailureToLog(e.getLocalizedMessage(), dataset);               
-            }
+            indexService.asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
             JsonObjectBuilder data = Json.createObjectBuilder();
             data.add("message", "Reindexed dataset " + persistentId);
             data.add("id", dataset.getId());
-            data.add("persistentId", dataset.getGlobalIdString());
+            data.add("persistentId", dataset.getGlobalId().asString());
             JsonArrayBuilder versions = Json.createArrayBuilder();
             for (DatasetVersion version : dataset.getVersions()) {
                 JsonObjectBuilder versionObject = Json.createObjectBuilder();
@@ -337,6 +325,29 @@ public class Index extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
         }
     }
+
+    /**
+     * Clears the entry for a dataset from Solr
+     * 
+     * @param id numer id of the dataset
+     * @return response; 
+     * will return 404 if no such dataset in the database; but will attempt to 
+     * clear the entry from Solr regardless.
+     */
+    @DELETE
+    @Path("datasets/{id}")
+    public Response clearDatasetFromIndex(@PathParam("id") Long id) {
+        Dataset dataset = datasetService.find(id);
+        // We'll attempt to delete the Solr document regardless of whether the 
+        // dataset exists in the database: 
+        String response = indexService.removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierDataset + id);
+        if (dataset != null) {
+            return ok("Sent request to clear Solr document for dataset " + id + ": " + response);
+        } else {
+            return notFound("Could not find dataset " + id + " in the database. Requested to clear from Solr anyway: " + response);
+        }
+    }
+
 
     /**
      * This is just a demo of the modular math logic we use for indexAll.
@@ -636,15 +647,16 @@ public class Index extends AbstractApiBean {
     }
 
     @GET
+    @AuthRequired
     @Path("filesearch")
-    public Response filesearch(@QueryParam("persistentId") String persistentId, @QueryParam("semanticVersion") String semanticVersion, @QueryParam("q") String userSuppliedQuery) {
+    public Response filesearch(@Context ContainerRequestContext crc, @QueryParam("persistentId") String persistentId, @QueryParam("semanticVersion") String semanticVersion, @QueryParam("q") String userSuppliedQuery) {
         Dataset dataset = datasetService.findByGlobalId(persistentId);
         if (dataset == null) {
             return error(Status.BAD_REQUEST, "Could not find dataset with persistent id " + persistentId);
         }
         User user = GuestUser.get();
         try {
-            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (authenticatedUser != null) {
                 user = authenticatedUser;
             }

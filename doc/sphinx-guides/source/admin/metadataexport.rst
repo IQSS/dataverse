@@ -57,3 +57,13 @@ Downloading Metadata via API
 ----------------------------
 
 The :doc:`/api/native-api` section of the API Guide explains how end users can download the metadata formats above via API.
+
+Exporter Configuration
+----------------------
+
+Two exporters - Schema.org JSONLD and OpenAire - use an algorithm to determine whether an author, or contact, name belongs to a person or organization. While the algorithm works well, there are cases in which it makes mistakes, usually inferring that an organization is a person.
+
+The Dataverse software implements two jvm-options that can be used to tune the algorithm:
+
+- :ref:`dataverse.personOrOrg.assumeCommaInPersonName` - boolean, default false. If true, Dataverse will assume any name without a comma must be an organization. This may be most useful for curated Dataverse instances that enforce the "family name, given name" convention.
+- :ref:`dataverse.personOrOrg.orgPhraseArray` - a JsonArray of strings. Any name that contains one of the strings is assumed to be an organization. For example, "Project" is a word that is not otherwise associated with being an organization. 

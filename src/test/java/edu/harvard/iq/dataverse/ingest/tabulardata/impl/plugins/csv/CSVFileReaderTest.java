@@ -22,8 +22,9 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -51,7 +52,7 @@ public class CSVFileReaderTest {
         try (BufferedInputStream stream = new BufferedInputStream(
                 new FileInputStream(testFile))) {
             CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi(), ',');
-            File outFile = instance.read(stream, null).getTabDelimitedFile();
+            File outFile = instance.read(stream, false, null).getTabDelimitedFile();
             result = new BufferedReader(new FileReader(outFile));
             logger.fine("Final pass: " + outFile.getPath());
         } catch (IOException ex) {
@@ -67,7 +68,7 @@ public class CSVFileReaderTest {
             } catch (IOException ex) {
                 fail();
             }
-            assertEquals("Error on line " + line, expLine, foundLine);
+            assertEquals(expLine, foundLine, "Error on line " + line);
             line++;
         }
 
@@ -103,7 +104,7 @@ public class CSVFileReaderTest {
         try (BufferedInputStream stream = new BufferedInputStream(
                 new FileInputStream(testFile))) {
             CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi(), ',');
-            result = instance.read(stream, null).getDataTable();
+            result = instance.read(stream, false, null).getDataTable();
         } catch (IOException ex) {
             fail("" + ex);
         }
@@ -121,15 +122,15 @@ public class CSVFileReaderTest {
         // OK, let's go through the individual variables:
         for (int i = 0; i < result.getVarQuantity(); i++) {
 
-            assertEquals("variable " + i + ":", expectedVariableNames[i], result.getDataVariables().get(i).getName());
+            assertEquals(expectedVariableNames[i], result.getDataVariables().get(i).getName(), "variable " + i + ":");
 
-            assertEquals("variable " + i + ":", expectedVariableTypes[i], result.getDataVariables().get(i).getType());
+            assertEquals(expectedVariableTypes[i], result.getDataVariables().get(i).getType(), "variable " + i + ":");
 
-            assertEquals("variable " + i + ":", expectedVariableIntervals[i], result.getDataVariables().get(i).getInterval());
+            assertEquals(expectedVariableIntervals[i], result.getDataVariables().get(i).getInterval(), "variable " + i + ":");
 
-            assertEquals("variable " + i + ":", expectedVariableFormatCategories[i], result.getDataVariables().get(i).getFormatCategory());
+            assertEquals(expectedVariableFormatCategories[i], result.getDataVariables().get(i).getFormatCategory(), "variable " + i + ":");
 
-            assertEquals("variable " + i + ":", expectedVariableFormats[i], result.getDataVariables().get(i).getFormat());
+            assertEquals(expectedVariableFormats[i], result.getDataVariables().get(i).getFormat(), "variable " + i + ":");
         }
     }
 
@@ -153,7 +154,7 @@ public class CSVFileReaderTest {
                 new FileInputStream(testFile))) {
             CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi(), ',');
 
-            ingestResult = instance.read(stream, null);
+            ingestResult = instance.read(stream, false, null);
 
             generatedTabFile = ingestResult.getTabDelimitedFile();
             generatedDataTable = ingestResult.getDataTable();
@@ -194,9 +195,9 @@ public class CSVFileReaderTest {
                 fail("Failed to open generated tab-delimited file for reading" + ioex);
             }
 
-            Double[] columnVector = TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+            Double[] columnVector = TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue(), false);
 
-            assertArrayEquals("column " + i + ":", floatVectors[vectorCount++], columnVector);
+            assertArrayEquals(floatVectors[vectorCount++], columnVector, "column " + i + ":");
         }
 
         // Discrete Numerics (aka, integers):
@@ -228,9 +229,9 @@ public class CSVFileReaderTest {
                 fail("Failed to open generated tab-delimited file for reading" + ioex);
             }
 
-            Long[] columnVector = TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+            Long[] columnVector = TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue(), false);
 
-            assertArrayEquals("column " + i + ":", longVectors[vectorCount++], columnVector);
+            assertArrayEquals(longVectors[vectorCount++], columnVector, "column " + i + ":");
         }
 
         // And finally, Strings:
@@ -255,9 +256,9 @@ public class CSVFileReaderTest {
                 fail("Failed to open generated tab-delimited file for reading" + ioex);
             }
 
-            String[] columnVector = TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+            String[] columnVector = TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue(), false);
 
-            assertArrayEquals("column " + i + ":", stringVectors[vectorCount++], columnVector);
+            assertArrayEquals(stringVectors[vectorCount++], columnVector, "column " + i + ":");
         }
     }
 
@@ -297,7 +298,7 @@ public class CSVFileReaderTest {
                 new FileInputStream(testFile))) {
             CSVFileReader instance = new CSVFileReader(new CSVFileReaderSpi(), ',');
 
-            ingestResult = instance.read(stream, null);
+            ingestResult = instance.read(stream, false, null);
 
             generatedTabFile = ingestResult.getTabDelimitedFile();
             generatedDataTable = ingestResult.getDataTable();
@@ -326,7 +327,7 @@ public class CSVFileReaderTest {
                     fail("Failed to open generated tab-delimited file for reading" + ioex);
                 }
 
-                Double[] columnVector = TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                Double[] columnVector = TabularSubsetGenerator.subsetDoubleVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue(), false);
                 try {
                     unf = UNFUtil.calculateUNF(columnVector);
                 } catch (IOException | UnfException ioex) {
@@ -344,7 +345,7 @@ public class CSVFileReaderTest {
                     fail("Failed to open generated tab-delimited file for reading" + ioex);
                 }
 
-                Long[] columnVector = TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                Long[] columnVector = TabularSubsetGenerator.subsetLongVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue(), false);
 
                 try {
                     unf = UNFUtil.calculateUNF(columnVector);
@@ -362,7 +363,7 @@ public class CSVFileReaderTest {
                     fail("Failed to open generated tab-delimited file for reading" + ioex);
                 }
 
-                String[] columnVector = TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue());
+                String[] columnVector = TabularSubsetGenerator.subsetStringVector(generatedTabInputStream, i, generatedDataTable.getCaseQuantity().intValue(), false);
 
                 String[] dateFormats = null;
 
@@ -387,7 +388,7 @@ public class CSVFileReaderTest {
                 }
             }
 
-            assertEquals("Variable number " + i + ":", expectedUNFs[i], unf);
+            assertEquals(expectedUNFs[i], unf, "Variable number " + i + ":");
         }
 
     }
@@ -400,7 +401,7 @@ public class CSVFileReaderTest {
     public void testBrokenCSV() {
         String brokenFile = "src/test/java/edu/harvard/iq/dataverse/ingest/tabulardata/impl/plugins/csv/BrokenCSV.csv";
         try {
-            new CSVFileReader(new CSVFileReaderSpi(), ',').read(null, null);
+            new CSVFileReader(new CSVFileReaderSpi(), ',').read(null, false, null);
             fail("IOException not thrown on null csv");
         } catch (NullPointerException ex) {
             String expMessage = null;
@@ -411,7 +412,7 @@ public class CSVFileReaderTest {
         }
         try (BufferedInputStream stream = new BufferedInputStream(
                 new FileInputStream(brokenFile))) {
-            new CSVFileReader(new CSVFileReaderSpi(), ',').read(stream, null);
+            new CSVFileReader(new CSVFileReaderSpi(), ',').read(stream, false, null);
             fail("IOException was not thrown when collumns do not align.");
         } catch (IOException ex) {
             String expMessage = BundleUtil.getStringFromBundle("ingest.csv.recordMismatch",

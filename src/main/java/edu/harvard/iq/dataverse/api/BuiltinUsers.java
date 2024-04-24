@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.api.auth.ApiKeyAuthMechanism;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -12,23 +13,20 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
-import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import java.util.Date;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
@@ -212,17 +210,14 @@ public class BuiltinUsers extends AbstractApiBean {
         }
     }
 
+    /***
+     * This method was moved here from AbstractApiBean during the filter-based auth
+     * refactoring, in order to preserve the existing BuiltinUsers endpoints behavior.
+     *
+     * @param apiKey from request
+     * @return error Response
+     */
+    private Response badApiKey(String apiKey) {
+        return error(Status.UNAUTHORIZED, (apiKey != null) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + ApiKeyAuthMechanism.DATAVERSE_API_KEY_REQUEST_HEADER_NAME);
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

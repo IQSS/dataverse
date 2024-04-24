@@ -108,9 +108,10 @@ public final class AliasConfigSource implements ConfigSource {
     
     @Override
     public int getOrdinal() {
-        // Any other config source can override us.
-        // As soon as someone is starting to use the new property name, this alias becomes pointless.
-        return Integer.MIN_VALUE;
+        // Any other config source can override us, except the microprofile-config.properties source (ordinal = 100)
+        // We use *the same* ordinal (which is also the default ordinal). As our source is named "Alias",
+        // it will be served first as "A" = 65 comes before other letters (uses String::compareTo).
+        return ConfigSource.DEFAULT_ORDINAL;
     }
     
     @Override

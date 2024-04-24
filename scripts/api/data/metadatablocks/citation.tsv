@@ -3,7 +3,7 @@
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id	termURI
 	title	Title	The main title of the Dataset		text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation	http://purl.org/dc/terms/title
 	subtitle	Subtitle	A secondary title that amplifies or states certain limitations on the main title		text	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	
-	alternativeTitle	Alternative Title	Either 1) a title commonly used to refer to the Dataset or 2) an abbreviation of the main title		text	2		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	http://purl.org/dc/terms/alternative
+	alternativeTitle	Alternative Title	Either 1) a title commonly used to refer to the Dataset or 2) an abbreviation of the main title		text	2		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	http://purl.org/dc/terms/alternative
 	alternativeURL	Alternative URL	Another URL where one can view or access the data in the Dataset, e.g. a project or personal webpage	https://	url	3	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	https://schema.org/distribution
 	otherId	Other Identifier	Another unique identifier for the Dataset (e.g. producer's or another repository's identifier)		none	4	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	
 	otherIdAgency	Agency	The name of the agency that generated the other identifier		text	5	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation	
@@ -33,7 +33,7 @@
 	publicationCitation	Citation	The full bibliographic citation for the related publication		textbox	29	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation	http://purl.org/dc/terms/bibliographicCitation
 	publicationIDType	Identifier Type	The type of identifier that uniquely identifies a related publication		text	30	#VALUE: 	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	publication	citation	http://purl.org/spar/datacite/ResourceIdentifierScheme
 	publicationIDNumber	Identifier	The identifier for a related publication		text	31	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation	http://purl.org/spar/datacite/ResourceIdentifier
-	publicationURL	URL	The URL form of the identifier entered in the Identifier field, e.g. the DOI URL if a DOI was entered in the Identifier field. Used to display what was entered in the ID Type and ID Number fields as a link. If what was entered in the Identifier field has no URL form, the URL of the publication webpage is used, e.g. a journal article webpage	https://	url	32	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation	https://schema.org/distribution
+	publicationURL	URL	The URL form of the identifier entered in the Identifier field, e.g. the DOI URL if a DOI was entered in the Identifier field. Used to display what was entered in the ID Type and ID Number fields as a link. If what was entered in the Identifier field has no URL form, the URL of the publication webpage is used, e.g. a journal article webpage	https://	url	32	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation	https://schema.org/distribution
 	notesText	Notes	Additional information about the Dataset		textbox	33		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation	
 	language	Language	A language that the Dataset's files is written in		text	34		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		citation	http://purl.org/dc/terms/language
 	producer	Producer	The entity, such a person or organization, managing the finances or other administrative processes involved in the creation of the Dataset		none	35		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	
@@ -43,7 +43,7 @@
 	producerURL	URL	The URL of the producer's website	https://	url	39	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation	
 	producerLogoURL	Logo URL	The URL of the producer's logo	https://	url	40	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation	
 	productionDate	Production Date	The date when the data were produced (not distributed, published, or archived)	YYYY-MM-DD	date	41		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation	
-	productionPlace	Production Location	The location where the data and any related materials were produced or collected		text	42		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	
+	productionPlace	Production Location	The location where the data and any related materials were produced or collected		text	42		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation	
 	contributor	Contributor	The entity, such as a person or organization, responsible for collecting, managing, or otherwise contributing to the development of the Dataset		none	43	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	http://purl.org/dc/terms/contributor
 	contributorType	Type	Indicates the type of contribution made to the dataset		text	44	#VALUE 	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	citation	
 	contributorName	Name	The name of the contributor, e.g. the person's name or the name of an organization	1) FamilyName, GivenName or 2) Organization	text	45	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	contributor	citation	
@@ -66,11 +66,11 @@
 	dateOfCollectionStart	Start Date	The date when the data collection started	YYYY-MM-DD	date	62	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation	
 	dateOfCollectionEnd	End Date	The date when the data collection ended	YYYY-MM-DD	date	63	#NAME: #VALUE 	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	citation	
 	kindOfData	Data Type	The type of data included in the files (e.g. survey data, clinical data, or machine-readable text)		text	64		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation	http://rdf-vocabulary.ddialliance.org/discovery#kindOfData
-	series	Series	Information about the dataset series to which the Dataset belong		none	65	:	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation	
+	series	Series	Information about the dataset series to which the Dataset belong		none	65	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	
 	seriesName	Name	The name of the dataset series		text	66	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	series	citation	
 	seriesInformation	Information	Can include 1) a history of the series and 2) a summary of features that apply to the series		textbox	67	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	citation	
 	software	Software	Information about the software used to generate the Dataset		none	68	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	https://www.w3.org/TR/prov-o/#wasGeneratedBy
-	softwareName	Name	The name of software used to generate the Dataset		text	69	#VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	software	citation	
+	softwareName	Name	The name of software used to generate the Dataset		text	69	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	citation
 	softwareVersion	Version	The version of the software used to generate the Dataset, e.g. 4.11		text	70	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	citation	
 	relatedMaterial	Related Material	Information, such as a persistent ID or citation, about the material related to the Dataset, such as appendices or sampling information available outside of the Dataset		textbox	71		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	
 	relatedDatasets	Related Dataset	Information, such as a persistent ID or citation, about a related dataset, such as previous research on the Dataset's subject		textbox	72		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	http://purl.org/dc/terms/relation

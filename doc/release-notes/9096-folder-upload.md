@@ -1,1 +1,0 @@
-Dataverse can now support upload of an entire folder tree of files and retain the relative paths of files as directory path metadata for the uploaded files, if the installation is configured with S3 direct upload.

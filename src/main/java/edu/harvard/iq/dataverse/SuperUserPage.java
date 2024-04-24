@@ -6,11 +6,11 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.json.JsonObjectBuilder;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.json.JsonObjectBuilder;
 
 @SessionScoped
 @Named("SuperUserPage")

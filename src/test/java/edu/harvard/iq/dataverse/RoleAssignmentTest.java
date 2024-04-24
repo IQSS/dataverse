@@ -1,18 +1,18 @@
 package edu.harvard.iq.dataverse;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public class RoleAssignmentTest {
 
@@ -22,7 +22,7 @@ public class RoleAssignmentTest {
     private Dataset dataset;
     private String privateUrlToken;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.dataverseRole = new DataverseRole();
         this.roleAssignee = GuestUser.get();
@@ -30,7 +30,7 @@ public class RoleAssignmentTest {
         this.privateUrlToken = "some-token";
     }
 
-    @After
+    @AfterEach
     public void after() {
         this.dataverseRole = null;
         this.roleAssignee = null;

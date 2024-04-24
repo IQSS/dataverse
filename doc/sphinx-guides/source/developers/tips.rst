@@ -2,7 +2,7 @@
 Tips
 ====
 
-If you just followed the steps in :doc:`dev-environment` for the first time, you will need to get set up to deploy code to your app server. Below you'll find other tips as well.
+If you just followed the steps in :doc:`classic-dev-env` for the first time, you will need to get set up to deploy code to your app server. Below you'll find other tips as well.
 
 .. contents:: |toctitle|
 	:local:
@@ -10,7 +10,7 @@ If you just followed the steps in :doc:`dev-environment` for the first time, you
 Iterating on Code and Redeploying
 ---------------------------------
 
-When you followed the steps in the :doc:`dev-environment` section, the war file was deployed to Payara by the Dataverse Software installation script. That's fine but once you're ready to make a change to the code you will need to get comfortable with undeploying and redeploying code (a war file) to Payara.
+When you followed the steps in the :doc:`classic-dev-env` section, the war file was deployed to Payara by the Dataverse Software installation script. That's fine but once you're ready to make a change to the code you will need to get comfortable with undeploying and redeploying code (a war file) to Payara.
 
 It's certainly possible to manage deployment and undeployment of the war file via the command line using the ``asadmin`` command that ships with Payara (that's what the Dataverse Software installation script uses and the steps are documented below), but we recommend getting set up with an IDE such as Netbeans to manage deployment for you.
 
@@ -19,20 +19,20 @@ Undeploy the war File from the Dataverse Software Installation Script
 
 Because the initial deployment of the war file was done outside of Netbeans by the Dataverse Software installation script, it's a good idea to undeploy that war file to give Netbeans a clean slate to work with.
 
-Assuming you installed Payara in ``/usr/local/payara5``, run the following ``asadmin`` command to see the version of the Dataverse Software that the Dataverse Software installation script deployed:
+Assuming you installed Payara in ``/usr/local/payara6``, run the following ``asadmin`` command to see the version of the Dataverse Software that the Dataverse Software installation script deployed:
 
-``/usr/local/payara5/bin/asadmin list-applications``
+``/usr/local/payara6/bin/asadmin list-applications``
 
 You will probably see something like ``dataverse-5.0 <ejb, web>`` as the output. To undeploy, use whichever version you see like this:
 
-``/usr/local/payara5/bin/asadmin undeploy dataverse-5.0``
+``/usr/local/payara6/bin/asadmin undeploy dataverse-5.0``
 
 Now that Payara doesn't have anything deployed, we can proceed with getting Netbeans set up to deploy the code.
 
 Add Payara as a Server in Netbeans
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Payara Server" and set the installation location to ``/usr/local/payara5``. The defaults are fine so you can click "Next" and "Finish".
+Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Payara Server" and set the installation location to ``/usr/local/payara6``. The defaults are fine so you can click "Next" and "Finish".
 
 Please note that if you are on a Mac, Netbeans may be unable to start Payara due to proxy settings in Netbeans. Go to the "General" tab in Netbeans preferences and click "Test connection" to see if you are affected. If you get a green checkmark, you're all set. If you get a red exclamation mark, change "Proxy Settings" to "No Proxy" and retest. A more complicated answer having to do with changing network settings is available at https://discussions.apple.com/thread/7680039?answerId=30715103022#30715103022 and the bug is also described at https://netbeans.org/bugzilla/show_bug.cgi?id=268076
 
@@ -99,7 +99,7 @@ With over 100 tables, the Dataverse Software PostgreSQL database ("dvndb") can b
 pgAdmin
 ~~~~~~~~
 
-Back in the :doc:`dev-environment` section, we had you install pgAdmin, which can help you explore the tables and execute SQL commands. It's also listed in the :doc:`tools` section.
+Back in the :doc:`classic-dev-env` section, we had you install pgAdmin, which can help you explore the tables and execute SQL commands. It's also listed in the :doc:`tools` section.
 
 SchemaSpy
 ~~~~~~~~~
@@ -117,7 +117,7 @@ Deploying With ``asadmin``
 
 Sometimes you want to deploy code without using Netbeans or from the command line on a server you have ssh'ed into.
 
-For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/payara5/glassfish/bin`` or wherever you have installed Payara.
+For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/payara6/glassfish/bin`` or wherever you have installed Payara.
 
 There are four steps to this process:
 
@@ -238,6 +238,4 @@ with the following code in ``SettingsWrapper.java``:
 
 A more serious example would be direct calls to PermissionServiceBean methods used in render logic expressions. This is something that has happened and caused some problems in real life. A simple permission service lookup (for example, whether a user is authorized to create a dataset in the current dataverse) can easily take 15 database queries. Repeated multiple times, this can quickly become a measurable delay in rendering the page. PermissionsWrapper must be used exclusively for any such lookups from JSF pages.
 
-----
-
-Previous: :doc:`dev-environment` | Next: :doc:`troubleshooting`
+See also :doc:`performance`.

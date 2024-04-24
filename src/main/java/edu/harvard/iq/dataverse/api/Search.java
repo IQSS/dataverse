@@ -1,9 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
@@ -15,7 +14,6 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchUtil;
-import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.IOException;
@@ -23,18 +21,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.EJB;
+import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -50,13 +49,13 @@ public class Search extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     DataverseServiceBean dataverseService;
-    @EJB
-    DvObjectServiceBean dvObjectService;
-    @EJB
-    SolrIndexServiceBean SolrIndexService;
+    @Inject
+    DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
 
     @GET
+    @AuthRequired
     public Response search(
+            @Context ContainerRequestContext crc,
             @QueryParam("q") String query,
             @QueryParam("type") final List<String> types,
             @QueryParam("subtree") final List<String> subtrees,
@@ -79,7 +78,7 @@ public class Search extends AbstractApiBean {
 
         User user;
         try {
-            user = getUser();
+            user = getUser(crc);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -154,7 +153,9 @@ public class Search extends AbstractApiBean {
                         numResultsPerPage,
                         true, //SEK get query entities always for search API additional Dataset Information 6300  12/6/2019
                         geoPoint,
-                        geoRadius
+                        geoRadius,
+                        showFacets, // facets are expensive, no need to ask for them if not requested
+                        showRelevance // no need for highlights unless requested either
                 );
             } catch (SearchException ex) {
                 Throwable cause = ex;
@@ -174,7 +175,7 @@ public class Search extends AbstractApiBean {
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
-                itemsArrayBuilder.add(solrSearchResult.toJsonObject(showRelevance, showEntityIds, showApiUrls, metadataFields));
+                itemsArrayBuilder.add(solrSearchResult.json(showRelevance, showEntityIds, showApiUrls, metadataFields, getDatasetFileCount(solrSearchResult)));
             }
 
             JsonObjectBuilder spelling_alternatives = Json.createObjectBuilder();
@@ -182,31 +183,32 @@ public class Search extends AbstractApiBean {
                 spelling_alternatives.add(entry.getKey(), entry.getValue().toString());
             }
 
-            JsonArrayBuilder facets = Json.createArrayBuilder();
-            JsonObjectBuilder facetCategoryBuilder = Json.createObjectBuilder();
-            for (FacetCategory facetCategory : solrQueryResponse.getFacetCategoryList()) {
-                JsonObjectBuilder facetCategoryBuilderFriendlyPlusData = Json.createObjectBuilder();
-                JsonArrayBuilder facetLabelBuilderData = Json.createArrayBuilder();
-                for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
-                    JsonObjectBuilder countBuilder = Json.createObjectBuilder();
-                    countBuilder.add(facetLabel.getName(), facetLabel.getCount());
-                    facetLabelBuilderData.add(countBuilder);
-                }
-                facetCategoryBuilderFriendlyPlusData.add("friendly", facetCategory.getFriendlyName());
-                facetCategoryBuilderFriendlyPlusData.add("labels", facetLabelBuilderData);
-                facetCategoryBuilder.add(facetCategory.getName(), facetCategoryBuilderFriendlyPlusData);
-            }
-            facets.add(facetCategoryBuilder);
-
             JsonObjectBuilder value = Json.createObjectBuilder()
                     .add("q", query)
                     .add("total_count", solrQueryResponse.getNumResultsFound())
                     .add("start", solrQueryResponse.getResultsStart())
                     .add("spelling_alternatives", spelling_alternatives)
                     .add("items", itemsArrayBuilder.build());
+
             if (showFacets) {
+                JsonArrayBuilder facets = Json.createArrayBuilder();
+                JsonObjectBuilder facetCategoryBuilder = Json.createObjectBuilder();
+                for (FacetCategory facetCategory : solrQueryResponse.getFacetCategoryList()) {
+                    JsonObjectBuilder facetCategoryBuilderFriendlyPlusData = Json.createObjectBuilder();
+                    JsonArrayBuilder facetLabelBuilderData = Json.createArrayBuilder();
+                    for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                        JsonObjectBuilder countBuilder = Json.createObjectBuilder();
+                        countBuilder.add(facetLabel.getName(), facetLabel.getCount());
+                        facetLabelBuilderData.add(countBuilder);
+                    }
+                    facetCategoryBuilderFriendlyPlusData.add("friendly", facetCategory.getFriendlyName());
+                    facetCategoryBuilderFriendlyPlusData.add("labels", facetLabelBuilderData);
+                    facetCategoryBuilder.add(facetCategory.getName(), facetCategoryBuilderFriendlyPlusData);
+                }
+                facets.add(facetCategoryBuilder);
                 value.add("facets", facets);
             }
+
             value.add("count_in_response", solrSearchResults.size());
             /**
              * @todo Returning the fq might be useful as a troubleshooting aid
@@ -227,10 +229,19 @@ public class Search extends AbstractApiBean {
         }
     }
 
-    private User getUser() throws WrappedResponse {
+    private Long getDatasetFileCount(SolrSearchResult solrSearchResult) {
+        DvObject dvObject = solrSearchResult.getEntity();
+        if (dvObject.isInstanceofDataset()) {
+            DatasetVersion datasetVersion = ((Dataset) dvObject).getVersionFromId(solrSearchResult.getDatasetVersionId());
+            return datasetVersionFilesServiceBean.getFileMetadataCount(datasetVersion);
+        }
+        return null;
+    }
+
+    private User getUser(ContainerRequestContext crc) throws WrappedResponse {
         User userToExecuteSearchAs = GuestUser.get();
         try {
-            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            AuthenticatedUser authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (authenticatedUser != null) {
                 userToExecuteSearchAs = authenticatedUser;
             }

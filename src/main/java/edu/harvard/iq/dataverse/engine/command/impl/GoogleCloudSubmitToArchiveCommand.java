@@ -19,8 +19,8 @@ import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.apache.commons.codec.binary.Hex;
 
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

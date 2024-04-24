@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.harvest.server.web.servlet;
 
+import edu.harvard.iq.dataverse.MailServiceBean;
 import io.gdcc.xoai.dataprovider.DataProvider;
 import io.gdcc.xoai.dataprovider.repository.Repository;
 import io.gdcc.xoai.dataprovider.repository.RepositoryConfiguration;
@@ -20,9 +21,10 @@ import io.gdcc.xoai.model.oaipmh.OAIPMH;
 import io.gdcc.xoai.xml.XmlWriter;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.export.spi.Exporter;
+import io.gdcc.spi.export.ExportException;
+import io.gdcc.spi.export.Exporter;
+import io.gdcc.spi.export.XMLExporter;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiItemRepository;
@@ -30,6 +32,7 @@ import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiSetRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import io.gdcc.xoai.exceptions.BadVerbException;
 import io.gdcc.xoai.exceptions.OAIException;
 import io.gdcc.xoai.model.oaipmh.Granularity;
 import io.gdcc.xoai.services.impl.SimpleResumptionTokenFormat;
@@ -37,17 +40,18 @@ import org.apache.commons.lang3.StringUtils;
 
 
 import java.io.IOException;
-import java.time.Instant;
+import java.util.Optional;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.inject.Inject;
+import jakarta.ejb.EJB;
+import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import javax.mail.internet.InternetAddress;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
 import javax.xml.stream.XMLStreamException;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -65,14 +69,14 @@ public class OAIServlet extends HttpServlet {
     @EJB
     OAIRecordServiceBean recordService;
     @EJB
-    SettingsServiceBean settingsService;
-    @EJB
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
     
     @EJB
     SystemConfig systemConfig;
+    @EJB
+    MailServiceBean mailServiceBean;
 
     @Inject
     @ConfigProperty(name = "dataverse.oai.server.maxidentifiers", defaultValue="100")
@@ -154,18 +158,13 @@ public class OAIServlet extends HttpServlet {
                 exporter = null;
             }
 
-            if (exporter != null && exporter.isXMLFormat() && exporter.isHarvestable()) {
+            if (exporter != null && (exporter instanceof XMLExporter) && exporter.isHarvestable()) {
                 MetadataFormat metadataFormat;
 
-                try {
+                metadataFormat = MetadataFormat.metadataFormat(formatName);
+                metadataFormat.withNamespace(((XMLExporter) exporter).getXMLNameSpace());
+                metadataFormat.withSchemaLocation(((XMLExporter) exporter).getXMLSchemaLocation());
 
-                    metadataFormat = MetadataFormat.metadataFormat(formatName);
-                    metadataFormat.withNamespace(exporter.getXMLNameSpace());
-                    metadataFormat.withSchemaLocation(exporter.getXMLSchemaLocation());
-                    
-                } catch (ExportException ex) {
-                    metadataFormat = null;
-                }
                 if (metadataFormat != null) {
                     context.withMetadataFormat(metadataFormat);
                 }
@@ -195,27 +194,32 @@ public class OAIServlet extends HttpServlet {
         }
         // The admin email address associated with this installation: 
         // (Note: if the setting does not exist, we are going to assume that they
-        // have a reason not to want to advertise their email address. 
-        InternetAddress systemEmailAddress = MailUtil.parseSystemAddress(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail));
-        String systemEmailLabel = systemEmailAddress != null ? systemEmailAddress.getAddress() : "donotreply@localhost";
+        // have a reason not to want to configure their email address, if it is
+        // a developer's instance, for example; or a reason not to want to 
+        // advertise it to the world.)
+        String systemEmailLabel = "donotreply@localhost";
+        // TODO: should we expose the support team's address if configured?
+        Optional<InternetAddress> systemAddress = mailServiceBean.getSystemAddress();
+        if (systemAddress.isPresent()) {
+            systemEmailLabel = systemAddress.get().getAddress();
+        }
         
         RepositoryConfiguration configuration = new RepositoryConfiguration.RepositoryConfigurationBuilder()
                 .withAdminEmail(systemEmailLabel)
                 .withCompression("gzip")
                 .withCompression("deflate")
-                .withGranularity(Granularity.Second)
+                .withGranularity(Granularity.Lenient)
                 .withResumptionTokenFormat(new SimpleResumptionTokenFormat().withGranularity(Granularity.Second))
                 .withRepositoryName(repositoryName)
                 .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
-                .withEarliestDate(Instant.EPOCH) // this is NOT something we really want to be doing, but this will be corrected once PR9316 is merged
+                .withEarliestDate(recordService.getEarliestDate())
                 .withMaxListIdentifiers(maxListIdentifiers)
                 .withMaxListSets(maxListSets)
                 .withMaxListRecords(maxListRecords)
                 .withDeleteMethod(DeletedRecord.TRANSIENT)
                 .withEnableMetadataAttributes(true)
                 .withRequireFromAfterEarliest(false)
-                .build();
-        
+                .build();        
         
         return configuration; 
     }
@@ -260,10 +264,16 @@ public class OAIServlet extends HttpServlet {
                         "Sorry. OAI Service is disabled on this Dataverse node.");
                 return;
             }
-                        
-            RawRequest rawRequest = RequestBuilder.buildRawRequest(httpServletRequest.getParameterMap());
-            
-            OAIPMH handle = dataProvider.handle(rawRequest);
+
+            Map<String, String[]> params = httpServletRequest.getParameterMap();
+            OAIPMH handle;
+            try {
+                RawRequest rawRequest = RequestBuilder.buildRawRequest(params);
+                handle = dataProvider.handle(rawRequest);
+            } catch (BadVerbException bve) {
+                handle = dataProvider.handle(params);
+            }
+
             response.setContentType("text/xml;charset=UTF-8");
 
             try (XmlWriter xmlWriter = new XmlWriter(response.getOutputStream(), repositoryConfiguration);) {

@@ -14,10 +14,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  *

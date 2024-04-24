@@ -5,35 +5,34 @@ import edu.harvard.iq.dataverse.AuxiliaryFileServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
-import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.URLTokenUtil.ReservedWord;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Scope;
 
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.ejb.EJB;
-import javax.json.JsonValue;
+
+import jakarta.ejb.EJB;
+import jakarta.json.JsonValue;
 
 @Stateless
 @Named
@@ -62,7 +61,7 @@ public class ExternalToolServiceBean {
     }
 
     /**
-     * @param type explore, configure or preview
+     * @param type explore, configure or preview, query
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findFileToolsByType(Type type) {
@@ -71,7 +70,7 @@ public class ExternalToolServiceBean {
     }
 
     /**
-     * @param type explore, configure or preview
+     * @param type explore, configure or preview, query
      * @param contentType file content type (MIME type)
      * @return A list of tools or an empty list.
      */
@@ -144,9 +143,10 @@ public class ExternalToolServiceBean {
         List<ExternalTool> externalTools = new ArrayList<>();
         //Map tabular data to it's mimetype (the isTabularData() check assures that this code works the same as before, but it may need to change if tabular data is split into subtypes with differing mimetypes)
         final String contentType = file.isTabularData() ? DataFileServiceBean.MIME_TYPE_TSV_ALT : file.getContentType();
+        boolean isAccessible = StorageIO.isDataverseAccessible(DataAccess.getStorageDriverFromIdentifier(file.getStorageIdentifier()));
         allExternalTools.forEach((externalTool) -> {
             //Match tool and file type, then check requirements
-            if (contentType.equals(externalTool.getContentType()) && meetsRequirements(externalTool, file)) {
+            if (contentType.equals(externalTool.getContentType()) && meetsRequirements(externalTool, file) && (isAccessible || externalTool.accessesAuxFiles())) {
                 externalTools.add(externalTool);
             }
         });
@@ -162,7 +162,7 @@ public class ExternalToolServiceBean {
         }
         boolean meetsRequirements = true;
         JsonObject requirementsObj = JsonUtil.getJsonObject(requirements);
-        JsonArray auxFilesExist = requirementsObj.getJsonArray("auxFilesExist");
+        JsonArray auxFilesExist = requirementsObj.getJsonArray(ExternalTool.AUX_FILES_EXIST);
         for (JsonValue jsonValue : auxFilesExist) {
             String formatTag = jsonValue.asJsonObject().getString("formatTag");
             String formatVersion = jsonValue.asJsonObject().getString("formatVersion");

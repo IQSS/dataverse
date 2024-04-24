@@ -27,15 +27,26 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
     
     final DatasetVersion newVersion;
     final Dataset dataset;
+    final boolean validate;
     
     public CreateDatasetVersionCommand(DataverseRequest aRequest, Dataset theDataset, DatasetVersion aVersion) {
+        this(aRequest, theDataset, aVersion, true);
+    }
+
+    public CreateDatasetVersionCommand(DataverseRequest aRequest, Dataset theDataset, DatasetVersion aVersion, boolean validate) {
         super(aRequest, theDataset);
         dataset = theDataset;
         newVersion = aVersion;
+        this.validate = validate;
     }
     
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
+        /*
+         * CreateDatasetVersionCommand assumes you have not added your new version to
+         * the dataset you send. Use UpdateDatasetVersionCommand if you created the new
+         * version via Dataset.getOrCreateEditVersion() and just want to persist it.
+         */
         DatasetVersion latest = dataset.getLatestVersion();
         if ( latest.isWorkingCopy() ) {
             // A dataset can only have a single draft, which has to be the latest.
@@ -44,6 +55,10 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
                 throw new IllegalCommandException("Latest version is already a draft. Cannot add another draft", this);
             }
         }
+        
+        //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
+        checkSystemMetadataKeyIfNeeded(newVersion, latest);
+
                 
         List<FileMetadata> newVersionMetadatum = new ArrayList<>(latest.getFileMetadatas().size());
         for ( FileMetadata fmd : latest.getFileMetadatas() ) {
@@ -59,10 +74,11 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         //good wrapped response if the TOA/Request Access not in compliance
         prepareDatasetAndVersion();
         
-        // TODO make async
-        // ctxt.index().indexDataset(dataset);
-        return ctxt.datasets().storeVersion(newVersion);
-        
+        DatasetVersion version = ctxt.datasets().storeVersion(newVersion);
+        if (ctxt.index() != null) {
+            ctxt.index().asyncIndexDataset(dataset, true);
+        }
+        return version;
     }
     
     /**
@@ -81,7 +97,9 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         //originally missing/empty required fields were not
         //throwing constraint violations because they
         //had been stripped from the dataset fields prior to validation 
-        validateOrDie(newVersion, false);
+        if (this.validate) {
+            validateOrDie(newVersion, false);
+        }
         DatasetFieldUtil.tidyUpFields(newVersion.getDatasetFields(), true);
         
         final List<DatasetVersion> currentVersions = dataset.getVersions();

@@ -1,11 +1,13 @@
 Application Base Image
 ======================
 
+The base image contains Payara and other dependencies that the Dataverse software runs on. It is the foundation for the :doc:`app-image`. Note that some dependencies, such as PostgreSQL and Solr, run in their own containers and are not part of the base image.
+
 .. contents:: |toctitle|
     :local:
 
 A "base image" offers you a pre-installed and pre-tuned application server to deploy Dataverse software to.
-Adding basic functionality like executing scripts at container boot, monitoring, memory tweaks etc is all done
+Adding basic functionality like executing scripts at container boot, monitoring, memory tweaks etc. is all done
 at this layer, to make the application image focus on the app itself.
 
 **NOTE: The base image does not contain the Dataverse application itself.**
@@ -15,7 +17,7 @@ This Maven module uses the `Maven Docker Plugin <https://dmp.fabric8.io>`_ to bu
 You may use, extend, or alter this image to your liking and/or host in some different registry if you want to.
 
 **NOTE: This image is created, maintained and supported by the Dataverse community on a best-effort basis.**
-IQSS will not offer you support how to deploy or run it, please reach out to the community for help on using it.
+IQSS will not offer you support how to deploy or run it, please reach out to the community (:ref:`support`) for help on using it.
 You might be interested in taking a look at :doc:`../developers/containers`, linking you to some (community-based)
 efforts.
 
@@ -29,7 +31,7 @@ upstream branches:
 
 - The ``unstable`` tag corresponds to the ``develop`` branch, where pull requests are merged.
   (`Dockerfile <https://github.com/IQSS/dataverse/tree/develop/modules/container-base/src/main/docker/Dockerfile>`__)
-- The ``stable`` tag corresponds to the ``master`` branch, where releases are cut from.
+- The ``alpha`` tag corresponds to the ``master`` branch, where releases are cut from.
   (`Dockerfile <https://github.com/IQSS/dataverse/tree/master/modules/container-base/src/main/docker/Dockerfile>`__)
 
 
@@ -39,7 +41,7 @@ Image Contents
 
 The base image provides:
 
-- `Eclipse Temurin JRE using Java 11 <https://adoptium.net/temurin/releases?version=11>`_
+- `Eclipse Temurin JRE using Java 17 <https://adoptium.net/temurin/releases?version=17>`_
 - `Payara Community Application Server <https://docs.payara.fish/community>`_
 - CLI tools necessary to run Dataverse (i. e. ``curl`` or ``jq`` - see also :doc:`../installation/prerequisites` in Installation Guide)
 - Linux tools for analysis, monitoring and so on
@@ -61,7 +63,7 @@ Build Instructions
 Assuming you have `Docker <https://docs.docker.com/engine/install/>`_, `Docker Desktop <https://www.docker.com/products/docker-desktop/>`_,
 `Moby <https://mobyproject.org/>`_ or some remote Docker host configured, up and running from here on.
 
-Simply execute the Maven modules packaging target with activated "container profile. Either from the projects Git root:
+Simply execute the Maven modules packaging target with activated "container" profile. Either from the projects Git root:
 
 ``mvn -Pct -f modules/container-base install``
 
@@ -72,7 +74,7 @@ Or move to the module and execute:
 Some additional notes, using Maven parameters to change the build and use ...:
 
 - | ... a different tag only: add ``-Dbase.image.tag=tag``.
-  | *Note:* default is ``develop``
+  | *Note:* default is ``unstable``
 - | ... a different image name and tag: add ``-Dbase.image=name:tag``.
   | *Note:* default is ``gdcc/base:${base.image.tag}``
 - ... a different image registry than Docker Hub: add ``-Ddocker.registry=registry.example.org`` (see also
@@ -101,19 +103,26 @@ Processor Architecture and Multiarch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This image is created as a "multi-arch image", supporting the most common architectures Dataverse usually runs on:
-AMD64 (Windows/Linux/...) and ARM64 (Apple M1/M2), by using Maven Docker Plugin's *BuildX* mode.
+AMD64 (Windows/Linux/...) and ARM64 (Apple M1/M2), by using `Maven Docker Plugin's BuildX mode <https://dmp.fabric8.io/#build-buildx>`_.
 
 Building the image via ``mvn -Pct package`` or ``mvn -Pct install`` as above will only build for the architecture of
-the Docker maschine's CPU.
+the Docker machine's CPU.
 
-Only ``mvn -Pct deploy`` will trigger building on all enabled architectures.
-Yet, to enable building with non-native code on your build machine, you will need to setup a cross-platform builder.
+Only ``mvn -Pct deploy`` will trigger building on all enabled architectures (and will try to push the images to a
+registry, which is Docker Hub by default).
+
+You can specify which architectures you would like to build for and include by them as a comma separated list:
+``mvn -Pct deploy -Ddocker.platforms="linux/amd64,linux/arm64"``. The shown configuration is the default and may be omitted.
+
+Yet, to enable building with non-native code on your build machine, you will need to setup a cross-platform builder!
 
 On Linux, you should install `qemu-user-static <https://github.com/multiarch/qemu-user-static>`__ (preferably via
 your package management) on the host and run ``docker run --rm --privileged multiarch/qemu-user-static --reset -p yes``
 to enable that builder. The Docker plugin will setup everything else for you.
 
+The upstream CI workflows publish images supporting AMD64 and ARM64 (see e.g. tag details on Docker Hub)
 
+.. _base-tunables:
 
 Tunables
 ++++++++
@@ -208,7 +217,14 @@ provides. These are mostly based on environment variables (very common with cont
       - ``0``
       - Bool, ``0|1``
       - Enable the dynamic "hot" reloads of files when changed in a deployment. Useful for development,
-        when new artifacts are copied into the running domain.
+        when new artifacts are copied into the running domain. Also, export Dataverse specific environment variables
+        ``DATAVERSE_JSF_PROJECT_STAGE=Development`` and ``DATAVERSE_JSF_REFRESH_PERIOD=0`` to enable dynamic JSF page
+        reloads.
+    * - ``SKIP_DEPLOY``
+      - ``0``
+      - Bool, ``0|1`` or ``false|true``
+      - When active, do not deploy applications from ``DEPLOY_DIR`` (see below), just start the application server.
+        Will still execute any provided init scripts and only skip deployments within the default init scripts.
     * - ``DATAVERSE_HTTP_TIMEOUT``
       - ``900``
       - Seconds
@@ -222,6 +238,7 @@ provides. These are mostly based on environment variables (very common with cont
 .. [dump-option] ``-XX:+HeapDumpOnOutOfMemoryError``
 
 
+.. _base-locations:
 
 Locations
 +++++++++
@@ -262,7 +279,8 @@ building upon it. You can also use these for references in scripts, etc.
         (Might be reused for Dataverse one day)
     * - ``DEPLOY_DIR``
       - ``${HOME_DIR}/deployments``
-      - Any EAR or WAR file, exploded WAR directory etc are autodeployed on start
+      - Any EAR or WAR file, exploded WAR directory etc are autodeployed on start.
+        See also ``SKIP_DEPLOY`` above.
     * - ``DOMAIN_DIR``
       - ``${PAYARA_DIR}/glassfish`` ``/domains/${DOMAIN_NAME}``
       - Path to root of the Payara domain applications will be deployed into. Usually ``${DOMAIN_NAME}`` will be ``domain1``.
@@ -289,9 +307,9 @@ named Docker volume in these places to avoid data loss, gain performance and/or 
       - Description
     * - ``STORAGE_DIR``
       - ``/dv``
-      - This place is writeable by the Payara user, making it usable as a place to store research data, customizations
-        or other. Images inheriting the base image should create distinct folders here, backed by different
-        mounted volumes.
+      - This place is writeable by the Payara user, making it usable as a place to store research data, customizations or other.
+        Images inheriting the base image should create distinct folders here, backed by different mounted volumes.
+        Enforce correct filesystem permissions on the mounted volume using ``fix-fs-perms.sh`` from :doc:`configbaker-image` or similar scripts.
     * - ``SECRETS_DIR``
       - ``/secrets``
       - Mount secrets or other here, being picked up automatically by
@@ -302,6 +320,8 @@ named Docker volume in these places to avoid data loss, gain performance and/or 
       - Default location where heap dumps will be stored (see above).
         You should mount some storage here (disk or ephemeral).
 
+
+.. _base-exposed-ports:
 
 Exposed Ports
 +++++++++++++
@@ -340,6 +360,8 @@ Other Hints
 +++++++++++
 
 By default, ``domain1`` is enabled to use the ``G1GC`` garbage collector.
+
+To access the Payara Admin Console or use the ``asadmin`` command, use username ``admin`` and password ``admin``.
 
 For running a Java application within a Linux based container, the support for CGroups is essential. It has been
 included and activated by default since Java 8u192, Java 11 LTS and later. If you are interested in more details,

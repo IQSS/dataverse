@@ -1,3 +1,0 @@
-9005
-
-Direct upload and out-of-band uploads can now be used to replace multiple files with one API call (complementing the prior ability to add multiple new files)

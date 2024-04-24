@@ -344,8 +344,7 @@ Repositories
 ------------
 
 Maven receives all dependencies from *repositories*. These can be public like `Maven Central <https://search.maven.org/>`_
-and others, but you can also use a private repository on premises or in the cloud. Last but not least, you can use
-local repositories, which can live next to your application code (see ``local_lib`` dir within the Dataverse Software codebase).
+and others, but you can also use a private repository on premises or in the cloud.
 
 Repositories are defined within the Dataverse Software POM like this:
 
@@ -363,11 +362,6 @@ Repositories are defined within the Dataverse Software POM like this:
             <name>PrimeFaces Maven Repository</name>
             <url>http://repository.primefaces.org</url>
             <layout>default</layout>
-        </repository>
-        <repository>
-            <id>dvn.private</id>
-            <name>Local repository for hosting jars not available from network repositories.</name>
-            <url>file://${project.basedir}/local_lib</url>
         </repository>
     </repositories>
 
@@ -450,7 +444,3 @@ The codebase is structured like this:
 
 .. [#f1] Modern IDEs import your Maven POM and offer import autocompletion for classes based on direct dependencies in the model. You might end up using legacy or repackaged classes because of a wrong scope.
 .. [#f2] This is going to bite back in modern IDEs when importing classes from transitive dependencies by "autocompletion accident".
-
-----
-
-Previous: :doc:`documentation` | Next: :doc:`debugging`

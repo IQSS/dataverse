@@ -1,1 +1,0 @@
-To improve performance, Dataverse estimates download counts. This release includes an update that makes the estimate more accurate.
