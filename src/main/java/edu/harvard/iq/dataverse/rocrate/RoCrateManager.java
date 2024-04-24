@@ -113,7 +113,7 @@ public class RoCrateManager {
             String fieldUri = fieldType.getUri();
 
             if (fieldUri == null) {
-                fieldUri = fieldType.getMetadataBlock().getJsonLDNamespace().getUrl();
+                fieldUri = fieldType.getMetadataBlock().getJsonLDNamespace().getUrl()+fieldName;
             }
 
             if (!datasetField.isEmpty()) {
@@ -407,7 +407,7 @@ public class RoCrateManager {
                 String childFieldName = childFieldType.getName();
                 String childFieldUri = childFieldType.getUri();
                 if (childFieldUri == null) {
-                    childFieldUri = childFieldType.getMetadataBlock().getJsonLDNamespace().getUrl();
+                    childFieldUri = childFieldType.getMetadataBlock().getJsonLDNamespace().getUrl()+childFieldName;
                 }
                 if (isCreation || !roCrateContext.has(childFieldName)) {
                     roCrateContextUpdater.addValuePairToContext(childFieldName, childFieldUri);
@@ -439,7 +439,7 @@ public class RoCrateManager {
         String parentFieldName = parentFieldType.getName();
         String parentFieldUri = parentFieldType.getUri();
         if (parentFieldUri == null) {
-            parentFieldUri = parentFieldType.getMetadataBlock().getJsonLDNamespace().getUrl();
+            parentFieldUri = parentFieldType.getMetadataBlock().getJsonLDNamespace().getUrl()+parentFieldName;
         }
         ContextualEntity.ContextualEntityBuilder contextualEntityBuilder = new ContextualEntity.ContextualEntityBuilder();
         buildNewContextualEntity(roCrate, roCrateContextUpdater, contextualEntityBuilder, compoundValue, mapper, parentFieldName, parentFieldUri, isCreation);

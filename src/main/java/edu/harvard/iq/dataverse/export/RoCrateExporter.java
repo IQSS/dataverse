@@ -49,7 +49,7 @@ public class RoCrateExporter implements Exporter {
         var versionId = Long.valueOf(json.getJsonObject("datasetVersion").get("id").toString());
         var version = ds.getVersionFromId(versionId);
 
-        // Now we can creat the RO-Crate using the roCrateManager
+        // Now we can create the RO-Crate using the roCrateManager
         String roCratePath = roCrateManager.getRoCratePath(version);
         if (!Files.exists(Paths.get(roCratePath))) {
             try {
