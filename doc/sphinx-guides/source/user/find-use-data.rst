@@ -71,7 +71,7 @@ View Files
 
 Files in a Dataverse installation each have their own landing page that can be reached through the search results or through the Files table on their parent dataset's page. The dataset page and file page offer much the same functionality in terms of viewing and editing files, with a few small exceptions. 
 
-- In installations that have enabled support for persistent identifers (PIDs) at the file level, the file page includes the file's DOI or handle, which can be found in the file citation and also under the Metadata tab.
+- In installations that have enabled support for persistent identifiers (PIDs) at the file level, the file page includes the file's DOI or handle, which can be found in the file citation and also under the Metadata tab.
 - Previewers for several common file types are available and can be added by installation administrators.
 - The file page's Versions tab gives you a version history that is more focused on the individual file rather than the dataset as a whole. 
 

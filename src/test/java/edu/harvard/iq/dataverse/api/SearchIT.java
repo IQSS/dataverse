@@ -862,7 +862,7 @@ public class SearchIT {
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+        UtilIT.sleepForReindex(datasetPid, apiToken, 5);
         Response searchPublishedSubtreeWDS = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
         searchPublishedSubtreeWDS.prettyPrint();
         searchPublishedSubtreeWDS.then().assertThat()
@@ -1197,12 +1197,12 @@ public class SearchIT {
                                                                                         .add("multiple", false)
                                                                                         .add("typeName", "westLongitude")
                                                                         )
-                                                                        .add("southLongitude",
+                                                                        .add("southLatitude",
                                                                                 Json.createObjectBuilder()
                                                                                         .add("value", "42.33661")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
-                                                                                        .add("typeName", "southLongitude")
+                                                                                        .add("typeName", "southLatitude")
                                                                         )
                                                                         .add("eastLongitude",
                                                                                 Json.createObjectBuilder()
@@ -1211,12 +1211,12 @@ public class SearchIT {
                                                                                         .add("multiple", false)
                                                                                         .add("typeName", "eastLongitude")
                                                                         )
-                                                                        .add("northLongitude",
+                                                                        .add("northLatitude",
                                                                                 Json.createObjectBuilder()
                                                                                         .add("value", "42.409599")
                                                                                         .add("typeClass", "primitive")
                                                                                         .add("multiple", false)
-                                                                                        .add("typeName", "northLongitude")
+                                                                                        .add("typeName", "northLatitude")
                                                                         )
                                                                 )
                                                         )

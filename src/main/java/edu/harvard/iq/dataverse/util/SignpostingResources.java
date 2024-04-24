@@ -19,6 +19,8 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
+import org.apache.commons.validator.routines.UrlValidator;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,14 +73,14 @@ public class SignpostingResources {
 
         String describedby = "<" + ds.getGlobalId().asURL().toString() + ">;rel=\"describedby\"" + ";type=\"" + "application/vnd.citationstyles.csl+json\"";
         describedby += ",<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId="
-                + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"application/json+ld\"";
+                + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"application/ld+json\"";
         valueList.add(describedby);
 
         String type = "<https://schema.org/AboutPage>;rel=\"type\"";
         type = "<https://schema.org/AboutPage>;rel=\"type\",<" + defaultFileTypeValue + ">;rel=\"type\"";
         valueList.add(type);
 
-        String licenseString = DatasetUtil.getLicenseURI(workingDatasetVersion) + ";rel=\"license\"";
+        String licenseString = "<" + DatasetUtil.getLicenseURI(workingDatasetVersion) + ">;rel=\"license\"";
         valueList.add(licenseString);
 
         String linkset = "<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/"
@@ -116,7 +118,7 @@ public class SignpostingResources {
                         systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier()
                 ).add(
                         "type",
-                        "application/json+ld"
+                        "application/ld+json"
                 )
         );
         JsonArrayBuilder linksetJsonObj = Json.createArrayBuilder();
@@ -164,12 +166,11 @@ public class SignpostingResources {
         for (DatasetAuthor da : workingDatasetVersion.getDatasetAuthors()) {
             logger.fine(String.format("idtype: %s; idvalue: %s, affiliation: %s; identifierUrl: %s", da.getIdType(),
                     da.getIdValue(), da.getAffiliation(), da.getIdentifierAsUrl()));
-            String authorURL = "";
-            authorURL = getAuthorUrl(da);
+            String authorURL = getAuthorUrl(da);
             if (authorURL != null && !authorURL.isBlank()) {
                 // return empty if number of visible author more than max allowed
                 // >= since we're comparing before incrementing visibleAuthorCounter
-                if (visibleAuthorCounter >= maxAuthors) {
+                if (limit && visibleAuthorCounter >= maxAuthors) {
                     authorURLs.clear();
                     break;
                 }
@@ -211,15 +212,22 @@ public class SignpostingResources {
      * 
      */
     private String getAuthorUrl(DatasetAuthor da) {
-        String authorURL = "";
-        //If no type and there's a value, assume it is a URL (is this reasonable?)
-        //Otherise, get the URL using the type and value
-        if (da.getIdType() != null && !da.getIdType().isBlank() && da.getIdValue()!=null) {
-            authorURL = da.getIdValue();
-        } else {
-            authorURL = da.getIdentifierAsUrl();
+
+        final String identifierAsUrl = da.getIdentifierAsUrl();
+        // First, try to get URL using the type and value
+        if(identifierAsUrl != null) {
+            return identifierAsUrl;
         }
-        return authorURL;
+
+        final String idValue = da.getIdValue();
+        UrlValidator urlValidator = new UrlValidator(new String[]{"http", "https"});
+        // Otherwise, try to use idValue as url if it's valid
+        if(urlValidator.isValid(idValue)) {
+            return idValue;
+        }
+
+        // No url found
+        return null;
     }
 
     private JsonArrayBuilder getJsonAuthors(List<String> datasetAuthorURLs) {

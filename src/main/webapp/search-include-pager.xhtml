@@ -15,7 +15,7 @@
                 <ul class="pagination">
                     <!--should take you to page 1-->
                     <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                        <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}">
                             <h:outputText value="&#171;"/>
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -29,7 +29,7 @@
                         </h:outputLink>
                     </li>
                     <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                        <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}">
                             <h:outputText value="&lt; #{bundle.previous}"/>
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -46,7 +46,7 @@
                                end="#{Math:min(SearchIncludeFragment.totalPages,SearchIncludeFragment.page+Math:max(2,5-SearchIncludeFragment.page))}"
                                varStatus="pageStatus">
                         <li class="#{SearchIncludeFragment.page == pageStatus.index ? 'active' : ''}">
-                            <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                            <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}">
                                 <h:outputText value="#{pageStatus.index}">
                                     <f:convertNumber pattern="###,###" />
                                 </h:outputText>
@@ -65,7 +65,7 @@
                         </li>
                     </c:forEach>
                     <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                        <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}">
                             <h:outputText value="#{bundle.next} &gt;"/>
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -79,7 +79,7 @@
                         </h:outputLink>
                     </li>
                     <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
+                        <h:outputLink rel="nofollow" value="#{widgetWrapper.wrapURL(page)}">
                             <h:outputText value="&#187;"/>
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">

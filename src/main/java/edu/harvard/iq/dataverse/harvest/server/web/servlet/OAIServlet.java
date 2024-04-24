@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.harvest.server.web.servlet;
 
+import edu.harvard.iq.dataverse.MailServiceBean;
 import io.gdcc.xoai.dataprovider.DataProvider;
 import io.gdcc.xoai.dataprovider.repository.Repository;
 import io.gdcc.xoai.dataprovider.repository.RepositoryConfiguration;
@@ -31,6 +32,7 @@ import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiSetRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import io.gdcc.xoai.exceptions.BadVerbException;
 import io.gdcc.xoai.exceptions.OAIException;
 import io.gdcc.xoai.model.oaipmh.Granularity;
 import io.gdcc.xoai.services.impl.SimpleResumptionTokenFormat;
@@ -38,6 +40,7 @@ import org.apache.commons.lang3.StringUtils;
 
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.logging.Logger;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
@@ -48,6 +51,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
 import javax.xml.stream.XMLStreamException;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -65,14 +69,14 @@ public class OAIServlet extends HttpServlet {
     @EJB
     OAIRecordServiceBean recordService;
     @EJB
-    SettingsServiceBean settingsService;
-    @EJB
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
     
     @EJB
     SystemConfig systemConfig;
+    @EJB
+    MailServiceBean mailServiceBean;
 
     @Inject
     @ConfigProperty(name = "dataverse.oai.server.maxidentifiers", defaultValue="100")
@@ -192,9 +196,13 @@ public class OAIServlet extends HttpServlet {
         // (Note: if the setting does not exist, we are going to assume that they
         // have a reason not to want to configure their email address, if it is
         // a developer's instance, for example; or a reason not to want to 
-        // advertise it to the world.) 
-        InternetAddress systemEmailAddress = MailUtil.parseSystemAddress(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail));
-        String systemEmailLabel = systemEmailAddress != null ? systemEmailAddress.getAddress() : "donotreply@localhost";
+        // advertise it to the world.)
+        String systemEmailLabel = "donotreply@localhost";
+        // TODO: should we expose the support team's address if configured?
+        Optional<InternetAddress> systemAddress = mailServiceBean.getSystemAddress();
+        if (systemAddress.isPresent()) {
+            systemEmailLabel = systemAddress.get().getAddress();
+        }
         
         RepositoryConfiguration configuration = new RepositoryConfiguration.RepositoryConfigurationBuilder()
                 .withAdminEmail(systemEmailLabel)
@@ -256,10 +264,16 @@ public class OAIServlet extends HttpServlet {
                         "Sorry. OAI Service is disabled on this Dataverse node.");
                 return;
             }
-                        
-            RawRequest rawRequest = RequestBuilder.buildRawRequest(httpServletRequest.getParameterMap());
-            
-            OAIPMH handle = dataProvider.handle(rawRequest);
+
+            Map<String, String[]> params = httpServletRequest.getParameterMap();
+            OAIPMH handle;
+            try {
+                RawRequest rawRequest = RequestBuilder.buildRawRequest(params);
+                handle = dataProvider.handle(rawRequest);
+            } catch (BadVerbException bve) {
+                handle = dataProvider.handle(params);
+            }
+
             response.setContentType("text/xml;charset=UTF-8");
 
             try (XmlWriter xmlWriter = new XmlWriter(response.getOutputStream(), repositoryConfiguration);) {

@@ -380,12 +380,13 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       print("Can't connect to PostgresQL as the admin user.\n")
       sys.exit("Is the server running, have you adjusted pg_hba.conf, etc?")
 
-   # 3b. get the Postgres version (do we need it still?)
+   # 3b. get the Postgres version for new permissions model in versions 15+
    try:
-      pg_full_version = conn.server_version
-      print("PostgresQL version: "+str(pg_full_version))
+      pg_full_version = str(conn.server_version)
+      pg_major_version = pg_full_version[0:2]
+      print("PostgreSQL version: "+pg_major_version)
    except:
-      print("Warning: Couldn't determine PostgresQL version.")
+      print("Warning: Couldn't determine PostgreSQL version.")
    conn.close()
 
    # 3c. create role:
@@ -410,6 +411,8 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       else:
          sys.exit("Couldn't create database or database already exists.\n")
 
+   # 3e. set permissions:
+
    conn_cmd = "GRANT ALL PRIVILEGES on DATABASE "+pgDb+" to "+pgUser+";"
    try:
       cur.execute(conn_cmd)
@@ -417,6 +420,23 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       sys.exit("Couldn't grant privileges on "+pgDb+" to "+pgUser)
    cur.close()
    conn.close()
+
+   if int(pg_major_version) >= 15:
+      admin_conn_string = "dbname='"+pgDb+"' user='postgres' password='"+pgAdminPassword+"' host='"+pgHost+"'"
+      conn = psycopg2.connect(admin_conn_string)
+      conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+      cur = conn.cursor()
+      conn_cmd = "GRANT CREATE ON SCHEMA public TO "+pgUser+";"
+      try:
+         print("PostgreSQL 15 or higher detected. Running " + conn_cmd)
+         cur.execute(conn_cmd)
+      except:
+         if force:
+            print("WARNING: failed to grant permissions on schema public - continuing, since the --force option was specified")
+         else:
+            sys.exit("Couldn't grant privileges on schema public to "+pgUser)
+      cur.close()
+      conn.close()
 
    print("Database and role created!")
    if pgOnly:
@@ -548,14 +568,6 @@ try:
 except:
    sys.exit("Failure to execute setup-all.sh! aborting.")
 
-# 7b. configure admin email in the application settings
-print("configuring system email address...")
-returnCode = subprocess.call(["curl", "-X", "PUT", "-d", adminEmail, apiUrl+"/admin/settings/:SystemEmail"])
-if returnCode != 0:
-   print("\nWARNING: failed to configure the admin email in the Dataverse settings!")
-else:
-   print("\ndone.")
-
 # 8c. configure remote Solr location, if specified
 if solrLocation != "LOCAL":
    print("configuring remote Solr location... ("+solrLocation+")")
@@ -571,15 +583,14 @@ if solrLocation != "LOCAL":
 print("\n\nYou should now have a running Dataverse instance at")
 print("  http://" + hostName + ":8080\n\n")
 
-# DataCite instructions: 
+# PID instructions: 
 
-print("\nYour Dataverse has been configured to use DataCite, to register DOI global identifiers in the ")
+print("\nYour Dataverse has been configured to use a Fake DOI Provider, registering (non-resolvable) DOI global identifiers in the ")
 print("test name space \"10.5072\" with the \"shoulder\" \"FK2\"")
-print("However, you have to contact DataCite (support\@datacite.org) and request a test account, before you ")
-print("can publish datasets. Once you receive the account name and password, add them to your domain.xml,")
-print("as the following two JVM options:")
-print("\t<jvm-options>-Ddataverse.pid.datacite.username=...</jvm-options>")
-print("\t<jvm-options>-Ddataverse.pid.datacite.password=...</jvm-options>")
+print("You can reconfigure to use additional/alternative providers.")
+print("If you intend to use DOIs, you should contact DataCite (support\@datacite.org) or GDCC (see https://www.gdcc.io/about.html) and request a test account.")
+print("Once you receive the account information (name, password, authority, shoulder), add them to your configuration ")
+print("as described in the Dataverse Guides (see https://guides.dataverse.org/en/latest/installation/config.html#persistent-identifiers-and-publishing-datasets),")
 print("and restart payara")
 print("If this is a production Dataverse and you are planning to register datasets as ")
 print("\"real\", non-test DOIs or Handles, consult the \"Persistent Identifiers and Publishing Datasets\"")
