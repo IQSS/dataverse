@@ -53,8 +53,8 @@ public class BagIT {
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        Response toggleSuperuser = UtilIT.makeSuperUser(username);
-        toggleSuperuser.then().assertThat()
+        Response makeSuperuser = UtilIT.setSuperuserStatus(username, true);
+        makeSuperuser.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         Response createDataverse = UtilIT.createRandomDataverse(apiToken);
