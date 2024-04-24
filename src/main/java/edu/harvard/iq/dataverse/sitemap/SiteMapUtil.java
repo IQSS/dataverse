@@ -25,12 +25,13 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 
 public class SiteMapUtil {
 
-    private static final Logger logger = Logger.getLogger(SiteMapUtil.class.getCanonicalName());
-    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
+    static final String DATE_PATTERN = "yyyy-MM-dd";
     static final String SITEMAP_FILENAME_STAGED = "sitemap.xml.staged";
     /** @see https://www.sitemaps.org/protocol.html#index */
     static final int SITEMAP_LIMIT = 50000;
+
+    private static final Logger logger = Logger.getLogger(SiteMapUtil.class.getCanonicalName());
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN);
 
 
     public static void updateSiteMap(List<Dataverse> dataverses, List<Dataset> datasets) {
@@ -56,11 +57,15 @@ public class SiteMapUtil {
             directory.mkdir();
         }
 
-        // Use DAY pattern (2024-01-24), local machine timezone
+        // Use DAY pattern (YYYY-MM-DD), local machine timezone
         final W3CDateFormat dateFormat = new W3CDateFormat(Pattern.DAY);
         WebSitemapGenerator wsg = null;
         try {
-            wsg = WebSitemapGenerator.builder(dataverseSiteUrl, directory).autoValidate(true).dateFormat(dateFormat)
+            // All sitemap files are in "sitemap" folder, see "getSitemapPathString" method.
+            // But with pretty-faces configuration, "sitemap.xml" and "sitemap_index.xml" are accessible directly,
+            // like "https://demo.dataverse.org/sitemap.xml". So "/sitemap/" need to be added on "WebSitemapGenerator"
+            // in order to have valid URL for sitemap location.
+            wsg = WebSitemapGenerator.builder(dataverseSiteUrl + "/sitemap/", directory).autoValidate(true).dateFormat(dateFormat)
                     .build();
         } catch (MalformedURLException e) {
             logger.warning(String.format(msgErrorFormat, "Dataverse site URL", dataverseSiteUrl, e.getLocalizedMessage()));
