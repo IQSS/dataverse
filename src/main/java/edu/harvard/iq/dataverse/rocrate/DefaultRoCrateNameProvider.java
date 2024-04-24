@@ -20,11 +20,9 @@ import java.util.stream.Collectors;
  */
 @Stateless
 @Named
-public class DefaultRoCrateNameProvider implements RoCrateNameProvider
-{
+public class DefaultRoCrateNameProvider implements RoCrateNameProvider {
     @Override
-    public String generateRoCrateName(DatasetFieldCompoundValue compoundValue)
-    {
+    public String generateRoCrateName(DatasetFieldCompoundValue compoundValue) {
         var nameFieldValue = compoundValue.getDisplayValueMap().entrySet().stream()
                 .map(o -> o.getValue())
                 .collect(Collectors.joining(" "));
