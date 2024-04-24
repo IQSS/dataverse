@@ -30,11 +30,10 @@ import jakarta.enterprise.inject.spi.CDI;
  * @version 1.0
  */
 @AutoService(Exporter.class)
-public class RoCrateExporter implements Exporter
-{
+public class RoCrateExporter implements Exporter {
+
     @Override
-    public void exportDataset(ExportDataProvider exportDataProvider, OutputStream outputStream) throws ExportException
-    {
+    public void exportDataset(ExportDataProvider exportDataProvider, OutputStream outputStream) throws ExportException {
         // The exporter is not loaded as an EJB by the ExporterService but is initialized directly, which means
         // we cannot inject EJB-s with the usual @EJB annotation. Instead, we look them up at runtime
         var roCrateManager = CDI.current().select(RoCrateManager.class).get();
@@ -72,33 +71,28 @@ public class RoCrateExporter implements Exporter
     }
 
     @Override
-    public String getFormatName()
-    {
+    public String getFormatName() {
         return "rocrate";
     }
 
     @Override
-    public String getDisplayName(Locale locale)
-    {
+    public String getDisplayName(Locale locale) {
         String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.rocrate",locale);
         return Optional.ofNullable(displayName).orElse("RO-Crate");
     }
 
     @Override
-    public Boolean isHarvestable()
-    {
+    public Boolean isHarvestable() {
         return true;
     }
 
     @Override
-    public Boolean isAvailableToUsers()
-    {
+    public Boolean isAvailableToUsers() {
         return true;
     }
 
     @Override
-    public String getMediaType()
-    {
+    public String getMediaType() {
         return MediaType.APPLICATION_JSON;
     }
 }

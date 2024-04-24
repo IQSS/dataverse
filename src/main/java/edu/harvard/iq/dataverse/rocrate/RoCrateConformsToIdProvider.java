@@ -17,8 +17,7 @@ import java.util.List;
  * @version 1.0
  */
 
-public interface RoCrateConformsToIdProvider
-{
+public interface RoCrateConformsToIdProvider {
     List<String> generateConformsToIds(Dataset dataset, RootDataEntity rootDataEntity);
 
     List<MetadataBlock> findMetadataBlockForConformsToIds(List<String> ids);

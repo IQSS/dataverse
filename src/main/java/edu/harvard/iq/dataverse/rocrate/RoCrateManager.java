@@ -272,8 +272,7 @@ public class RoCrateManager {
         }
     }
 
-    private void collectConformsToIds(Dataset dataset, RootDataEntity rootDataEntity, ObjectMapper mapper)
-    {
+    private void collectConformsToIds(Dataset dataset, RootDataEntity rootDataEntity, ObjectMapper mapper) {
         var conformsToArray = mapper.createArrayNode();
         Set<String> existingConformsToIds = new HashSet<>();
         if (rootDataEntity.getProperties().has("conformsTo")) {
@@ -435,8 +434,7 @@ public class RoCrateManager {
             DatasetField parentField,
             boolean isCreation,
             boolean reorderCompoundValues
-    ) throws JsonProcessingException
-    {
+    ) throws JsonProcessingException {
         DatasetFieldType parentFieldType = parentField.getDatasetFieldType();
         String parentFieldName = parentFieldType.getName();
         String parentFieldUri = parentFieldType.getUri();
@@ -850,8 +848,7 @@ public class RoCrateManager {
         FileUtils.copyDirectory(new File(roCrateFolderPath), new File(roCrateFolderPath + "_v" + versionNumber));
     }
 
-    public void saveRoCrateVersion(Dataset dataset, String versionNumber) throws IOException
-    {
+    public void saveRoCrateVersion(Dataset dataset, String versionNumber) throws IOException {
         String roCrateFolderPath = getRoCrateFolder(dataset.getLatestVersion());
         FileUtils.copyDirectory(new File(roCrateFolderPath), new File(roCrateFolderPath + "_v" + versionNumber));
     }

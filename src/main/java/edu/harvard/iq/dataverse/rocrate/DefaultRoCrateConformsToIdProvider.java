@@ -23,24 +23,21 @@ import java.util.stream.Collectors;
  */
 @Stateless
 @Named
-public class DefaultRoCrateConformsToIdProvider implements RoCrateConformsToIdProvider
-{
+public class DefaultRoCrateConformsToIdProvider implements RoCrateConformsToIdProvider {
     @EJB
     protected MetadataBlockServiceBean metadataBlockSvc;
 
     private static String ID_PREFIX = "https://dataverse.org/metadatablocks/";
 
     @Override
-    public List<String> generateConformsToIds(Dataset dataset, RootDataEntity rootDataEntity)
-    {
+    public List<String> generateConformsToIds(Dataset dataset, RootDataEntity rootDataEntity) {
         return dataset.getOwner().getMetadataBlocks().stream()
                 .map(metadataBlock -> ID_PREFIX+metadataBlock.getName())
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<MetadataBlock> findMetadataBlockForConformsToIds(List<String> ids)
-    {
+    public List<MetadataBlock> findMetadataBlockForConformsToIds(List<String> ids) {
         return ids.stream()
                 .map(id -> metadataBlockSvc.findByName(id.substring(ID_PREFIX.length())))
                 .collect(Collectors.toList());

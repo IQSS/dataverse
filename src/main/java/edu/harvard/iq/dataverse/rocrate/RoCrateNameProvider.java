@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
  * @author Norbert Finta <norbert.finta@sztaki.hu>, SZTAKI, Department of Distributed Systems, https://dsd.sztaki.hu
  * @version 1.0
  */
-public interface RoCrateNameProvider
-{
+public interface RoCrateNameProvider {
     String generateRoCrateName(DatasetFieldCompoundValue compoundField);
 }
