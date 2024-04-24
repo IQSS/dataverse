@@ -149,26 +149,39 @@ Globus File Transfer
 
 Note: Globus file transfer is still experimental but feedback is welcome! See :ref:`support`.
 
-Users can transfer files via `Globus <ttps://www.globus.org>`_ into and out of datasets when their Dataverse installation is configured to use a Globus accessible S3 store and a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ "transfer" app has been properly installed and configured.
+Users can transfer files via `Globus <https://www.globus.org>`_ into and out of datasets, or reference files on a remote Globus endpoint, when their Dataverse installation is configured to use a Globus accessible store(s) 
+and a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ app has been properly installed and configured.
 
-Due to differences in the access control models of a Dataverse installation and Globus, enabling the Globus capability on a store will disable the ability to restrict and embargo files in that store.
+Globus endpoints can be in a variety of places, from data centers to personal computers. 
+This means that from within the Dataverse software, a Globus transfer can feel like an upload or a download (with Globus Personal Connect running on your laptop, for example) or it can feel like a true transfer from one server to another (from a cluster in a data center into a Dataverse dataset or vice versa).
 
-As Globus aficionados know, Globus endpoints can be in a variety of places, from data centers to personal computers. This means that from within the Dataverse software, a Globus transfer can feel like an upload or a download (with Globus Personal Connect running on your laptop, for example) or it can feel like a true transfer from one server to another (from a cluster in a data center into a Dataverse dataset or vice versa).
-
-Globus transfer uses a very efficient transfer mechanism and has additional features that make it suitable for large files and large numbers of files:
+Globus transfer uses an efficient transfer mechanism and has additional features that make it suitable for large files and large numbers of files:
 
 * robust file transfer capable of restarting after network or endpoint failures
 * third-party transfer, which enables a user accessing a Dataverse installation in their desktop browser to initiate transfer of their files from a remote endpoint (i.e. on a local high-performance computing cluster), directly to an S3 store managed by the Dataverse installation
 
-Globus transfer requires use of the Globus S3 connector which requires a paid Globus subscription at the host institution. Users will need a Globus account which could be obtained via their institution or directly from Globus (at no cost).
+Note: Due to differences in the access control models of a Dataverse installation and Globus and the current Globus store model, Dataverse cannot enforce per-file-access restrictions.
+It is therefore recommended that a store be configured as public, which disables the ability to restrict and embargo files in that store, when Globus access is allowed.
 
-The setup required to enable Globus is described in the `Community Dataverse-Globus Setup and Configuration document <https://docs.google.com/document/d/1mwY3IVv8_wTspQC0d4ddFrD2deqwr-V5iAGHgOy4Ch8/edit?usp=sharing>`_ and the references therein.
+Dataverse supports three options for using Globus, two involving transfer to Dataverse-managed endpoints and one allowing Dataverse to reference files on remote endpoints.
+Dataverse-managed endpoints must be Globus 'guest collections' hosted on either a file-system-based endpoint or an S3-based endpoint (the latter requires use of the Globus
+S3 connector which requires a paid Globus subscription at the host institution). In either case, Dataverse is configured with the Globus credentials of a user account that can manage the endpoint.
+Users will need a Globus account, which can be obtained via their institution or directly from Globus (at no cost).
+
+With the file-system endpoint, Dataverse does not currently have access to the file contents. Thus, functionality related to ingest, previews, fixity hash validation, etc. are not available. (Using the S3-based endpoint, Dataverse has access via S3 and all functionality normally associated with direct uploads to S3 is available.)
+
+For the reference use case, Dataverse must be configured with a list of allowed endpoint/base paths from which files may be referenced. In this case, since Dataverse is not accessing the remote endpoint itself, it does not need Globus credentials. 
+Users will need a Globus account in this case, and the remote endpoint must be configured to allow them access (i.e. be publicly readable, or potentially involving some out-of-band mechanism to request access (that could be described in the dataset's Terms of Use and Access).
+
+All of Dataverse's Globus capabilities are now store-based (see the store documentation) and therefore different collections/datasets can be configured to use different Globus-capable stores (or normal file, S3 stores, etc.)
+
+More details of the setup required to enable Globus is described in the `Community Dataverse-Globus Setup and Configuration document <https://docs.google.com/document/d/1mwY3IVv8_wTspQC0d4ddFrD2deqwr-V5iAGHgOy4Ch8/edit?usp=sharing>`_ and the references therein.
 
 As described in that document, Globus transfers can be initiated by choosing the Globus option in the dataset upload panel. (Globus, which does asynchronous transfers, is not available during dataset creation.) Analogously, "Globus Transfer" is one of the download options in the "Access Dataset" menu and optionally the file landing page download menu (if/when supported in the dataverse-globus app).
 
 An overview of the control and data transfer interactions between components was presented at the 2022 Dataverse Community Meeting and can be viewed in the `Integrations and Tools Session Video <https://youtu.be/3ek7F_Dxcjk?t=5289>`_ around the 1 hr 28 min mark.
 
-See also :ref:`Globus settings <:GlobusBasicToken>`.
+See also :ref:`Globus settings <:GlobusSettings>`.
 
 Data Capture Module (DCM)
 -------------------------

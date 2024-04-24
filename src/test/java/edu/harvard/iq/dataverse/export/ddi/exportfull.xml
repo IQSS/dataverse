@@ -21,7 +21,8 @@
       <titlStmt>
         <titl>Replication Data for: Title</titl>
         <subTitl>Subtitle</subTitl>
-        <altTitl>Alternative Title</altTitl>
+        <altTitl>Alternative Title1</altTitl>
+        <altTitl>Alternative Title2</altTitl>
         <IDNo agency="DOI">doi:10.5072/FK2/WKUKGV</IDNo>
         <IDNo agency="OtherIDAgency1">OtherIDIdentifier1</IDNo>
         <IDNo agency="OtherIDAgency2">OtherIDIdentifier2</IDNo>

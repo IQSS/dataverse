@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
+import edu.harvard.iq.dataverse.storageuse.StorageUse;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
@@ -103,7 +104,11 @@ public class Dataverse extends DvObjectContainer {
      * dataverses.
      */
     protected boolean permissionRoot;
-
+    
+    public Dataverse() {
+        StorageUse storageUse = new StorageUse(this); 
+        this.setStorageUse(storageUse);
+    }
     
     public DataverseType getDataverseType() {
         return dataverseType;
