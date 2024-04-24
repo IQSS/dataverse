@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.util.file;
 import edu.harvard.iq.dataverse.DataFile;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;

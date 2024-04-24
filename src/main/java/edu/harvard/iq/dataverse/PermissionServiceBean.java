@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -17,14 +16,14 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.HashSet;
 import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -41,7 +40,10 @@ import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
-import javax.persistence.Query;
+import jakarta.persistence.Query;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 /**
  * Your one-stop-shop for deciding which user can do what action on which
@@ -94,6 +96,9 @@ public class PermissionServiceBean {
 
     @Inject
     DataverseRequestServiceBean dvRequestService;
+
+    @Inject
+    DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
 
     /**
      * A request-level permission query (e.g includes IP ras).
@@ -440,22 +445,14 @@ public class PermissionServiceBean {
      * download permission for everybody:
      */
     private boolean isPublicallyDownloadable(DvObject dvo) {
-        if (dvo instanceof DataFile) {
+        if (dvo instanceof DataFile df) {
             // unrestricted files that are part of a release dataset 
             // automatically get download permission for everybody:
             //      -- L.A. 4.0 beta12
-
-            DataFile df = (DataFile) dvo;
-
             if (!df.isRestricted()) {
-                if (df.getOwner().getReleasedVersion() != null) {
-                    if (df.getOwner().getReleasedVersion().getFileMetadatas() != null) {
-                        for (FileMetadata fm : df.getOwner().getReleasedVersion().getFileMetadatas()) {
-                            if (df.equals(fm.getDataFile())) {
-                                return true;
-                            }
-                        }
-                    }
+                DatasetVersion releasedVersion = df.getOwner().getReleasedVersion();
+                if (releasedVersion != null) {
+                    return datasetVersionFilesServiceBean.isDataFilePresentInDatasetVersion(releasedVersion, df);
                 }
             }
         }
@@ -750,6 +747,14 @@ public class PermissionServiceBean {
             }
         }
     }
+
+    public void checkUpdateDatasetVersionLock(Dataset dataset, DataverseRequest dataverseRequest, Command<?> command) throws IllegalCommandException {
+        boolean hasAtLeastOneLockThatIsNotAnIngestLock = dataset.isLocked() && dataset.getLocks().stream()
+            .anyMatch(lock -> !DatasetLock.Reason.Ingest.equals(lock.getReason()));
+        if (hasAtLeastOneLockThatIsNotAnIngestLock) {
+            checkEditDatasetLock(dataset, dataverseRequest, command);
+        }
+    }
     
     public void checkPublishDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {
@@ -830,4 +835,57 @@ public class PermissionServiceBean {
         return false;
     }
 
+    /**
+     * Checks if a DataverseRequest can download at least one file of the target DatasetVersion.
+     *
+     * @param dataverseRequest DataverseRequest to check
+     * @param datasetVersion DatasetVersion to check
+     * @return boolean indicating whether the user can download at least one file or not
+     */
+    public boolean canDownloadAtLeastOneFile(DataverseRequest dataverseRequest, DatasetVersion datasetVersion) {
+        if (hasUnrestrictedReleasedFiles(datasetVersion)) {
+            return true;
+        }
+        List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            Set<RoleAssignee> roleAssignees = new HashSet<>(groupService.groupsFor(dataverseRequest, dataFile));
+            roleAssignees.add(dataverseRequest.getUser());
+            if (hasGroupPermissionsFor(roleAssignees, dataFile, EnumSet.of(Permission.DownloadFile))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a DatasetVersion has unrestricted released files.
+     *
+     * This method is mostly based on {@link #isPublicallyDownloadable(DvObject)} although in this case, instead of basing
+     * the search on a particular file, it searches for the total number of files in the target version that are present
+     * in the released version.
+     *
+     * @param targetDatasetVersion DatasetVersion to check
+     * @return boolean indicating whether the dataset version has released files or not
+     */
+    private boolean hasUnrestrictedReleasedFiles(DatasetVersion targetDatasetVersion) {
+        Dataset targetDataset = targetDatasetVersion.getDataset();
+        if (!targetDataset.isReleased()) {
+            return false;
+        }
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+        Root<DatasetVersion> datasetVersionRoot = criteriaQuery.from(DatasetVersion.class);
+        Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
+        criteriaQuery
+                .select(criteriaBuilder.count(fileMetadataRoot))
+                .where(criteriaBuilder.and(
+                        criteriaBuilder.equal(fileMetadataRoot.get("dataFile").get("restricted"), false),
+                        criteriaBuilder.equal(datasetVersionRoot.get("dataset"), targetDataset),
+                        criteriaBuilder.equal(datasetVersionRoot.get("versionState"), DatasetVersion.VersionState.RELEASED),
+                        fileMetadataRoot.in(targetDatasetVersion.getFileMetadatas()),
+                        fileMetadataRoot.in(datasetVersionRoot.get("fileMetadatas"))));
+        Long result = em.createQuery(criteriaQuery).getSingleResult();
+        return result > 0;
+    }
 }

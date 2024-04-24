@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -19,11 +19,11 @@ import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
-import java.util.List;
 import java.util.Stack;
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * A base CommandContext for tests. Provides no-op implementations. Should
@@ -121,25 +121,10 @@ public class TestCommandContext implements CommandContext {
     }
 
     @Override
-    public DOIEZIdServiceBean doiEZId() {
+    public PidProviderFactoryBean pidProviderFactory() {
         return null;
     }
-
-    @Override
-    public DOIDataCiteServiceBean doiDataCite() {
-        return null;
-    }
-
-    @Override
-    public FakePidProviderServiceBean fakePidProvider() {
-        return null;
-    }
-
-    @Override
-    public HandlenetServiceBean handleNet() {
-        return null;
-    }
-
+    
     @Override
     public SettingsServiceBean settings() {
         return settings;
@@ -237,6 +222,16 @@ public class TestCommandContext implements CommandContext {
     
     @Override
     public ActionLogServiceBean actionLog() {
+        return null;
+    }
+
+    @Override
+    public MetadataBlockServiceBean metadataBlocks() {
+        return null;
+    }
+    
+    @Override
+    public StorageUseServiceBean storageUse() {
         return null;
     }
 

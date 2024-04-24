@@ -40,10 +40,10 @@ After all this, you can try the "version" command again.
 
 Note that it's possible to add an ``export`` line like the one above to your ``~/.bash_profile`` file so you don't have to run it yourself when you open a new terminal.
 
-Configure AWS CLI
-~~~~~~~~~~~~~~~~~
+Configure AWS CLI with Stored Credentials
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Next you need to configure AWS CLI.
+Dataverse can access S3 using credentials stored as described below, or using an IAM role described a little further below.
 
 Create a ``.aws`` directory in your home directory (which is called ``~``) like this:
 
@@ -69,6 +69,11 @@ Create a plain text file at ``~/.aws/credentials`` with the following content::
 Then update the file and replace the values for "aws_access_key_id" and "aws_secret_access_key" with your actual credentials by following the instructions at https://aws.amazon.com/blogs/security/wheres-my-secret-access-key/
 
 If you are having trouble configuring the files manually as described above, see https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html which documents the ``aws configure`` command.
+
+Configure Role-Based S3 Access
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Amazon offers instructions on using an IAM role to grant permissions to applications running in EC2 at https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html
 
 Configure Ansible File (Optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -109,7 +114,7 @@ Please note that while the script should work well on new-ish branches, older br
 Migrating Datafiles from Local Storage to S3
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A number of pilot Dataverse installations start on local storage, then administrators are tasked with migrating datafiles into S3 or similar object stores. The files may be copied with a command-line utility such as `s3cmd<https://s3tools.org/s3cmd>`. You will want to retain the local file hierarchy, keeping the authority (for example: 10.5072) at the bucket "root."
+A number of pilot Dataverse installations start on local storage, then administrators are tasked with migrating datafiles into S3 or similar object stores. The files may be copied with a command-line utility such as `s3cmd <https://s3tools.org/s3cmd>`_. You will want to retain the local file hierarchy, keeping the authority (for example: 10.5072) at the bucket "root."
 
 The below example queries may assist with updating dataset and datafile locations in the Dataverse installation's PostgresQL database. Depending on the initial version of the Dataverse Software and subsequent upgrade path, Datafile storage identifiers may or may not include a ``file://`` prefix, so you'll want to catch both cases.
 
@@ -141,8 +146,3 @@ To Update Datafile Location to your-s3-bucket, Assuming no ``file://`` Prefix
 	  WHERE id IN (SELECT o.id FROM dvobject o, dataset s WHERE o.dtype = 'DataFile'
 	  AND s.id = o.owner_id AND s.harvestingclient_id IS null
 	  AND o.storageidentifier NOT LIKE '%://%');
-
-
-----
-
-Previous: :doc:`coding-style` | Next: :doc:`containers`

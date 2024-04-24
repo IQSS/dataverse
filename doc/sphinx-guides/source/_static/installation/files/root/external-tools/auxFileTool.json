@@ -1,0 +1,26 @@
+{
+  "displayName": "AuxFileViewer",
+  "description": "Show an auxiliary file from a dataset file.",
+  "toolName": "auxPreviewer",
+  "scope": "file",
+  "types": [
+    "preview"
+  ],
+  "toolUrl": "https://example.com/AuxFileViewer.html",
+  "toolParameters": {
+    "queryParameters": [
+      {
+        "fileid": "{fileId}"
+      }
+    ]
+  },
+  "requirements": {
+    "auxFilesExist": [
+      {
+        "formatTag": "myFormatTag",
+        "formatVersion": "0.1"
+      }
+    ]
+  },
+  "contentType": "application/foobar"
+}

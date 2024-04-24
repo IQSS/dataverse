@@ -1,7 +1,7 @@
 Monitoring
 ===========
 
-Once you're in production, you'll want to set up some monitoring. This page may serve as a starting point for you but you are encouraged to share your ideas with the Dataverse community!
+Once you're in production, you'll want to set up some monitoring. This page may serve as a starting point for you but you are encouraged to share your ideas with the Dataverse community! You may also be interested in the :doc:`/developers/performance` section of the Developer Guide.
 
 .. contents:: Contents:
 	:local:
@@ -14,7 +14,7 @@ In production you'll want to monitor the usual suspects such as CPU, memory, fre
 Munin
 +++++
 
-http://munin-monitoring.org says, "A default installation provides a lot of graphs with almost no work." From RHEL or CentOS 7, you can try the following steps.
+https://munin-monitoring.org says, "A default installation provides a lot of graphs with almost no work." From RHEL or CentOS 7, you can try the following steps.
 
 Enable the EPEL yum repo (if you haven't already):
 
@@ -150,3 +150,11 @@ Tips:
 - It's possible to view and act on **RDS Events** such as snapshots, parameter changes, etc. See `Working with Amazon RDS events <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.access-control.html>`_ for details.
 - RDS monitoring is available via API and the ``aws`` command line tool. For example, see `Retrieving metrics with the Performance Insights API <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.API.html>`_.
 - To play with monitoring RDS using a server configured by `dataverse-ansible <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible>`_ set ``use_rds`` to true to skip some steps that aren't necessary when using RDS. See also the :doc:`/developers/deployment` section of the Developer Guide.
+
+MicroProfile Metrics endpoint
+-----------------------------
+
+Payara provides the metrics endpoint: <https://docs.payara.fish/community/docs/6.2023.9/Technical%20Documentation/MicroProfile/Metrics/Metrics%20Rest%20Endpoint.html>_
+The metrics you can retrieve that way:
+- `index_permit_wait_time_seconds_mean` displays how long does it take to receive a permit to index a dataset.
+- `index_time_seconds` displays how long does it take to index a dataset.

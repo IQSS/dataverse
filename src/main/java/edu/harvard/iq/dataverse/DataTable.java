@@ -7,26 +7,23 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.validation.constraints.Size;
-import javax.persistence.OrderBy;
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.URL;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.Size;
+import jakarta.persistence.OrderBy;
 
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.Index;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 
 /**
  *
@@ -114,6 +111,16 @@ public class DataTable implements Serializable {
      */
     @Column( nullable = true )
     private String originalFileName;
+    
+    
+    /**
+     * The physical tab-delimited file is in storage with the list of variable
+     * names saved as the 1st line. This means that we do not need to generate 
+     * this line on the fly. (Also means that direct download mechanism can be
+     * used for this file!)
+     */
+    @Column(nullable = false)
+    private boolean storedWithVariableHeader = false;  
     
     /*
      * Getter and Setter methods:
@@ -207,6 +214,14 @@ public class DataTable implements Serializable {
 
     public void setOriginalFileName(String originalFileName) {
         this.originalFileName = originalFileName;
+    }
+    
+    public boolean isStoredWithVariableHeader() {
+        return storedWithVariableHeader;
+    }
+    
+    public void setStoredWithVariableHeader(boolean storedWithVariableHeader) {
+        this.storedWithVariableHeader = storedWithVariableHeader;
     }
     
     /* 

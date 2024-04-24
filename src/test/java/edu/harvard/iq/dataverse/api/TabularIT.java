@@ -1,33 +1,31 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
-import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
-import static edu.harvard.iq.dataverse.api.AccessIT.datasetId;
-import static edu.harvard.iq.dataverse.api.AccessIT.tabFile3NameRestricted;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.logging.Logger;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class TabularIT {
 
     private static final Logger logger = Logger.getLogger(TabularIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testTabularFile() throws InterruptedException {
         Response createUser = UtilIT.createRandomUser();
@@ -63,7 +61,7 @@ public class TabularIT {
 
         // Give file time to ingest
         
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue(UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + pathToFileThatGoesThroughIngest);
       //  Thread.sleep(10000);
 
         Response fileMetadataNoFormat = UtilIT.getFileMetadata(fileIdAsString, null, apiToken);
@@ -102,7 +100,7 @@ public class TabularIT {
 
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void test50by1000() {
         // cp scripts/search/data/tabular/50by1000.dta /tmp
@@ -113,7 +111,7 @@ public class TabularIT {
         assertEquals("NVARS: 50", response.body().asString().split("\n")[0]);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testStata13TinyFile() {
         // cp scripts/search/data/tabular/120745.dta /tmp
@@ -124,7 +122,7 @@ public class TabularIT {
         assertEquals("NVARS: 1", response.body().asString().split("\n")[0]);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testStata13Auto() {
         // curl https://www.stata-press.com/data/r13/auto.dta > /tmp/stata13-auto.dta
@@ -135,7 +133,7 @@ public class TabularIT {
         assertEquals("NVARS: 12", response.body().asString().split("\n")[0]);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testStata14OpenSourceAtHarvard() {
         // https://dataverse.harvard.edu/file.xhtml?fileId=3040230 converted to Stata 14: 2017-07-31.tab
@@ -148,7 +146,7 @@ public class TabularIT {
         assertEquals("NVARS: 10", response.body().asString().split("\n")[0]);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testStata14Aggregated() {
         // https://dataverse.harvard.edu/file.xhtml?fileId=3140457 Stata 14: 2018_04_06_Aggregated_dataset_v2.dta
@@ -160,7 +158,7 @@ public class TabularIT {
         assertEquals("NVARS: 227", response.body().asString().split("\n")[0]);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testStata14MmPublic() {
         // TODO: This file was downloaded at random. We could keep trying to get it to ingest.
@@ -175,7 +173,7 @@ public class TabularIT {
         assertEquals("NVARS: 12", response.body().asString().split("\n")[0]);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testStata15() {
         // for i in `echo {0..33000}`; do echo -n "var$i,"; done > 33k.csv
@@ -187,7 +185,7 @@ public class TabularIT {
         assertEquals("NVARS: 33001", response.body().asString().split("\n")[0]);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testStata13Multiple() {
         String fileType = "application/x-stata-13";
@@ -207,7 +205,7 @@ public class TabularIT {
         }
     }
     
-    @Ignore
+    @Disabled
     @Test
     public void testStata14Multiple() {
         String fileType = "application/x-stata-14";

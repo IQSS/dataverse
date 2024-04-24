@@ -1,19 +1,19 @@
 package edu.harvard.iq.dataverse.ingest;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 // https://www.baeldung.com/jee-cdi-vs-ejb-singleton
-import javax.inject.Singleton;
-import javax.enterprise.inject.Produces;
-import javax.jms.JMSConnectionFactoryDefinition;
-import javax.jms.JMSDestinationDefinition;
-import javax.jms.Queue;
-import javax.jms.QueueConnectionFactory;
+import jakarta.inject.Singleton;
+import jakarta.enterprise.inject.Produces;
+import jakarta.jms.JMSConnectionFactoryDefinition;
+import jakarta.jms.JMSDestinationDefinition;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueConnectionFactory;
 
 @JMSConnectionFactoryDefinition(
     description = "Dataverse Ingest Queue Factory",
     name = "java:app/jms/factory/ingest",
     resourceAdapter = "jmsra",
-    interfaceName = "javax.jms.QueueConnectionFactory",
+    interfaceName = "jakarta.jms.QueueConnectionFactory",
     maxPoolSize = 250,
     minPoolSize = 1,
     properties = {
@@ -25,7 +25,7 @@ import javax.jms.QueueConnectionFactory;
     description = "Dataverse Ingest Queue",
     name = "java:app/jms/queue/ingest",
     resourceAdapter = "jmsra",
-    interfaceName="javax.jms.Queue",
+    interfaceName="jakarta.jms.Queue",
     destinationName = "DataverseIngest"
 )
 @Singleton

@@ -8,24 +8,31 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.dataaccess.AbstractRemoteOverlayAccessIO;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
+
 import java.util.ArrayList;
 import java.util.List;
-import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import org.junit.Test;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 public class ExternalToolServiceBeanTest {
 
+    private final ExternalToolServiceBean externalToolService;
+
     public ExternalToolServiceBeanTest() {
+        this.externalToolService = new ExternalToolServiceBean();
     }
 
     @Test
     public void testfindAll() {
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
+        dataFile.setStorageIdentifier("test://18debaa2d7c-db98ef7d9a77");
         FileMetadata fmd = new FileMetadata();
         fmd.setId(2L);
         DatasetVersion dv = new DatasetVersion();
@@ -46,10 +53,10 @@ public class ExternalToolServiceBeanTest {
         externalToolTypes.add(externalToolType);
         ExternalTool.Scope scope = ExternalTool.Scope.FILE;
         ExternalTool externalTool = new ExternalTool("displayName", "toolName", "description", externalToolTypes, scope, "http://foo.com", "{}", DataFileServiceBean.MIME_TYPE_TSV_ALT);
-        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, null);
+        URLTokenUtil externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, null);
         List<ExternalTool> externalTools = new ArrayList<>();
         externalTools.add(externalTool);
-        List<ExternalTool> availableExternalTools = ExternalToolServiceBean.findExternalToolsByFile(externalTools, dataFile);
+        List<ExternalTool> availableExternalTools = externalToolService.findExternalToolsByFile(externalTools, dataFile);
         assertEquals(availableExternalTools.size(), 1);
     }
 
@@ -139,7 +146,7 @@ public class ExternalToolServiceBeanTest {
         assertEquals("explorer", externalTool.getToolName());
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
-        dataFile.setGlobalId(new GlobalId("doi:10.5072/FK2/RMQT6J/G9F1A1"));
+        dataFile.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.5072","FK2/RMQT6J/G9F1A1", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
         FileMetadata fmd = new FileMetadata();
         fmd.setId(2L);
         DatasetVersion dv = new DatasetVersion();
@@ -334,7 +341,7 @@ public class ExternalToolServiceBeanTest {
         }
         assertNotNull(expectedException);
         System.out.println("exception: " + expectedException);
-        assertEquals("Type must be one of these values: [explore, configure, preview].", expectedException.getMessage());
+        assertEquals("Type must be one of these values: [explore, configure, preview, query].", expectedException.getMessage());
     }
 
     @Test
@@ -499,6 +506,92 @@ public class ExternalToolServiceBeanTest {
         }
         assertNotNull(externalTool);
         assertNull(externalTool.getContentType());
+    }
+
+    @Test
+    public void testParseAddDatasetToolAllowedApiCalls() {
+ 
+        ExternalTool externalTool = null;
+        try {
+            externalTool = getAllowedApiCallsTool();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        assertNotNull(externalTool);
+        assertNull(externalTool.getContentType());
+    }
+
+    protected static ExternalTool getAllowedApiCallsTool() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("toolName", "explorer");
+        job.add("description", "This tool is awesome.");
+        job.add("types", Json.createArrayBuilder().add("explore"));
+        job.add("scope", "dataset");
+        job.add("toolUrl", "http://awesometool.com");
+        job.add("hasPreviewMode", "true");
+
+        job.add("toolParameters", Json.createObjectBuilder()
+                .add("httpMethod", "GET")
+                .add("queryParameters",
+                        Json.createArrayBuilder()
+                    .add(Json.createObjectBuilder()
+                        .add("datasetId", "{datasetId}")
+                    )
+                )
+            ).add("allowedApiCalls", Json.createArrayBuilder()
+                .add(Json.createObjectBuilder()
+                .add("name", "getDataset")
+                .add("httpMethod", "GET")
+                .add("urlTemplate", "/api/v1/datasets/{datasetId}")
+                .add("timeOut", 10))
+            );
+        String tool = job.build().toString();
+        System.out.println("tool: " + tool);
+
+        return ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+    }
+
+    @Test
+    public void testParseAddFileToolRequireAuxFile() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "AwesomeTool");
+        job.add("toolName", "explorer");
+        job.add("description", "This tool is awesome.");
+        job.add("types", Json.createArrayBuilder().add("explore"));
+        job.add("scope", "file");
+        job.add("hasPreviewMode", "false");
+        job.add("toolUrl", "http://awesometool.com");
+        job.add("toolParameters", Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("filePid", "{filePid}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("key", "{apiToken}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("fileMetadataId", "{fileMetadataId}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("dvLocale", "{localeCode}")
+                                .build())
+                        .build())
+                .build());
+        job.add("requirements", Json.createObjectBuilder()
+                .add("auxFilesExist", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("formatTag", "NcML")
+                                .add("formatVersion", "0.1")
+                        )
+                )
+        );
+        job.add(ExternalTool.CONTENT_TYPE, DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        String tool = job.build().toString();
+        ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
+        assertEquals("AwesomeTool", externalTool.getDisplayName());
+        assertEquals("explorer", externalTool.getToolName());
+        assertEquals("{\"auxFilesExist\":[{\"formatTag\":\"NcML\",\"formatVersion\":\"0.1\"}]}", externalTool.getRequirements());
     }
 
 }

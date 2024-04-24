@@ -34,10 +34,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 import javax.net.ssl.SSLContext;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -305,7 +305,10 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
         String canonicalBody = new JsonCanonicalizer(body).getEncodedString();
         logger.fine("Canonical body: " + canonicalBody);
         String digest = DigestUtils.sha256Hex(canonicalBody);
-        return JWT.create().withIssuer(BrandingUtil.getInstallationBrandName()).withIssuedAt(Date.from(Instant.now()))
+        if(installationBrandName==null) {
+            installationBrandName = BrandingUtil.getInstallationBrandName();
+        }
+        return JWT.create().withIssuer(installationBrandName).withIssuedAt(Date.from(Instant.now()))
                 .withExpiresAt(Date.from(Instant.now().plusSeconds(60 * expirationInMinutes)))
                 .withKeyId("defaultDataverse").withClaim("bodySHA256Hash", digest).sign(algorithmRSA);
     }

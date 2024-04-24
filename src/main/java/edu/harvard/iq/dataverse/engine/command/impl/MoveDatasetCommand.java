@@ -141,15 +141,8 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         moved.setOwner(destination);
         ctxt.em().merge(moved);
 
-        try {
-            boolean doNormalSolrDocCleanUp = true;
-            ctxt.index().indexDataset(moved, doNormalSolrDocCleanUp);
-
-        } catch (Exception e) { // RuntimeException e ) {
-            logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage()); //, e);
-            throw new CommandException(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.indexingProblem"), this);
-
-        }
+        boolean doNormalSolrDocCleanUp = true;
+        ctxt.index().asyncIndexDataset(moved, doNormalSolrDocCleanUp);
 
     }
 
