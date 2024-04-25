@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.datafile.DataFileCreator;
 import edu.harvard.iq.dataverse.datafile.file.FileDownloadAPIHandler;
+import edu.harvard.iq.dataverse.dataset.DatasetFileDownloadUrlCsvWriter;
 import edu.harvard.iq.dataverse.dataset.DatasetService;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnailService;
@@ -188,6 +189,7 @@ public class Datasets extends AbstractApiBean {
     private RoleAssigneeServiceBean roleAssigneeSvc;
     private PermissionServiceBean permissionSvc;
     private FileLabelsService fileLabelsService;
+    private DatasetFileDownloadUrlCsvWriter fileDownloadUrlCsvWriter;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -205,7 +207,8 @@ public class Datasets extends AbstractApiBean {
                     DataFileCreator dataFileCreator, DatasetThumbnailService datasetThumbnailService,
                     FileDownloadAPIHandler fileDownloadAPIHandler, DataverseRoleServiceBean rolesSvc,
                     RoleAssigneeServiceBean roleAssigneeSvc, PermissionServiceBean permissionSvc,
-                    FileLabelsService fileLabelsService) {
+                    FileLabelsService fileLabelsService,
+                    DatasetFileDownloadUrlCsvWriter fileDownloadUrlCsvWriter) {
         this.datasetDao = datasetDao;
         this.dataverseDao = dataverseDao;
         this.userNotificationService = userNotificationService;
@@ -228,6 +231,7 @@ public class Datasets extends AbstractApiBean {
         this.roleAssigneeSvc = roleAssigneeSvc;
         this.permissionSvc = permissionSvc;
         this.fileLabelsService = fileLabelsService;
+        this.fileDownloadUrlCsvWriter = fileDownloadUrlCsvWriter;
     }
 
     // -------------------- LOGIC --------------------
@@ -506,6 +510,33 @@ public class Datasets extends AbstractApiBean {
 
         StreamingOutput fileStream = fileDownloadAPIHandler.downloadFiles(apiTokenUser, finalVersionId, originalFormatRequested, gbrecs);
         return Response.ok(fileStream).build();
+    }
+
+    @GET
+    @Path("{id}/versions/{versionId}/files/urls")
+    @Produces({"text/csv"})
+    public Response getVersionFilesUrls(@PathParam("id") String datasetId, @PathParam("versionId") String versionId) {
+        return allowCors(response(req -> {
+            Dataset dataset = findDatasetOrDie(datasetId);
+            if (dataset.hasActiveEmbargo()) {
+                return badRequest("Requested dataset is under embargo.");
+            }
+
+            if (dataset.getGuestbook() != null && dataset.getGuestbook().isEnabled() && dataset.getGuestbook().getDataverse() != null) {
+                return badRequest("Requested dataset has guestbook enabled.");
+            }
+
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, dataset);
+            if (!datasetVersion.isReleased()) {
+                return badRequest("Requested version has not been released.");
+            }
+
+            StreamingOutput csvContent = output -> fileDownloadUrlCsvWriter.write(output, datasetVersion.getFileMetadatas());
+
+            return Response.ok(csvContent)
+                    .header("Content-Disposition", "attachment; filename=\"dataset-file-urls.csv\"")
+                    .build();
+        }));
     }
 
     @GET

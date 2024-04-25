@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
+import org.assertj.core.util.Lists;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -352,6 +353,10 @@ public class MocksFactory {
         license.setName("License name");
         termsOfUse.setLicense(license);
         fileMetadata.setTermsOfUse(termsOfUse);
+
+        DataFile dataFile = makeDataFile();
+        dataFile.setFileMetadatas(Lists.newArrayList(fileMetadata));
+        fileMetadata.setDataFile(dataFile);
 
         return fileMetadata;
     }
