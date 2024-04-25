@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.datafile;
 
 import edu.harvard.iq.dataverse.UnitTestUtils;
+import edu.harvard.iq.dataverse.engine.TestSettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JhoveConfigurationInitializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
@@ -14,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class FileTypeDetectorTest {
 
-    private FileTypeDetector fileTypeDetector = new FileTypeDetector();
+    private FileTypeDetector fileTypeDetector = new FileTypeDetector(new TestSettingsServiceBean());
 
     @TempDir
     File tempDir;

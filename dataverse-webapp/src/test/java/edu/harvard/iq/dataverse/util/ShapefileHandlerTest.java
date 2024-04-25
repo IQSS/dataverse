@@ -1,15 +1,20 @@
 package edu.harvard.iq.dataverse.util;
 
+import com.google.common.collect.ImmutableMap;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -34,7 +39,7 @@ public class ShapefileHandlerTest {
         List<String> file_names = Arrays.asList("not-quite-a-shape.shp", "not-quite-a-shape.shx", "not-quite-a-shape.dbf", "not-quite-a-shape.pdf"); //, "prj");
         File zipfile_obj = createAndZipFiles(file_names, "not-quite-a-shape.zip");
 
-        ShapefileHandler shp_handler = new ShapefileHandler(zipfile_obj);
+        ShapefileHandler shp_handler = newShapeFileHandler(zipfile_obj);
 
         assertThat(shp_handler.containsShapefile()).isFalse();
 
@@ -55,7 +60,7 @@ public class ShapefileHandlerTest {
 
         File zipfile_obj = createAndZipFiles(file_names, "two-shapes.zip");
 
-        ShapefileHandler shp_handler = new ShapefileHandler(zipfile_obj);
+        ShapefileHandler shp_handler = newShapeFileHandler(zipfile_obj);
 
         assertThat(shp_handler.containsShapefile()).isTrue();
 
@@ -76,7 +81,8 @@ public class ShapefileHandlerTest {
 
         File zipfile_obj = createAndZipFiles(file_names, "duplicate_file.zip");
 
-        assertThatThrownBy(() -> new ShapefileHandler(zipfile_obj)).hasMessage("Found file-name collision: shape2.pdf");
+        assertThatThrownBy(() -> newShapeFileHandler(zipfile_obj))
+                .hasMessage("Found file-name collision: shape2.pdf");
     }
 
     @Test
@@ -91,7 +97,7 @@ public class ShapefileHandlerTest {
         File test_rezip_folder = this.tempFolder.newFolder("test_rezip").getAbsoluteFile();
 
 
-        ShapefileHandler shp_handler = new ShapefileHandler(zipfile_obj);
+        ShapefileHandler shp_handler = newShapeFileHandler(zipfile_obj);
         shp_handler.reZipShapefileSets(test_unzip_folder, test_rezip_folder);
 
         assertThat(test_unzip_folder.list().length).isEqualTo(0);
@@ -106,7 +112,7 @@ public class ShapefileHandlerTest {
         List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.pdf", "shape1.cpg", "shape1." + SHP_XML_EXTENSION, "README.md", "shape_notes.txt");
         File zipfile_obj = createAndZipFiles(file_names, "shape-plus.zip");
 
-        ShapefileHandler shp_handler = new ShapefileHandler(zipfile_obj);
+        ShapefileHandler shp_handler = newShapeFileHandler(zipfile_obj);
 
         assertThat(shp_handler.containsShapefile()).isTrue();
 
@@ -123,6 +129,37 @@ public class ShapefileHandlerTest {
     }
 
     @Test
+    public void testZippedShapefile__too_many_files() throws IOException {
+
+        List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.pdf",
+                "shape1.cpg", "shape1.shp.xml", "README.md", "shape_notes.txt");
+        File zipfile_obj = createAndZipFiles(file_names, "shape-plus.zip");
+
+        assertThatThrownBy(() -> new ShapefileHandler(zipfile_obj, 1024L, 8L))
+                .isInstanceOf(IngestException.class)
+                .hasMessage("There was a problem during ingest. Passing error key UNZIP_FILE_LIMIT_FAIL to report.");
+    }
+
+    @Test
+    public void testZippedShapefile__too_big_files() throws IOException {
+        Map<String, String> files = ImmutableMap.<String, String>builder().put("shape1.shp", "")
+                .put("shape1.shx", "")
+                .put("shape1.dbf", "")
+                .put("shape1.prj", "")
+                .put("shape1.pdf", RandomStringUtils.randomAlphanumeric(2048))
+                .put("shape1.cpg", "")
+                .put("shape1.shp.xml", "")
+                .put("README.md", "")
+                .put("shape_notes.txt", "")
+                .build();
+        File zipfile_obj = createAndZipFiles(files, "shape-plus.zip");
+
+        assertThatThrownBy(() -> new ShapefileHandler(zipfile_obj, 1024L, 100L))
+                .isInstanceOf(IngestException.class)
+                .hasMessage("There was a problem during ingest. Passing error key UNZIP_SIZE_FAIL to report.");
+    }
+
+    @Test
     public void testZippedShapefileWithExtraFiles_reshape() throws IOException {
 
         List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.pdf", "shape1.cpg", "shape1." + SHP_XML_EXTENSION, "README.md", "shape_notes.txt");
@@ -130,7 +167,7 @@ public class ShapefileHandlerTest {
         File unzip2Folder = this.tempFolder.newFolder("test_unzip2").getAbsoluteFile();
         File rezip2Folder = this.tempFolder.newFolder("test_rezip2").getAbsoluteFile();
 
-        ShapefileHandler shp_handler = new ShapefileHandler(zipfile_obj);
+        ShapefileHandler shp_handler = newShapeFileHandler(zipfile_obj);
         shp_handler.reZipShapefileSets(unzip2Folder, rezip2Folder);
 
         assertThat(unzip2Folder.list()).isEmpty();
@@ -145,13 +182,17 @@ public class ShapefileHandlerTest {
      * @param zipFileName - Name of .zip file to create
     */
     private File createAndZipFiles(List<String> fileNamesToZip, String zipFileName) throws IOException {
+        Map<String, String> filesWithContent = fileNamesToZip.stream().collect(LinkedHashMap::new,
+                (map, fileName) -> map.put(fileName, ""), Map::putAll);
+        return createAndZipFiles(filesWithContent, zipFileName);
+    }
 
+    private File createAndZipFiles(Map<String, String> filesToZip, String zipFileName) throws IOException {
         File zipFileObj = this.tempFolder.newFile(zipFileName);
-        
-        try (ZipOutputStream zip_stream = new ZipOutputStream(Files.newOutputStream(zipFileObj.toPath()))) {
 
-            for (String fileName : fileNamesToZip) {
-                this.addToZipFile(fileName, "".getBytes(StandardCharsets.UTF_8), zip_stream);
+        try (ZipOutputStream zip_stream = new ZipOutputStream(Files.newOutputStream(zipFileObj.toPath()))) {
+            for (Map.Entry<String, String> entry : filesToZip.entrySet()) {
+                this.addToZipFile(entry.getKey(), entry.getValue().getBytes(StandardCharsets.UTF_8), zip_stream);
             }
         }
 
@@ -167,6 +208,9 @@ public class ShapefileHandlerTest {
         zipOutputStream.closeEntry();
     }
 
+    private ShapefileHandler newShapeFileHandler(File zipfile_obj) {
+        return new ShapefileHandler(zipfile_obj, 1024L, 100L);
+    }
 }
     
 

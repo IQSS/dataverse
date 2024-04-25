@@ -40,7 +40,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import static edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestReport.createIngestFailureReport;
 import static edu.harvard.iq.dataverse.util.FileUtil.calculateChecksum;
@@ -148,7 +147,7 @@ public class DataFileCreator {
 
         } else if (finalType.equals(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
             try {
-                return createDataFilesFromReshapedShapeFile(tempFile, fileSizeLimit);
+                return createDataFilesFromReshapedShapeFile(tempFile, fileSizeLimit, zipFileUnpackFilesLimit);
             } catch (FileExceedsMaxSizeException femsx) {
                 logger.error("One of the unzipped shape files exceeded the size limit; giving up. " + femsx.getMessage());
                 throw new IOException("One of the unzipped shape files exceeded the size limit", femsx);
@@ -314,8 +313,9 @@ public class DataFileCreator {
      * Shape files may have to be split into multiple files,
      * one zip archive per each complete set of shape files.
      */
-    private List<DataFile> createDataFilesFromReshapedShapeFile(Path tempFile, Long fileSizeLimit) throws IOException {
-        try (IngestServiceShapefileHelper shpHelper = new IngestServiceShapefileHelper(tempFile.toFile(), Paths.get(getFilesTempDirectory()).toFile())) {
+    private List<DataFile> createDataFilesFromReshapedShapeFile(Path tempFile, Long fileSizeLimit, Long zipFileUnpackFilesLimit) throws IOException {
+        try (IngestServiceShapefileHelper shpHelper = new IngestServiceShapefileHelper(tempFile.toFile(), Paths.get(getFilesTempDirectory()).toFile(),
+                fileSizeLimit, zipFileUnpackFilesLimit)) {
             List<DataFile> datafiles = new ArrayList<>();
 
             for (File finalFile : shpHelper.processFile()) {

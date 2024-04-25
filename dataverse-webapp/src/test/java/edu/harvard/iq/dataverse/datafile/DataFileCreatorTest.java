@@ -365,6 +365,7 @@ public class DataFileCreatorTest {
         byte[] zipBytes = UnitTestUtils.readFileToByteArray("jhove/fake_shapefile.zip");
         
         lenient().when(settingsService.getValueForKeyAsLong(Key.MaxFileUploadSizeInBytes)).thenReturn(1024*1024L);
+        lenient().when(settingsService.getValueForKeyAsLong(Key.ZipUploadFilesLimit)).thenReturn(100L);
         lenient().when(settingsService.getValueForKey(Key.FileFixityChecksumAlgorithm)).thenReturn("MD5");
         lenient().when(fileTypeDetector.determineFileType(any(), any())).thenReturn("application/zipped-shapefile");
         

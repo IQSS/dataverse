@@ -482,7 +482,6 @@ public class IngestServiceBean {
         }
 
         if (forceTypeCheck) {
-            FileTypeDetector fileTypeDetector = new FileTypeDetector();
             String newType = fileTypeDetector.detectTabularFileType(localFile.get(), dataFile.getContentType());
 
             ingestPlugin = getTabDataReaderByMimeType(newType);

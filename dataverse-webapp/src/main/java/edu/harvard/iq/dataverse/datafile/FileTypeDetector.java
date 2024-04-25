@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.datafile;
 
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JhoveFileType;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import org.apache.commons.io.IOUtils;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ejb.EJBException;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -41,6 +43,18 @@ public class FileTypeDetector {
     private static final Logger logger = LoggerFactory.getLogger(FileTypeDetector.class);
 
     private static final MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
+
+    protected SettingsServiceBean settingsService;
+
+    protected FileTypeDetector() {
+    }
+
+    @Inject
+    public FileTypeDetector(SettingsServiceBean settingsService) {
+        this.settingsService = settingsService;
+    }
+
+    // -------------------- CONSTRUCTOR --------------------
 
     /**
      * Detects file type based on file content and filename
@@ -102,7 +116,10 @@ public class FileTypeDetector {
             // Is this a zipped Shapefile?
             // Check for shapefile extensions as described here: http://en.wikipedia.org/wiki/Shapefile
             try {
-                ShapefileHandler shapefileHandler = new ShapefileHandler(f);
+                Long fileSizeLimit = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
+                Long zipFileUnpackFilesLimit = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.ZipUploadFilesLimit);
+
+                ShapefileHandler shapefileHandler = new ShapefileHandler(f, fileSizeLimit, zipFileUnpackFilesLimit);
                 if (shapefileHandler.containsShapefile()) {
                     fileType = ShapefileHandler.SHAPEFILE_FILE_TYPE;
                 }

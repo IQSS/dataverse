@@ -1,6 +1,10 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.files.mime.ShapefileMimeType;
+import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestError;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
@@ -12,6 +16,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,6 +32,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
+
+import static edu.harvard.iq.dataverse.common.FileSizeUtil.bytesToHumanReadable;
 
 /**
  * Used to identify, "repackage", and extract data from Shapefiles in .zip format
@@ -89,10 +96,10 @@ public class ShapefileHandler {
 
     // -------------------- CONSTRUCTOR --------------------
 
-    public ShapefileHandler(File zipFile) {
+    public ShapefileHandler(File zipFile, Long fileSizeLimit, Long zipFileUnpackFilesLimit) {
         this.zipfile = zipFile;
 
-        examineZipFile();
+        examineZipFile(fileSizeLimit, zipFileUnpackFilesLimit);
     }
 
     // -------------------- GETTERS --------------------
@@ -346,7 +353,7 @@ public class ShapefileHandler {
      * Iterate through the zip file contents.
      * Does it contain any shapefiles?
      */
-    private void examineZipFile() {
+    private void examineZipFile(Long fileSizeLimit, Long zipFileUnpackFilesLimit) {
         if (zipfile == null || !zipfile.isFile()) {
             throw new IllegalArgumentException("Invalid zip file: " + zipfile);
         }
@@ -365,7 +372,18 @@ public class ShapefileHandler {
                 if (fileNamesInZip.contains(unzipFileName)) {
                     throw new IllegalStateException("Found file-name collision: " + unzipFileName);
                 }
+
+                if (fileSizeLimit != null && zipFileEntry.getSize() >= fileSizeLimit) {
+                    throw new IngestException(IngestError.UNZIP_SIZE_FAIL);
+                }
+
                 fileNamesInZip.add(unzipFileName);
+
+                if (zipFileUnpackFilesLimit != null && fileNamesInZip.size() >= zipFileUnpackFilesLimit) {
+                    logger.log(Level.WARNING, "Zip upload - too many files.");
+                    throw new IngestException(IngestError.UNZIP_FILE_LIMIT_FAIL);
+                }
+
                 updateFileGroupHash(unzipFileName);
             }
         } catch (IOException ex) {

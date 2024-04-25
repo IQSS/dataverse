@@ -32,13 +32,15 @@ public class IngestServiceShapefileHelper implements Closeable {
     private final File zippedShapefile;
     private final File reZipFolder;
     private final File unZipFolder;
+    private final Long fileSizeLimit;
+    private final Long zipFileUnpackFilesLimit;
 
     // -------------------- CONSTRUCTOR --------------------
 
     /**
      * Constructor that accepts a file object
      */
-    public IngestServiceShapefileHelper(File zippedShapefile, File workingFolderBase) {
+    public IngestServiceShapefileHelper(File zippedShapefile, File workingFolderBase, Long fileSizeLimit, Long zipFileUnpackFilesLimit) {
         Preconditions.checkArgument(isValidFile(zippedShapefile));
         Preconditions.checkArgument(isValidFolder(workingFolderBase));
 
@@ -46,6 +48,8 @@ public class IngestServiceShapefileHelper implements Closeable {
         String id = new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss-SSS").format(new Date());
         this.reZipFolder = getShapefileUnzipTempDirectory(workingFolderBase, "shp_" + id + "_rezip");
         this.unZipFolder = getShapefileUnzipTempDirectory(workingFolderBase, "shp_" + id + "_unzip");
+        this.fileSizeLimit = fileSizeLimit;
+        this.zipFileUnpackFilesLimit = zipFileUnpackFilesLimit;
 
     }
 
@@ -55,7 +59,7 @@ public class IngestServiceShapefileHelper implements Closeable {
         try {
             // (1) Use the ShapefileHandler to the .zip for a shapefile
             //
-            ShapefileHandler shpHandler = new ShapefileHandler(zippedShapefile);
+            ShapefileHandler shpHandler = new ShapefileHandler(zippedShapefile, fileSizeLimit, zipFileUnpackFilesLimit);
             if (!shpHandler.containsShapefile()) {
                 logger.severe("Shapefile was incorrectly detected upon Ingest (FileUtil) and passed here");
                 throw new IllegalStateException("Shapefile was incorrectly detected upon Ingest (FileUtil) and passed here");
