@@ -18,7 +18,7 @@ import java.util.Map;
  *
  * @author kaczynskid
  */
-class WorkflowExecutionStepContext extends WorkflowExecutionContext {
+public class WorkflowExecutionStepContext extends WorkflowExecutionContext {
 
     private static final Logger log = LoggerFactory.getLogger(WorkflowExecutionStepContext.class);
 
@@ -33,7 +33,7 @@ class WorkflowExecutionStepContext extends WorkflowExecutionContext {
 
     // -------------------- GETTERS --------------------
 
-    WorkflowExecutionStep getStepExecution() {
+    public WorkflowExecutionStep getStepExecution() {
         return stepExecution;
     }
 

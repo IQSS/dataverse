@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
@@ -51,7 +51,7 @@ public class SystemProcessStep extends FilesystemAccessingWorkflowStep {
     // -------------------- LOGIC --------------------
 
     @Override
-    protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) throws Exception {
+    protected WorkflowStepResult.Source runInternal(WorkflowExecutionStepContext context, Path workDir) throws Exception {
         String processId = UUID.randomUUID().toString();
         log.trace("About to run process {}", processId);
         int exitCode = executeCommand(processId, workDir);
@@ -60,12 +60,12 @@ public class SystemProcessStep extends FilesystemAccessingWorkflowStep {
     }
 
     @Override
-    public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
+    public WorkflowStepResult resume(WorkflowExecutionStepContext context, Map<String, String> internalData, String externalData) {
         throw new UnsupportedOperationException("This step des not pause");
     }
 
     @Override
-    public void rollback(WorkflowExecutionContext context, Failure reason) {
+    public void rollback(WorkflowExecutionStepContext context, Failure reason) {
     }
 
     // -------------------- PRIVATE --------------------

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.step;
 
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult.Source;
 import org.apache.commons.io.FileUtils;
 
@@ -20,17 +20,17 @@ public class ClearWorkingDirWorkflowStep extends FilesystemAccessingWorkflowStep
     // -------------------- LOGIC --------------------
 
     @Override
-    protected Source runInternal(WorkflowExecutionContext context, Path workDir) throws Exception {
+    protected Source runInternal(WorkflowExecutionStepContext context, Path workDir) throws Exception {
         FileUtils.deleteDirectory(workDir.toFile());
         return Success.successWith();
     }
 
     @Override
-    public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
+    public WorkflowStepResult resume(WorkflowExecutionStepContext context, Map<String, String> internalData, String externalData) {
         throw new UnsupportedOperationException("This step does not pause");
     }
 
     @Override
-    public void rollback(WorkflowExecutionContext context, Failure reason) {
+    public void rollback(WorkflowExecutionStepContext context, Failure reason) {
     }
 }

@@ -60,17 +60,17 @@ public class TestWorkflowStep implements WorkflowStep {
     // -------------------- LOGIC --------------------
 
     @Override
-    public WorkflowStepResult run(WorkflowExecutionContext context) {
+    public WorkflowStepResult run(WorkflowExecutionStepContext context) {
         return runningLogic.apply(context, params.asMap());
     }
 
     @Override
-    public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
+    public WorkflowStepResult resume(WorkflowExecutionStepContext context, Map<String, String> internalData, String externalData) {
         return resumingLogic.apply(context, internalData, externalData);
     }
 
     @Override
-    public void rollback(WorkflowExecutionContext context, Failure reason) {
+    public void rollback(WorkflowExecutionStepContext context, Failure reason) {
         failureConsumer.accept(context, reason);
     }
 

@@ -29,4 +29,12 @@ public class WorkflowContextMother implements WithTestClock {
         WorkflowContext context = givenWorkflowContext(execution.getDatasetId());
         return new WorkflowExecutionContext(workflow, context, execution, emptyMap(), clock);
     }
+
+    public static WorkflowExecutionStepContext nextStepContextToExecute(WorkflowExecutionContext context) {
+        return context.nextStepToExecute();
+    }
+
+    public static WorkflowExecutionStepContext nextStepContextToRollback(WorkflowExecutionContext context) {
+        return context.nextStepToRollback();
+    }
 }

@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.workflow.internalspi;
 
 import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionStepContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.Success;
@@ -50,7 +50,7 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
     }
 
     @Override
-    public WorkflowStepResult run(WorkflowExecutionContext context) {
+    public WorkflowStepResult run(WorkflowExecutionStepContext context) {
         HttpClient client = new HttpClient();
 
         try {
@@ -73,7 +73,7 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
     }
 
     @Override
-    public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
+    public WorkflowStepResult resume(WorkflowExecutionStepContext context, Map<String, String> internalData, String externalData) {
         Pattern pat = Pattern.compile(params.get("expectedResponse"));
         String response = externalData.trim();
         if (pat.matcher(response).matches()) {
@@ -85,7 +85,7 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
     }
 
     @Override
-    public void rollback(WorkflowExecutionContext context, Failure reason) {
+    public void rollback(WorkflowExecutionStepContext context, Failure reason) {
         HttpClient client = new HttpClient();
 
         try {
@@ -106,7 +106,7 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
         }
     }
 
-    HttpMethodBase buildMethod(boolean rollback, WorkflowExecutionContext ctxt) throws Exception {
+    HttpMethodBase buildMethod(boolean rollback, WorkflowExecutionStepContext ctxt) throws Exception {
         String methodName = params.getOrDefault("method" + (rollback ? "-rollback" : ""), "GET").trim().toUpperCase();
         HttpMethodBase m = null;
         switch (methodName) {
