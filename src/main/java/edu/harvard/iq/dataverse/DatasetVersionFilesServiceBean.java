@@ -46,6 +46,16 @@ public class DatasetVersionFilesServiceBean implements Serializable {
      * Given a DatasetVersion, returns its total file metadata count
      *
      * @param datasetVersion the DatasetVersion to access
+     * @return long value of total file metadata count
+     */
+    public long getFileMetadataCount(DatasetVersion datasetVersion) {
+        return getFileMetadataCount(datasetVersion, new FileSearchCriteria(null, null, null, null, null));
+    }
+
+    /**
+     * Given a DatasetVersion, returns its total file metadata count
+     *
+     * @param datasetVersion the DatasetVersion to access
      * @param searchCriteria for counting only files matching this criteria
      * @return long value of total file metadata count
      */
@@ -189,6 +199,32 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         };
     }
 
+    /**
+     * Determines whether or not a DataFile is present in a DatasetVersion
+     *
+     * @param datasetVersion the DatasetVersion to check
+     * @param dataFile the DataFile to check
+     * @return boolean value
+     */
+    public boolean isDataFilePresentInDatasetVersion(DatasetVersion datasetVersion, DataFile dataFile) {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+        Root<DataFile> dataFileRoot = criteriaQuery.from(DataFile.class);
+        Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
+        Root<DatasetVersion> datasetVersionRoot = criteriaQuery.from(DatasetVersion.class);
+        criteriaQuery
+                .select(criteriaBuilder.count(dataFileRoot))
+                .where(criteriaBuilder.and(
+                        criteriaBuilder.equal(dataFileRoot.get("id"), dataFile.getId()),
+                        criteriaBuilder.equal(datasetVersionRoot.get("id"), datasetVersion.getId()),
+                        fileMetadataRoot.in(dataFileRoot.get("fileMetadatas")),
+                        fileMetadataRoot.in(datasetVersionRoot.get("fileMetadatas"))
+                        )
+                );
+        Long count = em.createQuery(criteriaQuery).getSingleResult();
+        return count != null && count > 0;
+    }
+
     private void addAccessStatusCountToTotal(DatasetVersion datasetVersion, Map<FileAccessStatus, Long> totalCounts, FileAccessStatus dataFileAccessStatus, FileSearchCriteria searchCriteria) {
         long fileMetadataCount = getFileMetadataCountByAccessStatus(datasetVersion, dataFileAccessStatus, searchCriteria);
         if (fileMetadataCount > 0) {
@@ -260,22 +296,27 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         return criteriaBuilder.and(predicates.toArray(new Predicate[]{}));
     }
 
-    private Order createGetFileMetadatasOrder(CriteriaBuilder criteriaBuilder,
-                                              FileOrderCriteria orderCriteria,
-                                              Root<FileMetadata> fileMetadataRoot) {
+    private List<Order> createGetFileMetadatasOrder(CriteriaBuilder criteriaBuilder,
+                                                    FileOrderCriteria orderCriteria,
+                                                    Root<FileMetadata> fileMetadataRoot) {
         Path<Object> label = fileMetadataRoot.get("label");
         Path<Object> dataFile = fileMetadataRoot.get("dataFile");
         Path<Timestamp> publicationDate = dataFile.get("publicationDate");
         Path<Timestamp> createDate = dataFile.get("createDate");
         Expression<Object> orderByLifetimeExpression = criteriaBuilder.selectCase().when(publicationDate.isNotNull(), publicationDate).otherwise(createDate);
-        return switch (orderCriteria) {
-            case NameZA -> criteriaBuilder.desc(label);
-            case Newest -> criteriaBuilder.desc(orderByLifetimeExpression);
-            case Oldest -> criteriaBuilder.asc(orderByLifetimeExpression);
-            case Size -> criteriaBuilder.asc(dataFile.get("filesize"));
-            case Type -> criteriaBuilder.asc(dataFile.get("contentType"));
-            default -> criteriaBuilder.asc(label);
-        };
+        List<Order> orderList = new ArrayList<>();
+        switch (orderCriteria) {
+            case NameZA -> orderList.add(criteriaBuilder.desc(label));
+            case Newest -> orderList.add(criteriaBuilder.desc(orderByLifetimeExpression));
+            case Oldest -> orderList.add(criteriaBuilder.asc(orderByLifetimeExpression));
+            case Size -> orderList.add(criteriaBuilder.asc(dataFile.get("filesize")));
+            case Type -> {
+                orderList.add(criteriaBuilder.asc(dataFile.get("contentType")));
+                orderList.add(criteriaBuilder.asc(label));
+            }
+            default -> orderList.add(criteriaBuilder.asc(label));
+        }
+        return orderList;
     }
 
     private long getOriginalTabularFilesSize(DatasetVersion datasetVersion, FileSearchCriteria searchCriteria) {

@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
@@ -16,9 +17,9 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.exception.RateLimitCommandException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -31,6 +32,7 @@ import jakarta.inject.Named;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.StorageUseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -48,7 +50,6 @@ import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
 import static jakarta.ejb.TransactionAttributeType.SUPPORTS;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
 /**
@@ -113,20 +114,8 @@ public class EjbDataverseEngine {
     DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels;
 
     @EJB
-    DOIEZIdServiceBean doiEZId;
-    
-    @EJB
-    DOIDataCiteServiceBean doiDataCite;
+    PidProviderFactoryBean pidProviderFactory;
 
-    @EJB
-    FakePidProviderServiceBean fakePidProvider;
-
-    @EJB
-    HandlenetServiceBean handleNet;
-    
-    @EJB
-    PermaLinkPidProviderServiceBean permaLinkProvider;
-    
     @EJB
     SettingsServiceBean settings;
     
@@ -135,6 +124,9 @@ public class EjbDataverseEngine {
     
     @EJB
     GuestbookResponseServiceBean responses;
+
+    @EJB
+    MetadataBlockServiceBean metadataBlockService;
     
     @EJB
     DataverseLinkingServiceBean dvLinking;
@@ -185,8 +177,13 @@ public class EjbDataverseEngine {
     ConfirmEmailServiceBean confirmEmailService;
     
     @EJB
-    EjbDataverseEngineInner innerEngine;
+    StorageUseServiceBean storageUseService; 
     
+    @EJB
+    EjbDataverseEngineInner innerEngine;
+
+    @EJB
+    CacheFactoryBean cacheFactory;
     
     @Resource
     EJBContext ejbCtxt;
@@ -212,7 +209,11 @@ public class EjbDataverseEngine {
 
         try {
             logRec.setUserIdentifier( aCommand.getRequest().getUser().getIdentifier() );
-            
+            // Check for rate limit exceeded. Must be done before anything else to prevent unnecessary processing.
+            if (!cacheFactory.checkRate(aCommand.getRequest().getUser(), aCommand)) {
+                throw new RateLimitCommandException(BundleUtil.getStringFromBundle("command.exception.user.ratelimited", Arrays.asList(aCommand.getClass().getSimpleName())), aCommand);
+            }
+
             // Check permissions - or throw an exception
             Map<String, ? extends Set<Permission>> requiredMap = aCommand.getRequiredPermissions();
             if (requiredMap == null) {
@@ -480,28 +481,8 @@ public class EjbDataverseEngine {
                 }
 
                 @Override
-                public DOIEZIdServiceBean doiEZId() {
-                    return doiEZId;
-                }
-                
-                @Override
-                public DOIDataCiteServiceBean doiDataCite() {
-                    return doiDataCite;
-                }
-
-                @Override
-                public FakePidProviderServiceBean fakePidProvider() {
-                    return fakePidProvider;
-                }
-
-                @Override
-                public HandlenetServiceBean handleNet() {
-                    return handleNet;
-                }
-
-                @Override
-                public PermaLinkPidProviderServiceBean permaLinkProvider() {
-                    return permaLinkProvider;
+                public PidProviderFactoryBean pidProviderFactory() {
+                    return pidProviderFactory;
                 }
                 
                 @Override
@@ -528,6 +509,12 @@ public class EjbDataverseEngine {
                 public DatasetLinkingServiceBean dsLinking() {
                     return dsLinking;
                 }
+                
+                @Override
+                public StorageUseServiceBean storageUse() {
+                    return storageUseService;
+                }
+                
                 @Override
                 public DataverseEngine engine() {
                     return new DataverseEngine() {
@@ -601,6 +588,11 @@ public class EjbDataverseEngine {
                 @Override
                 public ActionLogServiceBean actionLog() {
                     return logSvc;
+                }
+
+                @Override
+                public MetadataBlockServiceBean metadataBlocks() {
+                    return metadataBlockService;
                 }
 
                 @Override

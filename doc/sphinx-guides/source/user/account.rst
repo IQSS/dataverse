@@ -83,7 +83,9 @@ Create a Dataverse installation account using Institutional Log In
 #. After you put in your institutional credentials successfully, you will be brought back to the Dataverse installation to confirm your account information, and click "Create Account".
 #. A username has been selected for you. You won't use this username to log in but it will appear next to your name when other users search for you to assign permissions within the system. To see what you username is, click on your name in the top right corner and click Account Information.
 
-If you do not find your institution listed, you will need to request that it is added to the Research & Scholarship category of InCommon. Contact support for assistance on how to get this process started with the identity provider support team at your institution.
+If you can't find your institution in a long list, you may need to request for it to be added to the "Research & Scholarship" category of an identity federation. See :ref:`fix-shib-login`.
+
+If your institution is listed but you get login error ("eppn was null" or similar), it may mean your institution has declared itself part of the "Research & Scholarship" category of an identity federation but it is not releasing required attributes (often email) as it should. To resolve this, see :ref:`fix-shib-login`.
 
 Convert your Dataverse installation account to use your Institutional Log In
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -105,6 +107,23 @@ Convert your Dataverse installation account away from your Institutional Log In
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you are leaving your institution and need to convert your Dataverse installation account to the Dataverse Username/Email log in option, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link that will open a popup form to contact support for assistance.
+
+.. _fix-shib-login:
+
+Troubleshooting Federated Institutional Log In
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Dataverse can be configured to allow institutional log in from a worldwide federation (eduGAIN) but for a successful log in, the following Research & Scholarship (R&S) attributes must be released:
+
+- Shib-Identity-Provider
+- eppn
+- givenName
+- sn
+- email
+
+If you have attempted to log in but are seeing an error such as ``The SAML assertion for "eppn" was null``, you will need to contact the people who run the log in system (Identity Provider or IdP) for your organization and explain that the attributes above must be released. You can link them to this document, of course, as well as https://refeds.org/category/research-and-scholarship and :ref:`identity-federation` in the Installation Guide.
+
+Note that while Identity Providers (IdPs) who have joined R&S are required to release the attributes above to all Service Providers (SPs) who have joined R&S (Harvard Dataverse or UNC Dataverse, for example), for a successful login to a Dataverse installation, the IdP could decide to release attributes to just that individual installation.
 
 ORCID Log In
 ~~~~~~~~~~~~~

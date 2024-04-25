@@ -588,6 +588,7 @@
      check for "Circuit Breakers tripped" in logs and the corresponding error message should tell
      you what transpired (if the failure was caused by tripped circuit breakers).
     -->
+    
     <!--
     <str name="memEnabled">true</str>
     <str name="memThreshold">75</str>
@@ -599,10 +600,12 @@
      whether the circuit breaker is enabled and the average load over the last minute at which the
      circuit breaker should start rejecting queries.
     -->
+    
     <!--
     <str name="cpuEnabled">true</str>
     <str name="cpuThreshold">75</str>
     -->
+
   </circuitBreaker>
 
   <!-- Request Dispatcher

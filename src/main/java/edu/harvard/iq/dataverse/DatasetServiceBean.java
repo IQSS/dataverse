@@ -19,6 +19,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -60,9 +62,6 @@ public class DatasetServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
-
-    @EJB
-    DOIEZIdServiceBean doiEZIdServiceBean;
 
     @EJB
     SettingsServiceBean settingsService;
@@ -700,7 +699,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         Integer countError = 0;
         String logTimestamp = logFormatter.format(new Date());
         Logger exportLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
-        String logFileName = "../logs" + File.separator + "export_" + logTimestamp + ".log";
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "export_" + logTimestamp + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
         try {
@@ -937,80 +936,6 @@ public class DatasetServiceBean implements java.io.Serializable {
             commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, request, isPidPrePublished));
         } catch (CommandException cex) {
             logger.warning("CommandException caught when executing the asynchronous portion of the Dataset Publication Command.");
-        }
-    }
-
-    /*
-     Experimental asynchronous method for requesting persistent identifiers for
-     datafiles. We decided not to run this method on upload/create (so files
-     will not have persistent ids while in draft; when the draft is published,
-     we will force obtaining persistent ids for all the files in the version.
-
-     If we go back to trying to register global ids on create, care will need to
-     be taken to make sure the asynchronous changes below are not conflicting with
-     the changes from file ingest (which may be happening in parallel, also
-     asynchronously). We would also need to lock the dataset (similarly to how
-     tabular ingest logs the dataset), to prevent the user from publishing the
-     version before all the identifiers get assigned - otherwise more conflicts
-     are likely. (It sounds like it would make sense to treat these two tasks -
-     persistent identifiers for files and ingest - as one post-upload job, so that
-     they can be run in sequence). -- L.A. Mar. 2018
-    */
-    @Asynchronous
-    public void obtainPersistentIdentifiersForDatafiles(Dataset dataset) {
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());
-
-        //If the Id type is sequential and Dependent then write file idenitifiers outside the command
-        String datasetIdentifier = dataset.getIdentifier();
-        Long maxIdentifier = null;
-
-        if (systemConfig.isDataFilePIDSequentialDependent()) {
-            maxIdentifier = getMaximumExistingDatafileIdentifier(dataset);
-        }
-
-        for (DataFile datafile : dataset.getFiles()) {
-            logger.info("Obtaining persistent id for datafile id=" + datafile.getId());
-
-            if (datafile.getIdentifier() == null || datafile.getIdentifier().isEmpty()) {
-
-                logger.info("Obtaining persistent id for datafile id=" + datafile.getId());
-
-                if (maxIdentifier != null) {
-                    maxIdentifier++;
-                    datafile.setIdentifier(datasetIdentifier + "/" + maxIdentifier.toString());
-                } else {
-                    datafile.setIdentifier(idServiceBean.generateDataFileIdentifier(datafile));
-                }
-
-                if (datafile.getProtocol() == null) {
-                    datafile.setProtocol(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""));
-                }
-                if (datafile.getAuthority() == null) {
-                    datafile.setAuthority(settingsService.getValueForKey(SettingsServiceBean.Key.Authority, ""));
-                }
-
-                logger.info("identifier: " + datafile.getIdentifier());
-
-                String doiRetString;
-
-                try {
-                    logger.log(Level.FINE, "creating identifier");
-                    doiRetString = idServiceBean.createIdentifier(datafile);
-                } catch (Throwable e) {
-                    logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
-                    doiRetString = "";
-                }
-
-                // Check return value to make sure registration succeeded
-                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(datafile.getIdentifier())) {
-                    datafile.setIdentifierRegistered(true);
-                    datafile.setGlobalIdCreateTime(new Date());
-                }
-
-                DataFile merged = em.merge(datafile);
-                merged = null;
-            }
-
         }
     }
 

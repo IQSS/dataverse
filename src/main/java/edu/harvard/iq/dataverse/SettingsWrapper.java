@@ -6,6 +6,9 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -63,6 +66,9 @@ public class SettingsWrapper implements java.io.Serializable {
     
     @EJB
     MetadataBlockServiceBean mdbService;
+    
+    @EJB
+    MailServiceBean mailServiceBean;
 
     private Map<String, String> settingsMap;
     
@@ -333,11 +339,28 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public boolean isGlobusEnabledStorageDriver(String driverId) {
-        if (globusStoreList == null) {
-            globusStoreList = systemConfig.getGlobusStoresList();
-        }
-        return globusStoreList.contains(driverId);
+        return (GlobusAccessibleStore.acceptsGlobusTransfers(driverId) || GlobusAccessibleStore.allowsGlobusReferences(driverId));
     }
+    
+    public boolean isDownloadable(FileMetadata fmd) {
+        boolean downloadable=true;
+        if(isGlobusFileDownload()) {
+            String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
+            
+            downloadable = downloadable && StorageIO.isDataverseAccessible(driverId); 
+        }
+        return downloadable;
+    }
+    
+    public boolean isGlobusTransferable(FileMetadata fmd) {
+        boolean globusTransferable=true;
+        if(isGlobusFileDownload()) {
+            String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
+            globusTransferable = GlobusAccessibleStore.isGlobusAccessible(driverId);
+        }
+        return globusTransferable;
+    }
+    
     
     public String getGlobusAppUrl() {
         if (globusAppUrl == null) {
@@ -380,22 +403,15 @@ public class SettingsWrapper implements java.io.Serializable {
         return httpUpload;      
     }
     
-    public boolean isDataFilePIDSequentialDependent(){
-        if (dataFilePIDSequentialDependent == null) {
-            dataFilePIDSequentialDependent = systemConfig.isDataFilePIDSequentialDependent();
-        }
-        return dataFilePIDSequentialDependent;
-    }
-    
     public String getSupportTeamName() {
-        String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
-        InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
+        // TODO: should this be replaced with mailServiceBean.getSupportAddress() to expose a configured support team?
+        InternetAddress systemAddress = mailServiceBean.getSystemAddress().orElse(null);
         return BrandingUtil.getSupportTeamName(systemAddress);
     }
     
     public String getSupportTeamEmail() {
-        String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
-        InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);        
+        // TODO: should this be replaced with mailServiceBean.getSupportAddress() to expose a configured support team?
+        InternetAddress systemAddress = mailServiceBean.getSystemAddress().orElse(null);
         return BrandingUtil.getSupportTeamEmailAddress(systemAddress) != null ? BrandingUtil.getSupportTeamEmailAddress(systemAddress) : BrandingUtil.getSupportTeamName(systemAddress);
     }
     
@@ -450,23 +466,6 @@ public class SettingsWrapper implements java.io.Serializable {
         return configuredLocales;
     }
     
-    public boolean isDoiInstallation() {
-        String protocol = getValueForKey(SettingsServiceBean.Key.Protocol);
-        if ("doi".equals(protocol)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean isDataCiteInstallation() {
-        String protocol = getValueForKey(SettingsServiceBean.Key.DoiProvider);
-        if ("DataCite".equals(protocol)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     public boolean isMakeDataCountDisplayEnabled() {
         boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath)!=null); //Backward compatible
