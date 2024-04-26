@@ -1,11 +1,6 @@
 package edu.harvard.iq.dataverse.dataset;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -33,15 +28,14 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+
+import jakarta.enterprise.inject.spi.CDI;
 import org.apache.commons.io.IOUtils;
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.license.License;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.EnumUtils;
@@ -479,8 +473,17 @@ public class DatasetUtil {
             }
 
             try {
+                boolean origImageFailed = thumbnailFile.isPreviewImageFail();
                 InputStreamIO isIO = ImageThumbConverter.getImageThumbnailAsInputStream(thumbnailFile.getStorageIO(),
                         ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
+                if (!origImageFailed && thumbnailFile.isPreviewImageFail()) {
+                    // We found an older 0 length thumbnail. Newer image uploads will not have this issue.
+                    // Once cleaned up, this thumbnail will no longer have this issue
+                    // ImageThumbConverter fixed the DataFile
+                    // Now we need to update dataset since this is a bad logo
+                    DatasetServiceBean datasetService = CDI.current().select(DatasetServiceBean.class).get();
+                    datasetService.removeDatasetThumbnail(dataset);
+                }
                 in = isIO != null ? isIO.getInputStream() : null;
             } catch (IOException ioex) {
                 logger.warning("getLogo(): Failed to get logo from DataFile for " + dataset.getStorageIdentifier()

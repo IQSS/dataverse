@@ -35,21 +35,21 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import jakarta.enterprise.inject.spi.CDI;
 import org.apache.commons.io.IOUtils;
 //import org.primefaces.util.Base64;
 import java.util.Base64;
@@ -172,15 +172,26 @@ public class ImageThumbConverter {
                 return null;
             }
             int cachedThumbnailSize = (int) storageIO.getAuxObjectSize(THUMBNAIL_SUFFIX + size);
+            InputStreamIO inputStreamIO = cachedThumbnailSize > 0 ? new InputStreamIO(cachedThumbnailInputStream, cachedThumbnailSize) : null;
 
-            InputStreamIO inputStreamIO = new InputStreamIO(cachedThumbnailInputStream, cachedThumbnailSize);
+            if (inputStreamIO != null) {
+                inputStreamIO.setMimeType(THUMBNAIL_MIME_TYPE);
 
-            inputStreamIO.setMimeType(THUMBNAIL_MIME_TYPE);
-
-            String fileName = storageIO.getFileName();
-            if (fileName != null) {
-                fileName = fileName.replaceAll("\\.[^\\.]*$", THUMBNAIL_FILE_EXTENSION);
-                inputStreamIO.setFileName(fileName);
+                String fileName = storageIO.getFileName();
+                if (fileName != null) {
+                    fileName = fileName.replaceAll("\\.[^\\.]*$", THUMBNAIL_FILE_EXTENSION);
+                    inputStreamIO.setFileName(fileName);
+                }
+            } else {
+                if (storageIO.getDataFile() != null && cachedThumbnailSize == 0) {
+                    // We found an older 0 length thumbnail. Newer image uploads will not have this issue.
+                    // Once cleaned up, this thumbnail will no longer have this issue
+                    logger.warning("Cleaning up zero sized thumbnail ID: "+ storageIO.getDataFile().getId());
+                    storageIO.getDataFile().setPreviewImageFail(true);
+                    storageIO.getDataFile().setPreviewImageAvailable(false);
+                    DataFileServiceBean datafileService = CDI.current().select(DataFileServiceBean.class).get();
+                    datafileService.save(storageIO.getDataFile());
+                }
             }
             return inputStreamIO;
         } catch (Exception ioex) {
