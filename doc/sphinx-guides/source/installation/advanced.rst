@@ -119,27 +119,46 @@ To activate in your Dataverse installation::
 
 .. _external-exporters:
 
-Installing External Metadata Exporters
-++++++++++++++++++++++++++++++++++++++
+External Metadata Exporters
++++++++++++++++++++++++++++
 
-As of Dataverse Software 5.14 Dataverse supports the use of external Exporters as a way to add additional metadata
-export formats to Dataverse or replace the built-in formats. This should be considered an **experimental** capability
-in that the mechanism is expected to evolve and using it may require additional effort when upgrading to new Dataverse
-versions.
+Dataverse 5.14+ supports the configuration of external metadata exporters (just "external exporters" or "exporters" for short) as a way to add additional metadata export formats or replace built-in formats. For a list of built-in formats, see :ref:`metadata-export-formats` in the User Guide.
 
-This capability is enabled by specifying a directory in which Dataverse should look for third-party Exporters. See
-:ref:`dataverse.spi.exporters.directory`.
+This should be considered an **experimental** capability in that the mechanism is expected to evolve and using it may require additional effort when upgrading to new Dataverse versions.
 
-See :doc:`/developers/metadataexport` for details about how to develop new Exporters.
+Enabling External Exporters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-An minimal example Exporter is available at https://github.com/gdcc/dataverse-exporters. The community is encourage to 
-add additional exporters (and/or links to exporters elsewhere) in this repository. Once you have downloaded the 
-dataverse-spi-export-examples-1.0.0.jar (or other exporter jar), installed it in the directory specified above, and 
-restarted your Payara server, the new exporter should be available. 
+Use the :ref:`dataverse.spi.exporters.directory` configuration option to specify a directory from which external exporters (JAR files) should be loaded.
 
-The example dataverse-spi-export-examples-1.0.0.jar replaces the ``JSON`` export with a ``MyJSON in <locale>`` version
-that just wraps the existing JSON export object in a new JSON object with the key ``inputJson`` containing the original
-JSON.(Note that the ``MyJSON in <locale>`` label will appear in the dataset Metadata Export download menu immediately,
-but the content for already published datasets will only be updated after you delete the cached exports and/or use a
-reExport API call (see :ref:`batch-exports-through-the-api`).)
+.. _inventory-of-external-exporters:
 
+Inventory of External Exporters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Known external exporters are listed below but development takes place at https://github.com/gdcc/dataverse-exporters and you are encouraged to check there for new exporters or contribute one!
+
+In the list below, the name of each exporter is followed by the machine-readable name in parentheses for use in APIs (see :ref:`export-dataset-metadata-api` in the API Guide).
+
+Croissant (``croissant``)
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`Croissant <https://github.com/mlcommons/croissant>`_ is oriented toward machine learning and exposes variable-level metadata. When enabled, it replaces the Schema.org JSON-LD shown in the ``<head>`` of a dataset page, as described under :ref:`schema.org-head` in the Admin Guide.
+
+You can download the Croissant exporter JAR from FIXME.
+
+The source can be found in the `"croissant" <https://github.com/gdcc/dataverse-exporters/tree/main/croissant>`_ directory of the exporters repo.
+
+MyJSON (``dataverse_json``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+MyJSON is a minimal example exporter that demonstrates how to override a built-in metadata format. Specifically, it replaces the ``dataverse_json`` format (Dataverse's native JSON format), shown as "JSON" in the GUI with a "MyJSON in <locale>" version that just wraps the existing JSON export object in a new JSON object with the key ``inputJson`` containing the original JSON.
+
+You can download the MyJSON exporter JAR from https://github.com/gdcc/dataverse-exporters where you should look under "prebuilt-examples" for a file called something like dataverse-spi-export-examples-x.x.x.jar.
+
+The source can be found in the `"dataverse-spi-export-examples" <https://github.com/gdcc/dataverse-exporters/tree/main/dataverse-spi-export-examples>`_ directory of the exporters repo.
+
+Developing New Exporters
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+See :doc:`/developers/metadataexport` for details about how to develop new exporters.
