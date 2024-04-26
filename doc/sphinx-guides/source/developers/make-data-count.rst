@@ -88,6 +88,35 @@ To read more about the Make Data Count api, see https://github.com/datacite/sash
 
 You can compare the MDC metrics display with the Dataverse installation's original by toggling the ``:DisplayMDCMetrics`` setting (true by default to display MDC metrics).
 
+Processing Archived Logs
+------------------------
+
+A new script (release date TBD) will be available for processing archived Dataverse log files. Monthly logs that are zipped, TARed, and copied to an archive can be processed by this script running nightly or weekly.
+
+The script will keep track of the state of each tar file they are processed and will make use of the following "processingState" API endpoints, which allow the state of each file to be checked or modified.
+
+The possible states are new, done, skip, processing, and failed.
+
+Setting the state to "skip" will prevent the file from being processed if the developer needs to analyze the contents.
+
+"failed" files will be re-tried in a later run.
+
+"done" files are successful and will be ignored going forward.
+
+The files currently being processed will have the state "processing".
+
+The script will process the newest set of log files (merging files from multiple nodes) and call Counter Processor.
+
+APIs to manage the states include GET, POST, and DELETE (for testing), as shown below.
+
+Note: ``yearMonth`` must be in the format ``yyyymm`` or ``yyyymmdd``.
+
+``curl -X GET http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState``
+
+``curl -X POST http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState?state=done``
+
+``curl -X DELETE http://localhost:8080/api/admin/makeDataCount/{yearMonth}/processingState``
+
 Resources
 ---------
 

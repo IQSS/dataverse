@@ -8,9 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import jakarta.validation.ConstraintValidator;
@@ -34,7 +32,6 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
     }
 
     public boolean isValid(DatasetFieldValue value, ConstraintValidatorContext context) {
-
         context.disableDefaultConstraintViolation(); // we do this so we can have different messages depending on the different issue
 
         boolean lengthOnly = false;
@@ -53,6 +50,38 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
 
         if (StringUtils.isBlank(value.getValue()) || StringUtils.equals(value.getValue(), DatasetField.NA_VALUE)) {
             return true;
+        }
+
+        // verify no junk in individual fields and values are within range
+        if (dsfType.getName() != null && (dsfType.getName().equals(DatasetFieldConstant.northLatitude) || dsfType.getName().equals(DatasetFieldConstant.southLatitude) ||
+                dsfType.getName().equals(DatasetFieldConstant.westLongitude) || dsfType.getName().equals(DatasetFieldConstant.eastLongitude))) {
+            try {
+                verifyBoundingBoxCoordinatesWithinRange(dsfType.getName(), value.getValue());
+            } catch (IllegalArgumentException iae) {
+                    try {
+                        context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidEntry")).addConstraintViolation();
+                    } catch (NullPointerException e) {
+                    }
+                    return false;
+            }
+        }
+
+        // validate fields that are siblings and depend on each others values
+        if (value.getDatasetField().getParentDatasetFieldCompoundValue() != null &&
+                value.getDatasetField().getParentDatasetFieldCompoundValue().getParentDatasetField().getValidationMessage() == null) {
+            Optional<String> failureMessage = validateChildConstraints(value.getDatasetField());
+            if (failureMessage.isPresent()) {
+                try {
+                    context.buildConstraintViolationWithTemplate(dsfType.getParentDatasetFieldType().getDisplayName() +  "  " +
+                            BundleUtil.getStringFromBundle(failureMessage.get()) ).addConstraintViolation();
+
+                    // save the failure message in the parent so we don't keep validating the children
+                    value.getDatasetField().getParentDatasetFieldCompoundValue().getParentDatasetField().setValidationMessage(failureMessage.get());
+
+                } catch (NullPointerException npe) {
+                }
+                return false;
+            }
         }
 
         if (fieldType.equals(FieldType.TEXT) && !lengthOnly && value.getDatasetField().getDatasetFieldType().getValidationFormat() != null) {
@@ -216,4 +245,60 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         return pattern.matcher(userInput).matches();
     }
 
+    // Validate child fields against each other and return failure message or Optional.empty() if success
+    public Optional<String> validateChildConstraints(DatasetField dsf) {
+        final String fieldName = dsf.getDatasetFieldType().getName() != null ? dsf.getDatasetFieldType().getName() : "";
+        Optional<String> returnFailureMessage = Optional.empty();
+
+        // Validate Child Constraint for Geospatial Bounding Box
+        // validate the four points of the box to insure proper layout
+        if (fieldName.equals(DatasetFieldConstant.northLatitude) || fieldName.equals(DatasetFieldConstant.westLongitude)
+                || fieldName.equals(DatasetFieldConstant.eastLongitude) || fieldName.equals(DatasetFieldConstant.southLatitude)) {
+            final String failureMessage = "dataset.metadata.invalidGeospatialCoordinates";
+
+            try {
+                final Map<String, String> coords = new HashMap<>();
+                dsf.getParentDatasetFieldCompoundValue().getChildDatasetFields().forEach(f -> {
+                        coords.put(f.getDatasetFieldType().getName(), f.getValue());
+                });
+                if (!validateBoundingBox(coords.get(DatasetFieldConstant.westLongitude),
+                        coords.get(DatasetFieldConstant.eastLongitude),
+                        coords.get(DatasetFieldConstant.northLatitude),
+                        coords.get(DatasetFieldConstant.southLatitude))) {
+                    returnFailureMessage = Optional.of(failureMessage);
+                }
+            } catch (IllegalArgumentException e) { // IllegalArgumentException NumberFormatException
+                returnFailureMessage = Optional.of(failureMessage);
+            }
+        }
+
+        return returnFailureMessage;
+    }
+
+    public static boolean validateBoundingBox(final String westLon, final String eastLon, final String northLat, final String southLat) {
+        boolean returnVal = false;
+
+        try {
+            Float west = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.westLongitude, westLon);
+            Float east = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.eastLongitude, eastLon);
+            Float north = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.northLatitude, northLat);
+            Float south = verifyBoundingBoxCoordinatesWithinRange(DatasetFieldConstant.southLatitude, southLat);
+            returnVal = west <= east && south <= north;
+        } catch (IllegalArgumentException e) {
+            returnVal = false;
+        }
+
+        return returnVal;
+    }
+
+    private static Float verifyBoundingBoxCoordinatesWithinRange(final String name, final String value) throws IllegalArgumentException {
+        int max = name.equals(DatasetFieldConstant.westLongitude) || name.equals(DatasetFieldConstant.eastLongitude) ? 180 : 90;
+        int min = max * -1;
+
+        final Float returnVal = value != null ? Float.parseFloat(value) : Float.NaN;
+        if (returnVal.isNaN() || returnVal < min || returnVal > max) {
+            throw new IllegalArgumentException(String.format("Value (%s) not in range (%s-%s)", returnVal.isNaN() ? "missing" : returnVal, min, max));
+        }
+        return returnVal;
+    }
 }

@@ -1,11 +1,7 @@
 package edu.harvard.iq.dataverse.export.openaire;
 
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 import jakarta.json.JsonObject;
@@ -17,16 +13,16 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -193,10 +189,10 @@ public class OpenAireExportUtil {
         if (StringUtils.isNotBlank(identifier)) {
             Map<String, String> identifier_map = new HashMap<String, String>();
 
-            if (StringUtils.containsIgnoreCase(identifier, DOIServiceBean.DOI_RESOLVER_URL)) {
+            if (StringUtils.containsIgnoreCase(identifier, AbstractDOIProvider.DOI_RESOLVER_URL)) {
                 identifier_map.put("identifierType", "DOI");
                 identifier = StringUtils.substring(identifier, identifier.indexOf("10."));
-            } else if (StringUtils.containsIgnoreCase(identifier, HandlenetServiceBean.HDL_RESOLVER_URL)) {
+            } else if (StringUtils.containsIgnoreCase(identifier, HandlePidProvider.HDL_RESOLVER_URL)) {
                 identifier_map.put("identifierType", "Handle");
                 if (StringUtils.contains(identifier, "http")) {
                     identifier = identifier.replace(identifier.substring(0, identifier.indexOf("/") + 2), "");
@@ -325,10 +321,32 @@ public class OpenAireExportUtil {
         String subtitle = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.subTitle);
         title_check = writeTitleElement(xmlw, "Subtitle", subtitle, title_check, language);
 
-        String alternativeTitle = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.alternativeTitle);
-        title_check = writeTitleElement(xmlw, "AlternativeTitle", alternativeTitle, title_check, language);
-
+        title_check = writeMultipleTitleElement(xmlw, "AlternativeTitle", datasetVersionDTO, "citation", title_check, language);
         writeEndTag(xmlw, title_check);
+    }
+
+    private static boolean writeMultipleTitleElement(XMLStreamWriter xmlw, String titleType, DatasetVersionDTO datasetVersionDTO, String metadataBlockName, boolean title_check, String language) throws XMLStreamException {
+        MetadataBlockDTO block = datasetVersionDTO.getMetadataBlocks().get(metadataBlockName);
+        if (block != null) {
+            logger.fine("Block is not empty");
+            List<FieldDTO> fieldsBlock =  block.getFields();
+            if (fieldsBlock != null) {
+                for (FieldDTO fieldDTO : fieldsBlock) {
+                    logger.fine(titleType + " " + fieldDTO.getTypeName());
+                    if (titleType.toLowerCase().equals(fieldDTO.getTypeName().toLowerCase())) {
+                        logger.fine("Found Alt title");
+                        List<String> fields = fieldDTO.getMultiplePrimitive();
+                        for (String value : fields) {
+                            if (!writeTitleElement(xmlw, titleType, value, title_check, language))
+                                title_check = false;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        return title_check;
     }
 
     /**
@@ -1062,7 +1080,6 @@ public class OpenAireExportUtil {
         xmlw.writeEndElement(); // </rights>
 
         writeRightsHeader(xmlw, language);
-
         if (datasetVersionDTO.getLicense() != null) {
             xmlw.writeAttribute("rightsURI", datasetVersionDTO.getLicense().getUri());
             xmlw.writeCharacters(datasetVersionDTO.getLicense().getName());

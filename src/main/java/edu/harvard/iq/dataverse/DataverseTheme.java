@@ -181,7 +181,7 @@ public class DataverseTheme implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof DatasetFieldType)) {
+        if (!(object instanceof DataverseTheme)) {
             return false;
         }
         DataverseTheme other = (DataverseTheme) object;
