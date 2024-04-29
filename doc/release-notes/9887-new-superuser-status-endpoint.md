@@ -1,0 +1,1 @@
+The existing API endpoint for toggling the superuser status of a user has been deprecated in favor of a new API endpoint that allows you to explicitly and idempotently set the status as true or false. For details, see [the guides](https://dataverse-guide--10440.org.readthedocs.build/en/10440/api/native-api.html), #9887 and #10440.
