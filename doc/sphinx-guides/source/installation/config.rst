@@ -3117,7 +3117,7 @@ This JVM option is used to configure the file system path where external exporte
 
 If this value is set, Dataverse will examine all JARs in the specified directory and will use them to add new metadata export formats or (if the machine-readable name used in :ref:`export-dataset-metadata-api` is the same) replace built-in metatadata export formats.
 
-If this value is not set (the default), Dataverse will load any external exporters.
+If this value is not set (the default), Dataverse will not load any external exporters.
 
 If you place a new JAR in this directory, you must restart Payara for Dataverse to load it.
 
