@@ -121,7 +121,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasets.api.thumbnail.nonDatasetFailed"), this);
 
             case removeThumbnail:
-                Dataset ds2 = ctxt.datasets().removeDatasetThumbnail(dataset);
+                Dataset ds2 = ctxt.datasets().clearDatasetLevelThumbnail(dataset);
                 DatasetThumbnail datasetThumbnail2 = ds2.getDatasetThumbnail(ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                 if (datasetThumbnail2 == null) {
                     return null;

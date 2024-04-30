@@ -473,6 +473,7 @@ public class DatasetUtil {
             }
 
             try {
+
                 boolean origImageFailed = thumbnailFile.isPreviewImageFail();
                 InputStreamIO isIO = ImageThumbConverter.getImageThumbnailAsInputStream(thumbnailFile.getStorageIO(),
                         ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
@@ -482,7 +483,7 @@ public class DatasetUtil {
                     // ImageThumbConverter fixed the DataFile
                     // Now we need to update dataset since this is a bad logo
                     DatasetServiceBean datasetService = CDI.current().select(DatasetServiceBean.class).get();
-                    datasetService.removeDatasetThumbnail(dataset);
+                    datasetService.clearDatasetLevelThumbnail(dataset);
                 }
                 in = isIO != null ? isIO.getInputStream() : null;
             } catch (IOException ioex) {

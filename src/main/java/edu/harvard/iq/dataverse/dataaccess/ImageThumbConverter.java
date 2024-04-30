@@ -191,6 +191,10 @@ public class ImageThumbConverter {
                     storageIO.getDataFile().setPreviewImageAvailable(false);
                     DataFileServiceBean datafileService = CDI.current().select(DataFileServiceBean.class).get();
                     datafileService.save(storageIO.getDataFile());
+                    
+                    // Now that we have marked this File as a thumbnail failure, 
+                    // no reason not to try and delete this 0-size cache here: 
+                    storageIO.deleteAuxObject(THUMBNAIL_SUFFIX + size);
                 }
             }
             return inputStreamIO;
@@ -378,15 +382,6 @@ public class ImageThumbConverter {
         try {
 
             rescaleImage(fullSizeImage, width, height, size, outputStream);
-            /*
-            // while we are at it, let's make sure other size thumbnails are 
-            // generated too:
-            for (int s : (new int[]{DEFAULT_PREVIEW_SIZE, DEFAULT_THUMBNAIL_SIZE, DEFAULT_CARDIMAGE_SIZE})) {
-                if (size != s && !thumbnailFileExists(fileLocation, s)) {
-                    rescaleImage(fullSizeImage, width, height, s, fileLocation);
-                }
-            }
-             */
 
             if (tempFileRequired) {
                 storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), THUMBNAIL_SUFFIX + size);
@@ -403,6 +398,15 @@ public class ImageThumbConverter {
                     tempFile.delete();
                 }
                 catch (Exception e) {}
+            } else if (!thumbnailGenerated) {
+                // if it was a local file - let's make sure we are not leaving 
+                // behind a half-baked, broken image - such as a 0-size file - 
+                // if this was a failure. 
+                try {
+                    storageIO.deleteAuxObject(THUMBNAIL_SUFFIX + size);
+                } catch (IOException ioex) {
+                    logger.fine("Failed attempt to delete the result of a failed thumbnail rescaling; this is most likely ok - for ex., because it was never createtd in the first place."); 
+                }
             }
         }
 
@@ -862,6 +866,7 @@ public class ImageThumbConverter {
 
             // generate the thumbnail for the requested size, *using the already scaled-down
             // 400x400 png version, above*:
+            // (the "exists()" check below appears to be unncessary - we've already checked early on - ?)
             if (!((new File(thumbFileLocation)).exists())) {
                 thumbFileLocation = runImageMagick(imageMagickExec, previewFileLocation, thumbFileLocation, size, "png");
             }

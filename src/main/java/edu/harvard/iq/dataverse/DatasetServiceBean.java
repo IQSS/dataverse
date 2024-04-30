@@ -860,18 +860,33 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.fine("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
             return null;
         }
+        // Just in case the previously designated thumbnail for the dataset was 
+        // a "custom" kind, i.e. an uploaded "dataset_logo" file, we just try 
+        // to delete it, and all the associated caches here (because it is otherwise 
+        // useless, if we are no longer using it for the dataset thumbnail). If that 
+        // was not the case, there will be an exception in the server log - but it 
+        // is harmless. 
         DatasetUtil.deleteDatasetLogo(dataset);
         dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
         dataset.setUseGenericThumbnail(false);
         return merge(dataset);
     }
 
-    public Dataset removeDatasetThumbnail(Dataset dataset) {
+    public Dataset clearDatasetLevelThumbnail(Dataset dataset) {
         if (dataset == null) {
-            logger.fine("In removeDatasetThumbnail but dataset is null! Returning null.");
+            logger.fine("In clearDatasetLevelThumbnail but dataset is null! Returning null.");
             return null;
         }
+        
+        // Just in case the thumbnail that was designated for the dataset was 
+        // a "custom logo" kind, i.e. an uploaded "dataset_logo" file, we just try 
+        // to delete it, and all the associated caches here (because it is otherwise 
+        // useless, if we are no longer using it for the dataset thumbnail). If that 
+        // was not the case, there will be an exception in the server log - but it 
+        // is harmless:
         DatasetUtil.deleteDatasetLogo(dataset);
+        
+        // Clear any designated thumbnails for the dataset:
         dataset.setThumbnailFile(null);
         dataset.setUseGenericThumbnail(true);
         return merge(dataset);
