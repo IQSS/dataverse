@@ -5476,12 +5476,46 @@ Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST  "https://demo.datavers
 
 This action changes the identifier of user johnsmith to jsmith.
 
-Make User a SuperUser
-~~~~~~~~~~~~~~~~~~~~~
+Toggle Superuser Status
+~~~~~~~~~~~~~~~~~~~~~~~
 
-Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
+Toggle the superuser status of a user.
 
-    POST http://$SERVER/api/admin/superuser/$identifier
+.. note:: This endpoint is deprecated as explained in :doc:`/api/changelog`. Please use the :ref:`set-superuser-status` endpoint instead.
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost:8080
+  export USERNAME=jdoe
+  curl -X POST "$SERVER_URL/api/admin/superuser/$USERNAME"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X POST "http://localhost:8080/api/admin/superuser/jdoe"
+
+.. _set-superuser-status:
+
+Set Superuser Status
+~~~~~~~~~~~~~~~~~~~~
+
+Specify the superuser status of a user with a boolean value (``true`` or ``false``).
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost:8080
+  export USERNAME=jdoe
+  export IS_SUPERUSER=true
+  curl -X PUT "$SERVER_URL/api/admin/superuser/$USERNAME" -d "$IS_SUPERUSER"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X PUT "http://localhost:8080/api/admin/superuser/jdoe" -d true
 
 .. _delete-a-user:
 
@@ -5612,6 +5646,17 @@ List permissions a user (based on API Token used) has on a Dataverse collection 
     GET http://$SERVER/api/admin/permissions/$identifier
 
 The ``$identifier`` can be a Dataverse collection alias or database id or a dataset persistent ID or database id.
+
+.. note:: Datasets can be selected using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the dataset is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+
+Example: List permissions a user (based on API Token used) has on a dataset whose DOI is *10.5072/FK2/J8SJZB*:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/permissions/:persistentId?persistentId=$PERSISTENT_IDENTIFIER"
 
 Show Role Assignee
 ~~~~~~~~~~~~~~~~~~
@@ -5845,7 +5890,7 @@ Superusers can add a new license by posting a JSON file adapted from this exampl
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  curl -X POST -H 'Content-Type: application/json' -H "X-Dataverse-key:$API_TOKEN" --data-binary @add-license.json "$SERVER_URL/api/licenses"
+  curl -X POST -H 'Content-Type: application/json' -H "X-Dataverse-key:$API_TOKEN" --upload-file add-license.json "$SERVER_URL/api/licenses"
 
 Superusers can change whether an existing license is active (usable for new dataset versions) or inactive (only allowed on already-published versions) specified by the license ``$ID``:
 

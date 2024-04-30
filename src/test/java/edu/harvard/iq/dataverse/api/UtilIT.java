@@ -1535,8 +1535,14 @@ public class UtilIT {
                 .get("/api/datasets/:persistentId/versions/" + DS_VERSION_LATEST_PUBLISHED + "/metadata/citation?persistentId=" + persistentId);
     }
 
+    @Deprecated
     static Response makeSuperUser(String username) {
         Response response = given().post("/api/admin/superuser/" + username);
+        return response;
+    }
+
+    static Response setSuperuserStatus(String username, Boolean isSuperUser) {
+        Response response = given().body(isSuperUser).put("/api/admin/superuser/" + username);
         return response;
     }
 
