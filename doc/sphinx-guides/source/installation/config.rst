@@ -3111,9 +3111,9 @@ dataverse.spi.exporters.directory
 
 For some background, see :ref:`external-exporters` and :ref:`inventory-of-external-exporters`.
 
-This JVM option is used to configure the file system path where external exporter JARs should be loaded from.
+This JVM option is used to configure the file system path where external exporter JARs should be loaded from. For example:
 
-``./asadmin create-jvm-options '-Ddataverse.spi.exporters.directory=PATH_LOCATION_HERE'``
+``./asadmin create-jvm-options '-Ddataverse.spi.exporters.directory=/var/lib/dataverse/exporters'``
 
 If this value is set, Dataverse will examine all JARs in the specified directory and will use them to add new metadata export formats or (if the machine-readable name used in :ref:`export-dataset-metadata-api` is the same) replace built-in metatadata export formats.
 

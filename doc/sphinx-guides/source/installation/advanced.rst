@@ -145,9 +145,12 @@ Croissant (``croissant``)
 
 `Croissant <https://github.com/mlcommons/croissant>`_ is oriented toward machine learning and exposes variable-level metadata. When enabled, it replaces the Schema.org JSON-LD shown in the ``<head>`` of a dataset page, as described under :ref:`schema.org-head` in the Admin Guide.
 
-You can download the Croissant exporter JAR from FIXME.
+You can download the Croissant exporter JAR from the following locations:
 
-The source can be found in the `"croissant" <https://github.com/gdcc/dataverse-exporters/tree/main/croissant>`_ directory of the exporters repo.
+- released/stable: https://repo1.maven.org/maven2/io/gdcc/croissant/
+- unreleased/snapshot: https://s01.oss.sonatype.org/content/groups/staging/io/gdcc/croissant/
+
+The source and additional information can be found in the `"croissant" <https://github.com/gdcc/dataverse-exporters/tree/main/croissant>`_ directory of the exporters repo.
 
 MyJSON (``dataverse_json``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
