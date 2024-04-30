@@ -69,6 +69,8 @@ These examples from the SWORD library. Below is what to expect from the interact
         What is the new development version for "SWORD v2 Common Server Library (forked)"? (sword2-server) 2.0.1-SNAPSHOT: :
         [INFO] 8/17 prepare:rewrite-poms-for-release
 
+Note that a commit or two will be made and pushed but if you do a ``git status`` you will see that locally you are behind by that number of commits. To fix this, you can just do a ``git pull``.
+
 It can take some time for the jar to be visible on Maven Central. You can start by looking on the repo1 server, like this: https://repo1.maven.org/maven2/io/gdcc/sword2-server/2.0.0/
 
 Don't bother putting the new version in a pom.xml until you see it on repo1.
