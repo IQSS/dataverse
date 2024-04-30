@@ -214,7 +214,8 @@ public class DatasetUtil {
             storageIO.deleteAuxObject(datasetLogoThumbnail + thumbExtension + ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
         } catch (IOException ex) {
-            logger.info("Failed to delete dataset logo: " + ex.getMessage());
+            logger.fine("Failed to delete dataset logo: " + ex.getMessage() + 
+                    " (this is most likely harmless; this method is often called without checking if the custom dataset logo was in fact present)");
             return false;
         }
         return true;

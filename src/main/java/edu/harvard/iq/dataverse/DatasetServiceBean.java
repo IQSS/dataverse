@@ -861,11 +861,11 @@ public class DatasetServiceBean implements java.io.Serializable {
             return null;
         }
         // Just in case the previously designated thumbnail for the dataset was 
-        // a "custom" kind, i.e. an uploaded "dataset_logo" file, we just try 
-        // to delete it, and all the associated caches here (because it is otherwise 
-        // useless, if we are no longer using it for the dataset thumbnail). If that 
-        // was not the case, there will be an exception in the server log - but it 
-        // is harmless. 
+        // a "custom" kind, i.e. an uploaded "dataset_logo" file, the following method 
+        // will try to delete it, and all the associated caches here (because there 
+        // are no other uses for the file). This method is apparently called in all 
+        // cases, without trying to check if the dataset was in fact using a custom 
+        // logo; probably under the assumption that it can't hurt.
         DatasetUtil.deleteDatasetLogo(dataset);
         dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
         dataset.setUseGenericThumbnail(false);
@@ -879,11 +879,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
         
         // Just in case the thumbnail that was designated for the dataset was 
-        // a "custom logo" kind, i.e. an uploaded "dataset_logo" file, we just try 
-        // to delete it, and all the associated caches here (because it is otherwise 
-        // useless, if we are no longer using it for the dataset thumbnail). If that 
-        // was not the case, there will be an exception in the server log - but it 
-        // is harmless:
+        // a "custom logo" kind, i.e. an uploaded "dataset_logo" file, the following method 
+        // will try to delete it, and all the associated caches here (because there 
+        // are no other uses for the file). This method is apparently called in all 
+        // cases, without trying to check if the dataset was in fact using a custom 
+        // logo; probably under the assumption that it can't hurt.
         DatasetUtil.deleteDatasetLogo(dataset);
         
         // Clear any designated thumbnails for the dataset:

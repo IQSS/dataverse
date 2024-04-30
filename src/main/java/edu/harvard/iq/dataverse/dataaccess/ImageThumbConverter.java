@@ -405,7 +405,7 @@ public class ImageThumbConverter {
                 try {
                     storageIO.deleteAuxObject(THUMBNAIL_SUFFIX + size);
                 } catch (IOException ioex) {
-                    logger.fine("Failed attempt to delete the result of a failed thumbnail rescaling; this is most likely ok - for ex., because it was never createtd in the first place."); 
+                    logger.fine("Failed attempt to delete the result of a failed thumbnail rescaling; this is most likely ok - for ex., because it was never created in the first place."); 
                 }
             }
         }
@@ -866,7 +866,7 @@ public class ImageThumbConverter {
 
             // generate the thumbnail for the requested size, *using the already scaled-down
             // 400x400 png version, above*:
-            // (the "exists()" check below appears to be unncessary - we've already checked early on - ?)
+            // (the "exists()" check below appears to be unnecessary - we've already checked early on - ?)
             if (!((new File(thumbFileLocation)).exists())) {
                 thumbFileLocation = runImageMagick(imageMagickExec, previewFileLocation, thumbFileLocation, size, "png");
             }
