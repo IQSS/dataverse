@@ -1780,23 +1780,39 @@ public class Datasets extends AbstractApiBean {
                 return error(Status.BAD_REQUEST, "Date unavailable can not be earlier than MinRetentionDurationInMonths: "+minRetentionDurationInMonths + " from now");
             }
         }
+        
+        try {
+            String reason = json.getString("reason");
+            retention.setReason(reason);
+        } catch (NullPointerException npex) {
+            // ignoring; no reason specified is OK, it is optional
+        } catch (ClassCastException ccex) {
+            return error(Status.BAD_REQUEST, "Invalid retention period; reason must be a string");
+        }
 
-        retention.setReason(json.getString("reason"));
 
         List<DataFile> datasetFiles = dataset.getFiles();
         List<DataFile> filesToRetention = new LinkedList<>();
 
         // extract fileIds from json, find datafiles and add to list
         if (json.containsKey("fileIds")){
-            JsonArray fileIds = json.getJsonArray("fileIds");
-            for (JsonValue jsv : fileIds) {
-                try {
-                    DataFile dataFile = findDataFileOrDie(jsv.toString());
-                    filesToRetention.add(dataFile);
-                } catch (WrappedResponse ex) {
-                    return ex.getResponse();
+            try {
+                JsonArray fileIds = json.getJsonArray("fileIds");
+                for (JsonValue jsv : fileIds) {
+                    try {
+                        DataFile dataFile = findDataFileOrDie(jsv.toString());
+                        filesToRetention.add(dataFile);
+                    } catch (WrappedResponse ex) {
+                        return ex.getResponse();
+                    }
                 }
+            } catch (ClassCastException ccex) {
+                return error(Status.BAD_REQUEST, "Invalid retention period; fileIds must be an array of id strings");
+            } catch (NullPointerException npex) {
+                return error(Status.BAD_REQUEST, "Invalid retention period; no fileIds specified");
             }
+        } else {
+            return error(Status.BAD_REQUEST, "No fileIds specified");
         }
 
         List<Retention> orphanedRetentions = new ArrayList<Retention>();
