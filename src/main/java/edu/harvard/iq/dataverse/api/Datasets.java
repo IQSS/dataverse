@@ -1731,11 +1731,11 @@ public class Datasets extends AbstractApiBean {
             minRetentionDurationInMonths  = Long.parseLong(settingsService.get(SettingsServiceBean.Key.MinRetentionDurationInMonths.toString()));
         } catch (NumberFormatException nfe){
             if (nfe.getMessage().contains("null")) {
-                return error(Status.BAD_REQUEST, "No Retentions allowed");
+                return error(Status.BAD_REQUEST, "No Retention periods allowed");
             }
         }
         if (minRetentionDurationInMonths == 0){
-            return error(Status.BAD_REQUEST, "No Retentions allowed");
+            return error(Status.BAD_REQUEST, "No Retention periods allowed");
         }
 
         JsonObject json = JsonUtil.getJsonObject(jsonBody);
@@ -1796,7 +1796,7 @@ public class Datasets extends AbstractApiBean {
             if (badFiles) {
                 return Response.status(Status.FORBIDDEN)
                         .entity(NullSafeJsonBuilder.jsonObjectBuilder().add("status", ApiConstants.STATUS_ERROR)
-                                .add("message", "You do not have permission to retention the following files")
+                                .add("message", "You do not have permission to set a retention period for the following files")
                                 .add("files", restrictedFiles).build())
                         .type(MediaType.APPLICATION_JSON_TYPE).build();
             }
@@ -1834,7 +1834,7 @@ public class Datasets extends AbstractApiBean {
                                     .setUserIdentifier(authenticatedUser.getIdentifier()));
                 }
             }
-            return ok(Json.createObjectBuilder().add("message", "Files were retentioned"));
+            return ok(Json.createObjectBuilder().add("message", "File(s) retention period has been set or updated"));
         } else {
             return error(BAD_REQUEST, "Not all files belong to dataset");
         }
@@ -1873,11 +1873,11 @@ public class Datasets extends AbstractApiBean {
             minRetentionDurationInMonths  = Integer.parseInt(settingsService.get(SettingsServiceBean.Key.MinRetentionDurationInMonths.toString()));
         } catch (NumberFormatException nfe){
             if (nfe.getMessage().contains("null")) {
-                return error(Status.BAD_REQUEST, "No Retentions allowed");
+                return error(Status.BAD_REQUEST, "No Retention periods allowed");
             }
         }
         if (minRetentionDurationInMonths == 0){
-            return error(Status.BAD_REQUEST, "No Retentions allowed");
+            return error(Status.BAD_REQUEST, "No Retention periods allowed");
         }
 
         JsonObject json = JsonUtil.getJsonObject(jsonBody);
@@ -1913,7 +1913,7 @@ public class Datasets extends AbstractApiBean {
             if (badFiles) {
                 return Response.status(Status.FORBIDDEN)
                         .entity(NullSafeJsonBuilder.jsonObjectBuilder().add("status", ApiConstants.STATUS_ERROR)
-                                .add("message", "The following files do not have retentions or you do not have permission to remove their retentions")
+                                .add("message", "The following files do not have retention periods or you do not have permission to remove their retention periods")
                                 .add("files", restrictedFiles).build())
                         .type(MediaType.APPLICATION_JSON_TYPE).build();
             }
@@ -1942,7 +1942,7 @@ public class Datasets extends AbstractApiBean {
                 removeRecord.setUserIdentifier(authenticatedUser.getIdentifier());
                 actionLogSvc.log(removeRecord);
             }
-            return ok(Json.createObjectBuilder().add("message", "Retention(s) were removed from files"));
+            return ok(Json.createObjectBuilder().add("message", "Retention periods were removed from file(s)"));
         } else {
             return error(BAD_REQUEST, "Not all files belong to dataset");
         }
