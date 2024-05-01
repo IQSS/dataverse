@@ -1914,22 +1914,35 @@ public class Datasets extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "No Retention periods allowed");
         }
 
-        JsonObject json = JsonUtil.getJsonObject(jsonBody);
+        JsonObject json;
+        try {
+            json = JsonUtil.getJsonObject(jsonBody);
+        } catch (JsonException ex) {
+            return error(Status.BAD_REQUEST, "Invalid JSON; error message: " + ex.getMessage());
+        }
 
         List<DataFile> datasetFiles = dataset.getFiles();
         List<DataFile> retentionFilesToUnset = new LinkedList<>();
 
         // extract fileIds from json, find datafiles and add to list
         if (json.containsKey("fileIds")){
-            JsonArray fileIds = json.getJsonArray("fileIds");
-            for (JsonValue jsv : fileIds) {
-                try {
-                    DataFile dataFile = findDataFileOrDie(jsv.toString());
-                    retentionFilesToUnset.add(dataFile);
-                } catch (WrappedResponse ex) {
-                    return ex.getResponse();
+            try {
+                JsonArray fileIds = json.getJsonArray("fileIds");
+                for (JsonValue jsv : fileIds) {
+                    try {
+                        DataFile dataFile = findDataFileOrDie(jsv.toString());
+                        retentionFilesToUnset.add(dataFile);
+                    } catch (WrappedResponse ex) {
+                        return ex.getResponse();
+                    }
                 }
+            } catch (ClassCastException ccex) {
+                return error(Status.BAD_REQUEST, "fileIds must be an array of id strings");
+            } catch (NullPointerException npex) {
+                return error(Status.BAD_REQUEST, "No fileIds specified");
             }
+        } else {
+            return error(Status.BAD_REQUEST, "No fileIds specified");
         }
 
         List<Retention> orphanedRetentions = new ArrayList<Retention>();
