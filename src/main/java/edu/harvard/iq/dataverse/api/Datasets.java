@@ -80,6 +80,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
@@ -1738,14 +1739,31 @@ public class Datasets extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "No Retention periods allowed");
         }
 
-        JsonObject json = JsonUtil.getJsonObject(jsonBody);
+        JsonObject json;
+        try {
+            json = JsonUtil.getJsonObject(jsonBody);
+        } catch (JsonException ex) {
+            return error(Status.BAD_REQUEST, "Invalid JSON; error message: " + ex.getMessage());
+        }
 
         Retention retention = new Retention();
 
 
         LocalDate currentDateTime = LocalDate.now();
-        LocalDate dateUnavailable = LocalDate.parse(json.getString("dateUnavailable"));
-        // TODO - check if dateUnavailable is specified and a valid date
+
+        // Extract the dateUnavailable - check if specified and valid
+        String dateUnavailableStr = "";
+        LocalDate dateUnavailable;
+        try {
+            dateUnavailableStr = json.getString("dateUnavailable");
+            dateUnavailable = LocalDate.parse(dateUnavailableStr);
+        } catch (NullPointerException npex) {
+            return error(Status.BAD_REQUEST, "Invalid retention period; no dateUnavailable specified");
+        } catch (ClassCastException ccex) {
+            return error(Status.BAD_REQUEST, "Invalid retention period; dateUnavailable must be a string");
+        } catch (DateTimeParseException dtpex) {
+            return error(Status.BAD_REQUEST, "Invalid date format for dateUnavailable: " + dateUnavailableStr);
+        }
 
         // check :MinRetentionDurationInMonths if -1
         LocalDate minRetentionDateTime = minRetentionDurationInMonths != -1 ? LocalDate.now().plusMonths(minRetentionDurationInMonths) : null;
