@@ -21,14 +21,8 @@
 package edu.harvard.iq.dataverse.util;
 
 
-import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Embargo;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
@@ -1238,6 +1232,9 @@ public class FileUtil implements java.io.Serializable  {
         if (isActivelyEmbargoed(fileMetadata)) {
             return false;
         }
+        if (isRetentionExpired(fileMetadata)) {
+            return false;
+        }
         boolean popupReasons = isDownloadPopupRequired(fileMetadata.getDatasetVersion());
         if (popupReasons == true) {
             /**
@@ -1791,6 +1788,29 @@ public class FileUtil implements java.io.Serializable  {
         return false;
     }
 
+    public static boolean isRetentionExpired(DataFile df) {
+        Retention e = df.getRetention();
+        if (e != null) {
+            LocalDate endDate = e.getDateUnavailable();
+            if (endDate != null && endDate.isBefore(LocalDate.now())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isRetentionExpired(FileMetadata fileMetadata) {
+        return isRetentionExpired(fileMetadata.getDataFile());
+    }
+
+    public static boolean isRetentionExpired(List<FileMetadata> fmdList) {
+        for (FileMetadata fmd : fmdList) {
+            if (isRetentionExpired(fmd)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public static String getStorageDriver(DataFile dataFile) {
         String storageIdentifier = dataFile.getStorageIdentifier();
