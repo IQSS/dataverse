@@ -330,7 +330,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                                 logger.warning("Ignoring External Vocabulary setting for non-existent child field: "
                                         + managedFields.getString(s));
                             } else {
-                                logger.info("Found: " + dft.getName());
+                                logger.fine("Found: " + dft.getName());
                             }
                         }
                     }
@@ -372,10 +372,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     /**
      * Retrieves indexable strings from a cached externalvocabularyvalue entry filtered through retrieval-filtering configuration.
      * <p>
-     * This method externalvocabularyvalue entries have been filtered and contains a single JsonObject.
-     * Is handled : Strings, Array of Objects with "lang" and ("value" or "content") keys, Object with Strings as value or Object with Array of Strings as value.
-     * The string, or the "value/content"s for each language are added to the set.
-     * This method can retrieve string values to be indexed in term-uri-field (parameter defined in CVOC configuration) or in "indexIn" field (optional parameter of retrieval-filtering defined in CVOC configuration).
+     * This method assumes externalvocabularyvalue entries have been filtered and that they contain a single JsonObject.
+     * Cases Handled : A String, an Array of Strings, an Array of Objects with "value" or "content" keys, an Object with one or more entries that have String values or Array values with a set of String values.
+     * The string(s), or the "value/content"s for each language are added to the set.
+     * Retrieved string values are indexed in the term-uri-field (parameter defined in CVOC configuration) by default, or in the field specified by an optional "indexIn" parameter in the retrieval-filtering defined in the CVOC configuration.
      * <p>
      * Any parsing error results in no entries (there can be unfiltered entries with
      * unknown structure - getting some strings from such an entry could give fairly
