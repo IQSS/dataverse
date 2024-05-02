@@ -1479,12 +1479,21 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return false;
         }
     }
+
+    public boolean isRetentionExpired(SolrSearchResult result) {
+        Long retentionEndDate = result.getRetentionEndDate();
+        if(retentionEndDate != null) {
+            return LocalDate.now().toEpochDay() > retentionEndDate;
+        } else {
+            return false;
+        }
+    }
     
     private DataverseRequest getDataverseRequest() {
         final HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         return new DataverseRequest(session.getUser(), httpServletRequest);
     }
-    
+
     public boolean isValid(SolrSearchResult result) {
         return result.isValid(x -> permissionsWrapper.canUpdateDataset(getDataverseRequest(), datasetService.find(x.getEntityId())));
     }

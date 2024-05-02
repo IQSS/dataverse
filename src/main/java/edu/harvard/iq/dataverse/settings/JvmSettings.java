@@ -51,6 +51,10 @@ public enum JvmSettings {
     DOCROOT_DIRECTORY(SCOPE_FILES, "docroot"),
     GUESTBOOK_AT_REQUEST(SCOPE_FILES, "guestbook-at-request"),
     GLOBUS_CACHE_MAXAGE(SCOPE_FILES, "globus-cache-maxage"),
+
+    //STORAGE DRIVER SETTINGS
+    SCOPE_DRIVER(SCOPE_FILES),
+    DISABLE_S3_TAGGING(SCOPE_DRIVER, "disable-tagging"),
     
     // SOLR INDEX SETTINGS
     SCOPE_SOLR(PREFIX, "solr"),
