@@ -2307,10 +2307,6 @@ public class DatasetPage implements java.io.Serializable {
         return valid;
     }
 
-    public boolean isValidOrCanReviewIncomplete() {
-        return isValid() || JvmSettings.UI_ALLOW_REVIEW_INCOMPLETE.lookupOptional(Boolean.class).orElse(false);
-    }
-
     private void displayLockInfo(Dataset dataset) {
         // Various info messages, when the dataset is locked (for various reasons):
         if (dataset.isLocked() && canUpdateDataset()) {
