@@ -836,15 +836,9 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
 
-        boolean valid;
-        if (!indexableDataset.getDatasetVersion().isDraft()) {
-            valid = true;
-        } else {
-            DatasetVersion version = indexableDataset.getDatasetVersion().cloneDatasetVersion();
-            version.setDatasetFields(version.initDatasetFields());
-            valid = version.isValid();
-        }
-        solrInputDocument.addField(SearchFields.DATASET_VALID, valid);
+        DatasetVersion version = indexableDataset.getDatasetVersion().cloneDatasetVersion();
+        version.setDatasetFields(version.initDatasetFields());
+        solrInputDocument.addField(SearchFields.DATASET_VALID, version.isValid());
 
         final Dataverse dataverse = dataset.getDataverseContext();
         final String dvIndexableCategoryName = dataverse.getIndexableCategoryName();
