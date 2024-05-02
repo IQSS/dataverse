@@ -837,7 +837,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
 
         DatasetVersion version = indexableDataset.getDatasetVersion().cloneDatasetVersion();
-        version.setDatasetFields(version.initDatasetFields());
+        version.setDatasetFields(version.initDatasetFields(true));
         solrInputDocument.addField(SearchFields.DATASET_VALID, version.isValid());
 
         final Dataverse dataverse = dataset.getDataverseContext();

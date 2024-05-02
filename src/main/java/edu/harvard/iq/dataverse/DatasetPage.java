@@ -2298,7 +2298,7 @@ public class DatasetPage implements java.io.Serializable {
         if (valid == null) {
             if (workingVersion.isDraft() || (canUpdateDataset() && JvmSettings.UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED.lookupOptional(Boolean.class).orElse(false))) {
                 final DatasetVersion newVersion = workingVersion.cloneDatasetVersion();
-                newVersion.setDatasetFields(newVersion.initDatasetFields());
+                newVersion.setDatasetFields(newVersion.initDatasetFields(true));
                 valid = newVersion.isValid();
             } else {
                 valid = true;

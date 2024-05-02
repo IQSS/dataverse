@@ -1585,6 +1585,10 @@ public class DatasetVersion implements Serializable {
     }
 
     public List<DatasetField> initDatasetFields() {
+        return initDatasetFields(false);
+    }
+
+    public List<DatasetField> initDatasetFields(boolean removeEmptyValues) {
         //retList - Return List of values
         List<DatasetField> retList = new ArrayList<>();
         //Running into null on create new dataset
@@ -1605,6 +1609,9 @@ public class DatasetVersion implements Serializable {
                     for (DatasetField dsf : retList) {
                         if (dsfType.equals(dsf.getDatasetFieldType())) {
                             add = false;
+                            if (removeEmptyValues) {
+                                removeEmptyValues(dsf);
+                            }
                             break;
                         }
                     }
@@ -1620,6 +1627,20 @@ public class DatasetVersion implements Serializable {
         Collections.sort(retList, DatasetField.DisplayOrder);
 
         return retList;
+    }
+
+    private void removeEmptyValues(DatasetField dsf) {
+        if (dsf.getDatasetFieldType().isPrimitive()) { // primitive
+            final Iterator<DatasetFieldValue> i = dsf.getDatasetFieldValues().iterator();
+            while (i.hasNext()) {
+                final String v = i.next().getValue();
+                if (StringUtils.isBlank(v) || DatasetField.NA_VALUE.equals(v)) {
+                    i.remove();
+                }
+            }
+        } else {
+            dsf.getDatasetFieldCompoundValues().forEach(cv -> cv.getChildDatasetFields().forEach(v -> removeEmptyValues(v)));
+        }
     }
 
     /**
