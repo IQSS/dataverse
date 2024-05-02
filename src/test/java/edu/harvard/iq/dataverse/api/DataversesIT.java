@@ -415,12 +415,13 @@ public class DataversesIT {
         Response superuserResponse = UtilIT.makeSuperUser(username);
         
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
-        createDataverseResponse.prettyPrint();
+        assertTrue(createDataverseResponse.prettyPrint().contains("isReleased\": false"));
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
         
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);//.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
+        assertTrue(publishDataverse.prettyPrint().contains("isReleased\": true"));
         
         Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse2.prettyPrint();

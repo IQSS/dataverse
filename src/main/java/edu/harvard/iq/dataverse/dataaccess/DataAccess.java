@@ -270,6 +270,10 @@ public class DataAccess {
         	logger.warning("Could not find storage driver for: " + storageTag);
         	throw new IOException("createDataAccessObject: Unsupported storage method " + storageDriverId);
         }
+        if (storageIO == null) {
+            logger.warning("Could not find storage driver for: " + storageTag);
+            throw new IOException("createDataAccessObject: Unsupported storage method " + storageDriverId);
+        }
         // Note: All storageIO classes must assure that dvObject instances' storageIdentifiers are prepended with 
         // the <driverId>:// + any additional storageIO type information required (e.g. the bucketname for s3/swift)
         // This currently happens when the storageIO is opened for write access

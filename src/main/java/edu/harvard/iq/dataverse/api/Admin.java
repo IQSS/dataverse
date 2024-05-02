@@ -1353,26 +1353,24 @@ public class Admin extends AbstractApiBean {
 
 	}
 
-	@Path("permissions/{dvo}")
-	@AuthRequired
-	@GET
-	public Response findPermissonsOn(@Context ContainerRequestContext crc, @PathParam("dvo") String dvo) {
-		try {
-			DvObject dvObj = findDvo(dvo);
-			if (dvObj == null) {
-				return notFound("DvObject " + dvo + " not found");
-			}
-			User aUser = getRequestUser(crc);
-			JsonObjectBuilder bld = Json.createObjectBuilder();
-			bld.add("user", aUser.getIdentifier());
-			bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
-			return ok(bld);
-
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error while testing permissions", e);
-			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
-		}
-	}
+    @Path("permissions/{dvo}")
+    @AuthRequired
+    @GET
+    public Response findPermissonsOn(@Context final ContainerRequestContext crc, @PathParam("dvo") final String dvo) {
+        try {
+            final DvObject dvObj = findDvo(dvo);
+            final User aUser = getRequestUser(crc);
+            final JsonObjectBuilder bld = Json.createObjectBuilder();
+            bld.add("user", aUser.getIdentifier());
+            bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
+            return ok(bld);
+        } catch (WrappedResponse r) {
+            return r.getResponse();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error while testing permissions", e);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
 
 	@Path("assignee/{idtf}")
 	@GET
