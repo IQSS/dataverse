@@ -662,10 +662,35 @@ public class DatasetsIT {
         UtilIT.publishDataverseViaNativeApi(collectionAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
 
+        //Set of tests on non-deaccesioned dataset 
+        String specificVersion = "1.0";        
+        boolean includeDeaccessioned = false;
+        Response datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.versionState", equalTo("RELEASED"))
+                .body("data.latestVersionPublishingState", equalTo("RELEASED"));
+
         // Upload another file: 
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
         Response uploadResponse2 = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile2, apiToken);
+        uploadResponse2.prettyPrint();
         uploadResponse2.then().assertThat().statusCode(OK.getStatusCode());
+
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiToken, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.versionState", equalTo("DRAFT"))
+                .body("data.latestVersionPublishingState", equalTo("DRAFT"));
+
+        datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
+        datasetVersion.prettyPrint();
+        datasetVersion.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.versionState", equalTo("RELEASED"))
+                .body("data.latestVersionPublishingState", equalTo("DRAFT"));
        
         // We should now have a published version, and a draft. 
         
@@ -712,13 +737,12 @@ public class DatasetsIT {
 
 
         
-        //Set of tests on non-deaccesioned dataset 
-        String specificVersion = "1.0";        
-        boolean includeDeaccessioned = false;
-        Response datasetVersion = null;
+
+        
         
         excludeFiles = true;
         //Latest published authorized token
+        //Latest published requested, draft exists and user has access to draft
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -726,6 +750,7 @@ public class DatasetsIT {
             .body("data.files", equalTo(null));
 
         //Latest published unauthorized token
+        //Latest published requested, draft exists but user doesn't have access to draft
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -733,6 +758,7 @@ public class DatasetsIT {
             .body("data.files", equalTo(null));
 
         //Latest authorized token
+        //Latest requested, draft exists and user has access to draft
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiToken, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -740,6 +766,7 @@ public class DatasetsIT {
             .body("data.files", equalTo(null));
 
         //Latest unauthorized token
+        //Latest requested, draft exists but user doesn't have access to draft
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -747,6 +774,7 @@ public class DatasetsIT {
             .body("data.files", equalTo(null));
 
         //Specific version authorized token
+        //Specific version requested, draft exists and user has access to draft
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiToken, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -754,6 +782,7 @@ public class DatasetsIT {
             .body("data.files", equalTo(null));
 
         //Specific version unauthorized token
+        //Specific version requested, draft exists but user doesn't have access to draft
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -763,6 +792,7 @@ public class DatasetsIT {
         excludeFiles = false;
         
         //Latest published authorized token
+        //Latest published requested, draft exists and user has access to draft
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -770,6 +800,7 @@ public class DatasetsIT {
             .body("data.files.size()", equalTo(1));
 
         //Latest published unauthorized token
+        //Latest published requested, draft exists but user doesn't have access to draft
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -777,6 +808,7 @@ public class DatasetsIT {
             .body("data.files.size()", equalTo(1));
 
         //Latest authorized token, user is authenticated should get the Draft version
+        //Latest requested, draft exists and user has access to draft
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiToken, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -784,6 +816,7 @@ public class DatasetsIT {
             .body("data.files.size()", equalTo(2));
 
         //Latest unauthorized token, user has no permissions should get the latest Published version
+        //Latest requested, draft exists but user doesn't have access to draft
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -791,6 +824,7 @@ public class DatasetsIT {
             .body("data.files.size()", equalTo(1));
 
         //Specific version authorized token
+        //Specific version requested, draft exists and user has access to draft
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiToken, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -798,6 +832,7 @@ public class DatasetsIT {
             .body("data.files.size()", equalTo(1));
 
         //Specific version unauthorized token
+        //Specific version requested, draft exists but user doesn't have access to draft
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -852,6 +887,7 @@ public class DatasetsIT {
         excludeFiles = true;
 
         //Latest published exclude files authorized token with deaccessioned dataset
+        //Latest published requested, that version was deaccessioned but a draft exist and the user has access to it.
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiToken, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -859,6 +895,7 @@ public class DatasetsIT {
             .body("data.files", equalTo(null));
 
         //Latest published exclude files, should get the DEACCESSIONED version
+        //Latest published requested, that version was deaccessioned but a draft exist but the user doesn't have access to it.
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST_PUBLISHED, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -866,6 +903,7 @@ public class DatasetsIT {
             .body("data.files", equalTo(null));
 
         //Latest authorized token should get the DRAFT version with no files
+        //Latest requested there is a draft and the user has access to it.
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiToken, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -873,6 +911,7 @@ public class DatasetsIT {
             .body("data.files", equalTo(null));
 
         //Latest unauthorized token excluding files, one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets
+        //Latest requested and latest version is deaccessioned and the user doesn't have access to the draft.
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -880,6 +919,7 @@ public class DatasetsIT {
             .body("data.files", equalTo(null));
 
         //Specific version authorized token
+        //Specific version requested (deaccesioned), the latest version is on draft amd the user has access to it.
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiToken, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -887,6 +927,7 @@ public class DatasetsIT {
             .body("data.files", equalTo(null));
 
         //Specific version unauthorized token requesting files, one version is DEACCESSIONED the second is DRAFT so shouldn't get any datasets.
+        //Specific version requested (deaccesioned), the latest version is on draft but the user doesn't have access to it.
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, specificVersion, apiTokenNoPerms, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -908,6 +949,7 @@ public class DatasetsIT {
         datasetVersion.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
         //Latest authorized token should get the DRAFT version
+        //Latest version requested, the user has access to the draft.
         datasetVersion = UtilIT.getDatasetVersion(datasetPid, DS_VERSION_LATEST, apiToken, excludeFiles, includeDeaccessioned);
         datasetVersion.prettyPrint();
         datasetVersion.then().assertThat().statusCode(OK.getStatusCode())
@@ -4093,6 +4135,21 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         fileMetadatasCount = getVersionFilesResponseEmbargoedThenRestricted.jsonPath().getList("data").size();
         assertEquals(1, fileMetadatasCount);
+
+
+        // Test Access Status Retention
+        UtilIT.setSetting(SettingsServiceBean.Key.MinRetentionDurationInMonths, "-1");
+        String retentionEndDate = LocalDate.now().plusMonths(240).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        // Create retention for test file 2 (Retention and Public)
+        Response createFileRetentionResponse = UtilIT.createFileRetention(datasetId, Integer.parseInt(testFileId2), retentionEndDate, apiToken);
+        createFileRetentionResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response getVersionFilesResponseRetentionPeriodExpired = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, FileSearchCriteria.FileAccessStatus.RetentionPeriodExpired.toString(), null, null, null, null, false, apiToken);
+        getVersionFilesResponseRetentionPeriodExpired.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("totalCount", equalTo(0));
 
         // Test Access Status Public
         Response getVersionFilesResponsePublic = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, FileSearchCriteria.FileAccessStatus.Public.toString(), null, null, null, null, false, apiToken);

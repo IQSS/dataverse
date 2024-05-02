@@ -32,7 +32,7 @@
                                                               and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
             <ui:param name="showReturnToAuthorLink" value="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
                                                              and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
-            <ui:param name="showAccessDatasetButtonGroup" value="#{DatasetPage.canDownloadFiles()
+            <ui:param name="showAccessDatasetButtonGroup" value="#{(DatasetPage.canDownloadFiles() or DatasetPage.versionHasGlobus)
                                                                    and (!DatasetPage.workingVersion.deaccessioned
                                                                    or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}"/>
             <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
@@ -139,6 +139,7 @@
                                             <!-- DATASET Publication Status -->
                                             <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
                                             <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{DatasetPage.isActivelyEmbargoed(DatasetPage.workingVersion.fileMetadatas)}"/>
+                                            <h:outputText value="#{bundle['retentionExpired']}" styleClass="label label-warning" rendered="#{DatasetPage.isRetentionExpired(DatasetPage.workingVersion.fileMetadatas)}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
@@ -235,20 +236,21 @@
                                                                 <h:outputText value="#{bundle['dataset.accessBtn.too.big']}">                                           
                                                                 </h:outputText>                                                            
                                                             </ui:fragment>
-                                                            <ui:fragment rendered="#{settingsWrapper.globusDownload and settingsWrapper.isGlobusEnabledStorageDriver(DatasetPage.dataset.effectiveStorageDriverId)}">
-                                                                <li>
-                                                                    <p:commandLink update="@form" oncomplete="showPopup(true);" 
-                                                                                       actionListener="#{DatasetPage.startGlobusTransfer(true, false)}" styleClass="btn-download">
-                                                                                #{bundle.transfer}
-                                                                        <h:outputFormat value="#{bundle['dataset.accessBtn.transfer.size']}">
-                                                                            <f:param value="#{DatasetPage.sizeOfDataset}" />
-                                                                        </h:outputFormat>
-                                                                        <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
-                                                                        </p:commandLink>
-                                                                </li>
-                                                            </ui:fragment>
-                                                            
                                                         </ui:fragment>
+                                                        <ui:fragment rendered="#{DatasetPage.versionHasGlobus}">
+                                                            <li>
+                                                                <p:commandLink update="@form" oncomplete="showPopup(true);" 
+                                                                                   actionListener="#{DatasetPage.startGlobusTransfer(true, false)}" styleClass="btn-download">
+                                                                            #{bundle.transfer}
+                                                                    <h:outputFormat value="#{bundle['dataset.accessBtn.transfer.size']}">
+                                                                        <f:param value="#{DatasetPage.sizeOfDataset}" />
+                                                                    </h:outputFormat>
+                                                                    <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
+                                                                    </p:commandLink>
+                                                            </li>
+                                                        </ui:fragment>
+                                                            
+
                                                                                                             
                                                         <!-- END: DOWNLOAD -->
                                                        
@@ -592,7 +594,7 @@
                                                         </span>
                                                 </div>
                                                 <!-- Make Data Count citations (DOIs only, not Handles) -->
-                                                <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled and DatasetPage.doi}">
+                                                <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled and DatasetPage.DOI}">
                                                     <p:commandLink oncomplete="PF('citationsDialog').show();">
                                                         <h:outputFormat value="{0} #{bundle['metrics.citations']}">
                                                             <f:param value="#{fn:length(datasetExternalCitationsServiceBean.getDatasetExternalCitationsByDataset(DatasetPage.dataset))}"/>
@@ -1003,8 +1005,10 @@
                         <ui:param name="bean" value="#{DatasetPage}"/>
                         <ui:param name="restrictFileAction" value="restrictFiles"/>
                         <ui:param name="deleteFileAction" value="deleteFiles"/>
-                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/> 
+                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/>
+                        <ui:param name="saveRetentionAction" value="saveRetention"/>
                         <ui:param name="updateElements" value=":datasetForm:embargoInputs"/>
+                        <ui:param name="updateRetentionElements" value=":datasetForm:retentionInputs"/>
                     </ui:include>
                     <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                         <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
@@ -1053,13 +1057,24 @@
                             </button>
                         </div>
                     </p:dialog>
-                    <p:dialog id="downloadInvalid" styleClass="smallPopUp" header="#{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.inValidSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
+                    <p:dialog id="downloadInvalid" styleClass="smallPopUp" header="#{DatasetPage.cantDownloadDueToEmbargoOrDVAccess ? bundle['dataset.inValidSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noValidSelectedFilesForDownload']}</p>
                         <ui:fragment rendered="#{DatasetPage.dataset.fileAccessRequest}">
-                            <p class="help-block">#{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.requestAccessToRestrictedFilesWithEmbargo'] : bundle['dataset.requestAccessToRestrictedFiles']}</p>
+                            <p class="help-block">#{DatasetPage.cantDownloadDueToEmbargoOrDVAccess ? bundle['dataset.requestAccessToRestrictedFilesWithEmbargo'] : bundle['dataset.requestAccessToRestrictedFiles']}</p>
                         </ui:fragment>
                         <div class="button-block">
                             <button class="btn btn-default" onclick="PF('downloadInvalid').hide();" type="button">
+                                #{bundle.close}
+                            </button>
+                        </div>
+                    </p:dialog>
+                    <p:dialog id="transferInvalid" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForTransfer']}" widgetVar="transferInvalid" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noValidSelectedFilesForTransfer']}</p>
+                        <ui:fragment rendered="#{DatasetPage.dataset.fileAccessRequest}">
+                            <p class="help-block">#{DatasetPage.cantDownloadDueToEmbargoOrDVAccess ? bundle['dataset.requestAccessToRestrictedFilesWithEmbargo'] : bundle['dataset.requestAccessToRestrictedFiles']}</p>
+                        </ui:fragment>
+                        <div class="button-block">
+                            <button class="btn btn-default" onclick="PF('transferInvalid').hide();" type="button">
                                 #{bundle.close}
                             </button>
                         </div>
@@ -1085,8 +1100,8 @@
                             </button>
                         </div>
                     </p:dialog>
-                    <p:dialog id="downloadMixed" styleClass="smallPopUp" header="#{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.inValidSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.mixedSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.mixedSelectedFilesForDownload']}</p>
+                    <p:dialog id="downloadMixed" styleClass="smallPopUp" header="#{DatasetPage.cantDownloadDueToEmbargoOrDVAccess ? bundle['dataset.inValidSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{DatasetPage.cantDownloadDueToEmbargoOrDVAccess ? bundle['dataset.mixedSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.mixedSelectedFilesForDownload']}</p>
                         <table>
                             <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadableFiles}" >
                                 <tr>
@@ -1970,7 +1985,11 @@
                             PF('downloadTooLarge').show();
                         }
                         if (outcome ==='FailRestricted'){
-                            PF('downloadInvalid').show();
+                            if(isTransfer) {
+                                PF('transferInvalid').show();
+                             } else {
+                                PF('downloadInvalid').show();
+                             }
                         }
                         if (outcome ==='GuestbookRequired'){
                             PF('guestbookAndTermsPopup').show();

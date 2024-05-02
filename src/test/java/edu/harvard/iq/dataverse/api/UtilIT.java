@@ -647,6 +647,21 @@ public class UtilIT {
                 .post("/api/dataverses/" + dataverseAlias + "/metadatablocks");
     }
 
+    static Response listMetadataBlocks(String dataverseAlias, boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("onlyDisplayedOnCreate", onlyDisplayedOnCreate)
+                .queryParam("returnDatasetFieldTypes", returnDatasetFieldTypes)
+                .get("/api/dataverses/" + dataverseAlias + "/metadatablocks");
+    }
+
+    static Response listMetadataBlocks(boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes) {
+        return given()
+                .queryParam("onlyDisplayedOnCreate", onlyDisplayedOnCreate)
+                .queryParam("returnDatasetFieldTypes", returnDatasetFieldTypes)
+                .get("/api/metadatablocks");
+    }
+
     static Response getMetadataBlock(String block) {
         return given()
                 .get("/api/metadatablocks/" + block);
@@ -1520,8 +1535,14 @@ public class UtilIT {
                 .get("/api/datasets/:persistentId/versions/" + DS_VERSION_LATEST_PUBLISHED + "/metadata/citation?persistentId=" + persistentId);
     }
 
+    @Deprecated
     static Response makeSuperUser(String username) {
         Response response = given().post("/api/admin/superuser/" + username);
+        return response;
+    }
+
+    static Response setSuperuserStatus(String username, Boolean isSuperUser) {
+        Response response = given().body(isSuperUser).put("/api/admin/superuser/" + username);
         return response;
     }
 
@@ -2497,6 +2518,21 @@ public class UtilIT {
         return requestSpecification.get("/api/datasets/" + idInPath + "/uploadurls?size=" + sizeInBytes + optionalQueryParam);
     }
 
+    /**
+     * If you set dataverse.files.localstack1.disable-tagging=true you will see
+     * an error like below.
+     *
+     * To avoid it, don't send the x-amz-tagging header.
+     */
+    /*
+    <Error>
+      <Code>AccessDenied</Code>
+      <Message>There were headers present in the request which were not signed</Message>
+      <RequestId>25ff2bb0-13c7-420e-8ae6-3d92677e4bd9</RequestId>
+      <HostId>9Gjjt1m+cjU4OPvX9O9/8RuvnG41MRb/18Oux2o5H5MY7ISNTlXN+Dz9IG62/ILVxhAGI0qyPfg=</HostId>
+      <HeadersNotSigned>x-amz-tagging</HeadersNotSigned>
+    </Error>
+     */
     static Response uploadFileDirect(String url, InputStream inputStream) {
         return given()
                 .header("x-amz-tagging", "dv-state=temp")
@@ -3263,6 +3299,33 @@ public class UtilIT {
                 .post("/api/roles?dvo="+dvAlias);
         return addBannerMessageResponse;
     }
+    
+    static Response addFeaturedDataverse (String dvAlias, String featuredDvAlias, String apiToken) {
+        
+        String jsonString = "[\"" + featuredDvAlias + "\"]";
+
+        Response addFeaturedDataverseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/dataverses/"+dvAlias+"/featured/");
+        return addFeaturedDataverseResponse;
+    }
+    
+    static Response deleteFeaturedDataverses (String dvAlias, String apiToken) {
+
+        Response deleteFeaturedDataversesResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/dataverses/"+dvAlias+"/featured/");
+        return deleteFeaturedDataversesResponse;
+    }
+    
+    static Response getFeaturedDataverses (String dvAlias, String apiToken) {
+
+        Response deleteFeaturedDataversesResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"+dvAlias+"/featured/");
+        return deleteFeaturedDataversesResponse;
+    }
 
     static Response deleteDataverseRole( String roleAlias, String apiToken) {
 
@@ -3694,6 +3757,20 @@ public class UtilIT {
                 .contentType("application/json")
                 .urlEncodingEnabled(false)
                 .post("/api/datasets/" + datasetId + "/files/actions/:set-embargo");
+    }
+
+    static Response createFileRetention(Integer datasetId, Integer fileId, String dateUnavailable, String apiToken) {
+        JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add("dateUnavailable", dateUnavailable);
+        jsonBuilder.add("reason", "This is a test retention");
+        jsonBuilder.add("fileIds", Json.createArrayBuilder().add(fileId));
+        String jsonString = jsonBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .contentType("application/json")
+                .urlEncodingEnabled(false)
+                .post("/api/datasets/" + datasetId + "/files/actions/:set-retention");
     }
 
     static Response getVersionFileCounts(Integer datasetId,

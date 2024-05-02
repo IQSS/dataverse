@@ -897,7 +897,8 @@ public class IndexServiceBean {
 
         if (dataset.isHarvested()) {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, true);
-            solrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
+            solrInputDocument.addField(SearchFields.METADATA_SOURCE,
+                                        dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getName() : HARVESTED);
         } else {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName); //rootDataverseName);
@@ -1217,12 +1218,13 @@ public class IndexServiceBean {
                         "We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
             }
             LocalDate embargoEndDate=null;
-            LocalDate end = null;
+            LocalDate retentionEndDate=null;
             final String datasetCitation = dataset.getCitation();
             final Long datasetId = dataset.getId();
             final String datasetGlobalId = dataset.getGlobalId().toString();
             for (FileMetadata fileMetadata : fileMetadatas) {
-               
+                LocalDate end = null;
+                LocalDate start = null;
                 Embargo emb= fileMetadata.getDataFile().getEmbargo();
                 if(emb!=null) {
                     end = emb.getDateAvailable();
@@ -1230,7 +1232,13 @@ public class IndexServiceBean {
                         embargoEndDate=end;
                     }
                 }
-
+                Retention ret= fileMetadata.getDataFile().getRetention();
+                if(ret!=null) {
+                    start = ret.getDateUnavailable();
+                    if(retentionEndDate==null || start.isBefore(retentionEndDate)) {
+                        retentionEndDate=start;
+                    }
+                }
                 boolean indexThisMetadata = true;
                 if (checkForDuplicateMetadata && !releasedFileMetadatas.isEmpty()) {
                     logger.fine("Checking if this file metadata is a duplicate.");
@@ -1262,10 +1270,14 @@ public class IndexServiceBean {
                     if(end!=null) {
                         datafileSolrInputDocument.addField(SearchFields.EMBARGO_END_DATE, end.toEpochDay()); 
                     }
-                    
+                    if(start!=null) {
+                        datafileSolrInputDocument.addField(SearchFields.RETENTION_END_DATE, start.toEpochDay());
+                    }
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
-                        if (!dataset.isHarvested() && !fileMetadata.getDataFile().isRestricted() && !fileMetadata.getDataFile().isFilePackage()) {
+                        if (!dataset.isHarvested() && !fileMetadata.getDataFile().isRestricted()
+                                && !fileMetadata.getDataFile().isFilePackage()
+                                && fileMetadata.getDataFile().getRetention() == null) {
                             StorageIO<DataFile> accessObject = null;
                             InputStream instream = null;
                             ContentHandler textHandler = null;
@@ -1368,11 +1380,13 @@ public class IndexServiceBean {
                                 logger.info(msg);
                             }
                             datafileSolrInputDocument.addField(SearchFields.ACCESS,
-                                    FileUtil.isActivelyEmbargoed(datafile)
-                                            ? (fileMetadata.isRestricted() ? SearchConstants.EMBARGOEDTHENRESTRICTED
-                                                    : SearchConstants.EMBARGOEDTHENPUBLIC)
-                                            : (fileMetadata.isRestricted() ? SearchConstants.RESTRICTED
-                                                    : SearchConstants.PUBLIC));
+                                    FileUtil.isRetentionExpired(datafile)
+                                        ? SearchConstants.RETENTIONEXPIRED :
+                                            FileUtil.isActivelyEmbargoed(datafile)
+                                                ? (fileMetadata.isRestricted() ? SearchConstants.EMBARGOEDTHENRESTRICTED
+                                                        : SearchConstants.EMBARGOEDTHENPUBLIC)
+                                                : (fileMetadata.isRestricted() ? SearchConstants.RESTRICTED
+                                                        : SearchConstants.PUBLIC));
                         } else {
                             logger.fine("indexing file with fileCreateTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
                             Timestamp fileCreateTimestamp = datafile.getCreateDate();
@@ -1540,6 +1554,9 @@ public class IndexServiceBean {
             }
             if(embargoEndDate!=null) {
               solrInputDocument.addField(SearchFields.EMBARGO_END_DATE, embargoEndDate.toEpochDay());
+            }
+            if(retentionEndDate!=null) {
+                solrInputDocument.addField(SearchFields.RETENTION_END_DATE, retentionEndDate.toEpochDay());
             }
         }
         Long datasetId = dataset.getId();

@@ -292,6 +292,7 @@ public class JsonPrinter {
         if (dv.getFilePIDsEnabled() != null) {
             bld.add("filePIDsEnabled", dv.getFilePIDsEnabled());
         }
+        bld.add("isReleased", dv.isReleased());
 
         return bld;
     }
@@ -415,18 +416,25 @@ public class JsonPrinter {
         return json(dsv, null, includeFiles, false);
     }
 
-    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList, boolean includeFiles, boolean returnOwners) {
+    public static JsonObjectBuilder json(DatasetVersion dsv, List<String> anonymizedFieldTypeNamesList, 
+        boolean includeFiles, boolean returnOwners) {
         Dataset dataset = dsv.getDataset();
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId()).add("datasetId", dataset.getId())
                 .add("datasetPersistentId", dataset.getGlobalId().asString())
                 .add("storageIdentifier", dataset.getStorageIdentifier())
-                .add("versionNumber", dsv.getVersionNumber()).add("versionMinorNumber", dsv.getMinorVersionNumber())
-                .add("versionState", dsv.getVersionState().name()).add("versionNote", dsv.getVersionNote())
-                .add("archiveNote", dsv.getArchiveNote()).add("deaccessionLink", dsv.getDeaccessionLink())
-                .add("distributionDate", dsv.getDistributionDate()).add("productionDate", dsv.getProductionDate())
+                .add("versionNumber", dsv.getVersionNumber())
+                .add("versionMinorNumber", dsv.getMinorVersionNumber())
+                .add("versionState", dsv.getVersionState().name())
+                .add("latestVersionPublishingState", dataset.getLatestVersion().getVersionState().name())
+                .add("versionNote", dsv.getVersionNote())
+                .add("archiveNote", dsv.getArchiveNote())
+                .add("deaccessionLink", dsv.getDeaccessionLink())
+                .add("distributionDate", dsv.getDistributionDate())
+                .add("productionDate", dsv.getProductionDate())
                 .add("UNF", dsv.getUNF()).add("archiveTime", format(dsv.getArchiveTime()))
-                .add("lastUpdateTime", format(dsv.getLastUpdateTime())).add("releaseTime", format(dsv.getReleaseTime()))
+                .add("lastUpdateTime", format(dsv.getLastUpdateTime()))
+                .add("releaseTime", format(dsv.getReleaseTime()))
                 .add("createTime", format(dsv.getCreateTime()))
                 .add("alternativePersistentId", dataset.getAlternativePersistentIdentifier())
                 .add("publicationDate", dataset.getPublicationDateFormattedYYYYMMDD())
@@ -580,6 +588,14 @@ public class JsonPrinter {
         return blockBld;
     }
 
+    public static JsonArrayBuilder json(List<MetadataBlock> metadataBlocks, boolean returnDatasetFieldTypes, boolean printOnlyDisplayedOnCreateDatasetFieldTypes) {
+        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        for (MetadataBlock metadataBlock : metadataBlocks) {
+            arrayBuilder.add(returnDatasetFieldTypes ? json(metadataBlock, printOnlyDisplayedOnCreateDatasetFieldTypes) : brief.json(metadataBlock));
+        }
+        return arrayBuilder;
+    }
+
     public static String typeClassString(DatasetFieldType typ) {
         if (typ.isControlledVocabulary()) {
             return "controlledVocabulary";
@@ -602,26 +618,34 @@ public class JsonPrinter {
         }
     }
 
-    public static JsonObjectBuilder json(MetadataBlock blk) {
-        JsonObjectBuilder bld = jsonObjectBuilder();
-        bld.add("id", blk.getId());
-        bld.add("name", blk.getName());
-        bld.add("displayName", blk.getDisplayName());
+    public static JsonObjectBuilder json(MetadataBlock metadataBlock) {
+        return json(metadataBlock, false);
+    }
 
-        JsonObjectBuilder fieldsBld = jsonObjectBuilder();
-        for (DatasetFieldType df : new TreeSet<>(blk.getDatasetFieldTypes())) {
-            fieldsBld.add(df.getName(), JsonPrinter.json(df));
+    public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes) {
+        JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder();
+        jsonObjectBuilder.add("id", metadataBlock.getId());
+        jsonObjectBuilder.add("name", metadataBlock.getName());
+        jsonObjectBuilder.add("displayName", metadataBlock.getDisplayName());
+        jsonObjectBuilder.add("displayOnCreate", metadataBlock.isDisplayOnCreate());
+
+        JsonObjectBuilder fieldsBuilder = jsonObjectBuilder();
+        for (DatasetFieldType datasetFieldType : new TreeSet<>(metadataBlock.getDatasetFieldTypes())) {
+            if (!printOnlyDisplayedOnCreateDatasetFieldTypes || datasetFieldType.isDisplayOnCreate()) {
+                fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType));
+            }
         }
 
-        bld.add("fields", fieldsBld);
+        jsonObjectBuilder.add("fields", fieldsBuilder);
 
-        return bld;
+        return jsonObjectBuilder;
     }
 
     public static JsonObjectBuilder json(DatasetFieldType fld) {
         JsonObjectBuilder fieldsBld = jsonObjectBuilder();
         fieldsBld.add("name", fld.getName());
         fieldsBld.add("displayName", fld.getDisplayName());
+        fieldsBld.add("displayOnCreate", fld.isDisplayOnCreate());
         fieldsBld.add("title", fld.getTitle());
         fieldsBld.add("type", fld.getFieldType().toString());
         fieldsBld.add("typeClass", typeClassString(fld));
@@ -726,6 +750,7 @@ public class JsonPrinter {
         String pidString = (filePid!=null)? filePid.asString(): "";
 
         JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
+        JsonObjectBuilder retention = df.getRetention() != null ? JsonPrinter.json(df.getRetention()) : null;
 
         NullSafeJsonBuilder builder = jsonObjectBuilder()
                 .add("id", df.getId())
@@ -738,6 +763,7 @@ public class JsonPrinter {
                 .add("description", fileMetadata.getDescription())
                 .add("categories", getFileCategories(fileMetadata))
                 .add("embargo", embargo)
+                .add("retention", retention)
                 //.add("released", df.isReleased())
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
@@ -1141,6 +1167,11 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(Embargo embargo) {
         return jsonObjectBuilder().add("dateAvailable", embargo.getDateAvailable().toString()).add("reason",
                 embargo.getReason());
+    }
+
+    public static JsonObjectBuilder json(Retention retention) {
+        return jsonObjectBuilder().add("dateUnavailable", retention.getDateUnavailable().toString()).add("reason",
+                retention.getReason());
     }
 
     public static JsonObjectBuilder json(License license) {

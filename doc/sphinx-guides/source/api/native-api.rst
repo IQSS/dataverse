@@ -447,6 +447,27 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/metadatablocks"
 
+This endpoint supports the following optional query parameters:
+
+- ``returnDatasetFieldTypes``: Whether or not to return the dataset field types present in each metadata block. If not set, the default value is false.
+- ``onlyDisplayedOnCreate``: Whether or not to return only the metadata blocks that are displayed on dataset creation. If ``returnDatasetFieldTypes`` is true, only the dataset field types shown on dataset creation will be returned within each metadata block. If not set, the default value is false.
+
+An example using the optional query parameters is presented below:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/dataverses/$ID/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/dataverses/root/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true"
+
 Define Metadata Blocks for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -563,6 +584,70 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/root/validateDatasetJson" -H 'Content-type:application/json' --upload-file dataset.json
 
 Note: you must have "Add Dataset" permission in the given collection to invoke this endpoint.
+
+List Featured Collections for a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The response is a JSON array of the alias strings of the featured collections of a given Dataverse collection identified by ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET "$SERVER_URL/api/dataverses/$ID/featured" 
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X GET "https://demo.dataverse.org/api/dataverses/root/featured" 
+
+
+Set Featured Collections for a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add featured collections to a given Dataverse collection identified by ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/dataverses/$ID/featured" --upload-file collection-alias.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/dataverses/root/featured" --upload-file collection-alias.json
+
+Where collection-alias.json contains a JSON encoded list of collections aliases to be featured (e.g. ``["collection1-alias","collection2-alias"]``).
+
+Note: You must have "Edit Dataverse" permission in the given Dataverse to invoke this endpoint. You may only feature collections that are published and owned by or linked to the featuring collection. Also, using this endpoint will only add new featured collections it will not remove collections that have already been featured.
+
+Remove Featured Collections from a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Remove featured collections from a given Dataverse collection identified by ``id``:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/dataverses/$ID/featured" 
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/dataverses/root/featured" 
+
+Note: You must have "Edit Dataverse" permission in the given Dataverse to invoke this endpoint.
 
 .. _create-dataset-command: 
 
@@ -995,7 +1080,7 @@ It returns a list of versions with their metadata, and file list:
     ]
   }
 
-The optional ``includeFiles`` parameter specifies whether the files should be listed in the output. It defaults to ``true``, preserving backward compatibility. (Note that for a dataset with a large number of versions and/or files having the files included can dramatically increase the volume of the output). A separate ``/files`` API can be used for listing the files, or a subset thereof in a given version. 
+The optional ``excludeFiles`` parameter specifies whether the files should be listed in the output. It defaults to ``true``, preserving backward compatibility. (Note that for a dataset with a large number of versions and/or files having the files included can dramatically increase the volume of the output). A separate ``/files`` API can be used for listing the files, or a subset thereof in a given version. 
 
 The optional ``offset`` and ``limit`` parameters can be used to specify the range of the versions list to be shown. This can be used to paginate through the list in a dataset with a large number of versions. 
 
@@ -1011,15 +1096,15 @@ Get Version of a Dataset
   export ID=24
   export VERSION=1.0
 
-  curl "$SERVER_URL/api/datasets/$ID/versions/$VERSION?includeFiles=false"
+  curl "$SERVER_URL/api/datasets/$ID/versions/$VERSION?excludeFiles=false"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0?includeFiles=false"
+  curl "https://demo.dataverse.org/api/datasets/24/versions/1.0?excludeFiles=false"
 
-The optional ``includeFiles`` parameter specifies whether the files should be listed in the output (defaults to ``true``). Note that a separate ``/files`` API can be used for listing the files, or a subset thereof in a given version. 
+The optional ``excludeFiles`` parameter specifies whether the files should be listed in the output (defaults to ``true``). Note that a separate ``/files`` API can be used for listing the files, or a subset thereof in a given version. 
 
 
 By default, deaccessioned dataset versions are not included in the search when applying the :latest or :latest-published identifiers. Additionally, when filtering by a specific version tag, you will get a "not found" error if the version is deaccessioned and you do not enable the ``includeDeaccessioned`` option described below.
@@ -1143,6 +1228,7 @@ File access filtering is also optionally supported. In particular, by the follow
 * ``Restricted``
 * ``EmbargoedThenRestricted``
 * ``EmbargoedThenPublic``
+* ``RetentionPeriodExpired``
 
 If no filter is specified, the files will match all of the above categories.
 
@@ -1192,7 +1278,7 @@ The returned file counts are based on different criteria:
 - Per content type
 - Per category name
 - Per tabular tag name
-- Per access status (Possible values: Public, Restricted, EmbargoedThenRestricted, EmbargoedThenPublic)
+- Per access status (Possible values: Public, Restricted, EmbargoedThenRestricted, EmbargoedThenPublic, RetentionPeriodExpired)
 
 .. code-block:: bash
 
@@ -1246,6 +1332,7 @@ File access filtering is also optionally supported. In particular, by the follow
 * ``Restricted``
 * ``EmbargoedThenRestricted``
 * ``EmbargoedThenPublic``
+* ``RetentionPeriodExpired``
 
 If no filter is specified, the files will match all of the above categories.
 
@@ -1928,7 +2015,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. _cleanup-storage-api:
 
-Cleanup storage of a Dataset
+Cleanup Storage of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This is an experimental feature and should be tested on your system before using it in production.
@@ -2061,6 +2148,7 @@ File access filtering is also optionally supported. In particular, by the follow
 * ``Restricted``
 * ``EmbargoedThenRestricted``
 * ``EmbargoedThenPublic``
+* ``RetentionPeriodExpired``
 
 If no filter is specified, the files will match all of the above categories.
 
@@ -2498,7 +2586,38 @@ The API call requires a Json body that includes the list of the fileIds that the
   export JSON='{"fileIds":[300,301]}'
 
   curl -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type:application/json" "$SERVER_URL/api/datasets/:persistentId/files/actions/:unset-embargo?persistentId=$PERSISTENT_IDENTIFIER" -d "$JSON"
-  
+
+Set a Retention Period on Files in a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``/api/datasets/$dataset-id/files/actions/:set-retention`` can be used to set a retention period on one or more files in a dataset. Retention periods can be set on files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser to add a retention period to files that have already been released as part of a previously published dataset version.
+
+The API call requires a Json body that includes the retention period's end date (dateUnavailable), a short reason (optional), and a list of the fileIds that the retention period should be set on. The dateUnavailable must be after the current date and the duration (dateUnavailable - today's date) must be larger than the value specified by the :ref:`:MinRetentionDurationInMonths` setting. All files listed must be in the specified dataset. For example:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
+  export JSON='{"dateUnavailable":"2051-12-31", "reason":"Standard project retention period", "fileIds":[300,301,302]}'
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type:application/json" "$SERVER_URL/api/datasets/:persistentId/files/actions/:set-retention?persistentId=$PERSISTENT_IDENTIFIER" -d "$JSON"
+
+Remove a Retention Period on Files in a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``/api/datasets/$dataset-id/files/actions/:unset-retention`` can be used to remove a retention period on one or more files in a dataset. Retention periods can be removed from files that are only in a draft dataset version (and are not in any previously published version) by anyone who can edit the dataset. The same API call can be used by a superuser to remove retention periods from files that have already been released as part of a previously published dataset version.
+
+The API call requires a Json body that includes the list of the fileIds that the retention period should be removed from. All files listed must be in the specified dataset. For example:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
+  export JSON='{"fileIds":[300,301]}'
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type:application/json" "$SERVER_URL/api/datasets/:persistentId/files/actions/:unset-retention?persistentId=$PERSISTENT_IDENTIFIER" -d "$JSON"
   
 .. _Archival Status API:
 
@@ -4455,6 +4574,25 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/metadatablocks"
 
+This endpoint supports the following optional query parameters:
+
+- ``returnDatasetFieldTypes``: Whether or not to return the dataset field types present in each metadata block. If not set, the default value is false.
+- ``onlyDisplayedOnCreate``: Whether or not to return only the metadata blocks that are displayed on dataset creation. If ``returnDatasetFieldTypes`` is true, only the dataset field types shown on dataset creation will be returned within each metadata block. If not set, the default value is false.
+
+An example using the optional query parameters is presented below:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/metadatablocks?returnDatasetFieldTypes=true&onlyDisplayedOnCreate=true"
+
 Show Info About Single Metadata Block
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -5372,12 +5510,46 @@ Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST  "https://demo.datavers
 
 This action changes the identifier of user johnsmith to jsmith.
 
-Make User a SuperUser
-~~~~~~~~~~~~~~~~~~~~~
+Toggle Superuser Status
+~~~~~~~~~~~~~~~~~~~~~~~
 
-Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
+Toggle the superuser status of a user.
 
-    POST http://$SERVER/api/admin/superuser/$identifier
+.. note:: This endpoint is deprecated as explained in :doc:`/api/changelog`. Please use the :ref:`set-superuser-status` endpoint instead.
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost:8080
+  export USERNAME=jdoe
+  curl -X POST "$SERVER_URL/api/admin/superuser/$USERNAME"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X POST "http://localhost:8080/api/admin/superuser/jdoe"
+
+.. _set-superuser-status:
+
+Set Superuser Status
+~~~~~~~~~~~~~~~~~~~~
+
+Specify the superuser status of a user with a boolean value (``true`` or ``false``).
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost:8080
+  export USERNAME=jdoe
+  export IS_SUPERUSER=true
+  curl -X PUT "$SERVER_URL/api/admin/superuser/$USERNAME" -d "$IS_SUPERUSER"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X PUT "http://localhost:8080/api/admin/superuser/jdoe" -d true
 
 .. _delete-a-user:
 
@@ -5508,6 +5680,17 @@ List permissions a user (based on API Token used) has on a Dataverse collection 
     GET http://$SERVER/api/admin/permissions/$identifier
 
 The ``$identifier`` can be a Dataverse collection alias or database id or a dataset persistent ID or database id.
+
+.. note:: Datasets can be selected using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the dataset is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
+
+Example: List permissions a user (based on API Token used) has on a dataset whose DOI is *10.5072/FK2/J8SJZB*:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/permissions/:persistentId?persistentId=$PERSISTENT_IDENTIFIER"
 
 Show Role Assignee
 ~~~~~~~~~~~~~~~~~~
@@ -5741,7 +5924,7 @@ Superusers can add a new license by posting a JSON file adapted from this exampl
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  curl -X POST -H 'Content-Type: application/json' -H "X-Dataverse-key:$API_TOKEN" --data-binary @add-license.json "$SERVER_URL/api/licenses"
+  curl -X POST -H 'Content-Type: application/json' -H "X-Dataverse-key:$API_TOKEN" --upload-file add-license.json "$SERVER_URL/api/licenses"
 
 Superusers can change whether an existing license is active (usable for new dataset versions) or inactive (only allowed on already-published versions) specified by the license ``$ID``:
 

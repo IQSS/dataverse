@@ -1189,11 +1189,30 @@ Larger installations may want to increase the number of open S3 connections allo
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.connection-pool-size=4096"``
 
+.. _s3-tagging:
+
+S3 Tagging
+##########
+
+By default, when direct upload to an S3 store is configured, Dataverse will place a ``temp`` tag on the file being uploaded for an easier cleanup in case the file is not added to the dataset after upload (e.g., if the user cancels the operation). (See :ref:`s3-tags-and-direct-upload`.)
+If your S3 store does not support tagging and gives an error when direct upload is configured, you can disable the tagging by using the ``dataverse.files.<id>.disable-tagging`` JVM option. For example:
+
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.disable-tagging=true"``
+
+Disabling the ``temp`` tag makes it harder to identify abandoned files that are not used by your Dataverse instance (i.e. one cannot search for the ``temp`` tag in a delete script). These should still be removed to avoid wasting storage space. To clean up these files and any other leftover files, regardless of whether the ``temp`` tag is applied, you can use the :ref:`cleanup-storage-api` API endpoint.
+
+Note that if you disable tagging, you should should omit the ``x-amz-tagging:dv-state=temp`` header when using the :doc:`/developers/s3-direct-upload-api`, as noted in that section.
+
+Finalizing S3 Configuration
+###########################
+
 In case you would like to configure Dataverse to use a custom S3 service instead of Amazon S3 services, please
 add the options for the custom URL and region as documented below. Please read above if your desired combination has
 been tested already and what other options have been set for a successful integration.
 
 Lastly, go ahead and restart your Payara server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
+
+.. _list-of-s3-storage-options:
 
 List of S3 Storage Options
 ##########################
@@ -1222,6 +1241,7 @@ List of S3 Storage Options
     dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                                     ``false``
     dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                                   ``true``
     dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                              ``256``
+    dataverse.files.<id>.disable-tagging         ``true``/``false``  Do not place the ``temp`` tag when redirecting the upload to the S3 server.          ``false``
     ===========================================  ==================  ===================================================================================  =============
 
 .. table::
@@ -4458,9 +4478,13 @@ A boolean setting that, if true, will send an email and notification to users wh
 :CVocConf
 +++++++++
 
-A JSON-structured setting that configures Dataverse to associate specific metadatablock fields with external vocabulary services and specific vocabularies/sub-vocabularies managed by that service. More information about this capability is available at :doc:`/admin/metadatacustomization`.
+The ``:CVocConf`` database setting is used to allow metadatablock fields to look up values in external vocabulary services. For example, you could configure the "Author Affiliation" field to look up organizations in the `Research Organization Registry (ROR) <https://ror.org>`_. For a high-level description of this feature, see :ref:`using-external-vocabulary-services` in the Admin Guide.
 
-Scripts that implement this association for specific service protocols are maintained at https://github.com/gdcc/dataverse-external-vocab-support. That repository also includes a json-schema for validating the structure required by this setting along with an example metadatablock and sample :CVocConf setting values associating entries in the example block with ORCID and SKOSMOS based services.
+The expected format for the ``:CVocConf`` database setting is JSON but the details are not documented here. Instead, please refer to `docs/readme.md <https://github.com/gdcc/dataverse-external-vocab-support/blob/main/docs/readme.md>`_ in the https://github.com/gdcc/dataverse-external-vocab-support repo.
+
+That repository also includes scripts that implement the lookup for specific service protocols, a JSON Schema for validating the structure required by this setting, and an example metadatablock with a sample ``:CVocConf`` config that associates fields in the example block with ORCID and SKOSMOS based services.
+
+The commands below should give you an idea of how to load the configuration, but you'll want to study the examples and make decisions about which configuration to use:
 
 ``wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json``
 
@@ -4524,6 +4548,18 @@ setting indicates embargoes are not supported. A value of -1 allows embargoes of
 can enter for an embargo end date. This limit will be enforced in the popup dialog in which users enter the embargo date. For example, to set a two year maximum:
 
 ``curl -X PUT -d 24 http://localhost:8080/api/admin/settings/:MaxEmbargoDurationInMonths``
+
+.. _:MinRetentionDurationInMonths:
+
+:MinRetentionDurationInMonths
++++++++++++++++++++++++++++++
+
+This setting controls whether retention periods are allowed in a Dataverse instance and can limit the minimum duration users are allowed to specify. A value of 0 months or non-existent
+setting indicates retention periods are not supported. A value of -1 allows retention periods of any length. Any other value indicates the minimum number of months (from the current date) a user
+can enter for a retention period end date. This limit will be enforced in the popup dialog in which users enter the retention period end date. For example, to set a ten year minimum:
+
+``curl -X PUT -d 120 http://localhost:8080/api/admin/settings/:MinRetentionDurationInMonths``
+
 
 :DataverseMetadataValidatorScript
 +++++++++++++++++++++++++++++++++

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import edu.harvard.iq.dataverse.*;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
@@ -16,14 +17,6 @@ import jakarta.json.JsonObjectBuilder;
 
 import org.apache.commons.collections4.CollectionUtils;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetRelPublication;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.util.DateUtil;
@@ -31,7 +24,6 @@ import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 public class SolrSearchResult {
-
 	private static final Logger logger = Logger.getLogger(SolrSearchResult.class.getCanonicalName());
 
 	private String id;
@@ -122,6 +114,8 @@ public class SolrSearchResult {
 	private String filePersistentId = null;
 
 	private Long embargoEndDate;
+
+	private Long retentionEndDate;
 
 	private boolean datasetValid;
 
@@ -403,15 +397,6 @@ public class SolrSearchResult {
 		return matchedFieldsArray;
 	}
 
-	public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
-		return toJsonObject(showRelevance, showEntityIds, showApiUrls, null);
-	}
-
-	public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds, boolean showApiUrls,
-			List<String> metadataFields) {
-		return json(showRelevance, showEntityIds, showApiUrls, metadataFields).build();
-	}
-
 	/**
 	 * Add additional fields for the MyData page
 	 *
@@ -450,12 +435,10 @@ public class SolrSearchResult {
 	} // getJsonForMydata
 
 	public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
-		return json(showRelevance, showEntityIds, showApiUrls, null);
+		return json(showRelevance, showEntityIds, showApiUrls, null, null);
 	}
 
-	public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls,
-			List<String> metadataFields) {
-
+	public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, List<String> metadataFields, Long datasetFileCount) {
 		if (this.type == null) {
 			return jsonObjectBuilder();
 		}
@@ -571,7 +554,7 @@ public class SolrSearchResult {
 					subjects.add(subject);
 				}
 				nullSafeJsonBuilder.add("subjects", subjects);
-				nullSafeJsonBuilder.add("fileCount", dv.getFileMetadatas().size());
+				nullSafeJsonBuilder.add("fileCount", datasetFileCount);
 				nullSafeJsonBuilder.add("versionId", dv.getId());
 				nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
 				if (this.isPublishedState()) {
@@ -1259,6 +1242,14 @@ public class SolrSearchResult {
 
 	public void setEmbargoEndDate(Long embargoEndDate) {
 		this.embargoEndDate = embargoEndDate;
+	}
+
+	public Long getRetentionEndDate() {
+		return retentionEndDate;
+	}
+
+	public void setRetentionEndDate(Long retentionEndDate) {
+		this.retentionEndDate = retentionEndDate;
 	}
 
 	public void setDatasetValid(Boolean datasetValid) {
