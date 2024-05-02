@@ -23,7 +23,7 @@
 	subject	Subject	The area of study relevant to the Dataset		text	19		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation	http://purl.org/dc/terms/subject
 	keyword	Keyword	A key term that describes an important aspect of the Dataset and information about any controlled vocabulary used		none	20		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation	
 	keywordValue	Term	A key term that describes important aspects of the Dataset		text	21	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	keyword	citation	
-	keywordTermURI	Term URI	Keyword URI points to the web presence of the term. Enter an absolute URI, starting by https://	https://	url	22	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation	
+	keywordTermURI	Term URI	A URI that points to the web presence of the Keyword Term	https://	url	22	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation	
 	keywordVocabulary	Controlled Vocabulary Name	The controlled vocabulary used for the keyword term (e.g. LCSH, MeSH)		text	23	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation	
 	keywordVocabularyURI	Controlled Vocabulary URL	The URL where one can access information about the term's controlled vocabulary	https://	url	24	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	citation
 	topicClassification	Topic Classification	Indicates a broad, important topic or subject that the Dataset covers and information about any controlled vocabulary used		none	25		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation	
