@@ -145,13 +145,6 @@ public class XmlWriterUtil {
         }
     }
 
-    public static boolean checkParentElement(XMLStreamWriter xmlw, String elementName, boolean elementAdded) throws XMLStreamException {
-        if (!elementAdded) {
-            xmlw.writeStartElement(elementName);
-        }
-
-        return true;
-    }
 
     public static void writeFullElementWithAttributes(XMLStreamWriter xmlw, String name, Map<String, String> attributeMap, String value) throws XMLStreamException {
         if (!StringUtils.isEmpty(value)) {
