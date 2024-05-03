@@ -959,6 +959,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             return true;
         }
         file.setPreviewImageFail(true);
+        file.setPreviewImageAvailable(false);
         this.save(file);
         return false;
     }
@@ -1242,9 +1243,8 @@ public class DataFileServiceBean implements java.io.Serializable {
      * Check that a identifier entered by the user is unique (not currently used
      * for any other study in this Dataverse Network). Also check for duplicate
      * in the remote PID service if needed
-     * @param userIdentifier
-     * @param datafile
-     * @param idServiceBean
+     * @param datafileId
+     * @param storageLocation
      * @return  {@code true} iff the global identifier is unique.
      */
     public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
@@ -1366,7 +1366,10 @@ public class DataFileServiceBean implements java.io.Serializable {
         DataFile d = find(id);
         return d.getEmbargo();
     }
-    
+
+    public boolean isRetentionExpired(FileMetadata fm) {
+        return FileUtil.isRetentionExpired(fm);
+    }
     /**
      * Checks if the supplied DvObjectContainer (Dataset or Collection; although
      * only collection-level storage quotas are officially supported as of now)

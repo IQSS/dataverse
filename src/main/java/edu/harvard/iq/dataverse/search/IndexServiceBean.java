@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -36,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -48,6 +48,8 @@ import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import static jakarta.ejb.TransactionAttributeType.REQUIRES_NEW;
+
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.JsonObject;
 import jakarta.persistence.EntityManager;
@@ -72,6 +74,9 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.Timer;
+import org.eclipse.microprofile.metrics.annotation.Metric;
 import org.xml.sax.ContentHandler;
 
 @Stateless
@@ -342,6 +347,29 @@ public class IndexServiceBean {
     private static final Map<Long, Dataset> NEXT_TO_INDEX = new ConcurrentHashMap<>();
     // indexingNow is a set of dataset ids of datasets being indexed asynchronously right now
     private static final Map<Long, Boolean> INDEXING_NOW = new ConcurrentHashMap<>();
+    // semaphore for async indexing
+    private static final Semaphore ASYNC_INDEX_SEMAPHORE = new Semaphore(JvmSettings.MAX_ASYNC_INDEXES.lookupOptional(Integer.class).orElse(4), true);
+    
+    @Inject
+    @Metric(name = "index_permit_wait_time", absolute = true, unit = MetricUnits.NANOSECONDS,
+            description = "Displays how long does it take to receive a permit to index a dataset")
+    Timer indexPermitWaitTimer;
+    
+    @Inject
+    @Metric(name = "index_time", absolute = true, unit = MetricUnits.NANOSECONDS,
+            description = "Displays how long does it take to index a dataset")
+    Timer indexTimer;
+    
+    /**
+     * Try to acquire a permit from the semaphore avoiding too many parallel indexes, potentially overwhelming Solr.
+     * This method will time the duration waiting for the permit, allowing indexing performance to be measured.
+     * @throws InterruptedException
+     */
+    private void acquirePermitFromSemaphore() throws InterruptedException {
+        try (var timeContext = indexPermitWaitTimer.time()) {
+            ASYNC_INDEX_SEMAPHORE.acquire();
+        }
+    }
 
     // When you pass null as Dataset parameter to this method, it indicates that the indexing of the dataset with "id" has finished
     // Pass non-null Dataset to schedule it for indexing
@@ -386,10 +414,24 @@ public class IndexServiceBean {
      */
     @Asynchronous
     public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
+        try {
+            acquirePermitFromSemaphore();
+            doAyncIndexDataset(dataset, doNormalSolrDocCleanUp);
+        } catch (InterruptedException e) {
+            String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+        } finally {
+            ASYNC_INDEX_SEMAPHORE.release();
+        }
+    }
+
+    private void doAyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
         Long id = dataset.getId();
         Dataset next = getNextToIndex(id, dataset); // if there is an ongoing index job for this dataset, next is null (ongoing index job will reindex the newest version after current indexing finishes)
         while (next != null) {
-            try {
+            // Time context will automatically start on creation and stop when leaving the try block
+            try (var timeContext = indexTimer.time()) {
                 indexDataset(next, doNormalSolrDocCleanUp);
             } catch (Exception e) { // catch all possible exceptions; otherwise when something unexpected happes the dataset wold remain locked and impossible to reindex
                 String failureLogText = "Indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
@@ -403,7 +445,16 @@ public class IndexServiceBean {
     @Asynchronous
     public void asyncIndexDatasetList(List<Dataset> datasets, boolean doNormalSolrDocCleanUp) {
         for(Dataset dataset : datasets) {
-            asyncIndexDataset(dataset, true);
+            try {
+                acquirePermitFromSemaphore();
+                doAyncIndexDataset(dataset, true);
+            } catch (InterruptedException e) {
+                String failureLogText = "Indexing failed: interrupted. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+                failureLogText += "\r\n" + e.getLocalizedMessage();
+                LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataset);
+            } finally {
+                ASYNC_INDEX_SEMAPHORE.release();
+            }
         }
     }
     
@@ -415,7 +466,7 @@ public class IndexServiceBean {
         }
     }
 
-    private void indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
+    public void indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         doIndexDataset(dataset, doNormalSolrDocCleanUp);
         updateLastIndexedTime(dataset.getId());
     }
@@ -784,6 +835,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.DATASET_PERSISTENT_ID, dataset.getGlobalId().toString());
         solrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
+
         boolean valid;
         if (!indexableDataset.getDatasetVersion().isDraft()) {
             valid = true;
@@ -845,7 +897,8 @@ public class IndexServiceBean {
 
         if (dataset.isHarvested()) {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, true);
-            solrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
+            solrInputDocument.addField(SearchFields.METADATA_SOURCE,
+                                        dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getName() : HARVESTED);
         } else {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName); //rootDataverseName);
@@ -854,6 +907,8 @@ public class IndexServiceBean {
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
         String parentDatasetTitle = "TBD";
         if (datasetVersion != null) {
+
+            addLicenseToSolrDoc(solrInputDocument, datasetVersion);
 
             solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
             solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(false));
@@ -956,22 +1011,39 @@ public class IndexServiceBean {
                             }
                         }
                         if (dsfType.isControlledVocabulary()) {
-                            for (ControlledVocabularyValue controlledVocabularyValue : dsf.getControlledVocabularyValues()) {
-                                if (controlledVocabularyValue.getStrValue().equals(DatasetField.NA_VALUE)) {
-                                    continue;
-                                }
+                            /** If the cvv list is empty but the dfv list is not then it is assumed this was harvested
+                             *  from an installation that had controlled vocabulary entries that don't exist in our this db
+                             * @see <a href="https://github.com/IQSS/dataverse/issues/9992">Feature Request/Idea: Harvest metadata values that aren't from a list of controlled values #9992</a>
+                             */
+                            if (dsf.getControlledVocabularyValues().isEmpty()) {
+                                for (DatasetFieldValue dfv : dsf.getDatasetFieldValues()) {
+                                    if (dfv.getValue() == null || dfv.getValue().equals(DatasetField.NA_VALUE)) {
+                                        continue;
+                                    }
+                                    solrInputDocument.addField(solrFieldSearchable, dfv.getValue());
 
-                                // Index in all used languages (display and metadata languages
-                                if (!dsfType.isAllowMultiples() || langs.isEmpty()) {
-                                    solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getStrValue());
-                                } else {
-                                    for(String locale: langs) {
-                                        solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getLocaleStrValue(locale));
+                                    if (dsfType.getSolrField().isFacetable()) {
+                                        solrInputDocument.addField(solrFieldFacetable, dfv.getValue());
                                     }
                                 }
+                            } else {
+                                for (ControlledVocabularyValue controlledVocabularyValue : dsf.getControlledVocabularyValues()) {
+                                    if (controlledVocabularyValue.getStrValue().equals(DatasetField.NA_VALUE)) {
+                                        continue;
+                                    }
 
-                                if (dsfType.getSolrField().isFacetable()) {
-                                    solrInputDocument.addField(solrFieldFacetable, controlledVocabularyValue.getStrValue());
+                                    // Index in all used languages (display and metadata languages
+                                    if (!dsfType.isAllowMultiples() || langs.isEmpty()) {
+                                        solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getStrValue());
+                                    } else {
+                                        for(String locale: langs) {
+                                            solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getLocaleStrValue(locale));
+                                        }
+                                    }
+
+                                    if (dsfType.getSolrField().isFacetable()) {
+                                        solrInputDocument.addField(solrFieldFacetable, controlledVocabularyValue.getStrValue());
+                                    }
                                 }
                             }
                         } else if (dsfType.getFieldType().equals(DatasetFieldType.FieldType.TEXTBOX)) {
@@ -1112,12 +1184,13 @@ public class IndexServiceBean {
                         "We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
             }
             LocalDate embargoEndDate=null;
-            LocalDate end = null;
+            LocalDate retentionEndDate=null;
             final String datasetCitation = dataset.getCitation();
             final Long datasetId = dataset.getId();
             final String datasetGlobalId = dataset.getGlobalId().toString();
             for (FileMetadata fileMetadata : fileMetadatas) {
-               
+                LocalDate end = null;
+                LocalDate start = null;
                 Embargo emb= fileMetadata.getDataFile().getEmbargo();
                 if(emb!=null) {
                     end = emb.getDateAvailable();
@@ -1125,7 +1198,13 @@ public class IndexServiceBean {
                         embargoEndDate=end;
                     }
                 }
-
+                Retention ret= fileMetadata.getDataFile().getRetention();
+                if(ret!=null) {
+                    start = ret.getDateUnavailable();
+                    if(retentionEndDate==null || start.isBefore(retentionEndDate)) {
+                        retentionEndDate=start;
+                    }
+                }
                 boolean indexThisMetadata = true;
                 if (checkForDuplicateMetadata && !releasedFileMetadatas.isEmpty()) {
                     logger.fine("Checking if this file metadata is a duplicate.");
@@ -1157,10 +1236,14 @@ public class IndexServiceBean {
                     if(end!=null) {
                         datafileSolrInputDocument.addField(SearchFields.EMBARGO_END_DATE, end.toEpochDay()); 
                     }
-                    
+                    if(start!=null) {
+                        datafileSolrInputDocument.addField(SearchFields.RETENTION_END_DATE, start.toEpochDay());
+                    }
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
-                        if (!dataset.isHarvested() && !fileMetadata.getDataFile().isRestricted() && !fileMetadata.getDataFile().isFilePackage()) {
+                        if (!dataset.isHarvested() && !fileMetadata.getDataFile().isRestricted()
+                                && !fileMetadata.getDataFile().isFilePackage()
+                                && fileMetadata.getDataFile().getRetention() == null) {
                             StorageIO<DataFile> accessObject = null;
                             InputStream instream = null;
                             ContentHandler textHandler = null;
@@ -1242,6 +1325,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameCompleteFinal);
 
                     datafileSolrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
+                    addLicenseToSolrDoc(datafileSolrInputDocument, datasetVersion);
 
                     /**
                      * for rules on sorting files see
@@ -1262,11 +1346,13 @@ public class IndexServiceBean {
                                 logger.info(msg);
                             }
                             datafileSolrInputDocument.addField(SearchFields.ACCESS,
-                                    FileUtil.isActivelyEmbargoed(datafile)
-                                            ? (fileMetadata.isRestricted() ? SearchConstants.EMBARGOEDTHENRESTRICTED
-                                                    : SearchConstants.EMBARGOEDTHENPUBLIC)
-                                            : (fileMetadata.isRestricted() ? SearchConstants.RESTRICTED
-                                                    : SearchConstants.PUBLIC));
+                                    FileUtil.isRetentionExpired(datafile)
+                                        ? SearchConstants.RETENTIONEXPIRED :
+                                            FileUtil.isActivelyEmbargoed(datafile)
+                                                ? (fileMetadata.isRestricted() ? SearchConstants.EMBARGOEDTHENRESTRICTED
+                                                        : SearchConstants.EMBARGOEDTHENPUBLIC)
+                                                : (fileMetadata.isRestricted() ? SearchConstants.RESTRICTED
+                                                        : SearchConstants.PUBLIC));
                         } else {
                             logger.fine("indexing file with fileCreateTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
                             Timestamp fileCreateTimestamp = datafile.getCreateDate();
@@ -1435,6 +1521,9 @@ public class IndexServiceBean {
             if(embargoEndDate!=null) {
               solrInputDocument.addField(SearchFields.EMBARGO_END_DATE, embargoEndDate.toEpochDay());
             }
+            if(retentionEndDate!=null) {
+                solrInputDocument.addField(SearchFields.RETENTION_END_DATE, retentionEndDate.toEpochDay());
+            }
         }
         Long datasetId = dataset.getId();
         final String msg = "indexed dataset " + datasetId + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
@@ -1475,6 +1564,7 @@ public class IndexServiceBean {
         DvObject dvObjectToModify = em.find(DvObject.class, id);
         dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
         dvObjectToModify = em.merge(dvObjectToModify);
+        em.flush();
     }
 
     /**
@@ -1609,6 +1699,16 @@ public class IndexServiceBean {
             subtrees.add(pathBuilder.toString());
         }
         return subtrees;
+    }
+
+    private void addLicenseToSolrDoc(SolrInputDocument solrInputDocument, DatasetVersion datasetVersion) {
+        if (datasetVersion != null && datasetVersion.getTermsOfUseAndAccess() != null) {
+            String licenseName = "Custom Terms";
+            if(datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
+                licenseName = datasetVersion.getTermsOfUseAndAccess().getLicense().getName();
+            }
+            solrInputDocument.addField(SearchFields.DATASET_LICENSE, licenseName);
+        }
     }
 
     private void addDataverseReleaseDateToSolrDoc(SolrInputDocument solrInputDocument, Dataverse dataverse) {

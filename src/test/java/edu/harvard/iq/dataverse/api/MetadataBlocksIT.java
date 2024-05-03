@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -20,7 +22,42 @@ public class MetadataBlocksIT {
     }
 
     @Test
-    void testGetCitationBlock() {
+    void testListMetadataBlocks() {
+        // No optional params enabled
+        Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks(false, false);
+        int expectedDefaultNumberOfMetadataBlocks = 6;
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", equalTo(null))
+                .body("data.size()", equalTo(expectedDefaultNumberOfMetadataBlocks));
+
+        // onlyDisplayedOnCreate=true
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(true, false);
+        int expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks = 1;
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", equalTo(null))
+                .body("data[0].displayName", equalTo("Citation Metadata"))
+                .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks));
+
+        // returnDatasetFieldTypes=true
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(false, true);
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data.size()", equalTo(expectedDefaultNumberOfMetadataBlocks));
+
+        // onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(true, true);
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data[0].displayName", equalTo("Citation Metadata"))
+                .body("data.size()", equalTo(expectedOnlyDisplayedOnCreateNumberOfMetadataBlocks));
+    }
+
+    @Test
+    void testGetMetadataBlock() {
         Response getCitationBlock = UtilIT.getMetadataBlock("citation");
         getCitationBlock.prettyPrint();
         getCitationBlock.then().assertThat()

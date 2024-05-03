@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -15,6 +16,11 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.exception.RateLimitCommandException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
@@ -36,6 +42,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -390,9 +397,34 @@ public abstract class AbstractApiBean {
             }
         }
     }
-    
+
+    protected DatasetVersion findDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
+        DatasetVersion dsv = execCommand(handleVersion(versionNumber, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
+
+            @Override
+            public Command<DatasetVersion> handleLatest() {
+                return new GetLatestAccessibleDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
+            }
+
+            @Override
+            public Command<DatasetVersion> handleDraft() {
+                return new GetDraftDatasetVersionCommand(req, ds);
+            }
+
+            @Override
+            public Command<DatasetVersion> handleSpecific(long major, long minor) {
+                return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor, includeDeaccessioned, checkPermsWhenDeaccessioned);
+            }
+
+            @Override
+            public Command<DatasetVersion> handleLatestPublished() {
+                return new GetLatestPublishedDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
+            }
+        }));
+        return dsv;
+    }
+
     protected DataFile findDataFileOrDie(String id) throws WrappedResponse {
-        
         DataFile datafile;
         if (id.equals(PERSISTENT_ID_KEY)) {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
@@ -500,17 +532,21 @@ public abstract class AbstractApiBean {
      * with that alias. If that fails, tries to get a {@link Dataset} with that global id.
      * @param id a value identifying the DvObject, either numeric of textual.
      * @return A DvObject, or {@code null}
+     * @throws WrappedResponse
      */
-	protected DvObject findDvo( String id ) {
-        if ( isNumeric(id) ) {
-            return findDvo( Long.valueOf(id)) ;
+    @NotNull
+    protected DvObject findDvo(@NotNull final String id) throws WrappedResponse {
+        DvObject d = null;
+        if (isNumeric(id)) {
+            d = findDvo(Long.valueOf(id));
         } else {
-            Dataverse d = dataverseSvc.findByAlias(id);
-            return ( d != null ) ?
-                    d : datasetSvc.findByGlobalId(id);
-
+            d = dataverseSvc.findByAlias(id);
         }
-	}
+        if (d == null) {
+            return findDatasetOrDie(id);
+        }
+        return d;
+    }
 
     protected <T> T failIfNull( T t, String errorMessage ) throws WrappedResponse {
         if ( t != null ) return t;
@@ -545,6 +581,8 @@ public abstract class AbstractApiBean {
         try {
             return engineSvc.submit(cmd);
 
+        } catch (RateLimitCommandException ex) {
+            throw new WrappedResponse(rateLimited(ex.getMessage()));
         } catch (IllegalCommandException ex) {
             //for 8859 for api calls that try to update datasets with TOA out of compliance
                 if (ex.getMessage().toLowerCase().contains("terms of use")){
@@ -746,11 +784,15 @@ public abstract class AbstractApiBean {
     protected Response badRequest( String msg ) {
         return error( Status.BAD_REQUEST, msg );
     }
-    
+
     protected Response forbidden( String msg ) {
         return error( Status.FORBIDDEN, msg );
     }
-    
+
+    protected Response rateLimited( String msg ) {
+        return error( Status.TOO_MANY_REQUESTS, msg );
+    }
+
     protected Response conflict( String msg ) {
         return error( Status.CONFLICT, msg );
     }
