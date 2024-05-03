@@ -1428,6 +1428,8 @@ public class OpenAireExportUtil {
         writeEndTag(xmlw, fundingReference_check);
     }
 
+    
+    //Duplicates XmlWriterUtil.dto2Primitive
     private static String dto2Primitive(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
         // give the single value of the given metadata
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
