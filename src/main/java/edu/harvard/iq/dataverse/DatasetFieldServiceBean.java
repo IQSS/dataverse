@@ -457,7 +457,6 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * @param term                  - the term uri as a string
      * @param relatedDatasetFields  - siblings or childs of the term
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void registerExternalTerm(JsonObject cvocEntry, String term, List<DatasetField> relatedDatasetFields) {
         String retrievalUri = cvocEntry.getString("retrieval-uri");
         String termUriFieldName = cvocEntry.getString("term-uri-field");
