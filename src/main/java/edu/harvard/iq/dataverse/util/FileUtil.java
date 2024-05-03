@@ -21,14 +21,8 @@
 package edu.harvard.iq.dataverse.util;
 
 
-import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Embargo;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
@@ -501,24 +495,15 @@ public class FileUtil implements java.io.Serializable  {
 
         if ("application/x-gzip".equals(fileType)) {
             logger.fine("we'll run additional checks on this gzipped file.");
-            // We want to be able to support gzipped FITS files, same way as
-            // if they were just regular FITS files:
-            FileInputStream gzippedIn = new FileInputStream(f);
-            // (new FileInputStream() can throw a "filen not found" exception;
-            // however, if we've made it this far, it really means that the 
-            // file does exist and can be opened)
-            InputStream uncompressedIn = null; 
-            try {
-                uncompressedIn = new GZIPInputStream(gzippedIn);
+            try (FileInputStream gzippedIn = new FileInputStream(f);
+                     InputStream uncompressedIn = new GZIPInputStream(gzippedIn)) {
                 if (isFITSFile(uncompressedIn)) {
                     fileType = "application/fits-gzipped";
                 }
             } catch (IOException ioex) {
-                if (uncompressedIn != null) {
-                    try {uncompressedIn.close();} catch (IOException e) {}
-                }
+                logger.warning("IOException while processing gzipped FITS file: " + ioex.getMessage());
             }
-        } 
+        }
         if ("application/zip".equals(fileType)) {
             
             // Is this a zipped Shapefile?
@@ -1199,34 +1184,12 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static boolean isTermsPopupRequired(DatasetVersion datasetVersion) {
-
-        if (datasetVersion == null) {
-            logger.fine("TermsPopup not required because datasetVersion is null.");
+        Boolean answer = popupDueToStateOrTerms(datasetVersion);
+        if(answer == null) {
+            logger.fine("TermsPopup is not required.");
             return false;
         }
-        //0. if version is draft then Popup "not required"
-        if (!datasetVersion.isReleased()) {
-            logger.fine("TermsPopup not required because datasetVersion has not been released.");
-            return false;
-        }
-        // 1. License and Terms of Use:
-        if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            if (!License.CC0.equals(datasetVersion.getTermsOfUseAndAccess().getLicense())
-                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
-                    || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
-                logger.fine("TermsPopup required because of license or terms of use.");
-                return true;
-            }
-
-            // 2. Terms of Access:
-            if (!(datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
-                logger.fine("TermsPopup required because of terms of access.");
-                return true;
-            }
-        }
-
-        logger.fine("TermsPopup is not required.");
-        return false;
+        return answer;
     }
     
     /**
@@ -1243,6 +1206,9 @@ public class FileUtil implements java.io.Serializable  {
             return false;
         }
         if (isActivelyEmbargoed(fileMetadata)) {
+            return false;
+        }
+        if (isRetentionExpired(fileMetadata)) {
             return false;
         }
         boolean popupReasons = isDownloadPopupRequired(fileMetadata.getDatasetVersion());
@@ -1796,6 +1762,35 @@ public class FileUtil implements java.io.Serializable  {
             }
         }
         return false;
+    }
+
+    public static boolean isRetentionExpired(DataFile df) {
+        Retention e = df.getRetention();
+        if (e != null) {
+            LocalDate endDate = e.getDateUnavailable();
+            if (endDate != null && endDate.isBefore(LocalDate.now())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isRetentionExpired(FileMetadata fileMetadata) {
+        return isRetentionExpired(fileMetadata.getDataFile());
+    }
+
+    public static boolean isRetentionExpired(List<FileMetadata> fmdList) {
+        for (FileMetadata fmd : fmdList) {
+            if (isRetentionExpired(fmd)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String getStorageDriver(DataFile dataFile) {
+        String storageIdentifier = dataFile.getStorageIdentifier();
+        return storageIdentifier.substring(0, storageIdentifier.indexOf(DataAccess.SEPARATOR));
     }
     
 }

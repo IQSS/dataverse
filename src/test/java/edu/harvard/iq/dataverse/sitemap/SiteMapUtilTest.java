@@ -1,11 +1,11 @@
 package edu.harvard.iq.dataverse.sitemap;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlValidator;
 import java.io.File;
@@ -66,14 +66,14 @@ class SiteMapUtilTest {
         List<Dataset> datasets = new ArrayList<>();
 
         Dataset published = new Dataset();
-        published.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL, "10.666", "FAKE/published1", null, DOIServiceBean.DOI_RESOLVER_URL, null));
+        published.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.666", "FAKE/published1", null, AbstractDOIProvider.DOI_RESOLVER_URL, null));
         String publishedPid = published.getGlobalId().asString();
         published.setPublicationDate(new Timestamp(new Date().getTime()));
         published.setModificationTime(new Timestamp(new Date().getTime()));
         datasets.add(published);
 
         Dataset unpublished = new Dataset();
-        unpublished.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL, "10.666", "FAKE/unpublished1", null, DOIServiceBean.DOI_RESOLVER_URL, null));
+        unpublished.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.666", "FAKE/unpublished1", null, AbstractDOIProvider.DOI_RESOLVER_URL, null));
         String unpublishedPid = unpublished.getGlobalId().asString();
 
         Timestamp nullPublicationDateToIndicateNotPublished = null;
@@ -81,14 +81,14 @@ class SiteMapUtilTest {
         datasets.add(unpublished);
 
         Dataset harvested = new Dataset();
-        harvested.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL, "10.666", "FAKE/harvested1", null, DOIServiceBean.DOI_RESOLVER_URL, null));
+        harvested.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.666", "FAKE/harvested1", null, AbstractDOIProvider.DOI_RESOLVER_URL, null));
         String harvestedPid = harvested.getGlobalId().asString();
         harvested.setPublicationDate(new Timestamp(new Date().getTime()));
         harvested.setHarvestedFrom(new HarvestingClient());
         datasets.add(harvested);
 
         Dataset deaccessioned = new Dataset();
-        deaccessioned.setGlobalId(new GlobalId(DOIServiceBean.DOI_PROTOCOL, "10.666", "FAKE/deaccessioned1", null, DOIServiceBean.DOI_RESOLVER_URL, null));
+        deaccessioned.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.666", "FAKE/deaccessioned1", null, AbstractDOIProvider.DOI_RESOLVER_URL, null));
         String deaccessionedPid = deaccessioned.getGlobalId().asString();
 
         deaccessioned.setPublicationDate(new Timestamp(new Date().getTime()));

@@ -1,0 +1,101 @@
+name: Maven Cache Management
+
+on:
+    # Every push to develop should trigger cache rejuvenation (dependencies might have changed)
+    push:
+        branches:
+            - develop
+    # According to https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#usage-limits-and-eviction-policy
+    # all caches are deleted after 7 days of no access. Make sure we rejuvenate every 7 days to keep it available.
+    schedule:
+        - cron: '23 2 * * 0' # Run for 'develop' every Sunday at 02:23 UTC (3:23 CET, 21:23 ET)
+    # Enable manual cache management
+    workflow_dispatch:
+    # Delete branch caches once a PR is merged
+    pull_request:
+        types:
+            - closed
+
+env:
+    COMMON_CACHE_KEY: "dataverse-maven-cache"
+    COMMON_CACHE_PATH: "~/.m2/repository"
+
+jobs:
+    seed:
+        name: Drop and Re-Seed Local Repository
+        runs-on: ubuntu-latest
+        if: ${{ github.event_name != 'pull_request' }}
+        permissions:
+            # Write permission needed to delete caches
+            # See also: https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28#delete-a-github-actions-cache-for-a-repository-using-a-cache-id
+            actions: write
+            contents: read
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - name: Determine Java version from Parent POM
+              run: echo "JAVA_VERSION=$(grep '<target.java.version>' modules/dataverse-parent/pom.xml | cut -f2 -d'>' | cut -f1 -d'<')" >> ${GITHUB_ENV}
+            - name: Set up JDK ${{ env.JAVA_VERSION }}
+              uses: actions/setup-java@v4
+              with:
+                  java-version: ${{ env.JAVA_VERSION }}
+                  distribution: temurin
+            - name: Seed common cache
+              run: |
+                  mvn -B -f modules/dataverse-parent dependency:go-offline dependency:resolve-plugins
+            # This non-obvious order is due to the fact that the download via Maven above will take a very long time (7-8 min).
+            # Jobs should not be left without a cache. Deleting and saving in one go leaves only a small chance for a cache miss.
+            - name: Drop common cache
+              run: |
+                  gh extension install actions/gh-actions-cache                  
+                  echo "🛒 Fetching list of cache keys"
+                  cacheKeys=$(gh actions-cache list -R ${{ github.repository }} -B develop | cut -f 1 )
+                  
+                  ## Setting this to not fail the workflow while deleting cache keys. 
+                  set +e
+                  echo "🗑️ Deleting caches..."
+                  for cacheKey in $cacheKeys
+                  do
+                      gh actions-cache delete $cacheKey -R ${{ github.repository }} -B develop --confirm
+                  done
+                  echo "✅ Done"
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Save the common cache
+              uses: actions/cache@v4
+              with:
+                  path: ${{ env.COMMON_CACHE_PATH }}
+                  key: ${{ env.COMMON_CACHE_KEY }}
+                  enableCrossOsArchive: true
+
+    # Let's delete feature branch caches once their PR is merged - we only have 10 GB of space before eviction kicks in
+    deplete:
+        name: Deplete feature branch caches
+        runs-on: ubuntu-latest
+        if: ${{ github.event_name == 'pull_request' }}
+        permissions:
+            # `actions:write` permission is required to delete caches
+            # See also: https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28#delete-a-github-actions-cache-for-a-repository-using-a-cache-id
+            actions: write
+            contents: read
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - name: Cleanup caches
+              run: |
+                  gh extension install actions/gh-actions-cache
+
+                  BRANCH=refs/pull/${{ github.event.pull_request.number }}/merge
+                  echo "🛒 Fetching list of cache keys"
+                  cacheKeysForPR=$(gh actions-cache list -R ${{ github.repository }} -B $BRANCH | cut -f 1 )
+                
+                  ## Setting this to not fail the workflow while deleting cache keys. 
+                  set +e
+                  echo "🗑️ Deleting caches..."
+                  for cacheKey in $cacheKeysForPR
+                  do
+                      gh actions-cache delete $cacheKey -R ${{ github.repository }} -B $BRANCH --confirm
+                  done
+                  echo "✅ Done"
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
