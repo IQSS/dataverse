@@ -6,12 +6,14 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -26,6 +28,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.ocpsoft.common.util.Strings;
 
+import edu.harvard.iq.dataverse.AlternativePersistentIdentifier;
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetAuthor;
@@ -33,9 +37,11 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
@@ -207,8 +213,6 @@ public class XmlMetadataTemplate {
      */
     private void writeIdentifier(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
         GlobalId pid = dvObject.getGlobalId();
-        // identifier with identifierType attribute
-        Map<String, String> identifier_map = new HashMap<String, String>();
         String identifierType = null;
         String identifier = null;
         switch (pid.getProtocol()) {
@@ -315,9 +319,9 @@ public class XmlMetadataTemplate {
         // subjects -> subject with subjectScheme and schemeURI attributes when
         // available
         boolean subjectsCreated = false;
-        List<String> subjects = null;
-        List<DatasetFieldCompoundValue> compoundKeywords = null;
-        List<DatasetFieldCompoundValue> compoundTopics = null;
+        List<String> subjects = new ArrayList<String>();
+        List<DatasetFieldCompoundValue> compoundKeywords = new ArrayList<DatasetFieldCompoundValue>();
+        List<DatasetFieldCompoundValue> compoundTopics = new ArrayList<DatasetFieldCompoundValue>();
         // Dataset Subject= Dataverse subject, keyword, and/or topic classification
         // fields
         if (dvObject instanceof Dataset d) {
@@ -419,10 +423,10 @@ public class XmlMetadataTemplate {
      */
     private void writeContributors(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
         boolean contributorsCreated = false;
-        List<DatasetFieldCompoundValue> compoundProducers = null;
-        List<DatasetFieldCompoundValue> compoundDistributors = null;
-        List<DatasetFieldCompoundValue> compoundContacts = null;
-        List<DatasetFieldCompoundValue> compoundContributors = null;
+        List<DatasetFieldCompoundValue> compoundProducers = new ArrayList<DatasetFieldCompoundValue>();
+        List<DatasetFieldCompoundValue> compoundDistributors = new ArrayList<DatasetFieldCompoundValue>();
+        List<DatasetFieldCompoundValue> compoundContacts = new ArrayList<DatasetFieldCompoundValue>();
+        List<DatasetFieldCompoundValue> compoundContributors = new ArrayList<DatasetFieldCompoundValue>();
         // Dataset Subject= Dataverse subject, keyword, and/or topic classification
         // fields
         //ToDo Include for files?
@@ -594,6 +598,208 @@ public class XmlMetadataTemplate {
             XmlWriterUtil.writeFullElementWithAttributes(xmlw, "affiliation", attributeMap, StringEscapeUtils.escapeXml10(affiliation));
         }
         xmlw.writeEndElement();
+    }
+
+    /**
+     * 8, Date (with type sub-property) (R)
+     *
+     * @param xmlw The Steam writer
+     * @param dvObject The dataset/datafile
+     * @throws XMLStreamException
+     */
+    private void writeDates(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
+        boolean datesWritten = false;
+        String dateOfDistribution = null;
+        String dateOfProduction = null;
+        String dateOfDeposit = null;
+        Date releaseDate = null;
+        List<DatasetFieldCompoundValue> datesOfCollection = new ArrayList<DatasetFieldCompoundValue>();
+
+        if (dvObject instanceof Dataset d) {
+            DatasetVersion dv = d.getLatestVersionForCopy();
+            releaseDate = dv.getReleaseTime();
+            for (DatasetField dsf : dv.getDatasetFields()) {
+                switch (dsf.getDatasetFieldType().getName()) {
+                case DatasetFieldConstant.distributionDate:
+                    dateOfDistribution = dsf.getValue();
+                    break;
+                case DatasetFieldConstant.productionDate:
+                    dateOfProduction = dsf.getValue();
+                    break;
+                case DatasetFieldConstant.dateOfDeposit:
+                    dateOfDeposit = dsf.getValue();
+                    break;
+                case DatasetFieldConstant.dateOfCollection:
+                    datesOfCollection = dsf.getDatasetFieldCompoundValues();
+                }
+            }
+        }
+        Map<String, String> attributes = new HashMap<String, String>();
+        if (StringUtils.isNotBlank(dateOfDistribution)) {
+            datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
+            attributes.put("dateType", "Issued");
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, dateOfDistribution);
+        }
+        // dates -> date with dateType attribute
+
+        if (StringUtils.isNotBlank(dateOfProduction)) {
+            datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
+            attributes.put("dateType", "Created");
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, dateOfProduction);
+        }
+        if (StringUtils.isNotBlank(dateOfDeposit)) {
+            datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
+            attributes.put("dateType", "Submitted");
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, dateOfDeposit);
+        }
+
+        if (releaseDate != null) {
+            String date = Util.getDateTimeFormat().format(releaseDate);
+            datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
+
+            attributes.put("dateType", "Available");
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, date);
+        }
+        if (datesOfCollection != null) {
+            for (DatasetFieldCompoundValue collectionDateFieldValue : datesOfCollection) {
+                String startDate = null;
+                String endDate = null;
+
+                for (DatasetField subField : collectionDateFieldValue.getChildDatasetFields()) {
+                    switch (subField.getDatasetFieldType().getName()) {
+                    case DatasetFieldConstant.dateOfCollectionStart:
+                        startDate = subField.getValue();
+                        break;
+                    case DatasetFieldConstant.dateOfCollectionEnd:
+                        endDate = subField.getValue();
+                        break;
+                    }
+                }
+                if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
+                    datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
+                    attributes.put("dateType", "Collected");
+                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, (startDate + "/" + endDate).trim());
+                }
+            }
+        }
+        if (datesWritten) {
+            xmlw.writeEndElement();
+        }
+    }
+
+
+    // 9, Language (MA), language
+    private void writeLanguage(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
+        //Currently not supported. Spec indicates one 'primary' language. Could send the first entry in DatasetFieldConstant.language or send iff there is only one entry, and/or default to the machine's default lang?
+        return;
+    }
+    
+    // 10, ResourceType (with mandatory general type 
+    //      description sub- property) (M)
+    private void writeResourceType(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
+        List<ControlledVocabularyValue> kindOfDataValues = new ArrayList<ControlledVocabularyValue>();
+        Map<String, String> attributes = new HashMap<String, String>();
+
+        attributes.put("resourceTypeGeneral", "Dataset");
+        if (dvObject instanceof Dataset d) {
+            DatasetVersion dv = d.getLatestVersionForCopy();
+            for (DatasetField dsf : dv.getDatasetFields()) {
+                switch (dsf.getDatasetFieldType().getName()) {
+                case DatasetFieldConstant.kindOfData:
+                    kindOfDataValues = dsf.getControlledVocabularyValues();
+                    break;
+                }
+
+                if (kindOfDataValues.isEmpty()) {
+                    // Write an attribute only element if there are no kindOfData values.
+                    xmlw.writeStartElement("resourceType");
+                    xmlw.writeAttribute("resourceTypeGeneral", attributes.get("resourceTypeGeneral"));
+                    xmlw.writeEndElement();
+                } else {
+                    for (ControlledVocabularyValue kindOfDataValue : kindOfDataValues) {
+                        String resourceType = kindOfDataValue.getStrValue();
+                        if (StringUtils.isNotBlank(resourceType)) {
+                            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, resourceType);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 11 AlternateIdentifier (with type sub-property) (O)
+     *
+     * @param xmlw The Steam writer
+     * @param dvObject The dataset/datafile
+     * @throws XMLStreamException
+     */
+    private void writeAlternateIdentifiers(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
+        List<DatasetFieldCompoundValue> otherIdentifiers = new ArrayList<DatasetFieldCompoundValue>();
+        Set<AlternativePersistentIdentifier> altPids = dvObject.getAlternativePersistentIndentifiers();
+
+        boolean alternatesWritten = false;
+
+        Map<String, String> attributes = new HashMap<String, String>();
+        if (dvObject instanceof Dataset d) {
+            DatasetVersion dv = d.getLatestVersionForCopy();
+            for (DatasetField dsf : dv.getDatasetFields()) {
+                if (DatasetFieldConstant.otherId.equals(dsf.getDatasetFieldType().getName())) {
+                    otherIdentifiers = dsf.getDatasetFieldCompoundValues();
+                    break;
+                }
+            }
+        }
+        if (!altPids.isEmpty()) {
+            alternatesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "alternativeIdentifiers", alternatesWritten);
+        }
+        for (AlternativePersistentIdentifier altPid : altPids) {
+            String identifierType = null;
+            String identifier = null;
+            switch (altPid.getProtocol()) {
+            case AbstractDOIProvider.DOI_PROTOCOL:
+                identifierType = AbstractDOIProvider.DOI_PROTOCOL.toUpperCase();
+                identifier = altPid.getAuthority() + "/" + altPid.getIdentifier();
+                break;
+            case HandlePidProvider.HDL_PROTOCOL:
+                identifierType = "Handle";
+                identifier = altPid.getAuthority() + "/" + altPid.getIdentifier();
+                break;
+            default:
+                // The AlternativePersistentIdentifier class isn't really ready for anything but
+                // doi or handle pids, but will add this as a default.
+                identifierType = ":unav";
+                identifier = altPid.getAuthority() + altPid.getIdentifier();
+                break;
+            }
+            attributes.put("alternativeIdentifierType", identifierType);
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "alternateIdentifier", attributes, identifier);
+
+        }
+        for (DatasetFieldCompoundValue otherIdentifier : otherIdentifiers) {
+            String identifierType = null;
+            String identifier = null;
+            for (DatasetField subField : otherIdentifier.getChildDatasetFields()) {
+                identifierType = ":unav";
+                switch (subField.getDatasetFieldType().getName()) {
+                case DatasetFieldConstant.otherIdAgency:
+                    identifierType = subField.getValue();
+                    break;
+                case DatasetFieldConstant.otherIdValue:
+                    identifier = subField.getValue();
+                    break;
+                }
+            }
+            attributes.put("alternativeIdentifierType", identifierType);
+            if (!StringUtils.isBlank(identifier)) {
+                alternatesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "alternativeIdentifiers", alternatesWritten);
+
+                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "alternateIdentifier", attributes, identifier);
+            }
+        }
+        if (alternatesWritten) {
+            xmlw.writeEndElement();
+        }
     }
 
     private String generateRelatedIdentifiers(DvObject dvObject) {
