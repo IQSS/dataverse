@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api.auth.doubles;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.*;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.*;

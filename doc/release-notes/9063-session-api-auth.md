@@ -1,1 +1,0 @@
-A feature flag called "api-session-auth" has been added temporarily to aid in the development of the new frontend (#9063) but will be removed once bearer tokens (#9229) have been implemented. There is a security risk (CSRF) in enabling this flag! Do not use it in production! For more information, see http://preview.guides.gdcc.io/en/develop/installation/config.html#feature-flags

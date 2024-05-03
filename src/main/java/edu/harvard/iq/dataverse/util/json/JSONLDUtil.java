@@ -18,17 +18,17 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonString;
-import javax.json.JsonValue;
-import javax.json.JsonWriter;
-import javax.json.JsonWriterFactory;
-import javax.json.JsonValue.ValueType;
-import javax.json.stream.JsonGenerator;
-import javax.ws.rs.BadRequestException;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.JsonValue.ValueType;
+import jakarta.json.stream.JsonGenerator;
+import jakarta.ws.rs.BadRequestException;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
@@ -39,7 +39,6 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -52,6 +51,8 @@ import com.apicatalog.jsonld.document.JsonDocument;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import jakarta.json.JsonReader;
 
 public class JSONLDUtil {
 
@@ -82,7 +83,7 @@ public class JSONLDUtil {
 
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
         if (migrating) {
-            Optional<GlobalId> maybePid = GlobalIdServiceBean.parse(jsonld.getString("@id"));
+            Optional<GlobalId> maybePid = PidProvider.parse(jsonld.getString("@id"));
             if (maybePid.isPresent()) {
                 ds.setGlobalId(maybePid.get());
             } else {
@@ -533,13 +534,11 @@ public class JSONLDUtil {
         try (StringReader rdr = new StringReader(jsonLDString)) {
 
             // Use JsonLd to expand/compact to localContext
-            JsonObject jsonld = Json.createReader(rdr).readObject();
-            JsonDocument doc = JsonDocument.of(jsonld);
-            JsonArray array = null;
-            try {
-                array = JsonLd.expand(doc).get();
-                jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(Json.createObjectBuilder().build()))
-                        .get();
+            try (JsonReader jsonReader = Json.createReader(rdr)) {
+                JsonObject jsonld = jsonReader.readObject();
+                JsonDocument doc = JsonDocument.of(jsonld);
+                JsonArray array = JsonLd.expand(doc).get();
+                jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(Json.createObjectBuilder().build())).get();
                 // jsonld = array.getJsonObject(0);
                 logger.fine("Decontextualized object: " + jsonld);
                 return jsonld;

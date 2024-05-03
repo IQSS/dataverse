@@ -35,8 +35,8 @@ For example:
 
 .. code-block:: bash
 
-  sudo touch /usr/local/payara5/glassfish/domains/domain1/logs/stopharvest_bigarchive.70916
-  sudo chown dataverse /usr/local/payara5/glassfish/domains/domain1/logs/stopharvest_bigarchive.70916
+  sudo touch /usr/local/payara6/glassfish/domains/domain1/logs/stopharvest_bigarchive.70916
+  sudo chown dataverse /usr/local/payara6/glassfish/domains/domain1/logs/stopharvest_bigarchive.70916
 
 Note: If the application server is stopped and restarted, any running harvesting jobs will be killed but may remain marked as in progress in the database. We thus recommend using the mechanism here to stop ongoing harvests prior to a server restart.
 
@@ -44,6 +44,6 @@ Note: If the application server is stopped and restarted, any running harvesting
 What if a Run Fails?
 ~~~~~~~~~~~~~~~~~~~~
 
-Each harvesting client run logs a separate file per run to the app server's default logging directory (``/usr/local/payara5/glassfish/domains/domain1/logs/`` unless you've changed it). Look for filenames in the format  ``harvest_TARGET_YYYY_MM_DD_timestamp.log`` to get a better idea of what's going wrong.
+Each harvesting client run logs a separate file per run to the app server's default logging directory (``/usr/local/payara6/glassfish/domains/domain1/logs/`` unless you've changed it). Look for filenames in the format  ``harvest_TARGET_YYYY_MM_DD_timestamp.log`` to get a better idea of what's going wrong.
 
 Note that you'll want to run a minimum of Dataverse Software 4.6, optimally 4.18 or beyond, for the best OAI-PMH interoperability.

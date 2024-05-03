@@ -91,7 +91,9 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // we have to merge to update the database but not flush because
         // we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(getDataset());
-
+        
+        updateVersion = tempDataset.getLatestVersionForCopy();
+        
         // Look for file metadata changes and update published metadata if needed
         List<FileMetadata> pubFmds = updateVersion.getFileMetadatas();
         int pubFileCount = pubFmds.size();

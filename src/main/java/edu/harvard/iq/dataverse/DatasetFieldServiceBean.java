@@ -17,24 +17,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonString;
-import javax.json.JsonValue;
-import javax.json.JsonValue.ValueType;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.inject.Named;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonValue.ValueType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceException;
+import jakarta.persistence.TypedQuery;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpException;
@@ -46,7 +49,6 @@ import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
-
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 /**
@@ -448,6 +450,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * @param cvocEntry - the configuration for the DatasetFieldType associated with this term 
      * @param term - the term uri as a string
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void registerExternalTerm(JsonObject cvocEntry, String term) {
         String retrievalUri = cvocEntry.getString("retrieval-uri");
         String prefix = cvocEntry.getString("prefix", null);
@@ -500,8 +503,16 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         .setRetryHandler(new DefaultHttpRequestRetryHandler(3, false))
                         .build()) {
                     HttpGet httpGet = new HttpGet(retrievalUri);
-                    httpGet.addHeader("Accept", "application/json+ld, application/json");
-
+                    //application/json+ld is for backward compatibility
+                    httpGet.addHeader("Accept", "application/ld+json, application/json+ld, application/json");
+                    //Adding others custom HTTP request headers if exists
+                    final JsonObject headers = cvocEntry.getJsonObject("headers");
+                    if (headers != null) {
+                        final Set<String> headerKeys = headers.keySet();
+                        for (final String hKey: headerKeys) {
+                            httpGet.addHeader(hKey, headers.getString(hKey));
+                        }
+                    }
                     HttpResponse response = httpClient.execute(httpGet);
                     String data = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                     int statusCode = response.getStatusLine().getStatusCode();
@@ -517,6 +528,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             logger.fine("Wrote value for term: " + term);
                         } catch (JsonException je) {
                             logger.severe("Error retrieving: " + retrievalUri + " : " + je.getMessage());
+                        } catch (PersistenceException e) {
+                            logger.fine("Problem persisting: " + retrievalUri + " : " + e.getMessage());
                         }
                     } else {
                         logger.severe("Received response code : " + statusCode + " when retrieving " + retrievalUri

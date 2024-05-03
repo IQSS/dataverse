@@ -1,32 +1,31 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
-import static com.jayway.restassured.path.json.JsonPath.with;
-import com.jayway.restassured.response.Response;
+import io.restassured.RestAssured;
+import io.restassured.path.json.JsonPath;
+import static io.restassured.path.json.JsonPath.with;
+import io.restassured.response.Response;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import java.io.StringReader;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonObject;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class MoveIT {
 
     private static final Logger logger = Logger.getLogger(MoveIT.class.getCanonicalName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
@@ -279,8 +278,8 @@ public class MoveIT {
                 .body("message", equalTo("Use the query parameter forceMove=true to complete the move. This dataset is linked to the new host dataverse or one of its parents. This move would remove the link to this dataset. "));
 
         JsonObject linksBeforeData = Json.createReader(new StringReader(getLinksBefore.asString())).readObject();
-        Assert.assertEquals("OK", linksBeforeData.getString("status"));
-        Assert.assertEquals(dataverse2Alias + " (id " + dataverse2Id + ")", linksBeforeData.getJsonObject("data").getJsonArray("dataverses that link to dataset id " + datasetId).getString(0));
+        assertEquals("OK", linksBeforeData.getString("status"));
+        assertEquals(dataverse2Alias + " (id " + dataverse2Id + ")", linksBeforeData.getJsonObject("data").getJsonArray("dataverses that link to dataset id " + datasetId).getString(0));
 
         boolean forceMove = true;
         Response forceMoveLinkedDataset = UtilIT.moveDataset(datasetId.toString(), dataverse2Alias, forceMove, superuserApiToken);
@@ -301,15 +300,15 @@ public class MoveIT {
                 .statusCode(OK.getStatusCode())
                 .body("feed.entry[0].id", CoreMatchers.endsWith(datasetPid));
 
-        UtilIT.sleepForReindex(datasetPid, superuserApiToken, 10);
+        UtilIT.sleepForReindex(datasetPid, superuserApiToken, 20);
         Response getLinksAfter = UtilIT.getDatasetLinks(datasetPid, superuserApiToken);
         getLinksAfter.prettyPrint();
         getLinksAfter.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         JsonObject linksAfterData = Json.createReader(new StringReader(getLinksAfter.asString())).readObject();
-        Assert.assertEquals("OK", linksAfterData.getString("status"));
-        Assert.assertEquals(0, linksAfterData.getJsonObject("data").getJsonArray("dataverses that link to dataset id " + datasetId).size());
+        assertEquals("OK", linksAfterData.getString("status"));
+        assertEquals(0, linksAfterData.getJsonObject("data").getJsonArray("dataverses that link to dataset id " + datasetId).size());
 
     }
     

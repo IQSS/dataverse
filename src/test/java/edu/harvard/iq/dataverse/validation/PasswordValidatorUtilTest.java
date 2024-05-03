@@ -5,24 +5,18 @@
  */
 package edu.harvard.iq.dataverse.validation;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.xml.html.HtmlPrinter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
 
@@ -30,10 +24,9 @@ import org.passay.EnglishCharacterData;
  *
  * @author pdurbin
  */
-@RunWith(Enclosed.class)
 public class PasswordValidatorUtilTest {
 
-    public static class PasswordValidatorUtilNoParamTest {
+    static class PasswordValidatorUtilNoParamTest {
         /**
          * Test of getPasswordRequirements method, of class PasswordValidatorUtil.
          */
@@ -83,79 +76,38 @@ public class PasswordValidatorUtilTest {
 
     }
 
-    @RunWith(Parameterized.class)
-    public static class PasswordValidatorUtilParamTest {
-
-        // influences use of # or "each" in text generation
-        @Parameter(0)
-        public int numberOfCharacteristics;
-
-        @Parameter(1)
-        public String characterRulesConfigString;
-
-        @Parameter(2)
-        public String expectedValue;
-
-        @Parameters
-        public static Collection data() {
-            return Arrays.asList(new Object[][] {
-                {
-                    2,
-                    null,
-                    "At least 1 character from each of the following types: letter, numeral"
-                },
-                {
-                    2,
-                    "UpperCase:1,LowerCase:1,Digit:1,Special:1",
-                    "At least 1 character from 2 of the following types: uppercase, lowercase, numeral, special"
-                },
-                {
-                    4,
-                    "UpperCase:1,LowerCase:1,Digit:1,Special:1",
-                    "At least 1 character from each of the following types: uppercase, lowercase, numeral, special"
-                },
-
-                // Should say each, even if more characteristics set than possible
-                {
-                    2,
-                    "Digit:1",
-                    "At least 1 character from each of the following types: numeral"
-                },
-
-                {
-                    2,
-                    "Digit:2",
-                    "Fufill 2: At least 2 numeral characters"
-                },
-                {
-                    2,
-                    "LowerCase:1,Digit:2,Special:3",
-                    "Fufill 2: At least 1 lowercase characters, 2 numeral characters, 3 special characters"
-                },
-
-                // letter is mentioned even though that configuration is discouraged
-                {
-                    2,
-                    "UpperCase:1,LowerCase:1,Digit:1,Special:1,Alphabetical:1",
-                    "At least 1 character from 2 of the following types: uppercase, lowercase, letter, numeral, special"
-                }
-            });
+    static Stream<Arguments> configurations() {
+        return Stream.of(
+            Arguments.of(2, null,
+                "At least 1 character from each of the following types: letter, numeral"),
+            Arguments.of(2, "UpperCase:1,LowerCase:1,Digit:1,Special:1",
+                "At least 1 character from 2 of the following types: uppercase, lowercase, numeral, special"),
+            Arguments.of(4, "UpperCase:1,LowerCase:1,Digit:1,Special:1",
+                "At least 1 character from each of the following types: uppercase, lowercase, numeral, special"),
+            // Should say each, even if more characteristics set than possible
+            Arguments.of(2, "Digit:1", "At least 1 character from each of the following types: numeral"),
+            Arguments.of(2, "Digit:2", "Fufill 2: At least 2 numeral characters"),
+            Arguments.of(2, "LowerCase:1,Digit:2,Special:3",
+                "Fufill 2: At least 1 lowercase characters, 2 numeral characters, 3 special characters"),
+            // letter is mentioned even though that configuration is discouraged
+            Arguments.of(2, "UpperCase:1,LowerCase:1,Digit:1,Special:1,Alphabetical:1",
+                "At least 1 character from 2 of the following types: uppercase, lowercase, letter, numeral, special")
+        );
+    }
+    @ParameterizedTest
+    @MethodSource("configurations")
+    void testGetRequiredCharacters(int numberOfCharacteristics, String characterRulesConfigString, String expectedValue) {
+        List<CharacterRule> characterRules;
+        String message = "Character rules string for ";
+        if (characterRulesConfigString != null) {
+            characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
+            message += characterRulesConfigString;
+        } else {
+            characterRules = PasswordValidatorUtil.getCharacterRulesDefault();
+            message += "default";
         }
-
-        @Test
-        public void testGetRequiredCharacters() {
-            List<CharacterRule> characterRules;
-            String message = "Character rules string for ";
-            if (characterRulesConfigString != null) {
-                characterRules = PasswordValidatorUtil.getCharacterRules(characterRulesConfigString);
-                message += characterRulesConfigString;
-            } else {
-                characterRules = PasswordValidatorUtil.getCharacterRulesDefault();
-                message += "default";
-            }
-
-            String reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules, numberOfCharacteristics);
-            assertEquals(message + ": " + reqString, expectedValue, reqString);
-        }
+        
+        String reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules, numberOfCharacteristics);
+        assertEquals(expectedValue, reqString, message + ": " + reqString);
     }
 }

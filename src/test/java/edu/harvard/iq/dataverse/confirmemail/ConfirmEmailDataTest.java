@@ -1,11 +1,11 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 
@@ -14,13 +14,13 @@ public class ConfirmEmailDataTest {
     private ConfirmEmailData instance;
     private AuthenticatedUser user;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.user = new AuthenticatedUser();
         this.instance = new ConfirmEmailData(user, 60);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         this.instance = null;
         this.user = null;

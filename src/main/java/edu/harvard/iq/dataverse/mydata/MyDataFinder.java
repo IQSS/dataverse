@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -239,7 +239,7 @@ public class MyDataFinder {
         //fq=publicationStatus:"Unpublished"&fq=publicationStatus:"Draft"
 
         // -----------------------------------------------------------------
-        // (4) FQ by dataset metadata vlidity
+        // (4) FQ by dataset metadata validity
         // -----------------------------------------------------------------
         filterQueries.add(this.filterParams.getSolrFragmentForDatasetValidity());
         //fq=datasetValid:(true OR false)

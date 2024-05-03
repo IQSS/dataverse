@@ -17,7 +17,6 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.ApiConstants;
 import edu.harvard.iq.dataverse.api.Util;
-import edu.harvard.iq.dataverse.api.Files;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -28,7 +27,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.file.CreateDataFileResult;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
@@ -48,23 +46,23 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ejb.Asynchronous;
-import javax.ejb.EJBException;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonNumber;
-import javax.json.JsonObject;
-import javax.json.JsonArray;
-import javax.json.JsonObjectBuilder;
-import javax.validation.ConstraintViolation;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.EJBException;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.validation.ConstraintViolation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import org.apache.commons.io.IOUtils;
-import org.ocpsoft.common.util.Strings;
-
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDataFilesCommand;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 
 /**
  *  Methods to add or replace a single file.
@@ -1206,18 +1204,25 @@ public class AddReplaceFileHelper{
             clone = workingVersion.cloneDatasetVersion();
         }
         try {
-            CreateDataFileResult result = FileUtil.createDataFiles(workingVersion,
+            /*CreateDataFileResult result = FileUtil.createDataFiles(workingVersion,
                     this.newFileInputStream,
                     this.newFileName,
                     this.newFileContentType,
                     this.newStorageIdentifier,
                     this.newCheckSum,
                     this.newCheckSumType,
-                    this.systemConfig);
-            initialFileList = result.getDataFiles();
+                    this.systemConfig);*/
+            
+            UploadSessionQuotaLimit quota = null; 
+            if (systemConfig.isStorageQuotasEnforced()) {
+                quota = fileService.getUploadSessionQuotaLimit(dataset);
+            }
+            Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequest, workingVersion, newFileInputStream, newFileName, newFileContentType, newStorageIdentifier, quota, newCheckSum, newCheckSumType);
+            CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
+            initialFileList = createDataFilesResult.getDataFiles();
 
-        } catch (IOException ex) {
-            if (!Strings.isNullOrEmpty(ex.getMessage())) {
+        } catch (CommandException ex) {
+            if (ex.getMessage() != null && !ex.getMessage().isEmpty()) {
                 this.addErrorSevere(getBundleErr("ingest_create_file_err") + " " + ex.getMessage());
             } else {
                 this.addErrorSevere(getBundleErr("ingest_create_file_err"));
@@ -2152,7 +2157,7 @@ public class AddReplaceFileHelper{
 
             }
         }
-        catch ( javax.json.stream.JsonParsingException ex) {
+        catch ( jakarta.json.stream.JsonParsingException ex) {
             ex.printStackTrace();
             return error(BAD_REQUEST, "Json Parsing Exception :" + ex.getMessage());
         }
@@ -2321,7 +2326,7 @@ public class AddReplaceFileHelper{
 
             }
         }
-        catch ( javax.json.stream.JsonParsingException ex) {
+        catch ( jakarta.json.stream.JsonParsingException ex) {
             ex.printStackTrace();
             return error(BAD_REQUEST, "Json Parsing Exception :" + ex.getMessage());
         }

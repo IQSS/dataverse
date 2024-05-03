@@ -1,28 +1,28 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 
-import static com.jayway.restassured.RestAssured.given;
-import com.jayway.restassured.response.Response;
+import static io.restassured.RestAssured.given;
+import io.restassured.response.Response;
 
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.junit.Assert.assertTrue;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class SignpostingIT {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
@@ -80,6 +80,7 @@ public class SignpostingIT {
         assertTrue(linkHeader.contains(datasetPid));
         assertTrue(linkHeader.contains("cite-as"));
         assertTrue(linkHeader.contains("describedby"));
+        assertTrue(linkHeader.contains("<http://creativecommons.org/publicdomain/zero/1.0>;rel=\"license\""));
 
         Pattern pattern = Pattern.compile("<([^<]*)> ; rel=\"linkset\";type=\"application\\/linkset\\+json\"");
         Matcher matcher = pattern.matcher(linkHeader);
@@ -92,7 +93,7 @@ public class SignpostingIT {
 
         String responseString = linksetResponse.getBody().asString();
 
-        JsonObject data = JsonUtil.getJsonObject(responseString).getJsonObject("data");
+        JsonObject data = JsonUtil.getJsonObject(responseString);
         JsonObject lso = data.getJsonArray("linkset").getJsonObject(0);
         System.out.println("Linkset: " + lso.toString());
 
@@ -100,6 +101,16 @@ public class SignpostingIT {
 
         assertTrue(lso.getString("anchor").indexOf("/dataset.xhtml?persistentId=" + datasetPid) > 0);
         assertTrue(lso.containsKey("describedby"));
+
+        // Test export URL from link header
+        // regex inspired by https://stackoverflow.com/questions/68860255/how-to-match-the-closest-opening-and-closing-brackets
+        Pattern exporterPattern = Pattern.compile("[<\\[][^()\\[\\]]*?exporter=schema.org[^()\\[\\]]*[>\\]]");
+        Matcher exporterMatcher = exporterPattern.matcher(linkHeader);
+        exporterMatcher.find();
+
+        Response exportDataset = UtilIT.exportDataset(datasetPid, "schema.org");
+        exportDataset.prettyPrint();
+        exportDataset.then().assertThat().statusCode(OK.getStatusCode());
 
     }
 

@@ -14,12 +14,12 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
@@ -48,19 +48,19 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 import java.io.InputStream;
@@ -69,14 +69,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
 
@@ -97,8 +97,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeactivateUserCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
@@ -106,8 +106,10 @@ import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -117,12 +119,13 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import javax.inject.Inject;
-import javax.json.JsonArray;
-import javax.persistence.Query;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.inject.Inject;
+import jakarta.json.JsonArray;
+import jakarta.persistence.Query;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.StreamingOutput;
+import java.nio.file.Paths;
 
 /**
  * Where the secure, setup API calls live.
@@ -135,46 +138,48 @@ public class Admin extends AbstractApiBean {
 
 	private static final Logger logger = Logger.getLogger(Admin.class.getName());
 
-        @EJB
-        AuthenticationProvidersRegistrationServiceBean authProvidersRegistrationSvc;
-	@EJB
-	BuiltinUserServiceBean builtinUserService;
-	@EJB
-	ShibServiceBean shibService;
-	@EJB
-	AuthTestDataServiceBean authTestDataService;
-	@EJB
-	UserServiceBean userService;
-	@EJB
-	IngestServiceBean ingestService;
-	@EJB
-	DataFileServiceBean fileService;
-	@EJB
-	DatasetServiceBean datasetService;
-        @EJB
-	DataverseServiceBean dataverseService;
-	@EJB
-	DatasetVersionServiceBean datasetversionService;
-        @Inject
-        DataverseRequestServiceBean dvRequestService;
-        @EJB
-        EjbDataverseEngine commandEngine;
-        @EJB
-        GroupServiceBean groupService;
-        @EJB
-        SettingsServiceBean settingsService;
-        @EJB
-        DatasetVersionServiceBean datasetVersionService;
-        @EJB
-        ExplicitGroupServiceBean explicitGroupService;
-        @EJB
-        BannerMessageServiceBean bannerMessageService;
-        @EJB
-        TemplateServiceBean templateService;
+    @EJB
+    AuthenticationProvidersRegistrationServiceBean authProvidersRegistrationSvc;
+    @EJB
+    BuiltinUserServiceBean builtinUserService;
+    @EJB
+    ShibServiceBean shibService;
+    @EJB
+    AuthTestDataServiceBean authTestDataService;
+    @EJB
+    UserServiceBean userService;
+    @EJB
+    IngestServiceBean ingestService;
+    @EJB
+    DataFileServiceBean fileService;
+    @EJB
+    DatasetServiceBean datasetService;
+    @EJB
+    DataverseServiceBean dataverseService;
+    @EJB
+    DvObjectServiceBean dvObjectService;
+    @EJB
+    DatasetVersionServiceBean datasetversionService;
+    @Inject
+    DataverseRequestServiceBean dvRequestService;
+    @EJB
+    EjbDataverseEngine commandEngine;
+    @EJB
+    GroupServiceBean groupService;
+    @EJB
+    SettingsServiceBean settingsService;
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
+    @EJB
+    ExplicitGroupServiceBean explicitGroupService;
+    @EJB
+    BannerMessageServiceBean bannerMessageService;
+    @EJB
+    TemplateServiceBean templateService;
 
-	// Make the session available
-	@Inject
-	DataverseSession session;
+    // Make the session available
+    @Inject
+    DataverseSession session;
 
 	public static final String listUsersPartialAPIPath = "list-users";
 	public static final String listUsersFullAPIPath = "/api/admin/" + listUsersPartialAPIPath;
@@ -1025,29 +1030,49 @@ public class Admin extends AbstractApiBean {
         }, getRequestUser(crc));
     }
 
-	@Path("superuser/{identifier}")
-	@POST
-	public Response toggleSuperuser(@PathParam("identifier") String identifier) {
-		ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "toggleSuperuser")
-				.setInfo(identifier);
-		try {
-			AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
-                        if (user.isDeactivated()) {
-                            return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
-                        }
+    @Path("superuser/{identifier}")
+    @Deprecated
+    @POST
+    public Response toggleSuperuser(@PathParam("identifier") String identifier) {
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "toggleSuperuser")
+                .setInfo(identifier);
+        try {
+            final AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+            return setSuperuserStatus(user, !user.isSuperuser());
+        } catch (Exception e) {
+            alr.setActionResult(ActionLogRecord.Result.InternalError);
+            alr.setInfo(alr.getInfo() + "// " + e.getMessage());
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        } finally {
+            actionLogSvc.log(alr);
+        }
+    }
 
-			user.setSuperuser(!user.isSuperuser());
+    private Response setSuperuserStatus(AuthenticatedUser user, Boolean isSuperuser) {
+        if (user.isDeactivated()) {
+            return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
+        }
+        user.setSuperuser(isSuperuser);
+        return ok("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set" : "removed")
+                + " as a superuser.");
+    }
 
-			return ok("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set" : "removed")
-					+ " as a superuser.");
-		} catch (Exception e) {
-			alr.setActionResult(ActionLogRecord.Result.InternalError);
-			alr.setInfo(alr.getInfo() + "// " + e.getMessage());
-			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
-		} finally {
-			actionLogSvc.log(alr);
-		}
-	}
+    @Path("superuser/{identifier}")
+    @PUT
+    // Using string instead of boolean so user doesn't need to add a Content-type header in their request
+    public Response setSuperuserStatus(@PathParam("identifier") String identifier, String isSuperuser) {
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "setSuperuserStatus")
+                .setInfo(identifier + ":" + isSuperuser);
+        try {
+            return setSuperuserStatus(authSvc.getAuthenticatedUser(identifier), StringUtil.isTrue(isSuperuser));
+        } catch (Exception e) {
+            alr.setActionResult(ActionLogRecord.Result.InternalError);
+            alr.setInfo(alr.getInfo() + "// " + e.getMessage());
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        } finally {
+            actionLogSvc.log(alr);
+        }
+    }
 
     @GET
     @Path("validate/datasets")
@@ -1328,26 +1353,24 @@ public class Admin extends AbstractApiBean {
 
 	}
 
-	@Path("permissions/{dvo}")
-	@AuthRequired
-	@GET
-	public Response findPermissonsOn(@Context ContainerRequestContext crc, @PathParam("dvo") String dvo) {
-		try {
-			DvObject dvObj = findDvo(dvo);
-			if (dvObj == null) {
-				return notFound("DvObject " + dvo + " not found");
-			}
-			User aUser = getRequestUser(crc);
-			JsonObjectBuilder bld = Json.createObjectBuilder();
-			bld.add("user", aUser.getIdentifier());
-			bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
-			return ok(bld);
-
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error while testing permissions", e);
-			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
-		}
-	}
+    @Path("permissions/{dvo}")
+    @AuthRequired
+    @GET
+    public Response findPermissonsOn(@Context final ContainerRequestContext crc, @PathParam("dvo") final String dvo) {
+        try {
+            final DvObject dvObj = findDvo(dvo);
+            final User aUser = getRequestUser(crc);
+            final JsonObjectBuilder bld = Json.createObjectBuilder();
+            bld.add("user", aUser.getIdentifier());
+            bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
+            return ok(bld);
+        } catch (WrappedResponse r) {
+            return r.getResponse();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error while testing permissions", e);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
 
 	@Path("assignee/{idtf}")
 	@GET
@@ -1473,10 +1496,7 @@ public class Admin extends AbstractApiBean {
     public Response reregisterHdlToPID(@Context ContainerRequestContext crc, @PathParam("id") String id) {
         logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
         try {
-            if (settingsSvc.get(SettingsServiceBean.Key.Protocol.toString()).equals(HandlenetServiceBean.HDL_PROTOCOL)) {
-                logger.info("Bad Request protocol set to handle  " );
-                return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
-            }
+
             
             User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
@@ -1486,7 +1506,12 @@ public class Admin extends AbstractApiBean {
 
             DataverseRequest r = createDataverseRequest(u);
             Dataset ds = findDatasetOrDie(id);
-            if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(HandlenetServiceBean.HDL_PROTOCOL)) {
+            
+            if (HandlePidProvider.HDL_PROTOCOL.equals(dvObjectService.getEffectivePidGenerator(ds).getProtocol())) {
+                logger.info("Bad Request protocol set to handle  " );
+                return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
+            }
+            if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(HandlePidProvider.HDL_PROTOCOL)) {
                 execCommand(new RegisterDvObjectCommand(r, ds, true));
             } else {
                 return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.hdl.dataset"));
@@ -1514,6 +1539,9 @@ public class Admin extends AbstractApiBean {
             User u = getRequestUser(crc);
             DataverseRequest r = createDataverseRequest(u);
             DataFile df = findDataFileOrDie(id);
+            if(!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
+                return forbidden("PIDs are not enabled for this file's collection.");
+            }
             if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
                 execCommand(new RegisterDvObjectCommand(r, df));
             } else {
@@ -1537,41 +1565,56 @@ public class Admin extends AbstractApiBean {
         Integer alreadyRegistered = 0;
         Integer released = 0;
         Integer draft = 0;
+        Integer skipped = 0;
         logger.info("Starting to register: analyzing " + count + " files. " + new Date());
         logger.info("Only unregistered, published files will be registered.");
+        User u = null;
+        try {
+            u = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse e1) {
+            return error(Status.UNAUTHORIZED, "api key required");
+        }
+        DataverseRequest r = createDataverseRequest(u);
         for (DataFile df : fileService.findAll()) {
             try {
                 if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
-                    if (df.isReleased()) {
+                    if(!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
+                        skipped++;
+                        if (skipped % 100 == 0) {
+                            logger.info(skipped + " of  " + count + " files not in collections that allow file PIDs. " + new Date());
+                        }
+                    } else if (df.isReleased()) {
                         released++;
-                        User u = getRequestAuthenticatedUserOrDie(crc);
-                        DataverseRequest r = createDataverseRequest(u);
                         execCommand(new RegisterDvObjectCommand(r, df));
                         successes++;
                         if (successes % 100 == 0) {
                             logger.info(successes + " of  " + count + " files registered successfully. " + new Date());
                         }
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ie) {
+                            logger.warning("Interrupted Exception when attempting to execute Thread.sleep()!");
+                        }
                     } else {
                         draft++;
-                        logger.info(draft + " of  " + count + " files not yet published");
+                        if (draft % 100 == 0) {
+                          logger.info(draft + " of  " + count + " files not yet published");
+                        }
                     }
                 } else {
                     alreadyRegistered++;
-                    logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
+                    if(alreadyRegistered % 100 == 0) {
+                      logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
+                    }
                 }
             } catch (WrappedResponse ex) {
-                released++;
                 logger.info("Failed to register file id: " + df.getId());
                 Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception e) {
                 logger.info("Unexpected Exception: " + e.getMessage());
             }
             
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ie) {
-                logger.warning("Interrupted Exception when attempting to execute Thread.sleep()!");
-            }
+
         }
         logger.info("Final Results:");
         logger.info(alreadyRegistered + " of  " + count + " files were already registered. " + new Date());
@@ -1579,6 +1622,7 @@ public class Admin extends AbstractApiBean {
         logger.info(released + " of  " + count + " unregistered, published files to register. " + new Date());
         logger.info(successes + " of  " + released + " unregistered, published files registered successfully. "
                 + new Date());
+        logger.info(skipped + " of  " + count + " files not in collections that allow file PIDs. " + new Date());
 
         return ok("Datafile registration complete." + successes + " of  " + released
                 + " unregistered, published files registered successfully.");
@@ -1633,6 +1677,11 @@ public class Admin extends AbstractApiBean {
                         if (countSuccesses % 100 == 0) {
                             logger.info(countSuccesses + " out of " + count + " files registered successfully. " + new Date());
                         }
+                        try {
+                            Thread.sleep(sleepInterval * 1000);
+                        } catch (InterruptedException ie) {
+                            logger.warning("Interrupted Exception when attempting to execute Thread.sleep()!");
+                        }
                     } else {
                         countDrafts++;
                         logger.fine(countDrafts + " out of " + count + " files not yet published");
@@ -1647,12 +1696,6 @@ public class Admin extends AbstractApiBean {
                 Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception e) {
                 logger.info("Unexpected Exception: " + e.getMessage());
-            }
-            
-            try {
-                Thread.sleep(sleepInterval * 1000);
-            } catch (InterruptedException ie) {
-                logger.warning("Interrupted Exception when attempting to execute Thread.sleep()!");
             }
         }
         
@@ -2401,12 +2444,60 @@ public class Admin extends AbstractApiBean {
         }
         
         String baseUrl = urlInfo.getString("url");
-        int timeout = urlInfo.getInt(ExternalToolHandler.TIMEOUT, 10);
-        String method = urlInfo.getString(ExternalToolHandler.HTTP_METHOD, "GET");
+        int timeout = urlInfo.getInt(URLTokenUtil.TIMEOUT, 10);
+        String method = urlInfo.getString(URLTokenUtil.HTTP_METHOD, "GET");
         
         String signedUrl = UrlSignerUtil.signUrl(baseUrl, timeout, userId, method, key); 
         
-        return ok(Json.createObjectBuilder().add(ExternalToolHandler.SIGNED_URL, signedUrl));
+        return ok(Json.createObjectBuilder().add(URLTokenUtil.SIGNED_URL, signedUrl));
     }
  
+    @DELETE
+    @Path("/clearThumbnailFailureFlag")
+    public Response clearThumbnailFailureFlag() {
+        em.createNativeQuery("UPDATE dvobject SET previewimagefail = FALSE").executeUpdate();
+        return ok("Thumbnail Failure Flags cleared.");
+    }
+    
+    @DELETE
+    @Path("/clearThumbnailFailureFlag/{id}")
+    public Response clearThumbnailFailureFlagByDatafile(@PathParam("id") String fileId) {
+        try {
+            DataFile df = findDataFileOrDie(fileId);
+            Query deleteQuery = em.createNativeQuery("UPDATE dvobject SET previewimagefail = FALSE where id = ?");
+            deleteQuery.setParameter(1, df.getId());
+            deleteQuery.executeUpdate();
+            return ok("Thumbnail Failure Flag cleared for file id=: " + df.getId() + ".");
+        } catch (WrappedResponse r) {
+            logger.info("Could not find file with the id: " + fileId);
+            return error(Status.BAD_REQUEST, "Could not find file with the id: " + fileId);
+        }
+    }
+
+    /**
+     * For testing only. Download a file from /tmp.
+     */
+    @GET
+    @AuthRequired
+    @Path("/downloadTmpFile")
+    public Response downloadTmpFile(@Context ContainerRequestContext crc, @QueryParam("fullyQualifiedPathToFile") String fullyQualifiedPathToFile) {
+        try {
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        java.nio.file.Path normalizedPath = Paths.get(fullyQualifiedPathToFile).normalize();
+        if (!normalizedPath.toString().startsWith("/tmp")) {
+            return error(Status.BAD_REQUEST, "Path must begin with '/tmp' but after normalization was '" + normalizedPath +"'.");
+        }
+        try {
+            return ok(new FileInputStream(fullyQualifiedPathToFile));
+        } catch (IOException ex) {
+            return error(Status.BAD_REQUEST, ex.toString());
+        }
+    }
+
 }

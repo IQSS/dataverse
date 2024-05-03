@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 
@@ -17,27 +16,28 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
-import javax.json.JsonObjectBuilder;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import jakarta.json.JsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
+import jakarta.ejb.EJB;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 
 @Path("harvest/clients")
 public class HarvestingClients extends AbstractApiBean {
@@ -165,8 +165,8 @@ public class HarvestingClients extends AbstractApiBean {
             return wr.getResponse();
         }
  
-        try ( StringReader rdr = new StringReader(jsonBody) ) {
-            JsonObject json = Json.createReader(rdr).readObject();
+        try {
+            JsonObject json = JsonUtil.getJsonObject(jsonBody);
             
             // Check that the client with this name doesn't exist yet: 
             // (we could simply let the command fail, but that does not result 
@@ -262,9 +262,9 @@ public class HarvestingClients extends AbstractApiBean {
         
         String ownerDataverseAlias = harvestingClient.getDataverse().getAlias();
         
-        try ( StringReader rdr = new StringReader(jsonBody) ) {
+        try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            JsonObject json = Json.createReader(rdr).readObject();
+            JsonObject json = JsonUtil.getJsonObject(jsonBody);
             
             HarvestingClient newHarvestingClient = new HarvestingClient(); 
             String newDataverseAlias = jsonParser().parseHarvestingClient(json, newHarvestingClient);

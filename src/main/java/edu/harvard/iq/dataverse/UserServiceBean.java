@@ -12,16 +12,15 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.apache.commons.lang3.StringUtils;
-import org.ocpsoft.common.util.Strings;
 
 @Stateless
 @Named
@@ -148,6 +147,8 @@ public class UserServiceBean {
         user.setMutedEmails(Type.tokenizeToSet((String) dbRowValues[15]));
         user.setMutedNotifications(Type.tokenizeToSet((String) dbRowValues[15]));
 
+        user.setRateLimitTier((int)dbRowValues[17]);
+
         user.setRoles(roles);
         return user;
     }
@@ -190,7 +191,7 @@ public class UserServiceBean {
         // Add '@' to each identifier and delimit the list by ","
         // -------------------------------------------------
         String identifierListString = userIdentifierList.stream()
-                                     .filter(x -> !Strings.isNullOrEmpty(x))
+                                     .filter(x -> x != null && !x.isEmpty())
                                      .map(x -> "'@" + x + "'")
                                      .collect(Collectors.joining(", "));
 
@@ -420,7 +421,7 @@ public class UserServiceBean {
         qstr += " u.createdtime, u.lastlogintime, u.lastapiusetime, ";
         qstr += " prov.id, prov.factoryalias, ";
         qstr += " u.deactivated, u.deactivatedtime, ";
-        qstr += " u.mutedEmails, u.mutedNotifications ";
+        qstr += " u.mutedEmails, u.mutedNotifications, u.rateLimitTier ";
         qstr += " FROM authenticateduser u,";
         qstr += " authenticateduserlookup prov_lookup,";
         qstr += " authenticationproviderrow prov";

@@ -11,12 +11,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import junit.framework.Assert;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
@@ -27,15 +27,15 @@ public class FieldDTOTest {
     public FieldDTOTest() {
     }
     
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
     }
     
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
     }
     
-    @Before
+    @BeforeEach
     public void setUp() {
        
         Set<FieldDTO> authorFields = new HashSet<>();
@@ -49,7 +49,7 @@ public class FieldDTOTest {
         
     }
     
-    @After
+    @AfterEach
     public void tearDown() {
     }
 
@@ -60,7 +60,7 @@ public class FieldDTOTest {
     public void testSinglePrimitive() {
         FieldDTO affil = FieldDTO.createPrimitiveFieldDTO("authorAffiliation", "Top");
         System.out.println(affil.getSinglePrimitive());
-        Assert.assertEquals("Top", affil.getSinglePrimitive());
+        assertEquals("Top", affil.getSinglePrimitive());
         
     }
 
@@ -78,10 +78,10 @@ public class FieldDTOTest {
         value.add("EventList");
         astroType.setMultipleVocab(value);
         
-        Assert.assertEquals(value, astroType.getMultipleVocab());
+        assertEquals(value, astroType.getMultipleVocab());
         String jsonStr = gson.toJson(astroType);
         FieldDTO astroType2 = gson.fromJson(jsonStr, FieldDTO.class);
-        Assert.assertEquals(astroType, astroType2);
+        assertEquals(astroType, astroType2);
         
     }
 
@@ -116,7 +116,7 @@ public class FieldDTOTest {
         compoundField.setTypeName("author");
         compoundField.setMultipleCompound(authorList);
         
-        Assert.assertEquals(compoundField.getMultipleCompound(), authorList);
+        assertEquals(compoundField.getMultipleCompound(), authorList);
     }
 
     /**
@@ -132,8 +132,8 @@ public class FieldDTOTest {
         
         FieldDTO compoundField = new FieldDTO();
         compoundField.setSingleCompound(authorFields.toArray(new FieldDTO[]{}));
-        Set<FieldDTO>  returned = compoundField.getSingleCompound();   
-        Assert.assertTrue(returned.equals(authorFields));
+        Set<FieldDTO>  returned = compoundField.getSingleCompound();
+        assertEquals(returned, authorFields);
        
     }
 

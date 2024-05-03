@@ -17,8 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.json.JsonObject;
-import javax.mail.internet.InternetAddress;
+import jakarta.json.JsonObject;
+import jakarta.mail.internet.InternetAddress;
 
 public class FeedbackUtil {
 

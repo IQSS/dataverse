@@ -7,21 +7,18 @@ import edu.harvard.iq.dataverse.SendFeedbackDialog;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.feedback.Feedback;
 import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.MailUtil;
 
-import javax.ejb.EJB;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonNumber;
-import javax.json.JsonObject;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ejb.EJB;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 @Path("admin/feedback")
 public class FeedbackApi extends AbstractApiBean {
@@ -40,7 +37,7 @@ public class FeedbackApi extends AbstractApiBean {
      * user input (e.g. to strip potentially malicious html, etc.)!!!!
      **/
     @POST
-    public Response submitFeedback(JsonObject jsonObject) throws AddressException {
+    public Response submitFeedback(JsonObject jsonObject) {
         JsonNumber jsonNumber = jsonObject.getJsonNumber("targetId");
         DvObject feedbackTarget = null;
         if (jsonNumber != null) {
@@ -51,8 +48,7 @@ public class FeedbackApi extends AbstractApiBean {
         }
         DataverseSession dataverseSession = null;
         String userMessage = jsonObject.getString("body");
-        String systemEmail = JvmSettings.SUPPORT_EMAIL.lookupOptional().orElse(settingsSvc.getValueForKey(SettingsServiceBean.Key.SystemEmail));
-        InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
+        InternetAddress systemAddress = mailService.getSupportAddress().orElse(null);
         String userEmail = jsonObject.getString("fromEmail");
         String messageSubject = jsonObject.getString("subject");
         String baseUrl = systemConfig.getDataverseSiteUrl();

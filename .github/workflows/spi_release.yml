@@ -2,12 +2,12 @@ name: Dataverse SPI
 
 on:
     push:
-        branch:
+        branches:
             - "develop"
         paths:
             - "modules/dataverse-spi/**"
     pull_request:
-        branch:
+        branches:
             - "develop"
         paths:
             - "modules/dataverse-spi/**"
@@ -40,7 +40,7 @@ jobs:
             - uses: actions/checkout@v3
             - uses: actions/setup-java@v3
               with:
-                  java-version: '11'
+                  java-version: '17'
                   distribution: 'adopt'
                   server-id: ossrh
                   server-username: MAVEN_USERNAME
@@ -66,7 +66,7 @@ jobs:
             -   uses: actions/checkout@v3
             -   uses: actions/setup-java@v3
                 with:
-                    java-version: '11'
+                    java-version: '17'
                     distribution: 'adopt'
             -   uses: actions/cache@v2
                 with:
@@ -78,7 +78,7 @@ jobs:
             -   name: Set up Maven Central Repository
                 uses: actions/setup-java@v3
                 with:
-                    java-version: '11'
+                    java-version: '17'
                     distribution: 'adopt'
                     server-id: ossrh
                     server-username: MAVEN_USERNAME
