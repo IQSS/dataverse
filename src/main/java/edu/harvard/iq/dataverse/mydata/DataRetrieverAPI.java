@@ -67,8 +67,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
     @Inject
     DataverseSession session;
-    @Inject
-    PermissionsWrapper permissionsWrapper;
 
     @EJB
     DataverseRoleServiceBean dataverseRoleService;
@@ -525,6 +523,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
     }
 
     private boolean isValid(SolrSearchResult result, DataverseRequest dataverseRequest) {
-        return result.isValid(x -> permissionsWrapper.canUpdateDataset(dataverseRequest, datasetService.find(x.getEntityId())));
+        return result.isValid(x -> true);
     }
 }        
