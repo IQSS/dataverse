@@ -88,6 +88,51 @@ See the :ref:`payara` section of :doc:`prerequisites` for details and init scrip
 
 Related to this is that you should remove ``/root/.payara/pass`` to ensure that Payara isn't ever accidentally started as root. Without the password, Payara won't be able to start as root, which is a good thing.
 
+.. _secure-password-storage:
+
+Secure Password Storage
+^^^^^^^^^^^^^^^^^^^^^^^
+
+In development or demo scenarios, we suggest not to store passwords in files permanently.
+We recommend the use of at least environment variables or production-grade mechanisms to supply passwords.
+
+In a production setup, permanently storing passwords as plaintext should be avoided at all cost.
+Environment variables are dangerous in shared environments and containers, as they may be easily exploited; we suggest not to use them.
+Depending on your deployment model and environment, you can make use of the following techniques to securely store and access passwords.
+
+**Password Aliases**
+
+A `password alias`_ allows you to have a plaintext reference to an encrypted password stored on the server, with the alias being used wherever the password is needed.
+This method is especially useful in a classic deployment, as it does not require any external secrets management.
+
+Password aliases are consumable as a MicroProfile Config source and can be referrenced by their name in a `property expression`_.
+You may also reference them within a `variable substitution`_, e.g. in your ``domain.xml``.
+
+Creation example for an alias named *my.alias.name*:
+
+.. code-block:: shell
+
+  echo "AS_ADMIN_ALIASPASSWORD=changeme" > /tmp/p.txt
+  asadmin create-password-alias --passwordfile "/tmp/p.txt" "my.alias.name"
+  rm /tmp/p.txt
+
+Note: omitting the ``--passwordfile`` parameter allows creating the alias in an interactive fashion with a prompt.
+
+**Secrets Files**
+
+Payara has a builtin MicroProfile Config source to consume values from files in a directory on your filesystem.
+This `directory config source`_ is most useful and secure with external secrets management in place, temporarily mounting cleartext passwords as files.
+Examples are Kubernetes / OpenShift `Secrets <https://kubernetes.io/docs/concepts/configuration/secret/>`_ or tools like `Vault Agent <https://developer.hashicorp.com/vault/docs/agent-and-proxy/agent>`_.
+
+Please follow the `directory config source`_ documentation to learn about its usage.
+
+**Cloud Providers**
+
+Running Dataverse on a cloud platform or running an external secret management system like `Vault <https://developer.hashicorp.com/vault>`_ enables accessing secrets without any intermediate storage of cleartext.
+Obviously this is the most secure option for any deployment model, but it may require more resources to set up and maintain - your mileage may vary.
+
+Take a look at `cloud sources`_ shipped with Payara to learn about their usage.
+
 Enforce Strong Passwords for User Accounts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -673,6 +718,20 @@ To enable bearer tokens, you must install and configure Keycloak (for now, see :
 
 You can test that bearer tokens are working by following the example under :ref:`bearer-tokens` in the API Guide.
 
+.. _smtp-config:
+
+SMTP/Email Configuration
+------------------------
+
+The installer prompts you for some basic options to configure Dataverse to send email using your SMTP server, but in many cases, extra configuration may be necessary.
+
+Make sure the :ref:`dataverse.mail.system-email` has been set. Email will not be sent without it. A hint will be logged about this fact.
+If you want to separate system email from your support team's email, take a look at :ref:`dataverse.mail.support-email`.
+
+Then check the list of commonly used settings at the top of :ref:`dataverse.mail.mta`.
+
+If you have trouble, consider turning on debugging with :ref:`dataverse.mail.debug`.
+
 .. _database-persistence:
 
 Database Persistence
@@ -688,16 +747,8 @@ Basic Database Settings
 1. Any of these settings can be set via system properties (see :ref:`jvm-options` starting at :ref:`dataverse.db.name`), environment variables or other
    MicroProfile Config mechanisms supported by the app server.
    `See Payara docs for supported sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html#config-sources>`_.
-2. Remember to protect your secrets. For passwords, use an environment variable (bare minimum), a password alias named the same
-   as the key (OK) or use the "dir config source" of Payara (best).
-
-   Alias creation example:
-
-   .. code-block:: shell
-
-      echo "AS_ADMIN_ALIASPASSWORD=changeme" > /tmp/p.txt
-      asadmin create-password-alias --passwordfile /tmp/p.txt dataverse.db.password
-      rm /tmp/p.txt
+2. Remember to protect your secrets.
+   See :ref:`secure-password-storage` for more information.
 
 3. Environment variables follow the key, replacing any dot, colon, dash, etc. into an underscore "_" and all uppercase
    letters. Example: ``dataverse.db.host`` -> ``DATAVERSE_DB_HOST``
@@ -926,6 +977,8 @@ Then create a password alias by running (without changes):
 
 The second command will trigger an interactive prompt asking you to input your Swift password.
 
+Note: you may choose a different way to secure this password, depending on your use case. See :ref:`secure-password-storage` for more options.
+
 Second, update the JVM option ``dataverse.files.storage-driver-id`` by running the delete command:
 
 ``./asadmin $ASADMIN_OPTS delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
@@ -1136,11 +1189,30 @@ Larger installations may want to increase the number of open S3 connections allo
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.connection-pool-size=4096"``
 
+.. _s3-tagging:
+
+S3 Tagging
+##########
+
+By default, when direct upload to an S3 store is configured, Dataverse will place a ``temp`` tag on the file being uploaded for an easier cleanup in case the file is not added to the dataset after upload (e.g., if the user cancels the operation). (See :ref:`s3-tags-and-direct-upload`.)
+If your S3 store does not support tagging and gives an error when direct upload is configured, you can disable the tagging by using the ``dataverse.files.<id>.disable-tagging`` JVM option. For example:
+
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.disable-tagging=true"``
+
+Disabling the ``temp`` tag makes it harder to identify abandoned files that are not used by your Dataverse instance (i.e. one cannot search for the ``temp`` tag in a delete script). These should still be removed to avoid wasting storage space. To clean up these files and any other leftover files, regardless of whether the ``temp`` tag is applied, you can use the :ref:`cleanup-storage-api` API endpoint.
+
+Note that if you disable tagging, you should should omit the ``x-amz-tagging:dv-state=temp`` header when using the :doc:`/developers/s3-direct-upload-api`, as noted in that section.
+
+Finalizing S3 Configuration
+###########################
+
 In case you would like to configure Dataverse to use a custom S3 service instead of Amazon S3 services, please
 add the options for the custom URL and region as documented below. Please read above if your desired combination has
 been tested already and what other options have been set for a successful integration.
 
 Lastly, go ahead and restart your Payara server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
+
+.. _list-of-s3-storage-options:
 
 List of S3 Storage Options
 ##########################
@@ -1169,6 +1241,7 @@ List of S3 Storage Options
     dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                                     ``false``
     dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                                   ``true``
     dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                              ``256``
+    dataverse.files.<id>.disable-tagging         ``true``/``false``  Do not place the ``temp`` tag when redirecting the upload to the S3 server.          ``false``
     ===========================================  ==================  ===================================================================================  =============
 
 .. table::
@@ -1195,9 +1268,8 @@ Optionally, you may provide static credentials for each S3 storage using MicroPr
 You may provide the values for these via any `supported MicroProfile Config API source`_.
 
 **WARNING:**
-
 *For security, do not use the sources "environment variable" or "system property" (JVM option) in a production context!*
-*Rely on password alias, secrets directory or cloud based sources instead!*
+*Rely on password alias, secrets directory or cloud based sources as described at* :ref:`secure-password-storage` *instead!*
 
 **NOTE:**
 
@@ -1375,8 +1447,8 @@ Before being moved there,
 
 .. _cache-rate-limiting:
 
-Configure Your Dataverse Installation to Use JCache (with Hazelcast as Provided by Payara) for Rate Limiting
-------------------------------------------------------------------------------------------------------------
+Rate Limiting
+-------------
 
 Rate limiting has been added to prevent users from over taxing the system either deliberately or by runaway automated processes.
 Rate limiting can be configured on a tier level with tier 0 being reserved for guest users and tiers 1-any for authenticated users.
@@ -1395,7 +1467,7 @@ Note: If either of these settings exist in the database rate limiting will be en
 - :RateLimitingCapacityByTierAndAction is a JSON object specifying the rate by tier and a list of actions (commands). This allows for more control over the rate limit of individual API command calls.
   In the following example, calls made by a guest user (tier 0) for API GetLatestPublishedDatasetVersionCommand is further limited to only 10 calls per hour, while an authenticated user (tier 1) will be able to make 30 calls per hour to the same API.
 
-:download:`rate-limit-actions.json </_static/installation/files/examples/rate-limit-actions-setting.json>`  Example json for RateLimitingCapacityByTierAndAction
+:download:`rate-limit-actions.json </_static/installation/files/examples/rate-limit-actions-setting.json>`  Example JSON for RateLimitingCapacityByTierAndAction
 
 .. code-block:: bash
 
@@ -2321,15 +2393,9 @@ dataverse.db.password
 
 The PostgreSQL users password to connect with.
 
-Preferrably use a JVM alias, as passwords in environment variables aren't safe.
+See :ref:`secure-password-storage` to learn about options to securely store this password.
 
-.. code-block:: shell
-
-  echo "AS_ADMIN_ALIASPASSWORD=change-me-super-secret" > /tmp/password.txt
-  asadmin create-password-alias --passwordfile /tmp/password.txt dataverse.db.password
-  rm /tmp/password.txt
-
-Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PASSWORD``.
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PASSWORD`` (although you shouldn't use environment variables for passwords).
 
 dataverse.db.host
 +++++++++++++++++
@@ -2403,6 +2469,15 @@ Defaults to ``/solr/${dataverse.solr.core}``, interpolating the core name when u
 when using it to configure your core name!
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_PATH``.
+
+dataverse.solr.concurrency.max-async-indexes
+++++++++++++++++++++++++++++++++++++++++++++
+
+Maximum number of simultaneously running asynchronous dataset index operations.
+
+Defaults to ``4``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_CONCURRENCY_MAX_ASYNC_INDEXES``.
 
 dataverse.rserve.host
 +++++++++++++++++++++
@@ -2576,14 +2651,7 @@ Once you have a username from DataCite, you can enter it like this:
 Legacy Single PID Provider: dataverse.pid.datacite.password
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Once you have a password from your provider, you should create a password alias.
-This avoids storing it in clear text, although you could use a JVM option `to reference
-a different place <https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Server%20Configuration%20And%20Management/Configuration%20Options/Variable%20Substitution/Types%20of%20Variables.html>`__.
-
-``./asadmin create-password-alias dataverse.pid.datacite.password``
-
-It will allow you to enter the password while not echoing the characters.
-To manage these, read up on `Payara docs about password aliases <https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Server%20Configuration%20And%20Management/Configuration%20Options/Password%20Aliases.html#asadmin-commands-password-aliases>`__.
+Once you have a password from your provider, you should create a password alias called *dataverse.pid.datacite.password* or use another method described at :ref:`secure-password-storage` to safeguard it.
 
 **Notes:**
 
@@ -2594,7 +2662,7 @@ To manage these, read up on `Payara docs about password aliases <https://docs.pa
   environment variables for passwords).
 - This setting was formerly known as ``doi.password`` and has been renamed.
   You should delete the old JVM option and the wrapped password alias, then recreate
-  with new alias name as above.
+  as described above.
 
 
 
@@ -2628,6 +2696,7 @@ Legacy Single PID Provider: dataverse.pid.handlenet.key.passphrase
 Related to :ref:`Handle.Net PID provider usage <pids-handle-configuration>`.
 
 Provide a passphrase to decrypt the :ref:`private key file <dataverse.pid.handlenet.key.path>`.
+See :ref:`secure-password-storage` for ways to do this securely.
 
 The key file may (and should) be encrypted with a passphrase (used for
 encryption with AES-128). See also chapter 1.4 "Authentication" of the
@@ -2635,10 +2704,10 @@ encryption with AES-128). See also chapter 1.4 "Authentication" of the
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment
 variable ``DATAVERSE_PID_HANDLENET_KEY_PASSPHRASE`` (although you shouldn't use
-environment variables for passwords). This setting was formerly known as
-``dataverse.handlenet.admprivphrase`` and has been renamed. You should delete
-the old JVM option and the wrapped password alias, then recreate as shown for
-:ref:`dataverse.pid.datacite.password` but with this option as alias name.
+environment variables for passwords).
+
+This setting was formerly known as ``dataverse.handlenet.admprivphrase`` and has been renamed.
+You should delete the old JVM option and the wrapped password alias, then recreate as shown for :ref:`dataverse.pid.datacite.password` but with this option as alias name.
 
 
 .. _dataverse.pid.handlenet.index:
@@ -2832,20 +2901,11 @@ The key used to sign a URL is created from the API token of the creating user pl
 signature-secret makes it impossible for someone who knows an API token from forging signed URLs and provides extra security by 
 making the overall signing key longer.
 
-Since the signature-secret is sensitive, you should treat it like a password. Here is an example how to set your shared secret 
-with the secure method "password alias":
+**WARNING**:
+*Since the signature-secret is sensitive, you should treat it like a password.*
+*See* :ref:`secure-password-storage` *to learn about ways to safeguard it.*
 
-.. code-block:: shell
-
-  echo "AS_ADMIN_ALIASPASSWORD=change-me-super-secret" > /tmp/password.txt
-  asadmin create-password-alias --passwordfile /tmp/password.txt dataverse.api.signature-secret
-  rm /tmp/password.txt
-
-Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
-``DATAVERSE_API_SIGNATURE_SECRET``.
-
-**WARNING:** For security, do not use the sources "environment variable" or "system property" (JVM option) in a
-production context! Rely on password alias, secrets directory or cloud based sources instead!
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_API_SIGNATURE_SECRET`` (although you shouldn't use environment variables for passwords) .
 
 .. _dataverse.api.allow-incomplete-metadata:
 
@@ -2878,26 +2938,173 @@ See :ref:`discovery-sign-posting` for details.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_SIGNPOSTING_LEVEL1_ITEM_LIMIT``.
 
+.. _systemEmail:
+.. _dataverse.mail.system-email:
+
+dataverse.mail.system-email
++++++++++++++++++++++++++++
+
+This is the email address that "system" emails are sent from such as password reset links, notifications, etc.
+It replaces the database setting :ref:`legacySystemEmail` since Dataverse 6.2.
+
+**WARNING**: Your Dataverse installation will not send mail without this setting in place.
+
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
+If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
+In case you want your system email address to of no-reply style, have a look at :ref:`dataverse.mail.support-email` setting, too.
+
+Please note that if you're having any trouble sending email, you can refer to "Troubleshooting" under :doc:`installation-main`.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SYSTEM_EMAIL``.
+
+See also :ref:`smtp-config`.
+
+.. _dataverse.mail.support-email:
+
 dataverse.mail.support-email
 ++++++++++++++++++++++++++++
 
-This provides an email address distinct from the :ref:`systemEmail` that will be used as the email address for Contact Forms and Feedback API. This address is used as the To address when the Contact form is launched from the Support entry in the top navigation bar and, if configured via :ref:`dataverse.mail.cc-support-on-contact-email`, as a CC address when the form is launched from a Dataverse/Dataset Contact button.
-This allows configuration of a no-reply email address for :ref:`systemEmail` while allowing feedback to go to/be cc'd to the support email address, which would normally accept replies. If not set, the :ref:`systemEmail` is used for the feedback API/contact form email.
+This provides an email address distinct from the :ref:`systemEmail` that will be used as the email address for Contact Forms and Feedback API.
+This address is used as the To address when the Contact form is launched from the Support entry in the top navigation bar and, if configured via :ref:`dataverse.mail.cc-support-on-contact-email`, as a CC address when the form is launched from a Dataverse/Dataset Contact button.
+This allows configuration of a no-reply email address for :ref:`systemEmail` while allowing feedback to go to/be cc'd to the support email address, which would normally accept replies.
+If not set, the :ref:`systemEmail` is used for the feedback API/contact form email.
 
-Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
+Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI.
+If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_SUPPORT_EMAIL``.
+
+See also :ref:`smtp-config`.
 
 .. _dataverse.mail.cc-support-on-contact-email:
 
 dataverse.mail.cc-support-on-contact-email
 ++++++++++++++++++++++++++++++++++++++++++
 
-If this setting is true, the contact forms and feedback API will cc the system (:SupportEmail if set, :SystemEmail if not) when sending email to the collection, dataset, or datafile contacts.
+If this boolean setting is true, the contact forms and feedback API will cc the system (``dataverse.mail.support-mail`` if set, ``dataverse.mail.system-email`` if not) when sending email to the collection, dataset, or datafile contacts.
 A CC line is added to the contact form when this setting is true so that users are aware that the cc will occur.
 The default is false.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_CC_SUPPORT_ON_CONTACT_EMAIL``.
+
+See also :ref:`smtp-config`.
+
+.. _dataverse.mail.debug:
+
+dataverse.mail.debug
+++++++++++++++++++++
+
+When this boolean setting is true, sending an email will generate more verbose logging, enabling you to analyze mail delivery malfunctions.
+Defaults to ``false``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_MAIL_DEBUG``.
+
+See also :ref:`smtp-config`.
+
+.. _dataverse.mail.mta:
+
+dataverse.mail.mta.*
+++++++++++++++++++++
+
+The following options allow you to configure a target Mail Transfer Agent (MTA) to be used for sending emails to users.
+Be advised: as the mail server connection (session) is cached once created, you need to restart Payara when applying configuration changes.
+
+All can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable ``DATAVERSE_MAIL_MTA_HOST``.
+(For environment variables: simply replace "." and "-" with "_" and write as all caps.)
+
+The following table describes the most important settings commonly used.
+
+.. list-table::
+    :widths: 15 60 25
+    :header-rows: 1
+    :align: left
+
+    * - Setting Key
+      - Description
+      - Default Value
+    * - ``dataverse.mail.mta.host``
+      - The SMTP server to connect to.
+      - *No default*
+    * - ``dataverse.mail.mta.port``
+      - The SMTP server port to connect to. (Common are ``25`` for plain, ``587`` for SSL, ``465`` for legacy SSL)
+      - ``25``
+    * - ``dataverse.mail.mta.ssl.enable``
+      - Enable if your mail provider uses SSL.
+      - ``false``
+    * - ``dataverse.mail.mta.auth``
+      - If ``true``, attempt to authenticate the user using the AUTH command.
+      - ``false``
+    * - ``dataverse.mail.mta.user``
+      - The username to use in an AUTH command.
+      - *No default*
+    * - ``dataverse.mail.mta.password``
+      - The password to use in an AUTH command. (Might be a token when using XOAUTH2 mechanism)
+      - *No default*
+    * - ``dataverse.mail.mta.allow-utf8-addresses``
+      - If set to ``true``, UTF-8 strings are allowed in message headers, e.g., in addresses.
+        This should only be set if the mail server also supports UTF-8.
+        (Quoted from `Jakarta Mail Javadoc <https://jakarta.ee/specifications/mail/2.1/apidocs/jakarta.mail/jakarta/mail/internet/package-summary>`_)
+        Setting to ``false`` will also make mail address validation in UI/API fail on UTF-8 chars.
+      - ``true``
+
+**WARNING**:
+*For security of your password use only safe ways to store and access it.*
+*See* :ref:`secure-password-storage` *to learn about your options.*
+
+Find below a list of even more options you can use to configure sending mails.
+Detailed description for every setting can be found in the table included within the `Jakarta Mail Documentation <https://eclipse-ee4j.github.io/angus-mail/docs/api/org.eclipse.angus.mail/org/eclipse/angus/mail/smtp/package-summary.html>`_.
+(Simply replace ``dataverse.mail.mta.`` with ``mail.smtp.``.)
+
+* Timeouts:
+    ``dataverse.mail.mta.connectiontimeout``,
+    ``dataverse.mail.mta.timeout``,
+    ``dataverse.mail.mta.writetimeout``
+* SSL/TLS:
+    ``dataverse.mail.mta.starttls.enable``,
+    ``dataverse.mail.mta.starttls.required``,
+    ``dataverse.mail.mta.ssl.checkserveridentity``,
+    ``dataverse.mail.mta.ssl.trust``,
+    ``dataverse.mail.mta.ssl.protocols``,
+    ``dataverse.mail.mta.ssl.ciphersuites``
+* Proxy Connection:
+    ``dataverse.mail.mta.proxy.host``,
+    ``dataverse.mail.mta.proxy.port``,
+    ``dataverse.mail.mta.proxy.user``,
+    ``dataverse.mail.mta.proxy.password``,
+    ``dataverse.mail.mta.socks.host``,
+    ``dataverse.mail.mta.socks.port``
+* SMTP EHLO command details:
+    ``dataverse.mail.mta.ehlo``,
+    ``dataverse.mail.mta.localhost``,
+    ``dataverse.mail.mta.localaddress``,
+    ``dataverse.mail.mta.localport``
+* Authentication details:
+    ``dataverse.mail.mta.auth.mechanisms``,
+    ``dataverse.mail.mta.auth.login.disable``,
+    ``dataverse.mail.mta.auth.plain.disable``,
+    ``dataverse.mail.mta.auth.digest-md5.disable``,
+    ``dataverse.mail.mta.auth.ntlm.disable``,
+    ``dataverse.mail.mta.auth.xoauth2.disable``,
+    ``dataverse.mail.mta.auth.ntlm.domain``,
+    ``dataverse.mail.mta.auth.ntlm.flag``,
+    ``dataverse.mail.mta.sasl.enable``,
+    ``dataverse.mail.mta.sasl.usecanonicalhostname``,
+    ``dataverse.mail.mta.sasl.mechanisms``,
+    ``dataverse.mail.mta.sasl.authorizationid``,
+    ``dataverse.mail.mta.sasl.realm``
+* Miscellaneous:
+    ``dataverse.mail.mta.allow8bitmime``,
+    ``dataverse.mail.mta.submitter``,
+    ``dataverse.mail.mta.dsn.notify``,
+    ``dataverse.mail.mta.dsn.ret``,
+    ``dataverse.mail.mta.sendpartial``,
+    ``dataverse.mail.mta.quitwait``,
+    ``dataverse.mail.mta.quitonsessionreject``,
+    ``dataverse.mail.mta.userset``,
+    ``dataverse.mail.mta.noop.strict``,
+    ``dataverse.mail.mta.mailextension``
+
+See also :ref:`smtp-config`.
 
 dataverse.ui.allow-review-for-incomplete
 ++++++++++++++++++++++++++++++++++++++++
@@ -3121,18 +3328,13 @@ In Dataverse Software 4.7 and lower, the :doc:`/api/search` required an API toke
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SearchApiRequiresToken``
 
-.. _systemEmail:
+.. _legacySystemEmail:
 
 :SystemEmail
 ++++++++++++
 
-This is the email address that "system" emails are sent from such as password reset links. Your Dataverse installation will not send mail without this setting in place.
-
-``curl -X PUT -d 'LibraScholar SWAT Team <support@librascholar.edu>' http://localhost:8080/api/admin/settings/:SystemEmail``
-
-Note that only the email address is required, which you can supply without the ``<`` and ``>`` signs, but if you include the text, it's the way to customize the name of your support team, which appears in the "from" address in emails as well as in help text in the UI. If you don't include the text, the installation name (see :ref:`Branding Your Installation`) will appear in the "from" address.
-
-Please note that if you're having any trouble sending email, you can refer to "Troubleshooting" under :doc:`installation-main`.
+Please note that this setting is deprecated since Dataverse 6.2.
+It will be picked up for backward compatibility, but please migrate to usage of :ref:`dataverse.mail.system-email`.
 
 :HomePageCustomizationFile
 ++++++++++++++++++++++++++
@@ -4301,9 +4503,13 @@ A boolean setting that, if true, will send an email and notification to users wh
 :CVocConf
 +++++++++
 
-A JSON-structured setting that configures Dataverse to associate specific metadatablock fields with external vocabulary services and specific vocabularies/sub-vocabularies managed by that service. More information about this capability is available at :doc:`/admin/metadatacustomization`.
+The ``:CVocConf`` database setting is used to allow metadatablock fields to look up values in external vocabulary services. For example, you could configure the "Author Affiliation" field to look up organizations in the `Research Organization Registry (ROR) <https://ror.org>`_. For a high-level description of this feature, see :ref:`using-external-vocabulary-services` in the Admin Guide.
 
-Scripts that implement this association for specific service protocols are maintained at https://github.com/gdcc/dataverse-external-vocab-support. That repository also includes a json-schema for validating the structure required by this setting along with an example metadatablock and sample :CVocConf setting values associating entries in the example block with ORCID and SKOSMOS based services.
+The expected format for the ``:CVocConf`` database setting is JSON but the details are not documented here. Instead, please refer to `docs/readme.md <https://github.com/gdcc/dataverse-external-vocab-support/blob/main/docs/readme.md>`_ in the https://github.com/gdcc/dataverse-external-vocab-support repo.
+
+That repository also includes scripts that implement the lookup for specific service protocols, a JSON Schema for validating the structure required by this setting, and an example metadatablock with a sample ``:CVocConf`` config that associates fields in the example block with ORCID and SKOSMOS based services.
+
+The commands below should give you an idea of how to load the configuration, but you'll want to study the examples and make decisions about which configuration to use:
 
 ``wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json``
 
@@ -4367,6 +4573,18 @@ setting indicates embargoes are not supported. A value of -1 allows embargoes of
 can enter for an embargo end date. This limit will be enforced in the popup dialog in which users enter the embargo date. For example, to set a two year maximum:
 
 ``curl -X PUT -d 24 http://localhost:8080/api/admin/settings/:MaxEmbargoDurationInMonths``
+
+.. _:MinRetentionDurationInMonths:
+
+:MinRetentionDurationInMonths
++++++++++++++++++++++++++++++
+
+This setting controls whether retention periods are allowed in a Dataverse instance and can limit the minimum duration users are allowed to specify. A value of 0 months or non-existent
+setting indicates retention periods are not supported. A value of -1 allows retention periods of any length. Any other value indicates the minimum number of months (from the current date) a user
+can enter for a retention period end date. This limit will be enforced in the popup dialog in which users enter the retention period end date. For example, to set a ten year minimum:
+
+``curl -X PUT -d 120 http://localhost:8080/api/admin/settings/:MinRetentionDurationInMonths``
+
 
 :DataverseMetadataValidatorScript
 +++++++++++++++++++++++++++++++++
@@ -4530,9 +4748,6 @@ A true/false (default) option determining whether the dataset datafile table dis
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:AllowUserManagementOfOrder``
 
-.. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
-
-
 .. _:UseStorageQuotas:
 
 :UseStorageQuotas
@@ -4560,11 +4775,26 @@ The setting is ``false`` by default, preserving the legacy behavior.
 Number of calls allowed per hour if the specific command is not configured. The values represent the number of calls per hour per user for tiers 0,1,...
 A value of -1 can be used to signify no rate limit. Also, by default, a tier not defined would receive a default of no limit.
 
+See also :ref:`cache-rate-limiting`.
+
 :RateLimitingCapacityByTierAndAction
 ++++++++++++++++++++++++++++++++++++
 JSON object specifying the rate by tier and a list of actions (commands). This allows for more control over the rate limit of individual API command calls.
 In the following example, calls made by a guest user (tier 0) for API GetLatestPublishedDatasetVersionCommand is further limited to only 10 calls per hour, while an authenticated user (tier 1) will be able to make 30 calls per hour to the same API.
-{"rateLimits":[
-{"tier": 0, "limitPerHour": 10, "actions": ["GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand"]},
-{"tier": 0, "limitPerHour": 1, "actions": ["CreateGuestbookResponseCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]},
-{"tier": 1, "limitPerHour": 30, "actions": ["CreateGuestbookResponseCommand", "GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}]}
+
+.. code-block:: shell
+
+  {"rateLimits":[
+    {"tier": 0, "limitPerHour": 10, "actions": ["GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand"]},
+    {"tier": 0, "limitPerHour": 1, "actions": ["CreateGuestbookResponseCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]},
+    {"tier": 1, "limitPerHour": 30, "actions": ["CreateGuestbookResponseCommand", "GetLatestPublishedDatasetVersionCommand", "GetPrivateUrlCommand", "GetDatasetCommand", "GetLatestAccessibleDatasetVersionCommand", "UpdateDatasetVersionCommand", "DestroyDatasetCommand", "DeleteDataFileCommand", "FinalizeDatasetPublicationCommand", "PublishDatasetCommand"]}
+  ]}
+
+See also :ref:`cache-rate-limiting`.
+
+.. _supported MicroProfile Config API source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Overview.html
+.. _password alias: https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Server%20Configuration%20And%20Management/Configuration%20Options/Password%20Aliases.html
+.. _variable substitution: https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Server%20Configuration%20And%20Management/Configuration%20Options/Variable%20Substitution/Usage%20of%20Variables.html
+.. _property expression: https://download.eclipse.org/microprofile/microprofile-config-3.1/microprofile-config-spec-3.1.html#property-expressions
+.. _directory config source: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Directory.html
+.. _cloud sources: https://docs.payara.fish/community/docs/Technical%20Documentation/MicroProfile/Config/Cloud/Overview.html

@@ -388,8 +388,16 @@ public class PidUtilTest {
         assertEquals("fake1", dataset1.getGlobalId().getProviderId());
         assertEquals("ez1", dataset1.getEffectivePidGenerator().getId());
         
-        
-        
+        //Now test failure case
+        dataverse1.setPidGenerator(null);
+        dataset1.setPidGenerator(null);
+        pidGeneratorSpecs = Json.createObjectBuilder().add("protocol", AbstractDOIProvider.DOI_PROTOCOL).add("authority","10.9999").add("shoulder", "FK2").build().toString();
+        //Set a PID generator on the parent
+        dataverse1.setPidGeneratorSpecs(pidGeneratorSpecs);
+        assertEquals(pidGeneratorSpecs, dataverse1.getPidGeneratorSpecs());
+        //Verify that the parent's PID generator is the effective one
+        assertNull(dataverse1.getEffectivePidGenerator());
+        assertNull(dataset1.getEffectivePidGenerator());
     }
     
     @Test

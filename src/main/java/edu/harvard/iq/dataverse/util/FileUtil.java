@@ -21,14 +21,8 @@
 package edu.harvard.iq.dataverse.util;
 
 
-import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Embargo;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
@@ -501,24 +495,15 @@ public class FileUtil implements java.io.Serializable  {
 
         if ("application/x-gzip".equals(fileType)) {
             logger.fine("we'll run additional checks on this gzipped file.");
-            // We want to be able to support gzipped FITS files, same way as
-            // if they were just regular FITS files:
-            FileInputStream gzippedIn = new FileInputStream(f);
-            // (new FileInputStream() can throw a "filen not found" exception;
-            // however, if we've made it this far, it really means that the 
-            // file does exist and can be opened)
-            InputStream uncompressedIn = null; 
-            try {
-                uncompressedIn = new GZIPInputStream(gzippedIn);
+            try (FileInputStream gzippedIn = new FileInputStream(f);
+                     InputStream uncompressedIn = new GZIPInputStream(gzippedIn)) {
                 if (isFITSFile(uncompressedIn)) {
                     fileType = "application/fits-gzipped";
                 }
             } catch (IOException ioex) {
-                if (uncompressedIn != null) {
-                    try {uncompressedIn.close();} catch (IOException e) {}
-                }
+                logger.warning("IOException while processing gzipped FITS file: " + ioex.getMessage());
             }
-        } 
+        }
         if ("application/zip".equals(fileType)) {
             
             // Is this a zipped Shapefile?
@@ -1223,6 +1208,9 @@ public class FileUtil implements java.io.Serializable  {
         if (isActivelyEmbargoed(fileMetadata)) {
             return false;
         }
+        if (isRetentionExpired(fileMetadata)) {
+            return false;
+        }
         boolean popupReasons = isDownloadPopupRequired(fileMetadata.getDatasetVersion());
         if (popupReasons == true) {
             /**
@@ -1776,6 +1764,29 @@ public class FileUtil implements java.io.Serializable  {
         return false;
     }
 
+    public static boolean isRetentionExpired(DataFile df) {
+        Retention e = df.getRetention();
+        if (e != null) {
+            LocalDate endDate = e.getDateUnavailable();
+            if (endDate != null && endDate.isBefore(LocalDate.now())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isRetentionExpired(FileMetadata fileMetadata) {
+        return isRetentionExpired(fileMetadata.getDataFile());
+    }
+
+    public static boolean isRetentionExpired(List<FileMetadata> fmdList) {
+        for (FileMetadata fmd : fmdList) {
+            if (isRetentionExpired(fmd)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public static String getStorageDriver(DataFile dataFile) {
         String storageIdentifier = dataFile.getStorageIdentifier();
