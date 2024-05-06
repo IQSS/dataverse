@@ -407,7 +407,6 @@ public abstract class AbstractApiBean {
                         badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
             }
         }
-
         if (deep) {
             dataset = datasetSvc.findDeep(datasetId);
         } else {
