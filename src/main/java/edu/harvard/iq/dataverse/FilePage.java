@@ -321,9 +321,7 @@ public class FilePage implements java.io.Serializable {
         if (valid == null) {
             final DatasetVersion workingVersion = fileMetadata.getDatasetVersion();
             if (workingVersion.isDraft() || (canUpdateDataset() && JvmSettings.UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED.lookupOptional(Boolean.class).orElse(false))) {
-                final DatasetVersion newVersion = workingVersion.cloneDatasetVersion();
-                newVersion.setDatasetFields(newVersion.initDatasetFields(true));
-                valid = newVersion.isValid();
+                valid = workingVersion.isValid();
             } else {
                 valid = true;
             }
