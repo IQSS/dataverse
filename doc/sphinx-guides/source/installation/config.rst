@@ -1877,7 +1877,7 @@ If you do not find the license JSON you need above, you are encouraged to contri
 - Name your file using the SPDX identifier. For example, if the identifier is ``Apache-2.0``, you should name your file ``licenseApache-2.0.json``.
 - For the ``name`` field, use the "short identifier" from the SPDX landing page (e.g. ``Apache-2.0``).
 - For the ``description`` field, use the "full name" from the SPDX landing page (e.g. ``Apache License 2.0``).
-- For the ``uri`` field, go to the SPDX landing page for the license and remove the extension ``.html`` from your browser and then copy the URL (e.g. ``https://spdx.org/licenses/Apache-2.0``) into the ``uri`` field.
+- For the ``uri`` field, we encourage you to use the same resource that DataCite uses, most of the times this will be the same than the first provided resource on SPDX, but please get in contact with us if you have any questions on the cominity group.
 - For the ``active`` field, put ``true``.
 - For the ``sortOrder`` field, put the next sequention number after checking previous files with ``grep sortOrder scripts/api/data/licenses/*``.
 
