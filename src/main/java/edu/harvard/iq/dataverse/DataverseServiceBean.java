@@ -22,7 +22,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.Properties;
 
+import edu.harvard.iq.dataverse.validation.JSONDataValidation;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -1023,9 +1024,10 @@ public class DataverseServiceBean implements java.io.Serializable {
     public String isDatasetJsonValid(String dataverseAlias, String jsonInput) {
         JSONObject rawSchema = new JSONObject(new JSONTokener(getCollectionDatasetSchema(dataverseAlias)));
         
-        try {               
+        try {
             Schema schema = SchemaLoader.load(rawSchema);
             schema.validate(new JSONObject(jsonInput)); // throws a ValidationException if this object is invalid
+            JSONDataValidation.validate(schema, jsonInput); // throws a ValidationException if any objects are invalid
         } catch (ValidationException vx) {
             logger.info(BundleUtil.getStringFromBundle("dataverses.api.validate.json.failed") + " " + vx.getErrorMessage()); 
             String accumulatedexceptions = "";

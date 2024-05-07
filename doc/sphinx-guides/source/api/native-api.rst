@@ -566,8 +566,17 @@ While it is recommended to download a copy of the JSON Schema from the collectio
 Validate Dataset JSON File for a Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Validates a dataset JSON file customized for a given collection prior to creating the dataset. The validation only tests for json formatting
-and the presence of required elements:
+Validates a dataset JSON file customized for a given collection prior to creating the dataset.
+The validation tests for:
+Json formatting and the presence of required elements
+typeClass must follow these rules:
+- if multiple = true then value must be a list
+- if typeClass = ''primitive'' the value object is a String or a List of Strings depending on the multiple flag
+- if typeClass = ''compound'' the value object is a FieldDTO or a List of FieldDTOs depending on the multiple flag
+- if typeClass = ''controlledVocabulary'' the value(s) are checked against the list of known values
+typeName validations include:
+- dsDescription validation includes checks for typeName = ''dsDescriptionValue'' (required) and ''dsDescriptionDate'' (optional)
+- datasetContact validation includes checks for typeName = ''datasetContactName'' (required) and ''datasetContactEmail''; ''datasetContactAffiliation'' (optional)
 
 .. code-block:: bash
 
