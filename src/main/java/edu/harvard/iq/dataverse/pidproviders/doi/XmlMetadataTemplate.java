@@ -47,6 +47,7 @@ import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.export.DDIExporter;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
@@ -145,7 +146,6 @@ public class XmlMetadataTemplate {
         String relIdentifiers = generateRelatedIdentifiers(dvObject);
 
     }
-
 
     /**
      * 3, Title(s) (with optional type sub-properties) (M)
@@ -802,132 +802,265 @@ public class XmlMetadataTemplate {
         }
     }
 
-    private String generateRelatedIdentifiers(DvObject dvObject) {
+    /**
+     * 12, RelatedIdentifier (with type and relation type sub-properties) (R)
+     *
+     * @param xmlw The Steam writer
+     * @param dvObject the dataset/datafile
+     * @throws XMLStreamException
+     */
+    private void writeRelatedIdentifiers(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
 
-        StringBuilder sb = new StringBuilder();
-        if (dvObject.isInstanceofDataset()) {
-            Dataset dataset = (Dataset) dvObject;
+        boolean relatedIdentifiersWritten = false;
+
+        Map<String, String> attributes = new HashMap<String, String>();
+
+        if (dvObject instanceof Dataset dataset) {
 
             List<DatasetRelPublication> relatedPublications = dataset.getLatestVersionForCopy().getRelatedPublications();
             if (!relatedPublications.isEmpty()) {
                 for (DatasetRelPublication relatedPub : relatedPublications) {
+                    attributes.clear();
+
                     String pubIdType = relatedPub.getIdType();
                     String identifier = relatedPub.getIdNumber();
+                    String url = relatedPub.getUrl();
                     /*
                      * Note - with identifier and url fields, it's not clear that there's a single
-                     * way those two fields are used for all identifier types In QDR, at this time,
-                     * doi and isbn types always have the raw number in the identifier field,
-                     * whereas there are examples where URLs are in the identifier or url fields.
-                     * The code here addresses those practices and is not generic.
+                     * way those two fields are used for all identifier types. The code here is
+                     * ~best effort to interpret those fields.
                      */
-                    if (pubIdType != null) {
-                        switch (pubIdType) {
-                        case "doi":
-                            if (identifier != null && identifier.length() != 0) {
-                                appendIdentifier(sb, "DOI", "IsSupplementTo", "doi:" + identifier);
-                            }
-                            break;
-                        case "isbn":
-                            if (identifier != null && identifier.length() != 0) {
-                                appendIdentifier(sb, "ISBN", "IsSupplementTo", "ISBN:" + identifier);
-                            }
-                            break;
-                        case "url":
-                            if (identifier != null && identifier.length() != 0) {
-                                appendIdentifier(sb, "URL", "IsSupplementTo", identifier);
-                            } else {
-                                String pubUrl = relatedPub.getUrl();
-                                if (pubUrl != null && pubUrl.length() > 0) {
-                                    appendIdentifier(sb, "URL", "IsSupplementTo", pubUrl);
-                                }
-                            }
-                            break;
-                        default:
-                            if (identifier != null && identifier.length() != 0) {
-                                if (pubIdType.equalsIgnoreCase("arXiv")) {
-                                    pubIdType = "arXiv";
-                                } else if (pubIdType.equalsIgnoreCase("handle")) {
-                                    // Initial cap required for handle
-                                    pubIdType = "Handle";
-                                } else if (!pubIdType.equals("bibcode")) {
-                                    pubIdType = pubIdType.toUpperCase();
-                                }
-                                // For all others, do a generic attempt to match the identifier type to the
-                                // datacite schema and send the raw identifier as the value
-                                appendIdentifier(sb, pubIdType, "IsSupplementTo", identifier);
-                            }
-                            break;
-                        }
+                    pubIdType = getCanonicalPublicationType(pubIdType);
 
-                    } else {
-                        logger.info(relatedPub.getIdNumber() + relatedPub.getUrl() + relatedPub.getTitle());
+                    // Prefer url if set, otherwise check identifier
+                    String relatedIdentifier = url;
+                    if (StringUtils.isBlank(relatedIdentifier)) {
+                        relatedIdentifier = identifier;
+                    }
+                    // For types where we understand the protocol, get the canonical form
+                    switch (pubIdType) {
+                    case "DOI":
+                        if (!relatedIdentifier.startsWith("doi:") || relatedIdentifier.startsWith("http")) {
+                            relatedIdentifier = "doi:" + relatedIdentifier;
+                        }
+                        try {
+                            GlobalId pid = PidUtil.parseAsGlobalID(relatedIdentifier);
+                            relatedIdentifier = pid.asRawIdentifier();
+                        } catch (IllegalArgumentException e) {
+                            relatedIdentifier = null;
+                        }
+                        break;
+                    case "Handle":
+                        if (!relatedIdentifier.startsWith("hdl:") || relatedIdentifier.startsWith("http")) {
+                            relatedIdentifier = "hdl:" + relatedIdentifier;
+                        }
+                        try {
+                            GlobalId pid = PidUtil.parseAsGlobalID(relatedIdentifier);
+                            relatedIdentifier = pid.asRawIdentifier();
+                        } catch (IllegalArgumentException e) {
+                            relatedIdentifier = null;
+                        }
+                        break;
+                    case "URL":
+                        break;
+                    default:
+
+                        // For non-URL types, if a URL is given, split the string to get a schemeUri
+                        try {
+                            URL relatedUrl = new URL(relatedIdentifier);
+                            String protocol = relatedUrl.getProtocol();
+                            String authority = relatedUrl.getAuthority();
+                            String site = String.format("%s://%s", protocol, authority);
+                            relatedIdentifier = relatedIdentifier.substring(site.length());
+                            attributes.put("schemeURI", site);
+                        } catch (MalformedURLException e) {
+                            // Just an identifier
+                        }
+                    }
+
+                    if (StringUtils.isNotBlank(relatedIdentifier)) {
+                        // Still have a valid entry
+                        attributes.put("relatedIdentifierType", pubIdType);
+                        attributes.put("relationType", "IsSupplementTo");
+                        relatedIdentifiersWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "relatedIdentifiers", relatedIdentifiersWritten);
+                        XmlWriterUtil.writeFullElementWithAttributes(xmlw, "relatedIdentifier", attributes, relatedIdentifier);
                     }
                 }
             }
-
             if (!dataset.getFiles().isEmpty() && !(dataset.getFiles().get(0).getIdentifier() == null)) {
-
-                List<String> datafileIdentifiers = new ArrayList<>();
+                attributes.clear();
+                attributes.put("relationType", "HasPart");
                 for (DataFile dataFile : dataset.getFiles()) {
-                    if (dataFile.getGlobalId() != null) {
-                        if (sb.toString().isEmpty()) {
-                            sb.append("<relatedIdentifiers>");
+                    GlobalId pid = dataFile.getGlobalId();
+                    if (pid != null) {
+                        String pubIdType = getCanonicalPublicationType(pid.getProtocol());
+                        if (pubIdType != null) {
+                            attributes.put("relatedIdentifierType", pubIdType);
+                            relatedIdentifiersWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "relatedIdentifiers", relatedIdentifiersWritten);
+                            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "relatedIdentifier", attributes, pid.asRawIdentifier());
                         }
-                        sb.append("<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"HasPart\">"
-                                + dataFile.getGlobalId() + "</relatedIdentifier>");
                     }
                 }
+            }
+        } else if (dvObject instanceof DataFile df) {
+            GlobalId pid = df.getOwner().getGlobalId();
+            if (pid != null) {
+                String pubIdType = getCanonicalPublicationType(pid.getProtocol());
+                if (pubIdType != null) {
 
-                if (!sb.toString().isEmpty()) {
-                    sb.append("</relatedIdentifiers>");
+                    attributes.clear();
+                    attributes.put("relationType", "IsPartOf");
+                    relatedIdentifiersWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "relatedIdentifiers", relatedIdentifiersWritten);
+                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "relatedIdentifier", attributes, pid.asRawIdentifier());
                 }
             }
-        } else if (dvObject.isInstanceofDataFile()) {
-            DataFile df = (DataFile) dvObject;
-            appendIdentifier(sb, "DOI", "IsPartOf", df.getOwner().getGlobalId().asString());
-            if (sb.length() != 0) {
-                // Should always be true
-                sb.append("</relatedIdentifiers>");
-            }
         }
-        return sb.toString();
+        if (relatedIdentifiersWritten) {
+            xmlw.writeEndElement();
+        }
     }
 
 
-    private void appendIdentifier(StringBuilder sb, String idType, String relationType, String identifier) {
-        if (sb.toString().isEmpty()) {
-            sb.append("<relatedIdentifiers>");
+    static HashMap<String, String> relatedIdentifierTypeMap = new HashMap<String, String>();
+    
+    private static String getCanonicalPublicationType(String pubIdType) {
+        if (relatedIdentifierTypeMap.isEmpty()) {
+            relatedIdentifierTypeMap.put("ARK".toLowerCase(), "ARK");
+            relatedIdentifierTypeMap.put("arXiv", "arXiv");
+            relatedIdentifierTypeMap.put("bibcode".toLowerCase(), "bibcode");
+            relatedIdentifierTypeMap.put("DOI".toLowerCase(), "DOI");
+            relatedIdentifierTypeMap.put("EAN13".toLowerCase(), "EAN13");
+            relatedIdentifierTypeMap.put("EISSN".toLowerCase(), "EISSN");
+            relatedIdentifierTypeMap.put("Handle".toLowerCase(), "Handle");
+            relatedIdentifierTypeMap.put("IGSN".toLowerCase(), "IGSN");
+            relatedIdentifierTypeMap.put("ISBN".toLowerCase(), "ISBN");
+            relatedIdentifierTypeMap.put("ISSN".toLowerCase(), "ISSN");
+            relatedIdentifierTypeMap.put("ISTC".toLowerCase(), "ISTC");
+            relatedIdentifierTypeMap.put("LISSN".toLowerCase(), "LISSN");
+            relatedIdentifierTypeMap.put("LSID".toLowerCase(), "LSID");
+            relatedIdentifierTypeMap.put("PISSN".toLowerCase(), "PISSN");
+            relatedIdentifierTypeMap.put("PMID".toLowerCase(), "PMID");
+            relatedIdentifierTypeMap.put("PURL".toLowerCase(), "PURL");
+            relatedIdentifierTypeMap.put("UPC".toLowerCase(), "UPC");
+            relatedIdentifierTypeMap.put("URL".toLowerCase(), "URL");
+            relatedIdentifierTypeMap.put("URN".toLowerCase(), "URN");
+            relatedIdentifierTypeMap.put("WOS".toLowerCase(), "WOS");
+            // Add entry for Handle protocol so this can be used with GlobalId/getProtocol()
+            relatedIdentifierTypeMap.put("hdl".toLowerCase(), "Handle");
         }
-        sb.append("<relatedIdentifier relatedIdentifierType=\"" + idType + "\" relationType=\"" + relationType + "\">" + identifier + "</relatedIdentifier>");
+        return relatedIdentifierTypeMap.get(pubIdType);
     }
 
-    public void generateFileIdentifiers(DvObject dvObject) {
+    private void writeSize(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
+        // sizes -> size
+        boolean sizesWritten = false;
+        List<DataFile> dataFiles = new ArrayList<DataFile>();
 
-        if (dvObject.isInstanceofDataset()) {
-            Dataset dataset = (Dataset) dvObject;
-
-            if (!dataset.getFiles().isEmpty() && !(dataset.getFiles().get(0).getIdentifier() == null)) {
-
-                List<String> datafileIdentifiers = new ArrayList<>();
-                for (DataFile dataFile : dataset.getFiles()) {
-                    datafileIdentifiers.add(dataFile.getIdentifier());
-                    // int x = xmlMetadata.indexOf("</relatedIdentifiers>") - 1;
-                    // xmlMetadata = xmlMetadata.replace("{relatedIdentifier}",
-                    // dataFile.getIdentifier());
-                    // xmlMetadata = xmlMetadata.substring(0, x) + "<relatedIdentifier
-                    // relatedIdentifierType=\"hasPart\" "
-                    // + "relationType=\"doi\">${relatedIdentifier}</relatedIdentifier>"
-                    // + template.substring(x, template.length() - 1);
-
+        if (dvObject instanceof Dataset dataset) {
+            dataFiles = dataset.getFiles();
+        } else if (dvObject instanceof DataFile df) {
+            dataFiles.add(df);
+        }
+        if (dataFiles != null && !dataFiles.isEmpty()) {
+            for (DataFile dataFile : dataFiles) {
+                Long size = dataFile.getFilesize();
+                if (size != -1) {
+                    sizesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "sizes", sizesWritten);
+                    XmlWriterUtil.writeFullElement(xmlw, "size", size.toString());
                 }
-
-            } else {
-                // xmlMetadata = xmlMetadata.replace(
-                // "<relatedIdentifier relatedIdentifierType=\"hasPart\"
-                // relationType=\"doi\">${relatedIdentifier}</relatedIdentifier>",
-                // "");
             }
         }
+        if (sizesWritten) {
+            xmlw.writeEndElement();
+        }
+
     }
 
+    private void writeFormats(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
+
+        boolean formatsWritten = false;
+        List<DataFile> dataFiles = new ArrayList<DataFile>();
+
+        if (dvObject instanceof Dataset dataset) {
+            dataFiles = dataset.getFiles();
+        } else if (dvObject instanceof DataFile df) {
+            dataFiles.add(df);
+        }
+        if (dataFiles != null && !dataFiles.isEmpty()) {
+            for (DataFile dataFile : dataFiles) {
+                String format = dataFile.getContentType();
+                if (StringUtils.isNotBlank(format)) {
+                    formatsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "formats", formatsWritten);
+                    XmlWriterUtil.writeFullElement(xmlw, "format", format);
+                }
+                /* Should original formats be sent? What about original sizes above?
+                if(dataFile.isTabularData()) {
+                    String originalFormat = dataFile.getOriginalFileFormat();
+                    if(StringUtils.isNotBlank(originalFormat)) {
+                        XmlWriterUtil.writeFullElement(xmlw, "format", format);
+                    }
+                }*/
+            }
+        }
+        if (formatsWritten) {
+            xmlw.writeEndElement();
+        }
+
+    }
+
+    private void writeVersion(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
+        Dataset d = null;
+        if(dvObject instanceof Dataset) {
+            d = (Dataset) dvObject;
+        } else if (dvObject instanceof DataFile) {
+            d = ((DataFile) dvObject).getOwner();
+        }
+        if(d !=null) {
+            DatasetVersion dv = d.getLatestVersionForCopy();
+        String version = dv.getFriendlyVersionNumber();
+            if (StringUtils.isNotBlank(version)) {
+                XmlWriterUtil.writeFullElement(xmlw, "version", version);
+            }
+        }
+        
+    }
+
+    private void writeAccessRights(XMLStreamWriter xmlw, DvObject dvObject) {
+        // rightsList -> rights with rightsURI attribute
+        xmlw.writeStartElement("rightsList"); // <rightsList>
+
+        // set terms from the info:eu-repo-Access-Terms vocabulary
+        writeRightsHeader(xmlw, language);
+        boolean restrict = false;
+        boolean closed = false;
+
+        if (datasetVersionDTO.isFileAccessRequest()) {
+            restrict = true;
+        }
+        if (datasetVersionDTO.getFiles() != null) {
+            for (int i = 0; i < datasetVersionDTO.getFiles().size(); i++) {
+                if (datasetVersionDTO.getFiles().get(i).isRestricted()) {
+                    closed = true;
+                    break;
+                }
+            }
+        }
+
+        if (restrict && closed) {
+            xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/restrictedAccess");
+        } else if (!restrict && closed) {
+            xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/closedAccess");
+        } else {
+            xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/openAccess");
+        }
+        xmlw.writeEndElement(); // </rights>
+
+        writeRightsHeader(xmlw, language);
+        if (datasetVersionDTO.getLicense() != null) {
+            xmlw.writeAttribute("rightsURI", datasetVersionDTO.getLicense().getUri());
+            xmlw.writeCharacters(datasetVersionDTO.getLicense().getName());
+        }
+        xmlw.writeEndElement(); // </rights>
+        xmlw.writeEndElement(); // </rightsList>        
+    }
 }
