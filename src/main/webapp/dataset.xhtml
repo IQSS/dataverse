@@ -139,6 +139,7 @@
                                             <!-- DATASET Publication Status -->
                                             <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
                                             <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{DatasetPage.isActivelyEmbargoed(DatasetPage.workingVersion.fileMetadatas)}"/>
+                                            <h:outputText value="#{bundle['retentionExpired']}" styleClass="label label-warning" rendered="#{DatasetPage.isRetentionExpired(DatasetPage.workingVersion.fileMetadatas)}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
@@ -1004,8 +1005,10 @@
                         <ui:param name="bean" value="#{DatasetPage}"/>
                         <ui:param name="restrictFileAction" value="restrictFiles"/>
                         <ui:param name="deleteFileAction" value="deleteFiles"/>
-                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/> 
+                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/>
+                        <ui:param name="saveRetentionAction" value="saveRetention"/>
                         <ui:param name="updateElements" value=":datasetForm:embargoInputs"/>
+                        <ui:param name="updateRetentionElements" value=":datasetForm:retentionInputs"/>
                     </ui:include>
                     <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                         <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
