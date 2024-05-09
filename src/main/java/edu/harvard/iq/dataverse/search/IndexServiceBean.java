@@ -1935,9 +1935,9 @@ public class IndexServiceBean {
         StringBuilder result = new StringBuilder();
         String deleteDeaccessionedResult = removeSolrDocFromIndex(determineDeaccessionedDatasetId(dataset));
         result.append(deleteDeaccessionedResult);
-        List<String> docIds = findSolrDocIdsForFilesToDelete(dataset, IndexableDataset.DatasetState.DEACCESSIONED);
-        String deleteFilesResult = removeMultipleSolrDocs(docIds);
-        result.append(deleteFilesResult);
+//        List<String> docIds = findSolrDocIdsForFilesToDelete(dataset, IndexableDataset.DatasetState.DEACCESSIONED);
+//        String deleteFilesResult = removeMultipleSolrDocs(docIds);
+//        result.append(deleteFilesResult);
         return result.toString();
     }
 
@@ -1945,9 +1945,9 @@ public class IndexServiceBean {
         StringBuilder result = new StringBuilder();
         String deletePublishedResult = removeSolrDocFromIndex(determinePublishedDatasetSolrDocId(dataset));
         result.append(deletePublishedResult);
-        List<String> docIds = findSolrDocIdsForFilesToDelete(dataset, IndexableDataset.DatasetState.PUBLISHED);
-        String deleteFilesResult = removeMultipleSolrDocs(docIds);
-        result.append(deleteFilesResult);
+//        List<String> docIds = findSolrDocIdsForFilesToDelete(dataset, IndexableDataset.DatasetState.PUBLISHED);
+//        String deleteFilesResult = removeMultipleSolrDocs(docIds);
+//        result.append(deleteFilesResult);
         return result.toString();
     }
 
