@@ -486,9 +486,40 @@ public class IndexServiceBean {
         String solrIdDeaccessioned = determineDeaccessionedDatasetId(dataset);
         StringBuilder debug = new StringBuilder();
         debug.append("\ndebug:\n");
+        DatasetVersion latestVersion = dataset.getLatestVersion();
+        String latestVersionStateString = latestVersion.getVersionState().name();
+        DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
+        DatasetVersion releasedVersion = dataset.getReleasedVersion();
+        boolean atLeastOnePublishedVersion = false;
+        if (releasedVersion != null) {
+            atLeastOnePublishedVersion = true;
+        } else {
+            atLeastOnePublishedVersion = false;
+        }
+        List<String> solrIdsOfFilesToDelete = null;
+
+        try {
+            solrIdsOfFilesToDelete = findFilesOfParentDataset(dataset.getId());
+            List<FileMetadata> fileMetadatas = latestVersion.getFileMetadatas();
+
+            for (FileMetadata fileMetadata : fileMetadatas) {
+                String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId();
+                solrIdsOfFilesToDelete.remove(solrIdOfPublishedFile);
+            }
+            if (releasedVersion != null && !releasedVersion.equals(latestVersion)) {
+                fileMetadatas = releasedVersion.getFileMetadatas();
+                for (FileMetadata fileMetadata : fileMetadatas) {
+                    String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId();
+                    solrIdsOfFilesToDelete.remove(solrIdOfPublishedFile);
+                }
+            }
+        } catch (SearchException | NullPointerException ex) {
+            logger.fine("could not run search of files to delete: " + ex);
+        }
         int numPublishedVersions = 0;
         List<DatasetVersion> versions = dataset.getVersions();
-        List<String> solrIdsOfFilesToDelete = new ArrayList<>();
+        //List<String> solrIdsOfFilesToDelete = new ArrayList<>();
+        //Debugging loop
         for (DatasetVersion datasetVersion : versions) {
             Long versionDatabaseId = datasetVersion.getId();
             String versionTitle = datasetVersion.getTitle();
@@ -500,10 +531,10 @@ public class IndexServiceBean {
             debug.append("version found with database id " + versionDatabaseId + "\n");
             debug.append("- title: " + versionTitle + "\n");
             debug.append("- semanticVersion-VersionState: " + semanticVersion + "-" + versionState + "\n");
-            List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
             List<String> fileInfo = new ArrayList<>();
+            List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
+
             for (FileMetadata fileMetadata : fileMetadatas) {
-                String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId();
                 /**
                  * It sounds weird but the first thing we'll do is preemptively
                  * delete the Solr documents of all published files. Don't
@@ -515,10 +546,9 @@ public class IndexServiceBean {
                  * searchable. See also
                  * https://github.com/IQSS/dataverse/issues/762
                  */
-                solrIdsOfFilesToDelete.add(solrIdOfPublishedFile);
                 fileInfo.add(fileMetadata.getDataFile().getId() + ":" + fileMetadata.getLabel());
             }
-            try {
+//            try {
                 /**
                  * Preemptively delete *all* Solr documents for files associated
                  * with the dataset based on a Solr query.
@@ -539,11 +569,11 @@ public class IndexServiceBean {
                  * @todo We should also delete the corresponding Solr
                  * "permission" documents for the files.
                  */
-                List<String> allFilesForDataset = findFilesOfParentDataset(dataset.getId());
-                solrIdsOfFilesToDelete.addAll(allFilesForDataset);
-            } catch (SearchException | NullPointerException ex) {
-                logger.fine("could not run search of files to delete: " + ex);
-            }
+                //List<String> allFilesForDataset = findFilesOfParentDataset(dataset.getId());
+                //solrIdsOfFilesToDelete.addAll(allFilesForDataset);
+//            } catch (SearchException | NullPointerException ex) {
+//                logger.fine("could not run search of files to delete: " + ex);
+//            }
             int numFiles = 0;
             if (fileMetadatas != null) {
                 numFiles = fileMetadatas.size();
@@ -555,16 +585,7 @@ public class IndexServiceBean {
             IndexResponse resultOfAttemptToPremptivelyDeletePublishedFiles = solrIndexService.deleteMultipleSolrIds(solrIdsOfFilesToDelete);
             debug.append("result of attempt to premptively deleted published files before reindexing: " + resultOfAttemptToPremptivelyDeletePublishedFiles + "\n");
         }
-        DatasetVersion latestVersion = dataset.getLatestVersion();
-        String latestVersionStateString = latestVersion.getVersionState().name();
-        DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
-        DatasetVersion releasedVersion = dataset.getReleasedVersion();
-        boolean atLeastOnePublishedVersion = false;
-        if (releasedVersion != null) {
-            atLeastOnePublishedVersion = true;
-        } else {
-            atLeastOnePublishedVersion = false;
-        }
+       
         Map<DatasetVersion.VersionState, Boolean> desiredCards = new LinkedHashMap<>();
         /**
          * @todo refactor all of this below and have a single method that takes
