@@ -9,14 +9,13 @@ import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.json.JSONArray;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class JSONDataValidation {
+    private static final Logger logger = Logger.getLogger(JSONDataValidation.class.getCanonicalName());
     private static DatasetFieldServiceBean datasetFieldService = null;
-    private static Map<String,List<String>> schemaDTOMap = new ConcurrentHashMap<>();
 
     /**
      *
@@ -24,26 +23,17 @@ public class JSONDataValidation {
      * @param jsonInput JSON string to validate against the schema
      * @throws ValidationException
      */
-    public static void validate(final Schema schema, String jsonInput) throws ValidationException {
+    public static void validate(Schema schema, Map<String, Map<String, List<String>>> schemaChildMap, String jsonInput) throws ValidationException {
         if (datasetFieldService == null) {
             datasetFieldService = CDI.current().select(DatasetFieldServiceBean.class).get();
-        }
-        if (schemaDTOMap.isEmpty()) {
-            // TODO: load from a config file
-            schemaDTOMap.put("datasetContact", Collections.EMPTY_LIST);
-            schemaDTOMap.put("datasetContact.required", List.of("datasetContactName"));
-            schemaDTOMap.put("datasetContact.allowed", List.of("datasetContactName", "datasetContactEmail","datasetContactAffiliation"));
-            schemaDTOMap.put("dsDescription", Collections.EMPTY_LIST);
-            schemaDTOMap.put("dsDescription.required", List.of("dsDescriptionValue"));
-            schemaDTOMap.put("dsDescription.allowed", List.of("dsDescriptionValue", "dsDescriptionDate"));
         }
         JsonNode node = new JsonNode(jsonInput);
         if (node.isArray()) {
             JSONArray arrayNode = node.getArray();
-            validateObject(schema, "root", arrayNode.toList());
+            validateObject(schema, schemaChildMap, "root", arrayNode.toList());
         } else {
             node.getObject().toMap().forEach((k,v) -> {
-                validateObject(schema, k, (v instanceof JSONArray) ? ((JSONArray) v).toList() : v);
+                validateObject(schema, schemaChildMap, k, (v instanceof JSONArray) ? ((JSONArray) v).toList() : v);
             });
         }
     }
@@ -51,16 +41,16 @@ public class JSONDataValidation {
     /*
      * Validate objects recursively
      */
-    private static void validateObject(final Schema schema, String key, Object value) {
+    private static void validateObject(Schema schema, Map<String, Map<String,List<String>>> schemaChildMap, String key, Object value) {
         if (value instanceof Map<?,?>) {
-            validateSchemaObject(schema, key, (Map) value);
+            validateSchemaObject(schema, schemaChildMap, key, (Map) value);
 
             ((Map<?, ?>) value).entrySet().forEach(e -> {
-                validateObject(schema, (String) e.getKey(), e.getValue());
+                validateObject(schema, schemaChildMap, (String) e.getKey(), e.getValue());
             });
         } else if (value instanceof List) {
             ((List<?>) value).listIterator().forEachRemaining(v -> {
-                validateObject(schema, key, v);
+                validateObject(schema, schemaChildMap, key, v);
             });
         }
     }
@@ -68,18 +58,18 @@ public class JSONDataValidation {
     /*
      * Validate objects specific to a type. Currently only validating Datasets
      */
-    private static void validateSchemaObject(final Schema schema, String key, Map valueMap) {
+    private static void validateSchemaObject(Schema schema, Map<String, Map<String,List<String>>> schemaChildMap, String key, Map valueMap) {
         if (schema.definesProperty("datasetVersion")) {
-            validateDatasetObject(schema, key, valueMap);
+            validateDatasetObject(schema, schemaChildMap, key, valueMap);
         }
     }
 
     /*
      * Specific validation for Dataset objects
      */
-    private static void validateDatasetObject(final Schema schema, String key, Map valueMap) {
+    private static void validateDatasetObject(Schema schema, Map<String, Map<String,List<String>>> schemaChildMap, String key, Map valueMap) {
         if (valueMap != null && valueMap.containsKey("typeClass")) {
-            validateTypeClass(schema, key, valueMap, valueMap.get("value"), "dataset");
+            validateTypeClass(schema, schemaChildMap, key, valueMap, valueMap.get("value"), "dataset");
         }
     }
 
@@ -97,7 +87,7 @@ public class JSONDataValidation {
      *         multiple/primitive: each JsonArray element will contain String
      *         multiple/compound: each JsonArray element will contain Set of FieldDTOs
      */
-    private static void validateTypeClass(Schema schema, String key, Map valueMap, Object value, String messageType) {
+    private static void validateTypeClass(Schema schema, Map<String, Map<String,List<String>>> schemaChildMap, String key, Map valueMap, Object value, String messageType) {
 
         String typeClass = valueMap.containsKey("typeClass") ? valueMap.get("typeClass").toString() : "";
         String typeName = valueMap.containsKey("typeName") ? valueMap.get("typeName").toString() : "";
@@ -135,13 +125,12 @@ public class JSONDataValidation {
                                 throwValidationException("compound", List.of(key, typeName, typeClass));
                             }
                             // validate mismatch between compound object key and typeName in value
-                            String valTypeName = ((Map<?, ?>) val).containsKey("typeName") ? (String)((Map<?, ?>) val).get("typeName") : "";
+                            String valTypeName = ((Map<?, ?>) val).containsKey("typeName") ? (String) ((Map<?, ?>) val).get("typeName") : "";
                             if (!k.equals(valTypeName)) {
-                                throwValidationException("compound.mismatch", List.of((String)k, valTypeName));
+                                throwValidationException("compound.mismatch", List.of((String) k, valTypeName));
                             }
-                            validateChildObject(schema, (String)k, val, messageType + "." + typeName,
-                                    schemaDTOMap.getOrDefault(typeName+".required", Collections.EMPTY_LIST), schemaDTOMap.getOrDefault(typeName+".allowed", Collections.EMPTY_LIST));
                         });
+                        validateChildren(schema, schemaChildMap, key, ((Map) item).values(), typeName, messageType);
                     }
                 });
             }
@@ -166,32 +155,26 @@ public class JSONDataValidation {
     // If value is another object or list of objects that need to be further validated then childType refers to the parent
     // Example: If this is a dsDescriptionValue from a dataset the messageType would be dataset.dsDescriptionValue
     // This needs to match the Bundle.properties for mapping the error messages when an exception occurs
-    private static void validateChildObject(Schema schema, String key, Object child, String messageType, List<String> requiredFields, List<String> allowedFields) {
-        if (child instanceof Map<?, ?>) {
-            Map childMap = (Map<String, Object>) child;
-
-            if (!childMap.containsKey("value")) { // if child is simple key/value where the value Map is what we really want to validate
-                requiredFields.forEach(field -> {
-                    if (!childMap.containsKey(field)) {
-                        throwValidationException(messageType, "required.missing", List.of(key, field));
-                    }
-                });
-                childMap.forEach((k, v) -> {
-                    if (!allowedFields.isEmpty() && !allowedFields.contains(k)) {
-                        throwValidationException(messageType, "invalidType", List.of(key, (String) k));
-                    }
-                });
-                childMap.forEach((k,v) -> {
-                    Map<?, ?> valueMap = (v instanceof Map<?, ?>) ? (Map<?, ?>) v : null;
-                    if (valueMap == null || !k.equals(valueMap.get("typeName"))) {
-                        throwValidationException(messageType, "invalidType", List.of(key, (String) k));
-                    }
-                    validateChildObject(schema, (String)k, v, messageType, requiredFields, allowedFields);
-                });
-            } else { // this child is an object with a "value" and "typeName" attribute
-                String typeName = childMap.containsKey("typeName") ? childMap.get("typeName").toString() : "";
-                validateTypeClass(schema, typeName, childMap, childMap.get("value"), messageType);
+    private static void validateChildren(Schema schema, Map<String, Map<String,List<String>>> schemaChildMap, String key, Collection<Object> children, String typeName, String messageType) {
+        if (children == null || children.isEmpty()) {
+            return;
+        }
+        List<String> requiredFields = new ArrayList<>();
+        requiredFields.addAll((List)schemaChildMap.getOrDefault(typeName, Collections.EMPTY_MAP).getOrDefault("required", Collections.EMPTY_LIST));
+        List<String> allowedFields = (List)schemaChildMap.getOrDefault(typeName, Collections.EMPTY_MAP).getOrDefault("allowed", Collections.EMPTY_LIST);
+        children.forEach(child -> {
+            if (child instanceof Map<?, ?>) {
+                String childTypeName = ((Map<?, ?>) child).containsKey("typeName") ? (String)((Map<?, ?>) child).get("typeName") : "";
+                if (!allowedFields.isEmpty() && !allowedFields.contains(childTypeName)) {
+                    throwValidationException(messageType, "invalidType", List.of(typeName, childTypeName, allowedFields.stream().collect(Collectors.joining(", "))));
+                }
+                if (!requiredFields.isEmpty() && requiredFields.contains(childTypeName)) {
+                    requiredFields.remove(childTypeName);
+                }
             }
+        });
+        if (!requiredFields.isEmpty()) {
+            throwValidationException(messageType, "required.missing", List.of(typeName, requiredFields.stream().collect(Collectors.joining(", ")), typeName));
         }
     }
     private static void throwValidationException(String key, List<String> argList) {

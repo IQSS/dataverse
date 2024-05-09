@@ -239,6 +239,19 @@ public class DatasetsIT {
                 BundleUtil.getStringFromBundle("schema.validation.exception.compound.mismatch", List.of("datasetContactName", "datasetContactNme"))
         );
 
+        // add a typeName which is not allowed
+        testDatasetSchemaValidationHelper(dataverseAlias, apiToken,
+                "\"datasetContactEmail\": {\n" +
+                        "                  \"typeClass\": \"primitive\",\n" +
+                        "                  \"multiple\": false,\n" +
+                        "                  \"typeName\": \"datasetContactEmail\",",
+                "\"datasetContactNotAllowed\": {\n" +
+                        "                  \"typeClass\": \"primitive\",\n" +
+                        "                  \"multiple\": false,\n" +
+                        "                  \"typeName\": \"datasetContactNotAllowed\",",
+                BundleUtil.getStringFromBundle("schema.validation.exception.dataset.invalidType", List.of("datasetContact", "datasetContactNotAllowed", "datasetContactName, datasetContactAffiliation, datasetContactEmail"))
+        );
+
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverseResponse.prettyPrint();
         assertEquals(200, deleteDataverseResponse.getStatusCode());
