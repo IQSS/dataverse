@@ -13,13 +13,14 @@ We aren't just looking for developers. There are many ways to contribute to Data
 
 ## Ideas/Feature Requests
 
-Your idea or feature request might already be captured in the Dataverse [issue tracker] on GitHub but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][] or bringing it up on a [Community Call][]. You're also welcome to make some noise in [chat.dataverse.org][] or cram your idea into 280 characters and mention [@dataverseorg][] on Twitter. To discuss your idea privately, please email it to <support@dataverse.org>
+1. Please check if your idea or feature request is already captured in our [issue tracker][] or [roadmap][].
+1. Bring your idea to the community by posting on our [Google Group][] or [chat.dataverse.org][].
+1. To discuss privately, email us at support@dataverse.org.
 
-There's a chance your idea is already on our roadmap, which is available at <https://www.iq.harvard.edu/roadmap-dataverse-project>
-
-[chat.dataverse.org]: http://chat.dataverse.org
 [issue tracker]: https://github.com/IQSS/dataverse/issues
-[@dataverseorg]: https://twitter.com/dataverseorg
+[roadmap]: https://www.iq.harvard.edu/roadmap-dataverse-project
+[chat.dataverse.org]: http://chat.dataverse.org
+[Google Group]: https://groups.google.com/group/dataverse-community
 
 ## Usability Testing
 
