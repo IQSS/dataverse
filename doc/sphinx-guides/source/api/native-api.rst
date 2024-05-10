@@ -573,10 +573,11 @@ typeClass must follow these rules:
 - if multiple = true then value must be a list
 - if typeClass = ''primitive'' the value object is a String or a List of Strings depending on the multiple flag
 - if typeClass = ''compound'' the value object is a FieldDTO or a List of FieldDTOs depending on the multiple flag
-- if typeClass = ''controlledVocabulary'' the value(s) are checked against the list of known values
-typeName validations include:
+- if typeClass = ''controlledVocabulary'' the value(s) are checked against the list of known values stored in the database
+typeName validations (child objects with their required and allowed typeNames are configured automatically by the database schema). Examples include:
 - dsDescription validation includes checks for typeName = ''dsDescriptionValue'' (required) and ''dsDescriptionDate'' (optional)
 - datasetContact validation includes checks for typeName = ''datasetContactName'' (required) and ''datasetContactEmail''; ''datasetContactAffiliation'' (optional)
+- etc.
 
 .. code-block:: bash
 

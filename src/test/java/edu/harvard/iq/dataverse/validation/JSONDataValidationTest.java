@@ -281,12 +281,12 @@ public class JSONDataValidationTest {
         schema.validate(new JSONObject(jsonInput()));
     }
     @Test
-    public void testGoodJson() {
+    public void testValid() {
         Schema schema = SchemaLoader.load(new JSONObject(rawSchema()));
         JSONDataValidation.validate(schema, schemaChildMap, jsonInput());
     }
     @Test
-    public void testBadJson() {
+    public void testInvalid() {
         Schema schema = SchemaLoader.load(new JSONObject(rawSchema()));
         try {
             JSONDataValidation.validate(schema, schemaChildMap, jsonInput().replace("\"Social Sciences\"", "\"Social Sciences\",\"Bad\""));
