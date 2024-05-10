@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -214,6 +215,9 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.DATAVERSE_CATEGORY, dataverse.getIndexableCategoryName());
         if (dataverse.isReleased()) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
+            if (FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled()) {
+                solrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
+            }
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
         } else {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
@@ -887,6 +891,9 @@ public class IndexServiceBean {
 
         if (state.equals(indexableDataset.getDatasetState().PUBLISHED)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
+            if (FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled()) {
+                solrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
+            }
             // solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE,
             // dataset.getPublicationDate());
         } else if (state.equals(indexableDataset.getDatasetState().WORKING_COPY)) {
@@ -1400,6 +1407,9 @@ public class IndexServiceBean {
                     if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
                         fileSolrDocId = solrDocIdentifierFile + fileEntityId;
                         datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
+                        if (FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled()) {
+                            solrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
+                        }
                         // datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
                         addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
                         // has this published file been deleted from the current draft version? 

@@ -41,3 +41,8 @@ It is not recommended to delete an IP Group that has been assigned roles. If you
 To delete an IP Group with an alias of "ipGroup1", use the curl command below:
 
 ``curl -X DELETE http://localhost:8080/api/admin/groups/ip/ipGroup1``
+
+Related Settings
+----------------
+
+Be aware that enabling the feature flag ``avoid-expensive-solr-join`` will effectively prevent collection, datasets, and files from being found by members of IP Groups when searching, rendering IP Groups much less useful. See :ref:`feature-flags` in the Installation Guide for details.

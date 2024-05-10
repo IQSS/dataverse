@@ -118,6 +118,10 @@ Solr
 
 While in the past Solr performance hasn't been much of a concern, in recent years we've noticed performance problems when Harvard Dataverse is under load. Improvements were made in `PR #10050 <https://github.com/IQSS/dataverse/pull/10050>`_, for example.
 
+We are tracking performance problems in `#10469 <https://github.com/IQSS/dataverse/issues/10469>`_.
+
+In a meeting with a Solr expert on 2024-05-10 we were advised to avoid joins as much as possible. (It was acknowledged that many Solr users make use of joins because they have to, like we do, to keep some documents private.) Toward that end we have added a feature flag called ``avoid-expensive-solr-join`` as explained under :ref:`feature-flags`.
+
 Datasets with Large Numbers of Files or Versions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

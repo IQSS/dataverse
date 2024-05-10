@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
@@ -1006,6 +1007,14 @@ public class SearchServiceBean {
         // Yes, see if GuestUser is part of any groups such as IP Groups.
         // ----------------------------------------------------
         if (user instanceof GuestUser) {
+            if (FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled()) {
+                /**
+                 * Instead of doing an expensive join, narrow down to only
+                 * public objects. This field is indexed on the content document
+                 * itself, rather than a permission document.
+                 */
+                return SearchFields.PUBLIC_OBJECT + ":" + true;
+            }
             String groupsFromProviders = "";
             Set<Group> groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
             StringBuilder sb = new StringBuilder();

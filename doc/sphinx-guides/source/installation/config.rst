@@ -3248,6 +3248,9 @@ please find all known feature flags below. Any of these flags can be activated u
     * - api-session-auth
       - Enables API authentication via session cookie (JSESSIONID). **Caution: Enabling this feature flag exposes the installation to CSRF risks!** We expect this feature flag to be temporary (only used by frontend developers, see `#9063 <https://github.com/IQSS/dataverse/issues/9063>`_) and for the feature to be removed in the future.
       - ``Off``
+    * - avoid-expensive-solr-join
+      - Changes the way Solr queries are constructed for guest (unauthenticated) users. From a search perspective, it disables :doc:`IP Groups </admin/ip-groups>` (collections, datasets, and files will not be discoverable) but it removes an expensive Solr join for the most common users, which are guests, to help improve overall performance. After turning on this feature, you must perform a full reindex. See :doc:`/admin/solr-search-index`.
+      - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
