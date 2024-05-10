@@ -28,7 +28,7 @@ We would love to hear your ideas!💡
 
 Before submitting an issue, please search for existing issues in our [issue tracker][]. If there is an existing open issue that matches the issue you want to report, please add a comment to it or give it a 👍.
 
-If there is no pre-existing issue or it has been closed, please open a new issue (unless it is a security issue which should be reported privately to <security@dataverse.org>).
+If there is no pre-existing issue or it has been closed, please open a new issue (unless it is a security issue which should be reported privately to <security@dataverse.org> as discussed under {ref}`reporting-security-issues` in the Installation Guide).
 
 If you do not receive a reply to your new issue or comment in a timely manner, please ping us at [chat.dataverse.org][].
 
