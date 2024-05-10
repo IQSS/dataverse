@@ -13,9 +13,11 @@ We aren't just looking for developers. There are many ways to contribute to Data
 
 ## Ideas/Feature Requests
 
+We would love to hear your ideas!💡
+
 1. Please check if your idea or feature request is already captured in our [issue tracker][] or [roadmap][].
 1. Bring your idea to the community by posting on our [Google Group][] or [chat.dataverse.org][].
-1. To discuss privately, email us at support@dataverse.org.
+1. To discuss privately, email us at <support@dataverse.org>.
 
 [issue tracker]: https://github.com/IQSS/dataverse/issues
 [roadmap]: https://www.iq.harvard.edu/roadmap-dataverse-project
