@@ -24,25 +24,13 @@ We would love to hear your ideas!💡
 [chat.dataverse.org]: http://chat.dataverse.org
 [Google Group]: https://groups.google.com/group/dataverse-community
 
-## Bug Reports/Issues
+## Bug Reports
 
-An issue is a bug (a feature is no longer behaving the way it should) or a feature (something new to Dataverse that helps users complete tasks). You can browse the Dataverse [issue tracker] on GitHub by open or closed issues or by milestones.
+Before submitting an issue, please search for existing issues in our [issue tracker][]. If there is an existing open issue that matches the issue you want to report, please add a comment to it or give it a 👍.
 
-Before submitting an issue, please search the existing issues by using the search bar at the top of the page. If there is an existing open issue that matches the issue you want to report, please add a comment to it.
+If there is no pre-existing issue or it has been closed, please open a new issue (unless it is a security issue which should be reported privately to <security@dataverse.org>).
 
-If there is no pre-existing issue or it has been closed, please click on the "New Issue" button, log in, and write in what the issue is (unless it is a security issue which should be reported privately to security@dataverse.org).
-
-If you do not receive a reply to your new issue or comment in a timely manner, please email <support@dataverse.org> with a link to the issue.
-
-### Writing an Issue
-
-For the subject of an issue, please start it by writing the feature or functionality it relates to, i.e. "Create Account:..." or "Dataset Page:...". In the body of the issue, please outline the issue you are reporting with as much detail as possible. In order for the Dataverse development team to best respond to the issue, we need as much information about the issue as you can provide. Include steps to reproduce bugs. Indicate which version you're using, which is shown at the bottom of the page. We love screenshots!
-
-### Issue Attachments
-
-You can attach certain files (images, screenshots, logs, etc.) by dragging and dropping, selecting them, or pasting from the clipboard. Files must be one of GitHub's [supported attachment formats] such as png, gif, jpg, txt, pdf, zip, etc. (Pro tip: A file ending in .log can be renamed to .txt so you can upload it.) If there's no easy way to attach your file, please include a URL that points to the file in question.
-
-[supported attachment formats]: https://help.github.com/articles/file-attachments-on-issues-and-pull-requests/
+If you do not receive a reply to your new issue or comment in a timely manner, please ping us at [chat.dataverse.org][].
 
 ## Documentation
 
