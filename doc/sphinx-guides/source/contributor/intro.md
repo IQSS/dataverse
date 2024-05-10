@@ -22,10 +22,6 @@ We aren't just looking for developers. There are many ways to contribute to Data
 [chat.dataverse.org]: http://chat.dataverse.org
 [Google Group]: https://groups.google.com/group/dataverse-community
 
-## Usability Testing
-
-Please email us at <support@dataverse.org> if you are interested in participating in usability testing.
-
 ## Bug Reports/Issues
 
 An issue is a bug (a feature is no longer behaving the way it should) or a feature (something new to Dataverse that helps users complete tasks). You can browse the Dataverse [issue tracker] on GitHub by open or closed issues or by milestones.
@@ -63,6 +59,12 @@ Please read {doc}`/developers/version-control` in the Developer Guide to underst
 After making your pull request, your goal should be to help it advance through our kanban board at <https://github.com/orgs/IQSS/projects/34> . If no one has moved your pull request to the code review column in a timely manner, please reach out. Note that once a pull request is created for an issue, we'll remove the issue from the board so that we only track one card (the pull request).
 
 Thanks for your contribution!
+
+## Usability Testing
+
+Please email us at <support@dataverse.org> or fill in our [feedback form][] if you are interested in participating in usability testing.
+
+[feedback form]: https://goo.gl/forms/p7uu3GfiWYSlJrsi1
 
 [dataverse-community Google Group]: https://groups.google.com/group/dataverse-community
 [Community Call]: https://dataverse.org/community-calls
