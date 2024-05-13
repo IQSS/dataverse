@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
