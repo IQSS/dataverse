@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +65,7 @@ public class IndexServiceBeanTest {
         indexService.init();
         
         // then
-        HttpSolrClient client = (HttpSolrClient) indexService.solrServer;
+        Http2SolrClient client = (Http2SolrClient) indexService.solrServer;
         assertEquals(url, client.getBaseURL());
     }
     
@@ -82,7 +82,7 @@ public class IndexServiceBeanTest {
         indexService.init();
         
         // then
-        HttpSolrClient client = (HttpSolrClient) indexService.solrServer;
+        Http2SolrClient client = (Http2SolrClient) indexService.solrServer;
         assertEquals(url, client.getBaseURL());
     }
 

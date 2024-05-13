@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  *
  * @author landreev
  * 
- * This singleton is dedicated to initializing the HttpSolrClient used by the 
+ * This singleton is dedicated to initializing the Http2SolrClient used by the 
  * application to talk to the search engine, and serving it to all the other
  * classes that need it. 
  * This ensures that we are using one client only - as recommended by the 
