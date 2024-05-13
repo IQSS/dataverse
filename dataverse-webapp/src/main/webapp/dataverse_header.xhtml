@@ -476,6 +476,7 @@
     <p:dialog id="createDataset" header="#{bundle['add.dataset.dialog.header']}" widgetVar="createDatasetDialog" modal="true">
         <div class="form-horizontal">
             <h:form id="create-dataset-dialog">
+                <p jsf:rendered="#{not empty CreateDatasetDialog.selectDataverseInfo}">#{CreateDatasetDialog.selectDataverseInfo}</p>
                 <p>#{bundle['add.dataset.dialog.info']}</p>
                 <div class="form-group">
                     <div class="col-md-10">

@@ -722,7 +722,13 @@ public class SettingsServiceBean {
          * Additional (localized) text to show at the top
          * of the login page.
          */
-        LoginInfo
+        LoginInfo,
+
+        /**
+         * Additional (localized) text to show at the top
+         * of the "Add dataset" modal window.
+         */
+        SelectDataverseInfo
         ;
 
 

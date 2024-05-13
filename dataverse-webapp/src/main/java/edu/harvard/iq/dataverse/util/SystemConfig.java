@@ -274,6 +274,10 @@ public class SystemConfig {
         return getLocalizedProperty(SettingsServiceBean.Key.LoginInfo, locale);
     }
 
+    public String getSelectDataverseInfo(Locale locale) {
+        return getLocalizedProperty(SettingsServiceBean.Key.SelectDataverseInfo, locale);
+    }
+
     public long getTabularIngestSizeLimit() {
         // This method will return the blanket ingestable size limit, if
         // set on the system. I.e., the universal limit that applies to all

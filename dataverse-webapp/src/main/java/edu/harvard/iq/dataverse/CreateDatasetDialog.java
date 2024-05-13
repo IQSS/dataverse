@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.search.dataversestree.NodeData;
 import edu.harvard.iq.dataverse.search.dataversestree.NodesInfo;
 import edu.harvard.iq.dataverse.search.dataversestree.SolrTreeService;
 import edu.harvard.iq.dataverse.search.dataversestree.TreeNodeBrowser;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.event.NodeExpandEvent;
 import org.primefaces.model.TreeNode;
@@ -37,6 +38,8 @@ public class CreateDatasetDialog implements Serializable {
     private String treeFilter;
     private String prevTreeFilter;
     private TreeNodeBrowser treeNodeBrowser;
+    private DataverseSession session;
+    private SystemConfig systemConfig;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -44,11 +47,14 @@ public class CreateDatasetDialog implements Serializable {
 
     @Inject
     public CreateDatasetDialog(SolrTreeService solrTreeService, DataverseRequestServiceBean dataverseRequestService,
-                               DataverseLookupService dataverseLookupService, DataverseDao dataverseDao) {
+                               DataverseLookupService dataverseLookupService, DataverseDao dataverseDao,
+                               DataverseSession session, SystemConfig systemConfig) {
         this.solrTreeService = solrTreeService;
         this.dataverseRequestService = dataverseRequestService;
         this.dataverseLookupService = dataverseLookupService;
         this.dataverseDao = dataverseDao;
+        this.session = session;
+        this.systemConfig = systemConfig;
     }
 
     // -------------------- GETTERS --------------------
@@ -110,6 +116,10 @@ public class CreateDatasetDialog implements Serializable {
     public String createDataset() {
         return "/createDataset.xhtml?ownerId=" + ((NodeData) selectedNode.getData()).getId()
                 + "&faces-redirect=true";
+    }
+
+    public String getSelectDataverseInfo() {
+        return systemConfig.getSelectDataverseInfo(session.getLocale());
     }
 
     // -------------------- PRIVATE --------------------
