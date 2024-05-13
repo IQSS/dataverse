@@ -440,7 +440,7 @@ public class DataversesIT {
         while (checkIndex) {
             try {   
                     try {
-                        Thread.sleep(4000);
+                        Thread.sleep(6000);
                     } catch (InterruptedException ex) {
                     }                
                 Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);

@@ -793,7 +793,13 @@ public class SearchIT {
         Response createDataverseResponse2 = UtilIT.createSubDataverse("subDV" + UtilIT.getRandomIdentifier(), null, apiToken, dataverseAlias);
         createDataverseResponse2.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
-
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException ex) {
+            /**
+             * With solrconfig autoSoftCommit set to 1000 (1sec), this sleep is needed.
+             */
+        }
         String searchPart = "*"; 
 
         Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
@@ -968,7 +974,7 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode());
         
         // Wait a little while for the index to pick up the datasets, otherwise timing issue with searching for it.
-        UtilIT.sleepForReindex(datasetId2.toString(), apiToken, 2);
+        UtilIT.sleepForReindex(datasetId2.toString(), apiToken, 3);
 
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
         String identifier2 = JsonPath.from(datasetAsJson2.getBody().asString()).getString("data.identifier"); 
