@@ -131,6 +131,10 @@ public abstract class FilesystemAccessingWorkflowStep implements WorkflowStep {
         }
     }
 
+    public Optional<Path> getBaseWorkDir() {
+        return Optional.ofNullable(baseWorkDirParam).map(Paths::get);
+    }
+
     protected Optional<Path> resolveWorkDirFromOutputParams(WorkflowExecutionStep step) {
         return Optional.ofNullable(step.getOutputParams().get(WORK_DIR_PARAM_NAME)).map(Paths::get);
     }
@@ -144,6 +148,9 @@ public abstract class FilesystemAccessingWorkflowStep implements WorkflowStep {
     private HashMap<String, String> defaultOutputParams() {
         HashMap<String, String> outputParams = new HashMap<>();
         outputParams.put(WORK_DIR_PARAM_NAME, workDir.toAbsolutePath().toString());
+        if (baseWorkDirParam != null) {
+            outputParams.put(BASE_WORK_DIR_PARAM_NAME, Paths.get(baseWorkDirParam).toAbsolutePath().toString());
+        }
         return outputParams;
     }
 }
