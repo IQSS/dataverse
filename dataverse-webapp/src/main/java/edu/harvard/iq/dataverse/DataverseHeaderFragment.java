@@ -113,9 +113,12 @@ public class DataverseHeaderFragment implements Serializable {
     }
 
     public boolean shouldShowAddDatasetButton() {
-        return dataverseSession.getUser().isAuthenticated()
-                && !confirmEmailService.hasEffectivelyUnconfirmedMail(dataverseSession.getUser())
-                && !systemConfig.isReadonlyMode();
+        return !systemConfig.isReadonlyMode() &&
+                (!dataverseSession.getUser().isAuthenticated() || !confirmEmailService.hasEffectivelyUnconfirmedMail(dataverseSession.getUser()));
+    }
+
+    public boolean shouldShowLoginRedirect() {
+        return !dataverseSession.getUser().isAuthenticated();
     }
 
     public void initBreadcrumbsForFileMetadata(FileMetadata fmd, String subPage) {

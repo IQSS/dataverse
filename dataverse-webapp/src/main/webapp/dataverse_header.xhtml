@@ -160,7 +160,12 @@
                             <li jsf:rendered="#{dataverseHeaderFragment.shouldShowAddDatasetButton()}">
                                 <h:form styleClass="navbar-form navbar-left navbar-form-link navbar-highlighted-link">
                                     <p:commandLink action="#{CreateDatasetDialog.init()}" update="create-dataset-dialog"
-                                                   oncomplete="primeFacesShowModal('createDatasetDialog', this)">
+                                                   oncomplete="primeFacesShowModal('createDatasetDialog', this)"
+                                                   rendered="#{!dataverseHeaderFragment.shouldShowLoginRedirect()}">
+                                        <h:outputText value="#{bundle['add.dataset.button']}"/>
+                                    </p:commandLink>
+                                    <p:commandLink oncomplete="primeFacesShowModal('loginRedirectDialog', this)"
+                                                   rendered="#{dataverseHeaderFragment.shouldShowLoginRedirect()}">
                                         <h:outputText value="#{bundle['add.dataset.button']}"/>
                                     </p:commandLink>
                                 </h:form>
@@ -515,6 +520,23 @@
                                      oncomplete="if (args &amp;&amp; !args.validationFailed) PF('createDatasetDialog').hide();"/>
                     <button type="button" onclick="PF('createDatasetDialog').hide()" class="btn btn-default" value="#{bundle.cancel}">
                         #{bundle.cancel}
+                    </button>
+                </div>
+            </h:form>
+        </div>
+    </p:dialog>
+
+    <p:dialog id="loginRedirectDialog" header="#{bundle['add.dataset.dialog.login.redirect.header']}" widgetVar="loginRedirectDialog" modal="true">
+        <div class="form-horizontal">
+            <h:form id="login-redirect-dialog">
+                <p>
+                    <h:outputFormat value="#{bundle['add.dataset.dialog.login.redirect.info']}" escape="false">
+                        <f:param value="/loginpage.xhtml#{navigationWrapper.redirectPage}"/>
+                    </h:outputFormat>
+                </p>
+                <div class="row button-block">
+                    <button type="button" onclick="PF('loginRedirectDialog').hide()" class="btn btn-default" value="#{bundle.close}">
+                        #{bundle.close}
                     </button>
                 </div>
             </h:form>
