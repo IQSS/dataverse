@@ -2844,6 +2844,13 @@ public class UtilIT {
                 i = repeats + 1;
             }
         } while ((i <= repeats) && stale);
+        try {
+            Thread.sleep(1000);  //Current autoSoftIndexTime - which adds a delay to when the new docs are visible 
+            i++;
+        } catch (InterruptedException ex) {
+            Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            i = repeats + 1;
+        }
         System.out.println("Waited " + (i * (sleepStep / 1000.0)) + " seconds");
         return i <= repeats;
 

@@ -349,7 +349,7 @@ public class IndexServiceBean {
     private static final Map<Long, Boolean> INDEXING_NOW = new ConcurrentHashMap<>();
     // semaphore for async indexing
     private static final Semaphore ASYNC_INDEX_SEMAPHORE = new Semaphore(JvmSettings.MAX_ASYNC_INDEXES.lookupOptional(Integer.class).orElse(4), true);
-    static final int COMMIT_WITHIN = 5000;
+    static final int COMMIT_WITHIN = 30000;  //Same as current autoHardIndex time
     
     @Inject
     @Metric(name = "index_permit_wait_time", absolute = true, unit = MetricUnits.NANOSECONDS,
