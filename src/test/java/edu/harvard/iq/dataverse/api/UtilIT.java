@@ -61,7 +61,7 @@ public class UtilIT {
     private static final String API_TOKEN_KEY = "apiToken";
     private static final String BUILTIN_USER_KEY = "burrito";
     private static final String EMPTY_STRING = "";
-    public static final int MAXIMUM_INGEST_LOCK_DURATION = 15;
+    public static final int MAXIMUM_INGEST_LOCK_DURATION = 16; // 15 + 1 sec for current autoSoftCommit duration
     public static final int MAXIMUM_PUBLISH_LOCK_DURATION = 20;
     public static final int MAXIMUM_IMPORT_DURATION = 1;
 
