@@ -5,13 +5,10 @@ import edu.harvard.iq.dataverse.Dataverse.DataverseType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
-import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +23,6 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @LocalJvmSettings
@@ -55,36 +51,7 @@ public class IndexServiceBeanTest {
 
         Mockito.when(indexService.dataverseService.findRootDataverse()).thenReturn(dataverse);
     }
-    
-    @Test
-    public void testInitWithDefaults() {
-        // given
-        String url = "http://localhost:8983/solr/collection1";
-        
-        // when
-        indexService.init();
-        
-        // then
-        Http2SolrClient client = (Http2SolrClient) indexService.solrServer;
-        assertEquals(url, client.getBaseURL());
-    }
-    
-    
-    @Test
-    @JvmSetting(key = JvmSettings.SOLR_HOST, value = "foobar")
-    @JvmSetting(key = JvmSettings.SOLR_PORT, value = "1234")
-    @JvmSetting(key = JvmSettings.SOLR_CORE, value = "test")
-    void testInitWithConfig() {
-        // given
-        String url = "http://foobar:1234/solr/test";
-        
-        // when
-        indexService.init();
-        
-        // then
-        Http2SolrClient client = (Http2SolrClient) indexService.solrServer;
-        assertEquals(url, client.getBaseURL());
-    }
+
 
     @Test
     public void TestIndexing() throws SolrServerException, IOException {

@@ -145,33 +145,12 @@ public class IndexServiceBean {
     public static final String HARVESTED = "Harvested";
     private String rootDataverseName;
     private Dataverse rootDataverseCached;
-    SolrClient solrServer;
 
     private VariableMetadataUtil variableMetadataUtil;
 
     @PostConstruct
     public void init() {
-        // Get from MPCONFIG. Might be configured by a sysadmin or simply return the default shipped with
-        // resources/META-INF/microprofile-config.properties.
-        String protocol = JvmSettings.SOLR_PROT.lookup();
-        String path = JvmSettings.SOLR_PATH.lookup();
-    
-        String urlString = protocol + "://" + systemConfig.getSolrHostColonPort() + path;
-        solrServer = new Http2SolrClient.Builder(urlString).withMaxConnectionsPerHost(4).build();
-
         rootDataverseName = findRootDataverseCached().getName();
-    }
-
-    @PreDestroy
-    public void close() {
-        if (solrServer != null) {
-            try {
-                solrServer.close();
-            } catch (IOException e) {
-                logger.warning("Solr closing error: " + e);
-            }
-            solrServer = null;
-        }
     }
    
     @TransactionAttribute(REQUIRES_NEW)
@@ -2066,7 +2045,7 @@ public class IndexServiceBean {
             boolean done = false;
             while (!done) {
                 q.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
-                QueryResponse rsp = solrServer.query(q);
+                QueryResponse rsp = solrClientService.getSolrClient().query(q);
                 String nextCursorMark = rsp.getNextCursorMark();
                 SolrDocumentList list = rsp.getResults();
                 for (SolrDocument doc: list) {
@@ -2101,7 +2080,7 @@ public class IndexServiceBean {
             solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
             QueryResponse rsp = null;
             try {
-                rsp = solrServer.query(solrQuery);
+                rsp = solrClientService.getSolrClient().query(solrQuery);
              } catch (SolrServerException | IOException ex) {
                 throw new SearchException("Error searching Solr type: " + type, ex);
 
