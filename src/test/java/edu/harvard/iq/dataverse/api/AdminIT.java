@@ -15,8 +15,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
-import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -27,10 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import static jakarta.ws.rs.core.Response.Status.CREATED;
-import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static jakarta.ws.rs.core.Response.Status.OK;
-import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -836,32 +831,34 @@ public class AdminIT {
         String pathToJsonFile = "scripts/api/data/bannerMessageError.json";
         Response addBannerMessageErrorResponse = UtilIT.addBannerMessage(pathToJsonFile);
         addBannerMessageErrorResponse.prettyPrint();
-        String body = addBannerMessageErrorResponse.getBody().asString();
-        String status = JsonPath.from(body).getString("status");
-        assertEquals("ERROR", status);
-        
+        System.out.println(addBannerMessageErrorResponse.statusCode());
+        addBannerMessageErrorResponse.then().assertThat()
+                        .statusCode(BAD_REQUEST.getStatusCode())
+                        .body("status", equalTo("ERROR"));
+
         pathToJsonFile = "scripts/api/data/bannerMessageTest.json";
         
         Response addBannerMessageResponse = UtilIT.addBannerMessage(pathToJsonFile);
         addBannerMessageResponse.prettyPrint();
-        body = addBannerMessageResponse.getBody().asString();
-        status = JsonPath.from(body).getString("status");
-        assertEquals("OK", status);
-        
+        addBannerMessageResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo("OK"))
+                        ;
+             
         Response getBannerMessageResponse = UtilIT.getBannerMessages();
         getBannerMessageResponse.prettyPrint();
-        body = getBannerMessageResponse.getBody().asString();
-        status = JsonPath.from(body).getString("status");
-        assertEquals("OK", status);
-        String deleteId = UtilIT.getBannerMessageIdFromResponse(getBannerMessageResponse.getBody().asString());
-         
-        System.out.print("delete id: " + deleteId);
-        
-        Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(new Long (deleteId));
+        getBannerMessageResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].displayValue", equalTo("Banner Message For Deletion"));
+
+        Long deleteId = Long.valueOf(
+                UtilIT.getBannerMessageIdFromResponse(getBannerMessageResponse.getBody().asString()));
+        System.out.println("delete id: " + deleteId);
+        Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(deleteId);
         deleteBannerMessageResponse.prettyPrint();
-        body = deleteBannerMessageResponse.getBody().asString();
-        status = JsonPath.from(body).getString("status");
-        assertEquals("OK", status);
+        deleteBannerMessageResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo("OK"));
         
     }
 
