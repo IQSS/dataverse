@@ -47,3 +47,8 @@ What if a Run Fails?
 Each harvesting client run logs a separate file per run to the app server's default logging directory (``/usr/local/payara6/glassfish/domains/domain1/logs/`` unless you've changed it). Look for filenames in the format  ``harvest_TARGET_YYYY_MM_DD_timestamp.log`` to get a better idea of what's going wrong.
 
 Note that you'll want to run a minimum of Dataverse Software 4.6, optimally 4.18 or beyond, for the best OAI-PMH interoperability.
+
+Harvesting Client Changelog
+---------------------------
+
+- As of Dataverse 6.3, the publisher value of harvested datasets is now attributed to the dataset's distributor instead of its producer. This change affects all newly harvested datasets. For more information, see https://github.com/IQSS/dataverse/pull/9013
