@@ -159,4 +159,4 @@ The metrics you can retrieve that way:
 - `index_permit_wait_time_seconds_mean` displays how long does it take to receive a permit to index a dataset.
 - `index_time_seconds` displays how long does it take to receive a permit to do a heavy operation on Solr.
 - `solr_heavy_operation_permit_wait_time_seconds_mean` displays how long does it take to receive a permit to index a dataset.
-- `heavy_solr_operation_time` displays how long does it take to perform a heavy Solr operation.
+- `heavy_solr_operation_time_seconds` displays how long does it take to perform a heavy Solr operation.
