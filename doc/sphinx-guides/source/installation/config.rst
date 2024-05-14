@@ -2901,15 +2901,14 @@ dataverse.ui.show-validity-label-when-published
 +++++++++++++++++++++++++++++++++++++++++++++++
 
 Even when you do not allow incomplete metadata to be saved in dataverse, some metadata may end up being incomplete, e.g., after making a metadata field mandatory. Datasets where that field is
-not filled out, become incomplete, and therefore can be labeled with the ``incomplete metadata`` label. By default, this label is only shown for draft datasets. However, in some situations, you
-may want to show the label also for published datasets. For example, when an admin needs to have an overview of the datasets that are no longer valid after a metadata fields update,
-enabling this option will show the ``incomplete metadata`` labels on published datasets, but only to the users that can edit the specific datasets. Note that you need to reindex the datasets
-after changing the metadata definitions. Reindexing will update the labels and other dataset information according to the new situation.
+not filled out, become incomplete, and therefore can be labeled with the ``incomplete metadata`` label. By default, this label is only shown for draft datasets and published datasets that the
+user can edit. This option can be disabled by setting it to ``false`` where only draft datasets with incomplete metadata will have that label. When disabled, all published dataset will not have
+that label. Note that you need to reindex the datasets after changing the metadata definitions. Reindexing will update the labels and other dataset information according to the new situation.
 
-When enabled, published datasets with incomplete metadata will have an ``incomplete metadata`` label attached to them, but only for the datasets that the user can edit. You can list these datasets,
-for example, with the validity of metadata filter shown in "My Data" page that can be turned on by enabling the :ref:`dataverse.ui.show-validity-filter` option.
+When enabled (by default), published datasets with incomplete metadata will have an ``incomplete metadata`` label attached to them, but only for the datasets that the user can edit.
+You can list these datasets, for example, with the validity of metadata filter shown in "My Data" page that can be turned on by enabling the :ref:`dataverse.ui.show-validity-filter` option.
 
-Defaults to ``false``.
+Defaults to ``true``.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_API_SHOW_LABEL_FOR_INCOMPLETE_WHEN_PUBLISHED``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.

@@ -2296,7 +2296,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isValid() {
         if (valid == null) {
-            if (workingVersion.isDraft() || (canUpdateDataset() && JvmSettings.UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED.lookupOptional(Boolean.class).orElse(false))) {
+            if (workingVersion.isDraft() || (canUpdateDataset() && JvmSettings.UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED.lookupOptional(Boolean.class).orElse(true))) {
                 valid = workingVersion.isValid();
             } else {
                 valid = true;
