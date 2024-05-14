@@ -128,6 +128,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.fileCategories")
             //.setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses")
             .setHint("eclipselink.left-join-fetch", "o.files.embargo")
+            .setHint("eclipselink.left-join-fetch", "o.files.retention")
             .setHint("eclipselink.left-join-fetch", "o.files.fileAccessRequests")
             .setHint("eclipselink.left-join-fetch", "o.files.owner")
             .setHint("eclipselink.left-join-fetch", "o.files.releaseUser")
@@ -860,18 +861,33 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.fine("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
             return null;
         }
+        // Just in case the previously designated thumbnail for the dataset was 
+        // a "custom" kind, i.e. an uploaded "dataset_logo" file, the following method 
+        // will try to delete it, and all the associated caches here (because there 
+        // are no other uses for the file). This method is apparently called in all 
+        // cases, without trying to check if the dataset was in fact using a custom 
+        // logo; probably under the assumption that it can't hurt.
         DatasetUtil.deleteDatasetLogo(dataset);
         dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
         dataset.setUseGenericThumbnail(false);
         return merge(dataset);
     }
 
-    public Dataset removeDatasetThumbnail(Dataset dataset) {
+    public Dataset clearDatasetLevelThumbnail(Dataset dataset) {
         if (dataset == null) {
-            logger.fine("In removeDatasetThumbnail but dataset is null! Returning null.");
+            logger.fine("In clearDatasetLevelThumbnail but dataset is null! Returning null.");
             return null;
         }
+        
+        // Just in case the thumbnail that was designated for the dataset was 
+        // a "custom logo" kind, i.e. an uploaded "dataset_logo" file, the following method 
+        // will try to delete it, and all the associated caches here (because there 
+        // are no other uses for the file). This method is apparently called in all 
+        // cases, without trying to check if the dataset was in fact using a custom 
+        // logo; probably under the assumption that it can't hurt.
         DatasetUtil.deleteDatasetLogo(dataset);
+        
+        // Clear any designated thumbnails for the dataset:
         dataset.setThumbnailFile(null);
         dataset.setUseGenericThumbnail(true);
         return merge(dataset);

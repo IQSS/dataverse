@@ -1536,8 +1536,14 @@ public class UtilIT {
                 .get("/api/datasets/:persistentId/versions/" + DS_VERSION_LATEST_PUBLISHED + "/metadata/citation?persistentId=" + persistentId);
     }
 
+    @Deprecated
     static Response makeSuperUser(String username) {
         Response response = given().post("/api/admin/superuser/" + username);
+        return response;
+    }
+
+    static Response setSuperuserStatus(String username, Boolean isSuperUser) {
+        Response response = given().body(isSuperUser).put("/api/admin/superuser/" + username);
         return response;
     }
 
@@ -2513,6 +2519,21 @@ public class UtilIT {
         return requestSpecification.get("/api/datasets/" + idInPath + "/uploadurls?size=" + sizeInBytes + optionalQueryParam);
     }
 
+    /**
+     * If you set dataverse.files.localstack1.disable-tagging=true you will see
+     * an error like below.
+     *
+     * To avoid it, don't send the x-amz-tagging header.
+     */
+    /*
+    <Error>
+      <Code>AccessDenied</Code>
+      <Message>There were headers present in the request which were not signed</Message>
+      <RequestId>25ff2bb0-13c7-420e-8ae6-3d92677e4bd9</RequestId>
+      <HostId>9Gjjt1m+cjU4OPvX9O9/8RuvnG41MRb/18Oux2o5H5MY7ISNTlXN+Dz9IG62/ILVxhAGI0qyPfg=</HostId>
+      <HeadersNotSigned>x-amz-tagging</HeadersNotSigned>
+    </Error>
+     */
     static Response uploadFileDirect(String url, InputStream inputStream) {
         return given()
                 .header("x-amz-tagging", "dv-state=temp")
@@ -3739,6 +3760,20 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/files/actions/:set-embargo");
     }
 
+    static Response createFileRetention(Integer datasetId, Integer fileId, String dateUnavailable, String apiToken) {
+        JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add("dateUnavailable", dateUnavailable);
+        jsonBuilder.add("reason", "This is a test retention");
+        jsonBuilder.add("fileIds", Json.createArrayBuilder().add(fileId));
+        String jsonString = jsonBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .contentType("application/json")
+                .urlEncodingEnabled(false)
+                .post("/api/datasets/" + datasetId + "/files/actions/:set-retention");
+    }
+
     static Response getVersionFileCounts(Integer datasetId,
                                          String version,
                                          String contentType,
@@ -3905,6 +3940,22 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/requestGlobusUploadPaths");
     }
 
+    static Response updateDataverseInputLevels(String dataverseAlias, String[] inputLevelNames, String apiToken) {
+        JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
+        for(String inputLevelName : inputLevelNames) {
+            contactArrayBuilder.add(Json.createObjectBuilder()
+                    .add("datasetFieldTypeName", inputLevelName)
+                    .add("required", true)
+                    .add("include", true)
+            );
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(contactArrayBuilder.build().toString())
+                .contentType(ContentType.JSON)
+                .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
+    }
+
     public static Response getOpenAPI(String accept, String format) {
         Response response = given()
                 .header("Accept", accept)
@@ -3912,5 +3963,4 @@ public class UtilIT {
                 .get("/openapi");
         return response;
     }
-
 }

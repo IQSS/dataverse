@@ -571,6 +571,12 @@
           <artifactId>java-json-canonicalization</artifactId>
           <version>1.1</version>
         </dependency>
+        <!-- Sitemap generation -->
+        <dependency>
+            <groupId>io.gdcc</groupId>
+            <artifactId>sitemapgen4j</artifactId>
+            <version>2.1.2</version>
+        </dependency>
         <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>cdm-core</artifactId>

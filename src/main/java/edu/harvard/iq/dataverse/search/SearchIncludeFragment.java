@@ -1480,7 +1480,16 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return false;
         }
     }
-    
+
+    public boolean isRetentionExpired(SolrSearchResult result) {
+        Long retentionEndDate = result.getRetentionEndDate();
+        if(retentionEndDate != null) {
+            return LocalDate.now().toEpochDay() > retentionEndDate;
+        } else {
+            return false;
+        }
+    }
+
     public boolean isValid(SolrSearchResult result) {
         return result.isValid();
     }
