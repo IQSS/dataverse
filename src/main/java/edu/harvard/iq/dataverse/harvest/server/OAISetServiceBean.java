@@ -291,7 +291,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         
         QueryResponse queryResponse = null;
         try {
-            queryResponse = solrClientService.getSolrClient().query(solrQuery);
+            queryResponse = (QueryResponse) solrClientService.doHeavyOperation(x -> x.query(solrQuery));
         } catch (RemoteSolrException ex) {
             String messageFromSolr = ex.getLocalizedMessage();
             String error = "Search Syntax Error: ";

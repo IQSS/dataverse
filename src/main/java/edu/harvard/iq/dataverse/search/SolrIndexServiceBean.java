@@ -25,6 +25,8 @@ import jakarta.ejb.Stateless;
 import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
+
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
@@ -356,8 +358,8 @@ public class SolrIndexServiceBean {
         /**
          * @todo Do something with these responses from Solr.
          */
-        UpdateResponse addResponse = solrClientService.getSolrClient().add(docs);
-        UpdateResponse commitResponse = solrClientService.getSolrClient().commit();
+        solrClientService.doHeavyOperation(x -> x.add(docs));
+        solrClientService.doHeavyOperation(x -> x.commit());
     }
 
     public IndexResponse indexPermissionsOnSelfAndChildren(long definitionPointId) {
@@ -497,7 +499,7 @@ public class SolrIndexServiceBean {
             return new IndexResponse("nothing to delete");
         }
         try {
-            solrClientService.getSolrClient().deleteById(solrIdsToDelete);
+            solrClientService.doHeavyOperation(x -> x.deleteById(solrIdsToDelete));
         } catch (SolrServerException | IOException ex) {
             /**
              * @todo mark these for re-deletion
@@ -505,7 +507,7 @@ public class SolrIndexServiceBean {
             return new IndexResponse("problem deleting the following documents from Solr: " + solrIdsToDelete);
         }
         try {
-            solrClientService.getSolrClient().commit();
+            solrClientService.doHeavyOperation(x -> x.commit());
         } catch (SolrServerException | IOException ex) {
             return new IndexResponse("problem committing deletion of the following documents from Solr: " + solrIdsToDelete);
         }
@@ -515,8 +517,8 @@ public class SolrIndexServiceBean {
     public JsonObjectBuilder deleteAllFromSolrAndResetIndexTimes() throws SolrServerException, IOException {
         JsonObjectBuilder response = Json.createObjectBuilder();
         logger.info("attempting to delete all Solr documents before a complete re-index");
-        solrClientService.getSolrClient().deleteByQuery("*:*");
-        solrClientService.getSolrClient().commit();
+        solrClientService.doHeavyOperation(x -> x.deleteByQuery("*:*"));
+        solrClientService.doHeavyOperation(x -> x.commit());
         int numRowsAffected = dvObjectService.clearAllIndexTimes();
         response.add(numRowsClearedByClearAllIndexTimes, numRowsAffected);
         response.add(messageString, "Solr index and database index timestamps cleared.");

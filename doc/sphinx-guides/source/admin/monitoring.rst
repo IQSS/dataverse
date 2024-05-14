@@ -157,4 +157,6 @@ MicroProfile Metrics endpoint
 Payara provides the metrics endpoint: <https://docs.payara.fish/community/docs/6.2023.9/Technical%20Documentation/MicroProfile/Metrics/Metrics%20Rest%20Endpoint.html>_
 The metrics you can retrieve that way:
 - `index_permit_wait_time_seconds_mean` displays how long does it take to receive a permit to index a dataset.
-- `index_time_seconds` displays how long does it take to index a dataset.
+- `index_time_seconds` displays how long does it take to receive a permit to do a heavy operation on Solr.
+- `solr_heavy_operation_permit_wait_time_seconds_mean` displays how long does it take to receive a permit to index a dataset.
+- `heavy_solr_operation_time` displays how long does it take to perform a heavy Solr operation.

@@ -2504,6 +2504,23 @@ Defaults to ``4``.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_CONCURRENCY_MAX_ASYNC_INDEXES``.
 
+dataverse.solr.concurrency.max-heavy-operations
+++++++++++++++++++++++++++++++++++++++++++++
+
+Maximum number of simultaneously running heavy solr operations.
+
+Defaults to ``1``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_CONCURRENCY_MAX_HEAVY_OPERATIONS``.
+dataverse.solr.concurrency.max-solr-connections
+++++++++++++++++++++++++++++++++++++++++++++
+
+Maximum number of simultaneously open connections to Solr back-end.
+
+Defaults to ``10000``.
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_SOLR_CONCURRENCY_MAX_SOLR_CONNECTIONS``.
+
 dataverse.rserve.host
 +++++++++++++++++++++
 

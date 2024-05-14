@@ -64,9 +64,11 @@ public enum JvmSettings {
     SOLR_CORE(SCOPE_SOLR, "core"),
     SOLR_PATH(SCOPE_SOLR, "path"),
 
-    // INDEX CONCURENCY
-    SCOPE_SOLR_CONCURENCY(SCOPE_SOLR, "concurrency"),
-    MAX_ASYNC_INDEXES(SCOPE_SOLR_CONCURENCY, "max-async-indexes"),
+    // SOLR CONCURRENCY
+    SCOPE_SOLR_CONCURRENCY(SCOPE_SOLR, "concurrency"),
+    MAX_ASYNC_INDEXES(SCOPE_SOLR_CONCURRENCY, "max-async-indexes"),
+    MAX_SOLR_CONNECTIONS(SCOPE_SOLR_CONCURRENCY, "max-solr-connections"),
+    MAX_HEAVY_SOLR_OPERATIONS(SCOPE_SOLR_CONCURRENCY, "max-heavy-operations"),
 
     // RSERVE CONNECTION
     SCOPE_RSERVE(PREFIX, "rserve"),
