@@ -135,6 +135,16 @@ public class ConfigCheckService {
      * @return True if all checks successful, false otherwise.
      */
     private boolean checkPidProviders() {
-        return (PidUtil.getManagedProviderIds().size() > 0) && (pidProviderFactoryBean.getDefaultPidGenerator()!=null);
+        // Check if at least one PidProvider capable of editing/minting PIDs is configured.
+        boolean valid=true;
+        if(!(PidUtil.getManagedProviderIds().size() > 0)) {
+            valid = false;
+            logger.warning("No PID providers configured");
+        }
+        if (pidProviderFactoryBean.getDefaultPidGenerator()==null){
+            valid=false;
+            logger.warning("No default PID provider configured");
+        }
+        return valid;
     }
 }
