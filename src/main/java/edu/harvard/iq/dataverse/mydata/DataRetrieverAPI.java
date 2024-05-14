@@ -3,6 +3,7 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
@@ -63,7 +64,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     private static final String retrieveDataPartialAPIPath = "retrieve";
 
     @Inject
-    DataverseSession session;    
+    DataverseSession session;
 
     @EJB
     DataverseRoleServiceBean dataverseRoleService;
@@ -81,6 +82,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
     //MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     @EJB
     GroupServiceBean groupService;
+    @EJB
+    DatasetServiceBean datasetService;
     
     private List<DataverseRole> roleList;
     private DataverseRolePermissionHelper rolePermissionHelper;
@@ -491,7 +494,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
             // -------------------------------------------
             // (a) Get core card data from solr
             // -------------------------------------------
-            myDataCardInfo = doc.getJsonForMyData();
+            
+            myDataCardInfo = doc.getJsonForMyData(isValid(doc));
             
             if (doc.getEntity() != null && !doc.getEntity().isInstanceofDataFile()){
                 String parentAlias = dataverseService.getParentAliasString(doc);
@@ -513,5 +517,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
         }
         return jsonSolrDocsArrayBuilder;
         
+    }
+
+    private boolean isValid(SolrSearchResult result) {
+        return result.isValid(x -> true);
     }
 }        
