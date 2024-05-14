@@ -108,7 +108,7 @@ public class SolrClientService {
                 return operation.apply(getSolrClient());
             }
         } catch (InterruptedException e) {
-            logger.fine("Acquiring permit for heavy solr operation failed: interrupted. Granting one anyway.");
+            logger.severe("Acquiring permit for heavy solr operation failed: interrupted. Granting one anyway.");
             return operation.apply(getSolrClient());
         } finally {
             SOLR_HEAVY_OPERATIONS_SEMAPHORE.release();
