@@ -35,7 +35,8 @@ class SolrClientServiceTest {
         // given
         String url = "http://localhost:8983/solr/collection1";
         
-        // whenHttpSolrClient
+        // when
+        clientService.init();
         
         // then
         HttpSolrClient client = (HttpSolrClient) clientService.getSolrClient();
