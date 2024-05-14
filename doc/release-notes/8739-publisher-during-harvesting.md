@@ -1,0 +1,1 @@
+The publisher value of harvested datasets is now attributed to the dataset's distributor instead of its producer. This change affects all newly harvested datasets. For more information, see #8739
