@@ -312,6 +312,8 @@ public class IndexServiceBean {
     public void indexDatasetInNewTransaction(Long datasetId) { //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
         Dataset dataset = datasetService.findDeep(datasetId);
+        // this call is not async because we call it the same bean, the loop calling indexDatasetInNewTransaction remains single-threaded
+        // we call asyncIndexDataset here because we want it to go through the semaphore permission wait, like all other index operations.
         asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
         dataset = null;
     }
