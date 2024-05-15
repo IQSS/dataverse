@@ -21,7 +21,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+
+
 import java.util.Map;
+import java.util.Iterator;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -829,9 +833,20 @@ public class AdminIT {
     @Test
     public void testBannerMessages(){
 
-        
 
+        //We cleanup in case there may be any existing banner messages
+        Response getBannerMessageResponse = UtilIT.getBannerMessages();
+        getBannerMessageResponse.prettyPrint();
+        Integer bannerListSize = JsonPath.from(getBannerMessageResponse.getBody().asString()).getInt("data.size()");
 
+        for (int i = 0; i < bannerListSize; i++){
+            Long bannerID = JsonPath.from(getBannerMessageResponse.getBody().asString()).getLong("data[" + i + "].id");
+            Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(bannerID);
+            deleteBannerMessageResponse.prettyPrint();
+            deleteBannerMessageResponse.then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("status", equalTo("OK"));
+        }  
         
         String pathToJsonFile = "scripts/api/data/bannerMessageError.json";
         Response addBannerMessageErrorResponse = UtilIT.addBannerMessage(pathToJsonFile);
@@ -848,9 +863,11 @@ public class AdminIT {
         addBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"))
-                        ;
+                .body("data.message", equalTo("Banner Message added successfully."));
+                        
              
-        Response getBannerMessageResponse = UtilIT.getBannerMessages();
+        //Response 
+        getBannerMessageResponse = UtilIT.getBannerMessages();
         logger.log(Level.ALL, getBannerMessageResponse.prettyPrint());
         getBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
