@@ -79,7 +79,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
@@ -2338,16 +2338,13 @@ public class Admin extends AbstractApiBean {
 
         BannerMessage toAdd = new BannerMessage();
         try {
-            String dismissible = jsonObject.getString("dismissibleByUser");
 
-            boolean dismissibleByUser = false;
-            if (dismissible.equals("true")) {
-                dismissibleByUser = true;
-            }
-            toAdd.setDismissibleByUser(dismissibleByUser);
-            toAdd.setBannerMessageTexts(new ArrayList());
-            toAdd.setActive(true);
+            String dismissible = jsonObject.getString("dismissibleByUser");
             JsonArray jsonArray = jsonObject.getJsonArray("messageTexts");
+
+            boolean dismissibleByUser = "true".equals(dismissible) ? true : false;
+            ArrayList<BannerMessageText> bannerMessageTexts = new ArrayList<BannerMessageText>();
+
             for (int i = 0; i < jsonArray.size(); i++) {
                 JsonObject obj = (JsonObject) jsonArray.get(i);
                 String message = obj.getString("message");
@@ -2356,10 +2353,14 @@ public class Admin extends AbstractApiBean {
                 messageText.setMessage(message);
                 messageText.setLang(lang);
                 messageText.setBannerMessage(toAdd);
-                toAdd.getBannerMessageTexts().add(messageText);
+                bannerMessageTexts.add(messageText);
             }
-                bannerMessageService.save(toAdd);
-                return ok("Banner Message added successfully.");
+
+            toAdd.setDismissibleByUser(dismissibleByUser);
+            toAdd.setActive(true);
+            toAdd.setBannerMessageTexts(bannerMessageTexts);
+            bannerMessageService.save(toAdd);
+            return ok("Banner Message added successfully.");
 
         } catch (Exception e) {
             e.printStackTrace();
