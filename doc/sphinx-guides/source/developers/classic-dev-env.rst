@@ -37,7 +37,7 @@ Windows is gaining support through Docker as described in the :doc:`windows` sec
 Install Java
 ~~~~~~~~~~~~
 
-The Dataverse Software requires Java 11.
+The Dataverse Software requires Java 17.
 
 We suggest downloading OpenJDK from https://adoptopenjdk.net
 
@@ -87,6 +87,8 @@ On Mac, run this command:
 ``brew install jq``
 
 On Linux, install ``jq`` from your package manager or download a binary from https://stedolan.github.io/jq/
+
+.. _install-payara-dev:
 
 Install Payara
 ~~~~~~~~~~~~~~
@@ -260,7 +262,3 @@ Next Steps
 If you can log in to the Dataverse installation, great! If not, please see the :doc:`troubleshooting` section. For further assistance, please see "Getting Help" in the :doc:`intro` section.
 
 You're almost ready to start hacking on code. Now that the installer script has you up and running, you need to continue on to the :doc:`tips` section to get set up to deploy code from your IDE or the command line.
-
-----
-
-Previous: :doc:`intro` | Next: :doc:`tips`

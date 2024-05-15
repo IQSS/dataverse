@@ -1,0 +1,142 @@
+version: "2.4"
+
+services:
+
+  dataverse:
+    container_name: "dataverse"
+    hostname: dataverse
+    image: gdcc/dataverse:alpha
+    restart: on-failure
+    user: payara
+    environment:
+      _CT_DATAVERSE_SITEURL: "https://demo.example.org"
+      DATAVERSE_DB_HOST: postgres
+      DATAVERSE_DB_PASSWORD: secret
+      DATAVERSE_DB_USER: dataverse
+      DATAVERSE_FEATURE_API_BEARER_AUTH: "1"
+      DATAVERSE_MAIL_SYSTEM_EMAIL: "Demo Dataverse <dataverse@example.org>"
+      DATAVERSE_MAIL_MTA_HOST: "smtp"
+      JVM_ARGS: -Ddataverse.files.storage-driver-id=file1
+        -Ddataverse.files.file1.type=file
+        -Ddataverse.files.file1.label=Filesystem
+        -Ddataverse.files.file1.directory=${STORAGE_DIR}/store
+        -Ddataverse.pid.providers=fake
+        -Ddataverse.pid.default-provider=fake
+        -Ddataverse.pid.fake.type=FAKE
+        -Ddataverse.pid.fake.label=FakeDOIProvider
+        -Ddataverse.pid.fake.authority=10.5072
+        -Ddataverse.pid.fake.shoulder=FK2/
+    ports:
+      - "8080:8080" # HTTP (Dataverse Application)
+      - "4848:4848" # HTTP (Payara Admin Console)
+      - "9009:9009" # JDWP
+      - "8686:8686" # JMX
+    networks:
+      - dataverse
+    depends_on:
+      - postgres
+      - solr
+      - dv_initializer
+    volumes:
+      - ./data/app/data:/dv
+      - ./data/app/secrets:/secrets
+    tmpfs:
+      - /dumps:mode=770,size=2052M,uid=1000,gid=1000
+      - /tmp:mode=770,size=2052M,uid=1000,gid=1000
+    mem_limit: 2147483648 # 2 GiB
+    mem_reservation: 1024m
+    privileged: false
+
+  bootstrap:
+    container_name: "bootstrap"
+    image: gdcc/configbaker:alpha
+    restart: "no"
+    environment:
+      - TIMEOUT=3m
+    command:
+      - bootstrap.sh
+      - dev
+      #- demo
+    #volumes:
+    #  - ./demo:/scripts/bootstrap/demo
+    networks:
+      - dataverse
+
+  dv_initializer:
+    container_name: "dv_initializer"
+    image: gdcc/configbaker:alpha
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - "fix-fs-perms.sh dv"
+    volumes:
+      - ./data/app/data:/dv
+
+  postgres:
+    container_name: "postgres"
+    hostname: postgres
+    image: postgres:13
+    restart: on-failure
+    environment:
+      - POSTGRES_USER=dataverse
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - "5432:5432"
+    networks:
+      - dataverse
+    volumes:
+      - ./data/postgresql/data:/var/lib/postgresql/data
+
+  solr_initializer:
+    container_name: "solr_initializer"
+    image: gdcc/configbaker:alpha
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - "fix-fs-perms.sh solr && cp -a /template/* /solr-template"
+    volumes:
+      - ./data/solr/data:/var/solr
+      - ./data/solr/conf:/solr-template
+
+  solr:
+    container_name: "solr"
+    hostname: "solr"
+    image: solr:9.3.0
+    depends_on:
+      - solr_initializer
+    restart: on-failure
+    ports:
+      - "8983:8983"
+    networks:
+      - dataverse
+    command:
+      - "solr-precreate"
+      - "collection1"
+      - "/template"
+    volumes:
+      - ./data/solr/data:/var/solr
+      - ./data/solr/conf:/template
+
+  smtp:
+    container_name: "smtp"
+    hostname: "smtp"
+    image: maildev/maildev:2.0.5
+    restart: on-failure
+    ports:
+      - "25:25" # smtp server
+      - "1080:1080" # web ui
+    environment:
+      - MAILDEV_SMTP_PORT=25
+      - MAILDEV_MAIL_DIRECTORY=/mail
+    networks:
+      - dataverse
+    #volumes:
+    #  - ./data/smtp/data:/mail
+    tmpfs:
+      - /mail:mode=770,size=128M,uid=1000,gid=1000
+
+networks:
+  dataverse:
+    driver: bridge

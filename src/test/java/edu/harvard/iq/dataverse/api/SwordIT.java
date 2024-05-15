@@ -855,7 +855,7 @@ public class SwordIT {
         List<String> oneFileLeftInV2Draft = statement3.getBody().xmlPath().getList("feed.entry.id");
         logger.info("Number of files remaining in this post version 1 draft:" + oneFileLeftInV2Draft.size());
         assertEquals(1, oneFileLeftInV2Draft.size());
-
+        UtilIT.sleepForLock(datasetPersistentId, "EditInProgress", apiToken, UtilIT.MAXIMUM_PUBLISH_LOCK_DURATION);
         Response deleteIndex1b = UtilIT.deleteFile(Integer.parseInt(index1b), apiToken);
         deleteIndex1b.then().assertThat()
                 .statusCode(NO_CONTENT.getStatusCode());
