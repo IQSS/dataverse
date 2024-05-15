@@ -1344,6 +1344,7 @@ public class DatasetVersion implements Serializable {
                 }
 
             }
+            break;
         }
         return geoCoverages;
     }
