@@ -79,6 +79,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
@@ -2361,8 +2362,13 @@ public class Admin extends AbstractApiBean {
                 return ok("Banner Message added successfully.");
 
         } catch (Exception e) {
+            e.printStackTrace();
             logger.warning("Unexpected Exception: " + e.getMessage());
-            return error(Status.BAD_REQUEST, "Add Banner Message unexpected exception: " + e.getMessage());
+            return error(Status.BAD_REQUEST, "Add Banner Message unexpected exception: " + e.getMessage()
+             + " [TRACE]: [\n" +
+             ExceptionUtils.getStackTrace(e)
+             + "/n]"
+             );
         }
 
     }
