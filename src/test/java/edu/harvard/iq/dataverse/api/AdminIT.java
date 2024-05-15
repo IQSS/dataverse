@@ -885,7 +885,7 @@ public class AdminIT {
                         ]
                 }
                 """;
-                
+
         Response addBannerMessageResponse = UtilIT.addBannerJson(bannerJson);
 
 
@@ -901,6 +901,7 @@ public class AdminIT {
         logger.log(Level.ALL, getBannerMessageResponse.prettyPrint());
         getBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1))
                 .body("data[0].displayValue", equalTo("Banner Message For Deletion"));
         
         Long deleteId = Long.valueOf(
