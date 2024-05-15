@@ -1715,12 +1715,12 @@ public class DdiExportUtil {
                 // range.getBeginValueType().getName().equals(DB_VAR_RANGE_TYPE_POINT)) {
                 if (range.getBoolean("hasBeginValueType") && range.getBoolean("isBeginValueTypePoint")) {
                     if (range.containsKey("beginValue")) {
-                        invalrngAdded = XmlWriterUtil.checkParentElement(xmlw, "invalrng", invalrngAdded);
+                        invalrngAdded = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "invalrng", invalrngAdded);
                         xmlw.writeEmptyElement("item");
                         XmlWriterUtil.writeAttribute(xmlw, "VALUE", range.getString("beginValue"));
                     }
                 } else {
-                    invalrngAdded = XmlWriterUtil.checkParentElement(xmlw, "invalrng", invalrngAdded);
+                    invalrngAdded = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "invalrng", invalrngAdded);
                     xmlw.writeEmptyElement("range");
                     if (range.getBoolean("hasBeginValueType") && range.containsKey("beginValue")) {
                         if (range.getBoolean("isBeginValueTypeMin")) {
