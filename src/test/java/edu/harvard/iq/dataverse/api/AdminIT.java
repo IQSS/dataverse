@@ -23,6 +23,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static jakarta.ws.rs.core.Response.Status.*;
@@ -830,7 +831,7 @@ public class AdminIT {
         
         String pathToJsonFile = "scripts/api/data/bannerMessageError.json";
         Response addBannerMessageErrorResponse = UtilIT.addBannerMessage(pathToJsonFile);
-        addBannerMessageErrorResponse.prettyPrint();
+        logger.log(Level.ALL, addBannerMessageErrorResponse.prettyPrint());
         System.out.println(addBannerMessageErrorResponse.statusCode());
         addBannerMessageErrorResponse.then().assertThat()
                         .statusCode(BAD_REQUEST.getStatusCode())
@@ -839,23 +840,23 @@ public class AdminIT {
         pathToJsonFile = "scripts/api/data/bannerMessageTest.json";
         
         Response addBannerMessageResponse = UtilIT.addBannerMessage(pathToJsonFile);
-        addBannerMessageResponse.prettyPrint();
+        logger.log(Level.ALL, addBannerMessageResponse.prettyPrint());
         addBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"))
                         ;
              
         Response getBannerMessageResponse = UtilIT.getBannerMessages();
-        getBannerMessageResponse.prettyPrint();
+        logger.log(Level.ALL, getBannerMessageResponse.prettyPrint());
         getBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].displayValue", equalTo("Banner Message For Deletion"));
 
         Long deleteId = Long.valueOf(
                 UtilIT.getBannerMessageIdFromResponse(getBannerMessageResponse.getBody().asString()));
-        System.out.println("delete id: " + deleteId);
+        //System.out.println("delete id: " + deleteId);
         Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(deleteId);
-        deleteBannerMessageResponse.prettyPrint();
+        logger.log(Level.ALL, deleteBannerMessageResponse.prettyPrint());
         deleteBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"));
