@@ -828,6 +828,10 @@ public class AdminIT {
     
     @Test
     public void testBannerMessages(){
+
+        
+
+
         
         String pathToJsonFile = "scripts/api/data/bannerMessageError.json";
         Response addBannerMessageErrorResponse = UtilIT.addBannerMessage(pathToJsonFile);
@@ -851,10 +855,10 @@ public class AdminIT {
         getBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data[0].displayValue", equalTo("Banner Message For Deletion"));
-
+        
         Long deleteId = Long.valueOf(
-                UtilIT.getBannerMessageIdFromResponse(getBannerMessageResponse.getBody().asString()));
-        //System.out.println("delete id: " + deleteId);
+                JsonPath.from(getBannerMessageResponse.getBody().asString()).getLong("data[0].id"));
+
         Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(deleteId);
         logger.log(Level.ALL, deleteBannerMessageResponse.prettyPrint());
         deleteBannerMessageResponse.then().assertThat()
