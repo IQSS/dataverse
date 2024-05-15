@@ -14,16 +14,18 @@
     <!-- Access Status -->
     <li class="dropdown-header">#{bundle['file.accessBtn.header.access']} <span class="glyphicon glyphicon-file"/></li>
     <li><span class="dropdown-item-text">
-            <span class="#{!fileMetadata.restricted ?
+            <span class="#{dataFileServiceBean.isRetentionExpired(fileMetadata) ? 'glyphicon glyphicon-lock text-danger' : !fileMetadata.restricted ?
                            'glyphicon glyphicon-globe text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'glyphicon glyphicon-lock text-danger' : 'icon-unlock text-success')}"/>
             
             <!-- TODO - add Embargo state -->
             <h:outputText 
-                value=" #{!fileDownloadHelper.isRestrictedOrEmbargoed(fileMetadata) ? bundle['public'] : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? (!dataFileServiceBean.isActivelyEmbargoed(fileMetadata) ? bundle['restricted'] : bundle['embargoed']) : (!dataFileServiceBean.isActivelyEmbargoed(fileMetadata) ? bundle['restrictedaccess'] : bundle['embargoed']) )}"
-                styleClass="#{!fileDownloadHelper.isRestrictedOrEmbargoed(fileMetadata) ? 'text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'text-danger' : 'text-success')}"/>
+                value=" #{dataFileServiceBean.isRetentionExpired(fileMetadata) ? bundle['retentionExpired'] : !fileDownloadHelper.isRestrictedOrEmbargoed(fileMetadata) ? bundle['public'] : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? (!dataFileServiceBean.isActivelyEmbargoed(fileMetadata) ? bundle['restricted'] : bundle['embargoed']) : (!dataFileServiceBean.isActivelyEmbargoed(fileMetadata) ? bundle['restrictedaccess'] : bundle['embargoed']) )}"
+                styleClass="#{dataFileServiceBean.isRetentionExpired(fileMetadata) ? 'text-danger' : !fileDownloadHelper.isRestrictedOrEmbargoed(fileMetadata) ? 'text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'text-danger' : 'text-success')}"/>
         </span></li>
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
-                             and fileMetadata.dataFile.owner.fileAccessRequest and !dataFileServiceBean.isActivelyEmbargoed(fileMetadata)}">
+                             and fileMetadata.dataFile.owner.fileAccessRequest
+                             and !dataFileServiceBean.isActivelyEmbargoed(fileMetadata)
+                             and !dataFileServiceBean.isRetentionExpired(fileMetadata)}">
         <p:outputPanel id="requestPanel" styleClass="iq-dropdown-list-item #{fileMetadata.dataFile.containsActiveFileAccessRequestFromUser(dataverseSession.user) ? 'disabled' : ''}"
                        rendered="#{fileDownloadHelper.session.user.authenticated}">
             <p:commandLink styleClass="btn-request #{fileMetadata.dataFile.containsActiveFileAccessRequestFromUser(dataverseSession.user) ? 'italic'  : ''}"
