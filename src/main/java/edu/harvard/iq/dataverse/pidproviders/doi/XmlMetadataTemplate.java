@@ -41,16 +41,20 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.export.DDIExporter;
+import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
@@ -117,34 +121,6 @@ public class XmlMetadataTemplate {
         writeDescriptions(xmlw, dvObject);
         writeGeoLocations(xmlw, dvObject);
         writeFundingReferences(xmlw, dvObject);
-
-        StringBuilder contributorsElement = new StringBuilder();
-        if (doiMetadata.getContacts() != null) {
-            for (String[] contact : doiMetadata.getContacts()) {
-                if (!contact[0].isEmpty()) {
-                    contributorsElement.append("<contributor contributorType=\"ContactPerson\"><contributorName>"
-                            + StringEscapeUtils.escapeXml10(contact[0]) + "</contributorName>");
-                    if (!contact[1].isEmpty()) {
-                        contributorsElement.append("<affiliation>" + StringEscapeUtils.escapeXml10(contact[1]) + "</affiliation>");
-                    }
-                    contributorsElement.append("</contributor>");
-                }
-            }
-        }
-
-        if (doiMetadata.getProducers() != null) {
-            for (String[] producer : doiMetadata.getProducers()) {
-                contributorsElement.append("<contributor contributorType=\"Producer\"><contributorName>" + StringEscapeUtils.escapeXml10(producer[0])
-                        + "</contributorName>");
-                if (!producer[1].isEmpty()) {
-                    contributorsElement.append("<affiliation>" + StringEscapeUtils.escapeXml10(producer[1]) + "</affiliation>");
-                }
-                contributorsElement.append("</contributor>");
-            }
-        }
-
-        String relIdentifiers = generateRelatedIdentifiers(dvObject);
-
     }
 
     /**
@@ -1025,42 +1001,267 @@ public class XmlMetadataTemplate {
         
     }
 
-    private void writeAccessRights(XMLStreamWriter xmlw, DvObject dvObject) {
+    private void writeAccessRights(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
         // rightsList -> rights with rightsURI attribute
         xmlw.writeStartElement("rightsList"); // <rightsList>
 
         // set terms from the info:eu-repo-Access-Terms vocabulary
-        writeRightsHeader(xmlw, language);
-        boolean restrict = false;
+        xmlw.writeStartElement("rights"); // <rights>
+        DatasetVersion dv = null;
         boolean closed = false;
+        if (dvObject instanceof Dataset d) {
+            dv = d.getLatestVersionForCopy();
+            closed = dv.isHasRestrictedFile();
+        } else if (dvObject instanceof DataFile df) {
+            dv = df.getOwner().getLatestVersionForCopy();
 
-        if (datasetVersionDTO.isFileAccessRequest()) {
-            restrict = true;
+            closed = df.isRestricted();
         }
-        if (datasetVersionDTO.getFiles() != null) {
-            for (int i = 0; i < datasetVersionDTO.getFiles().size(); i++) {
-                if (datasetVersionDTO.getFiles().get(i).isRestricted()) {
-                    closed = true;
-                    break;
-                }
-            }
-        }
+        TermsOfUseAndAccess terms = dv.getTermsOfUseAndAccess();
+        boolean requestsAllowed = terms.isFileAccessRequest();
+        License license = terms.getLicense();
 
-        if (restrict && closed) {
+        if (requestsAllowed && closed) {
             xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/restrictedAccess");
-        } else if (!restrict && closed) {
+        } else if (!requestsAllowed && closed) {
             xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/closedAccess");
         } else {
             xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/openAccess");
         }
         xmlw.writeEndElement(); // </rights>
+        xmlw.writeStartElement("rights"); // <rights>
 
-        writeRightsHeader(xmlw, language);
-        if (datasetVersionDTO.getLicense() != null) {
-            xmlw.writeAttribute("rightsURI", datasetVersionDTO.getLicense().getUri());
-            xmlw.writeCharacters(datasetVersionDTO.getLicense().getName());
+        if (license != null) {
+            xmlw.writeAttribute("rightsURI", license.getUri().toString());
+            xmlw.writeCharacters(license.getName());
+        } else {
+            xmlw.writeAttribute("rightsURI", DatasetUtil.getLicenseURI(dv));
+            xmlw.writeCharacters(BundleUtil.getStringFromBundle("license.custom.description"));
+            ;
         }
         xmlw.writeEndElement(); // </rights>
-        xmlw.writeEndElement(); // </rightsList>        
+        xmlw.writeEndElement(); // </rightsList>
+    }
+
+    private void writeDescriptions(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
+        // descriptions -> description with descriptionType attribute
+        boolean descriptionsWritten = false;
+        List<String> descriptions = null;
+        DatasetVersion dv = null;
+
+        if (dvObject instanceof Dataset d) {
+            dv = d.getLatestVersionForCopy();
+            dv.getDescriptions();
+        } else if (dvObject instanceof DataFile df) {
+            String description = df.getDescription();
+            if (description != null) {
+                descriptions = new ArrayList<String>();
+                descriptions.add(description);
+            }
+        }
+        Map<String, String> attributes = new HashMap<String, String>();
+        attributes.put("descriptionType", "Abstract");
+        for (String description : descriptions) {
+            descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, description);
+            ;
+        }
+
+        if (dv != null) {
+            List<DatasetField> dsfs = dv.getDatasetFields();
+
+            for (DatasetField dsf : dsfs) {
+
+                switch (dsf.getDatasetFieldType().getName()) {
+                case DatasetFieldConstant.software:
+                    attributes.clear();
+                    attributes.put("descriptionType", "TechnicalInfo");
+                    List<DatasetFieldCompoundValue> dsfcvs = dsf.getDatasetFieldCompoundValues();
+                    for (DatasetFieldCompoundValue dsfcv : dsfcvs) {
+
+                        String softwareName = null;
+                        String softwareVersion = null;
+                        List<DatasetField> childDsfs = dsfcv.getChildDatasetFields();
+                        for (DatasetField childDsf : childDsfs) {
+                            if (DatasetFieldConstant.softwareName.equals(childDsf.getDatasetFieldType().getName())) {
+                                softwareName = childDsf.getValue();
+                            } else if (DatasetFieldConstant.softwareVersion.equals(childDsf.getDatasetFieldType().getName())) {
+                                softwareVersion = childDsf.getValue();
+                            }
+                        }
+                        if (StringUtils.isNotBlank(softwareName)) {
+                            if (StringUtils.isNotBlank(softwareVersion)) {
+                            }
+                            softwareName = softwareName + ", " + softwareVersion;
+                            descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
+                            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, softwareName);
+                        }
+                    }
+                    break;
+                case DatasetFieldConstant.originOfSources:
+                case DatasetFieldConstant.characteristicOfSources:
+                case DatasetFieldConstant.accessToSources:
+                    attributes.clear();
+                    attributes.put("descriptionType", "Methods");
+                    String method = dsf.getValue();
+                    if (StringUtils.isNotBlank(method)) {
+                        descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
+                        XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, method);
+
+                    }
+                    break;
+                case DatasetFieldConstant.series:
+                    attributes.clear();
+                    attributes.put("descriptionType", "SeriesInformation");
+                    dsfcvs = dsf.getDatasetFieldCompoundValues();
+                    for (DatasetFieldCompoundValue dsfcv : dsfcvs) {
+                        List<DatasetField> childDsfs = dsfcv.getChildDatasetFields();
+                        for (DatasetField childDsf : childDsfs) {
+
+                            if (DatasetFieldConstant.seriesInformation.equals(childDsf.getDatasetFieldType().getName())) {
+                                String seriesInformation = childDsf.getValue();
+                                if (StringUtils.isNotBlank(seriesInformation)) {
+                                    descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
+                                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, seriesInformation);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                case DatasetFieldConstant.notesText:
+                    attributes.clear();
+                    attributes.put("descriptionType", "Other");
+                    String notesText = dsf.getValue();
+                    if (StringUtils.isNotBlank(notesText)) {
+                        descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
+                        XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, notesText);
+                    }
+                    break;
+
+                }
+            }
+
+        }
+
+        if (descriptionsWritten) {
+            xmlw.writeEndElement(); // </descriptions>
+        }
+    }
+
+    private void writeGeoLocations(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
+        if (dvObject instanceof Dataset d) {
+            boolean geoLocationsWritten = false;
+            DatasetVersion dv = d.getLatestVersionForCopy();
+
+            List<String[]> places = dv.getGeographicCoverage();
+            if (places != null && !places.isEmpty()) {
+                // geoLocationPlace
+                geoLocationsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "geoLocation", geoLocationsWritten);
+
+                for (String[] place : places) {
+                    ArrayList<String> placeList = new ArrayList<String>();
+                    for (String placePart : place) {
+                        placeList.add(placePart);
+                    }
+                    XmlWriterUtil.writeFullElement(xmlw, "geoLocationPlace", Strings.join(placeList, ", "));
+                }
+            }
+            boolean boundingBoxFound = false;
+            boolean productionPlaceFound = false;
+            for (DatasetField dsf : dv.getDatasetFields()) {
+                switch (dsf.getDatasetFieldType().getName()) {
+                case DatasetFieldConstant.geographicBoundingBox:
+                    boundingBoxFound = true;
+                    for (DatasetFieldCompoundValue dsfcv : dsf.getDatasetFieldCompoundValues()) {
+                        List<DatasetField> childDsfs = dsfcv.getChildDatasetFields();
+                        String nLatitude = null;
+                        String sLatitude = null;
+                        String eLongitude = null;
+                        String wLongitude = null;
+                        for (DatasetField childDsf : childDsfs) {
+                            switch (childDsf.getDatasetFieldType().getName()) {
+                            case DatasetFieldConstant.northLatitude:
+                                nLatitude = childDsf.getValue();
+                                break;
+                            case DatasetFieldConstant.southLatitude:
+                                sLatitude = childDsf.getValue();
+                                break;
+                            case DatasetFieldConstant.eastLongitude:
+                                eLongitude = childDsf.getValue();
+                                break;
+                            case DatasetFieldConstant.westLongitude:
+                                wLongitude = childDsf.getValue();
+
+                            }
+                        }
+                        if (StringUtils.isNoneBlank(wLongitude, eLongitude, nLatitude, sLatitude)) {
+                            geoLocationsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "geoLocation", geoLocationsWritten);
+                            if (wLongitude.equals(eLongitude) && nLatitude.equals(sLatitude)) {
+                                // A point
+                                xmlw.writeStartElement("geoLocationPoint");
+                                XmlWriterUtil.writeFullElement(xmlw, "pointLongitude", eLongitude);
+                                XmlWriterUtil.writeFullElement(xmlw, "pointLatitude", sLatitude);
+                                xmlw.writeEndElement();
+                            } else {
+                                // A box
+                                xmlw.writeStartElement("geoLocationBox");
+                                XmlWriterUtil.writeFullElement(xmlw, "westBoundLongitude", wLongitude);
+                                XmlWriterUtil.writeFullElement(xmlw, "eastBoundLongitude", eLongitude);
+                                XmlWriterUtil.writeFullElement(xmlw, "southBoundLatitude", sLatitude);
+                                XmlWriterUtil.writeFullElement(xmlw, "northBoundLatitude", nLatitude);
+                                xmlw.writeEndElement();
+
+                            }
+                        }
+                    }
+                case DatasetFieldConstant.productionPlace:
+                    productionPlaceFound = true;
+                    // geoLocationPlace
+                    geoLocationsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "geoLocation", geoLocationsWritten);
+                    List<String> prodPlaces = dsf.getValues();
+                    for (String prodPlace : prodPlaces) {
+                        XmlWriterUtil.writeFullElement(xmlw, "geoLocationPlace", prodPlace);
+                    }
+                    break;
+                }
+                if (boundingBoxFound && productionPlaceFound) {
+                    break;
+                }
+            }
+            if (geoLocationsWritten) {
+                xmlw.writeEndElement(); // <geoLocations>
+            }
+        }
+
+    }
+
+
+    private void writeFundingReferences(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
+        // fundingReferences -> fundingReference -> funderName, awardNumber
+        boolean fundingReferenceWritten = false;
+        DatasetVersion dv = null;
+        if (dvObject instanceof Dataset d) {
+            dv = d.getLatestVersionForCopy();
+        } else if (dvObject instanceof DataFile df) {
+            dv = df.getOwner().getLatestVersionForCopy();
+        }
+        if (dv != null) {
+            List<String> funders = dv.getFunders();
+            if (!funders.isEmpty()) {
+
+                for (String funder : funders) {
+                    if (!StringUtils.isBlank(funder)) {
+                        fundingReferenceWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "fundingReferences", fundingReferenceWritten);
+                        xmlw.writeStartElement("fundingReference"); // <fundingReference>
+                        XmlWriterUtil.writeFullElement(xmlw, "funderName", funder);
+                        xmlw.writeEndElement(); // </fundingReference>
+                    }
+                }
+                if (fundingReferenceWritten) {
+                    xmlw.writeEndElement(); // </fundingReferences>
+                }
+            }
+        }
     }
 }
