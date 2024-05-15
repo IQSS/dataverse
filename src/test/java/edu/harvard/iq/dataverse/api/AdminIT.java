@@ -833,7 +833,6 @@ public class AdminIT {
     @Test
     public void testBannerMessages(){
 
-
         //We cleanup in case there may be any existing banner messages
         Response getBannerMessageResponse = UtilIT.getBannerMessages();
         getBannerMessageResponse.prettyPrint();
@@ -847,18 +846,49 @@ public class AdminIT {
                     .statusCode(OK.getStatusCode())
                     .body("status", equalTo("OK"));
         }  
-        
-        String pathToJsonFile = "scripts/api/data/bannerMessageError.json";
-        Response addBannerMessageErrorResponse = UtilIT.addBannerMessage(pathToJsonFile);
+        String bannerError = 
+                """
+                {
+                        "dismissible": "false",
+                        "messageTexts": [
+                        {
+                                "lang": "en",
+                                "text": "Invalid json"
+                        }
+                        ]
+                }               
+                """;
+
+        Response addBannerMessageErrorResponse 
+                = UtilIT.addBannerJson(bannerError);
+
+
         logger.log(Level.ALL, addBannerMessageErrorResponse.prettyPrint());
         System.out.println(addBannerMessageErrorResponse.statusCode());
         addBannerMessageErrorResponse.then().assertThat()
                         .statusCode(BAD_REQUEST.getStatusCode())
                         .body("status", equalTo("ERROR"));
-
-        pathToJsonFile = "scripts/api/data/bannerMessageTest.json";
         
-        Response addBannerMessageResponse = UtilIT.addBannerMessage(pathToJsonFile);
+        String bannerJson = 
+                """
+                {
+                        "dismissibleByUser": "false",
+                        "messageTexts": [
+                        {
+                          "lang": "en",
+                          "message": "Banner Message For Deletion"
+                        },
+                        {
+                          "lang": "fr",
+                          "message": "Banner Message For Deletion"
+                        }
+                        ]
+                }
+                """;
+                
+        Response addBannerMessageResponse = UtilIT.addBannerJson(bannerJson);
+
+
         logger.log(Level.ALL, addBannerMessageResponse.prettyPrint());
         addBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
