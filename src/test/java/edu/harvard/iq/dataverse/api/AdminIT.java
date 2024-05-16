@@ -907,7 +907,7 @@ public class AdminIT {
                 JsonPath.from(getBannerMessageResponse.getBody().asString()).getLong("data[0].id"));
 
         Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(deleteId);
-        logger.log(Level.ALL, deleteBannerMessageResponse.prettyPrint());
+        //logger.log(Level.ALL, deleteBannerMessageResponse.prettyPrint());
         logger.log(Level.ALL, "LOG TEST");
         deleteBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
