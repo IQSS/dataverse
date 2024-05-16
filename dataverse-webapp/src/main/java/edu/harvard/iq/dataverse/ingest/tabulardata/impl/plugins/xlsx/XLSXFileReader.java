@@ -50,7 +50,10 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -122,12 +125,14 @@ public class XLSXFileReader extends TabularDataFileReader {
 
         XMLReader parser = fetchSheetParser(sst, dataTable, tempOut);
 
-        // rId2 found by processing the Workbook
-        // Seems to either be rId# or rSheet#
-        InputStream sheet1 = r.getSheet("rId1");
-        InputSource sheetSource = new InputSource(sheet1);
-        parser.parse(sheetSource);
-        sheet1.close();
+        Iterator<InputStream> sheetsData = r.getSheetsData();
+        // Reading only the first sheet
+        if (sheetsData.hasNext()) {
+            try (InputStream sheet1 = sheetsData.next()) {
+                InputSource sheetSource = new InputSource(sheet1);
+                parser.parse(sheetSource);
+            }
+        }
     }
 
     // -------------------- PRIVATE --------------------
@@ -143,7 +148,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             throw ie;
         } catch (Exception ex) {
             logger.log(Level.FINE, "Could not parse Excel/XLSX spreadsheet.", ex);
-            throw new IngestException(IngestError.EXCEL_PARSE);
+            throw new IngestException(IngestError.EXCEL_PARSE, ex);
         }
 
         if (dataTable.getCaseQuantity() == null || dataTable.getCaseQuantity().intValue() < 1) {
@@ -257,14 +262,14 @@ public class XLSXFileReader extends TabularDataFileReader {
 
     private static class SheetHandler extends DefaultHandler {
 
+        private final Map<Integer, String> variableNames = new TreeMap<>();
         private DataTable dataTable;
         private SharedStringsTable sst;
         private String cellContents;
         private boolean nextIsString;
         private boolean variableHeader;
-        private String[] variableNames;
         private int caseCount;
-        private int columnCount;
+        private int columnIdx;
         private boolean[] isNumericVariable;
         private String[] dataRow;
         private PrintWriter tempOut;
@@ -281,7 +286,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             this.tempOut = tempOut;
             variableHeader = true;
             caseCount = 0;
-            columnCount = 0;
+            columnIdx = 0;
         }
 
         // -------------------- LOGIC --------------------
@@ -291,36 +296,12 @@ public class XLSXFileReader extends TabularDataFileReader {
 
             // first raw encountered:
             if (variableHeader && "row".equals(name)) {
-                Long varCount;
-                String rAttribute = attributes.getValue("t");
-                if (rAttribute == null) {
-                    logger.warning("Null r attribute in the first row element!");
-                } else if (!rAttribute.equals("1")) {
-                    logger.warning("Attribute r of the first row element is not \"1\"!");
+                Integer varCount = getColCount(attributes);
+                if (varCount != null) {
+                    for (int i = 0; i < varCount; i++) {
+                        variableNames.put(i, StringUtils.EMPTY);
+                    }
                 }
-
-                String spansAttribute = attributes.getValue("spans");
-                if (spansAttribute == null) {
-                    logger.warning("Null spans attribute in the first row element!");
-                }
-                int colIndex = spansAttribute.indexOf(':');
-                if (colIndex < 1 || (colIndex == spansAttribute.length() - 1)) {
-                    logger.warning("Invalid spans attribute in the first row element: " + spansAttribute + "!");
-                }
-                try {
-                    varCount = new Long(spansAttribute.substring(colIndex + 1));
-                } catch (Exception ex) {
-                    varCount = null;
-                }
-
-                if (varCount == null || varCount.intValue() < 1) {
-                    throw new IngestException(IngestError.EXCEL_UNKNOWN_OR_INVALID_COLUMN_COUNT);
-                }
-
-                logger.info("Established variable (column) count: " + varCount);
-
-                dataTable.setVarQuantity(varCount);
-                variableNames = new String[varCount.intValue()];
             }
 
             // c => cell
@@ -336,9 +317,9 @@ public class XLSXFileReader extends TabularDataFileReader {
                 if (!indexAttribute.matches(".*[0-9]")) {
                     logger.warning("Invalid index (r) attribute in a cell element: " + indexAttribute + "!");
                 }
-                columnCount = converter.columnToIndex(indexAttribute.replaceFirst("[0-9].*$", ""));
+                columnIdx = converter.columnToIndex(indexAttribute.replaceFirst("[0-9].*$", ""));
 
-                if (columnCount < 0) {
+                if (columnIdx < 0) {
                     throw new IngestException(IngestError.EXCEL_AMBIGUOUS_INDEX_POSITION);
                 }
 
@@ -363,13 +344,12 @@ public class XLSXFileReader extends TabularDataFileReader {
             // Output after we've seen the string contents
             if ("v".equals(name)) {
                 if (variableHeader) {
-                    logger.fine("variable header mode; cell " + columnCount + ", cell contents: " + cellContents);
+                    logger.fine("variable header mode; cell " + columnIdx + ", cell contents: " + cellContents);
 
-                    //variableNames.add(cellContents);
-                    variableNames[columnCount] = cellContents;
+                    variableNames.put(columnIdx, cellContents);
                 } else {
-                    dataRow[columnCount] = cellContents;
-                    logger.fine("data row mode; cell " + columnCount + ", cell contents: " + cellContents);
+                    dataRow[columnIdx] = cellContents;
+                    logger.fine("data row mode; cell " + columnIdx + ", cell contents: " + cellContents);
                 }
             }
 
@@ -378,15 +358,17 @@ public class XLSXFileReader extends TabularDataFileReader {
                     // Initialize variables:
                     logger.fine("variableHeader mode; ");
                     List<DataVariable> variableList = new ArrayList<DataVariable>();
-                    //columnCount = variableNames.size();
-                    columnCount = dataTable.getVarQuantity().intValue();
+                    int columnCount = variableNames.size();
+                    logger.info("Established variable (column) count: " + columnCount);
+                    dataTable.setVarQuantity((long) columnCount);
 
-                    for (int i = 0; i < columnCount; i++) {
-                        String varName = variableNames[i];
+                    for (int i = 0; i < variableNames.size(); i++) {
+                        String varName = variableNames.get(i);
 
-                        if (varName == null || varName.equals("")) {
+                        if (varName == null || varName.equals(StringUtils.EMPTY)) {
                             varName = converter.indexToColumn(i);
                         }
+
                         if (varName == null) {
                             throw new IngestException(IngestError.EXCEL_UNKNOWN_VARIABLE_NAME, String.valueOf(i));
                         }
@@ -451,7 +433,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                     tempOut.println(StringUtils.join(dataRow, "\t"));
                     caseCount++;
                 }
-                columnCount = 0;
+                columnIdx = 0;
                 dataRow = new String[dataTable.getVarQuantity().intValue()];
             }
 
@@ -473,5 +455,26 @@ public class XLSXFileReader extends TabularDataFileReader {
         public void characters(char[] ch, int start, int length) {
             cellContents += new String(ch, start, length);
         }
+
+        private static Integer getColCount(Attributes attributes) {
+            String spansAttribute = attributes.getValue("spans");
+            if (spansAttribute == null) {
+                logger.warning("Null spans attribute in the first row element!");
+                return null;
+            }
+
+            int colIndex = spansAttribute.indexOf(':');
+            if (colIndex < 1 || (colIndex == spansAttribute.length() - 1)) {
+                logger.warning("Invalid spans attribute in the first row element: " + spansAttribute + "!");
+                return null;
+            }
+
+            try {
+                return Integer.parseInt(spansAttribute.substring(colIndex + 1));
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+
     }
 }
