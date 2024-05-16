@@ -2346,9 +2346,11 @@ public class Admin extends AbstractApiBean {
             ArrayList<BannerMessageText> bannerMessageTexts = new ArrayList<BannerMessageText>();
 
             for (int i = 0; i < jsonArray.size(); i++) {
+                
                 JsonObject obj = (JsonObject) jsonArray.get(i);
                 String message = obj.getString("message");
                 String lang = obj.getString("lang");
+
                 BannerMessageText messageText = new BannerMessageText();
                 messageText.setMessage(message);
                 messageText.setLang(lang);
