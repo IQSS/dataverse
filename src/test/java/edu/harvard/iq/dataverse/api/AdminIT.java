@@ -908,6 +908,7 @@ public class AdminIT {
 
         Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(deleteId);
         logger.log(Level.ALL, deleteBannerMessageResponse.prettyPrint());
+        logger.log("LOG TEST");
         deleteBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"));
