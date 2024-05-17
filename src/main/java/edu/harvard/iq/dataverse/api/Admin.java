@@ -79,7 +79,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
@@ -2338,40 +2337,32 @@ public class Admin extends AbstractApiBean {
 
         BannerMessage toAdd = new BannerMessage();
         try {
-
             String dismissible = jsonObject.getString("dismissibleByUser");
+
+            boolean dismissibleByUser = false;
+            if (dismissible.equals("true")) {
+                dismissibleByUser = true;
+            }
+            toAdd.setDismissibleByUser(dismissibleByUser);
+            toAdd.setBannerMessageTexts(new ArrayList());
+            toAdd.setActive(true);
             JsonArray jsonArray = jsonObject.getJsonArray("messageTexts");
-
-            boolean dismissibleByUser = "true".equals(dismissible) ? true : false;
-            ArrayList<BannerMessageText> bannerMessageTexts = new ArrayList<BannerMessageText>();
-
             for (int i = 0; i < jsonArray.size(); i++) {
-                
                 JsonObject obj = (JsonObject) jsonArray.get(i);
                 String message = obj.getString("message");
                 String lang = obj.getString("lang");
-
                 BannerMessageText messageText = new BannerMessageText();
                 messageText.setMessage(message);
                 messageText.setLang(lang);
                 messageText.setBannerMessage(toAdd);
-                bannerMessageTexts.add(messageText);
+                toAdd.getBannerMessageTexts().add(messageText);
             }
-
-            toAdd.setDismissibleByUser(dismissibleByUser);
-            toAdd.setActive(true);
-            toAdd.setBannerMessageTexts(bannerMessageTexts);
-            bannerMessageService.save(toAdd);
-            return ok("Banner Message added successfully.");
+                bannerMessageService.save(toAdd);
+                return ok("Banner Message added successfully.");
 
         } catch (Exception e) {
-            e.printStackTrace();
             logger.warning("Unexpected Exception: " + e.getMessage());
-            return error(Status.BAD_REQUEST, "Add Banner Message unexpected exception: " + e.getMessage()
-             + " [TRACE]: [\n" +
-             ExceptionUtils.getStackTrace(e)
-             + "/n]"
-             );
+            return error(Status.BAD_REQUEST, "Add Banner Message unexpected exception: " + e.getMessage());
         }
 
     }
@@ -2407,45 +2398,8 @@ public class Admin extends AbstractApiBean {
     @Path("/bannerMessage")
     public Response getBannerMessages(@PathParam("id") Long id) throws WrappedResponse {
 
-        JsonArrayBuilder builder = Json.createArrayBuilder();
-
-       
-        System.out.println("-----------------  Banner Messages -----------------");
-       
-        List <BannerMessage> messages = bannerMessageService.findAllBannerMessages();
-        System.out.println("Total messages: " + messages.size());
-        
-        
-        for (BannerMessage message : messages) {
-
-            JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder().add("id", message.getId())
-                    .add("displayValue", message.getDisplayValue());
-
-            builder.add(jsonObjectBuilder);
-
-            System.out.println("Message id: " + message.getId());
-            System.out.println("Message dismissible: " + message.isDismissibleByUser());
-            for (BannerMessageText messageText : message.getBannerMessageTexts()) {
-                System.out.println("Message MESSAGE: " + messageText.getMessage());
-                System.out.println("Message lang: " + messageText.getLang());
-                System.out.println("Message displayValue: " + message.getDisplayValue());
-            }
-
-
-        }
-
-        System.out.println("---------------JSON------------------------------------");
-
-        System.out.println(bannerMessageService.findAllBannerMessages().stream()
-        .map(m -> jsonObjectBuilder().add("id", m.getId())
-        .add("displayValue", m.getDisplayValue()))
-        .collect(toJsonArray()).toString());
-        
-
-
         return ok(bannerMessageService.findAllBannerMessages().stream()
-                .map(m -> jsonObjectBuilder().add("id", m.getId())
-                .add("displayValue", m.getDisplayValue()))
+                .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
                 .collect(toJsonArray()));
 
     }
