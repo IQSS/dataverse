@@ -2408,6 +2408,13 @@ public class Admin extends AbstractApiBean {
     public Response getBannerMessages(@PathParam("id") Long id) throws WrappedResponse {
 
         logger.log(Level.ALL, "-------------------------------------------------");
+        System.err.println("-----------------  err Banner Messages -----------------");
+        System.out.println("-----------------  Banner Messages -----------------");
+        try {
+            throw new Exception("eeee Banner Messages");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         List <BannerMessage> messages = bannerMessageService.findAllBannerMessages();
         for (BannerMessage message : messages) {
             System.out.println("Message id: " + message.getId());
