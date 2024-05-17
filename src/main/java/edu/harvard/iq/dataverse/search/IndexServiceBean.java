@@ -1408,7 +1408,7 @@ public class IndexServiceBean {
                         fileSolrDocId = solrDocIdentifierFile + fileEntityId;
                         datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
                         if (FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled()) {
-                            solrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
+                            datafileSolrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
                         }
                         // datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
                         addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
