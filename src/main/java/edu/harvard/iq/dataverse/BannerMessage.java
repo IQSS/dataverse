@@ -48,8 +48,6 @@ public class BannerMessage implements Serializable {
     public String getDisplayValue(){        
         String retVal = "";
         for (BannerMessageText msgTxt : this.getBannerMessageTexts()) {
-            System.err.println("----------ROCKYLANG--------");
-            System.out.println(BundleUtil.getCurrentLocale().getLanguage());
             if (msgTxt.getLang().equals(BundleUtil.getCurrentLocale().getLanguage())) {
                 retVal = msgTxt.getMessage();
             }
