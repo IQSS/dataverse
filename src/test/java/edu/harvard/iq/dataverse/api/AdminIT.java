@@ -863,7 +863,9 @@ public class AdminIT {
 
 
         logger.log(Level.ALL, addBannerMessageErrorResponse.prettyPrint());
-        System.out.println(addBannerMessageErrorResponse.statusCode());
+        System.out.println("THIS WORKS: " + addBannerMessageErrorResponse.statusCode());
+
+
         addBannerMessageErrorResponse.then().assertThat()
                         .statusCode(BAD_REQUEST.getStatusCode())
                         .body("status", equalTo("ERROR"));
