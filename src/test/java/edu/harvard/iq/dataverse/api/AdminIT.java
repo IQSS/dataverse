@@ -15,22 +15,21 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
-import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+
+
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static jakarta.ws.rs.core.Response.Status.CREATED;
-import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static jakarta.ws.rs.core.Response.Status.OK;
-import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -832,37 +831,95 @@ public class AdminIT {
     
     @Test
     public void testBannerMessages(){
-        
-        String pathToJsonFile = "scripts/api/data/bannerMessageError.json";
-        Response addBannerMessageErrorResponse = UtilIT.addBannerMessage(pathToJsonFile);
-        addBannerMessageErrorResponse.prettyPrint();
-        String body = addBannerMessageErrorResponse.getBody().asString();
-        String status = JsonPath.from(body).getString("status");
-        assertEquals("ERROR", status);
-        
-        pathToJsonFile = "scripts/api/data/bannerMessageTest.json";
-        
-        Response addBannerMessageResponse = UtilIT.addBannerMessage(pathToJsonFile);
-        addBannerMessageResponse.prettyPrint();
-        body = addBannerMessageResponse.getBody().asString();
-        status = JsonPath.from(body).getString("status");
-        assertEquals("OK", status);
-        
+
+        //We cleanup in case there may be any existing banner messages
         Response getBannerMessageResponse = UtilIT.getBannerMessages();
         getBannerMessageResponse.prettyPrint();
-        body = getBannerMessageResponse.getBody().asString();
-        status = JsonPath.from(body).getString("status");
-        assertEquals("OK", status);
-        String deleteId = UtilIT.getBannerMessageIdFromResponse(getBannerMessageResponse.getBody().asString());
-         
-        System.out.print("delete id: " + deleteId);
+        Integer bannerListSize = JsonPath.from(getBannerMessageResponse.getBody().asString()).getInt("data.size()");
+
+        for (int i = 0; i < bannerListSize; i++){
+            Long bannerID = JsonPath.from(getBannerMessageResponse.getBody().asString()).getLong("data[" + i + "].id");
+            Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(bannerID);
+            deleteBannerMessageResponse.prettyPrint();
+            deleteBannerMessageResponse.then().assertThat()
+                    .statusCode(OK.getStatusCode())
+                    .body("status", equalTo("OK"));
+        }  
+        String bannerError = 
+                """
+                {
+                        "dismissible": "false",
+                        "messageTexts": [
+                        {
+                                "lang": "en",
+                                "text": "Invalid json"
+                        }
+                        ]
+                }               
+                """;
+
+        Response addBannerMessageErrorResponse 
+                = UtilIT.addBannerJson(bannerError);
+
+
+        addBannerMessageErrorResponse.prettyPrint();
+        System.out.println("THIS WORKS: " + addBannerMessageErrorResponse.statusCode());
+
+
+        addBannerMessageErrorResponse.then().assertThat()
+                        .statusCode(BAD_REQUEST.getStatusCode())
+                        .body("status", equalTo("ERROR"));
         
-        Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(new Long (deleteId));
-        deleteBannerMessageResponse.prettyPrint();
-        body = deleteBannerMessageResponse.getBody().asString();
-        status = JsonPath.from(body).getString("status");
-        assertEquals("OK", status);
+        String bannerJson = 
+                """
+                {
+                        "dismissibleByUser": "false",
+                        "messageTexts": [
+                        {
+                          "lang": "en",
+                          "message": "Banner Message For Deletion"
+                        },
+                        {
+                          "lang": "fr",
+                          "message": "Banner Message For Deletion"
+                        }
+                        ]
+                }
+                """;
+
+        Response addBannerMessageResponse = UtilIT.addBannerJson(bannerJson);
+
+        line();
+        addBannerMessageResponse.prettyPrint();
+        line();
+
+        addBannerMessageResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo("OK"))
+                .body("data.message", equalTo("Banner Message added successfully."));
+                        
+             
+        //Response 
+        getBannerMessageResponse = UtilIT.getBannerMessages();
+        getBannerMessageResponse.prettyPrint();
+        getBannerMessageResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.size()", equalTo(1));
+                //.body("data[0].displayValue", equalTo("Banner Message For Deletion"));
         
+        Long deleteId = Long.valueOf(
+                JsonPath.from(getBannerMessageResponse.getBody().asString()).getLong("data[0].id"));
+
+        Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(deleteId);
+        //logger.log(Level.ALL, deleteBannerMessageResponse.prettyPrint());
+        deleteBannerMessageResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("status", equalTo("OK"));
+        
+    }
+
+    private void line(){
+        System.out.println("---------------------------------------------");
     }
 
     /**
