@@ -4613,7 +4613,42 @@ public class Datasets extends AbstractApiBean {
             return ok(permissionService.canDownloadAtLeastOneFile(req, datasetVersion));
         }, getRequestUser(crc));
     }
-    
+
+    @PUT
+    @AuthRequired
+    @Path("{identifier}/pidReconcile/{pididentifier}")
+    public Response reconcilePid(@Context ContainerRequestContext crc, @PathParam("identifier") String datasetId,
+                                 @PathParam("pididentifier") String generatorId) throws WrappedResponse {
+
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+
+        Dataset dataset;
+        PidProvider pidProvider;
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        if (PidUtil.getManagedProviderIds().contains(generatorId)) {
+               pidProvider =PidUtil.getPidProvider(generatorId);
+        } else {
+            return error(Response.Status.NOT_FOUND, "No PID Generator found for the give id");
+        }
+        return response(req -> {
+            execCommand(new ReconcileDatasetPidCommand(req, dataset, pidProvider));
+            return ok(dataset.getGlobalId().toString());
+        }, getRequestUser(crc));
+
+    }
     /**
      * Get the PidProvider that will be used for generating new DOIs in this dataset
      *

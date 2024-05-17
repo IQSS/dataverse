@@ -1,11 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionDifference;
-import edu.harvard.iq.dataverse.DatasetVersionUser;
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -25,8 +20,6 @@ import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 
 import jakarta.validation.ConstraintViolation;
-import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 
 /**
@@ -151,9 +144,9 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      * @param ctxt
      * @throws CommandException
      */
-    protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt, boolean retry) throws CommandException {
+    protected void registerExternalIdentifier(DvObject theDataset, CommandContext ctxt, boolean retry) throws CommandException {
         if (!theDataset.isIdentifierRegistered()) {
-            PidProvider pidProvider = PidUtil.getPidProvider(theDataset.getGlobalId().getProviderId());
+            PidProvider pidProvider = theDataset.getEffectivePidGenerator();
             if ( pidProvider != null ) {
                 try {
                     if (pidProvider.alreadyRegistered(theDataset)) {
