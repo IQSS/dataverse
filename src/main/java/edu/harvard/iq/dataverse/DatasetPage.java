@@ -2296,13 +2296,11 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isValid() {
         if (valid == null) {
-            DatasetVersion version = dataset.getLatestVersion();
-            if (!version.isDraft()) {
+            if (workingVersion.isDraft() || (canUpdateDataset() && JvmSettings.UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED.lookupOptional(Boolean.class).orElse(true))) {
+                valid = workingVersion.isValid();
+            } else {
                 valid = true;
             }
-            DatasetVersion newVersion = version.cloneDatasetVersion();
-            newVersion.setDatasetFields(newVersion.initDatasetFields());
-            valid = newVersion.isValid();
         }
         return valid;
     }
