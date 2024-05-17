@@ -2407,6 +2407,18 @@ public class Admin extends AbstractApiBean {
     @Path("/bannerMessage")
     public Response getBannerMessages(@PathParam("id") Long id) throws WrappedResponse {
 
+        System.out.println("-------------------------------------------------");
+        List <BannerMessage> messages = bannerMessageService.findAllBannerMessages();
+        for (BannerMessage message : messages) {
+            System.out.println("Message id: " + message.getId());
+            System.out.println("Message dismissible: " + message.isDismissibleByUser());
+            for (BannerMessageText messageText : message.getBannerMessageTexts()) {
+                System.out.println("Message text: " + messageText.getMessage());
+                System.out.println("Message lang: " + messageText.getLang());
+            }
+        }
+
+
         return ok(bannerMessageService.findAllBannerMessages().stream()
                 .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
                 .collect(toJsonArray()));
