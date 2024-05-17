@@ -914,11 +914,20 @@ public class SearchIT {
         createSubDataverseResponse.prettyPrint();
         //UtilIT.getAliasFromResponse(createSubDataverseResponse);
         
+
         Response grantRoleOnDataverseResponse = UtilIT.grantRoleOnDataverse(subDataverseAlias, "curator", "@" + username, apiTokenSuper); 
         grantRoleOnDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
                 
         String searchPart = "*"; 
+        
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException ex) {
+            /**
+             * With solrconfig autoSoftCommit set to 1000 (1sec), this sleep is needed.
+             */
+        }
         
         Response searchPublishedSubtreeSuper = UtilIT.search(searchPart, apiTokenSuper, "&subtree="+parentDataverseAlias);
         assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if search exceeds max duration " + searchPart);
