@@ -2428,7 +2428,7 @@ public class Admin extends AbstractApiBean {
         System.out.println(bannerMessageService.findAllBannerMessages().stream()
         .map(m -> jsonObjectBuilder().add("id", m.getId())
         .add("displayValue", m.getDisplayValue()))
-        .collect(toJsonArray()));
+        .collect(toJsonArray()).toString());
         
 
 
