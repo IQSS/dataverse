@@ -860,12 +860,7 @@ public class AdminIT {
 
         Response addBannerMessageErrorResponse 
                 = UtilIT.addBannerJson(bannerError);
-
-
         addBannerMessageErrorResponse.prettyPrint();
-        System.out.println("THIS WORKS: " + addBannerMessageErrorResponse.statusCode());
-
-
         addBannerMessageErrorResponse.then().assertThat()
                         .statusCode(BAD_REQUEST.getStatusCode())
                         .body("status", equalTo("ERROR"));
@@ -888,11 +883,7 @@ public class AdminIT {
                 """;
 
         Response addBannerMessageResponse = UtilIT.addBannerJson(bannerJson);
-
-        line();
         addBannerMessageResponse.prettyPrint();
-        line();
-
         addBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"))
@@ -916,10 +907,6 @@ public class AdminIT {
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"));
         
-    }
-
-    private void line(){
-        System.out.println("---------------------------------------------");
     }
 
     /**
