@@ -862,7 +862,7 @@ public class AdminIT {
                 = UtilIT.addBannerJson(bannerError);
 
 
-        logger.log(Level.ALL, addBannerMessageErrorResponse.prettyPrint());
+        addBannerMessageErrorResponse.prettyPrint();
         System.out.println("THIS WORKS: " + addBannerMessageErrorResponse.statusCode());
 
 
@@ -901,7 +901,7 @@ public class AdminIT {
              
         //Response 
         getBannerMessageResponse = UtilIT.getBannerMessages();
-        logger.log(Level.ALL, getBannerMessageResponse.prettyPrint());
+        getBannerMessageResponse.prettyPrint();
         getBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(1));
@@ -912,7 +912,6 @@ public class AdminIT {
 
         Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(deleteId);
         //logger.log(Level.ALL, deleteBannerMessageResponse.prettyPrint());
-        logger.log(Level.ALL, "LOG TEST");
         deleteBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"));

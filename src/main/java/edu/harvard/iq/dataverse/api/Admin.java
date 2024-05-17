@@ -2407,7 +2407,7 @@ public class Admin extends AbstractApiBean {
     @Path("/bannerMessage")
     public Response getBannerMessages(@PathParam("id") Long id) throws WrappedResponse {
 
-        System.out.println("-------------------------------------------------");
+        logger.log(Level.ALL, "-------------------------------------------------");
         List <BannerMessage> messages = bannerMessageService.findAllBannerMessages();
         for (BannerMessage message : messages) {
             System.out.println("Message id: " + message.getId());
