@@ -138,7 +138,7 @@ public class XmlMetadataTemplate {
     private void writeTitles(XMLStreamWriter xmlw, DvObject dvObject, String language) throws XMLStreamException {
         String title = doiMetadata.getTitle();
         String subTitle = null;
-        List<String> altTitles = null;
+        List<String> altTitles = new ArrayList<>();
         // Only Datasets can have a subtitle or alternative titles
         if (dvObject instanceof Dataset d) {
             DatasetVersion dv = d.getLatestVersion();
