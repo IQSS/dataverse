@@ -896,13 +896,12 @@ public class AdminIT {
         getBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.size()", equalTo(1));
-                //.body("data[0].displayValue", equalTo("Banner Message For Deletion"));
         
         Long deleteId = Long.valueOf(
                 JsonPath.from(getBannerMessageResponse.getBody().asString()).getLong("data[0].id"));
 
         Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(deleteId);
-        //logger.log(Level.ALL, deleteBannerMessageResponse.prettyPrint());
+        deleteBannerMessageResponse.prettyPrint();
         deleteBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"));
