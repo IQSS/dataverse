@@ -2407,15 +2407,11 @@ public class Admin extends AbstractApiBean {
     @Path("/bannerMessage")
     public Response getBannerMessages(@PathParam("id") Long id) throws WrappedResponse {
 
-        logger.log(Level.ALL, "-------------------------------------------------");
-        System.err.println("-----------------  err Banner Messages -----------------");
+       
         System.out.println("-----------------  Banner Messages -----------------");
-        try {
-            throw new Exception("eeee Banner Messages");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+       
         List <BannerMessage> messages = bannerMessageService.findAllBannerMessages();
+        System.out.println("Total messages: " + messages.size());
         for (BannerMessage message : messages) {
             System.out.println("Message id: " + message.getId());
             System.out.println("Message dismissible: " + message.isDismissibleByUser());
@@ -2423,11 +2419,14 @@ public class Admin extends AbstractApiBean {
                 System.out.println("Message text: " + messageText.getMessage());
                 System.out.println("Message lang: " + messageText.getLang());
             }
+
+
         }
 
 
         return ok(bannerMessageService.findAllBannerMessages().stream()
-                .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
+                .map(m -> jsonObjectBuilder().add("id", m.getId())
+                .add("displayValue", m.getDisplayValue()))
                 .collect(toJsonArray()));
 
     }
