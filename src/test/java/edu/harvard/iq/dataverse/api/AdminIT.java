@@ -889,8 +889,9 @@ public class AdminIT {
 
         Response addBannerMessageResponse = UtilIT.addBannerJson(bannerJson);
 
-
-        logger.log(Level.ALL, addBannerMessageResponse.prettyPrint());
+        System.out.println("-----------------");
+        addBannerMessageResponse.prettyPrint();
+        System.out.println("-----------------");
         addBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"))
