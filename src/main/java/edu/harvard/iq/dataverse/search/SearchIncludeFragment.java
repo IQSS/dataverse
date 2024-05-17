@@ -1501,13 +1501,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
         if(obj != null && obj instanceof Dataset) {
                 
         return result.isValid(x -> permissionsWrapper.canUpdateDataset(getDataverseRequest(), datasetService.find(x.getEntityId())));
-        } else if(obj != null && obj instanceof DataFile) {
-            logger.info("Object is a DataFile");
-        } else if(obj != null && obj instanceof Dataverse) {
-            logger.info("Object is a Dataverse");
-        } else if(obj == null) {
-            logger.info("Object is null");
         }
+        logger.fine("isValid called for dvObject that is null (or not a dataset), id: " + id + "This can occur if a dataset is deleted while a search is in progress");
         return result.isValid(x -> true);
     }
     
