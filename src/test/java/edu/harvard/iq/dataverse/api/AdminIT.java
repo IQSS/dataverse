@@ -842,7 +842,7 @@ public class AdminIT {
 
         //We add a banner message with an error in the json file
         String pathToJsonFile = "scripts/api/data/bannerMessageError.json";       
-        Response addBannerMessageErrorResponse  = UtilIT.addBannerJson(pathToJsonFile);
+        Response addBannerMessageErrorResponse  = UtilIT.addBannerMessage(pathToJsonFile);
         addBannerMessageErrorResponse.prettyPrint();
         addBannerMessageErrorResponse.then().assertThat()
                         .statusCode(BAD_REQUEST.getStatusCode())

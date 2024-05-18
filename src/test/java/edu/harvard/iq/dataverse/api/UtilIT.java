@@ -3373,20 +3373,6 @@ public class UtilIT {
         return deleteBannerMessageResponse;
     }
     
-    static String getBannerMessageIdFromResponse(String getBannerMessagesResponse) {
-        StringReader rdr = new StringReader(getBannerMessagesResponse);
-        JsonObject json = Json.createReader(rdr).readObject();
-
-        for (JsonObject obj : json.getJsonArray("data").getValuesAs(JsonObject.class)) {
-            String message = obj.getString("displayValue");
-            if (message.equals("Banner Message For Deletion")) {
-                return obj.getJsonNumber("id").toString();
-            }
-        }
-
-        return "0";
-    }
-    
     static Response getDatasetJsonLDMetadata(Integer datasetId, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
