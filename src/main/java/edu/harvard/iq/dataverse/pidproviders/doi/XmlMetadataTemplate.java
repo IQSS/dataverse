@@ -21,6 +21,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -84,6 +85,7 @@ public class XmlMetadataTemplate {
             generateXML(dvObject, outputStream);
 
             String xml = outputStream.toString();
+            logger.info(xml);
             return XmlPrinter.prettyPrintXml(xml);
         } catch (XMLStreamException | IOException e) {
             logger.severe("Unable to generate DataCite XML for DOI: " + dvObject.getGlobalId().asString() + " : " + e.getMessage());
@@ -98,10 +100,11 @@ public class XmlMetadataTemplate {
         String metadataLanguage = null; // when set, otherwise  = language?
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         xmlw.writeStartElement("resource");
+        
         xmlw.writeDefaultNamespace(XML_NAMESPACE);
         xmlw.writeAttribute("xmlns:xsi", XML_XSI);
         xmlw.writeAttribute("xsi:schemaLocation", XML_SCHEMA_LOCATION);
-
+        
         writeIdentifier(xmlw, dvObject);
         writeCreators(xmlw, doiMetadata.getAuthors());
         writeTitles(xmlw, dvObject, language);
@@ -121,6 +124,8 @@ public class XmlMetadataTemplate {
         writeDescriptions(xmlw, dvObject);
         writeGeoLocations(xmlw, dvObject);
         writeFundingReferences(xmlw, dvObject);
+        xmlw.writeEndElement();
+        xmlw.flush();
     }
 
     /**
@@ -726,32 +731,34 @@ public class XmlMetadataTemplate {
                 }
             }
         }
-        if (!altPids.isEmpty()) {
+        
+        if (altPids != null && !altPids.isEmpty()) {
             alternatesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "alternativeIdentifiers", alternatesWritten);
-        }
-        for (AlternativePersistentIdentifier altPid : altPids) {
-            String identifierType = null;
-            String identifier = null;
-            switch (altPid.getProtocol()) {
-            case AbstractDOIProvider.DOI_PROTOCOL:
-                identifierType = AbstractDOIProvider.DOI_PROTOCOL.toUpperCase();
-                identifier = altPid.getAuthority() + "/" + altPid.getIdentifier();
-                break;
-            case HandlePidProvider.HDL_PROTOCOL:
-                identifierType = "Handle";
-                identifier = altPid.getAuthority() + "/" + altPid.getIdentifier();
-                break;
-            default:
-                // The AlternativePersistentIdentifier class isn't really ready for anything but
-                // doi or handle pids, but will add this as a default.
-                identifierType = ":unav";
-                identifier = altPid.getAuthority() + altPid.getIdentifier();
-                break;
-            }
-            attributes.put("alternativeIdentifierType", identifierType);
-            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "alternateIdentifier", attributes, identifier);
+            for (AlternativePersistentIdentifier altPid : altPids) {
+                String identifierType = null;
+                String identifier = null;
+                switch (altPid.getProtocol()) {
+                case AbstractDOIProvider.DOI_PROTOCOL:
+                    identifierType = AbstractDOIProvider.DOI_PROTOCOL.toUpperCase();
+                    identifier = altPid.getAuthority() + "/" + altPid.getIdentifier();
+                    break;
+                case HandlePidProvider.HDL_PROTOCOL:
+                    identifierType = "Handle";
+                    identifier = altPid.getAuthority() + "/" + altPid.getIdentifier();
+                    break;
+                default:
+                    // The AlternativePersistentIdentifier class isn't really ready for anything but
+                    // doi or handle pids, but will add this as a default.
+                    identifierType = ":unav";
+                    identifier = altPid.getAuthority() + altPid.getIdentifier();
+                    break;
+                }
+                attributes.put("alternativeIdentifierType", identifierType);
+                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "alternateIdentifier", attributes, identifier);
 
+            }
         }
+
         for (DatasetFieldCompoundValue otherIdentifier : otherIdentifiers) {
             String identifierType = null;
             String identifier = null;
@@ -1061,10 +1068,11 @@ public class XmlMetadataTemplate {
         }
         Map<String, String> attributes = new HashMap<String, String>();
         attributes.put("descriptionType", "Abstract");
-        for (String description : descriptions) {
-            descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
-            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, description);
-            ;
+        if (descriptions != null) {
+            for (String description : descriptions) {
+                descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
+                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, description);
+            }
         }
 
         if (dv != null) {
