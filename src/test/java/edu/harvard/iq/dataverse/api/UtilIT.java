@@ -3271,14 +3271,6 @@ public class UtilIT {
                 .post("/api/admin/bannerMessage");
         return addBannerMessageResponse;
     }
-
-    static Response addBannerJson(String json){
-        Response addBannerMessageResponse = given()               
-                .body(json)
-                .contentType("application/json")
-                .post("/api/admin/bannerMessage");
-        return addBannerMessageResponse;
-    }
     
     static Response addBuiltInRole(String pathToJsonFile) {
         String jsonIn = getDatasetJson(pathToJsonFile);

@@ -2357,8 +2357,13 @@ public class Admin extends AbstractApiBean {
                 messageText.setBannerMessage(toAdd);
                 toAdd.getBannerMessageTexts().add(messageText);
             }
-                bannerMessageService.save(toAdd);
-                return ok("Banner Message added successfully.");
+            bannerMessageService.save(toAdd);
+
+            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder()
+                .add("message", "Banner Message added successfully.")
+                .add("id", toAdd.getId());
+
+            return ok(jsonObjectBuilder);
 
         } catch (Exception e) {
             logger.warning("Unexpected Exception: " + e.getMessage());

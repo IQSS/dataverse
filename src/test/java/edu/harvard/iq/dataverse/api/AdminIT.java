@@ -832,75 +832,42 @@ public class AdminIT {
     @Test
     public void testBannerMessages(){
 
-        //We cleanup in case there may be any existing banner messages
+        //We check for existing banner messages and get the number of existing messages
         Response getBannerMessageResponse = UtilIT.getBannerMessages();
         getBannerMessageResponse.prettyPrint();
-        Integer bannerListSize = JsonPath.from(getBannerMessageResponse.getBody().asString()).getInt("data.size()");
+        getBannerMessageResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Integer numBannerMessages =
+                JsonPath.from(getBannerMessageResponse.getBody().asString()).getInt("data.size()");
 
-        for (int i = 0; i < bannerListSize; i++){
-            Long bannerID = JsonPath.from(getBannerMessageResponse.getBody().asString()).getLong("data[" + i + "].id");
-            Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(bannerID);
-            deleteBannerMessageResponse.prettyPrint();
-            deleteBannerMessageResponse.then().assertThat()
-                    .statusCode(OK.getStatusCode())
-                    .body("status", equalTo("OK"));
-        }  
-        String bannerError = 
-                """
-                {
-                        "dismissible": "false",
-                        "messageTexts": [
-                        {
-                                "lang": "en",
-                                "text": "Invalid json"
-                        }
-                        ]
-                }               
-                """;
-
-        Response addBannerMessageErrorResponse 
-                = UtilIT.addBannerJson(bannerError);
+        //We add a banner message with an error in the json file
+        String pathToJsonFile = "scripts/api/data/bannerMessageError.json";       
+        Response addBannerMessageErrorResponse  = UtilIT.addBannerJson(pathToJsonFile);
         addBannerMessageErrorResponse.prettyPrint();
         addBannerMessageErrorResponse.then().assertThat()
                         .statusCode(BAD_REQUEST.getStatusCode())
                         .body("status", equalTo("ERROR"));
         
-        String bannerJson = 
-                """
-                {
-                        "dismissibleByUser": "false",
-                        "messageTexts": [
-                        {
-                          "lang": "en",
-                          "message": "Banner Message For Deletion"
-                        },
-                        {
-                          "lang": "fr",
-                          "message": "Banner Message For Deletion"
-                        }
-                        ]
-                }
-                """;
-
-        Response addBannerMessageResponse = UtilIT.addBannerJson(bannerJson);
+        //We add a banner message with a correct json file
+        pathToJsonFile = "scripts/api/data/bannerMessageTest.json";
+        Response addBannerMessageResponse = UtilIT.addBannerMessage(pathToJsonFile);
         addBannerMessageResponse.prettyPrint();
         addBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"))
                 .body("data.message", equalTo("Banner Message added successfully."));
-                        
-             
-        //Response 
+        Long addedBanner = Long.valueOf(
+                        JsonPath.from(addBannerMessageResponse.getBody().asString()).getLong("data.id"));                
+        
+        //We get the banner messages and check that the number of messages has increased by 1
         getBannerMessageResponse = UtilIT.getBannerMessages();
         getBannerMessageResponse.prettyPrint();
         getBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.size()", equalTo(1));
-        
-        Long deleteId = Long.valueOf(
-                JsonPath.from(getBannerMessageResponse.getBody().asString()).getLong("data[0].id"));
+                .body("data.size()", equalTo(numBannerMessages + 1));
 
-        Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(deleteId);
+        //We delete the banner message
+        Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(addedBanner);
         deleteBannerMessageResponse.prettyPrint();
         deleteBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
