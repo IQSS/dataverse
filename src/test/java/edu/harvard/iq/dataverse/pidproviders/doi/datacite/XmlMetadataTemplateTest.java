@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse.pidproviders.doi.datacite;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetAuthor;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
@@ -19,11 +21,16 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
 import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
+import edu.harvard.iq.dataverse.util.xml.XmlValidator;
 
 import java.io.IOException;
+import java.io.StringReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.transform.stream.StreamSource;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -32,6 +39,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.xml.sax.SAXException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -69,10 +77,32 @@ public class XmlMetadataTemplateTest {
     public void testDataCiteXMLCreation() throws IOException {
         DoiMetadata doiMetadata = new DoiMetadata();
         doiMetadata.setTitle("A Title");
-        List<String> creators = new ArrayList<String>();
-        creators.add("Alice");
-        creators.add("Bob");
-        doiMetadata.setCreators(creators);
+        DatasetFieldType dft = new DatasetFieldType(DatasetFieldConstant.authorName, FieldType.TEXT, false);
+        dft.setDisplayFormat("#VALUE");
+        DatasetFieldType dft2 = new DatasetFieldType(DatasetFieldConstant.authorAffiliation, FieldType.TEXT, false);
+        dft2.setDisplayFormat("#VALUE");
+        DatasetAuthor alice = new DatasetAuthor();
+        DatasetField df1 = new DatasetField();
+        df1.setDatasetFieldType(dft);
+        df1.setSingleValue("Alice");
+        alice.setName(df1);
+        DatasetField df2 = new DatasetField();
+        df2.setDatasetFieldType(dft2);
+        df2.setSingleValue("Harvard University");
+        alice.setAffiliation(df2);
+        DatasetAuthor bob = new DatasetAuthor();
+        DatasetField df3 = new DatasetField();
+        df3.setDatasetFieldType(dft);
+        df3.setSingleValue("Bob");
+        bob.setName(df3);
+        DatasetField df4 = new DatasetField();
+        df4.setDatasetFieldType(dft2);
+        df4.setSingleValue("QDR");
+        bob.setAffiliation(df4);
+        List<DatasetAuthor> authors = new ArrayList<>();
+        authors.add(alice);
+        authors.add(bob);
+        doiMetadata.setAuthors(authors);
         doiMetadata.setPublisher("Dataverse");
         XmlMetadataTemplate template = new XmlMetadataTemplate(doiMetadata);
         
@@ -102,6 +132,13 @@ public class XmlMetadataTemplateTest {
 
         String xml = template.generateXML(d);
         System.out.println("Output is " + xml);
+        try {
+            StreamSource source = new StreamSource(new StringReader(xml));
+            source.setSystemId("DataCite XML for test dataset");
+            assertTrue(XmlValidator.validateXmlSchema(source, new URL("https://schema.datacite.org/meta/kernel-4/metadata.xsd")));
+        } catch (SAXException e) {
+            System.out.println("Invalid schema: " + e.getMessage());
+        }
         
     }
 
