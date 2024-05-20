@@ -158,20 +158,22 @@ public class XmlMetadataTemplate {
 
         if (StringUtils.isNotBlank(title) || StringUtils.isNotBlank(subTitle) || (altTitles != null && !String.join("", altTitles).isBlank())) {
             xmlw.writeStartElement("titles");
-            XmlWriterUtil.writeFullElement(xmlw, "title", title, language);
-
-            Map<String, String> attributes = new HashMap<String, String>();
-            attributes.put("titleType", "Subtitle");
-
-            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "title", attributes, title);
-
-            attributes.clear();
-            attributes.put("titleType", "AlternativeTitle");
-
-            for (String altTitle : altTitles) {
-                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "title", attributes, altTitle);
+            if (StringUtils.isNotBlank(title)) {
+                XmlWriterUtil.writeFullElement(xmlw, "title", title, language);
             }
+            Map<String, String> attributes = new HashMap<String, String>();
 
+            if (StringUtils.isNotBlank(subTitle)) {
+                attributes.put("titleType", "Subtitle");
+                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "title", attributes, subTitle);
+            }
+            if ((altTitles != null && !String.join("", altTitles).isBlank())) {
+                attributes.clear();
+                attributes.put("titleType", "AlternativeTitle");
+                for (String altTitle : altTitles) {
+                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "title", attributes, altTitle);
+                }
+            }
             xmlw.writeEndElement();
         }
     }
@@ -250,12 +252,9 @@ public class XmlMetadataTemplate {
                 }
 
                 if (StringUtils.isNotBlank(creatorName)) {
-                    xmlw.writeStartElement("creator"); // <creator>
                     JsonObject creatorObj = PersonOrOrgUtil.getPersonOrOrganization(creatorName, false,
                             StringUtils.containsIgnoreCase(nameIdentifierScheme, "orcid"));
-
                     writeEntityElements(xmlw, "creator", null, creatorObj, affiliation, nameIdentifier, nameIdentifierScheme);
-                    xmlw.writeEndElement(); // </creator>
                 }
 
                 else {
@@ -693,21 +692,21 @@ public class XmlMetadataTemplate {
                     kindOfDataValues = dsf.getControlledVocabularyValues();
                     break;
                 }
-
-                if (kindOfDataValues.isEmpty()) {
-                    // Write an attribute only element if there are no kindOfData values.
-                    xmlw.writeStartElement("resourceType");
-                    xmlw.writeAttribute("resourceTypeGeneral", attributes.get("resourceTypeGeneral"));
-                    xmlw.writeEndElement();
-                } else {
-                    for (ControlledVocabularyValue kindOfDataValue : kindOfDataValues) {
-                        String resourceType = kindOfDataValue.getStrValue();
-                        if (StringUtils.isNotBlank(resourceType)) {
-                            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, resourceType);
-                        }
+            }
+            if (kindOfDataValues.isEmpty()) {
+                // Write an attribute only element if there are no kindOfData values.
+                xmlw.writeStartElement("resourceType");
+                xmlw.writeAttribute("resourceTypeGeneral", attributes.get("resourceTypeGeneral"));
+                xmlw.writeEndElement();
+            } else {
+                for (ControlledVocabularyValue kindOfDataValue : kindOfDataValues) {
+                    String resourceType = kindOfDataValue.getStrValue();
+                    if (StringUtils.isNotBlank(resourceType)) {
+                        XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, resourceType);
                     }
                 }
             }
+
         }
     }
 
