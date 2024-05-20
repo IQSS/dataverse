@@ -2403,10 +2403,19 @@ public class Admin extends AbstractApiBean {
     @Path("/bannerMessage")
     public Response getBannerMessages(@PathParam("id") Long id) throws WrappedResponse {
 
-        return ok(bannerMessageService.findAllBannerMessages().stream()
-                .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
-                .collect(toJsonArray()));
+        List<BannerMessage> messagesList = bannerMessageService.findAllBannerMessages();
 
+        for (BannerMessage message : messagesList) {
+            if ("".equals(message.getDisplayValue())) {
+               return error(Response.Status.INTERNAL_SERVER_ERROR, "No banner messages found for this locale.");
+            }
+        }
+
+        JsonArrayBuilder messages = messagesList.stream()
+        .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
+        .collect(toJsonArray());
+        
+        return ok(messages);
     }
     
     @POST
