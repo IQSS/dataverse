@@ -292,7 +292,7 @@ public class MyDataFilterParams {
     }
 
     public String getSolrFragmentForDatasetValidity(){
-        if ((this.datasetValidities == null) || (this.datasetValidities.isEmpty())){
+        if ((this.datasetValidities == null) || (this.datasetValidities.isEmpty()) || (this.datasetValidities.size() > 1)){
             return "";
         }
     
