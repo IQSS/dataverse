@@ -663,6 +663,9 @@ public class SettingsServiceBean {
          * and dataset pages instantly
          */
         DisableSolrFacets,
+        DisableSolrFacetsForGuestUsers,
+        DisableSolrFacetsForAnonymousUsers,
+        DisableUncheckedTypesFacet,
         /**
          * When ingesting tabular data files, store the generated tab-delimited 
          * files *with* the variable names line up top. 
