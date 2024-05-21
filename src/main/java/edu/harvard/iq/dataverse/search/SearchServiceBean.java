@@ -1079,6 +1079,24 @@ public class SearchServiceBean {
         // ----------------------------------------------------
         // (5) Work with Authenticated User who is not a Superuser
         // ----------------------------------------------------
+        
+        // A quick speedup experiment (L.A.) 
+        // - This ignores the group membership completely; 
+        // so, not a production-ready fix, just a proof of concept, 
+        // an attempt to replace an uber-expensive join on ALL the public  
+        // documents with the "publicObject:true" flag, similarly to what we 
+        // are doing for guest users, above, and only using 
+        // the join to explicitly look up the (few) documents the user is 
+        // directly authorized to see (once again, groups are ignored for now)
+        if (FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled()) {
+                StringBuilder sb = new StringBuilder();
+                
+                sb.append(SearchFields.PUBLIC_OBJECT + ":" + true + " OR ");
+                sb.append("{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" + IndexServiceBean.getGroupPerUserPrefix() + au.getId());
+                String ret = sb.toString();
+                logger.info("Returning experimental query: "+ret);
+                return ret;
+            }
         /**
          * @todo all this code needs cleanup and clarification.
          */

@@ -356,8 +356,8 @@ public class SolrIndexServiceBean {
         /**
          * @todo Do something with these responses from Solr.
          */
-        UpdateResponse addResponse = solrClientService.getSolrClient().add(docs);
-        UpdateResponse commitResponse = solrClientService.getSolrClient().commit();
+        UpdateResponse addResponse = solrClientService.getSolrClient().add(docs, IndexServiceBean.COMMIT_WITHIN);
+        //UpdateResponse commitResponse = solrClientService.getSolrClient().commit();
     }
 
     public IndexResponse indexPermissionsOnSelfAndChildren(long definitionPointId) {
@@ -497,26 +497,26 @@ public class SolrIndexServiceBean {
             return new IndexResponse("nothing to delete");
         }
         try {
-            solrClientService.getSolrClient().deleteById(solrIdsToDelete);
+            solrClientService.getSolrClient().deleteById(solrIdsToDelete, IndexServiceBean.COMMIT_WITHIN);
         } catch (SolrServerException | IOException ex) {
             /**
              * @todo mark these for re-deletion
              */
             return new IndexResponse("problem deleting the following documents from Solr: " + solrIdsToDelete);
         }
-        try {
+        /*try {
             solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             return new IndexResponse("problem committing deletion of the following documents from Solr: " + solrIdsToDelete);
-        }
+        }*/
         return new IndexResponse("no known problem deleting the following documents from Solr:" + solrIdsToDelete);
     }
 
     public JsonObjectBuilder deleteAllFromSolrAndResetIndexTimes() throws SolrServerException, IOException {
         JsonObjectBuilder response = Json.createObjectBuilder();
         logger.info("attempting to delete all Solr documents before a complete re-index");
-        solrClientService.getSolrClient().deleteByQuery("*:*");
-        solrClientService.getSolrClient().commit();
+        solrClientService.getSolrClient().deleteByQuery("*:*", IndexServiceBean.COMMIT_WITHIN);
+        //solrClientService.getSolrClient().commit();
         int numRowsAffected = dvObjectService.clearAllIndexTimes();
         response.add(numRowsClearedByClearAllIndexTimes, numRowsAffected);
         response.add(messageString, "Solr index and database index timestamps cleared.");
