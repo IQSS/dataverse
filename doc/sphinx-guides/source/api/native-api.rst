@@ -2884,7 +2884,7 @@ The API can also be used to reset the dataset to use the default/inherited value
 The default will always be the same provider as for the dataset PID if that provider can generate new PIDs, and will be the PID Provider set for the collection or the global default otherwise.
 
 Reconcile the PID ofa a dataset (If multiple PIDProvider are Enabled)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Dataverse can be configured to use multiple PID Providers (see the :ref:`pids-configuration` section for more information).
 It is possible to update the used PIDProvider of a dataset. This API not only modifies the PIDProvider, but also
 reconciles the PID with the newly configured provider if it has not already been published.
