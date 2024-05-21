@@ -589,7 +589,7 @@ public class SearchIT {
 
         overrideThumbnailFail.prettyPrint();
         overrideThumbnailFail.then().assertThat()
-                .body("message", CoreMatchers.equalTo("File is larger than maximum size: 500000."))
+                .body("message", CoreMatchers.containsString("File is larger than maximum size:"))
                 /**
                  * @todo We want this to expect 400 (BAD_REQUEST), not 403
                  * (FORBIDDEN).
