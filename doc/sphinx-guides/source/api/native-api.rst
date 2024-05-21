@@ -2883,6 +2883,27 @@ The API can also be used to reset the dataset to use the default/inherited value
 
 The default will always be the same provider as for the dataset PID if that provider can generate new PIDs, and will be the PID Provider set for the collection or the global default otherwise.
 
+Reconcile the PID ofa a dataset (If multiple PIDProvider are Enabled)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Dataverse can be configured to use multiple PID Providers (see the :ref:`pids-configuration` section for more information).
+It is possible to update the used PIDProvider of a dataset. This API not only modifies the PIDProvider, but also
+reconciles the PID with the newly configured provider if it has not already been published.
+This means that the identifier of the previous PIDProvider is removed and a new one is created using the given PIDProvider.
+Note that this change does not affect the storage repository where the old identifier is still used.
+
+The PID Provider id used must be one of the those configured - see :ref:`pids-providers-api`.
+
+To reconcile the PID of the dataset:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/YD5QDG
+  export GENERATOR_ID=perma1
+
+  curl -X PUT -H "X-Dataverse-key:$API_TOKEN"  "$SERVER_URL/api/datasets/$PERSISTENT_IDENTIFIER/pidReconcile/$GENERATOR_ID"
+
 Files
 -----
 
