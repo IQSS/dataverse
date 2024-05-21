@@ -134,7 +134,7 @@ In GitHub, you will likely need to configure the following secrets:
 - DATAVERSEBOT_SONATYPE_TOKEN
 - DATAVERSEBOT_SONATYPE_USERNAME
 
-Note that some of these secrets might be configure at the org level (e.g. gdcc or IQSS).
+Note that some of these secrets might be configured at the org level (e.g. gdcc or IQSS).
 
 Many of the automated tasks are performed by the dataversebot account on GitHub: https://github.com/dataversebot
 
