@@ -191,7 +191,7 @@ public class LinkIT {
                 .body("data.message", equalTo("Dataverse " + level2a + " linked successfully to " + level2b));
 
         try {
-            Thread.sleep(3000);
+            Thread.sleep(4000);
         } catch (InterruptedException ex) {
             /**
              * With solrconfig autoSoftCommit set to 1000 (1sec), this sleep is needed.

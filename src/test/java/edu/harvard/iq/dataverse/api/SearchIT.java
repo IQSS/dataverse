@@ -794,7 +794,7 @@ public class SearchIT {
         createDataverseResponse2.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
         try {
-            Thread.sleep(2000);
+            Thread.sleep(3000);
         } catch (InterruptedException ex) {
             /**
              * With solrconfig autoSoftCommit set to 1000 (1sec), this sleep is needed.
@@ -922,7 +922,7 @@ public class SearchIT {
         String searchPart = "*"; 
         
         try {
-            Thread.sleep(2000);
+            Thread.sleep(3000);
         } catch (InterruptedException ex) {
             /**
              * With solrconfig autoSoftCommit set to 1000 (1sec), this sleep is needed.
