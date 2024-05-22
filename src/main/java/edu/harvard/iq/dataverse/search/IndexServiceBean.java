@@ -317,14 +317,6 @@ public class IndexServiceBean {
             logger.info(status);
             return new AsyncResult<>(status);
         }
-        /*try {
-            solrClientService.getSolrClient().commit();
-        } catch (SolrServerException | IOException ex) {
-            status = ex.toString();
-            logger.info(status);
-            return new AsyncResult<>(status);
-        }*/
-
         dvObjectService.updateContentIndexTime(dataverse);
         IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dataverse);
         String msg = "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias() + ". Response from permission indexing: " + indexResponse.getMessage();
@@ -1527,7 +1519,6 @@ public class IndexServiceBean {
 
         try {
             solrClientService.getSolrClient().add(docs.getDocuments(), COMMIT_WITHIN);
-            //solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
             if (ex.getCause() instanceof SolrServerException) {
                 throw new SolrServerException(ex);
@@ -1780,7 +1771,6 @@ public class IndexServiceBean {
             sid.removeField(SearchFields.SUBTREE);
             sid.addField(SearchFields.SUBTREE, paths);
             UpdateResponse addResponse = solrClientService.getSolrClient().add(sid, COMMIT_WITHIN);
-            //UpdateResponse commitResponse = solrClientService.getSolrClient().commit();
             if (object.isInstanceofDataset()) {
                 for (DataFile df : dataset.getFiles()) {
                     solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, df.getId().toString()));
@@ -1794,7 +1784,6 @@ public class IndexServiceBean {
                         sid.removeField(SearchFields.SUBTREE);
                         sid.addField(SearchFields.SUBTREE, paths);
                         addResponse = solrClientService.getSolrClient().add(sid, COMMIT_WITHIN);
-                        //commitResponse = solrClientService.getSolrClient().commit();
                     }
                 }
             }
@@ -1840,12 +1829,6 @@ public class IndexServiceBean {
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
-        /*try {
-            solrClientService.getSolrClient().commit();
-        } catch (SolrServerException | IOException ex) {
-            return ex.toString();
-        }
-        */
         String response = "Successfully deleted dataverse " + doomed.getId() + " from Solr index. updateReponse was: " + updateResponse.toString();
         logger.fine(response);
         return response;
@@ -1866,12 +1849,6 @@ public class IndexServiceBean {
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
-        /*try {
-            solrClientService.getSolrClient().commit();
-        } catch (SolrServerException | IOException ex) {
-            return ex.toString();
-        }
-        */
         String response = "Attempted to delete " + doomed + " from Solr index. updateReponse was: " + updateResponse.toString();
         logger.fine(response);
         return response;
