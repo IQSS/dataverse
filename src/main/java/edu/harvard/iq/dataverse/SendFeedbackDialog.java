@@ -129,6 +129,10 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
 
     public String getMessageTo() {
+        if (op1 == null || op2 == null) {
+            // Fix for 403 error page: initUserInput method doesn't call before
+            initUserInput(null);
+        }
         if (feedbackTarget == null) {
             return BrandingUtil.getSupportTeamName(systemAddress);
         } else if (feedbackTarget.isInstanceofDataverse()) {
