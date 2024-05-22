@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DataRetrieverApiIT {
 
-    private static final String ERR_MSG_FORMAT = "{\"success\":false,\"error_message\":\"%s\"}";
+    private static final String ERR_MSG_FORMAT = "{\n    \"success\": false,\n    \"error_message\": \"%s\"\n}";
 
     @BeforeAll
     public static void setUpClass() {
