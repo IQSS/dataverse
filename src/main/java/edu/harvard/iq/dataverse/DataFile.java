@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
@@ -1111,9 +1112,5 @@ public class DataFile extends DvObject implements Comparable {
             }
         }
         return false;
-    }
-    @Override
-    public PidProvider getEffectivePidGenerator() {
-        return getOwner().getEffectivePidGenerator();
     }
 } // end of class

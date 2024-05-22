@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.io.IOException;
@@ -25,8 +26,7 @@ import java.util.logging.Logger;
 
 /**
  * Given a draft datasetVersion (which has no published predecessors), and PID provider that is different to the current
- * configured one this command reconfigures the PID provider, and updates the PID to the new provider (Removed the
- * existing PID, registers a new one and notifies the user about the change).
+ * configured one this command updates the PID to the new provider (Removed the existing PID, registers a new one and notifies the user about the change).
  *
  * @author jdarms
  */
@@ -58,16 +58,17 @@ public class ReconcileDatasetPidCommand extends AbstractDatasetCommand<Dataset> 
         if (getDataset().isHarvested()) {
             throw new IllegalCommandException("Dataset is harvested, cannot alter PID Provider", this);
         }
-        PidProvider currentPidProvider = getDataset().getEffectivePidGenerator();
+        GlobalId oldId = getDataset().getGlobalId();
+
+        if (oldId == null) {
+            throw new IllegalStateException("Dataset without a global identifier, cannot alter!");
+        }
+        PidProvider currentPidProvider = PidUtil.getPidProvider(oldId.getProviderId());
         // new PID Provider must be different to requested one!
         if (this.newPidProvider.equals(currentPidProvider)) {
             throw new IllegalCommandException("PID Provider " + currentPidProvider.getId() + " is same as configured. This Operation has no effect!", this);
         }
 
-        GlobalId oldId = getDataset().getGlobalId();
-        if (oldId == null) {
-            throw new IllegalStateException("Dataset without a global identifier, cannot alter!");
-        }
         logger.fine("Reconciling dataset( id =`" + getDataset().getId() + ")` - removing globalId `" + getDataset().getGlobalId() + '`');
         // remove dataset PID
         try {
@@ -82,9 +83,9 @@ public class ReconcileDatasetPidCommand extends AbstractDatasetCommand<Dataset> 
         }
 
         if(ctxt.systemConfig().isFilePIDsEnabledForCollection(getDataset().getOwner())) {
-            reconcileFilePids(ctxt, currentPidProvider);
+            reconcileFilePids(ctxt);
         }
-        getDataset().setPidGenerator(this.newPidProvider);
+
         newPidProvider.generatePid(getDataset()); // this updates Protocol, Authority, and Identifier and thus a new GlobalID
         logger.fine("Reconciling dataset( id =`" + getDataset().getId() + ")` - creating new globalId `" + getDataset().getGlobalId() + '`');
         if (!newPidProvider.registerWhenPublished()) {
@@ -125,14 +126,16 @@ public class ReconcileDatasetPidCommand extends AbstractDatasetCommand<Dataset> 
         return getDataset();
     }
 
-    private void reconcileFilePids(CommandContext ctxt, PidProvider currentPidProvider) {
+    private void reconcileFilePids(CommandContext ctxt) {
         // remove datafile PIDs
             try {
                 for (DataFile df : getDataset().getFiles()) {
+                    GlobalId oldPid=df.getGlobalId();
+                    PidProvider currentPidProvider = PidUtil.getPidProvider(oldPid.getProviderId());
                     if (currentPidProvider.alreadyRegistered(df)) {
                         currentPidProvider.deleteIdentifier(df);// delete it external
                     }
-                    GlobalId oldPid=df.getGlobalId();
+
                     df.setGlobalId(null); // and remove it internally from data structure
                     df.setGlobalIdCreateTime(null);
                     df.setIdentifierRegistered(false);
@@ -149,9 +152,6 @@ public class ReconcileDatasetPidCommand extends AbstractDatasetCommand<Dataset> 
                     }else{
                         df.setAlternativePersistentIndentifiers(Set.of(api));
                     }
-                    // DataFiles are not a child of DvObjectContainer hence we cannot update the PIDProvider for them! cf. DvObjectContainer.setPidGenerator(this.newPidProvider);
-                    // We don't need to update the PIDProvider since the configuration of the Dataset, which is already updated, is used.
-                    // @TODO: Is this true?
                     newPidProvider.generatePid(df); // this updates Protocol, Authority, and Identifier and thus a new GlobalID
                     logger.fine("Reconciling datafile( id =`" + df.getId() + ")` - creating new globalId `" +df.getGlobalId() + '`');
                     if (!newPidProvider.registerWhenPublished()) {
@@ -159,7 +159,7 @@ public class ReconcileDatasetPidCommand extends AbstractDatasetCommand<Dataset> 
                     }
                 }
             } catch (Exception e) {
-                logger.log(Level.WARNING, "Identifier deletion was not successful:", e.getMessage());
+                logger.log(Level.WARNING, "Reconcilation of the datafile persistent identifier was not successful:", e.getMessage());
             }
     }
 
