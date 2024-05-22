@@ -673,11 +673,11 @@ public class IndexServiceBean {
 
                 desiredCards.put(DatasetVersion.VersionState.DRAFT, false);
                 if (doNormalSolrDocCleanUp) {
-                    List<String> solrDocIdsForDraftFilesToDelete = findSolrDocIdsForDraftFilesToDelete(dataset);
+                    //List<String> solrDocIdsForDraftFilesToDelete = findSolrDocIdsForDraftFilesToDelete(dataset);
                     String deleteDraftDatasetVersionResult = removeSolrDocFromIndex(solrIdDraftDataset);
-                    String deleteDraftFilesResults = deleteDraftFiles(solrDocIdsForDraftFilesToDelete);
-                    results.append("Attempting to delete traces of drafts. Result: ")
-                            .append(deleteDraftDatasetVersionResult).append(deleteDraftFilesResults).append("\n");
+                    //String deleteDraftFilesResults = deleteDraftFiles(solrDocIdsForDraftFilesToDelete);
+                    //results.append("Attempting to delete traces of drafts. Result: ")
+                    //        .append(deleteDraftDatasetVersionResult).append(deleteDraftFilesResults).append("\n");
                 }
 
                 /**
@@ -721,11 +721,11 @@ public class IndexServiceBean {
 
                 desiredCards.put(DatasetVersion.VersionState.DRAFT, false);
                 if (doNormalSolrDocCleanUp) {
-                    List<String> solrDocIdsForDraftFilesToDelete = findSolrDocIdsForDraftFilesToDelete(dataset);
+                    //List<String> solrDocIdsForDraftFilesToDelete = findSolrDocIdsForDraftFilesToDelete(dataset);
                     String deleteDraftDatasetVersionResult = removeSolrDocFromIndex(solrIdDraftDataset);
-                    String deleteDraftFilesResults = deleteDraftFiles(solrDocIdsForDraftFilesToDelete);
-                    results.append("The latest version is published. Attempting to delete drafts. Result: ")
-                            .append(deleteDraftDatasetVersionResult).append(deleteDraftFilesResults).append("\n");
+                    //String deleteDraftFilesResults = deleteDraftFiles(solrDocIdsForDraftFilesToDelete);
+                    //results.append("The latest version is published. Attempting to delete drafts. Result: ")
+                    //        .append(deleteDraftDatasetVersionResult).append(deleteDraftFilesResults).append("\n");
                 }
 
                 desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
@@ -822,13 +822,13 @@ public class IndexServiceBean {
         }
     }
     
-    private String deleteDraftFiles(List<String> solrDocIdsForDraftFilesToDelete) {
+/*    private String deleteDraftFiles(List<String> solrDocIdsForDraftFilesToDelete) {
         String deleteDraftFilesResults = "";
         IndexResponse indexResponse = solrIndexService.deleteMultipleSolrIds(solrDocIdsForDraftFilesToDelete);
         deleteDraftFilesResults = indexResponse.toString();
         return deleteDraftFilesResults;
     }
-
+*/
     private IndexResponse indexDatasetPermissions(Dataset dataset) {
         boolean disabledForDebugging = false;
         if (disabledForDebugging) {
