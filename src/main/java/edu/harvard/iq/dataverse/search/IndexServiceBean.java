@@ -502,13 +502,15 @@ public class IndexServiceBean {
         try {
             solrIdsOfFilesToDelete = findFilesOfParentDataset(dataset.getId());
             logger.fine("Existing file docs: " + String.join(", ", solrIdsOfFilesToDelete));
-            if(latestVersion.isDeaccessioned() && !atLeastOnePublishedVersion) {
-            List<FileMetadata> latestFileMetadatas = latestVersion.getFileMetadatas();
-            String suffix = (new IndexableDataset(latestVersion)).getDatasetState().getSuffix();
-            for (FileMetadata fileMetadata : latestFileMetadatas) {
-                String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId() + suffix;
-                solrIdsOfFilesToDelete.remove(solrIdOfPublishedFile);
-            }
+            //We keep the latest version's docs unless it is deaccessioned and there is no published/released version
+            //So skip the loop removing those docs from the delete list in that case
+            if ((!latestVersion.isDeaccessioned() || atLeastOnePublishedVersion)) {
+                List<FileMetadata> latestFileMetadatas = latestVersion.getFileMetadatas();
+                String suffix = (new IndexableDataset(latestVersion)).getDatasetState().getSuffix();
+                for (FileMetadata fileMetadata : latestFileMetadatas) {
+                    String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId() + suffix;
+                    solrIdsOfFilesToDelete.remove(solrIdOfPublishedFile);
+                }
             }
             if (releasedVersion != null && !releasedVersion.equals(latestVersion)) {
                 List<FileMetadata> releasedFileMetadatas = releasedVersion.getFileMetadatas();
