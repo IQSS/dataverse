@@ -1224,8 +1224,8 @@ public class IndexServiceBean {
                         retentionEndDate=start;
                     }
                 }
-                boolean indexThisMetadata = true;
-                if (checkForDuplicateMetadata && !releasedFileMetadatas.isEmpty()) {
+                boolean indexThisMetadata = indexableDataset.isFilesShouldBeIndexed();
+                if (indexThisMetadata && checkForDuplicateMetadata && !releasedFileMetadatas.isEmpty()) {
                     logger.fine("Checking if this file metadata is a duplicate.");
                     FileMetadata getFromMap = fileMap.get(fileMetadata.getDataFile().getId());
                     if (getFromMap != null) {
@@ -1531,10 +1531,8 @@ public class IndexServiceBean {
                         }
                     }
 
-                    if (indexableDataset.isFilesShouldBeIndexed()) {
-                        filesIndexed.add(fileSolrDocId);
-                        docs.add(datafileSolrInputDocument);
-                    }
+                    filesIndexed.add(fileSolrDocId);
+                    docs.add(datafileSolrInputDocument);
                 }
             }
             if(embargoEndDate!=null) {
