@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jakarta.annotation.PostConstruct;
@@ -500,15 +501,18 @@ public class IndexServiceBean {
 
         try {
             solrIdsOfFilesToDelete = findFilesOfParentDataset(dataset.getId());
-            List<FileMetadata> fileMetadatas = latestVersion.getFileMetadatas();
-
-            for (FileMetadata fileMetadata : fileMetadatas) {
-                String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId();
+            logger.fine("Existing file docs: " + String.join(", ", solrIdsOfFilesToDelete));
+            if(latestVersion.isDeaccessioned() && !atLeastOnePublishedVersion) {
+            List<FileMetadata> latestFileMetadatas = latestVersion.getFileMetadatas();
+            String suffix = (new IndexableDataset(latestVersion)).getDatasetState().getSuffix();
+            for (FileMetadata fileMetadata : latestFileMetadatas) {
+                String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId() + suffix;
                 solrIdsOfFilesToDelete.remove(solrIdOfPublishedFile);
             }
+            }
             if (releasedVersion != null && !releasedVersion.equals(latestVersion)) {
-                fileMetadatas = releasedVersion.getFileMetadatas();
-                for (FileMetadata fileMetadata : fileMetadatas) {
+                List<FileMetadata> releasedFileMetadatas = releasedVersion.getFileMetadatas();
+                for (FileMetadata fileMetadata : releasedFileMetadatas) {
                     String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId();
                     solrIdsOfFilesToDelete.remove(solrIdOfPublishedFile);
                 }
@@ -516,74 +520,75 @@ public class IndexServiceBean {
         } catch (SearchException | NullPointerException ex) {
             logger.fine("could not run search of files to delete: " + ex);
         }
+        logger.fine("File docs to delete: " + String.join(", ", solrIdsOfFilesToDelete));
         int numPublishedVersions = 0;
         List<DatasetVersion> versions = dataset.getVersions();
         //List<String> solrIdsOfFilesToDelete = new ArrayList<>();
-        //Debugging loop
-        for (DatasetVersion datasetVersion : versions) {
-            Long versionDatabaseId = datasetVersion.getId();
-            String versionTitle = datasetVersion.getTitle();
-            String semanticVersion = datasetVersion.getSemanticVersion();
-            DatasetVersion.VersionState versionState = datasetVersion.getVersionState();
-            if (versionState.equals(DatasetVersion.VersionState.RELEASED)) {
-                numPublishedVersions += 1;
-            }
-            debug.append("version found with database id " + versionDatabaseId + "\n");
-            debug.append("- title: " + versionTitle + "\n");
-            debug.append("- semanticVersion-VersionState: " + semanticVersion + "-" + versionState + "\n");
-            List<String> fileInfo = new ArrayList<>();
-            List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
+        if (logger.isLoggable(Level.FINE)) {
+            for (DatasetVersion datasetVersion : versions) {
+                Long versionDatabaseId = datasetVersion.getId();
+                String versionTitle = datasetVersion.getTitle();
+                String semanticVersion = datasetVersion.getSemanticVersion();
+                DatasetVersion.VersionState versionState = datasetVersion.getVersionState();
+                if (versionState.equals(DatasetVersion.VersionState.RELEASED)) {
+                    numPublishedVersions += 1;
+                }
+                debug.append("version found with database id " + versionDatabaseId + "\n");
+                debug.append("- title: " + versionTitle + "\n");
+                debug.append("- semanticVersion-VersionState: " + semanticVersion + "-" + versionState + "\n");
+                List<String> fileInfo = new ArrayList<>();
+                List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
 
-            for (FileMetadata fileMetadata : fileMetadatas) {
-                /**
-                 * It sounds weird but the first thing we'll do is preemptively
-                 * delete the Solr documents of all published files. Don't
-                 * worry, published files will be re-indexed later along with
-                 * the dataset. We do this so users can delete files from
-                 * published versions of datasets and then re-publish a new
-                 * version without fear that their old published files (now
-                 * deleted from the latest published version) will be
-                 * searchable. See also
-                 * https://github.com/IQSS/dataverse/issues/762
-                 */
-                fileInfo.add(fileMetadata.getDataFile().getId() + ":" + fileMetadata.getLabel());
-            }
+                for (FileMetadata fileMetadata : fileMetadatas) {
+                    /**
+                     * It sounds weird but the first thing we'll do is preemptively delete the Solr
+                     * documents of all published files. Don't worry, published files will be
+                     * re-indexed later along with the dataset. We do this so users can delete files
+                     * from published versions of datasets and then re-publish a new version without
+                     * fear that their old published files (now deleted from the latest published
+                     * version) will be searchable. See also
+                     * https://github.com/IQSS/dataverse/issues/762
+                     */
+                    fileInfo.add(fileMetadata.getDataFile().getId() + ":" + fileMetadata.getLabel());
+                }
 //            try {
                 /**
-                 * Preemptively delete *all* Solr documents for files associated
-                 * with the dataset based on a Solr query.
+                 * Preemptively delete *all* Solr documents for files associated with the
+                 * dataset based on a Solr query.
                  *
-                 * We must query Solr for this information because the file has
-                 * been deleted from the database ( perhaps when Solr was down,
-                 * as reported in https://github.com/IQSS/dataverse/issues/2086
-                 * ) so the database doesn't even know about the file. It's an
-                 * orphan.
+                 * We must query Solr for this information because the file has been deleted
+                 * from the database ( perhaps when Solr was down, as reported in
+                 * https://github.com/IQSS/dataverse/issues/2086 ) so the database doesn't even
+                 * know about the file. It's an orphan.
                  *
-                 * @todo This Solr query should make the iteration above based
-                 * on the database unnecessary because it the Solr query should
-                 * find all files for the dataset. We can probably remove the
-                 * iteration above after an "index all" has been performed.
-                 * Without an "index all" we won't be able to find files based
-                 * on parentId because that field wasn't searchable in 4.0.
+                 * @todo This Solr query should make the iteration above based on the database
+                 *       unnecessary because it the Solr query should find all files for the
+                 *       dataset. We can probably remove the iteration above after an "index
+                 *       all" has been performed. Without an "index all" we won't be able to
+                 *       find files based on parentId because that field wasn't searchable in
+                 *       4.0.
                  *
-                 * @todo We should also delete the corresponding Solr
-                 * "permission" documents for the files.
+                 * @todo We should also delete the corresponding Solr "permission" documents for
+                 *       the files.
                  */
-                //List<String> allFilesForDataset = findFilesOfParentDataset(dataset.getId());
-                //solrIdsOfFilesToDelete.addAll(allFilesForDataset);
+                // List<String> allFilesForDataset = findFilesOfParentDataset(dataset.getId());
+                // solrIdsOfFilesToDelete.addAll(allFilesForDataset);
 //            } catch (SearchException | NullPointerException ex) {
 //                logger.fine("could not run search of files to delete: " + ex);
 //            }
-            int numFiles = 0;
-            if (fileMetadatas != null) {
-                numFiles = fileMetadatas.size();
+                int numFiles = 0;
+                if (fileMetadatas != null) {
+                    numFiles = fileMetadatas.size();
+                }
+                debug.append("- files: " + numFiles + " " + fileInfo.toString() + "\n");
             }
-            debug.append("- files: " + numFiles + " " + fileInfo.toString() + "\n");
         }
         debug.append("numPublishedVersions: " + numPublishedVersions + "\n");
         if (doNormalSolrDocCleanUp) {
-            IndexResponse resultOfAttemptToPremptivelyDeletePublishedFiles = solrIndexService.deleteMultipleSolrIds(solrIdsOfFilesToDelete);
-            debug.append("result of attempt to premptively deleted published files before reindexing: " + resultOfAttemptToPremptivelyDeletePublishedFiles + "\n");
+            if(!solrIdsOfFilesToDelete.isEmpty()) {
+                IndexResponse resultOfAttemptToPremptivelyDeletePublishedFiles = solrIndexService.deleteMultipleSolrIds(solrIdsOfFilesToDelete);
+                debug.append("result of attempt to premptively deleted published files before reindexing: " + resultOfAttemptToPremptivelyDeletePublishedFiles + "\n");
+            }
         }
        
         Map<DatasetVersion.VersionState, Boolean> desiredCards = new LinkedHashMap<>();
