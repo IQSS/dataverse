@@ -1081,22 +1081,40 @@ public class SearchServiceBean {
         // ----------------------------------------------------
         
         // A quick speedup experiment (L.A.) 
-        // - This ignores the group membership completely; 
-        // so, not a production-ready fix, just a proof of concept, 
         // an attempt to replace an uber-expensive join on ALL the public  
         // documents with the "publicObject:true" flag, similarly to what we 
         // are doing for guest users, above, and only using 
         // the join to explicitly look up the (few) documents the user is 
-        // directly authorized to see (once again, groups are ignored for now)
+        // directly authorized to see, by direct assignment or via 
+        // group membership. Group support is very experimental still. 
         if (FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled()) {
-                StringBuilder sb = new StringBuilder();
-                
-                sb.append(SearchFields.PUBLIC_OBJECT + ":" + true + " OR ");
-                sb.append("{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" + IndexServiceBean.getGroupPerUserPrefix() + au.getId());
-                String ret = sb.toString();
-                logger.info("Returning experimental query: "+ret);
-                return ret;
+            StringBuilder sb = new StringBuilder();
+
+            sb.append(SearchFields.PUBLIC_OBJECT + ":" + true + " OR ");
+
+            // An AuthenticatedUser should also be able to see all the content 
+            // on which they have direct permissions:              
+            solrQuery.setParam("q1", SearchFields.DISCOVERABLE_BY + ":" + IndexServiceBean.getGroupPerUserPrefix() + au.getId());
+            sb.append("{!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1}");
+
+            // In addition to the user referenced directly, we will also 
+            // add joins on all the non-public groups that may exist for the
+            // user:
+            Set<Group> groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
+            int groupCounter = 1;
+            for (Group group : groups) {
+                String groupAlias = group.getAlias();
+                if (groupAlias != null && !groupAlias.isEmpty() && !groupAlias.startsWith("builtIn")) {
+                    groupCounter++;
+                    solrQuery.setParam("q" + groupCounter, SearchFields.DISCOVERABLE_BY + ":" + IndexServiceBean.getGroupPrefix() + groupAlias);
+                    sb.append(" OR ");
+                    sb.append("{!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q" + groupCounter + "}");
+                }
             }
+            String ret = sb.toString();
+            logger.info("Returning experimental query: " + ret);
+            return ret;
+        }
         /**
          * @todo all this code needs cleanup and clarification.
          */
@@ -1109,7 +1127,7 @@ public class SearchServiceBean {
          * @todo rename this from publicPlusUserPrivateGroup. Confusing
          */
         // safe default: public only
-        String publicPlusUserPrivateGroup = publicOnly;
+        String publicPlusUserPrivateGroup = publicOnly; 
 //                    + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
 //                    + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
 
