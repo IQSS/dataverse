@@ -95,9 +95,7 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
 
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {  
-        if(ctxt.solrIndex() != null) {
-            ctxt.solrIndex().indexPermissionsOnSelfAndChildren(this.defPoint);
-        }
+        ctxt.solrIndex().indexPermissionsOnSelfAndChildren(this.defPoint);
         return true;
     }
 
