@@ -1004,20 +1004,43 @@ public class SearchServiceBean {
 
         // ----------------------------------------------------
         // (1) Is this a GuestUser?
-        // Yes, see if GuestUser is part of any groups such as IP Groups.
         // ----------------------------------------------------
         if (user instanceof GuestUser) {
+            
+            StringBuilder sb = new StringBuilder();
+            
+            // Yes, see if GuestUser is part of any groups, such as IP Groups.
+            Set<Group> groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
+            
             if (FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled()) {
                 /**
                  * Instead of doing an expensive join, narrow down to only
                  * public objects. This field is indexed on the content document
                  * itself, rather than a permission document.
                  */
-                return SearchFields.PUBLIC_OBJECT + ":" + true;
+                sb.append(SearchFields.PUBLIC_OBJECT + ":" + true);
+                
+                // If there are any IP groups, we'll add separate (and much cheaper)
+                // joins on them. 
+                // Note that in order for these potential extra joins to work with 
+                // the above, we need to use a query syntax that is a bit different 
+                // from what we normally use (below): 
+                int groupCounter = 0; 
+                for (Group group : groups) {
+                    logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
+                    String groupAlias = group.getAlias();
+                    if (groupAlias != null && !groupAlias.isEmpty() && !groupAlias.startsWith("builtIn")) {
+                        groupCounter++;
+                        solrQuery.setParam("q" + groupCounter, SearchFields.DISCOVERABLE_BY + ":" + IndexServiceBean.getGroupPrefix() + groupAlias);
+                        sb.append(" OR ");
+                        sb.append("{!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q" + groupCounter + "}");
+                    }
+                }
+                String ret = sb.toString();
+                logger.info("Returning experimental query for Guest user: " + ret);
+                return ret;
             }
             String groupsFromProviders = "";
-            Set<Group> groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
-            StringBuilder sb = new StringBuilder();
             for (Group group : groups) {
                 logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
                 String groupAlias = group.getAlias();
