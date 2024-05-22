@@ -921,16 +921,9 @@ public class SearchIT {
                 
         String searchPart = "*"; 
         
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException ex) {
-            /**
-             * With solrconfig autoSoftCommit set to 1000 (1sec), this sleep is needed.
-             */
-        }
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if search exceeds max duration " + searchPart);
         
         Response searchPublishedSubtreeSuper = UtilIT.search(searchPart, apiTokenSuper, "&subtree="+parentDataverseAlias);
-        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if search exceeds max duration " + searchPart);
         searchPublishedSubtreeSuper.prettyPrint();
         searchPublishedSubtreeSuper.then().assertThat()
                 .statusCode(OK.getStatusCode())

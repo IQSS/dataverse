@@ -9,6 +9,8 @@ import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -190,13 +192,8 @@ public class LinkIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("Dataverse " + level2a + " linked successfully to " + level2b));
 
-        try {
-            Thread.sleep(4000);
-        } catch (InterruptedException ex) {
-            /**
-             * With solrconfig autoSoftCommit set to 1000 (1sec), this sleep is needed.
-             */
-        }
+        assertTrue(UtilIT.sleepForSearch("*", apiToken, "&subtree=" + level2b, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Never found linked dataverse: " + level2b);
+        
         Response searchLevel2toLevel2 = UtilIT.search("*", apiToken, "&subtree=" + level2b);
         searchLevel2toLevel2.prettyPrint();
         searchLevel2toLevel2.then().assertThat()
