@@ -95,10 +95,12 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
 
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {  
-        ctxt.solrIndex().indexPermissionsOnSelfAndChildren((Dataverse) r);
+        if(ctxt.solrIndex() != null) {
+            ctxt.solrIndex().indexPermissionsOnSelfAndChildren(this.defPoint);
+        }
         return true;
     }
-    
+
     @Override
     public String describe() {
         return grantee + " has been given " + role + " on " + defPoint.accept(DvObject.NameIdPrinter);
