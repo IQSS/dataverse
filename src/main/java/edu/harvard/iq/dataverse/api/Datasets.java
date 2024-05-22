@@ -4616,9 +4616,8 @@ public class Datasets extends AbstractApiBean {
 
     @PUT
     @AuthRequired
-    @Path("{identifier}/pidReconcile/{pididentifier}")
-    public Response reconcilePid(@Context ContainerRequestContext crc, @PathParam("identifier") String datasetId,
-                                 @PathParam("pididentifier") String generatorId) throws WrappedResponse {
+    @Path("{identifier}/pidReconcile/")
+    public Response reconcilePid(@Context ContainerRequestContext crc, @PathParam("identifier") String datasetId) throws WrappedResponse {
 
         // Superuser-only:
         AuthenticatedUser user;
@@ -4638,13 +4637,8 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
-        if (PidUtil.getManagedProviderIds().contains(generatorId)) {
-               pidProvider =PidUtil.getPidProvider(generatorId);
-        } else {
-            return error(Response.Status.NOT_FOUND, "No PID Generator found for the give id");
-        }
         return response(req -> {
-            execCommand(new ReconcileDatasetPidCommand(req, dataset, pidProvider));
+            execCommand(new ReconcileDatasetPidCommand(req, dataset, dataset.getEffectivePidGenerator()));
             return ok(dataset.getGlobalId().toString());
         }, getRequestUser(crc));
 
