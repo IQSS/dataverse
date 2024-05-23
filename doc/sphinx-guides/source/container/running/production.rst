@@ -21,7 +21,7 @@ The images described in this guide are not yet recommended for production usage,
   - How to set up previewers. See https://github.com/IQSS/dataverse/issues/10506
   - How to set up Rserve.
 
-- Go through all the features in docs and check what needs to be done diffeaarently with containers
+- Go through all the features in docs and check what needs to be done differently with containers
 
   - Check ports, for example.
 
