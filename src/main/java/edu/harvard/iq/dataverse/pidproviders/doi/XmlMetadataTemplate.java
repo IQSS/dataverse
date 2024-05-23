@@ -1176,14 +1176,14 @@ public class XmlMetadataTemplate {
                 // geoLocationPlace
                 geoLocationsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "geoLocations", geoLocationsWritten);
                 for (String[] place : places) {
-                    xmlw.startElement("geoLocation"); // <geoLocation>
+                    xmlw.writeStartElement("geoLocation"); // <geoLocation>
                     
                     ArrayList<String> placeList = new ArrayList<String>();
                     for (String placePart : place) {
                         placeList.add(placePart);
                     }
                     XmlWriterUtil.writeFullElement(xmlw, "geoLocationPlace", Strings.join(placeList, ", "));
-                    xmlw.endElement(); // </geoLocation>
+                    xmlw.writeEndElement(); // </geoLocation>
                 }
                 
             }
@@ -1217,7 +1217,7 @@ public class XmlMetadataTemplate {
                         }
                         if (StringUtils.isNoneBlank(wLongitude, eLongitude, nLatitude, sLatitude)) {
                             geoLocationsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "geoLocations", geoLocationsWritten);
-                            xmlw.startElement("geoLocation"); // <geoLocation>
+                            xmlw.writeStartElement("geoLocation"); // <geoLocation>
                             if (wLongitude.equals(eLongitude) && nLatitude.equals(sLatitude)) {
                                 // A point
                                 xmlw.writeStartElement("geoLocationPoint");
@@ -1234,7 +1234,7 @@ public class XmlMetadataTemplate {
                                 xmlw.writeEndElement();
 
                             }
-                            xmlw.endElement(); // </geoLocation>
+                            xmlw.writeEndElement(); // </geoLocation>
                         }
                     }
                 case DatasetFieldConstant.productionPlace:
@@ -1243,9 +1243,9 @@ public class XmlMetadataTemplate {
                     geoLocationsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "geoLocations", geoLocationsWritten);
                     List<String> prodPlaces = dsf.getValues();
                     for (String prodPlace : prodPlaces) {
-                        xmlw.startElement("geoLocation"); // <geoLocation>
+                        xmlw.writeStartElement("geoLocation"); // <geoLocation>
                         XmlWriterUtil.writeFullElement(xmlw, "geoLocationPlace", prodPlace);
-                        xmlw.endElement(); // </geoLocation>
+                        xmlw.writeEndElement(); // </geoLocation>
                     }
                     break;
                 }
