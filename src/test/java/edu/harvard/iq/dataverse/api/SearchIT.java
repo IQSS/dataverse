@@ -793,20 +793,8 @@ public class SearchIT {
         Response createDataverseResponse2 = UtilIT.createSubDataverse("subDV" + UtilIT.getRandomIdentifier(), null, apiToken, dataverseAlias);
         createDataverseResponse2.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException ex) {
-            /**
-             * With solrconfig autoSoftCommit set to 1000 (1sec), this sleep is needed.
-             */
-        }
         String searchPart = "*"; 
-
-        Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
-        searchUnpublishedSubtree.prettyPrint();
-        searchUnpublishedSubtree.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.total_count", CoreMatchers.equalTo(1));
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + dataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Missing subDV w/no apiKey");
         
         Response searchUnpublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
         searchUnpublishedSubtree2.prettyPrint();
