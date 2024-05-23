@@ -535,7 +535,7 @@ public class XmlMetadataTemplate {
         xmlw.writeStartElement(elementName);
         Map<String, String> attributeMap = new HashMap<String, String>();
         if (StringUtils.isNotBlank(type)) {
-            attributeMap.put("contributorType", type);
+            xmlw.writeAttribute("contributorType", type);
         }
         // person name=<FamilyName>, <FirstName>
         if (entityObject.getBoolean("isPerson")) {
