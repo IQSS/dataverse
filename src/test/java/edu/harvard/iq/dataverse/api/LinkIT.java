@@ -164,13 +164,9 @@ public class LinkIT {
         linkLevel1toLevel1.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("Dataverse " + level1a + " linked successfully to " + level1b));
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException ex) {
-            /**
-             * With solrconfig autoSoftCommit set to 1000 (1sec), this sleep is needed.
-             */
-        }
+
+        assertTrue(UtilIT.sleepForSearch("*", apiToken, "&subtree="+level1b, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Zero counts in level1b");
+        
         Response searchLevel1toLevel1 = UtilIT.search("*", apiToken, "&subtree=" + level1b);
         searchLevel1toLevel1.prettyPrint();
         searchLevel1toLevel1.then().assertThat()

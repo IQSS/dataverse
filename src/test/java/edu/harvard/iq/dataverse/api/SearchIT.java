@@ -1085,6 +1085,8 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(2));
         
+        assertTrue(UtilIT.sleepForSearch(searchPart, null, "&subtree=" + dataverseAlias2, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Missing dataset w/no apiKey");
+        
         Response searchPublishedSubtreesNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias+"&subtree="+dataverseAlias2);
         searchPublishedSubtreesNoAPI.prettyPrint();
         searchPublishedSubtreesNoAPI.then().assertThat()
