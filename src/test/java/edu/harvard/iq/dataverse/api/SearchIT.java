@@ -793,8 +793,12 @@ public class SearchIT {
         Response createDataverseResponse2 = UtilIT.createSubDataverse("subDV" + UtilIT.getRandomIdentifier(), null, apiToken, dataverseAlias);
         createDataverseResponse2.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
+        Integer subDvId = UtilIT.getDataverseIdFromResponse(createDataverseResponse2);
+        
+        UtilIT.reindexDataverse(subDvId.toString());
+        
         String searchPart = "*"; 
-        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + dataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Missing subDV w/no apiKey");
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + dataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Missing subDV");
         
         Response searchUnpublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
         searchUnpublishedSubtree2.prettyPrint();
@@ -900,13 +904,16 @@ public class SearchIT {
         String subDataverseAlias = "dv" + UtilIT.getRandomIdentifier();
         Response createSubDataverseResponse = UtilIT.createSubDataverse(subDataverseAlias, null, apiTokenSuper, parentDataverseAlias);
         createSubDataverseResponse.prettyPrint();
+        Integer subDvId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
         //UtilIT.getAliasFromResponse(createSubDataverseResponse);
         
 
         Response grantRoleOnDataverseResponse = UtilIT.grantRoleOnDataverse(subDataverseAlias, "curator", "@" + username, apiTokenSuper); 
         grantRoleOnDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-                
+        
+        UtilIT.reindexDataverse(subDvId.toString());
+        
         String searchPart = "*"; 
         
         assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if search exceeds max duration " + searchPart);
