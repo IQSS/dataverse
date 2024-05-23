@@ -1174,15 +1174,18 @@ public class XmlMetadataTemplate {
             List<String[]> places = dv.getGeographicCoverage();
             if (places != null && !places.isEmpty()) {
                 // geoLocationPlace
-                geoLocationsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "geoLocation", geoLocationsWritten);
-
+                geoLocationsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "geoLocations", geoLocationsWritten);
                 for (String[] place : places) {
+                    xmlw.startElement("geoLocation"); // <geoLocation>
+                    
                     ArrayList<String> placeList = new ArrayList<String>();
                     for (String placePart : place) {
                         placeList.add(placePart);
                     }
                     XmlWriterUtil.writeFullElement(xmlw, "geoLocationPlace", Strings.join(placeList, ", "));
+                    xmlw.endElement(); // </geoLocation>
                 }
+                
             }
             boolean boundingBoxFound = false;
             boolean productionPlaceFound = false;
@@ -1213,7 +1216,8 @@ public class XmlMetadataTemplate {
                             }
                         }
                         if (StringUtils.isNoneBlank(wLongitude, eLongitude, nLatitude, sLatitude)) {
-                            geoLocationsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "geoLocation", geoLocationsWritten);
+                            geoLocationsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "geoLocations", geoLocationsWritten);
+                            xmlw.startElement("geoLocation"); // <geoLocation>
                             if (wLongitude.equals(eLongitude) && nLatitude.equals(sLatitude)) {
                                 // A point
                                 xmlw.writeStartElement("geoLocationPoint");
@@ -1230,15 +1234,18 @@ public class XmlMetadataTemplate {
                                 xmlw.writeEndElement();
 
                             }
+                            xmlw.endElement(); // </geoLocation>
                         }
                     }
                 case DatasetFieldConstant.productionPlace:
                     productionPlaceFound = true;
                     // geoLocationPlace
-                    geoLocationsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "geoLocation", geoLocationsWritten);
+                    geoLocationsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "geoLocations", geoLocationsWritten);
                     List<String> prodPlaces = dsf.getValues();
                     for (String prodPlace : prodPlaces) {
+                        xmlw.startElement("geoLocation"); // <geoLocation>
                         XmlWriterUtil.writeFullElement(xmlw, "geoLocationPlace", prodPlace);
+                        xmlw.endElement(); // </geoLocation>
                     }
                     break;
                 }
