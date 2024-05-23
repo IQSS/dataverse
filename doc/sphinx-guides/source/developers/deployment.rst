@@ -96,7 +96,7 @@ To run it with default values you just need the script, but you may also want a 
 ec2-create-instance accepts a number of command-line switches, including:
 
 * -r: GitHub Repository URL (defaults to https://github.com/IQSS/dataverse.git)
-* -b: branch to build (defaults to develop)
+* -b: branch to build (defaults to the latest release of Dataverse)
 * -p: pemfile directory (defaults to $HOME)
 * -g: Ansible GroupVars file (if you wish to override role defaults)
 * -h: help (displays usage for each available option)
