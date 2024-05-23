@@ -72,7 +72,7 @@ public class LinkDataverseCommand extends AbstractCommand<DataverseLinkingDatave
         DataverseLinkingDataverse result = (DataverseLinkingDataverse) r;
 
         try {
-            ctxt.index().indexDataverse(result.getLinkingDataverse());
+            ctxt.index().indexDataverse(result.getDataverse());
         } catch (IOException | SolrServerException e) {
             String failureLogText = "Dataverse indexing failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + result.getDataverse().getId().toString();
             failureLogText += "\r\n" + e.getLocalizedMessage();
