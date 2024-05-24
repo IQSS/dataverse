@@ -167,9 +167,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         DeleteDatasetVersionCommand cmd;
 
         cmd = new DeleteDatasetVersionCommand(getRequest(), savedDataset);
-        ctxt.engine().submit(cmd);
-        // Running the command above reindexes the dataset, so we don't need to do it
-        // again in here.
+        cmd.execute(ctxt);
 
         // And update metadata at PID provider
         ctxt.engine().submit(
