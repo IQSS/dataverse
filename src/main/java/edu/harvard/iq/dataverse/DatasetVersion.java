@@ -1342,9 +1342,8 @@ public class DatasetVersion implements Serializable {
                     }
                     geoCoverages.add(coverageItem);
                 }
-
+                break;
             }
-            break;
         }
         return geoCoverages;
     }
