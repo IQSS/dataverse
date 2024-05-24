@@ -14,7 +14,7 @@ After following all the steps below, you can proceed to the :doc:`installation-m
 Linux
 -----
 
-We assume you plan to run your Dataverse installation on Linux and we recommend RHEL or a derivative such as RockyLinux or AlmaLinux, which is the distribution family tested by the Dataverse Project team. These instructions are written for RHEL9 and derivatives with notes for RHEL 8 and earlier, but a number of community members have successfully installed Dataverse in Debian and Ubuntu environments.
+We assume you plan to run your Dataverse installation on Linux and we recommend RHEL or a derivative such as RockyLinux, which is the distribution family tested by the Dataverse Project team. These instructions are written for RHEL9 and derivatives with notes for RHEL 8, but Dataverse is known to work well in Debian, Ubuntu, and most any modern Linux distribution.
 
 Java
 ----
@@ -298,7 +298,7 @@ On a Red Hat or derivative Linux distribution, you can install ImageMagick with 
 	# dnf install ImageMagick
 
 (most RedHat systems will have it pre-installed).
-When installed using standard ``yum`` mechanism, above, the executable for the ImageMagick convert utility will be located at ``/usr/bin/convert``. No further configuration steps will then be required.
+When installed using standard ``dnf`` mechanism, above, the executable for the ImageMagick convert utility will be located at ``/usr/bin/convert``. No further configuration steps will then be required.
 
 If the installed location of the convert executable is different from ``/usr/bin/convert``, you will also need to specify it in your Payara configuration using the JVM option, below. For example::
 
@@ -341,7 +341,7 @@ RHEL 8 users will need to enable the CodeReady-Builder repository::
 
        subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms
 
-Rocky or AlmaLinux 8.3+ users will need to enable the PowerTools repository::
+Rocky 8 users will need to enable the PowerTools repository::
 
        dnf config-manager --enable powertools
 
@@ -472,11 +472,11 @@ The following commands are intended to be run as root but we are aware that Pyth
 
 Install Python 3.9::
 
-        dnf install python39
+        dnf install python3
 
 Install Counter Processor Python requirements::
 
-        python3.9 -m ensurepip
+        python3 -m ensurepip
         cd /usr/local/counter-processor-0.1.04
         pip3 install -r requirements.txt
 

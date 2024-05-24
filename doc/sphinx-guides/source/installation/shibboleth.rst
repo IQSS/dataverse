@@ -39,14 +39,14 @@ Install Shibboleth
 
 Installing Shibboleth will give us both the ``shibd`` service and the ``mod_shib`` Apache module.
 
-Install Shibboleth Yum Repo
+Install Shibboleth DNF Repo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Shibboleth project now provides `a web form <https://shibboleth.net/downloads/service-provider/RPMS/>`_ to generate an appropriate package repository for use with YUM/DNF.
+The Shibboleth project now provides `a web form <https://shibboleth.net/downloads/service-provider/RPMS/>`_ to generate an appropriate package repository for use with DNF.
 
 You'll want to copy-paste the form results into ``/etc/yum.repos.d/shibboleth.repo`` or wherever is most appropriate for your operating system.
 
-Install Shibboleth Via Yum
+Install Shibboleth Via DNF
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Please note that during the installation it's ok to import GPG keys from the Shibboleth project. We trust them.
