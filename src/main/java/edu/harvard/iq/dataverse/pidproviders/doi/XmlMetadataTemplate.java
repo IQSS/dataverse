@@ -1082,7 +1082,7 @@ public class XmlMetadataTemplate {
         if (descriptions != null) {
             for (String description : descriptions) {
                 descriptionsWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "descriptions", descriptionsWritten);
-                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, description);
+                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "description", attributes, StringEscapeUtils.escapeXml10(description));
             }
         }
 
@@ -1272,21 +1272,67 @@ public class XmlMetadataTemplate {
             dv = df.getOwner().getLatestVersionForCopy();
         }
         if (dv != null) {
-            List<String> funders = dv.getFunders();
-            if (!funders.isEmpty()) {
-
-                for (String funder : funders) {
-                    if (!StringUtils.isBlank(funder)) {
-                        fundingReferenceWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "fundingReferences", fundingReferenceWritten);
-                        xmlw.writeStartElement("fundingReference"); // <fundingReference>
-                        XmlWriterUtil.writeFullElement(xmlw, "funderName", funder);
-                        xmlw.writeEndElement(); // </fundingReference>
+            List<String> retList = new ArrayList<>();
+            for (DatasetField dsf : dv.getDatasetFields()) {
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributor)) {
+                    boolean addFunder = false;
+                    for (DatasetFieldCompoundValue contributorValue : dsf.getDatasetFieldCompoundValues()) {
+                        String contributorName = null;
+                        String contributorType = null;
+                        for (DatasetField subField : contributorValue.getChildDatasetFields()) {
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributorName)) {
+                                contributorName = subField.getDisplayValue();
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributorType)) {
+                                contributorType = subField.getRawValue();
+                            }
+                        }
+                        // SEK 02/12/2019 move outside loop to prevent contrib type to carry over to
+                        // next contributor
+                        // TODO: Consider how this will work in French, Chinese, etc.
+                        if ("Funder".equals(contributorType)) {
+                            if (!StringUtils.isBlank(contributorName)) {
+                                fundingReferenceWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "fundingReferences", fundingReferenceWritten);
+                                xmlw.writeStartElement("fundingReference"); // <fundingReference>
+                                XmlWriterUtil.writeFullElement(xmlw, "funderName", contributorName);
+                                xmlw.writeEndElement(); // </fundingReference>
+                            }
+                        }
                     }
                 }
-                if (fundingReferenceWritten) {
-                    xmlw.writeEndElement(); // </fundingReferences>
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumber)) {
+                    for (DatasetFieldCompoundValue grantObject : dsf.getDatasetFieldCompoundValues()) {
+                        String funder = null;
+                        String awardNumber = null;
+                        for (DatasetField subField : grantObject.getChildDatasetFields()) {
+                            // It would be nice to do something with grantNumberValue (the actual number)
+                            // but schema.org doesn't support it.
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberAgency)) {
+                                String grantAgency = subField.getDisplayValue();
+                                funder = grantAgency;
+                            } else if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberValue)) {
+                                String grantNumberValue = subField.getDisplayValue();
+                                awardNumber = grantNumberValue;
+                            }
+                        }
+                        if (!StringUtils.isBlank(funder)) {
+                            fundingReferenceWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "fundingReferences", fundingReferenceWritten);
+                            xmlw.writeStartElement("fundingReference"); // <fundingReference>
+                            XmlWriterUtil.writeFullElement(xmlw, "funderName", funder);
+                            if (StringUtils.isNotBlank(awardNumber)) {
+                                writeFullElement(xmlw, null, "awardNumber", null, awardNumber);
+                            }
+                            xmlw.writeEndElement(); // </fundingReference>
+                        }
+
+                    }
                 }
             }
+
+            if (fundingReferenceWritten) {
+                xmlw.writeEndElement(); // </fundingReferences>
+            }
+
         }
     }
 }
