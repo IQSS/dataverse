@@ -944,9 +944,9 @@ public class DatasetServiceBean implements java.io.Serializable {
         // portion of the PublishDatasetCommand. I'm going to leave the 1 second
         // sleep below, for just in case reasons: -- L.A.
         try {
-            Thread.sleep(5000);
+            Thread.sleep(1000);
         } catch (Exception ex) {
-            logger.warning("Failed to sleep for five seconds.");
+            logger.warning("Failed to sleep for one second.");
         }
         logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
         Dataset theDataset = find(datasetId);
