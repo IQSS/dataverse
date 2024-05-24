@@ -1858,6 +1858,31 @@ JSON files for `Creative Commons licenses <https://creativecommons.org/about/ccl
 
 .. _adding-custom-licenses:
 
+Adding Software Licenses
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+JSON files for software licenses are provided below.
+
+- :download:`licenseMIT.json <../../../../scripts/api/data/licenses/licenseMIT.json>`
+- :download:`licenseApache-2.0.json <../../../../scripts/api/data/licenses/licenseApache-2.0.json>`
+
+Contributing to the Collection of Standard Licenses Above
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you do not find the license JSON you need above, you are encouraged to contribute it to this documentation. Following the Dataverse 6.2 release, we have standardized on the following procedure:
+
+- Look for the license at https://spdx.org/licenses/
+- ``cd scripts/api/data/licenses``
+- Copy an existing license as a starting point.
+- Name your file using the SPDX identifier. For example, if the identifier is ``Apache-2.0``, you should name your file ``licenseApache-2.0.json``.
+- For the ``name`` field, use the "short identifier" from the SPDX landing page (e.g. ``Apache-2.0``).
+- For the ``description`` field, use the "full name" from the SPDX landing page (e.g. ``Apache License 2.0``).
+- For the ``uri`` field, we encourage you to use the same resource that DataCite uses, which is often the same as the first "Other web pages for this license" on the SPDX page for the license. When these differ, or there are other concerns about the URI DataCite uses, please reach out to the community to see if a consensus can be reached.
+- For the ``active`` field, put ``true``.
+- For the ``sortOrder`` field, put the next sequential number after checking previous files with ``grep sortOrder scripts/api/data/licenses/*``.
+
+Note that prior to Dataverse 6.2, various license above have been added that do not adhere perfectly with this procedure. For example, the ``name`` for the CC0 license is ``CC0 1.0`` (no dash) rather than ``CC0-1.0`` (with a dash). We are keeping the existing names for backward compatibility. For more on standarizing license configuration, see https://github.com/IQSS/dataverse/issues/8512
+
 Adding Custom Licenses
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -2151,26 +2176,51 @@ If you are not fronting Payara with Apache you'll need to prevent Payara from se
 Creating a Sitemap and Submitting it to Search Engines
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Search engines have an easier time indexing content when you provide them a sitemap. The Dataverse Software sitemap includes URLs to all published Dataverse collections and all published datasets that are not harvested or deaccessioned.
+Creating a Sitemap
+##################
+
+Search engines have an easier time indexing content when you provide them a sitemap. Dataverse can generate a sitemap that includes URLs to all published collections and all published datasets that are not harvested or deaccessioned.
 
 Create or update your sitemap by adding the following curl command to cron to run nightly or as you see fit:
 
 ``curl -X POST http://localhost:8080/api/admin/sitemap``
 
-This will create or update a file in the following location unless you have customized your installation directory for Payara:
+On a Dataverse installation with many datasets, the creation or updating of the sitemap can take a while. You can check Payara's server.log file for "BEGIN updateSiteMap" and "END updateSiteMap" lines to know when the process started and stopped and any errors in between.
+
+For compliance with the `Sitemap protocol <https://sitemaps.org/protocol.html>`_, the generated sitemap will be a single file with 50,000 items or fewer or it will be split into multiple files.
+
+Single Sitemap File
+###################
+
+If you have 50,000 items or fewer, a single sitemap will be generated in the following location (unless you have customized your installation directory for Payara):
 
 ``/usr/local/payara6/glassfish/domains/domain1/docroot/sitemap/sitemap.xml``
 
-On Dataverse installation with many datasets, the creation or updating of the sitemap can take a while. You can check Payara's server.log file for "BEGIN updateSiteMap" and "END updateSiteMap" lines to know when the process started and stopped and any errors in between.
+Once the sitemap has been generated in the location above, it will be served at ``/sitemap.xml`` like this: https://demo.dataverse.org/sitemap.xml
 
-https://demo.dataverse.org/sitemap.xml is the sitemap URL for the Dataverse Project Demo site and yours should be similar.
+Multiple Sitemap Files (Sitemap Index File)
+###########################################
 
-Once the sitemap has been generated and placed in the domain docroot directory, it will become available to the outside callers at <YOUR_SITE_URL>/sitemap/sitemap.xml; it will also be accessible at <YOUR_SITE_URL>/sitemap.xml (via a *pretty-faces* rewrite rule). Some search engines will be able to find it at this default location. Some, **including Google**, need to be **specifically instructed** to retrieve it.
+According to the `Sitemaps.org protocol <https://www.sitemaps.org/protocol.html#index>`_, a sitemap file must have no more than 50,000 URLs and must be no larger than 50MiB. In this case, the protocol instructs you to create a sitemap index file called ``sitemap_index.xml`` (instead of ``sitemap.xml``), which references multiple sitemap files named ``sitemap1.xml``, ``sitemap2.xml``, etc. These referenced files are also generated in the same place as other sitemap files (``domain1/docroot/sitemap``) and there will be as many files as necessary to contain the URLs of collections and datasets present in your installation, while respecting the limit of 50,000 URLs per file.
 
-One way to submit your sitemap URL to Google is by using their "Search Console" (https://search.google.com/search-console). In order to use the console, you will need to authenticate yourself as the owner of your Dataverse site. Various authentication methods are provided; but if you are already using Google Analytics, the easiest way is to use that account. Make sure you are logged in on Google with the account that has the edit permission on your Google Analytics property; go to the search console and enter the root URL of your Dataverse installation, then choose Google Analytics as the authentication method. Once logged in, click on "Sitemaps" in the menu on the left. (todo: add a screenshot?) Consult `Google's "submit a sitemap" instructions`_ for more information; and/or similar instructions for other search engines.
+If you have over 50,000 items, a sitemap index file will be generated in the following location (unless you have customized your installation directory for Payara):
+
+``/usr/local/payara6/glassfish/domains/domain1/docroot/sitemap/sitemap_index.xml``
+
+Once the sitemap has been generated in the location above, it will be served at ``/sitemap_index.xml`` like this: https://demo.dataverse.org/sitemap_index.xml
+
+Note that the sitemap is also available at (for example) https://demo.dataverse.org/sitemap/sitemap_index.xml and in that ``sitemap`` directory you will find the files it references such as ``sitemap1.xml``, ``sitemap2.xml``, etc.
+
+Submitting Your Sitemap to Search Engines
+#########################################
+
+Some search engines will be able to find your sitemap file at ``/sitemap.xml`` or ``/sitemap_index.xml``, but others, **including Google**, need to be **specifically instructed** to retrieve it.
+
+As described above, Dataverse will automatically detect whether you need to create a single sitemap file or several files and generate them for you. However, when submitting your sitemap file to Google or other search engines, you must be careful to supply the correct file name (``sitemap.xml`` or ``sitemap_index.xml``) depending on your situation.
+
+One way to submit your sitemap URL to Google is by using their "Search Console" (https://search.google.com/search-console). In order to use the console, you will need to authenticate yourself as the owner of your Dataverse site. Various authentication methods are provided; but if you are already using Google Analytics, the easiest way is to use that account. Make sure you are logged in on Google with the account that has the edit permission on your Google Analytics property; go to the Search Console and enter the root URL of your Dataverse installation, then choose Google Analytics as the authentication method. Once logged in, click on "Sitemaps" in the menu on the left. Consult `Google's "submit a sitemap" instructions`_ for more information.
 
 .. _Google's "submit a sitemap" instructions: https://support.google.com/webmasters/answer/183668
-
 
 Putting Your Dataverse Installation on the Map at dataverse.org
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2895,6 +2945,24 @@ Defaults to ``false``.
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_API_ALLOW_INCOMPLETE_METADATA``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
 
+.. _dataverse.ui.show-validity-label-when-published:
+
+dataverse.ui.show-validity-label-when-published
++++++++++++++++++++++++++++++++++++++++++++++++
+
+Even when you do not allow incomplete metadata to be saved in dataverse, some metadata may end up being incomplete, e.g., after making a metadata field mandatory. Datasets where that field is
+not filled out, become incomplete, and therefore can be labeled with the ``incomplete metadata`` label. By default, this label is only shown for draft datasets and published datasets that the
+user can edit. This option can be disabled by setting it to ``false`` where only draft datasets with incomplete metadata will have that label. When disabled, all published dataset will not have
+that label. Note that you need to reindex the datasets after changing the metadata definitions. Reindexing will update the labels and other dataset information according to the new situation.
+
+When enabled (by default), published datasets with incomplete metadata will have an ``incomplete metadata`` label attached to them, but only for the datasets that the user can edit.
+You can list these datasets, for example, with the validity of metadata filter shown in "My Data" page that can be turned on by enabling the :ref:`dataverse.ui.show-validity-filter` option.
+
+Defaults to ``true``.
+
+Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
+``DATAVERSE_API_SHOW_LABEL_FOR_INCOMPLETE_WHEN_PUBLISHED``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
 .. _dataverse.signposting.level1-author-limit:
 
 dataverse.signposting.level1-author-limit
@@ -3091,6 +3159,8 @@ Defaults to ``false``.
 
 Can also be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_UI_ALLOW_REVIEW_FOR_INCOMPLETE``. Will accept ``[tT][rR][uU][eE]|1|[oO][nN]`` as "true" expressions.
+
+.. _dataverse.ui.show-validity-filter:
 
 dataverse.ui.show-validity-filter
 +++++++++++++++++++++++++++++++++
