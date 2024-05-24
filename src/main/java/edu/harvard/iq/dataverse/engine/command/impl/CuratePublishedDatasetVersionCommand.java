@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.datavariable.VarGroup;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -151,7 +152,11 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 tempDataset.setThumbnailFile(publishedFmd.getDataFile());
             }
         }
-
+        if(logger.isLoggable(Level.FINE)) {
+            for(FileMetadata fmd: updateVersion.getFileMetadatas()) {
+                logger.fine("Id: " + fmd.getId() + " label: " + fmd.getLabel());
+            }
+        }
         // Update modification time on the published version and the dataset
         updateVersion.setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
@@ -170,28 +175,38 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         cmd.execute(ctxt);
 
         // And update metadata at PID provider
-        ctxt.engine().submit(
-                new UpdateDvObjectPIDMetadataCommand(savedDataset, getRequest()));
-        
-        //And the exported metadata files
         try {
-            ExportService instance = ExportService.getInstance();
-            instance.exportAllFormats(getDataset());
-        } catch (ExportException ex) {
-            // Just like with indexing, a failure to export is not a fatal condition.
-            logger.log(Level.WARNING, "Curate Published DatasetVersion: exception while exporting metadata files:{0}", ex.getMessage());
+            ctxt.engine().submit(
+                new UpdateDvObjectPIDMetadataCommand(savedDataset, getRequest()));
+        } catch (CommandException ex) {
+            //Make this non-fatal as after the DeleteDatasetVersionCommand, we can't roll back - for some reason no datasetfields remain in the DB
+            //(The old version doesn't need them and the new version doesn't get updated to include them?)
+            logger.log(Level.WARNING, "Curate Published DatasetVersion: exception while updating PID metadata:{0}", ex.getMessage());
         }
-        
-
         // Update so that getDataset() in updateDatasetUser will get the up-to-date copy
         // (with no draft version)
         setDataset(savedDataset);
         updateDatasetUser(ctxt);
         
-
-
-
         return savedDataset;
     }
 
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        boolean retVal = true;
+        Dataset d = (Dataset) r;
+        
+        ctxt.index().asyncIndexDataset(d, true);
+        
+        // And the exported metadata files
+        try {
+            ExportService instance = ExportService.getInstance();
+            instance.exportAllFormats(d);
+        } catch (ExportException ex) {
+            // Just like with indexing, a failure to export is not a fatal condition.
+            retVal = false;
+            logger.log(Level.WARNING, "Curate Published DatasetVersion: exception while exporting metadata files:{0}", ex.getMessage());
+        }
+        return retVal;
+    }
 }
