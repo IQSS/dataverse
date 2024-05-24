@@ -3,5 +3,6 @@
   "uri": "http://dataverse..org/licenses/test/1.0",
   "iconUrl": "http://dataverse.org/licenses/test/1.0/icon.png",
   "shortDescription": "Dataverse Test License v1.0.",
-  "active": false
+  "active": false,
+  "sortOrder": 1000
 }

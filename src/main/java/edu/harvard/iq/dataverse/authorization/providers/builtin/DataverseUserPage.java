@@ -51,15 +51,15 @@ import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIInput;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ActionEvent;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
@@ -488,6 +488,7 @@ public class DataverseUserPage implements java.io.Serializable {
                     break;
 
                 case REQUESTFILEACCESS:
+                case REQUESTEDFILEACCESS:
                     DataFile file = fileService.find(userNotification.getObjectId());
                     if (file != null) {
                         userNotification.setTheObject(file.getOwner());
@@ -496,6 +497,7 @@ public class DataverseUserPage implements java.io.Serializable {
                 case GRANTFILEACCESS:
                 case REJECTFILEACCESS:
                 case DATASETCREATED:
+                case DATASETMENTIONED:
                     userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
                     break;
 
@@ -520,6 +522,13 @@ public class DataverseUserPage implements java.io.Serializable {
 
                 case FILESYSTEMIMPORT:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
+                    break;
+
+                case GLOBUSUPLOADCOMPLETED:
+                case GLOBUSUPLOADCOMPLETEDWITHERRORS:
+                case GLOBUSDOWNLOADCOMPLETED:
+                case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
+                    userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
                     break;
 
                 case CHECKSUMIMPORT:

@@ -9,12 +9,16 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CheckRateLimitForCollectionPageCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateSavedSearchCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchFields;
@@ -28,12 +32,16 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+
+import edu.harvard.iq.dataverse.util.cache.CacheFactoryBean;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -43,12 +51,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIInput;
 import org.primefaces.model.DualListModel;
-import javax.ejb.EJBException;
-import javax.faces.event.ValueChangeEvent;
-import javax.faces.model.SelectItem;
+import jakarta.ejb.EJBException;
+import jakarta.faces.event.ValueChangeEvent;
+import jakarta.faces.model.SelectItem;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.primefaces.PrimeFaces;
@@ -110,7 +118,13 @@ public class DataversePage implements java.io.Serializable {
     @EJB
     DataverseLinkingServiceBean linkingService;
     @Inject PermissionsWrapper permissionsWrapper;
-    @Inject DataverseHeaderFragment dataverseHeaderFragment; 
+    @Inject 
+    NavigationWrapper navigationWrapper;
+    @Inject DataverseHeaderFragment dataverseHeaderFragment;
+    @EJB
+    PidProviderFactoryBean pidProviderFactoryBean;
+    @EJB
+    CacheFactoryBean cacheFactory;
 
     private Dataverse dataverse = new Dataverse();  
 
@@ -311,7 +325,10 @@ public class DataversePage implements java.io.Serializable {
     
     public String init() {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-
+        // Check for rate limit exceeded. Must be done before anything else to prevent unnecessary processing.
+        if (!cacheFactory.checkRate(session.getUser(), new CheckRateLimitForCollectionPageCommand(null,null))) {
+            return navigationWrapper.tooManyRequests();
+        }
         if (this.getAlias() != null || this.getId() != null || this.getOwnerId() == null) {// view mode for a dataverse
             if (this.getAlias() != null) {
                 dataverse = dataverseService.findByAlias(this.getAlias());
@@ -363,7 +380,7 @@ public class DataversePage implements java.io.Serializable {
         List<Dataverse> featuredSource = new ArrayList<>();
         List<Dataverse> featuredTarget = new ArrayList<>();
         featuredSource.addAll(dataverseService.findAllPublishedByOwnerId(dataverse.getId()));
-        featuredSource.addAll(linkingService.findLinkingDataverses(dataverse.getId()));
+        featuredSource.addAll(linkingService.findLinkedDataverses(dataverse.getId()));
         List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
         for (DataverseFeaturedDataverse dfd : featuredList) {
             Dataverse fd = dfd.getFeaturedDataverse();
@@ -1287,4 +1304,37 @@ public class DataversePage implements java.io.Serializable {
         return setName;
     }
 
+    public Set<Entry<String, String>> getGuestbookEntryOptions() {
+        return settingsWrapper.getGuestbookEntryOptions(this.dataverse).entrySet();
+    }
+
+    public Set<Entry<String, String>> getPidProviderOptions() {
+        PidProvider defaultPidProvider = pidProviderFactoryBean.getDefaultPidGenerator();
+        Set<String> providerIds = PidUtil.getManagedProviderIds();
+        Set<Entry<String, String>> options = new HashSet<Entry<String, String>>();
+        if (providerIds.size() > 1) {
+
+            String label = null;
+            if (this.dataverse.getOwner() != null && this.dataverse.getOwner().getEffectivePidGenerator()!= null) {
+                PidProvider inheritedPidProvider = this.dataverse.getOwner().getEffectivePidGenerator();
+                label = inheritedPidProvider.getLabel() + " " + BundleUtil.getStringFromBundle("dataverse.inherited") + ": "
+                        + inheritedPidProvider.getProtocol() + ":" + inheritedPidProvider.getAuthority()
+                        + inheritedPidProvider.getSeparator() + inheritedPidProvider.getShoulder();
+            } else {
+                label = defaultPidProvider.getLabel() +  " " + BundleUtil.getStringFromBundle("dataverse.default") + ": "
+                        + defaultPidProvider.getProtocol() + ":" + defaultPidProvider.getAuthority()
+                        + defaultPidProvider.getSeparator() + defaultPidProvider.getShoulder();
+            }
+            Entry<String, String> option = new AbstractMap.SimpleEntry<String, String>("default", label);
+            options.add(option);
+        }
+        for (String providerId : providerIds) {
+            PidProvider pidProvider = PidUtil.getPidProvider(providerId);
+            String label = pidProvider.getLabel() + ": " + pidProvider.getProtocol() + ":" + pidProvider.getAuthority()
+                    + pidProvider.getSeparator() + pidProvider.getShoulder();
+            Entry<String, String> option = new AbstractMap.SimpleEntry<String, String>(providerId, label);
+            options.add(option);
+        }
+        return options;
+    }
 }

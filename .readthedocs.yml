@@ -1,0 +1,21 @@
+version: 2
+
+# HTML is always built, these are additional formats only
+formats:
+    - pdf
+
+build:
+    os: ubuntu-22.04
+    tools:
+        python: "3.10"
+    apt_packages:
+        - graphviz
+
+python:
+    install:
+        - requirements: doc/sphinx-guides/requirements.txt
+
+
+sphinx:
+    configuration: doc/sphinx-guides/source/conf.py
+    fail_on_warning: true

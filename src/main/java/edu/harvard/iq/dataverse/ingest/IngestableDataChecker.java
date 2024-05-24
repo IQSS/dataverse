@@ -610,20 +610,19 @@ public class IngestableDataChecker implements java.io.Serializable {
         String readableFormatType = null;
         FileChannel srcChannel = null;
         FileInputStream inp = null;
-        try {
-            int buffer_size = this.getBufferSize(fh);
-            dbgLog.fine("buffer_size: " + buffer_size);
         
+        try {
             // set-up a FileChannel instance for a given file object
             inp = new FileInputStream(fh);
             srcChannel = inp.getChannel();
+            long buffer_size = this.getBufferSize(srcChannel);
+            dbgLog.fine("buffer_size: " + buffer_size);
 
             // create a read-only MappedByteBuffer
             MappedByteBuffer buff = srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, buffer_size);
-
+            
             //this.printHexDump(buff, "hex dump of the byte-buffer");
 
-            //for (String fmt : defaultFormatSet){
             buff.rewind();
             dbgLog.fine("before the for loop");
             for (String fmt : this.getTestFormatSet()) {
@@ -646,7 +645,6 @@ public class IngestableDataChecker implements java.io.Serializable {
                             readableFormatType = result;
                         }
                         dbgLog.fine("readableFormatType=" + readableFormatType);
-                        return readableFormatType;
                     } else {
                         dbgLog.fine("null was returned for " + fmt + " test");
                         if (DEBUG) {
@@ -669,9 +667,15 @@ public class IngestableDataChecker implements java.io.Serializable {
                     dbgLog.info("BufferUnderflowException " + e);
                     e.printStackTrace();
                 }
+                
+                if (readableFormatType != null) {
+                    break;
+                }
             }
-
-            return readableFormatType;
+            
+            // help garbage-collect the mapped buffer sooner, to avoid the jvm  
+            // holding onto the underlying file unnecessarily:
+            buff = null; 
 
         } catch (FileNotFoundException fe) {
             dbgLog.fine("exception detected: file was not foud");
@@ -716,14 +720,18 @@ public class IngestableDataChecker implements java.io.Serializable {
      * adjust the size of the buffer according to the size of 
      * the file if necessary; otherwise, use the default size
      */
-    private int getBufferSize(File fh) {
+    private long getBufferSize(FileChannel fileChannel) {
         boolean DEBUG = false;
         int BUFFER_SIZE = DEFAULT_BUFFER_SIZE;
-        if (fh.length() < DEFAULT_BUFFER_SIZE) {
-            BUFFER_SIZE = (int) fh.length();
+        try {
+        if (fileChannel.size() < DEFAULT_BUFFER_SIZE) {
+            BUFFER_SIZE = (int) fileChannel.size();
             if (DEBUG) {
                 out.println("non-default buffer_size: new size=" + BUFFER_SIZE);
             }
+        }
+        } catch (IOException ioex) {
+            dbgLog.warning("failed to check the physical file size under an open FileChannel");
         }
         return BUFFER_SIZE;
     }

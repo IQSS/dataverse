@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.ThemeWidgetFragment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -22,7 +23,6 @@ import java.nio.file.StandardCopyOption;
 public class UpdateDataverseThemeCommand extends AbstractCommand<Dataverse> {
     private final Dataverse editedDv;
     private final File uploadedFile;
-    private final Path logoPath = Paths.get("../docroot/logos");
     private String locate;
 
     public UpdateDataverseThemeCommand(Dataverse editedDv, File uploadedFile, DataverseRequest aRequest, String location) {
@@ -44,7 +44,7 @@ public class UpdateDataverseThemeCommand extends AbstractCommand<Dataverse> {
     public Dataverse execute(CommandContext ctxt) throws CommandException {
         // Get current dataverse, so we can delete current logo file if necessary
         Dataverse currentDv = ctxt.dataverses().find(editedDv.getId());
-        File logoFileDir = new File(logoPath.toFile(), editedDv.getId().toString());
+        File logoFileDir = ThemeWidgetFragment.getLogoDir(editedDv.getId().toString()).toFile();
         File currentFile=null;
 
         if (locate.equals("FOOTER")){

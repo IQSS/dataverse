@@ -2,16 +2,16 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.dataaccess.Range;
 import java.util.List;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DownloadInstanceWriterTest {
 
     DownloadInstanceWriter diw;
 
-    @Before
+    @BeforeEach
     public void setUpClass() {
         diw = new DownloadInstanceWriter();
     }

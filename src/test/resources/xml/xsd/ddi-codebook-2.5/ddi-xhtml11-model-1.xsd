@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+Copyright (c) 2009 DDI Alliance, DDI 3.1, 2009-10-18
+
+This file is part of DDI 3.1 XML Schema.
+
+DDI 3.1 XML Schema is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+DDI 3.1 XML Schema is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+for more details.
+
+You should have received a copy of the GNU Lesser General Public License along
+with DDI 3.1 XML Schema. If not, see <http://www.gnu.org/licenses/>.
+
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/1999/xhtml">
+
+  <xs:annotation>
+    <xs:documentation>
+      This is the XML Schema module of common content models for XHTML11
+      $Id: ddi-xhtml11-model-1.xsd,v 1.1 2007/02/08 16:03:11 jgager Exp $
+    </xs:documentation>
+    <xs:documentation source="XHTML/xhtml-copyright-1.xsd"/>
+  </xs:annotation>
+
+  <xs:annotation>
+    <xs:documentation>
+      XHTML Document Model
+
+      This module describes the groupings of elements/attributes that make up
+      common content models for XHTML elements.
+
+      XHTML has following basic content models:
+
+          Inline.mix;          character-level elements
+          Block.mix;           block-like elements, eg., paragraphs and lists
+          Flow.mix;            any block or inline elements
+          HeadOpts.mix;        Head Elements
+          InlinePre.mix;     Special class for pre content model
+          InlineNoAnchor.mix;  Content model for Anchor
+
+      Any groups declared in this module may be used
+      to create element content models, but the above are
+      considered 'global' (insofar as that term applies here).
+
+      XHTML has the following Attribute Groups
+           Core.extra.attrib
+           I18n.extra.attrib
+           Common.extra
+
+      The above attribute Groups are considered Global
+
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:attributeGroup name="I18n.extra.attrib">
+    <xs:annotation>
+        <xs:documentation>
+           Extended I18n attribute
+        </xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="dir.attrib">
+        <xs:annotation>
+          <xs:documentation>
+            "dir" Attribute from Bi Directional Text (bdo) Module
+          </xs:documentation>
+        </xs:annotation>
+    </xs:attributeGroup>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="Common.extra">
+    <xs:annotation>
+       <xs:documentation>
+           Extended Common Attributes
+       </xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="style.attrib">
+       <xs:annotation>
+         <xs:documentation>
+           "style" attribute from Inline Style Module
+         </xs:documentation>
+       </xs:annotation>
+     </xs:attributeGroup>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="Core.extra.attrib">
+      <xs:annotation>
+        <xs:documentation>
+           Extend Core Attributes
+        </xs:documentation>
+      </xs:annotation>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="Global.core.extra.attrib">
+      <xs:annotation>
+        <xs:documentation>
+           Extended Global Core Attributes
+        </xs:documentation>
+      </xs:annotation>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="Global.I18n.extra.attrib">
+      <xs:annotation>
+        <xs:documentation>
+           Extended Global I18n attributes
+        </xs:documentation>
+      </xs:annotation>
+  </xs:attributeGroup>
+
+   <xs:attributeGroup name="Global.Common.extra">
+      <xs:annotation>
+        <xs:documentation>
+           Extended Global Common Attributes
+        </xs:documentation>
+      </xs:annotation>
+   </xs:attributeGroup>
+<!--
+  <xs:group name="HeadOpts.mix">
+    <xs:choice>
+      <xs:element ref="script"/>
+      <xs:element ref="style"/>
+      <xs:element ref="meta"/>
+      <xs:element ref="link"/>
+      <xs:element ref="object"/>
+    </xs:choice>
+  </xs:group>
+-->
+  <!--
+   ins and del are used to denote editing changes
+  -->
+<!--
+  <xs:group name="Edit.class">
+    <xs:choice>
+      <xs:element ref="ins"/>
+      <xs:element ref="del"/>
+    </xs:choice>
+  </xs:group>
+-->
+  <!--
+   script and noscript are used to contain scripts
+   and alternative content
+  -->
+<!--
+  <xs:group name="Script.class">
+    <xs:choice>
+      <xs:element ref="script"/>
+      <xs:element ref="noscript"/>
+    </xs:choice>
+  </xs:group>
+-->
+  <xs:group name="Misc.extra">
+    <xs:choice/>
+  </xs:group>
+
+  <!--
+   These elements are neither block nor inline, and can
+   essentially be used anywhere in the document body.
+  -->
+  <xs:group name="Misc.class">
+    <xs:choice/>
+<!--      <xs:group ref="Edit.class"/>
+      <xs:group ref="Script.class"/>
+      <xs:group ref="Misc.extra"/>
+    </xs:choice>
+ -->
+  </xs:group>
+
+  <!-- Inline Elements -->
+  <xs:group name="InlStruct.class">
+    <xs:choice>
+      <xs:element ref="br"/>
+      <xs:element ref="span"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="InlPhras.class">
+    <xs:choice>
+      <xs:element ref="em"/>
+      <xs:element ref="strong"/>
+      <xs:element ref="dfn"/>
+      <xs:element ref="code"/>
+      <xs:element ref="samp"/>
+      <xs:element ref="kbd"/>
+      <xs:element ref="var"/>
+      <xs:element ref="cite"/>
+      <xs:element ref="abbr"/>
+      <xs:element ref="acronym"/>
+      <xs:element ref="q"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="InlPres.class">
+    <xs:choice>
+      <xs:element ref="tt"/>
+      <xs:element ref="i"/>
+      <xs:element ref="b"/>
+      <xs:element ref="big"/>
+      <xs:element ref="small"/>
+      <xs:element ref="sub"/>
+      <xs:element ref="sup"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="I18n.class">
+    <xs:sequence>
+      <xs:element ref="bdo"/>
+    </xs:sequence>
+  </xs:group>
+
+  <xs:group name="Anchor.class">
+    <xs:sequence>
+      <xs:element ref="a"/>
+    </xs:sequence>
+  </xs:group>
+<!--
+  <xs:group name="InlSpecial.class">
+    <xs:choice>
+      <xs:element ref="img"/>
+      <xs:element ref="map"/>
+      <xs:element ref="object"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="InlForm.class">
+    <xs:choice>
+      <xs:element ref="input"/>
+      <xs:element ref="select"/>
+      <xs:element ref="textarea"/>
+      <xs:element ref="label"/>
+      <xs:element ref="button"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="Inline.extra">
+    <xs:choice/>
+  </xs:group>
+
+  <xs:group name="Ruby.class">
+    <xs:sequence>
+      <xs:element ref="ruby"/>
+    </xs:sequence>
+  </xs:group>
+-->
+  <!--
+   Inline.class includes all inline elements,
+   used as a component in mixes
+  -->
+
+  <xs:group name="Inline.class">
+    <xs:choice>
+      <xs:group ref="InlStruct.class"/>
+      <xs:group ref="InlPhras.class"/>
+      <xs:group ref="InlPres.class"/>
+      <xs:group ref="I18n.class"/>
+      <xs:group ref="Anchor.class"/>
+<!--      <xs:group ref="InlSpecial.class"/>
+      <xs:group ref="InlForm.class"/>
+      <xs:group ref="Ruby.class"/>
+      <xs:group ref="Inline.extra"/> -->
+    </xs:choice>
+  </xs:group>
+
+  <!--
+     InlNoRuby.class includes all inline elements
+     except ruby
+  -->
+  <xs:group name="InlNoRuby.class">
+    <xs:choice>
+      <xs:group ref="InlStruct.class"/>
+      <xs:group ref="InlPhras.class"/>
+      <xs:group ref="InlPres.class"/>
+      <xs:group ref="I18n.class"/>
+      <xs:group ref="Anchor.class"/>
+<!--      <xs:group ref="InlSpecial.class"/> -->
+<!--      <xs:group ref="InlForm.class"/> -->
+<!--      <xs:group ref="Inline.extra"/> -->
+    </xs:choice>
+  </xs:group>
+
+
+  <!--
+    InlinePre.mix
+    Used as a component in pre model
+  -->
+  <xs:group name="InlinePre.mix">
+    <xs:choice>
+      <xs:group ref="InlStruct.class"/>
+      <xs:group ref="InlPhras.class"/>
+      <xs:element ref="tt"/>
+      <xs:element ref="i"/>
+      <xs:element ref="b"/>
+      <xs:group ref="I18n.class"/>
+      <xs:group ref="Anchor.class"/>
+<!--      <xs:element ref="script"/>
+      <xs:element ref="map"/>
+      <xs:group ref="Inline.extra"/> -->
+    </xs:choice>
+  </xs:group>
+
+  <!--
+    InlNoAnchor.class includes all non-anchor inlines,
+    used as a component in mixes
+  -->
+  <xs:group name="InlNoAnchor.class">
+    <xs:choice>
+      <xs:group ref="InlStruct.class"/>
+      <xs:group ref="InlPhras.class"/>
+      <xs:group ref="InlPres.class"/>
+      <xs:group ref="I18n.class"/>
+<!--      <xs:group ref="InlSpecial.class"/>
+      <xs:group ref="InlForm.class"/>
+      <xs:group ref="Ruby.class"/>
+      <xs:group ref="Inline.extra"/> -->
+    </xs:choice>
+  </xs:group>
+
+  <!--
+    InlNoAnchor.mix includes all non-anchor inlines
+  -->
+  <xs:group name="InlNoAnchor.mix">
+    <xs:choice>
+      <xs:group ref="InlNoAnchor.class"/>
+    </xs:choice>
+  </xs:group>
+
+  <!--
+    Inline.mix includes all inline elements, including Misc.class
+  -->
+  <xs:group name="Inline.mix">
+    <xs:choice>
+      <xs:group ref="Inline.class"/>
+    </xs:choice>
+  </xs:group>
+
+  <!--
+   InlNoRuby.mix includes all of inline.mix elements
+   except ruby
+  -->
+<!--
+  <xs:group name="InlNoRuby.mix">
+    <xs:choice>
+      <xs:group ref="InlNoRuby.class"/>
+      <xs:group ref="Misc.class"/>
+    </xs:choice>
+  </xs:group>
+-->
+
+  <!--
+    In the HTML 4 DTD, heading and list elements were included
+    in the block group. The Heading.class and
+    List.class groups must now be included explicitly
+    on element declarations where desired.
+  -->
+  <xs:group name="Heading.class">
+    <xs:choice>
+      <xs:element ref="h1"/>
+      <xs:element ref="h2"/>
+      <xs:element ref="h3"/>
+      <xs:element ref="h4"/>
+      <xs:element ref="h5"/>
+      <xs:element ref="h6"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="List.class">
+    <xs:choice>
+      <xs:element ref="ul"/>
+      <xs:element ref="ol"/>
+      <xs:element ref="dl"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="Table.class">
+    <xs:choice>
+      <xs:element ref="table"/>
+    </xs:choice>
+  </xs:group>
+<!--
+  <xs:group name="Form.class">
+    <xs:choice>
+      <xs:element ref="form"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="Fieldset.class">
+    <xs:choice>
+      <xs:element ref="fieldset"/>
+    </xs:choice>
+  </xs:group>
+-->
+  <xs:group name="BlkStruct.class">
+    <xs:choice>
+      <xs:element ref="p"/>
+      <xs:element ref="div"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="BlkPhras.class">
+    <xs:choice>
+      <xs:element ref="pre"/>
+      <xs:element ref="blockquote"/>
+      <xs:element ref="address"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="BlkPres.class">
+    <xs:sequence>
+      <xs:element ref="hr"/>
+    </xs:sequence>
+  </xs:group>
+
+  <xs:group name="BlkSpecial.class">
+    <xs:choice>
+      <xs:group ref="Table.class"/>
+<!--      <xs:group ref="Form.class"/>
+      <xs:group ref="Fieldset.class"/> -->
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="Block.extra">
+    <xs:choice/>
+  </xs:group>
+
+  <!--
+    Block.class includes all block elements,
+    used as an component in mixes
+  -->
+  <xs:group name="Block.class">
+    <xs:choice>
+      <xs:group ref="BlkStruct.class"/>
+      <xs:group ref="BlkPhras.class"/>
+      <xs:group ref="BlkPres.class"/>
+      <xs:group ref="BlkSpecial.class"/>
+    </xs:choice>
+  </xs:group>
+
+  <!--
+   Block.mix includes all block elements plus %Misc.class;
+  -->
+  <xs:group name="Block.mix">
+    <xs:choice>
+      <xs:group ref="Heading.class"/>
+      <xs:group ref="List.class"/>
+      <xs:group ref="Block.class"/>
+    </xs:choice>
+  </xs:group>
+
+  <!--
+    All Content Elements
+    Flow.mix includes all text content, block and inline
+    Note that the "any" element included here allows us
+    to add data from any other namespace, a necessity
+    for compound document creation.
+    Note however that it is not possible to add
+    to any head level element without further
+    modification. To add RDF metadata to the head
+    of a document, modify the structure module.
+  -->
+  <xs:group name="Flow.mix">
+    <xs:choice>
+      <xs:group ref="Heading.class"/>
+      <xs:group ref="List.class"/>
+      <xs:group ref="Block.class"/>
+      <xs:group ref="Inline.class"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <!--
+    BlkNoForm.mix includes all non-form block elements,
+       plus Misc.class
+  -->
+  <xs:group name="BlkNoForm.mix">
+    <xs:choice>
+      <xs:group ref="Heading.class"/>
+      <xs:group ref="List.class"/>
+      <xs:group ref="BlkStruct.class"/>
+      <xs:group ref="BlkPhras.class"/>
+      <xs:group ref="BlkPres.class"/>
+      <xs:group ref="Table.class"/>
+    </xs:choice>
+  </xs:group>
+
+</xs:schema>

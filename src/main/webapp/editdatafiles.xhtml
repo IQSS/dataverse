@@ -62,7 +62,9 @@
                                 <ui:param name="createDataset" value="false"/>
                                 <ui:param name="showFileButtonUpdate" value="true"/>
                                 <ui:param name="rsyncSupported" value="#{EditDatafilesPage.rsyncUploadSupported()}"/>
-                                <ui:param name="lockedFromEdits" value="#{EditDatafilesPage.lockedFromEdits}"/>                             
+                                <ui:param name="globusUploadSupported" value="#{EditDatafilesPage.globusUploadSupported()}"/>
+                                <ui:param name="webloaderUploadSupported" value="#{EditDatafilesPage.webloaderUploadSupported()}"/>
+                                <ui:param name="lockedFromEdits" value="#{EditDatafilesPage.lockedFromEdits}"/>
                             </ui:include>
                         </div>
                     </ui:fragment> 
@@ -73,8 +75,10 @@
                         <ui:param name="bean" value="#{EditDatafilesPage}"/>
                         <ui:param name="restrictFileAction" value="restrictFiles"/>
                         <ui:param name="deleteFileAction" value="deleteFiles"/>
-                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/> 
+                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/>
+                        <ui:param name="saveRetentionAction" value="saveRetention"/>
                         <ui:param name="updateElements" value=":datasetForm:embargoInputs"/>
+                        <ui:param name="updateRetentionElements" value=":datasetForm:retentionInputs"/>
                     </ui:include>
                     
                     <!-- Create/Save Dataset Button Panel -->

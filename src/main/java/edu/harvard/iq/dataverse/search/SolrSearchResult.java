@@ -7,30 +7,25 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import edu.harvard.iq.dataverse.*;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.apache.commons.collections4.CollectionUtils;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetRelPublication;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 public class SolrSearchResult {
-
 	private static final Logger logger = Logger.getLogger(SolrSearchResult.class.getCanonicalName());
 
 	private String id;
@@ -121,6 +116,10 @@ public class SolrSearchResult {
 	private String filePersistentId = null;
 
 	private Long embargoEndDate;
+
+	private Long retentionEndDate;
+
+	private boolean datasetValid;
 
 	public String getDvTree() {
 		return dvTree;
@@ -400,21 +399,12 @@ public class SolrSearchResult {
 		return matchedFieldsArray;
 	}
 
-	public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
-		return toJsonObject(showRelevance, showEntityIds, showApiUrls, null);
-	}
-
-	public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds, boolean showApiUrls,
-			List<String> metadataFields) {
-		return json(showRelevance, showEntityIds, showApiUrls, metadataFields).build();
-	}
-
 	/**
 	 * Add additional fields for the MyData page
 	 *
 	 * @return
 	 */
-	public JsonObjectBuilder getJsonForMyData() {
+	public JsonObjectBuilder getJsonForMyData(boolean isValid) {
 
 		JsonObjectBuilder myDataJson = json(true, true, true);// boolean showRelevance, boolean showEntityIds, boolean showApiUrls)
 
@@ -422,6 +412,7 @@ public class SolrSearchResult {
 				.add("is_draft_state", this.isDraftState()).add("is_in_review_state", this.isInReviewState())
 				.add("is_unpublished_state", this.isUnpublishedState()).add("is_published", this.isPublishedState())
 				.add("is_deaccesioned", this.isDeaccessionedState())
+				.add("is_valid", isValid)
 				.add("date_to_display_on_card", getDateToDisplayOnCard());
 
 		// Add is_deaccessioned attribute, even though MyData currently screens any deaccessioned info out
@@ -432,7 +423,7 @@ public class SolrSearchResult {
 
 		if ((this.getParent() != null) && (!this.getParent().isEmpty())) {
 			// System.out.println("keys:" + parent.keySet().toString());
-			if (this.entity.isInstanceofDataFile()) {
+			if (this.entity != null && this.entity.isInstanceofDataFile()) {
 				myDataJson.add("parentIdentifier", this.getParent().get(SolrSearchResult.PARENT_IDENTIFIER))
 						.add("parentName", this.getParent().get("name"));
 
@@ -446,12 +437,10 @@ public class SolrSearchResult {
 	} // getJsonForMydata
 
 	public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
-		return json(showRelevance, showEntityIds, showApiUrls, null);
+		return json(showRelevance, showEntityIds, showApiUrls, null, null);
 	}
 
-	public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls,
-			List<String> metadataFields) {
-
+	public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, List<String> metadataFields, Long datasetFileCount) {
 		if (this.type == null) {
 			return jsonObjectBuilder();
 		}
@@ -567,7 +556,7 @@ public class SolrSearchResult {
 					subjects.add(subject);
 				}
 				nullSafeJsonBuilder.add("subjects", subjects);
-				nullSafeJsonBuilder.add("fileCount", dv.getFileMetadatas().size());
+				nullSafeJsonBuilder.add("fileCount", datasetFileCount);
 				nullSafeJsonBuilder.add("versionId", dv.getId());
 				nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
 				if (this.isPublishedState()) {
@@ -1129,9 +1118,10 @@ public class SolrSearchResult {
 		 * if (entity != null && entity instanceof DataFile && this.isHarvested()) { String remoteArchiveUrl = ((DataFile) entity).getRemoteArchiveURL(); if
 		 * (remoteArchiveUrl != null) { return remoteArchiveUrl; } return null; }
 		 */
-		if (entity.getIdentifier() != null) {
-			return "/file.xhtml?persistentId=" + entity.getGlobalIdString();
-		}
+        if (entity.getIdentifier() != null) {
+            GlobalId entityPid = entity.getGlobalId();
+            return "/file.xhtml?persistentId=" + ((entityPid != null) ? entityPid.asString() : null);
+        }
 
 		return "/file.xhtml?fileId=" + entity.getId() + "&datasetVersionId=" + datasetVersionId;
 
@@ -1255,4 +1245,32 @@ public class SolrSearchResult {
 	public void setEmbargoEndDate(Long embargoEndDate) {
 		this.embargoEndDate = embargoEndDate;
 	}
+
+	public Long getRetentionEndDate() {
+		return retentionEndDate;
+	}
+
+	public void setRetentionEndDate(Long retentionEndDate) {
+		this.retentionEndDate = retentionEndDate;
+	}
+
+	public void setDatasetValid(Boolean datasetValid) {
+		this.datasetValid = datasetValid == null || Boolean.valueOf(datasetValid);
+	}
+
+	public boolean isValid(Predicate<SolrSearchResult> canUpdateDataset) {
+        if (this.datasetValid) {
+            return true;
+        }
+        if (!this.getType().equals("datasets")) {
+            return true;
+        }
+        if (this.isDraftState()) {
+            return false;
+        }
+        if (!JvmSettings.UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED.lookupOptional(Boolean.class).orElse(true)) {
+            return true;
+        }
+		return !canUpdateDataset.test(this);
+    }
 }

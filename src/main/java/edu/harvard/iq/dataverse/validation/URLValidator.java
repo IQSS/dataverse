@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.validation;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.apache.commons.validator.routines.UrlValidator;
 
 /**
@@ -42,7 +41,7 @@ public class URLValidator implements ConstraintValidator<ValidateURL, String> {
      * @return true when valid (null is also valid) or false
      */
     public static boolean isURLValid(String value, String[] schemes) {
-        UrlValidator urlValidator = new UrlValidator(schemes);
+        UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_2_SLASHES);
         return value == null || urlValidator.isValid(value);
     }
 

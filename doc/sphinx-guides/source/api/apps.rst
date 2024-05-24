@@ -28,9 +28,9 @@ https://github.com/scholarsportal/Dataverse-Data-Curation-Tool
 File Previewers
 ~~~~~~~~~~~~~~~
 
-File Previewers are tools that display the content of files - including audio, html, Hypothes.is annotations, images, PDF, text, video - allowing them to be viewed without downloading.
+File Previewers are tools that display the content of files - including audio, html, Hypothes.is annotations, images, PDF, text, video, GeoJSON - allowing them to be viewed without downloading.
 
-https://github.com/GlobalDataverseCommunityConsortium/dataverse-previewers
+https://github.com/gdcc/dataverse-previewers
 
 Python
 ------
@@ -94,6 +94,13 @@ This series of Python scripts offers a starting point for migrating datasets fro
 
 https://github.com/scholarsportal/dataverse-migration-scripts
 
+idsc.dataverse
+~~~~~~~~~~~~~~
+
+This module can, among others, help you migrate one dataverse to another. (see `migrate.md <https://github.com/iza-institute-of-labor-economics/idsc.dataverse/blob/main/migrate.md>`_)
+
+https://github.com/iza-institute-of-labor-economics/idsc.dataverse
+
 Java
 ----
 
@@ -102,9 +109,9 @@ Please note that there is a Java library for Dataverse Software APIs listed in t
 DVUploader
 ~~~~~~~~~~
 
-The open-source DVUploader tool is a stand-alone command-line Java application that uses the Dataverse Software API to upload files to a specified Dataset. Files can be specified by name, or the DVUploader can upload all files in a directory or recursively from a directory tree. The DVUploader can also verify that uploaded files match their local sources by comparing the local and remote fixity checksums. Source code, release 1.0.0- jar file, and documentation are available on GitHub. DVUploader's creation was supported by the Texas Digital Library.
+The open-source DVUploader tool is a stand-alone command-line Java application that uses the Dataverse Software API to upload files to a specified Dataset. Files can be specified by name, or the DVUploader can upload all files in a directory or recursively from a directory tree. The DVUploader can also verify that uploaded files match their local sources by comparing the local and remote fixity checksums. Source code, the latest release - jar file, and documentation are available on GitHub. DVUploader's creation was supported by the Texas Digital Library.
 
-https://github.com/IQSS/dataverse-uploader
+https://github.com/GlobalDataverseCommunityConsortium/dataverse-uploader
 
 Dataverse for Android
 ~~~~~~~~~~~~~~~~~~~~~
@@ -112,6 +119,16 @@ Dataverse for Android
 Dataverse Software on Android makes use of a Dataverse installation's Search API.
 
 https://github.com/IQSS/dataverse-android
+
+Go
+--
+
+Integrations Dashboard
+~~~~~~~~~~~~~~~~~~~~~~
+
+The integrations dashboard is software by the Dataverse community to enable easy data transfer from an existing data management platform to a dataset in a Dataverse collection. See :ref:`integrations-dashboard` for details.
+
+https://github.com/libis/rdm-integration
 
 PHP
 ---

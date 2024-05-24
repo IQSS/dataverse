@@ -21,5 +21,7 @@ API Guide
    client-libraries
    external-tools
    curation-labels
+   linkeddatanotification
    apps
    faq
+   changelog

@@ -15,7 +15,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import org.apache.commons.lang3.StringUtils;
 
 @Stateless

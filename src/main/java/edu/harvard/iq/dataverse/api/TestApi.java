@@ -2,20 +2,19 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import java.util.List;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Response;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 
 @Path("admin/test")
 public class TestApi extends AbstractApiBean {
@@ -45,6 +44,34 @@ public class TestApi extends AbstractApiBean {
             return wr.getResponse();
         }
     }
+    
+    @GET
+    @Path("datasets/{id}/externalTool/{toolId}")
+    public Response getExternalToolforDatasetById(@PathParam("id") String idSupplied, @PathParam("toolId") String toolId, @QueryParam("type") String typeSupplied) {
+        ExternalTool.Type type;
+        try {
+            type = ExternalTool.Type.fromString(typeSupplied);
+        } catch (IllegalArgumentException ex) {
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
+        }
+        Dataset dataset;
+        try {
+            dataset = findDatasetOrDie(idSupplied);
+            JsonArrayBuilder tools = Json.createArrayBuilder();
+            List<ExternalTool> datasetTools = externalToolService.findDatasetToolsByType(type);
+            for (ExternalTool tool : datasetTools) {
+                ApiToken apiToken = externalToolService.getApiToken(getRequestApiKey());
+                ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataset, apiToken, null);
+                JsonObjectBuilder toolToJson = externalToolService.getToolAsJsonWithQueryParameters(externalToolHandler);
+                if (tool.getId().toString().equals(toolId)) {
+                    return ok(toolToJson);
+                }
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        return error(BAD_REQUEST, "Could not find external tool with id of " + toolId);
+    }
 
     @Path("files/{id}/externalTools")
     @GET
@@ -63,9 +90,37 @@ public class TestApi extends AbstractApiBean {
                 ApiToken apiToken = externalToolService.getApiToken(getRequestApiKey());
                 ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataFile, apiToken, dataFile.getFileMetadata(), null);
                 JsonObjectBuilder toolToJson = externalToolService.getToolAsJsonWithQueryParameters(externalToolHandler);
-                tools.add(toolToJson);
+                if (externalToolService.meetsRequirements(tool, dataFile)) {
+                    tools.add(toolToJson);
+                }
             }
             return ok(tools);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
+    @Path("files/{id}/externalTool/{toolId}")
+    @GET
+    public Response getExternalToolForFileById(@PathParam("id") String idSupplied, @QueryParam("type") String typeSupplied, @PathParam("toolId") String toolId) {
+        ExternalTool.Type type;
+        try {
+            type = ExternalTool.Type.fromString(typeSupplied);
+        } catch (IllegalArgumentException ex) {
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
+        }
+        try {
+            DataFile dataFile = findDataFileOrDie(idSupplied);
+            List<ExternalTool> datasetTools = externalToolService.findFileToolsByTypeAndContentType(type, dataFile.getContentType());
+            for (ExternalTool tool : datasetTools) {
+                ApiToken apiToken = externalToolService.getApiToken(getRequestApiKey());
+                ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataFile, apiToken, dataFile.getFileMetadata(), null);
+                JsonObjectBuilder toolToJson = externalToolService.getToolAsJsonWithQueryParameters(externalToolHandler);
+                if (externalToolService.meetsRequirements(tool, dataFile) && tool.getId().toString().equals(toolId)) {
+                    return ok(toolToJson);
+                }
+            }
+            return error(BAD_REQUEST, "Could not find external tool with id of " + toolId);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }

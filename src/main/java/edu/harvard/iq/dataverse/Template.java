@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -10,26 +9,34 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
-import javax.validation.constraints.Size;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
+import jakarta.validation.constraints.Size;
 
 import edu.harvard.iq.dataverse.util.DateUtil;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -53,14 +60,13 @@ public class Template implements Serializable {
     private Long id;
 
     public Template() {
-
     }
 
     //Constructor for create
-    public Template(Dataverse dataverseIn) {
+    public Template(Dataverse dataverseIn, List<MetadataBlock> systemMDBlocks) {
         dataverse = dataverseIn;
         datasetFields = initDatasetFields();
-        initMetadataBlocksForCreate();
+        initMetadataBlocksForCreate(systemMDBlocks);
     }
 
     public Long getId() {
@@ -125,11 +131,17 @@ public class Template implements Serializable {
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
     }
+    
+    @Column(columnDefinition="TEXT", nullable = true )
+    private String instructions;
 
     @Transient
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap<>();
+    private Map<String, String> instructionsMap = null;
+    
     @Transient
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap<>();
+    private TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForView = new TreeMap<>();
+    @Transient
+    private TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new TreeMap<>();
     
     @Transient
     private boolean isDefaultForDataverse;
@@ -154,19 +166,19 @@ public class Template implements Serializable {
     }
     
 
-    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
+    public TreeMap<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
         return metadataBlocksForView;
     }
 
-    public void setMetadataBlocksForView(Map<MetadataBlock, List<DatasetField>> metadataBlocksForView) {
+    public void setMetadataBlocksForView(TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForView) {
         this.metadataBlocksForView = metadataBlocksForView;
     }
 
-    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForEdit() {
+    public TreeMap<MetadataBlock, List<DatasetField>> getMetadataBlocksForEdit() {
         return metadataBlocksForEdit;
     }
 
-    public void setMetadataBlocksForEdit(Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit) {
+    public void setMetadataBlocksForEdit(TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForEdit) {
         this.metadataBlocksForEdit = metadataBlocksForEdit;
     }
 
@@ -234,48 +246,55 @@ public class Template implements Serializable {
         return dsfList;
     }
 
-    private void initMetadataBlocksForCreate() {
+    private void initMetadataBlocksForCreate(List<MetadataBlock> systemMDBlocks) {
         metadataBlocksForEdit.clear();
         for (MetadataBlock mdb : this.getDataverse().getMetadataBlocks()) {
-            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
-            for (DatasetField dsf : this.getDatasetFields()) {
+            if (!systemMDBlocks.contains(mdb)) {
+                List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
+                for (DatasetField dsf : this.getDatasetFields()) {
 
-                if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
-                    datasetFieldsForEdit.add(dsf);
+                    if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
+                        datasetFieldsForEdit.add(dsf);
+                    }
                 }
-            }
 
-            if (!datasetFieldsForEdit.isEmpty()) {
-                metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
+                if (!datasetFieldsForEdit.isEmpty()) {
+                    metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
+                }
             }
         }
     }
 
-    public void setMetadataValueBlocks() {
+    public void setMetadataValueBlocks(List<MetadataBlock> systemMDBlocks) {
         //TODO: A lot of clean up on the logic of this method
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
         List<DatasetField> filledInFields = this.getDatasetFields(); 
+
+        Map<String, String> instructionsMap = getInstructionsMap();
         
         List <MetadataBlock> viewMDB = new ArrayList<>();
-        List <MetadataBlock> editMDB=this.getDataverse().getMetadataBlocks(true);
+        List <MetadataBlock> editMDB=this.getDataverse().getMetadataBlocks(false);
             
+        //The metadatablocks in this template include any from the Dataverse it is associated with 
+        //plus any others where the template has a displayable field (i.e. from before a block was dropped in the dataverse/collection)
         viewMDB.addAll(this.getDataverse().getMetadataBlocks(true));
-        for (DatasetField dsfv : filledInFields) {
-            if (!dsfv.isEmptyForDisplay()) {
-                MetadataBlock mdbTest = dsfv.getDatasetFieldType().getMetadataBlock();
+        for (DatasetField dsf : filledInFields) {
+            if (!dsf.isEmptyForDisplay()) {
+                MetadataBlock mdbTest = dsf.getDatasetFieldType().getMetadataBlock();
                 if (!viewMDB.contains(mdbTest)) {
                     viewMDB.add(mdbTest);
                 }
             }
-        }       
-        
+        }
+
         for (MetadataBlock mdb : viewMDB) {
 
             List<DatasetField> datasetFieldsForView = new ArrayList<>();
             for (DatasetField dsf : this.getDatasetFields()) {
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
-                    if (!dsf.isEmpty()) {
+                    //For viewing, show the field if it has a value or custom instructions
+                    if (!dsf.isEmpty() || instructionsMap.containsKey(dsf.getDatasetFieldType().getName())) {
                         datasetFieldsForView.add(dsf);
                     }
                 }
@@ -288,14 +307,16 @@ public class Template implements Serializable {
         }
         
         for (MetadataBlock mdb : editMDB) {
-            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
-            this.setDatasetFields(initDatasetFields());
-            for (DatasetField dsf : this.getDatasetFields() ) {
-                if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) { 
-                    datasetFieldsForEdit.add(dsf);
+            if (!systemMDBlocks.contains(mdb)) {
+                List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
+                this.setDatasetFields(initDatasetFields());
+                for (DatasetField dsf : this.getDatasetFields()) {
+                    if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
+                        datasetFieldsForEdit.add(dsf);
+                    }
                 }
+                metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
             }
-            metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
         }
         
     }
@@ -344,6 +365,9 @@ public class Template implements Serializable {
         }
         terms.setTemplate(newTemplate);
         newTemplate.setTermsOfUseAndAccess(terms);
+        
+        newTemplate.getInstructionsMap().putAll(source.getInstructionsMap());
+        newTemplate.updateInstructions();
         return newTemplate;
     }
 
@@ -383,6 +407,45 @@ public class Template implements Serializable {
         return retList;
     }
     
+    //Cache values in map for reading
+    public Map<String, String> getInstructionsMap() {
+        if(instructionsMap==null)
+            if(instructions != null) {
+            instructionsMap = JsonUtil.getJsonObject(instructions).entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(),entry -> ((JsonString)entry.getValue()).getString()));
+            } else {
+                instructionsMap = new HashMap<String,String>();
+        }
+        return instructionsMap;
+    }
+
+    //Get the cutstom instructions defined for a give fieldType
+    public String getInstructionsFor(String fieldType) {
+        return getInstructionsMap().get(fieldType);
+    }
+
+    /*
+    //Add/change or remove (null instructionString) instructions for a given fieldType
+    public void setInstructionsFor(String fieldType, String instructionString) {
+        if(instructionString==null) {
+            getInstructionsMap().remove(fieldType);
+        } else {
+        getInstructionsMap().put(fieldType, instructionString);
+        }
+        updateInstructions();
+    }
+    */
+    
+    //Keep instructions up-to-date on any change
+    public void updateInstructions() {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        getInstructionsMap().forEach((key, value) -> {
+            if (value != null)
+                builder.add(key, value);
+        });
+        instructions = JsonUtil.prettyPrint(builder.build());
+    }
+    
+
     @Override
      public int hashCode() {
         int hash = 0;
