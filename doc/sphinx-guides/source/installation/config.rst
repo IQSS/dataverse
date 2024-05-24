@@ -3863,7 +3863,7 @@ To enable the setting::
 :DisableSolrFacetsForGuestUsers
 +++++++++++++++++++++++++++++++
 
-Similar to the above, but will disable the facets for Guest users only. 
+Similar to the above, but will disable the facets for Guest (unauthenticated) users only. 
 
 :DisableSolrFacetsForAnonymousUsers
 +++++++++++++++++++++++++++++++++++
