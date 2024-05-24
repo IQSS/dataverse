@@ -146,7 +146,7 @@ public class XmlMetadataTemplate {
         List<String> altTitles = new ArrayList<>();
         // Only Datasets can have a subtitle or alternative titles
         if (dvObject instanceof Dataset d) {
-            DatasetVersion dv = d.getLatestVersion();
+            DatasetVersion dv = d.getLatestVersionForCopy();
             Optional<DatasetField> subTitleField = dv.getDatasetFields().stream().filter(f -> f.getDatasetFieldType().getName().equals(DatasetFieldConstant.subTitle)).findFirst();
             if (subTitleField.isPresent()) {
                 subTitle = subTitleField.get().getValue();
