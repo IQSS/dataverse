@@ -156,6 +156,8 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String confidentialityDeclaration="confidentialityDeclaration";
     public final static String specialPermissions="specialPermissions";
     public final static String restrictions="restrictions";
+    @Deprecated
+    //Doesn't appear to be used and is not datasetContact
     public final static String contact="contact";
     public final static String citationRequirements="citationRequirements";
     public final static String depositorRequirements="depositorRequirements";
