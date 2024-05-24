@@ -1069,7 +1069,7 @@ public class XmlMetadataTemplate {
 
         if (dvObject instanceof Dataset d) {
             dv = d.getLatestVersionForCopy();
-            dv.getDescriptions();
+            descriptions = dv.getDescriptions();
         } else if (dvObject instanceof DataFile df) {
             String description = df.getDescription();
             if (description != null) {
