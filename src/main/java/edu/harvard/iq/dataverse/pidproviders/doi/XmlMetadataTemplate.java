@@ -1320,7 +1320,7 @@ public class XmlMetadataTemplate {
                             xmlw.writeStartElement("fundingReference"); // <fundingReference>
                             XmlWriterUtil.writeFullElement(xmlw, "funderName", StringEscapeUtils.escapeXml10(funder));
                             if (StringUtils.isNotBlank(awardNumber)) {
-                                writeFullElement(xmlw, null, "awardNumber", StringEscapeUtils.escapeXml10(awardNumber));
+                                XmlWriterUtil.writeFullElement(xmlw, "awardNumber", StringEscapeUtils.escapeXml10(awardNumber));
                             }
                             xmlw.writeEndElement(); // </fundingReference>
                         }
