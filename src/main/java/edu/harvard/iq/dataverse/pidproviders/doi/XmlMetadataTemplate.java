@@ -1294,7 +1294,7 @@ public class XmlMetadataTemplate {
                             if (!StringUtils.isBlank(contributorName)) {
                                 fundingReferenceWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "fundingReferences", fundingReferenceWritten);
                                 xmlw.writeStartElement("fundingReference"); // <fundingReference>
-                                XmlWriterUtil.writeFullElement(xmlw, "funderName", contributorName);
+                                XmlWriterUtil.writeFullElement(xmlw, "funderName", StringEscapeUtils.escapeXml10(contributorName));
                                 xmlw.writeEndElement(); // </fundingReference>
                             }
                         }
@@ -1318,9 +1318,9 @@ public class XmlMetadataTemplate {
                         if (!StringUtils.isBlank(funder)) {
                             fundingReferenceWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "fundingReferences", fundingReferenceWritten);
                             xmlw.writeStartElement("fundingReference"); // <fundingReference>
-                            XmlWriterUtil.writeFullElement(xmlw, "funderName", funder);
+                            XmlWriterUtil.writeFullElement(xmlw, "funderName", StringEscapeUtils.escapeXml10(funder));
                             if (StringUtils.isNotBlank(awardNumber)) {
-                                writeFullElement(xmlw, null, "awardNumber", null, awardNumber);
+                                writeFullElement(xmlw, null, "awardNumber", StringEscapeUtils.escapeXml10(awardNumber));
                             }
                             xmlw.writeEndElement(); // </fundingReference>
                         }
