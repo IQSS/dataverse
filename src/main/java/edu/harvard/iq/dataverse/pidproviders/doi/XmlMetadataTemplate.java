@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -661,12 +662,20 @@ public class XmlMetadataTemplate {
                 }
                 if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
                     if(StringUtils.isNotBlank(startDate)) {
+                        try {
                         Date start = Util.getDateTimeFormat().parse(startDate);
                         startDate = Util.getDateFormat().format(start);
+                        } catch (ParseException e) {
+                            logger.warning("Could not parse date: " + startDate);
+                        }
                     }
                     if(StringUtils.isNotBlank(endDate)) {
+                        try {
                         Date end = Util.getDateTimeFormat().parse(endDate);
                         endDate = Util.getDateFormat().format(end);
+                        } catch (ParseException e) {
+                            logger.warning("Could not parse date: " + endDate);
+                        };
                     }
                     datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
                     attributes.put("dateType", "Collected");
