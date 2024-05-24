@@ -305,8 +305,10 @@ public class XmlMetadataTemplate {
         // fields
         if (dvObject instanceof Dataset d) {
             DatasetVersion dv = d.getLatestVersionForCopy();
-            dv.getDatasetSubjects();
             for (DatasetField dsf : dv.getDatasetFields()) {
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
+                    subjects.addAll(dsf.getValues());
+                }
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword)) {
                     compoundKeywords = dsf.getDatasetFieldCompoundValues();
                 } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.topicClassification)) {
@@ -330,7 +332,7 @@ public class XmlMetadataTemplate {
 
             for (DatasetField subField : keywordFieldValue.getChildDatasetFields()) {
                 switch (subField.getDatasetFieldType().getName()) {
-                case DatasetFieldConstant.keyword:
+                case DatasetFieldConstant.keywordValue:
                     keyword = subField.getValue();
                     break;
                 case DatasetFieldConstant.keywordVocab:
