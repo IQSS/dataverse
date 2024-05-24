@@ -427,7 +427,7 @@ public class XmlMetadataTemplate {
                 case DatasetFieldConstant.distributor:
                     compoundDistributors = dsf.getDatasetFieldCompoundValues();
                     break;
-                case DatasetFieldConstant.contact:
+                case DatasetFieldConstant.datasetContact:
                     compoundContacts = dsf.getDatasetFieldCompoundValues();
                     break;
                 case DatasetFieldConstant.contributor:
@@ -638,7 +638,7 @@ public class XmlMetadataTemplate {
         }
 
         if (releaseDate != null) {
-            String date = Util.getDateTimeFormat().format(releaseDate);
+            String date = Util.getDateFormat().format(releaseDate);
             datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
 
             attributes.put("dateType", "Available");
@@ -660,6 +660,14 @@ public class XmlMetadataTemplate {
                     }
                 }
                 if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
+                    if(StringUtils.isNotBlank(startDate)) {
+                        Date start = Util.getDateTimeFormat().parse(startDate);
+                        startDate = Util.getDateFormat().format(start);
+                    }
+                    if(StringUtils.isNotBlank(endDate)) {
+                        Date end = Util.getDateTimeFormat().parse(endDate);
+                        endDate = Util.getDateFormat().format(end);
+                    }
                     datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
                     attributes.put("dateType", "Collected");
                     XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, (startDate + "/" + endDate).trim());
@@ -675,14 +683,14 @@ public class XmlMetadataTemplate {
     private void writeLanguage(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
         // Currently not supported. Spec indicates one 'primary' language. Could send
         // the first entry in DatasetFieldConstant.language or send iff there is only
-        // one entry, and/or default to the machine's default lang?
+        // one entry, and/or default to the machine's default lang, or the dataverse metadatalang?
         return;
     }
 
     // 10, ResourceType (with mandatory general type
     // description sub- property) (M)
     private void writeResourceType(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
-        List<ControlledVocabularyValue> kindOfDataValues = new ArrayList<ControlledVocabularyValue>();
+        List<String> kindOfDataValues = new ArrayList<String>();
         Map<String, String> attributes = new HashMap<String, String>();
 
         attributes.put("resourceTypeGeneral", "Dataset");
@@ -691,7 +699,7 @@ public class XmlMetadataTemplate {
             for (DatasetField dsf : dv.getDatasetFields()) {
                 switch (dsf.getDatasetFieldType().getName()) {
                 case DatasetFieldConstant.kindOfData:
-                    kindOfDataValues = dsf.getControlledVocabularyValues();
+                    kindOfDataValues.addAll(dsf.getValues());
                     break;
                 }
             }
@@ -701,8 +709,7 @@ public class XmlMetadataTemplate {
                 xmlw.writeAttribute("resourceTypeGeneral", attributes.get("resourceTypeGeneral"));
                 xmlw.writeEndElement();
             } else {
-                for (ControlledVocabularyValue kindOfDataValue : kindOfDataValues) {
-                    String resourceType = kindOfDataValue.getStrValue();
+                for (String resourceType : kindOfDataValues) {
                     if (StringUtils.isNotBlank(resourceType)) {
                         XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, resourceType);
                     }
@@ -821,14 +828,16 @@ public class XmlMetadataTemplate {
                      * way those two fields are used for all identifier types. The code here is
                      * ~best effort to interpret those fields.
                      */
+                    logger.info("Found relpub: " + pubIdType + " " + identifier + " " + url);
 
                     pubIdType = getCanonicalPublicationType(pubIdType);
-
+logger.info("Canonical type: " + pubIdType);
                     // Prefer url if set, otherwise check identifier
                     String relatedIdentifier = url;
                     if (StringUtils.isBlank(relatedIdentifier)) {
                         relatedIdentifier = identifier;
                     }
+                    logger.info("Related identifier: " + relatedIdentifier);
                     // For types where we understand the protocol, get the canonical form
                     if (pubIdType != null) {
                         switch (pubIdType) {
@@ -836,12 +845,15 @@ public class XmlMetadataTemplate {
                             if (!relatedIdentifier.startsWith("doi:") || relatedIdentifier.startsWith("http")) {
                                 relatedIdentifier = "doi:" + relatedIdentifier;
                             }
+                            logger.info("Intermediate Related identifier: " + relatedIdentifier);
                             try {
                                 GlobalId pid = PidUtil.parseAsGlobalID(relatedIdentifier);
                                 relatedIdentifier = pid.asRawIdentifier();
                             } catch (IllegalArgumentException e) {
+                                logger.warning("Invalid DOI: " + e.getLocalizedMessage());
                                 relatedIdentifier = null;
                             }
+                            logger.info("Final Related identifier: " + relatedIdentifier);
                             break;
                         case "Handle":
                             if (!relatedIdentifier.startsWith("hdl:") || relatedIdentifier.startsWith("http")) {
