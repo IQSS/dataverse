@@ -215,7 +215,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.DATAVERSE_CATEGORY, dataverse.getIndexableCategoryName());
         if (dataverse.isReleased()) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
-            if (FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled()) {
+            if (FeatureFlags.ADD_PUBLICOBJECT_SOLR_FIELD.enabled()) {
                 solrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
             }
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
@@ -882,7 +882,7 @@ public class IndexServiceBean {
 
         if (state.equals(indexableDataset.getDatasetState().PUBLISHED)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
-            if (FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled()) {
+            if (FeatureFlags.ADD_PUBLICOBJECT_SOLR_FIELD.enabled()) {
                 solrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
             }
             // solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE,
@@ -1398,7 +1398,7 @@ public class IndexServiceBean {
                     if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
                         fileSolrDocId = solrDocIdentifierFile + fileEntityId;
                         datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
-                        if (FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled()) {
+                        if (FeatureFlags.ADD_PUBLICOBJECT_SOLR_FIELD.enabled()) {
                             datafileSolrInputDocument.addField(SearchFields.PUBLIC_OBJECT, true);
                         }
                         // datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);

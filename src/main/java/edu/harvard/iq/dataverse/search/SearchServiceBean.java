@@ -1057,7 +1057,7 @@ public class SearchServiceBean {
              * is indexed on the content document itself, rather than a permission 
              * document. An additional join will be added only for any extra, 
              * more restricted groups that the user may be part of.
-             * Note the experimental nature of this optimization. 
+             * **Note the experimental nature of this optimization**. 
              */
             StringBuilder sb = new StringBuilder();
             StringBuilder sbgroups = new StringBuilder();
@@ -1074,7 +1074,6 @@ public class SearchServiceBean {
 
             // An AuthenticatedUser should also be able to see all the content 
             // on which they have direct permissions:              
-            //solrQuery.setParam("q1", SearchFields.DISCOVERABLE_BY + ":" + IndexServiceBean.getGroupPerUserPrefix() + au.getId());
             if (au != null) {
                 groupCounter++; 
                 sbgroups.append(IndexServiceBean.getGroupPerUserPrefix() + au.getId());
@@ -1087,7 +1086,9 @@ public class SearchServiceBean {
                 String groupAlias = group.getAlias();
                 if (groupAlias != null && !groupAlias.isEmpty() && !groupAlias.startsWith("builtIn")) {
                     groupCounter++;
-                    sbgroups.append(" OR ");
+                    if (groupCounter > 1) {
+                        sbgroups.append(" OR ");
+                    }
                     sbgroups.append(IndexServiceBean.getGroupPrefix() + groupAlias);
                 }
             }
