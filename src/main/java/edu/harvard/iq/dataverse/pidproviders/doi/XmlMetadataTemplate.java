@@ -249,8 +249,10 @@ public class XmlMetadataTemplate {
         // familyName, nameIdentifier
         // write all creators
         xmlw.writeStartElement("creators"); // <creators>
-
-        if (!deaccessioned && authorList != null && !authorList.isEmpty()) {
+        if(deaccessioned) {
+            authorList = null;
+        }
+        if (authorList != null && !authorList.isEmpty()) {
             for (DatasetAuthor author : authorList) {
                 String creatorName = StringEscapeUtils.escapeXml10(author.getName().getDisplayValue());
                 String affiliation = null;
