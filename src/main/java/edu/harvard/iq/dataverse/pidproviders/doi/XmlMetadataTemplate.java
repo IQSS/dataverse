@@ -736,23 +736,24 @@ public class XmlMetadataTemplate {
             for (DatasetField dsf : dv.getDatasetFields()) {
                 switch (dsf.getDatasetFieldType().getName()) {
                 case DatasetFieldConstant.kindOfData:
-                    kindOfDataValues.addAll(dsf.getValues());
+                    List<String> vals = dsf.getValues();
+                    for(String val: vals) {
+                        if(StringUtils.isNotBlank(val)) {
+                            kindOfDataValues.add(val);
+                        }
+                    }
                     break;
                 }
             }
-            if (kindOfDataValues.isEmpty()) {
+            if (!kindOfDataValues.isEmpty()) {
+                XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, String.join(", ", kindOfDataValues));
+
+            } else {
                 // Write an attribute only element if there are no kindOfData values.
                 xmlw.writeStartElement("resourceType");
                 xmlw.writeAttribute("resourceTypeGeneral", attributes.get("resourceTypeGeneral"));
                 xmlw.writeEndElement();
-            } else {
-                for (String resourceType : kindOfDataValues) {
-                    if (StringUtils.isNotBlank(resourceType)) {
-                        XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, resourceType);
-                    }
-                }
             }
-
         }
     }
 
