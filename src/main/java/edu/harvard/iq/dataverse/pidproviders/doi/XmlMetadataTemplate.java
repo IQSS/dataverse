@@ -287,7 +287,7 @@ public class XmlMetadataTemplate {
             // Authors unavailable
             xmlw.writeStartElement("creator");
             XmlWriterUtil.writeFullElement(xmlw, "creatorName", AbstractPidProvider.UNAVAILABLE);
-            xmlw.writeEndElement("creator");
+            xmlw.writeEndElement();
         }
         xmlw.writeEndElement(); // </creators>
     }
