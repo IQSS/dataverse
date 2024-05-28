@@ -136,8 +136,6 @@ Use the :ref:`dataverse.spi.exporters.directory` configuration option to specify
 Inventory of External Exporters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Known external exporters are listed below but development takes place at https://github.com/gdcc/dataverse-exporters and you are encouraged to check there for new exporters or contribute one!
-
 In the list below, the name of each exporter is followed by the machine-readable name in parentheses for use in APIs (see :ref:`export-dataset-metadata-api` in the API Guide).
 
 Croissant (``croissant``)
@@ -147,10 +145,12 @@ Croissant (``croissant``)
 
 You can download the Croissant exporter JAR from the following locations:
 
-- released/stable: https://repo1.maven.org/maven2/io/gdcc/croissant/
+- released/stable: https://repo1.maven.org/maven2/io/gdcc/export/croissant/
 - unreleased/snapshot: https://s01.oss.sonatype.org/content/groups/staging/io/gdcc/export/croissant/
 
-The source and additional information can be found in the `"croissant" <https://github.com/gdcc/dataverse-exporters/tree/main/croissant>`_ directory of the exporters repo.
+The Maven Central landing page can be found at https://central.sonatype.com/artifact/io.gdcc.export/croissant
+
+The source code and additional information can be found at https://github.com/gdcc/exporter-croissant where you are welcome to open issues and create pull requests.
 
 MyJSON (``dataverse_json``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -159,7 +159,7 @@ MyJSON is a minimal example exporter that demonstrates how to override a built-i
 
 You can download the MyJSON exporter JAR from https://github.com/gdcc/dataverse-exporters where you should look under "prebuilt-examples" for a file called something like dataverse-spi-export-examples-x.x.x.jar.
 
-The source can be found in the `"dataverse-spi-export-examples" <https://github.com/gdcc/dataverse-exporters/tree/main/dataverse-spi-export-examples>`_ directory of the exporters repo.
+The source can be found in the "dataverse-spi-export-examples" directory of https://github.com/gdcc/dataverse-exporters
 
 Developing New Exporters
 ^^^^^^^^^^^^^^^^^^^^^^^^
