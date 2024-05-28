@@ -1,3 +1,3 @@
-An experimental feature flag called "avoid-expensive-solr-join" has been added to change the way Solr queries are constructed for guest (unauthenticated) users. It is hoped that it will help with performance, reducing load on Solr.
+Two experimental features flag called "add-publicobject-solr-field" and "avoid-expensive-solr-join" have been added to change the way how Solr documents are indexed for public objects, and how Solr queries are constructed to accommodate access to restricted content (drafts, etc.). It is hoped that it will help with performance, especially on large instances and under load.
 
-From a search perspective, it disables IP Groups (collections, datasets, and files will not be discoverable) but it removes an expensive Solr join for the most common users, which are guests. After turning on this feature, you must perform a full reindex.
+Before the search feature flag ("avoid-expensive...") can be turned on, the indexing flag must be enabled, and a full reindex performed. Otherwise publicly available objects are NOT going to be shown in search results.
