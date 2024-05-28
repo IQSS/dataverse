@@ -100,30 +100,41 @@ public class XmlMetadataTemplate {
         String metadataLanguage = null; // when set, otherwise = language?
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         xmlw.writeStartElement("resource");
-
+        boolean deaccessioned=false;
+        if(dvObject instanceof Dataset d) {
+            deaccessioned=d.isDeaccessioned();
+        } else if (dvObject instanceof DataFile df) {
+            deaccessioned = df.isDeaccessioned();
+        }
         xmlw.writeDefaultNamespace(XML_NAMESPACE);
         xmlw.writeAttribute("xmlns:xsi", XML_XSI);
         xmlw.writeAttribute("xsi:schemaLocation", XML_SCHEMA_LOCATION);
 
         writeIdentifier(xmlw, dvObject);
-        writeCreators(xmlw, doiMetadata.getAuthors());
-        writeTitles(xmlw, dvObject, language);
-        writePublisher(xmlw, dvObject);
-        writePublicationYear(xmlw, dvObject);
-        writeSubjects(xmlw, dvObject);
-        writeContributors(xmlw, dvObject);
-        writeDates(xmlw, dvObject);
-        writeLanguage(xmlw, dvObject);
+        writeCreators(xmlw, doiMetadata.getAuthors(), deaccessioned);
+        writeTitles(xmlw, dvObject, language, deaccessioned);
+        writePublisher(xmlw, dvObject, deaccessioned);
+        writePublicationYear(xmlw, dvObject, deaccessioned);
+        if (!deaccessioned) {
+            writeSubjects(xmlw, dvObject);
+            writeContributors(xmlw, dvObject);
+            writeDates(xmlw, dvObject);
+            writeLanguage(xmlw, dvObject);
+        }
         writeResourceType(xmlw, dvObject);
-        writeAlternateIdentifiers(xmlw, dvObject);
-        writeRelatedIdentifiers(xmlw, dvObject);
-        writeSize(xmlw, dvObject);
-        writeFormats(xmlw, dvObject);
-        writeVersion(xmlw, dvObject);
-        writeAccessRights(xmlw, dvObject);
-        writeDescriptions(xmlw, dvObject);
-        writeGeoLocations(xmlw, dvObject);
-        writeFundingReferences(xmlw, dvObject);
+        if (!deaccessioned) {
+            writeAlternateIdentifiers(xmlw, dvObject);
+            writeRelatedIdentifiers(xmlw, dvObject);
+            writeSize(xmlw, dvObject);
+            writeFormats(xmlw, dvObject);
+            writeVersion(xmlw, dvObject);
+            writeAccessRights(xmlw, dvObject);
+        }
+        writeDescriptions(xmlw, dvObject, deaccessioned);
+        if (!deaccessioned) {
+            writeGeoLocations(xmlw, dvObject);
+            writeFundingReferences(xmlw, dvObject);
+        }
         xmlw.writeEndElement();
         xmlw.flush();
     }
@@ -140,23 +151,29 @@ public class XmlMetadataTemplate {
      * @return
      * @throws XMLStreamException
      */
-    private void writeTitles(XMLStreamWriter xmlw, DvObject dvObject, String language) throws XMLStreamException {
-        String title = doiMetadata.getTitle();
+    private void writeTitles(XMLStreamWriter xmlw, DvObject dvObject, String language, boolean deaccessioned) throws XMLStreamException {
+        String title = null;
         String subTitle = null;
         List<String> altTitles = new ArrayList<>();
-        // Only Datasets can have a subtitle or alternative titles
-        if (dvObject instanceof Dataset d) {
-            DatasetVersion dv = d.getLatestVersionForCopy();
-            Optional<DatasetField> subTitleField = dv.getDatasetFields().stream().filter(f -> f.getDatasetFieldType().getName().equals(DatasetFieldConstant.subTitle)).findFirst();
-            if (subTitleField.isPresent()) {
-                subTitle = subTitleField.get().getValue();
-            }
-            Optional<DatasetField> altTitleField = dv.getDatasetFields().stream().filter(f -> f.getDatasetFieldType().getName().equals(DatasetFieldConstant.alternativeTitle)).findFirst();
-            if (altTitleField.isPresent()) {
-                altTitles = altTitleField.get().getValues();
-            }
-        }
 
+        if (!deaccessioned) {
+            doiMetadata.getTitle();
+
+            // Only Datasets can have a subtitle or alternative titles
+            if (dvObject instanceof Dataset d) {
+                DatasetVersion dv = d.getLatestVersionForCopy();
+                Optional<DatasetField> subTitleField = dv.getDatasetFields().stream().filter(f -> f.getDatasetFieldType().getName().equals(DatasetFieldConstant.subTitle)).findFirst();
+                if (subTitleField.isPresent()) {
+                    subTitle = subTitleField.get().getValue();
+                }
+                Optional<DatasetField> altTitleField = dv.getDatasetFields().stream().filter(f -> f.getDatasetFieldType().getName().equals(DatasetFieldConstant.alternativeTitle)).findFirst();
+                if (altTitleField.isPresent()) {
+                    altTitles = altTitleField.get().getValues();
+                }
+            }
+        } else {
+            title = AbstractDOIProvider.UNAVAILABLE;
+        }
         if (StringUtils.isNotBlank(title) || StringUtils.isNotBlank(subTitle) || (altTitles != null && !String.join("", altTitles).isBlank())) {
             xmlw.writeStartElement("titles");
             if (StringUtils.isNotBlank(title)) {
@@ -227,13 +244,13 @@ public class XmlMetadataTemplate {
      *            - the list of authors
      * @throws XMLStreamException
      */
-    public void writeCreators(XMLStreamWriter xmlw, List<DatasetAuthor> authorList) throws XMLStreamException {
+    public void writeCreators(XMLStreamWriter xmlw, List<DatasetAuthor> authorList, boolean deaccessioned) throws XMLStreamException {
         // creators -> creator -> creatorName with nameType attribute, givenName,
         // familyName, nameIdentifier
         // write all creators
         xmlw.writeStartElement("creators"); // <creators>
 
-        if (authorList != null && !authorList.isEmpty()) {
+        if (!deaccessioned && authorList != null && !authorList.isEmpty()) {
             for (DatasetAuthor author : authorList) {
                 String creatorName = StringEscapeUtils.escapeXml10(author.getName().getDisplayValue());
                 String affiliation = null;
@@ -267,18 +284,21 @@ public class XmlMetadataTemplate {
         xmlw.writeEndElement(); // </creators>
     }
 
-    private void writePublisher(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
+    private void writePublisher(XMLStreamWriter xmlw, DvObject dvObject, boolean deaccessioned) throws XMLStreamException {
         // publisher should already be non null - :unav if it wasn't available
+        if(deaccessioned) {
+            doiMetadata.setPublisher(AbstractPidProvider.UNAVAILABLE);
+        }
         XmlWriterUtil.writeFullElement(xmlw, "publisher", doiMetadata.getPublisher());
     }
 
-    private void writePublicationYear(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
+    private void writePublicationYear(XMLStreamWriter xmlw, DvObject dvObject, boolean deaccessioned) throws XMLStreamException {
         // Can't use "UNKNOWN" here because DataCite will respond with "[facet
         // 'pattern'] the value 'unknown' is not accepted by the pattern '[\d]{4}'"
         String pubYear = "9999";
         // FIXME: Investigate why this.publisherYear is sometimes null now that pull
         // request #4606 has been merged.
-        if (doiMetadata.getPublisherYear() != null) {
+        if (! deaccessioned && (doiMetadata.getPublisherYear() != null)) {
             // Added to prevent a NullPointerException when trying to destroy datasets when
             // using DataCite rather than EZID.
             pubYear = doiMetadata.getPublisherYear();
@@ -926,6 +946,7 @@ logger.info("Canonical type: " + pubIdType);
 
                     attributes.clear();
                     attributes.put("relationType", "IsPartOf");
+                    attributes.put("relatedIdentifierType", pubIdType);
                     relatedIdentifiersWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "relatedIdentifiers", relatedIdentifiersWritten);
                     XmlWriterUtil.writeFullElementWithAttributes(xmlw, "relatedIdentifier", attributes, pid.asRawIdentifier());
                 }
@@ -1082,20 +1103,24 @@ logger.info("Canonical type: " + pubIdType);
         xmlw.writeEndElement(); // </rightsList>
     }
 
-    private void writeDescriptions(XMLStreamWriter xmlw, DvObject dvObject) throws XMLStreamException {
+    private void writeDescriptions(XMLStreamWriter xmlw, DvObject dvObject, boolean deaccessioned) throws XMLStreamException {
         // descriptions -> description with descriptionType attribute
         boolean descriptionsWritten = false;
         List<String> descriptions = null;
         DatasetVersion dv = null;
-
-        if (dvObject instanceof Dataset d) {
-            dv = d.getLatestVersionForCopy();
-            descriptions = dv.getDescriptions();
-        } else if (dvObject instanceof DataFile df) {
-            String description = df.getDescription();
-            if (description != null) {
-                descriptions = new ArrayList<String>();
-                descriptions.add(description);
+        if(deaccessioned) {
+            descriptions = new ArrayList<String>();
+            descriptions.add(AbstractDOIProvider.UNAVAILABLE);
+        } else {
+            if (dvObject instanceof Dataset d) {
+                dv = d.getLatestVersionForCopy();
+                descriptions = dv.getDescriptions();
+            } else if (dvObject instanceof DataFile df) {
+                String description = df.getDescription();
+                if (description != null) {
+                    descriptions = new ArrayList<String>();
+                    descriptions.add(description);
+                }
             }
         }
         Map<String, String> attributes = new HashMap<String, String>();
