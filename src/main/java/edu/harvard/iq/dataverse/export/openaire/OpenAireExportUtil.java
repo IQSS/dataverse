@@ -437,7 +437,7 @@ public class OpenAireExportUtil {
                         for (String subject : fieldDTO.getMultipleVocab()) {
                             if (StringUtils.isNotBlank(subject)) {
                                 subject_check = writeOpenTag(xmlw, "subjects", subject_check);
-                                writeSubjectElement(xmlw, null, null, subject, language);
+                                writeSubjectElement(xmlw, null, null, null, subject, language);
                             }
                         }
                     }
@@ -470,8 +470,7 @@ public class OpenAireExportUtil {
 
                             if (StringUtils.isNotBlank(subject)) {
                                 subject_check = writeOpenTag(xmlw, "subjects", subject_check);
-                                // we prioritize the keywordTermURI metadata to populate schemeURI
-                                writeSubjectElement(xmlw, subjectScheme, StringUtils.isNotBlank(keywordTermURI) ? keywordTermURI : keywordVocabURI, subject, language);
+                                writeSubjectElement(xmlw, subjectScheme, keywordTermURI, keywordVocabURI, subject, language);
                             }
                         }
                     }
@@ -499,7 +498,7 @@ public class OpenAireExportUtil {
 
                             if (StringUtils.isNotBlank(subject)) {
                                 subject_check = writeOpenTag(xmlw, "subjects", subject_check);
-                                writeSubjectElement(xmlw, subjectScheme, schemeURI, subject, language);
+                                writeSubjectElement(xmlw, subjectScheme, null, schemeURI, subject, language);
                             }
                         }
                     }
@@ -519,7 +518,7 @@ public class OpenAireExportUtil {
      * @param language
      * @throws XMLStreamException
      */
-    private static void writeSubjectElement(XMLStreamWriter xmlw, String subjectScheme, String schemeURI, String value, String language) throws XMLStreamException {
+    private static void writeSubjectElement(XMLStreamWriter xmlw, String subjectScheme, String valueURI, String schemeURI, String value, String language) throws XMLStreamException {
         // write a subject
         Map<String, String> subject_map = new HashMap<String, String>();
 
@@ -529,6 +528,9 @@ public class OpenAireExportUtil {
 
         if (StringUtils.isNotBlank(subjectScheme)) {
             subject_map.put("subjectScheme", subjectScheme);
+        }
+        if (StringUtils.isNotBlank(valueURI)) {
+            subject_map.put("valueURI", valueURI);
         }
         if (StringUtils.isNotBlank(schemeURI)) {
             subject_map.put("schemeURI", schemeURI);
