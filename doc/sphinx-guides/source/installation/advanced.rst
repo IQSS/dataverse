@@ -152,6 +152,20 @@ The Maven Central landing page can be found at https://central.sonatype.com/arti
 
 The source code and additional information can be found at https://github.com/gdcc/exporter-croissant where you are welcome to open issues and create pull requests.
 
+Debug (``debug``)
+~~~~~~~~~~~~~~~~~
+
+The "Debug" exporter is intended to help developers of future external exporters. It produces a JSON file that contains all available formats that are available to exporter authors such as datasetJson, datasetORE, datasetSchemaDotOrg, etc.
+
+You can download the Debug exporter JAR from the following locations:
+
+- released/stable: https://repo1.maven.org/maven2/io/gdcc/export/debug/
+- unreleased/snapshot: https://s01.oss.sonatype.org/content/groups/staging/io/gdcc/export/debug/
+
+The Maven Central landing page can be found at https://central.sonatype.com/artifact/io.gdcc.export/debug
+
+The source code and additional information can be found at https://github.com/gdcc/exporter-debug where you are welcome to open issues and create pull requests.
+
 MyJSON (``dataverse_json``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
