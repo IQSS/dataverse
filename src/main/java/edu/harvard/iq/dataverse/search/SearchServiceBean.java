@@ -1093,22 +1093,20 @@ public class SearchServiceBean {
                 }
             }
             
-            if (groupCounter > 1)
-            {
+            if (groupCounter > 1) {
                 // If there is more than one group, the parentheses must be added:
                 sbgroups.insert(0, "(");
                 sbgroups.append(")");
             }
             
-            if (groupCounter > 0)
-            {
+            if (groupCounter > 0) {
                 // If there are any groups for this user, an extra join must be
                 // added to the query, and the extra sub-query must be added to 
                 // the combined Solr query:
                 sb.append(" OR {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1}");
                 // Add the subquery to the combined Solr query: 
                 solrQuery.setParam("q1", SearchFields.DISCOVERABLE_BY + ":" + sbgroups.toString());
-                logger.info("The sub-query q1 set to "+sbgroups.toString());
+                logger.info("The sub-query q1 set to " + SearchFields.DISCOVERABLE_BY + ":" + sbgroups.toString());
             }
             
             String ret = sb.toString();
