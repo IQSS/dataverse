@@ -37,14 +37,27 @@ public enum FeatureFlags {
      */
     API_BEARER_AUTH("api-bearer-auth"),
     /**
-     * For Guest users, don't use a join when searching Solr. Disables the IP
-     * Groups feature from a search perspective. Requires a reindex.
+     * For published (public) objects, don't use a join when searching Solr. 
+     * Experimental! Requires a reindex with the following feature flag enabled,
+     * in order to add the boolean PublicObject_b:true field to all the public
+     * Solr documents. 
      *
      * @apiNote Raise flag by setting
      * "dataverse.feature.avoid-expensive-solr-join"
-     * @since Dataverse @TODO:
+     * @since Dataverse 6.3
      */
     AVOID_EXPENSIVE_SOLR_JOIN("avoid-expensive-solr-join"),
+    /**
+     * With this flag enabled, the boolean field PublicObject_b:true will be 
+     * added to all the indexed Solr documents for publicly-available collections,
+     * datasets and files. This flag makes it possible to rely on it in searches,
+     * instead of the very expensive join (the feature flag above).
+     *
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.add-publicobject-solr-field"
+     * @since Dataverse 6.3
+     */
+    ADD_PUBLICOBJECT_SOLR_FIELD("add-publicobject-solr-field"),
     ;
     
     final String flag;
