@@ -156,10 +156,12 @@ See :ref:`list-role-assignments-on-a-dataverse-api`.
 
 .. _openapi:
 
-Getting the OpenAPI Specification
----------------------------------
+Getting the OpenAPI Document
+----------------------------
 
-You can access our OpenAPI specification using the ``/openapi`` endpoint. The default format is YAML if no parameter is provided, but you can also obtain the JSON version by either passing ``format=json`` as a query parameter or by sending ``Accept:application/json`` (case-sensitive) as a header.
+You can access our `OpenAPI document`_ using the ``/openapi`` endpoint. The default format is YAML if no parameter is provided, but you can also obtain the JSON version by either passing ``format=json`` as a query parameter or by sending ``Accept:application/json`` (case-sensitive) as a header.
+
+.. _OpenAPI document: https://spec.openapis.org/oas/latest.html#openapi-document
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -175,6 +177,8 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl "https://demo.dataverse.org/openapi?format=json"
+
+We are aware that our OpenAPI document is not perfect. You can find more information about validating the document under :ref:`openapi-dev` in the Developer Guide.
 
 Beyond "Getting Started" Tasks
 ------------------------------
