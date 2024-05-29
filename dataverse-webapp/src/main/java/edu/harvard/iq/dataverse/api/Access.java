@@ -473,7 +473,6 @@ public class Access extends AbstractApiBean {
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
-    @ApiWriteOperation
     public Response datafiles(@PathParam("fileIds") String fileIds, @QueryParam("gbrecs") Boolean gbrecs,
                               @Context UriInfo uriInfo, @Context HttpServletResponse response) throws WebApplicationException {
         assertOrThrowBadRequest(() -> StringUtils.isNotBlank(fileIds));

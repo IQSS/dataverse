@@ -483,7 +483,6 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{id}/versions/{versionId}/files/download")
     @Produces({"application/zip"})
-    @ApiWriteOperation
     public Response getVersionFiles(@PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("gbrecs") boolean gbrecs,
                                     @Context HttpServletResponse response, @Context UriInfo uriInfo) {
 

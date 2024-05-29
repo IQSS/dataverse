@@ -56,4 +56,9 @@ public class DownloadDatasetLog {
     public void setDownloadDate(Date downloadDate) {
         this.downloadDate = downloadDate;
     }
+
+    @Override
+    public String toString() {
+        return "DownloadDatasetLog [id=" + id + ", datasetId=" + datasetId + ", downloadDate=" + downloadDate + ']';
+    }
 }

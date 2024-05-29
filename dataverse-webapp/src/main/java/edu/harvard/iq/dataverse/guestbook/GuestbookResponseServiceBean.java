@@ -19,7 +19,9 @@ import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -92,6 +94,9 @@ public class GuestbookResponseServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+
+    @EJB
+    protected SystemConfig systemConfig;
 
     public List<GuestbookResponse> findAll() {
         return em.createQuery("select object(o) from GuestbookResponse as o order by o.responseTime desc", GuestbookResponse.class).getResultList();
@@ -701,7 +706,11 @@ public class GuestbookResponseServiceBean {
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void save(GuestbookResponse guestbookResponse) {
-        em.persist(guestbookResponse);
+        if (systemConfig.isReadonlyMode()) {
+            logger.info(guestbookResponse.toString());
+        } else {
+            em.persist(guestbookResponse);
+        }
     }
 
 

@@ -35,12 +35,8 @@ public class CreateGuestbookResponseCommand extends AbstractVoidCommand {
     protected void executeImpl(CommandContext ctxt) {
         Timestamp createDate = new Timestamp(new Date().getTime());
         response.setResponseTime(createDate);
-        
-        if (ctxt.systemConfig().isReadonlyMode()) {
-            log.info(response.toString());
-        } else {
-            ctxt.responses().save(response);
-        }
+
+        ctxt.responses().save(response);
     }
 
 }
