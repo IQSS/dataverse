@@ -5,6 +5,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.*;
+
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -59,10 +63,22 @@ public class OpenAPI extends HttpServlet {
         } else  if (YAML_FORMAT.equals(format)){
             resp.setContentType(MediaType.TEXT_PLAIN_TYPE.toString());
         } else {
+            
             List<String> args = Arrays.asList(format);
             String bundleResponse = BundleUtil.getStringFromBundle("openapi.exception.invalid.format", args);
-            resp.sendError(Response.Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(),
-                            bundleResponse);
+
+            JsonObject errorResponse = Json.createObjectBuilder()
+                .add("status", "ERROR")
+                .add("code", HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE)
+                .add("message", bundleResponse)
+                .build();
+
+            resp.setContentType(MediaType.APPLICATION_JSON_TYPE.toString());
+            resp.setStatus(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
+
+            PrintWriter responseWriter = resp.getWriter();
+            responseWriter.println(errorResponse.toString());
+            responseWriter.flush();
             return;
         }
 

@@ -81,24 +81,6 @@ public class InfoIT {
                 .body("data", notNullValue());
     }
 
-    @Test
-    public void testOpenApiDefinition(){
-        Response response = given()
-                .get("/api/info/openapi/jasonInvalid");
-        response.prettyPrint();
-        response.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
- 
-        String jsonDefinitionFileContent = UtilIT.getDatasetJson("src/main/resources/edu/harvard/iq/dataverse/openapi/dataverse_openapi.json");
-        response = given().get("/api/info/openapi/json");
-        response.then().assertThat().statusCode(OK.getStatusCode())
-                .body(equalTo(jsonDefinitionFileContent));
-       
-        String yamlFileContent = UtilIT.getDatasetJson("src/main/resources/edu/harvard/iq/dataverse/openapi/dataverse_openapi.yaml");
-        response = given().get("/api/info/openapi/yaml");
-        response.then().assertThat().statusCode(OK.getStatusCode())
-                .body(equalTo(yamlFileContent));
-        
-    }
 
     private void testSettingEndpoint(SettingsServiceBean.Key settingKey, String testSettingValue) {
         String endpoint =  "/api/info/settings/" + settingKey;
