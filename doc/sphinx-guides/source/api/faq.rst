@@ -61,7 +61,7 @@ It is possible to get a complete list of API functionality in Swagger/OpenAPI fo
 Is There a Changelog of API Functionality That Has Been Added Over Time?
 ------------------------------------------------------------------------
 
-No, but there probably should be. If you have suggestions for how it should look, please create an issue at https://github.com/IQSS/dataverse/issues
+Changes to the API that don't break anything can be found in the `release notes <https://github.com/IQSS/dataverse/releases>`_ of each release. Breaking changes are documented in :doc:`changelog`.
 
 .. _no-api:
 
