@@ -53,7 +53,7 @@ public class OpenAPI extends HttpServlet {
         /*
          * We currently support only JSON or YAML being the second the default
          * if no format is specified, if a different format is specified we return 
-         * UNSUPPORTED_MEDIA_TYPE (415) specifing that the format is not supported 
+         * UNSUPPORTED_MEDIA_TYPE (415) specifying that the format is not supported
          */
 
         format = format == null ? YAML_FORMAT : format.toLowerCase();
