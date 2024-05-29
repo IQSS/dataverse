@@ -8,7 +8,6 @@ import java.util.logging.*;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -18,7 +17,7 @@ import edu.harvard.iq.dataverse.api.Info;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 @WebServlet("/openapi")
-public class OpenAPI extends HttpServlet {
+public class OpenApi extends HttpServlet {
 
     private static final Logger logger = Logger.getLogger(Info.class.getCanonicalName());
 
