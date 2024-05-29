@@ -151,498 +151,483 @@
 	language	Ainu	ain	9	ain
 	language	Akan	aka	10	aka	ak
 	language	Akkadian	akk	11	akk
-	language	Albanian	alb	12	alb	sqi	sq
-	language	Albanian	sqi	13	sqi	alb	sq
-	language	Aleut	ale	14	ale
-	language	Algonquian languages	alg	15	alg
-	language	Altaic languages	tut	16	tut
-	language	Amharic	amh	17	amh	am
-	language	Angika	anp	18	anp
-	language	Apache languages	apa	19	apa
-	language	Arabic	ara	20	ara	ar
-	language	Aragonese	arg	21	arg	an
-	language	Arapaho	arp	22	arp
-	language	Arawak	arw	23	arw
-	language	Armenian	arm	24	arm	hye	hy
-	language	Armenian	hye	25	hye	arm	hy
-	language	Aromanian, Arumanian, Macedo-Romanian	rup	26	rup
-	language	Artificial languages	art	27	art
-	language	Assamese	asm	28	asm	as
-	language	Asturian, Bable, Leonese, Asturleonese	ast	29	ast
-	language	Athapascan languages	ath	30	ath
-	language	Australian languages	aus	31	aus
-	language	Austronesian languages	map	32	map
-	language	Avaric	ava	33	ava	av
-	language	Avestan	ave	34	ave	ae
-	language	Awadhi	awa	35	awa
-	language	Aymara	aym	36	aym	ay
-	language	Azerbaijani	aze	37	aze	az
-	language	Balinese	ban	38	ban
-	language	Baltic languages	bat	39	bat
-	language	Baluchi	bal	40	bal
-	language	Bambara	bam	41	bam	bm
-	language	Bamileke languages	bai	42	bai
-	language	Banda languages	bad	43	bad
-	language	Bantu languages	bnt	44	bnt
-	language	Basa	bas	45	bas
-	language	Bashkir	bak	46	bak	ba
-	language	Basque	baq	47	baq	eus	eu
-	language	Basque	eus	48	eus	baq	eu
-	language	Batak languages	btk	49	btk
-	language	Beja, Bedawiyet	bej	50	bej
-	language	Belarusian	bel	51	bel	be
-	language	Bemba	bem	52	bem
-	language	Bengali, Bangla	ben	53	ben	bn	Bengali	Bangla
-	language	Berber languages	ber	54	ber
-	language	Bhojpuri	bho	55	bho
-	language	Bihari	bih	56	bih	bh
-	language	Bikol	bik	57	bik
-	language	Bini, Edo	bin	58	bin
-	language	Bislama	bis	59	bis	bi
-	language	Blin, Bilin	byn	60	byn
-	language	Blissymbols, Blissymbolics, Bliss	zbl	61	zbl
-	language	Bosnian	bos	62	bos	bs
-	language	Braj	bra	63	bra
-	language	Breton	bre	64	bre	br
-	language	Buginese	bug	65	bug
-	language	Bulgarian	bul	66	bul	bg
-	language	Buriat	bua	67	bua
-	language	Burmese	bur	68	bur	mya	my
-	language	Burmese	mya	69	mya	bur	my
-	language	Caddo	cad	70	cad
-	language	Catalan,Valencian	cat	71	cat	ca	Catalan	Valencian
-	language	Caucasian languages	cau	72	cau
-	language	Cebuano	ceb	73	ceb
-	language	Celtic languages	cel	74	cel
-	language	Central American Indian languages	cai	75	cai
-	language	Chagatai	chg	76	chg
-	language	Chamic languages	cmc	77	cmc
-	language	Chamorro	cha	78	cha	ch
-	language	Chechen	che	79	che	ce
-	language	Cherokee	chr	80	chr
-	language	Cheyenne	chy	81	chy
-	language	Chibcha	chb	82	chb
-	language	Chichewa, Chewa, Nyanja	nya	83	nya	ny	Chichewa	Chewa	Nyanja
-	language	Chinese	chi	84	chi	zho	zh
-	language	Chinese	zho	85	zho	chi	zh
-	language	Chinook jargon	chn	86	chn
-	language	Chipewyan, Dene Suline	chp	87	chp
-	language	Choctaw	cho	88	cho
-	language	Chuukese	chk	89	chk
-	language	Chuvash	chv	90	chv	cv
-	language	Classical Newari, Old Newari, Classical Nepal Bhasa	nwc	91	nwc
-	language	Classical Syriac	syc	92	syc
-	language	Coptic	cop	93	cop
-	language	Cornish	cor	94	cor	kw
-	language	Corsican	cos	95	cos	co
-	language	Cree	cre	96	cre	cr
-	language	Creek	mus	97	mus
-	language	Creoles and pidgins	crp	98	crp
-	language	Creoles and pidgins, English based	cpe	99	cpe
-	language	Creoles and pidgins, French-based	cpf	100	cpf
-	language	Creoles and pidgins, Portuguese-based	cpp	101	cpp
-	language	Crimean Tatar, Crimean Turkish	crh	102	crh
-	language	Croatian	hrv	103	hrv	src	hr
-	language	Cushitic languages	cus	104	cus
-	language	Czech	ces	105	ces	cze	cs
-	language	Czech	cze	106	cze	ces	cs
-	language	Dakota	dak	107	dak
-	language	Danish	dan	108	dan	da
-	language	Dargwa	dar	109	dar
-	language	Delaware	del	110	del
-	language	Dinka	din	111	din
-	language	Divehi, Dhivehi, Maldivian	div	112	div	dv	Divehi	Dhivehi	Maldivian
-	language	Dogri	doi	113	doi
-	language	Dogrib	dgr	114	dgr
-	language	Dravidian languages	dra	115	dra
-	language	Duala	dua	116	dua
-	language	Dutch	nld	117	nld	dut	nl
-	language	Dutch, Flemish	dut	118	dut	nld	nl
-	language	Dutch, Middle (ca.1050-1350)	dum	119	dum
-	language	Dyula	dyu	120	dyu
-	language	Dzongkha	dzo	121	dzo	dz
-	language	Eastern Frisian	frs	122	frs
-	language	Efik	efi	123	efi
-	language	Egyptian (Ancient)	egy	124	egy
-	language	Ekajuk	eka	125	eka
-	language	Elamite	elx	126	elx
-	language	English	eng	127	eng	en
-	language	English, Middle (1100-1500)	enm	128	enm
-	language	English, Old (ca.450-1100)	ang	129	ang
-	language	Erzya	myv	130	myv
-	language	Esperanto	epo	131	epo	eo
-	language	Estonian	est	132	est	et
-	language	Ewe	ewe	133	ewe	ee
-	language	Ewondo	ewo	134	ewo
-	language	Fang	fan	135	fan
-	language	Fanti	fat	136	fat
-	language	Faroese	fao	137	fao	fo
-	language	Fijian	fij	138	fij	fj
-	language	Filipino, Pilipino	fil	139	fil
-	language	Finnish	fin	140	fin	fi
-	language	Finno-Ugrian languages	fiu	141	fiu
-	language	Fon	fon	142	fon
-	language	French	fra	143	fra	fre	fr
-	language	French	fre	144	fre	fra	fr
-	language	French, Middle (ca.1400-1600)	frm	145	frm
-	language	French, Old (842-ca.1400)	fro	146	fro
-	language	Friulian	fur	147	fur
-	language	Fula, Fulah, Pulaar, Pular	ful	148	ful	ff	Fula	Fulah	Pulaar	Pular
-	language	Ga	gaa	149	gaa
-	language	Galibi Carib	car	150	car
-	language	Galician	glg	151	glg	gl
-	language	Ganda	lug	152	lug	lg
-	language	Gayo	gay	153	gay
-	language	Gbaya	gba	154	gba
-	language	Geez	gez	155	gez
-	language	Georgian	geo	156	geo	kat	ka
-	language	Georgian	kat	157	kat	geo	ka
-	language	German	deu	158	deu	ger	de
-	language	German	ger	159	ger	deu	de
-	language	German, Middle High (ca.1050-1500)	gmh	160	gmh
-	language	German, Old High (ca.750-1050)	goh	161	goh
-	language	Germanic languages	gem	162	gem
-	language	Gilbertese	gil	163	gil
-	language	Gondi	gon	164	gon
-	language	Gorontalo	gor	165	gor
-	language	Gothic	got	166	got
-	language	Grebo	grb	167	grb
-	language	Greek (modern)	ell	168	ell	gre	el	Greek
-	language	Greek, Ancient (to 1453)	grc	169	grc
-	language	Greek, Modern (1453-)	gre	170	gre	ell	el
-	language	Guaraní	grn	171	grn	gn
-	language	Gujarati	guj	172	guj	gu
-	language	Gwich'in	gwi	173	gwi
-	language	Haida	hai	174	hai
-	language	Haitian, Haitian Creole	hat	175	hat	ht	Haitian	Haitian Creole
-	language	Hausa	hau	176	hau	ha
-	language	Hawaiian	haw	177	haw
-	language	Hebrew (modern)	heb	178	heb	he
-	language	Herero	her	179	her	hz
-	language	Hiligaynon	hil	180	hil
-	language	Himachali languages, Western Pahari languages	him	181	him
-	language	Hindi	hin	182	hin	hi
-	language	Hiri Motu	hmo	183	hmo	ho
-	language	Hittite	hit	184	hit
-	language	Hmong, Mong	hmn	185	hmn
-	language	Hungarian	hun	186	hun	hu
-	language	Hupa	hup	187	hup
-	language	Iban	iba	188	iba
-	language	Icelandic	ice	189	ice	isl	is
-	language	Icelandic	isl	190	isl	ice	is
-	language	Ido	ido	191	ido	io
-	language	Igbo	ibo	192	ibo	ig
-	language	Ijo languages	ijo	193	ijo
-	language	Iloko	ilo	194	ilo
-	language	Inari Sami	smn	195	smn
-	language	Indic languages	inc	196	inc
-	language	Indo-European languages	ine	197	ine
-	language	Indonesian	ind	198	ind	id
-	language	Ingush	inh	199	inh
-	language	Interlingua	ina	200	ina	ia
-	language	Interlingue	ile	201	ile	ie
-	language	Inuktitut	iku	202	iku	iu
-	language	Inupiaq	ipk	203	ipk	ik
-	language	Iranian languages	ira	204	ira
-	language	Irish	gle	205	gle	ga
-	language	Irish, Middle (900-1200)	mga	206	mga
-	language	Irish, Old (to 900)	sga	207	sga
-	language	Iroquoian languages	iro	208	iro
-	language	Italian	ita	209	ita	it
-	language	Japanese	jpn	210	jpn	ja
-	language	Javanese	jav	211	jav	jv
-	language	Judeo-Arabic	jrb	212	jrb
-	language	Judeo-Persian	jpr	213	jpr
-	language	Kabardian	kbd	214	kbd
-	language	Kabyle	kab	215	kab
-	language	Kachin, Jingpho	kac	216	kac
-	language	Kalaallisut, Greenlandic	kal	217	kal	kl	Kalaallisut	Greenlandic
-	language	Kalmyk, Oirat	xal	218	xal
-	language	Kamba	kam	219	kam
-	language	Kannada	kan	220	kan	kn
-	language	Kanuri	kau	221	kau	kr
-	language	Kara-Kalpak	kaa	222	kaa
-	language	Karachay-Balkar	krc	223	krc
-	language	Karelian	krl	224	krl
-	language	Karen languages	kar	225	kar
-	language	Kashmiri	kas	226	kas	ks
-	language	Kashubian	csb	227	csb
-	language	Kawi	kaw	228	kaw
-	language	Kazakh	kaz	229	kaz	kk
-	language	Khasi	kha	230	kha
-	language	Khmer	khm	231	khm	km
-	language	Khoisan languages	khi	232	khi
-	language	Khotanese, Sakan	kho	233	kho
-	language	Kikuyu, Gikuyu	kik	234	kik	ki	Kikuyu	Gikuyu
-	language	Kimbundu	kmb	235	kmb
-	language	Kinyarwanda	kin	236	kin	rw
-	language	Kirundi	run	237	run	rn
-	language	Klingon, tlhIngan-Hol	tlh	238	tlh
-	language	Komi	kom	239	kom	kv
-	language	Kongo	kon	240	kon	kg
-	language	Konkani	kok	241	kok
-	language	Korean	kor	242	kor	ko
-	language	Kosraean	kos	243	kos
-	language	Kpelle	kpe	244	kpe
-	language	Kru languages	kro	245	kro
-	language	Kumyk	kum	246	kum
-	language	Kurdish	kur	247	kur	ku
-	language	Kurukh	kru	248	kru
-	language	Kutenai	kut	249	kut
-	language	Kwanyama, Kuanyama	kua	250	kua	kj	Kwanyama	Kuanyama
-	language	Kyrgyz	kir	251	kir	ky	Kirghiz
-	language	Ladino	lad	252	lad
-	language	Lahnda	lah	253	lah
-	language	Lamba	lam	254	lam
-	language	Land Dayak languages	day	255	day
-	language	Lao	lao	256	lao	lo
-	language	Latin	lat	257	lat	la
-	language	Latvian	lav	258	lav	lv
-	language	Lezghian	lez	259	lez
-	language	Limburgish, Limburgan, Limburger	lim	260	lim	li	Limburgish	Limburgan	Limburger
-	language	Lingala	lin	261	lin	ln
-	language	Lithuanian	lit	262	lit	lt
-	language	Lojban	jbo	263	jbo
-	language	Low German, Low Saxon, German, Low, Saxon, Low	nds	264	nds
-	language	Lower Sorbian	dsb	265	dsb
-	language	Lozi	loz	266	loz
-	language	Luba-Katanga	lub	267	lub	lu
-	language	Luba-Lulua	lua	268	lua
-	language	Luiseno	lui	269	lui
-	language	Lule Sami	smj	270	smj
-	language	Lunda	lun	271	lun
-	language	Luo (Kenya and Tanzania)	luo	272	luo
-	language	Lushai	lus	273	lus
-	language	Luxembourgish, Letzeburgesch	ltz	274	ltz	lb	Luxembourgish	Letzeburgesch
-	language	Macedonian	mac	275	mac	mkd	mk
-	language	Macedonian	mkd	276	mkd	mac	mk
-	language	Madurese	mad	277	mad
-	language	Magahi	mag	278	mag
-	language	Maithili	mai	279	mai
-	language	Makasar	mak	280	mak
-	language	Malagasy	mlg	281	mlg	mg
-	language	Malay	may	282	may	msa	ms
-	language	Malay	msa	283	msa	may	ms
-	language	Malayalam	mal	284	mal	ml
-	language	Maltese	mlt	285	mlt	mt
-	language	Manchu	mnc	286	mnc
-	language	Mandar	mdr	287	mdr
-	language	Mandingo	man	288	man
-	language	Manipuri	mni	289	mni
-	language	Manobo languages	mno	290	mno
-	language	Manx	glv	291	glv	gv
-	language	Maori	mao	292	mao	mri	mi
-	language	Mapudungun, Mapuche	arn	293	arn
-	language	Marathi (Marāṭhī)	mar	294	mar	mr
-	language	Mari	chm	295	chm
-	language	Marshallese	mah	296	mah	mh
-	language	Marwari	mwr	297	mwr
-	language	Masai	mas	298	mas
-	language	Mayan languages	myn	299	myn
-	language	Mende	men	300	men
-	language	Mi'kmaq, Micmac	mic	301	mic
-	language	Minangkabau	min	302	min
-	language	Mirandese	mwl	303	mwl
-	language	Mixtepec Mixtec	mix	304	mix
-	language	Mohawk	moh	305	moh
-	language	Moksha	mdf	306	mdf
-	language	Mon-Khmer languages	mkh	307	mkh
-	language	Mongo	lol	308	lol
-	language	Mongolian	mon	309	mon	mn
-	language	Montenegrin	cnr	310	cnr
-	language	Mossi	mos	311	mos
-	language	Multiple languages	mul	312	mul
-	language	Munda languages	mun	313	mun
-	language	Māori	mri	314	mri	mao	mi	Maori
-	language	N'Ko	nqo	315	nqo
-	language	Nahuatl languages	nah	316	nah
-	language	Nauru	nau	317	nau	na
-	language	Navajo, Navaho	nav	318	nav	nv	Navajo	Navaho
-	language	Ndonga	ndo	319	ndo	ng
-	language	Neapolitan	nap	320	nap
-	language	Nepal Bhasa, Newari	new	321	new
-	language	Nepali	nep	322	nep	ne
-	language	Nias	nia	323	nia
-	language	Niger-Kordofanian languages	nic	324	nic
-	language	Nilo-Saharan languages	ssa	325	ssa
-	language	Niuean	niu	326	niu
-	language	Nogai	nog	327	nog
-	language	Norse, Old	non	328	non
-	language	North American Indian languages	nai	329	nai
-	language	Northern Frisian	frr	330	frr
-	language	Northern Ndebele	nde	331	nde	nd
-	language	Northern Sami	sme	332	sme	se
-	language	Norwegian	nor	333	nor	no
-	language	Norwegian Bokmål	nob	334	nob	nb
-	language	Norwegian Nynorsk	nno	335	nno	nn
-	language	Nubian languages	nub	336	nub
-	language	Nuosu	iii	337	iii	ii	Sichuan Yi
-	language	Nyamwezi	nym	338	nym
-	language	Nyankole	nyn	339	nyn
-	language	Nyoro	nyo	340	nyo
-	language	Nzima	nzi	341	nzi
-	language	Occitan	oci	342	oci	oc
-	language	Official Aramaic (700-300 BCE), Imperial Aramaic (700-300 BCE)	arc	343	arc
-	language	Ojibwe, Ojibwa	oji	344	oji	oj	Ojibwe	Ojibwa
-	language	Old Church Slavonic,Church Slavonic,Old Bulgarian	chu	345	chu	cu
-	language	Oriya	ori	346	ori	or
-	language	Oromo	orm	347	orm	om
-	language	Osage	osa	348	osa
-	language	Ossetian, Ossetic	oss	349	oss	os	Ossetian	Ossetic
-	language	Otomian languages	oto	350	oto
-	language	Pahlavi	pal	351	pal
-	language	Palauan	pau	352	pau
-	language	Pampanga, Kapampangan	pam	353	pam
-	language	Pangasinan	pag	354	pag
-	language	Panjabi, Punjabi	pan	355	pan	pa	Panjabi	Punjabi
-	language	Papiamento	pap	356	pap
-	language	Papuan languages	paa	357	paa
-	language	Pashto, Pushto	pus	358	pus	ps	Pashto	Pushto
-	language	Pedi, Sepedi, Northern Sotho	nso	359	nso
-	language	Persian	per	360	per	fas	fa
-	language	Persian (Farsi)	fas	361	fas	per	fa
-	language	Persian, Old (ca.600-400 B.C.)	peo	362	peo
-	language	Philippine languages	phi	363	phi
-	language	Phoenician	phn	364	phn
-	language	Pohnpeian	pon	365	pon
-	language	Polish	pol	366	pol	pl
-	language	Portuguese	por	367	por	pt
-	language	Prakrit languages	pra	368	pra
-	language	Provençal, Old (to 1500), Occitan, Old (to 1500)	pro	369	pro
-	language	Pāli	pli	370	pli	pi
-	language	Quechua	que	371	que	qu
-	language	Rajasthani	raj	372	raj
-	language	Rapanui	rap	373	rap
-	language	Rarotongan, Cook Islands Maori	rar	374	rar
-	language	Romance languages	roa	375	roa
-	language	Romanian	ron	376	ron	rum	ro
-	language	Romanian, Moldavian, Moldovan	rum	377	rum	ron	ro
-	language	Romansh	roh	378	roh	rm
-	language	Romany	rom	379	rom
-	language	Russian	rus	380	rus	ru
-	language	Salishan languages	sal	381	sal
-	language	Samaritan Aramaic	sam	382	sam
-	language	Sami languages	smi	383	smi
-	language	Samoan	smo	384	smo	sm
-	language	Sandawe	sad	385	sad
-	language	Sango	sag	386	sag	sg
-	language	Sanskrit (Saṁskṛta)	san	387	san	sa
-	language	Santali	sat	388	sat
-	language	Sardinian	srd	389	srd	sc
-	language	Sasak	sas	390	sas
-	language	Scots	sco	391	sco
-	language	Scottish Gaelic, Gaelic	gla	392	gla	gd	Scottish Gaelic	Gaelic
-	language	Selkup	sel	393	sel
-	language	Semitic languages	sem	394	sem
-	language	Serbian	srp	395	srp	scc	sr
-	language	Serer	srr	396	srr
-	language	Shan	shn	397	shn
-	language	Shona	sna	398	sna	sn
-	language	Sicilian	scn	399	scn
-	language	Sidamo	sid	400	sid
-	language	Sign Languages	sgn	401	sgn
-	language	Siksika	bla	402	bla
-	language	Sindhi	snd	403	snd	sd
-	language	Sinhala, Sinhalese	sin	404	sin	si	Sinhala	Sinhalese
-	language	Sino-Tibetan languages	sit	405	sit
-	language	Siouan languages	sio	406	sio
-	language	Skolt Sami	sms	407	sms
-	language	Slave (Athapascan)	den	408	den
-	language	Slavic languages	sla	409	sla
-	language	Slovak	slk	410	slk	slo	sk
-	language	Slovak	slo	411	slo	slk	sk
-	language	Slovene	slv	412	slv	sl	Slovenian
-	language	Sogdian	sog	413	sog
-	language	Somali	som	414	som	so
-	language	Songhai languages	son	415	son
-	language	Soninke	snk	416	snk
-	language	Sorbian languages	wen	417	wen
-	language	South American Indian languages	sai	418	sai
-	language	Southern Altai	alt	419	alt
-	language	Southern Ndebele	nbl	420	nbl	nr
-	language	Southern Sami	sma	421	sma
-	language	Southern Sotho	sot	422	sot	st
-	language	Spanish, Castilian	spa	423	spa	es	Spanish	Castilian
-	language	Sranan Tongo	srn	424	srn
-	language	Standard Moroccan Tamazight	zgh	425	zgh
-	language	Sukuma	suk	426	suk
-	language	Sumerian	sux	427	sux
-	language	Sundanese	sun	428	sun	su
-	language	Susu	sus	429	sus
-	language	Swahili	swa	430	swa	sw
-	language	Swati	ssw	431	ssw	ss
-	language	Swedish	swe	432	swe	sv
-	language	Swiss German, Alemannic, Alsatian	gsw	433	gsw
-	language	Syriac	syr	434	syr
-	language	Tagalog	tgl	435	tgl	tl
-	language	Tahitian	tah	436	tah	ty
-	language	Tai languages	tai	437	tai
-	language	Tajik	tgk	438	tgk	tg
-	language	Tamashek	tmh	439	tmh
-	language	Tamil	tam	440	tam	ta
-	language	Tatar	tat	441	tat	tt
-	language	Telugu	tel	442	tel	te
-	language	Tereno	ter	443	ter
-	language	Tetum	tet	444	tet
-	language	Thai	tha	445	tha	th
-	language	Tibetan	tib	446	tib	bod	bo
-	language	Tibetan Standard, Tibetan, Central	bod	447	bod	tib	bo	Tibetan Standard	Tibetan Central
-	language	Tigre	tig	448	tig
-	language	Tigrinya	tir	449	tir	ti
-	language	Timne	tem	450	tem
-	language	Tiv	tiv	451	tiv
-	language	Tlingit	tli	452	tli
-	language	Tok Pisin	tpi	453	tpi
-	language	Tokelau	tkl	454	tkl
-	language	Tonga (Nyasa)	tog	455	tog
-	language	Tonga (Tonga Islands)	ton	456	ton	to	Tonga
-	language	Tsimshian	tsi	457	tsi
-	language	Tsonga	tso	458	tso	ts
-	language	Tswana	tsn	459	tsn	tn
-	language	Tumbuka	tum	460	tum
-	language	Tupi languages	tup	461	tup
-	language	Turkish	tur	462	tur	tr
-	language	Turkish, Ottoman (1500-1928)	ota	463	ota
-	language	Turkmen	tuk	464	tuk	tk
-	language	Tuvalu	tvl	465	tvl
-	language	Tuvinian	tyv	466	tyv
-	language	Twi	twi	467	twi	tw
-	language	Udmurt	udm	468	udm
-	language	Ugaritic	uga	469	uga
-	language	Ukrainian	ukr	470	ukr	uk
-	language	Umbundu	umb	471	umb
-	language	Uncoded languages	mis	472	mis
-	language	Undetermined	und	473	und
-	language	Upper Sorbian	hsb	474	hsb
-	language	Urdu	urd	475	urd	ur
-	language	Uyghur, Uighur	uig	476	uig	ug	Uyghur	Uighur
-	language	Uzbek	uzb	477	uzb	uz
-	language	Vai	vai	478	vai
-	language	Venda	ven	479	ven	ve
-	language	Vietnamese	vie	480	vie	vi
-	language	Volapük	vol	481	vol	vo
-	language	Votic	vot	482	vot
-	language	Wakashan languages	wak	483	wak
-	language	Walloon	wln	484	wln	wa
-	language	Waray	war	485	war
-	language	Washo	was	486	was
-	language	Welsh	cym	487	cym	wel	cy
-	language	Welsh	wel	488	wel	cym	cy
-	language	Western Frisian	fry	489	fry	fy
-	language	Wolaitta, Wolaytta	wal	490	wal
-	language	Wolof	wol	491	wol	wo
-	language	Xhosa	xho	492	xho	xh
-	language	Yakut	sah	493	sah
-	language	Yao	yao	494	yao
-	language	Yapese	yap	495	yap
-	language	Yiddish	yid	496	yid	yi
-	language	Yoruba	yor	497	yor	yo
-	language	Yupik languages	ypk	498	ypk
-	language	Zande languages	znd	499	znd
-	language	Zapotec	zap	500	zap
-	language	Zaza, Dimili, Dimli, Kirdki, Kirmanjki, Zazaki	zza	501	zza
-	language	Zenaga	zen	502	zen
-	language	Zhuang, Chuang	zha	503	zha	za	Zhuang	Chuang
-	language	Zulu	zul	504	zul	zu
-	language	Zuni	zun	505	zun
-	language	Not applicable		506
+	language	Albanian	sqi	12	sqi	alb	sq
+	language	Aleut	ale	13	ale
+	language	Algonquian languages	alg	14	alg
+	language	Altaic languages	tut	15	tut
+	language	Amharic	amh	16	amh	am
+	language	Angika	anp	17	anp
+	language	Apache languages	apa	18	apa
+	language	Arabic	ara	19	ara	ar
+	language	Aragonese	arg	20	arg	an
+	language	Arapaho	arp	21	arp
+	language	Arawak	arw	22	arw
+	language	Armenian	hye	23	hye	arm	hy
+	language	Aromanian, Arumanian, Macedo-Romanian	rup	24	rup
+	language	Artificial languages	art	25	art
+	language	Assamese	asm	26	asm	as
+	language	Asturian, Bable, Leonese, Asturleonese	ast	27	ast
+	language	Athapascan languages	ath	28	ath
+	language	Australian languages	aus	29	aus
+	language	Austronesian languages	map	30	map
+	language	Avaric	ava	31	ava	av
+	language	Avestan	ave	32	ave	ae
+	language	Awadhi	awa	33	awa
+	language	Aymara	aym	34	aym	ay
+	language	Azerbaijani	aze	35	aze	az
+	language	Balinese	ban	36	ban
+	language	Baltic languages	bat	37	bat
+	language	Baluchi	bal	38	bal
+	language	Bambara	bam	39	bam	bm
+	language	Bamileke languages	bai	40	bai
+	language	Banda languages	bad	41	bad
+	language	Bantu languages	bnt	42	bnt
+	language	Basa	bas	43	bas
+	language	Bashkir	bak	44	bak	ba
+	language	Basque	eus	45	eus	baq	eu
+	language	Batak languages	btk	46	btk
+	language	Beja, Bedawiyet	bej	47	bej
+	language	Belarusian	bel	48	bel	be
+	language	Bemba	bem	49	bem
+	language	Bengali, Bangla	ben	50	ben	bn	Bengali	Bangla
+	language	Berber languages	ber	51	ber
+	language	Bhojpuri	bho	52	bho
+	language	Bihari	bih	53	bih	bh
+	language	Bikol	bik	54	bik
+	language	Bini, Edo	bin	55	bin
+	language	Bislama	bis	56	bis	bi
+	language	Blin, Bilin	byn	57	byn
+	language	Blissymbols, Blissymbolics, Bliss	zbl	58	zbl
+	language	Bosnian	bos	59	bos	bs
+	language	Braj	bra	60	bra
+	language	Breton	bre	61	bre	br
+	language	Buginese	bug	62	bug
+	language	Bulgarian	bul	63	bul	bg
+	language	Buriat	bua	64	bua
+	language	Burmese	mya	65	mya	bur	my
+	language	Caddo	cad	66	cad
+	language	Catalan,Valencian	cat	67	cat	ca	Catalan	Valencian
+	language	Caucasian languages	cau	68	cau
+	language	Cebuano	ceb	69	ceb
+	language	Celtic languages	cel	70	cel
+	language	Central American Indian languages	cai	71	cai
+	language	Chagatai	chg	72	chg
+	language	Chamic languages	cmc	73	cmc
+	language	Chamorro	cha	74	cha	ch
+	language	Chechen	che	75	che	ce
+	language	Cherokee	chr	76	chr
+	language	Cheyenne	chy	77	chy
+	language	Chibcha	chb	78	chb
+	language	Chichewa, Chewa, Nyanja	nya	79	nya	ny	Chichewa	Chewa	Nyanja
+	language	Chinese	zho	80	zho	chi	zh
+	language	Chinook jargon	chn	81	chn
+	language	Chipewyan, Dene Suline	chp	82	chp
+	language	Choctaw	cho	83	cho
+	language	Chuukese	chk	84	chk
+	language	Chuvash	chv	85	chv	cv
+	language	Classical Newari, Old Newari, Classical Nepal Bhasa	nwc	86	nwc
+	language	Classical Syriac	syc	87	syc
+	language	Coptic	cop	88	cop
+	language	Cornish	cor	89	cor	kw
+	language	Corsican	cos	90	cos	co
+	language	Cree	cre	91	cre	cr
+	language	Creek	mus	92	mus
+	language	Creoles and pidgins	crp	93	crp
+	language	Creoles and pidgins, English based	cpe	94	cpe
+	language	Creoles and pidgins, French-based	cpf	95	cpf
+	language	Creoles and pidgins, Portuguese-based	cpp	96	cpp
+	language	Crimean Tatar, Crimean Turkish	crh	97	crh
+	language	Croatian	hrv	98	hrv	src	hr
+	language	Cushitic languages	cus	99	cus
+	language	Czech	ces	100	ces	cze	cs
+	language	Dakota	dak	101	dak
+	language	Danish	dan	102	dan	da
+	language	Dargwa	dar	103	dar
+	language	Delaware	del	104	del
+	language	Dinka	din	105	din
+	language	Divehi, Dhivehi, Maldivian	div	106	div	dv	Divehi	Dhivehi	Maldivian
+	language	Dogri	doi	107	doi
+	language	Dogrib	dgr	108	dgr
+	language	Dravidian languages	dra	109	dra
+	language	Duala	dua	110	dua
+	language	Dutch	nld	111	nld	dut	nl
+	language	Dutch, Flemish	dut	112	dut	nld	nl
+	language	Dutch, Middle (ca.1050-1350)	dum	113	dum
+	language	Dyula	dyu	114	dyu
+	language	Dzongkha	dzo	115	dzo	dz
+	language	Eastern Frisian	frs	116	frs
+	language	Efik	efi	117	efi
+	language	Egyptian (Ancient)	egy	118	egy
+	language	Ekajuk	eka	119	eka
+	language	Elamite	elx	120	elx
+	language	English	eng	121	eng	en
+	language	English, Middle (1100-1500)	enm	122	enm
+	language	English, Old (ca.450-1100)	ang	123	ang
+	language	Erzya	myv	124	myv
+	language	Esperanto	epo	125	epo	eo
+	language	Estonian	est	126	est	et
+	language	Ewe	ewe	127	ewe	ee
+	language	Ewondo	ewo	128	ewo
+	language	Fang	fan	129	fan
+	language	Fanti	fat	130	fat
+	language	Faroese	fao	131	fao	fo
+	language	Fijian	fij	132	fij	fj
+	language	Filipino, Pilipino	fil	133	fil
+	language	Finnish	fin	134	fin	fi
+	language	Finno-Ugrian languages	fiu	135	fiu
+	language	Fon	fon	136	fon
+	language	French	fra	137	fra	fre	fr
+	language	French, Middle (ca.1400-1600)	frm	138	frm
+	language	French, Old (842-ca.1400)	fro	139	fro
+	language	Friulian	fur	140	fur
+	language	Fula, Fulah, Pulaar, Pular	ful	141	ful	ff	Fula	Fulah	Pulaar	Pular
+	language	Ga	gaa	142	gaa
+	language	Galibi Carib	car	143	car
+	language	Galician	glg	144	glg	gl
+	language	Ganda	lug	145	lug	lg
+	language	Gayo	gay	146	gay
+	language	Gbaya	gba	147	gba
+	language	Geez	gez	148	gez
+	language	Georgian	kat	149	kat	geo	ka
+	language	German	deu	150	deu	ger	de
+	language	German, Middle High (ca.1050-1500)	gmh	151	gmh
+	language	German, Old High (ca.750-1050)	goh	152	goh
+	language	Germanic languages	gem	153	gem
+	language	Gilbertese	gil	154	gil
+	language	Gondi	gon	155	gon
+	language	Gorontalo	gor	156	gor
+	language	Gothic	got	157	got
+	language	Grebo	grb	158	grb
+	language	Greek (modern)	ell	159	ell	gre	el	Greek
+	language	Greek, Ancient (to 1453)	grc	160	grc
+	language	Greek, Modern (1453-)	gre	161	gre	ell	el
+	language	Guaraní	grn	162	grn	gn
+	language	Gujarati	guj	163	guj	gu
+	language	Gwich'in	gwi	164	gwi
+	language	Haida	hai	165	hai
+	language	Haitian, Haitian Creole	hat	166	hat	ht	Haitian	Haitian Creole
+	language	Hausa	hau	167	hau	ha
+	language	Hawaiian	haw	168	haw
+	language	Hebrew (modern)	heb	169	heb	he
+	language	Herero	her	170	her	hz
+	language	Hiligaynon	hil	171	hil
+	language	Himachali languages, Western Pahari languages	him	172	him
+	language	Hindi	hin	173	hin	hi
+	language	Hiri Motu	hmo	174	hmo	ho
+	language	Hittite	hit	175	hit
+	language	Hmong, Mong	hmn	176	hmn
+	language	Hungarian	hun	177	hun	hu
+	language	Hupa	hup	178	hup
+	language	Iban	iba	179	iba
+	language	Icelandic	isl	180	isl	ice	is
+	language	Ido	ido	181	ido	io
+	language	Igbo	ibo	182	ibo	ig
+	language	Ijo languages	ijo	183	ijo
+	language	Iloko	ilo	184	ilo
+	language	Inari Sami	smn	185	smn
+	language	Indic languages	inc	186	inc
+	language	Indo-European languages	ine	187	ine
+	language	Indonesian	ind	188	ind	id
+	language	Ingush	inh	189	inh
+	language	Interlingua	ina	190	ina	ia
+	language	Interlingue	ile	191	ile	ie
+	language	Inuktitut	iku	192	iku	iu
+	language	Inupiaq	ipk	193	ipk	ik
+	language	Iranian languages	ira	194	ira
+	language	Irish	gle	195	gle	ga
+	language	Irish, Middle (900-1200)	mga	196	mga
+	language	Irish, Old (to 900)	sga	197	sga
+	language	Iroquoian languages	iro	198	iro
+	language	Italian	ita	199	ita	it
+	language	Japanese	jpn	200	jpn	ja
+	language	Javanese	jav	201	jav	jv
+	language	Judeo-Arabic	jrb	202	jrb
+	language	Judeo-Persian	jpr	203	jpr
+	language	Kabardian	kbd	204	kbd
+	language	Kabyle	kab	205	kab
+	language	Kachin, Jingpho	kac	206	kac
+	language	Kalaallisut, Greenlandic	kal	207	kal	kl	Kalaallisut	Greenlandic
+	language	Kalmyk, Oirat	xal	208	xal
+	language	Kamba	kam	209	kam
+	language	Kannada	kan	210	kan	kn
+	language	Kanuri	kau	211	kau	kr
+	language	Kara-Kalpak	kaa	212	kaa
+	language	Karachay-Balkar	krc	213	krc
+	language	Karelian	krl	214	krl
+	language	Karen languages	kar	215	kar
+	language	Kashmiri	kas	216	kas	ks
+	language	Kashubian	csb	217	csb
+	language	Kawi	kaw	218	kaw
+	language	Kazakh	kaz	219	kaz	kk
+	language	Khasi	kha	220	kha
+	language	Khmer	khm	221	khm	km
+	language	Khoisan languages	khi	222	khi
+	language	Khotanese, Sakan	kho	223	kho
+	language	Kikuyu, Gikuyu	kik	224	kik	ki	Kikuyu	Gikuyu
+	language	Kimbundu	kmb	225	kmb
+	language	Kinyarwanda	kin	226	kin	rw
+	language	Kirundi	run	227	run	rn
+	language	Klingon, tlhIngan-Hol	tlh	228	tlh
+	language	Komi	kom	229	kom	kv
+	language	Kongo	kon	230	kon	kg
+	language	Konkani	kok	231	kok
+	language	Korean	kor	232	kor	ko
+	language	Kosraean	kos	233	kos
+	language	Kpelle	kpe	234	kpe
+	language	Kru languages	kro	235	kro
+	language	Kumyk	kum	236	kum
+	language	Kurdish	kur	237	kur	ku
+	language	Kurukh	kru	238	kru
+	language	Kutenai	kut	239	kut
+	language	Kwanyama, Kuanyama	kua	240	kua	kj	Kwanyama	Kuanyama
+	language	Kyrgyz	kir	241	kir	ky	Kirghiz
+	language	Ladino	lad	242	lad
+	language	Lahnda	lah	243	lah
+	language	Lamba	lam	244	lam
+	language	Land Dayak languages	day	245	day
+	language	Lao	lao	246	lao	lo
+	language	Latin	lat	247	lat	la
+	language	Latvian	lav	248	lav	lv
+	language	Lezghian	lez	249	lez
+	language	Limburgish, Limburgan, Limburger	lim	250	lim	li	Limburgish	Limburgan	Limburger
+	language	Lingala	lin	251	lin	ln
+	language	Lithuanian	lit	252	lit	lt
+	language	Lojban	jbo	253	jbo
+	language	Low German, Low Saxon, German, Low, Saxon, Low	nds	254	nds
+	language	Lower Sorbian	dsb	255	dsb
+	language	Lozi	loz	256	loz
+	language	Luba-Katanga	lub	257	lub	lu
+	language	Luba-Lulua	lua	258	lua
+	language	Luiseno	lui	259	lui
+	language	Lule Sami	smj	260	smj
+	language	Lunda	lun	261	lun
+	language	Luo (Kenya and Tanzania)	luo	262	luo
+	language	Lushai	lus	263	lus
+	language	Luxembourgish, Letzeburgesch	ltz	264	ltz	lb	Luxembourgish	Letzeburgesch
+	language	Macedonian	mkd	265	mkd	mac	mk
+	language	Madurese	mad	266	mad
+	language	Magahi	mag	267	mag
+	language	Maithili	mai	268	mai
+	language	Makasar	mak	269	mak
+	language	Malagasy	mlg	270	mlg	mg
+	language	Malay	msa	271	msa	may	ms
+	language	Malayalam	mal	272	mal	ml
+	language	Maltese	mlt	273	mlt	mt
+	language	Manchu	mnc	274	mnc
+	language	Mandar	mdr	275	mdr
+	language	Mandingo	man	276	man
+	language	Manipuri	mni	277	mni
+	language	Manobo languages	mno	278	mno
+	language	Manx	glv	279	glv	gv
+	language	Mapudungun, Mapuche	arn	280	arn
+	language	Marathi (Marāṭhī)	mar	281	mar	mr
+	language	Mari	chm	282	chm
+	language	Marshallese	mah	283	mah	mh
+	language	Marwari	mwr	284	mwr
+	language	Masai	mas	285	mas
+	language	Mayan languages	myn	286	myn
+	language	Mende	men	287	men
+	language	Mi'kmaq, Micmac	mic	288	mic
+	language	Minangkabau	min	289	min
+	language	Mirandese	mwl	290	mwl
+	language	Mixtepec Mixtec	mix	291	mix
+	language	Mohawk	moh	292	moh
+	language	Moksha	mdf	293	mdf
+	language	Mon-Khmer languages	mkh	294	mkh
+	language	Mongo	lol	295	lol
+	language	Mongolian	mon	296	mon	mn
+	language	Montenegrin	cnr	297	cnr
+	language	Mossi	mos	298	mos
+	language	Multiple languages	mul	299	mul
+	language	Munda languages	mun	300	mun
+	language	Māori	mri	301	mri	mao	mi	Maori
+	language	N'Ko	nqo	302	nqo
+	language	Nahuatl languages	nah	303	nah
+	language	Nauru	nau	304	nau	na
+	language	Navajo, Navaho	nav	305	nav	nv	Navajo	Navaho
+	language	Ndonga	ndo	306	ndo	ng
+	language	Neapolitan	nap	307	nap
+	language	Nepal Bhasa, Newari	new	308	new
+	language	Nepali	nep	309	nep	ne
+	language	Nias	nia	310	nia
+	language	Niger-Kordofanian languages	nic	311	nic
+	language	Nilo-Saharan languages	ssa	312	ssa
+	language	Niuean	niu	313	niu
+	language	Nogai	nog	314	nog
+	language	Norse, Old	non	315	non
+	language	North American Indian languages	nai	316	nai
+	language	Northern Frisian	frr	317	frr
+	language	Northern Ndebele	nde	318	nde	nd
+	language	Northern Sami	sme	319	sme	se
+	language	Norwegian	nor	320	nor	no
+	language	Norwegian Bokmål	nob	321	nob	nb
+	language	Norwegian Nynorsk	nno	322	nno	nn
+	language	Nubian languages	nub	323	nub
+	language	Nuosu	iii	324	iii	ii	Sichuan Yi
+	language	Nyamwezi	nym	325	nym
+	language	Nyankole	nyn	326	nyn
+	language	Nyoro	nyo	327	nyo
+	language	Nzima	nzi	328	nzi
+	language	Occitan	oci	329	oci	oc
+	language	Official Aramaic (700-300 BCE), Imperial Aramaic (700-300 BCE)	arc	330	arc
+	language	Ojibwe, Ojibwa	oji	331	oji	oj	Ojibwe	Ojibwa
+	language	Old Church Slavonic,Church Slavonic,Old Bulgarian	chu	332	chu	cu
+	language	Oriya	ori	333	ori	or
+	language	Oromo	orm	334	orm	om
+	language	Osage	osa	335	osa
+	language	Ossetian, Ossetic	oss	336	oss	os	Ossetian	Ossetic
+	language	Otomian languages	oto	337	oto
+	language	Pahlavi	pal	338	pal
+	language	Palauan	pau	339	pau
+	language	Pampanga, Kapampangan	pam	340	pam
+	language	Pangasinan	pag	341	pag
+	language	Panjabi, Punjabi	pan	342	pan	pa	Panjabi	Punjabi
+	language	Papiamento	pap	343	pap
+	language	Papuan languages	paa	344	paa
+	language	Pashto, Pushto	pus	345	pus	ps	Pashto	Pushto
+	language	Pedi, Sepedi, Northern Sotho	nso	346	nso
+	language	Persian	per	347	per	fas	fa
+	language	Persian (Farsi)	fas	348	fas	per	fa
+	language	Persian, Old (ca.600-400 B.C.)	peo	349	peo
+	language	Philippine languages	phi	350	phi
+	language	Phoenician	phn	351	phn
+	language	Pohnpeian	pon	352	pon
+	language	Polish	pol	353	pol	pl
+	language	Portuguese	por	354	por	pt
+	language	Prakrit languages	pra	355	pra
+	language	Provençal, Old (to 1500), Occitan, Old (to 1500)	pro	356	pro
+	language	Pāli	pli	357	pli	pi
+	language	Quechua	que	358	que	qu
+	language	Rajasthani	raj	359	raj
+	language	Rapanui	rap	360	rap
+	language	Rarotongan, Cook Islands Maori	rar	361	rar
+	language	Romance languages	roa	362	roa
+	language	Romanian	ron	363	ron	rum	ro
+	language	Romanian, Moldavian, Moldovan	rum	364	rum	ron	ro
+	language	Romansh	roh	365	roh	rm
+	language	Romany	rom	366	rom
+	language	Russian	rus	367	rus	ru
+	language	Salishan languages	sal	368	sal
+	language	Samaritan Aramaic	sam	369	sam
+	language	Sami languages	smi	370	smi
+	language	Samoan	smo	371	smo	sm
+	language	Sandawe	sad	372	sad
+	language	Sango	sag	373	sag	sg
+	language	Sanskrit (Saṁskṛta)	san	374	san	sa
+	language	Santali	sat	375	sat
+	language	Sardinian	srd	376	srd	sc
+	language	Sasak	sas	377	sas
+	language	Scots	sco	378	sco
+	language	Scottish Gaelic, Gaelic	gla	379	gla	gd	Scottish Gaelic	Gaelic
+	language	Selkup	sel	380	sel
+	language	Semitic languages	sem	381	sem
+	language	Serbian	srp	382	srp	scc	sr
+	language	Serer	srr	383	srr
+	language	Shan	shn	384	shn
+	language	Shona	sna	385	sna	sn
+	language	Sicilian	scn	386	scn
+	language	Sidamo	sid	387	sid
+	language	Sign Languages	sgn	388	sgn
+	language	Siksika	bla	389	bla
+	language	Sindhi	snd	390	snd	sd
+	language	Sinhala, Sinhalese	sin	391	sin	si	Sinhala	Sinhalese
+	language	Sino-Tibetan languages	sit	392	sit
+	language	Siouan languages	sio	393	sio
+	language	Skolt Sami	sms	394	sms
+	language	Slave (Athapascan)	den	395	den
+	language	Slavic languages	sla	396	sla
+	language	Slovak	slk	397	slk	slo	sk
+	language	Slovene	slv	398	slv	sl	Slovenian
+	language	Sogdian	sog	399	sog
+	language	Somali	som	400	som	so
+	language	Songhai languages	son	401	son
+	language	Soninke	snk	402	snk
+	language	Sorbian languages	wen	403	wen
+	language	South American Indian languages	sai	404	sai
+	language	Southern Altai	alt	405	alt
+	language	Southern Ndebele	nbl	406	nbl	nr
+	language	Southern Sami	sma	407	sma
+	language	Southern Sotho	sot	408	sot	st
+	language	Spanish, Castilian	spa	409	spa	es	Spanish	Castilian
+	language	Sranan Tongo	srn	410	srn
+	language	Standard Moroccan Tamazight	zgh	411	zgh
+	language	Sukuma	suk	412	suk
+	language	Sumerian	sux	413	sux
+	language	Sundanese	sun	414	sun	su
+	language	Susu	sus	415	sus
+	language	Swahili	swa	416	swa	sw
+	language	Swati	ssw	417	ssw	ss
+	language	Swedish	swe	418	swe	sv
+	language	Swiss German, Alemannic, Alsatian	gsw	419	gsw
+	language	Syriac	syr	420	syr
+	language	Tagalog	tgl	421	tgl	tl
+	language	Tahitian	tah	422	tah	ty
+	language	Tai languages	tai	423	tai
+	language	Tajik	tgk	424	tgk	tg
+	language	Tamashek	tmh	425	tmh
+	language	Tamil	tam	426	tam	ta
+	language	Tatar	tat	427	tat	tt
+	language	Telugu	tel	428	tel	te
+	language	Tereno	ter	429	ter
+	language	Tetum	tet	430	tet
+	language	Thai	tha	431	tha	th
+	language	Tibetan	tib	432	tib	bod	bo
+	language	Tibetan Standard, Tibetan, Central	bod	433	bod	tib	bo	Tibetan Standard	Tibetan Central
+	language	Tigre	tig	434	tig
+	language	Tigrinya	tir	435	tir	ti
+	language	Timne	tem	436	tem
+	language	Tiv	tiv	437	tiv
+	language	Tlingit	tli	438	tli
+	language	Tok Pisin	tpi	439	tpi
+	language	Tokelau	tkl	440	tkl
+	language	Tonga (Nyasa)	tog	441	tog
+	language	Tonga (Tonga Islands)	ton	442	ton	to	Tonga
+	language	Tsimshian	tsi	443	tsi
+	language	Tsonga	tso	444	tso	ts
+	language	Tswana	tsn	445	tsn	tn
+	language	Tumbuka	tum	446	tum
+	language	Tupi languages	tup	447	tup
+	language	Turkish	tur	448	tur	tr
+	language	Turkish, Ottoman (1500-1928)	ota	449	ota
+	language	Turkmen	tuk	450	tuk	tk
+	language	Tuvalu	tvl	451	tvl
+	language	Tuvinian	tyv	452	tyv
+	language	Twi	twi	453	twi	tw
+	language	Udmurt	udm	454	udm
+	language	Ugaritic	uga	455	uga
+	language	Ukrainian	ukr	456	ukr	uk
+	language	Umbundu	umb	457	umb
+	language	Uncoded languages	mis	458	mis
+	language	Undetermined	und	459	und
+	language	Upper Sorbian	hsb	460	hsb
+	language	Urdu	urd	461	urd	ur
+	language	Uyghur, Uighur	uig	462	uig	ug	Uyghur	Uighur
+	language	Uzbek	uzb	463	uzb	uz
+	language	Vai	vai	464	vai
+	language	Venda	ven	465	ven	ve
+	language	Vietnamese	vie	466	vie	vi
+	language	Volapük	vol	467	vol	vo
+	language	Votic	vot	468	vot
+	language	Wakashan languages	wak	469	wak
+	language	Walloon	wln	470	wln	wa
+	language	Waray	war	471	war
+	language	Washo	was	472	was
+	language	Welsh	cym	473	cym	wel	cy
+	language	Western Frisian	fry	474	fry	fy
+	language	Wolaitta, Wolaytta	wal	475	wal
+	language	Wolof	wol	476	wol	wo
+	language	Xhosa	xho	477	xho	xh
+	language	Yakut	sah	478	sah
+	language	Yao	yao	479	yao
+	language	Yapese	yap	480	yap
+	language	Yiddish	yid	481	yid	yi
+	language	Yoruba	yor	482	yor	yo
+	language	Yupik languages	ypk	483	ypk
+	language	Zande languages	znd	484	znd
+	language	Zapotec	zap	485	zap
+	language	Zaza, Dimili, Dimli, Kirdki, Kirmanjki, Zazaki	zza	486	zza
+	language	Zenaga	zen	487	zen
+	language	Zhuang, Chuang	zha	488	zha	za	Zhuang	Chuang
+	language	Zulu	zul	489	zul	zu
+	language	Zuni	zun	490	zun
+	language	Not applicable		491
