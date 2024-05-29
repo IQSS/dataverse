@@ -154,6 +154,25 @@ Listing Permissions (Role Assignments)
 
 See :ref:`list-role-assignments-on-a-dataverse-api`.
 
+Get OpenAPI Specification
+-------------------------
+
+You can access our OpenAPI specification using this endpoint. The default format is YAML if no parameter is provided, but you can also obtain the JSON version by specifying the `format` parameter or setting the `Accept` header to `application/json`
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/openapi"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/openapi?format=json"
+
 Beyond "Getting Started" Tasks
 ------------------------------
 

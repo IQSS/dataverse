@@ -4489,27 +4489,6 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/info/server"
 
-Get OpenAPI Specification
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Get the Dataverse OpenAPI specification in the requested format (json or yaml).
-
-.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
-
-.. code-block:: bash
-
-  export SERVER_URL=https://demo.dataverse.org
-  export FORMAT=yaml
-
-  curl "$SERVER_URL/api/info/openapi/$FORMAT"
-
-The fully expanded example above (without environment variables) looks like this:
-
-.. code-block:: bash
-
-  curl "https://demo.dataverse.org/api/info/openapi/yaml"
-
-
 Show Custom Popup Text for Publishing Datasets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
