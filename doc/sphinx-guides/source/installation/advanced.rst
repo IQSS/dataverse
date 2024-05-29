@@ -166,15 +166,6 @@ The Maven Central landing page can be found at https://central.sonatype.com/arti
 
 The source code and additional information can be found at https://github.com/gdcc/exporter-debug where you are welcome to open issues and create pull requests.
 
-MyJSON (``dataverse_json``)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-MyJSON is a minimal example exporter that demonstrates how to override a built-in metadata format. Specifically, it replaces the ``dataverse_json`` format (Dataverse's native JSON format), shown as "JSON" in the GUI with a "MyJSON in <locale>" version that just wraps the existing JSON export object in a new JSON object with the key ``inputJson`` containing the original JSON.
-
-You can download the MyJSON exporter JAR from https://github.com/gdcc/dataverse-exporters where you should look under "prebuilt-examples" for a file called something like dataverse-spi-export-examples-x.x.x.jar.
-
-The source can be found in the "dataverse-spi-export-examples" directory of https://github.com/gdcc/dataverse-exporters
-
 Developing New Exporters
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
