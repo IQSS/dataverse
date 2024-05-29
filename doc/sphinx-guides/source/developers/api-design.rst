@@ -20,6 +20,8 @@ You can prevent additional problems in our OpenAPI document by observing the fol
 
 - When creating a method name within an API class, make it unique.
 
+If you are looking for a reference about the annotations used to generate the OpenAPI document, you can find it in the `MicroProfile OpenAPI Specification <https://download.eclipse.org/microprofile/microprofile-open-api-3.1/microprofile-openapi-spec-3.1.html#_detailed_usage_of_key_annotations>`_.
+
 Paths
 -----
 
