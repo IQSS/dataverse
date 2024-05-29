@@ -35,7 +35,7 @@
         
         <openapi.infoTitle>Dataverse API</openapi.infoTitle>
         <openapi.infoVersion>${project.version}</openapi.infoVersion>
-        <openapi.infoDescription>Dataverse is an open source publication repository software with an API first approach.</openapi.infoDescription>
+        <openapi.infoDescription>Open source research data repository software.</openapi.infoDescription>
         <!-- https://download.eclipse.org/microprofile/microprofile-open-api-3.1.1/microprofile-openapi-spec-3.1.1.html#_location_and_formats -->
         <openapi.outputDirectory>${project.build.outputDirectory}/META-INF</openapi.outputDirectory>
     </properties>
