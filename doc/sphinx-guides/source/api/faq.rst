@@ -89,6 +89,8 @@ Why Are the Return Values (HTTP Status Codes) Not Documented?
 
 They should be. Please consider making a pull request to help. The :doc:`/developers/documentation` section of the Developer Guide should help you get started. :ref:`create-dataverse-api` has an example you can follow or you can come up with a better way.
 
+Also, please note that we are starting to experiment with putting response codes in our OpenAPI document. See :ref:`openapi`.
+
 What If My Question Is Not Answered Here?
 -----------------------------------------
 
