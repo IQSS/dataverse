@@ -61,8 +61,9 @@ public class UtilIT {
     private static final String API_TOKEN_KEY = "apiToken";
     private static final String BUILTIN_USER_KEY = "burrito";
     private static final String EMPTY_STRING = "";
-    public static final int MAXIMUM_INGEST_LOCK_DURATION = 17; // 15 + 2 sec for current autoSoftCommit duration of 1sec
+    public static final int MAXIMUM_INGEST_LOCK_DURATION = 15;
     public static final int MAXIMUM_PUBLISH_LOCK_DURATION = 20;
+    public static final int GENERAL_LONG_DURATION = 45; //Useful when multiple adds/publishes, etc/ all get done in sequence
     public static final int MAXIMUM_IMPORT_DURATION = 1;
 
     private static SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
@@ -2906,10 +2907,15 @@ public class UtilIT {
 
     //Helper function that returns true if a given search returns a non-zero response within a fixed time limit
     // a given duration returns false if still zero results after given duration
-    static Boolean sleepForSearch(String searchPart, String apiToken,  String subTree, int duration) {
+    static Boolean sleepForSearch(String searchPart, String apiToken,  String subTree, int count, int duration) {
         
 
         Response searchResponse = UtilIT.search(searchPart, apiToken, subTree);
+        //Leave early if search isn't working
+        if(searchResponse.statusCode()!=200) {
+            logger.warning("Non-200 status in sleepForSearch: " + searchResponse.statusCode());
+            return false;
+        }
         int i = 0;
         do {
             try {
@@ -2922,8 +2928,8 @@ public class UtilIT {
             } catch (InterruptedException ex) {
                 Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } while (UtilIT.getSearchCountFromResponse(searchResponse) == 0);
-
+        } while (UtilIT.getSearchCountFromResponse(searchResponse) != count);
+        logger.info("Waited " + i + " seconds in sleepForSearch");
         return i <= duration;
 
     }

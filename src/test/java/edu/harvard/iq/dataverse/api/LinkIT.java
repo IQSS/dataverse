@@ -165,7 +165,7 @@ public class LinkIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("Dataverse " + level1a + " linked successfully to " + level1b));
 
-        assertTrue(UtilIT.sleepForSearch("*", apiToken, "&subtree="+level1b, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Zero counts in level1b");
+        assertTrue(UtilIT.sleepForSearch("*", apiToken, "&subtree="+level1b, 1, UtilIT.GENERAL_LONG_DURATION), "Zero counts in level1b");
         
         Response searchLevel1toLevel1 = UtilIT.search("*", apiToken, "&subtree=" + level1b);
         searchLevel1toLevel1.prettyPrint();
@@ -177,8 +177,6 @@ public class LinkIT {
         Response createLevel2a = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-level2a", null, apiToken, level1a);
         createLevel2a.prettyPrint();
         String level2a = UtilIT.getAliasFromResponse(createLevel2a);
-        Integer subDvId = UtilIT.getDataverseIdFromResponse(createLevel2a);
-        
 
         Response createLevel2b = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-level2b", null, apiToken, level1b);
         createLevel2b.prettyPrint();
@@ -190,9 +188,7 @@ public class LinkIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.message", equalTo("Dataverse " + level2a + " linked successfully to " + level2b));
 
-        UtilIT.reindexDataverse(subDvId.toString());
-        
-        assertTrue(UtilIT.sleepForSearch("*", apiToken, "&subtree=" + level2b, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Never found linked dataverse: " + level2b);
+        assertTrue(UtilIT.sleepForSearch("*", apiToken, "&subtree=" + level2b, 1, UtilIT.GENERAL_LONG_DURATION), "Never found linked dataverse: " + level2b);
         
         Response searchLevel2toLevel2 = UtilIT.search("*", apiToken, "&subtree=" + level2b);
         searchLevel2toLevel2.prettyPrint();

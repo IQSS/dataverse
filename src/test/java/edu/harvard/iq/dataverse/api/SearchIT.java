@@ -105,7 +105,7 @@ public class SearchIT {
         assertEquals(200, grantUser2AccessOnDataset.getStatusCode());
 
         String searchPart = "id:dataset_" + datasetId1 + "_draft";        
-        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken2, "", UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if search exceeds max duration " + searchPart);
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken2, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if search exceeds max duration " + searchPart);
         
         Response shouldBeVisibleToUser2 = UtilIT.search("id:dataset_" + datasetId1 + "_draft", apiToken2);
         shouldBeVisibleToUser2.prettyPrint();
@@ -793,12 +793,9 @@ public class SearchIT {
         Response createDataverseResponse2 = UtilIT.createSubDataverse("subDV" + UtilIT.getRandomIdentifier(), null, apiToken, dataverseAlias);
         createDataverseResponse2.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
-        Integer subDvId = UtilIT.getDataverseIdFromResponse(createDataverseResponse2);
-        
-        UtilIT.reindexDataverse(subDvId.toString());
-        
+         
         String searchPart = "*"; 
-        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + dataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Missing subDV");
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + dataverseAlias, 1, UtilIT.GENERAL_LONG_DURATION), "Missing subDV");
         
         Response searchUnpublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
         searchUnpublishedSubtree2.prettyPrint();
@@ -861,18 +858,8 @@ public class SearchIT {
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
         UtilIT.sleepForReindex(datasetPid, apiToken, 5);
-        Response searchPublishedSubtreeWDS = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
-        searchPublishedSubtreeWDS.prettyPrint();
-        searchPublishedSubtreeWDS.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.total_count", CoreMatchers.equalTo(2));
-        
-        Response searchPublishedSubtreeWDS2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
-        searchPublishedSubtreeWDS2.prettyPrint();
-        searchPublishedSubtreeWDS2.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("data.total_count", CoreMatchers.equalTo(1));
-                
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + dataverseAlias, 2, UtilIT.GENERAL_LONG_DURATION), "Did not find 2 children");
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + dataverseAlias2, 1, UtilIT.GENERAL_LONG_DURATION), "Did not find 1 child");
     }
     
     //If this test fails it'll fail inconsistently as it tests underlying async role code
@@ -904,19 +891,14 @@ public class SearchIT {
         String subDataverseAlias = "dv" + UtilIT.getRandomIdentifier();
         Response createSubDataverseResponse = UtilIT.createSubDataverse(subDataverseAlias, null, apiTokenSuper, parentDataverseAlias);
         createSubDataverseResponse.prettyPrint();
-        Integer subDvId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
-        //UtilIT.getAliasFromResponse(createSubDataverseResponse);
-        
 
         Response grantRoleOnDataverseResponse = UtilIT.grantRoleOnDataverse(subDataverseAlias, "curator", "@" + username, apiTokenSuper); 
         grantRoleOnDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         
-        UtilIT.reindexDataverse(subDvId.toString());
-        
         String searchPart = "*"; 
         
-        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if search exceeds max duration " + searchPart);
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, 1, UtilIT.GENERAL_LONG_DURATION), "Failed test if search exceeds max duration " + searchPart);
         
         Response searchPublishedSubtreeSuper = UtilIT.search(searchPart, apiTokenSuper, "&subtree="+parentDataverseAlias);
         searchPublishedSubtreeSuper.prettyPrint();
@@ -1080,7 +1062,7 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(2));
         
-        assertTrue(UtilIT.sleepForSearch(searchPart, null, "&subtree=" + dataverseAlias2, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Missing dataset w/no apiKey");
+        assertTrue(UtilIT.sleepForSearch(searchPart, null, "&subtree=" + dataverseAlias2, 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Missing dataset w/no apiKey");
         
         Response searchPublishedSubtreesNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias+"&subtree="+dataverseAlias2);
         searchPublishedSubtreesNoAPI.prettyPrint();
