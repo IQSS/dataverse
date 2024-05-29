@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
