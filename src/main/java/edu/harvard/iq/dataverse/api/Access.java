@@ -141,8 +141,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
-import com.mashape.unirest.request.body.MultipartBody;
-
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
 import edu.harvard.iq.dataverse.api.exceptions.NotFoundException;
@@ -1271,8 +1269,7 @@ public class Access extends AbstractApiBean {
     })
     @Tag(name = "saveAuxiliaryFileWithVersion", 
          description = "Save Auxiliary File With Version")
-    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA,
-         schema = @Schema(implementation = MultipartBody.class)))
+    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
     public Response saveAuxiliaryFileWithVersion(@Context ContainerRequestContext crc,
                                                  @PathParam("fileId") Long fileId,
                                                  @PathParam("formatTag") String formatTag,

@@ -2,8 +2,6 @@ package edu.harvard.iq.dataverse.api;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.mashape.unirest.request.body.MultipartBody;
-
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -192,8 +190,7 @@ public class Files extends AbstractApiBean {
                description = "File replaced successfully on the dataset")
     @Tag(name = "replaceFilesInDataset", 
          description = "Replace a file to a dataset")
-    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA,
-         schema = @Schema(implementation = MultipartBody.class))) 
+    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA)) 
     public Response replaceFileInDataset(
                     @Context ContainerRequestContext crc,
                     @PathParam("id") String fileIdOrPersistentId,
