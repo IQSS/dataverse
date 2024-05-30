@@ -58,7 +58,7 @@ public class DataFileTag implements Serializable {
     
     private static final Map<TagType, String> TagTypeToLabels = new HashMap<>();
     
-    private static final Map<String, TagType> TagLabelToTypes = new HashMap<>();
+    public static final Map<String, TagType> TagLabelToTypes = new HashMap<>();
     
     
     static {

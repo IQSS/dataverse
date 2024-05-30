@@ -139,6 +139,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
      * Receive user data from OAuth2 provider after authn/z has been successfull. (Callback view uses this)
      * Request a token and access the resource, parse output and return user details.
      * @param code The authz code sent from the provider
+     * @param state The state which was communicated between us and the provider, identifying the exact request
      * @param redirectUrl The redirect URL (some providers require this when fetching the access token, e. g. Google)
      * @return A user record containing all user details accessible for us
      * @throws IOException Thrown when communication with the provider fails
@@ -146,7 +147,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
      * @throws InterruptedException Thrown when the requests thread is failing
      * @throws ExecutionException Thrown when the requests thread is failing
      */
-    public OAuth2UserRecord getUserRecord(String code, String redirectUrl)
+    public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl)
         throws IOException, OAuth2Exception, InterruptedException, ExecutionException {
         
         OAuth20Service service = getService(redirectUrl);

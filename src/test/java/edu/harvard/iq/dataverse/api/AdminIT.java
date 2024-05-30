@@ -21,7 +21,8 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
-
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -153,10 +154,10 @@ public class AdminIT {
                 .body("data.pagination.pageCount", equalTo(1))
                 .body("data.pagination.numResults", equalTo(numResults));
         
-        String userIdentifer;
+        String userIdentifier;
         for (int i=0; i < numResults; i++){
-            userIdentifer = JsonPath.from(filterReponse01.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
-            assertEquals(randomUsernames.contains(userIdentifer), true);
+            userIdentifier = JsonPath.from(filterReponse01.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
+            assertTrue(randomUsernames.contains(userIdentifier));
         }
 
         List<Object> userList1 = JsonPath.from(filterReponse01.body().asString()).getList("data.users");
@@ -177,10 +178,10 @@ public class AdminIT {
                 .body("data.pagination.pageCount", equalTo(3))
                 .body("data.pagination.numResults", equalTo(numResults));
         
-        String userIdentifer2;
+        String userIdentifier2;
         for (int i=0; i < numUsersReturned; i++){
-            userIdentifer2 = JsonPath.from(filterReponse02.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
-            assertEquals(randomUsernames.contains(userIdentifer2), true);
+            userIdentifier2 = JsonPath.from(filterReponse02.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
+            assertTrue(randomUsernames.contains(userIdentifier2));
         }
         
         List<Object> userList2 = JsonPath.from(filterReponse02.body().asString()).getList("data.users");
@@ -734,6 +735,13 @@ public class AdminIT {
                 .statusCode(OK.getStatusCode());
     }
 
+    /**
+     * Disabled because once there are new fields in the database that Solr
+     * doesn't know about, dataset creation could be prevented, or at least
+     * subsequent search operations could fail because the dataset can't be
+     * indexed.
+     */
+    @Disabled
     @Test
     public void testLoadMetadataBlock_NoErrorPath() {
         Response createUser = UtilIT.createRandomUser();
@@ -778,6 +786,13 @@ public class AdminIT {
         assertEquals(244, (int) statistics.get("Controlled Vocabulary"));
     }
 
+    /**
+     * Disabled because once there are new fields in the database that Solr
+     * doesn't know about, dataset creation could be prevented, or at least
+     * subsequent search operations could fail because the dataset can't be
+     * indexed.
+     */
+    @Disabled
     @Test
     public void testLoadMetadataBlock_ErrorHandling() {
         Response createUser = UtilIT.createRandomUser();
@@ -803,6 +818,16 @@ public class AdminIT {
           "Error parsing metadata block in DATASETFIELD part, line #5: missing 'watermark' column (#5)",
           message
         );
+    }
+    @Test
+    public void testClearThumbnailFailureFlag(){
+        Response nonExistentFile = UtilIT.clearThumbnailFailureFlag(Long.MAX_VALUE);
+        nonExistentFile.prettyPrint();
+        nonExistentFile.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        
+        Response clearAllFlags = UtilIT.clearThumbnailFailureFlags();
+        clearAllFlags.prettyPrint();
+        clearAllFlags.then().assertThat().statusCode(OK.getStatusCode());
     }
     
     @Test
@@ -840,9 +865,46 @@ public class AdminIT {
         
     }
 
+    /**
+     * For a successful download from /tmp, see BagIT. Here we are doing error
+     * checking.
+     */
+    @Test
+    public void testDownloadTmpFile() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response tryToDownloadAsNonSuperuser = UtilIT.downloadTmpFile("/tmp/foo", apiToken);
+        tryToDownloadAsNonSuperuser.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+
+        Response toggleSuperuser = UtilIT.makeSuperUser(username);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response tryToDownloadEtcPasswd = UtilIT.downloadTmpFile("/etc/passwd", apiToken);
+        tryToDownloadEtcPasswd.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("Path must begin with '/tmp' but after normalization was '/etc/passwd'."));
+    }
+
     private String createTestNonSuperuserApiToken() {
         Response createUserResponse = UtilIT.createRandomUser();
         createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
         return UtilIT.getApiTokenFromResponse(createUserResponse);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans={true,false})
+    public void testSetSuperUserStatus(Boolean status) {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        Response toggleSuperuser = UtilIT.setSuperuserStatus(username, status);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 }

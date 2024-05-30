@@ -39,7 +39,6 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -52,6 +51,8 @@ import com.apicatalog.jsonld.document.JsonDocument;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import jakarta.json.JsonReader;
 
 public class JSONLDUtil {
 
@@ -82,7 +83,7 @@ public class JSONLDUtil {
 
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
         if (migrating) {
-            Optional<GlobalId> maybePid = GlobalIdServiceBean.parse(jsonld.getString("@id"));
+            Optional<GlobalId> maybePid = PidProvider.parse(jsonld.getString("@id"));
             if (maybePid.isPresent()) {
                 ds.setGlobalId(maybePid.get());
             } else {
@@ -465,7 +466,6 @@ public class JSONLDUtil {
                     if(!datasetFieldSvc.isValidCVocValue(dsft, strValue)) {
                         throw new BadRequestException("Invalid values submitted for " + dsft.getName() + " which is limited to specific vocabularies.");
                     }
-                    datasetFieldSvc.registerExternalTerm(cvocMap.get(dsft.getId()), strValue);
                 }
                 DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
 
@@ -533,13 +533,11 @@ public class JSONLDUtil {
         try (StringReader rdr = new StringReader(jsonLDString)) {
 
             // Use JsonLd to expand/compact to localContext
-            JsonObject jsonld = Json.createReader(rdr).readObject();
-            JsonDocument doc = JsonDocument.of(jsonld);
-            JsonArray array = null;
-            try {
-                array = JsonLd.expand(doc).get();
-                jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(Json.createObjectBuilder().build()))
-                        .get();
+            try (JsonReader jsonReader = Json.createReader(rdr)) {
+                JsonObject jsonld = jsonReader.readObject();
+                JsonDocument doc = JsonDocument.of(jsonld);
+                JsonArray array = JsonLd.expand(doc).get();
+                jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(Json.createObjectBuilder().build())).get();
                 // jsonld = array.getJsonObject(0);
                 logger.fine("Decontextualized object: " + jsonld);
                 return jsonld;

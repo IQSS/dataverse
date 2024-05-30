@@ -88,7 +88,6 @@ public class HarvesterServiceBean {
     public static final String HARVEST_RESULT_FAILED="failed";
     public static final String DATAVERSE_PROPRIETARY_METADATA_FORMAT="dataverse_json";
     public static final String DATAVERSE_PROPRIETARY_METADATA_API="/api/datasets/export?exporter="+DATAVERSE_PROPRIETARY_METADATA_FORMAT+"&persistentId=";
-    public static final String DATAVERSE_HARVEST_STOP_FILE="../logs/stopharvest_";
 
     public HarvesterServiceBean() {
 
@@ -399,7 +398,7 @@ public class HarvesterServiceBean {
     
     private boolean checkIfStoppingJob(HarvestingClient harvestingClient) {
         Long pid = ProcessHandle.current().pid();
-        String stopFileName = DATAVERSE_HARVEST_STOP_FILE + harvestingClient.getName() + "." + pid; 
+        String stopFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "stopharvest_" + harvestingClient.getName() + "." + pid; 
         Path stopFilePath = Paths.get(stopFileName);
         
         if (Files.exists(stopFilePath)) {

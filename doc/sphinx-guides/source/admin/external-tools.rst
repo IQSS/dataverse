@@ -115,7 +115,7 @@ Dataset level explore tools allow the user to explore all the files in a dataset
 Dataset Level Configure Tools
 +++++++++++++++++++++++++++++
 
-Configure tools at the dataset level are not currently supported.
+Dataset level configure tools can be launched by users who have edit access to the dataset. These tools are found under the "Edit Dataset" menu.
 
 Writing Your Own External Tool
 ------------------------------

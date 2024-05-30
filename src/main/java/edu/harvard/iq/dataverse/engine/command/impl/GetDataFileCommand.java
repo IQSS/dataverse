@@ -11,35 +11,34 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 /**
- *
  * @author Matthew
  */
 // no annotations here, since permissions are dynamically decided
 // based off GetDatasetCommand for similar permissions checking
 public class GetDataFileCommand extends AbstractCommand<DataFile> {
 
-    private final DataFile df;
+    private final DataFile dataFile;
 
-    public GetDataFileCommand(DataverseRequest aRequest, DataFile anAffectedDataset) {
-        super(aRequest, anAffectedDataset);
-        df = anAffectedDataset;
+    public GetDataFileCommand(DataverseRequest aRequest, DataFile dataFile) {
+        super(aRequest, dataFile);
+        this.dataFile = dataFile;
     }
 
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
-        return df;
+        return dataFile;
     }
 
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         return Collections.singletonMap("",
-                df.isReleased() ? Collections.<Permission>emptySet()
-                : Collections.singleton(Permission.ViewUnpublishedDataset));
+                dataFile.isReleased() ? Collections.emptySet()
+                        : Collections.singleton(Permission.ViewUnpublishedDataset));
     }
-
 }

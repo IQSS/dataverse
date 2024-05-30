@@ -148,6 +148,7 @@ public class TemplatePage implements java.io.Serializable {
             editMode = TemplatePage.EditMode.CREATE;
             template = new Template(this.dataverse, settingsWrapper.getSystemMetadataBlocks());
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+            terms.setFileAccessRequest(true);
             terms.setTemplate(template);
             terms.setLicense(licenseServiceBean.getDefault());
             template.setTermsOfUseAndAccess(terms);

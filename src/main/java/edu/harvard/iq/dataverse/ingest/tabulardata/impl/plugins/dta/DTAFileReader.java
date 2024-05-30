@@ -505,7 +505,7 @@ public class DTAFileReader extends TabularDataFileReader{
     }
 
     @Override
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
+    public TabularDataIngest read(BufferedInputStream stream, boolean storeWithVariableHeader, File dataFile) throws IOException {
         dbgLog.info("***** DTAFileReader: read() start *****");
         
         if (dataFile != null) {
@@ -519,7 +519,7 @@ public class DTAFileReader extends TabularDataFileReader{
             if (releaseNumber!=104) {
                 decodeExpansionFields(stream);
             }
-            decodeData(stream);
+            decodeData(stream, storeWithVariableHeader);
             decodeValueLabels(stream);
 
             ingesteddata.setDataTable(dataTable);
@@ -1665,7 +1665,7 @@ public class DTAFileReader extends TabularDataFileReader{
         dbgLog.fine("parseValueLabelsRelease108(): end");
     }
 
-    private void decodeData(BufferedInputStream stream) throws IOException {
+    private void decodeData(BufferedInputStream stream, boolean saveWithVariableHeader) throws IOException {
 
         dbgLog.fine("\n***** decodeData(): start *****");
 
@@ -1719,6 +1719,11 @@ public class DTAFileReader extends TabularDataFileReader{
           BUT, this needs to be reviewed/confirmed etc! 
          */
         //String[][] dateFormat = new String[nvar][nobs];
+        
+        // add the variable header here, if needed
+        if (saveWithVariableHeader) {
+            pwout.println(generateVariableHeader(dataTable.getDataVariables())); 
+        }
 
         for (int i = 0; i < nobs; i++) {
             byte[] dataRowBytes = new byte[bytes_per_row];
