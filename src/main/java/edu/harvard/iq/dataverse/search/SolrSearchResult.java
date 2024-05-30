@@ -443,10 +443,10 @@ public class SolrSearchResult {
 	} // getJsonForMydata
 
 	public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
-		return json(showRelevance, showEntityIds, showApiUrls, null, null);
+		return json(showRelevance, showEntityIds, showApiUrls, null);
 	}
 
-	public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, List<String> metadataFields, Long datasetFileCount) {
+	public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, List<String> metadataFields) {
 		if (this.type == null) {
 			return jsonObjectBuilder();
 		}
@@ -1265,20 +1265,20 @@ public class SolrSearchResult {
 	}
 
 	public boolean isValid(Predicate<SolrSearchResult> canUpdateDataset) {
-        if (this.datasetValid) {
-            return true;
-        }
-        if (!this.getType().equals("datasets")) {
-            return true;
-        }
-        if (this.isDraftState()) {
-            return false;
-        }
-        if (!JvmSettings.UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED.lookupOptional(Boolean.class).orElse(true)) {
-            return true;
-        }
+		if (this.datasetValid) {
+			return true;
+		}
+		if (!this.getType().equals("datasets")) {
+			return true;
+		}
+		if (this.isDraftState()) {
+			return false;
+		}
+		if (!JvmSettings.UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED.lookupOptional(Boolean.class).orElse(true)) {
+			return true;
+		}
 		return !canUpdateDataset.test(this);
-    }
+	}
 	public Long getFileCount() {
 		return fileCount;
 	}
