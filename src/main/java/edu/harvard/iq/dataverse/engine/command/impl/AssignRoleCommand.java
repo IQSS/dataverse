@@ -18,8 +18,6 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.search.IndexResponse;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -91,12 +89,6 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
         requiredPermissions.addAll(role.permissions());
 
         return Collections.singletonMap("", requiredPermissions);
-    }
-
-    @Override
-    public boolean onSuccess(CommandContext ctxt, Object r) {  
-        ctxt.solrIndex().indexPermissionsOnSelfAndChildren(this.defPoint);
-        return true;
     }
 
     @Override
