@@ -23,7 +23,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetV
 import edu.harvard.iq.dataverse.engine.command.exception.RateLimitCommandException;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
@@ -372,11 +371,6 @@ public abstract class AbstractApiBean {
     }
 
     protected Dataset findDatasetOrDie(String id) throws WrappedResponse {
-        return findDatasetOrDie(id, false);
-    }
-
-    protected Dataset findDatasetOrDie(String id, boolean deep) throws WrappedResponse {
-        Long datasetId;
         Dataset dataset;
         if (id.equals(PERSISTENT_ID_KEY)) {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
@@ -384,38 +378,24 @@ public abstract class AbstractApiBean {
                 throw new WrappedResponse(
                         badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
             }
-            GlobalId globalId;
-            try {
-                globalId = PidUtil.parseAsGlobalID(persistentId);
-            } catch (IllegalArgumentException e) {
-                throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(persistentId))));
+            dataset = datasetSvc.findByGlobalId(persistentId);
+            if (dataset == null) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
             }
-            datasetId = dvObjSvc.findIdByGlobalId(globalId, DvObject.DType.Dataset);
-            if (datasetId == null) {
-                datasetId = dvObjSvc.findIdByAltGlobalId(globalId, DvObject.DType.Dataset);
-            }
-            if (datasetId == null) {
-                throw new WrappedResponse(
-                    notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
-            }
+            return dataset;
+
         } else {
             try {
-                datasetId = Long.parseLong(id);
+                dataset = datasetSvc.find(Long.parseLong(id));
+                if (dataset == null) {
+                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
+                }
+                return dataset;
             } catch (NumberFormatException nfe) {
                 throw new WrappedResponse(
                         badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
             }
         }
-        if (deep) {
-            dataset = datasetSvc.findDeep(datasetId);
-        } else {
-            dataset = datasetSvc.find(datasetId);
-        }
-        if (dataset == null) {
-            throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
-        }
-        return dataset;
     }
 
     protected DatasetVersion findDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
