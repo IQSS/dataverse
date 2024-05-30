@@ -1063,7 +1063,7 @@ public class SearchServiceBean {
             StringBuilder sbgroups = new StringBuilder();
             
             // All users, guests and authenticated, should see all the 
-            // documents marked as PublicObject_b:true, at least:
+            // documents marked as publicObject_b:true, at least:
             sb.append(SearchFields.PUBLIC_OBJECT + ":" + true);
 
             // One or more groups *may* also be available for this user. Once again,
@@ -1161,7 +1161,7 @@ public class SearchServiceBean {
          * @todo rename this from publicPlusUserPrivateGroup. Confusing
          */
         // safe default: public only
-        String publicPlusUserPrivateGroup = publicOnly; 
+        String publicPlusUserPrivateGroup = publicOnly;
 //                    + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
 //                    + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
 

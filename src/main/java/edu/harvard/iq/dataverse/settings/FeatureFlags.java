@@ -39,7 +39,7 @@ public enum FeatureFlags {
     /**
      * For published (public) objects, don't use a join when searching Solr. 
      * Experimental! Requires a reindex with the following feature flag enabled,
-     * in order to add the boolean PublicObject_b:true field to all the public
+     * in order to add the boolean publicObject_b:true field to all the public
      * Solr documents. 
      *
      * @apiNote Raise flag by setting
@@ -48,7 +48,7 @@ public enum FeatureFlags {
      */
     AVOID_EXPENSIVE_SOLR_JOIN("avoid-expensive-solr-join"),
     /**
-     * With this flag enabled, the boolean field PublicObject_b:true will be 
+     * With this flag enabled, the boolean field publicObject_b:true will be 
      * added to all the indexed Solr documents for publicly-available collections,
      * datasets and files. This flag makes it possible to rely on it in searches,
      * instead of the very expensive join (the feature flag above).
