@@ -42,6 +42,7 @@ import jakarta.persistence.TypedQuery;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.client.methods.HttpGet;
@@ -560,6 +561,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     }
 
     private String replaceRetrievalUriParam(String retrievalUri, String paramName, String value) {
+
+        if(StringUtils.isBlank(paramName) || StringUtils.isBlank(value)) {
+            return retrievalUri;
+        }
 
         if(retrievalUri.contains("encodeUrl:" + paramName)) {
             retrievalUri = retrievalUri.replace("{encodeUrl:"+paramName+"}", URLEncoder.encode(value, StandardCharsets.UTF_8));
