@@ -23,6 +23,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -39,6 +40,7 @@ import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.DatasetRelPublication;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -853,7 +855,6 @@ public class XmlMetadataTemplate {
         Map<String, String> attributes = new HashMap<String, String>();
 
         if (dvObject instanceof Dataset dataset) {
-
             List<DatasetRelPublication> relatedPublications = dataset.getLatestVersionForCopy().getRelatedPublications();
             if (!relatedPublications.isEmpty()) {
                 for (DatasetRelPublication relatedPub : relatedPublications) {
@@ -966,7 +967,6 @@ logger.info("Canonical type: " + pubIdType);
             xmlw.writeEndElement();
         }
     }
-
 
     static HashMap<String, String> relatedIdentifierTypeMap = new HashMap<String, String>();
 
