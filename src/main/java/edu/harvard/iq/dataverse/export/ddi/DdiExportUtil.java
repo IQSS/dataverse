@@ -371,7 +371,7 @@ public class DdiExportUtil {
     
     private static void writeVersionStatement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException{
         xmlw.writeStartElement("verStmt");
-        XmlWriterUtil.writeAttribute(xmlw,"source","archive"); 
+        xmlw.writeAttribute("source","archive"); 
         xmlw.writeStartElement("version");
         XmlWriterUtil.writeAttribute(xmlw,"date", datasetVersionDTO.getReleaseTime().substring(0, 10));
         XmlWriterUtil.writeAttribute(xmlw,"type", datasetVersionDTO.getVersionState().toString()); 
@@ -842,9 +842,7 @@ public class DdiExportUtil {
                             }
                             if (!authorName.isEmpty()){
                                 xmlw.writeStartElement("AuthEnty"); 
-                                if(!authorAffiliation.isEmpty()){
-                                   XmlWriterUtil.writeAttribute(xmlw,"affiliation",authorAffiliation); 
-                                } 
+                                XmlWriterUtil.writeAttribute(xmlw,"affiliation",authorAffiliation); 
                                 xmlw.writeCharacters(authorName);
                                 xmlw.writeEndElement(); //AuthEnty
                             }
@@ -865,9 +863,7 @@ public class DdiExportUtil {
                             }
                             if (!contributorName.isEmpty()){
                                 xmlw.writeStartElement("othId");
-                                if(!contributorType.isEmpty()){
-                                    XmlWriterUtil.writeAttribute(xmlw,"role", contributorType);
-                                }
+                                XmlWriterUtil.writeAttribute(xmlw,"role", contributorType);
                                 xmlw.writeCharacters(contributorName);
                                 xmlw.writeEndElement(); //othId
                             }
@@ -907,12 +903,8 @@ public class DdiExportUtil {
                             // TODO: Since datasetContactEmail is a required field but datasetContactName is not consider not checking if datasetContactName is empty so we can write out datasetContactEmail.
                             if (!datasetContactName.isEmpty()){
                                 xmlw.writeStartElement("contact"); 
-                                if(!datasetContactAffiliation.isEmpty()){
-                                   XmlWriterUtil.writeAttribute(xmlw,"affiliation",datasetContactAffiliation); 
-                                } 
-                                if(!datasetContactEmail.isEmpty()){
-                                   XmlWriterUtil.writeAttribute(xmlw,"email",datasetContactEmail); 
-                                } 
+                                XmlWriterUtil.writeAttribute(xmlw,"affiliation",datasetContactAffiliation); 
+                                XmlWriterUtil.writeAttribute(xmlw,"email",datasetContactEmail); 
                                 xmlw.writeCharacters(datasetContactName);
                                 xmlw.writeEndElement(); //AuthEnty
                             }
@@ -957,9 +949,7 @@ public class DdiExportUtil {
                                 xmlw.writeStartElement("producer");
                                 XmlWriterUtil.writeAttribute(xmlw, "affiliation", producerAffiliation);
                                 XmlWriterUtil.writeAttribute(xmlw, "abbr", producerAbbreviation);
-                                /*if (!producerLogo.isEmpty()) {
-                                    XmlWriterUtil.writeAttribute(xmlw, "role", producerLogo);
-                                }*/
+                                //XmlWriterUtil.writeAttribute(xmlw, "role", producerLogo);
                                 xmlw.writeCharacters(producerName);
                                 xmlw.writeEndElement(); //AuthEnty
                             }
@@ -1139,9 +1129,7 @@ public class DdiExportUtil {
                             }
                             if (!descriptionText.isEmpty()){
                                 xmlw.writeStartElement("abstract"); 
-                                if(!descriptionDate.isEmpty()){
-                                   XmlWriterUtil.writeAttribute(xmlw,"date",descriptionDate); 
-                                } 
+                                XmlWriterUtil.writeAttribute(xmlw,"date",descriptionDate); 
                                 if(DvObjectContainer.isMetadataLanguageSet(lang)) {
                                     xmlw.writeAttribute("xml:lang", lang);
                                 }
@@ -1176,9 +1164,7 @@ public class DdiExportUtil {
                             }
                             if (!grantNumber.isEmpty()){
                                 xmlw.writeStartElement("grantNo"); 
-                                if(!grantAgency.isEmpty()){
-                                   XmlWriterUtil.writeAttribute(xmlw,"agency",grantAgency); 
-                                } 
+                                XmlWriterUtil.writeAttribute(xmlw,"agency",grantAgency); 
                                 xmlw.writeCharacters(grantNumber);
                                 xmlw.writeEndElement(); //grantno
                             }
@@ -1210,9 +1196,7 @@ public class DdiExportUtil {
                             }
                             if (!otherId.isEmpty()){
                                 xmlw.writeStartElement("IDNo"); 
-                                if(!otherIdAgency.isEmpty()){
-                                   XmlWriterUtil.writeAttribute(xmlw,"agency",otherIdAgency); 
-                                } 
+                                XmlWriterUtil.writeAttribute(xmlw,"agency",otherIdAgency); 
                                 xmlw.writeCharacters(otherId);
                                 xmlw.writeEndElement(); //IDNo
                             }
@@ -1244,9 +1228,7 @@ public class DdiExportUtil {
                             }
                             if (!softwareName.isEmpty()){
                                 xmlw.writeStartElement("software"); 
-                                if(!softwareVersion.isEmpty()){
-                                   XmlWriterUtil.writeAttribute(xmlw,"version",softwareVersion); 
-                                } 
+                                XmlWriterUtil.writeAttribute(xmlw,"version",softwareVersion); 
                                 xmlw.writeCharacters(softwareName);
                                 xmlw.writeEndElement(); //software
                             }
@@ -1359,12 +1341,8 @@ public class DdiExportUtil {
                         }
                         if (!notesText.isEmpty()) {
                             xmlw.writeStartElement("notes");
-                                if(!notesType.isEmpty()){
-                                   XmlWriterUtil.writeAttribute(xmlw,"type",notesType); 
-                                } 
-                                if(!notesSubject.isEmpty()){
-                                   XmlWriterUtil.writeAttribute(xmlw,"subject",notesSubject); 
-                                } 
+                            XmlWriterUtil.writeAttribute(xmlw,"type",notesType); 
+                            XmlWriterUtil.writeAttribute(xmlw,"subject",notesSubject); 
                             xmlw.writeCharacters(notesText);
                             xmlw.writeEndElement(); 
                         }
