@@ -51,7 +51,7 @@ After the installation of Linux is complete, check that you have an internet con
 
   ping www.google.com
 
-If you do not have internet connection try add in ``/etc/wsl.conf``
+If you do not have an internet connection try adding it in ``/etc/wsl.conf``
 
 .. code-block:: bash
   
