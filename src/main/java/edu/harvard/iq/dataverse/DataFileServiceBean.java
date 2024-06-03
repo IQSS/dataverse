@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -757,6 +758,13 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     public List<DataFile> findAll() {
         return em.createQuery("select object(o) from DataFile as o order by o.id", DataFile.class).getResultList();
+    }
+    
+    public List<VersionState> findVersionStates(Long fileId) {
+        Query query = em.createQuery(
+                "select distinct dv.versionState from DatasetVersion dv where dv.id in (select fm.datasetVersion.id from FileMetadata fm where fm.dataFile.id=:fileId)");
+        query.setParameter("fileId", fileId);
+        return query.getResultList();
     }
     
     public DataFile save(DataFile dataFile) {

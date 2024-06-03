@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
@@ -503,7 +504,7 @@ public class IndexServiceBean {
             solrIdsOfFilesToDelete = findFilesOfParentDataset(dataset.getId());
             logger.fine("Existing file docs: " + String.join(", ", solrIdsOfFilesToDelete));
             //We keep the latest version's docs unless it is deaccessioned and there is no published/released version
-            //So skip the loop removing those docs from the delete list in that case
+            //So skip the loop removing those docs from the delete list except in that case
             if ((!latestVersion.isDeaccessioned() || atLeastOnePublishedVersion)) {
                 List<FileMetadata> latestFileMetadatas = latestVersion.getFileMetadatas();
                 String suffix = (new IndexableDataset(latestVersion)).getDatasetState().getSuffix();
@@ -588,6 +589,10 @@ public class IndexServiceBean {
         debug.append("numPublishedVersions: " + numPublishedVersions + "\n");
         if (doNormalSolrDocCleanUp) {
             if(!solrIdsOfFilesToDelete.isEmpty()) {
+                for(String file: solrIdsOfFilesToDelete) {
+                    //Also remove associated permission docs
+                    solrIdsOfFilesToDelete.add(file+"_permission");
+                }
                 IndexResponse resultOfAttemptToPremptivelyDeletePublishedFiles = solrIndexService.deleteMultipleSolrIds(solrIdsOfFilesToDelete);
                 debug.append("result of attempt to premptively deleted published files before reindexing: " + resultOfAttemptToPremptivelyDeletePublishedFiles + "\n");
             }
@@ -2088,8 +2093,48 @@ public class IndexServiceBean {
                 SolrDocumentList list = rsp.getResults();
                 for (SolrDocument doc: list) {
                     long id = Long.parseLong((String) doc.getFieldValue(SearchFields.DEFINITION_POINT_DVOBJECT_ID));
+                    String docId = (String)doc.getFieldValue(SearchFields.ID);
                     if(!dvObjectService.checkExists(id)) {
-                        permissionInSolrOnly.add((String)doc.getFieldValue(SearchFields.ID));
+                        permissionInSolrOnly.add(docId);
+                    } else {
+                        DvObject obj = dvObjectService.findDvObject(id);
+                        if (obj instanceof Dataset d) {
+                            DatasetVersion dv = d.getLatestVersion();
+                            if (docId.endsWith("draft_permission")) {
+                                if (!dv.isDraft()) {
+                                    permissionInSolrOnly.add(docId);
+                                }
+                            } else if (docId.endsWith("deaccessioned_permission")) {
+                                if (!dv.isDeaccessioned()) {
+                                    permissionInSolrOnly.add(docId);
+                                }
+                            } else {
+                                if (d.getReleasedVersion() != null) {
+                                    permissionInSolrOnly.add(docId);
+                                }
+                            }
+                        } else if (obj instanceof DataFile f) {
+                            List<VersionState> states = dataFileService.findVersionStates(f.getId());
+                            Set<String> strings = states.stream().map(VersionState::toString).collect(Collectors.toSet());
+                            logger.info("for " + docId + " states: " + String.join(", ", strings));
+                            if (docId.endsWith("draft_permission")) {
+                                if (!states.contains(VersionState.DRAFT)) {
+                                    permissionInSolrOnly.add(docId);
+                                }
+                            } else if (docId.endsWith("deaccessioned_permission")) {
+                                if (!states.contains(VersionState.DEACCESSIONED) && states.size() == 1) {
+                                    permissionInSolrOnly.add(docId);
+                                }
+                            } else {
+                                if (!states.contains(VersionState.RELEASED)) {
+                                    permissionInSolrOnly.add(docId);
+                                } else if (!dataFileService.findMostRecentVersionFileIsIn(f).getDatasetVersion()
+                                        .equals(f.getOwner().getReleasedVersion())) {
+                                    permissionInSolrOnly.add(docId);
+                                }
+
+                            }
+                        }
                     }
                 }
                 if (cursorMark.equals(nextCursorMark)) {
