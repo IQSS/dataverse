@@ -92,7 +92,7 @@ It is still though possible to use full strength of IDE, the following instructi
 - Install Intelij in Windows.
 
 You can open the project through ``\\wsl.localhost`` and navigate to dataverse project.
-You can try to build the project in Intelij. You may get a message ``Cannot establish network connection from WSL to Windows host (could be blocked by firewall).`` In that case you can try
+You can try to build the project in Intellij. You may get a message ``Cannot establish network connection from WSL to Windows host (could be blocked by firewall).`` In that case you can try
 to disable WSL Hyperviser from firewall.
 After that you should be able to build the project in Intellij.
 It seems that at present it is impossible to deploy the glassfish application in Intelij. You can try to add Glassfish plugin through Settings->Plugins and in Run->Edit Configurations configure Application Server from WSL ``/usr/localhost/payara6`` with URL http://localhost:8080 and Server Domain as domian one, but it may fail since Intelij confuses the Windows and Linux paths.
