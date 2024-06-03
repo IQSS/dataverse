@@ -94,7 +94,7 @@ It is still though possible to use full strength of IDE, the following instructi
 You can open the project through ``\\wsl.localhost`` and navigate to dataverse project.
 You can try to build the project in Intelij. You may get a message ``Cannot establish network connection from WSL to Windows host (could be blocked by firewall).`` In that case you can try
 to disable WSL Hyperviser from firewall.
-After that you should be able to build the project in Intelij.
+After that you should be able to build the project in Intellij.
 It seems that at present it is impossible to deploy the glassfish application in Intelij. You can try to add Glassfish plugin through Settings->Plugins and in Run->Edit Configurations configure Application Server from WSL ``/usr/localhost/payara6`` with URL http://localhost:8080 and Server Domain as domian one, but it may fail since Intelij confuses the Windows and Linux paths.
 
 To use the full strength of Intelij with build, deployment and debugging, one will need to use Intelij ``Remote development``. Close all the projects in InteliJ and go to ``Remote development->WSL`` and press ``New Project``. In WSL instance choose your linux distribution and press ``Next``. In ``Prpject Directory`` navigate to WSL dataverse project.Then press ``Download IDE and Connect``. This will install InteliJ in WSL in ``~/.cache/JetBrains/``. Now in InteliJ you should see your project opened in a new InteliJ window. After adding Glassfish plugin and editing configuration you should be able to build the project and run the project.
