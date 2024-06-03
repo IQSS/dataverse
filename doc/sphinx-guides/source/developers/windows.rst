@@ -91,7 +91,7 @@ It is still though possible to use a full-strength IDE. The following instructio
 
 - Install Intelij in Windows.
 
-You can open the project through ``\\wsl.localhost`` and navigate to dataverse project.
+You can open the project through ``\\wsl.localhost`` and navigate to Dataverse project.
 You can try to build the project in Intellij. You may get a message ``Cannot establish network connection from WSL to Windows host (could be blocked by firewall).`` In that case you can try
 to disable WSL Hyperviser from firewall.
 After that you should be able to build the project in Intellij.
