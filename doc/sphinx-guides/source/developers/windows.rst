@@ -77,7 +77,7 @@ Install Dataverse
 Now you can install Dataverse in WSL following the instructions for :doc:`classic-dev-env`
 At the end check that you have ``-Ddataverse.pid.default-provider=fake`` in jvm-options.
 
-Now you can access dataverse in your windows browser
+Now you can access Dataverse in your Windows browser (Edge, Chrome, etc.):
 
  - http://localhost:8080
  - username: dataverseAdmin
