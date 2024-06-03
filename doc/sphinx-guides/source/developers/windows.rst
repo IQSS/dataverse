@@ -58,7 +58,7 @@ If you do not have an internet connection try adding it in ``/etc/wsl.conf``
   [network]
   generateResolvConf = false
 
-Also in /etc/resolv.conf add
+Also in ``/etc/resolv.conf`` add
 
 .. code-block:: bash
 
