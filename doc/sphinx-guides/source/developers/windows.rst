@@ -102,5 +102,5 @@ To use the full strength of Intelij with build, deployment and debugging, one wi
 PgAdmin in Windows for Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can access dataverse database from Windows. Install pgAdmin https://www.pgadmin.org/download/pgadmin-4-windows/ In pgAdmin register server using 127.0.0.1 with port 5432, database dvndb and dvnapp as username with secret password. Now you will be able to access and update dataverse database. 
+You can access The Dataverse database from Windows. Install pgAdmin https://www.pgadmin.org/download/pgadmin-4-windows/ In pgAdmin register a server using 127.0.0.1 with port 5432, database dvndb and dvnapp as username with secret password. Now you will be able to access and update Dataverse database. 
 
