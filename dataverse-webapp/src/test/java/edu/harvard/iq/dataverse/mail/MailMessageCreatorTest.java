@@ -82,6 +82,8 @@ public class MailMessageCreatorTest {
     void prepare() {
         Dataverse rootDataverse = createRootDataverse(ROOTDVNAME);
 
+        testDataverse.setOwner(rootDataverse);
+
         RoleAssignment roleAssignment = createRoleAssignment();
 
         when(permissionService.getRolesOfUser(any(), any(Dataverse.class)))
@@ -262,29 +264,29 @@ public class MailMessageCreatorTest {
     private String getAssignRoleMessage(String role, String dvObjectType) {
         return "Hello, \n\n" +
                 "You are now " + role + " for the " + dvObjectType +
-                " \"" + testDataverse.getDisplayName() + "\" (view at " + SITEURL + "/dataverse/" + testDataverse.getAlias() + ").";
+                " \"" + testDataverse.getDisplayName() + "\" (view at " + SITEURL + "/dataverse/" + testDataverse.getAlias() + " ).";
     }
 
     private String getCreateDataverseMessage() {
         return "Hello, \n\n" +
                 "Your new dataverse named " + testDataverse.getDisplayName() + " (view at " + SITEURL + "/dataverse/" + testDataverse.getAlias()
-                + ") was created in  (view at )." +
+                + " ) was created in Root (view at " + SITEURL + "/dataverse/" + testDataverse.getOwner().getAlias() + " )." +
                 " To learn more about what you can do with your dataverse, check out the Dataverse Management" +
                 " - User Guide at " + GUIDESBASEURL + "/" + GUIDESVERSION + "/user/dataverse-management.html .";
     }
 
     private String getPolishCreateDataverseMessage() {
         return  "Witaj, \n\n" +
-                "Twoja nowa kolekcja o nazwie " + testDataverse.getDisplayName() + " (zobacz na stronie " + SITEURL +"/dataverse/"+ testDataverse.getAlias()+ ") została utworzona" +
-                " w  (zobacz na stronie ). Aby dowiedzieć się więcej, co można zrobić z kolekcją, zapoznaj się z" +
+                "Twoja nowa kolekcja o nazwie " + testDataverse.getDisplayName() + " (zobacz na stronie " + SITEURL +"/dataverse/"+ testDataverse.getAlias() + " ) została utworzona" +
+                " w Root (zobacz na stronie " + SITEURL +"/dataverse/"+ testDataverse.getOwner().getAlias() + " ). Aby dowiedzieć się więcej, co można zrobić z kolekcją, zapoznaj się z" +
                 " rozdziałem Zarządzanie kolekcją w Poradniku użytkownika" +
-                " na stronie " + GUIDESBASEURL + "/" + GUIDESVERSION + "/user/dataverse-management.html.";
+                " na stronie " + GUIDESBASEURL + "/" + GUIDESVERSION + "/user/dataverse-management.html .";
     }
 
     private String getReturnToAuthorMessage() {
         return "Hello, \n\n" +
-                "Dataset \"TheTitle\" (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT) was " +
-                "returned by the data reviewer of \"rootDataverseName\" (view at http://localhost:8080/dataverse/nicedataverse).\n\n" +
+                "Dataset \"TheTitle\" (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT ) was " +
+                "returned by the data reviewer of \"rootDataverseName\" (view at http://localhost:8080/dataverse/nicedataverse ).\n\n" +
                 "Additional information from the dataset reviewer:\n\n" +
                 "=====\n\n" +
                 "Dataset returned to author message\n\n" +
@@ -294,7 +296,7 @@ public class MailMessageCreatorTest {
 
     private String getSubmitForReviewMessage() {
         return "Hello, \n\n" +
-                "TheTitle (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT) was submitted for review to be published in rootDataverseName (view at http://localhost:8080/dataverse/nicedataverse). " +
+                "TheTitle (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT ) was submitted for review to be published in rootDataverseName (view at http://localhost:8080/dataverse/nicedataverse ). " +
                 "Don't forget to publish it or send it back to the submitter, Notifcation Requester (Notifcation.Requester@someU.edu)!\n\n" +
                 "Additional information from the dataset submitter:\n\n" +
                 "=====\n\n" +
@@ -305,7 +307,7 @@ public class MailMessageCreatorTest {
     private String getGrantFileAccessInfoMessage() {
         return "Hello, \n\n"
                 + "dataverseAdmin accepted access request to files in dataset “testDataset” "
-                + "(view at http://localhost:8080/dataset.xhtml?persistentId=doi:10.5072/FK2/TEST11).\n\n"
+                + "(view at http://localhost:8080/dataset.xhtml?persistentId=doi:10.5072/FK2/TEST11 ).\n\n"
                 + "Current number of users awaiting file access request resolution in this dataset: 0.\n\n"
                 + "You may manage access to files in this dataset at http://localhost:8080/permissions-manage-files.xhtml?id=2";
     }
@@ -313,7 +315,7 @@ public class MailMessageCreatorTest {
     private String getRejectFileAccessInfoMessage() {
         return "Hello, \n\n"
                 + "dataverseAdmin rejected access request to files in dataset “testDataset” "
-                + "(view at http://localhost:8080/dataset.xhtml?persistentId=doi:10.5072/FK2/TEST11).\n\n"
+                + "(view at http://localhost:8080/dataset.xhtml?persistentId=doi:10.5072/FK2/TEST11 ).\n\n"
                 + "Current number of users awaiting file access request resolution in this dataset: 0.\n\n"
                 + "You may manage access to files in this dataset at http://localhost:8080/permissions-manage-files.xhtml?id=2";
     }
@@ -419,6 +421,7 @@ public class MailMessageCreatorTest {
 
     private Dataverse createRootDataverse(String rootdvname) {
         Dataverse rootDataverse = new Dataverse();
+        rootDataverse.setAlias("root");
         rootDataverse.setName(rootdvname);
         return rootDataverse;
     }

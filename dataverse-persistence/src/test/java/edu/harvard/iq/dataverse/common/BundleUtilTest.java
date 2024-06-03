@@ -38,8 +38,8 @@ public class BundleUtilTest {
                             "Dataverse User Guide\" target=\"_blank\">User Guide</a>.",
                     BundleUtil.getStringFromBundle("dataverse.create.success", "http://guides.dataverse.org/en", "4.0")),
             () -> assertEquals("Your new dataverse named "
-                                 + "dvName (view at dvUrl) "
-                                 + "was created in parentDvName (view at parentDvUrl). To learn more "
+                                 + "dvName (view at dvUrl ) "
+                                 + "was created in parentDvName (view at parentDvUrl ). To learn more "
                                  + "about what you can do with your dataverse, check out "
                                  + "the Dataverse Management - User Guide at "
                                  + "http://guides.dataverse.org/en/4.0/user/dataverse-management.html .",
