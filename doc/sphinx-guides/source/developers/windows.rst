@@ -38,7 +38,7 @@ See the list of possible distributions:
 
   wsl --list --online
 
-Choose the distribution you would like. Then run the following command. Notice that this installation of dataverse was tried with ubuntu distribution.
+Choose the distribution you would like. Then run the following command. These instructions were tested with Ubuntu.
 
 .. code-block:: powershell
 
