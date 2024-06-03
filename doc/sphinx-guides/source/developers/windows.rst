@@ -44,7 +44,7 @@ Choose the distribution you would like. Then run the following command. These in
 
   wsl --install -d <Distribution Name>
 
-You will be asked to create a linux user.
+You will be asked to create a Linux user.
 After the installation of Linux is complete, check that you have an internet connection:
 
 .. code-block:: bash
