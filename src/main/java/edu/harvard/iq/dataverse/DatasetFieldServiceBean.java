@@ -6,6 +6,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidParameterException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.time.Instant;
@@ -20,8 +21,6 @@ import java.util.logging.Logger;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -495,10 +494,19 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             if (evv.getValue() == null) {
                 String adjustedTerm = (prefix==null)? term: term.replace(prefix, "");
 
-                retrievalUri = replaceRetrievalUriParam(retrievalUri, "0", adjustedTerm);
-                retrievalUri = replaceRetrievalUriParam(retrievalUri, termUriFieldName, adjustedTerm);
-                for (DatasetField f : relatedDatasetFields) {
-                    retrievalUri = replaceRetrievalUriParam(retrievalUri, f.getDatasetFieldType().getName(), f.getValue());
+                try {
+                    retrievalUri = tryToReplaceRetrievalUriParam(retrievalUri, "0", adjustedTerm);
+                    retrievalUri = tryToReplaceRetrievalUriParam(retrievalUri, termUriFieldName, adjustedTerm);
+                    for (DatasetField f : relatedDatasetFields) {
+                        retrievalUri = tryToReplaceRetrievalUriParam(retrievalUri, f.getDatasetFieldType().getName(), f.getValue());
+                    }
+                } catch (InvalidParameterException e) {
+                    logger.warning("InvalidParameterException in tryReplaceRetrievalUriParam : " + e.getMessage());
+                    return;
+                }
+                if (retrievalUri.contains("{")) {
+                    logger.severe("Retrieval URI still contains unreplaced parameter :" + retrievalUri);
+                    return;
                 }
 
                 logger.fine("Didn't find " + term + ", calling " + retrievalUri);
@@ -552,24 +560,32 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 } catch (IOException ioe) {
                     logger.severe("IOException when retrieving url: " + retrievalUri + " : " + ioe.getMessage());
                 }
-
             }
         } catch (URISyntaxException e) {
             logger.fine("Term is not a URI: " + term);
         }
-
     }
 
-    private String replaceRetrievalUriParam(String retrievalUri, String paramName, String value) {
+    private String tryToReplaceRetrievalUriParam(String retrievalUri, String paramName, String value) throws InvalidParameterException {
 
-        if(StringUtils.isBlank(paramName) || StringUtils.isBlank(value)) {
-            return retrievalUri;
+        if(StringUtils.isBlank(paramName)) {
+            throw new InvalidParameterException("Empty or null paramName is not allowed while replacing retrieval uri parameter");
         }
 
-        if(retrievalUri.contains("encodeUrl:" + paramName)) {
-            retrievalUri = retrievalUri.replace("{encodeUrl:"+paramName+"}", URLEncoder.encode(value, StandardCharsets.UTF_8));
+        if(retrievalUri.contains(paramName)) {
+            logger.fine("Parameter {" + paramName + "} found in retrievalUri");
+
+            if(StringUtils.isBlank(value)) {
+                throw new InvalidParameterException("Empty or null value is not allowed while replacing retrieval uri parameter");
+            }
+
+            if(retrievalUri.contains("encodeUrl:" + paramName)) {
+                retrievalUri = retrievalUri.replace("{encodeUrl:"+paramName+"}", URLEncoder.encode(value, StandardCharsets.UTF_8));
+            } else {
+                retrievalUri = retrievalUri.replace("{"+paramName+"}", value);
+            }
         } else {
-            retrievalUri = retrievalUri.replace("{"+paramName+"}", value);
+            logger.fine("Parameter {" + paramName + "} not found in retrievalUri");
         }
 
         return retrievalUri;
