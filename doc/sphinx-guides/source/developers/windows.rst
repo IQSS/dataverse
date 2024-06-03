@@ -30,7 +30,7 @@ If you have Docker already installed, you should already have WSL installed, oth
   
    wsl --install
 
-If you already had WSL installed you can install specific linux distribution:
+If you already had WSL installed you can install a specific Linux distribution:
 
 See the list of possible distributions:
 
