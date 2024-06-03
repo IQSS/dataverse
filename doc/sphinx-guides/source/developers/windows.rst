@@ -64,7 +64,7 @@ Also in ``/etc/resolv.conf`` add
 
   nameserver 1.1.1.1
 
-Now you can install all the tools one usually uses in Linux. For example, it is good idea to run update:
+Now you can install all the tools one usually uses in Linux. For example, it is good idea to run an update:
 
 .. code-block:: bash
 
