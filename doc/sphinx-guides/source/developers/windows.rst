@@ -87,7 +87,7 @@ IDE for Dataverse in Windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Files in WSL are accessible from Windows for editing using ``\\wsl.localhost`` or ``\\wsl$`` path. Windows files are accessible under Linux in the ``/mnt/c/`` directory. Therefore one can use one's favorite editor or IDE to edit Dataverse project files. Then one can build using ``mvn`` in WSL and deploy manually in WSL using ``asadmin``.
 
-It is still though possible to use full strength of IDE, the following instructions are for Intelij users.
+It is still though possible to use a full-strength IDE. The following instructions are for Intellij users.
 
 - Install Intelij in Windows.
 
