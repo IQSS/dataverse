@@ -133,6 +133,13 @@ https://github.com/libis/rdm-integration
 PHP
 ---
 
+DOI2PMH
+~~~~~~~
+
+The DOI2PMH server allow Dataverse instances to harvest DOI through OAI-PMH from otherwise unharvestable sources.
+
+https://github.com/IQSS/doi2pmh-server
+
 OJS
 ~~~
 

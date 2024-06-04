@@ -8,12 +8,15 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -136,7 +139,7 @@ public class UpdateDatasetThumbnailCommandTest {
 
     @Test
     public void testSetDatasetFileAsThumbnailFileNotFound() {
-        String expected = "Could not find file based on id supplied: 1.";
+        String expected = BundleUtil.getStringFromBundle("datasets.api.thumbnail.fileNotFound", List.of("1"));
         String actual = null;
         DatasetThumbnail datasetThumbnail = null;
         try {
