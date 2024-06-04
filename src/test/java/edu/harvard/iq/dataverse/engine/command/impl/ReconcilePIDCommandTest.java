@@ -43,11 +43,7 @@ public class ReconcilePIDCommandTest {
     IndexServiceBean indexServiceBean;
     RoleAssigneeServiceBean roleAssigneeServiceBean;
     UserNotificationServiceBean notificationService;
-    static MockedStatic<PidUtil> pidutil;
-    @BeforeAll
-    public static  void pre(){
-        pidutil = mockStatic(PidUtil.class);
-    }
+
 
     @BeforeEach
     public void setUp() {
@@ -105,13 +101,14 @@ public class ReconcilePIDCommandTest {
         when(pidProvider.getShoulder()).thenReturn("PROTO");
         when(pidProvider.getSeparator()).thenReturn("PROTO");
         when(pidProvider.getLabel()).thenReturn("PROTO");
+        when(pidProvider.getId()).thenReturn("PROTO");
         when(pidProvider.registerWhenPublished()).thenReturn(false);
+
         // register the provider
-        pidutil.when(() -> PidUtil.getPidProvider(eq(pidProvider.getLabel()))).thenReturn(pidProvider);
+        PidUtil.addToProviderList(pidProvider);
 
         GlobalId pid = new GlobalId(pidProvider.getProtocol(),pidProvider.getAuthority(),"OLD-ID", pidProvider.getSeparator(),pidProvider.getUrlPrefix(), pidProvider.getLabel());
-        pidutil.when(() -> PidUtil.parseAsGlobalID(eq("PROTO"),eq("PROTO"),eq("OLD-ID"))).thenReturn(pid);
-
+        when(pidProvider.parsePersistentId(eq("PROTO"),eq("PROTO"),eq("OLD-ID"))).thenReturn(pid);
         // given a dataset linked with the PIDprovider
         Dataset ds = MocksFactory.makeDataset();
         ds.setGlobalId(pid);
@@ -129,11 +126,17 @@ public class ReconcilePIDCommandTest {
         when(newPIDProviderMock.getAuthority()).thenReturn("PROTO1");
         when(newPIDProviderMock.getShoulder()).thenReturn("PROTO1");
         when(newPIDProviderMock.getSeparator()).thenReturn("PROTO1");
+        when(newPIDProviderMock.getLabel()).thenReturn("PROTO1");
+        when(newPIDProviderMock.getId()).thenReturn("PROTO1");
         when(newPIDProviderMock.registerWhenPublished()).thenReturn(false);
         when(newPIDProviderMock.canManagePID()).thenReturn(true);
+        // register the provider
+        PidUtil.addToProviderList(newPIDProviderMock);
         // create new GloablID and register with the Utils.
         GlobalId pid2 = new GlobalId(newPIDProviderMock.getProtocol(), newPIDProviderMock.getAuthority(),"MYIDENT", newPIDProviderMock.getSeparator(), newPIDProviderMock.getUrlPrefix(), newPIDProviderMock.getLabel());
-        pidutil.when(() -> PidUtil.parseAsGlobalID(eq("PROTO1"),eq("PROTO1"),eq("MYIDENT"))).thenReturn(pid2);
+        when(newPIDProviderMock.parsePersistentId(eq("PROTO1"),eq("PROTO1"),eq("MYIDENT"))).thenReturn(pid2);
+
+
         when(newPIDProviderMock.generatePid(ds)).thenAnswer(new Answer<DvObject>() {
             public DvObject answer(InvocationOnMock invocation) {
                 Dataset callback = (Dataset) invocation.getArguments()[0];
@@ -143,8 +146,7 @@ public class ReconcilePIDCommandTest {
                 return callback;
             }
         });
-        // register the provider
-        pidutil.when(() -> PidUtil.getPidProvider(eq(newPIDProviderMock.getLabel()))).thenReturn(newPIDProviderMock);
+
 
         // mocks and stubs for notification
         RoleAssignment roleAssignment=new RoleAssignment();
@@ -196,12 +198,13 @@ public class ReconcilePIDCommandTest {
         when(pidProvider.getShoulder()).thenReturn("PROTO");
         when(pidProvider.getSeparator()).thenReturn("PROTO");
         when(pidProvider.getLabel()).thenReturn("PROTO");
+        when(pidProvider.getId()).thenReturn("PROTO");
         when(pidProvider.registerWhenPublished()).thenReturn(false);
         // register the provider
-        pidutil.when(() -> PidUtil.getPidProvider(eq(pidProvider.getLabel()))).thenReturn(pidProvider);
+        PidUtil.addToProviderList(pidProvider);
 
         GlobalId pid = new GlobalId(pidProvider.getProtocol(),pidProvider.getAuthority(),"OLD-ID", pidProvider.getSeparator(),pidProvider.getUrlPrefix(), pidProvider.getLabel());
-        pidutil.when(() -> PidUtil.parseAsGlobalID(eq("PROTO"),eq("PROTO"),eq("OLD-ID"))).thenReturn(pid);
+        when(pidProvider.parsePersistentId(eq("PROTO"),eq("PROTO"),eq("OLD-ID"))).thenReturn(pid);
 
         // given a dataset linked with the PIDprovider
         Dataset ds = MocksFactory.makeDataset();
@@ -212,7 +215,7 @@ public class ReconcilePIDCommandTest {
         ds.setFiles(ds.getFiles().subList(0,1));
         DataFile df = ds.getFiles().get(0);
         GlobalId piddf = new GlobalId(pidProvider.getProtocol(),pidProvider.getAuthority(),"OLD-DF-ID", pidProvider.getSeparator(),pidProvider.getUrlPrefix(), pidProvider.getLabel());
-        pidutil.when(() -> PidUtil.parseAsGlobalID(eq("PROTO"),eq("PROTO"),eq("OLD-DF-ID"))).thenReturn(piddf);
+        when(pidProvider.parsePersistentId(eq("PROTO"),eq("PROTO"),eq("OLD-DF-ID"))).thenReturn(piddf);
         df.setGlobalId(piddf);
         when(pidProvider.alreadyRegistered(df)).thenReturn(true).thenReturn(false);
         ///
@@ -223,15 +226,19 @@ public class ReconcilePIDCommandTest {
 
         // given a new PID Provider
         PidProvider newPIDProviderMock = mock(PidProvider.class);
+        when(newPIDProviderMock.getId()).thenReturn("PROTO1");
+        when(newPIDProviderMock.getLabel()).thenReturn("PROTO1");
         when(newPIDProviderMock.getProtocol()).thenReturn("PROTO1");
         when(newPIDProviderMock.getAuthority()).thenReturn("PROTO1");
         when(newPIDProviderMock.getShoulder()).thenReturn("PROTO1");
         when(newPIDProviderMock.getSeparator()).thenReturn("PROTO1");
         when(newPIDProviderMock.registerWhenPublished()).thenReturn(false);
         when(newPIDProviderMock.canManagePID()).thenReturn(true);
+        // register the provider
+        PidUtil.addToProviderList(newPIDProviderMock);
         // create new GloablID and register with the Utils.
         GlobalId pid2 = new GlobalId(newPIDProviderMock.getProtocol(), newPIDProviderMock.getAuthority(),"MYIDENT", newPIDProviderMock.getSeparator(), newPIDProviderMock.getUrlPrefix(), newPIDProviderMock.getLabel());
-        pidutil.when(() -> PidUtil.parseAsGlobalID(eq("PROTO1"),eq("PROTO1"),eq("MYIDENT"))).thenReturn(pid2);
+        when(newPIDProviderMock.parsePersistentId(eq("PROTO1"),eq("PROTO1"),eq("MYIDENT"))).thenReturn(pid2);
         when(newPIDProviderMock.generatePid(ds)).thenAnswer(new Answer<DvObject>() {
             public DvObject answer(InvocationOnMock invocation) {
                 Dataset callback = (Dataset) invocation.getArguments()[0];
@@ -241,8 +248,8 @@ public class ReconcilePIDCommandTest {
                 return callback;
             }
         });
-        GlobalId piddf2 = new GlobalId(pidProvider.getProtocol(),pidProvider.getAuthority(),"NEW-DF-ID", pidProvider.getSeparator(),pidProvider.getUrlPrefix(), pidProvider.getLabel());
-        pidutil.when(() -> PidUtil.parseAsGlobalID(eq(piddf2.getProtocol()),eq(piddf2.getAuthority()),eq(piddf2.getIdentifier()))).thenReturn(piddf2);
+        GlobalId piddf2 = new GlobalId(newPIDProviderMock.getProtocol(),newPIDProviderMock.getAuthority(),"NEW-DF-ID", newPIDProviderMock.getSeparator(),newPIDProviderMock.getUrlPrefix(), newPIDProviderMock.getLabel());
+        when(newPIDProviderMock.parsePersistentId(eq("PROTO1"),eq("PROTO1"),eq("NEW-DF-ID"))).thenReturn(piddf2);
         when(newPIDProviderMock.generatePid(df)).thenAnswer(new Answer<DvObject>() {
             public DvObject answer(InvocationOnMock invocation) {
                 DataFile callback = (DataFile) invocation.getArguments()[0];
@@ -253,8 +260,7 @@ public class ReconcilePIDCommandTest {
             }
         });
 
-        // register the provider
-        pidutil.when(() -> PidUtil.getPidProvider(eq(newPIDProviderMock.getLabel()))).thenReturn(newPIDProviderMock);
+
 
         // mocks and stubs for notification
         RoleAssignment roleAssignment=new RoleAssignment();
@@ -313,7 +319,11 @@ public class ReconcilePIDCommandTest {
         when(pidProvider.getAuthority()).thenReturn("PROTO");
         when(pidProvider.getShoulder()).thenReturn("PROTO");
         when(pidProvider.getSeparator()).thenReturn("PROTO");
+        when(pidProvider.getLabel()).thenReturn("PROTO");
+        when(pidProvider.getId()).thenReturn("PROTO");
         when(pidProvider.registerWhenPublished()).thenReturn(true);
+        // register the provider
+        PidUtil.addToProviderList(pidProvider);
 
         // given a dataset linked with a PidProvider and corresponding globalId
         Dataset ds = MocksFactory.makeDataset();
@@ -322,9 +332,8 @@ public class ReconcilePIDCommandTest {
         Dataverse dv = MocksFactory.makeDataverse();
         ds.setOwner(dv);
         GlobalId pid = new GlobalId(pidProvider.getProtocol(),pidProvider.getAuthority(),"OLD-ID", pidProvider.getSeparator(),pidProvider.getUrlPrefix(), pidProvider.getLabel());
-        pidutil.when(() -> PidUtil.parseAsGlobalID(eq("PROTO"),eq("PROTO"),eq("OLD-ID"))).thenReturn(pid);
+        when(pidProvider.parsePersistentId(eq("PROTO"),eq("PROTO"),eq("OLD-ID"))).thenReturn(pid);
         ds.setGlobalId(pid);
-        pidutil.when(() -> PidUtil.getPidProvider(eq(pidProvider.getLabel()))).thenReturn(pidProvider);
 
         ReconcileDatasetPidCommand sut = new ReconcileDatasetPidCommand(request, ds, pidProvider);
         assertThrows(IllegalCommandException.class, () -> engine.submit(sut),"Should throw ICE when no change");
@@ -342,6 +351,7 @@ public class ReconcilePIDCommandTest {
         when(pidProvider.getAuthority()).thenReturn("PROTO");
         when(pidProvider.getShoulder()).thenReturn("PROTO");
         when(pidProvider.getSeparator()).thenReturn("PROTO");
+        when(pidProvider.getLabel()).thenReturn("PROTO");
         when(pidProvider.registerWhenPublished()).thenReturn(true);
 
         // given a dataset linked with the PIDprovider
