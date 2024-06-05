@@ -3899,6 +3899,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         int datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
@@ -3917,7 +3918,9 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         Response deaccessionDatasetResponse = UtilIT.deaccessionDataset(datasetId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
-        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+        deaccessionDatasetResponse.prettyPrint();
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .assertThat().body("data.message", containsString(String.valueOf(datasetId)));
 
         // includeDeaccessioned false
         Response getDatasetVersionCitationNotDeaccessioned = UtilIT.getDatasetVersionCitation(datasetId, DS_VERSION_LATEST_PUBLISHED, false, apiToken);
@@ -3928,8 +3931,20 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getDatasetVersionCitationDeaccessioned.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", containsString("DEACCESSIONED VERSION"));
+
+        publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResponse.prettyPrint();
+        publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String globalId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+
+        deaccessionDatasetResponse = UtilIT.deaccessionDatasetByGlobalId(globalId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionDatasetResponse.prettyPrint();
+        deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode())
+                .assertThat().body("data.message", containsString(String.valueOf(globalId)));
     }
 
+    
     @Test
     public void getVersionFiles() throws IOException, InterruptedException {
         Response createUser = UtilIT.createRandomUser();

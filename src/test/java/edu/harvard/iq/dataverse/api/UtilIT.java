@@ -3858,6 +3858,19 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
     }
 
+    static Response deaccessionDatasetByGlobalId(String globalId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("deaccessionReason", deaccessionReason);
+        if (deaccessionForwardURL != null) {
+            jsonObjectBuilder.add("deaccessionForwardURL", deaccessionForwardURL);
+        }
+        String jsonString = jsonObjectBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/datasets/:persistentId/versions/" + version + "/deaccession?persistentId=" + globalId);
+    }
+
     static Response getDownloadSize(Integer datasetId,
                                     String version,
                                     String contentType,
