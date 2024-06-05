@@ -4778,7 +4778,8 @@ public class Datasets extends AbstractApiBean {
             return badRequest(BundleUtil.getStringFromBundle("datasets.api.deaccessionDataset.invalid.version.identifier.error", List.of(DS_VERSION_LATEST_PUBLISHED)));
         }
         return response(req -> {
-            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            Dataset dataset = findDatasetOrDie(datasetId);
+            DatasetVersion datasetVersion = getDatasetVersionOrDie(req, versionId, dataset, uriInfo, headers);
             try {
                 JsonObject jsonObject = JsonUtil.getJsonObject(jsonBody);
                 datasetVersion.setVersionNote(jsonObject.getString("deaccessionReason"));
@@ -4791,7 +4792,10 @@ public class Datasets extends AbstractApiBean {
                     }
                 }
                 execCommand(new DeaccessionDatasetVersionCommand(req, datasetVersion, false));
-                return ok("Dataset " + datasetId + " deaccessioned for version " + versionId);
+
+                return ok("Dataset " + 
+                        (":persistentId".equals(datasetId) ? dataset.getAuthority() + "/" + dataset.getIdentifier() : datasetId) + 
+                        " deaccessioned for version " + versionId);
             } catch (JsonParsingException jpe) {
                 return error(Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
             }
