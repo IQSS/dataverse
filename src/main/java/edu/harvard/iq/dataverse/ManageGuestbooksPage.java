@@ -220,7 +220,8 @@ public class ManageGuestbooksPage implements java.io.Serializable {
        // The fix below replaces any spaces in the name of the dataverse with underscores;
        // without it, the filename was chopped off (by the browser??), and the user 
        // was getting the file name "Foo", instead of "Foo and Bar in Social Sciences.csv". -- L.A.
-       return  dataverse.getName().replace(' ', '_') + "_GuestbookReponses.csv";
+       // Also removing some chars that have been reported to cause issues with certain browsers
+       return  dataverse.getName().replace(' ', '_').replaceAll("[\\\\/:*?\"<>|,;]", "") + "_GuestbookResponses.csv";
     }
     
     public void deleteGuestbook() {

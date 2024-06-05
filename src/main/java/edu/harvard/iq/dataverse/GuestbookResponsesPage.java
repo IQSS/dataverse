@@ -101,8 +101,9 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     private String getFileName(){
        // The fix below replaces any spaces in the name of the dataverse with underscores;
        // without it, the filename was chopped off (by the browser??), and the user 
-       // was getting the file name "Foo", instead of "Foo and Bar in Social Sciences.csv". -- L.A. 
-       return  dataverse.getName().replace(' ', '_') + "_" + guestbook.getId() + "_GuestbookReponses.csv";
+       // was getting the file name "Foo", instead of "Foo and Bar in Social Sciences.csv". -- L.A.
+       // Also removing some chars that have been reported to cause issues with certain browsers
+       return  dataverse.getName().replace(' ', '_').replaceAll("[\\\\/:*?\"<>|,;]", "") + "_" + guestbook.getId() + "_GuestbookResponses.csv";
     }
 
     public void streamResponsesByDataverseAndGuestbook(){
