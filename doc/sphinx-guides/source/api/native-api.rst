@@ -4249,12 +4249,12 @@ The JSON representation of a role (``roles.json``) looks like this::
 
   {
     "alias": "sys1",
-    "name": “Restricted System Role”,
-    "description": “A person who may only add datasets.”,
+    "name": "Restricted System Role",
+    "description": "A person who may only add datasets.",
     "permissions": [
       "AddDataset"
     ]
-  } 
+  }
 
 .. note:: alias is constrained to a length of 16 characters
 
@@ -5313,9 +5313,25 @@ Creates a global role in the Dataverse installation. The data POSTed are assumed
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export ID=root
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/admin/roles" --upload-file roles.json
+  curl -H "Content-Type: application/json" -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/admin/roles" --upload-file roles.json
+
+``roles.json`` see :ref:`json-representation-of-a-role`
+
+Update Global Role
+~~~~~~~~~~~~~~~~~~
+
+Update a global role in the Dataverse installation. The data PUTed are assumed to be a role JSON. ::
+
+    POST http://$SERVER/api/admin/roles
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "Content-Type: application/json" -H "X-Dataverse-key:$API_TOKEN" -X PUT "$SERVER_URL/api/admin/roles/$ID" --upload-file roles.json
 
 ``roles.json`` see :ref:`json-representation-of-a-role`
 
