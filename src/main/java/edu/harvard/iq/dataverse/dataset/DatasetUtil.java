@@ -653,6 +653,15 @@ public class DatasetUtil {
     }
 
     public static String getLicenseName(DatasetVersion dsv) {
+
+        DatasetVersionServiceBean datasetVersionService = CDI.current().select(DatasetVersionServiceBean.class).get();
+        /*
+        Special case where there are default custom terms indicating that no actual choice has been made...
+         */
+        if (datasetVersionService.isVersionDefaultCustomTerms(dsv)) {
+            return BundleUtil.getStringFromBundle("license.none.chosen");
+        }
+
         License license = DatasetUtil.getLicense(dsv);
         return getLocalizedLicenseName(license);
     }
@@ -683,7 +692,16 @@ public class DatasetUtil {
     }
 
     public static String getLicenseDescription(DatasetVersion dsv) {
+        
+        DatasetVersionServiceBean datasetVersionService = CDI.current().select(DatasetVersionServiceBean.class).get();
+        /*
+        Special case where there are default custom terms indicating that no actual choice has been made...
+         */
+        if (datasetVersionService.isVersionDefaultCustomTerms(dsv)) {
+            return BundleUtil.getStringFromBundle("license.none.chosen.description");
+        }
         License license = DatasetUtil.getLicense(dsv);
+        
         return license != null ? getLocalizedLicenseDetails(license,"DESCRIPTION") : BundleUtil.getStringFromBundle("license.custom.description");
     }
 

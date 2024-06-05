@@ -53,7 +53,9 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.json.JsonObject;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -95,6 +97,8 @@ public class IndexServiceBean {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
     @EJB
     BuiltinUserServiceBean dataverseUserServiceBean;
     @EJB
@@ -468,11 +472,13 @@ public class IndexServiceBean {
 
     public void indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         doIndexDataset(dataset, doNormalSolrDocCleanUp);
+        System.out.print("indexed: " + dataset.getId());
         updateLastIndexedTime(dataset.getId());
     }
     
     private void doIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         logger.fine("indexing dataset " + dataset.getId());
+        System.out.print("indexing dataset " + dataset.getId());
         /**
          * @todo should we use solrDocIdentifierDataset or
          * IndexableObject.IndexableTypes.DATASET.getName() + "_" ?
@@ -1694,6 +1700,12 @@ public class IndexServiceBean {
 
     private void addLicenseToSolrDoc(SolrInputDocument solrInputDocument, DatasetVersion datasetVersion) {
         if (datasetVersion != null && datasetVersion.getTermsOfUseAndAccess() != null) {
+            //test to see if the terms of use are the default set in 5.10 - if so and there's no license then don't add license to solr doc.   
+            //fixes 10513
+            if (datasetVersionService.isVersionDefaultCustomTerms(datasetVersion)){
+                return; 
+            }
+            
             String licenseName = "Custom Terms";
             if(datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
                 licenseName = datasetVersion.getTermsOfUseAndAccess().getLicense().getName();
