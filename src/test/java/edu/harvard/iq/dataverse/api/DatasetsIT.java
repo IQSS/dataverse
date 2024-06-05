@@ -3936,12 +3936,12 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         publishDatasetResponse.prettyPrint();
         publishDatasetResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        String globalId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
+        String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
 
-        deaccessionDatasetResponse = UtilIT.deaccessionDatasetByGlobalId(globalId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionDatasetResponse = UtilIT.deaccessionDatasetByPersistentId(persistentId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
         deaccessionDatasetResponse.prettyPrint();
         deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode())
-                .assertThat().body("data.message", containsString(String.valueOf(globalId)));
+                .assertThat().body("data.message", containsString(String.valueOf(persistentId)));
     }
 
     

@@ -3858,7 +3858,7 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
     }
 
-    static Response deaccessionDatasetByGlobalId(String globalId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+    static Response deaccessionDatasetByPersistentId(String persistentId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add("deaccessionReason", deaccessionReason);
         if (deaccessionForwardURL != null) {
@@ -3868,7 +3868,7 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonString)
-                .post("/api/datasets/:persistentId/versions/" + version + "/deaccession?persistentId=" + globalId);
+                .post("/api/datasets/:persistentId/versions/" + version + "/deaccession?persistentId=" + persistentId);
     }
 
     static Response getDownloadSize(Integer datasetId,
