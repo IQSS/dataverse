@@ -11,6 +11,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
+
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 
 import java.nio.charset.StandardCharsets;
@@ -3953,5 +3954,13 @@ public class UtilIT {
                 .body(contactArrayBuilder.build().toString())
                 .contentType(ContentType.JSON)
                 .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
+    }
+
+    public static Response getOpenAPI(String accept, String format) {
+        Response response = given()
+                .header("Accept", accept)
+                .queryParam("format", format)
+                .get("/openapi");
+        return response;
     }
 }
