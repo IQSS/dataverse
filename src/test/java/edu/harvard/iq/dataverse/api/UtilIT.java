@@ -3845,30 +3845,38 @@ public class UtilIT {
                 .get("/api/files/" + dataFileId + "/hasBeenDeleted");
     }
 
-    static Response deaccessionDataset(Integer datasetId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-        jsonObjectBuilder.add("deaccessionReason", deaccessionReason);
-        if (deaccessionForwardURL != null) {
-            jsonObjectBuilder.add("deaccessionForwardURL", deaccessionForwardURL);
-        }
-        String jsonString = jsonObjectBuilder.build().toString();
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(jsonString)
-                .post("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
+    static Response deaccessionDataset(int datasetId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+        return deaccessionDataset(String.valueOf(datasetId), version, deaccessionReason, deaccessionForwardURL, apiToken);
     }
 
-    static Response deaccessionDatasetByPersistentId(String persistentId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+    static Response deaccessionDataset(String datasetIdOrPersistentId, String versionId, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+        
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+    
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add("deaccessionReason", deaccessionReason);
         if (deaccessionForwardURL != null) {
             jsonObjectBuilder.add("deaccessionForwardURL", deaccessionForwardURL);
         }
+
         String jsonString = jsonObjectBuilder.build().toString();
+        StringBuilder query = new StringBuilder()
+            .append("/api/datasets/")
+            .append(idInPath)
+            .append("/versions/")
+            .append(versionId)
+            .append("/deaccession")
+            .append(optionalQueryParam);   
+                 
         return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(jsonString)
-                .post("/api/datasets/:persistentId/versions/" + version + "/deaccession?persistentId=" + persistentId);
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .body(jsonString)
+            .post(query.toString());
     }
 
     static Response getDownloadSize(Integer datasetId,

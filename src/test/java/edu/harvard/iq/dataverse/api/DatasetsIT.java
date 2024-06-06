@@ -3938,7 +3938,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         String persistentId = JsonPath.from(createDatasetResponse.body().asString()).getString("data.persistentId");
 
-        deaccessionDatasetResponse = UtilIT.deaccessionDatasetByPersistentId(persistentId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
+        deaccessionDatasetResponse = UtilIT.deaccessionDataset(persistentId, DS_VERSION_LATEST_PUBLISHED, "Test deaccession reason.", null, apiToken);
         deaccessionDatasetResponse.prettyPrint();
         deaccessionDatasetResponse.then().assertThat().statusCode(OK.getStatusCode())
                 .assertThat().body("data.message", containsString(String.valueOf(persistentId)));
