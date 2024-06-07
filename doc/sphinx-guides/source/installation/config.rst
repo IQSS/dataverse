@@ -991,8 +991,6 @@ You also have the option to set a **custom container name separator.** It is ini
 
 ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.folderPathSeparator=-"``
 
-By default, your Swift installation will be public-only, meaning users will be unable to put access restrictions on their data. If you are comfortable with this level of privacy, the final step in your setup is to set the  :ref:`:PublicInstall` setting to `true`.
-
 In order to **enable file access restrictions**, you must enable Swift to use temporary URLs for file access. To enable usage of temporary URLs, set a hash key both on your swift endpoint and in your swift.properties file. You can do so by running the create command:
 
 ``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.hashKey.endpoint1=your-hash-key"``
@@ -1023,11 +1021,7 @@ If a user is computing on multiple datasets, the compute tool option will redire
 
 ``:ComputeBaseUrl/multiparty?datasetPersistentId&anotherDatasetPersistentId&anotherDatasetPersistentId&...``
 
-If a user is computing on a single file, depending on the configuration of your installation, the compute tool option will either redirect to:
-
-``:ComputeBaseUrl?datasetPersistentId=yourObject``
-
-if your installation's :ref:`:PublicInstall` setting is true, or:
+If a user is computing on a single file, the compute tool option will redirect to:
 
 ``:ComputeBaseUrl?datasetPersistentId=yourObject&temp_url_sig=yourTempUrlSig&temp_url_expires=yourTempUrlExpiry``
 
@@ -4206,33 +4200,6 @@ Set the base URL for the "Compute" button for a dataset.
 Set the name of the cloud environment you've integrated with your Dataverse installation.
 
 ``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``
-
-.. _:PublicInstall:
-
-:PublicInstall
-++++++++++++++
-
-Setting an installation to public will remove the ability to restrict data files or datasets. This functionality of the Dataverse Software will be disabled from your installation.
-
-This is useful for specific cases where an installation's files are stored in public access. Because files stored this way do not obey the Dataverse Software's file restrictions, users would still be able to access the files even when they're restricted. In these cases it's best to use :PublicInstall to disable the feature altogether.
-
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:PublicInstall``
-
-:DataCaptureModuleUrl
-+++++++++++++++++++++
-
-The URL for your Data Capture Module (DCM) installation. This component is experimental and can be downloaded from https://github.com/sbgrid/data-capture-module .
-
-``curl -X PUT -d 'https://dcm.example.edu' http://localhost:8080/api/admin/settings/:DataCaptureModuleUrl``
-
-:RepositoryStorageAbstractionLayerUrl
-+++++++++++++++++++++++++++++++++++++
-
-The URL for your Repository Storage Abstraction Layer (RSAL) installation. This component is experimental and can be downloaded from https://github.com/sbgrid/rsal .
-
-``curl -X PUT -d 'https://rsal.example.edu' http://localhost:8080/api/admin/settings/:RepositoryStorageAbstractionLayerUrl``
-
-.. _:UploadMethods:
 
 :UploadMethods
 ++++++++++++++
