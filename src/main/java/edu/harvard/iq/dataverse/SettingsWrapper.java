@@ -299,20 +299,23 @@ public class SettingsWrapper implements java.io.Serializable {
         return zipDownloadLimit;
     }
 
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isPublicInstall(){
         if (publicInstall == null) {
             publicInstall = systemConfig.isPublicInstall();
         }
         return publicInstall; 
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncUpload() {
         if (rsyncUpload == null) {
             rsyncUpload = getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
         return rsyncUpload; 
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncDownload() {
         if (rsyncDownload == null) {
             rsyncDownload = systemConfig.isRsyncDownload();
@@ -379,7 +382,8 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return webloaderUpload;
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncOnly() {
         if (rsyncOnly == null) {
             String downloadMethods = getValueForKey(SettingsServiceBean.Key.DownloadMethods);
@@ -398,7 +402,7 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return rsyncOnly;
     }
-    
+
     public boolean isHTTPUpload(){
         if (httpUpload == null) {
             httpUpload = getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());

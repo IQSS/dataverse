@@ -2297,6 +2297,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     @GET
     @AuthRequired
     @Path("{identifier}/dataCaptureModule/rsync")

@@ -55,7 +55,10 @@ public class SettingsServiceBean {
         CustomDatasetSummaryFields,
         /**
          * Defines a public installation -- all datafiles are unrestricted
+         *
+         * This was added for rsync, which is now deprecated.
          */
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         PublicInstall,
         /**
          * Sets the name of your cloud computing environment.
@@ -75,9 +78,12 @@ public class SettingsServiceBean {
         /**
          * For example, https://datacapture.example.org
          */
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         DataCaptureModuleUrl,
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         RepositoryStorageAbstractionLayerUrl,
         UploadMethods,
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         DownloadMethods,
         /**
          * If the data replicated around the world using RSAL (Repository
@@ -87,6 +93,7 @@ public class SettingsServiceBean {
          * TODO: Think about if it makes sense to make this a column in the
          * StorageSite database table.
          */
+        @Deprecated(forRemoval = true, since = "2024-07-07")
         LocalDataAccessPath,
         /**
          * The algorithm used to generate PIDs, randomString (default) or
