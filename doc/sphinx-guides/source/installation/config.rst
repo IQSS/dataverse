@@ -4201,6 +4201,8 @@ Set the name of the cloud environment you've integrated with your Dataverse inst
 
 ``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``
 
+.. _:UploadMethods:
+
 :UploadMethods
 ++++++++++++++
 
