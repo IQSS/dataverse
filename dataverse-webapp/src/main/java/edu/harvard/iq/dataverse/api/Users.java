@@ -2,15 +2,19 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.userdata.AuthenticatedUserCsvWriter;
 import edu.harvard.iq.dataverse.users.ChangeUserIdentifierService;
 import edu.harvard.iq.dataverse.users.MergeInAccountService;
 
 import javax.ejb.EJBException;
 import javax.inject.Inject;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 /**
  *
@@ -24,6 +28,21 @@ public class Users extends AbstractApiBean {
 
     @Inject
     private MergeInAccountService mergeInAccountService;
+
+    @Inject
+    private AuthenticatedUserCsvWriter authenticatedUserCsvWriter;
+
+    @GET
+    @Produces({"text/csv"})
+    public Response listUsersCSV() throws WrappedResponse {
+        findSuperuserOrDie();
+
+        StreamingOutput csvContent = output -> authenticatedUserCsvWriter.write(output, authSvc.findAllAuthenticatedUsers());
+
+        return Response.ok(csvContent)
+                .header("Content-Disposition", "attachment; filename=\"authenticated-users.csv\"")
+                .build();
+    }
 
     @POST
     @ApiWriteOperation
