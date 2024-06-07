@@ -91,17 +91,11 @@ Download `ec2-create-instance.sh`_ and put it somewhere reasonable. For the purp
 
 .. _ec2-create-instance.sh: https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh
 
-To run it with default values you just need the script, but you may also want a current copy of the ansible `group vars <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/defaults/main.yml>`_ file.
+To run the script, you can make it executable (``chmod 755 ec2-create-instance.sh``) or run it with bash, like this with ``-h`` as an argument to print the help:
 
-ec2-create-instance accepts a number of command-line switches, including:
+``bash ~/Downloads/ec2-create-instance.sh -h``
 
-* -r: GitHub Repository URL (defaults to https://github.com/IQSS/dataverse.git)
-* -b: branch to build (defaults to develop)
-* -p: pemfile directory (defaults to $HOME)
-* -g: Ansible GroupVars file (if you wish to override role defaults)
-* -h: help (displays usage for each available option)
-
-``bash ~/Downloads/ec2-create-instance.sh -b develop -r https://github.com/scholarsportal/dataverse.git -g main.yml``
+If you run the script without any arguments, it should spin up the latest version of Dataverse.
 
 You will need to wait for 15 minutes or so until the deployment is finished, longer if you've enabled sample data and/or the API test suite. Eventually, the output should tell you how to access the Dataverse installation in a web browser or via SSH. It will also provide instructions on how to delete the instance when you are finished with it. Please be aware that AWS charges per minute for a running instance. You may also delete your instance from https://console.aws.amazon.com/console/home?region=us-east-1 .
 

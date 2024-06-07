@@ -11,6 +11,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
+
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 
 import java.nio.charset.StandardCharsets;
@@ -3759,6 +3760,20 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/files/actions/:set-embargo");
     }
 
+    static Response createFileRetention(Integer datasetId, Integer fileId, String dateUnavailable, String apiToken) {
+        JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add("dateUnavailable", dateUnavailable);
+        jsonBuilder.add("reason", "This is a test retention");
+        jsonBuilder.add("fileIds", Json.createArrayBuilder().add(fileId));
+        String jsonString = jsonBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .contentType("application/json")
+                .urlEncodingEnabled(false)
+                .post("/api/datasets/" + datasetId + "/files/actions/:set-retention");
+    }
+
     static Response getVersionFileCounts(Integer datasetId,
                                          String version,
                                          String contentType,
@@ -3925,4 +3940,27 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/requestGlobusUploadPaths");
     }
 
+    static Response updateDataverseInputLevels(String dataverseAlias, String[] inputLevelNames, String apiToken) {
+        JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
+        for(String inputLevelName : inputLevelNames) {
+            contactArrayBuilder.add(Json.createObjectBuilder()
+                    .add("datasetFieldTypeName", inputLevelName)
+                    .add("required", true)
+                    .add("include", true)
+            );
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(contactArrayBuilder.build().toString())
+                .contentType(ContentType.JSON)
+                .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
+    }
+
+    public static Response getOpenAPI(String accept, String format) {
+        Response response = given()
+                .header("Accept", accept)
+                .queryParam("format", format)
+                .get("/openapi");
+        return response;
+    }
 }
