@@ -2,9 +2,9 @@
 
 Please note: this is a copy/paste from <https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md> but we intend to split the content on this intro page into sub-pages.
 
-Thank you for your interest in contributing to Dataverse!  We are open to contributions from everyone. You don't need permission to participate. Just jump in. If you have questions, please reach out using one or more of the channels described below.
+Thank you for your interest in contributing to Dataverse!  We are open to contributions from everyone. We aren't just looking for developers. There are many ways to contribute to Dataverse.  We welcome contributions of ideas, bug reports, usability research/feedback, documentation, code, and more!
 
-We aren't just looking for developers. There are many ways to contribute to Dataverse.  We welcome contributions of ideas, bug reports, usability research/feedback, documentation, code, and more!
+If you have questions, please reach out using one or more of the channels described below.
 
 ```{contents} Contents:
 :local:
