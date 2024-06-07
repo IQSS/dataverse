@@ -114,6 +114,13 @@ Every non-index page should use the following code to display a table of content
 
 This code should be placed below any introductory text/images and directly above the first subheading, much like a Wikipedia page.
 
+If you are using Markdown, you should use this form instead: ::
+
+    ```{contents} Contents:
+    :local:
+    :depth: 3
+    ```
+
 Images
 ------
 
@@ -124,6 +131,8 @@ PNG image directly and include or b) use inline description languages like Graph
 While PNGs in the git repo can be linked directly via URL, Sphinx-generated images do not need a manual step and might
 provide higher visual quality. Especially in terms of quality of content, generated images can be extendend and improved
 by a textbased and reviewable commit, without needing raw data or source files and no diff around.
+
+TODO: The above covers "how" but what about "when"?
 
 Cross References
 ----------------
