@@ -2315,7 +2315,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/datasets/24/locks?type=Ingest"
 
-Currently implemented lock types are ``Ingest``, ``Workflow``, ``InReview``, ``DcmUpload``, ``finalizePublication``, ``EditInProgress`` and ``FileValidationFailed``.
+Currently implemented lock types are ``Ingest``, ``Workflow``, ``InReview``, ``DcmUpload`` (deprecated), ``finalizePublication``, ``EditInProgress`` and ``FileValidationFailed``.
 
 The API will output the list of locks, for example:: 
 
@@ -2406,7 +2406,7 @@ Use the following API to list ALL the locks on all the datasets in your installa
 The listing can be filtered by specific lock type **and/or** user, using the following *optional* query parameters:
 
 * ``userIdentifier`` - To list the locks owned by a specific user
-* ``type`` - To list the locks of the type specified. If the supplied value does not match a known lock type, the API will return an error and a list of valid lock types. As of writing this, the implemented lock types are ``Ingest``, ``Workflow``, ``InReview``, ``DcmUpload``, ``finalizePublication``, ``EditInProgress`` and ``FileValidationFailed``.
+* ``type`` - To list the locks of the type specified. If the supplied value does not match a known lock type, the API will return an error and a list of valid lock types. As of writing this, the implemented lock types are ``Ingest``, ``Workflow``, ``InReview``, ``DcmUpload`` (deprecated), ``finalizePublication``, ``EditInProgress`` and ``FileValidationFailed``.
 
 For example:
 
