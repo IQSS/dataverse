@@ -345,6 +345,10 @@ Rocky 8 users will need to enable the PowerTools repository::
 
        dnf config-manager --enable powertools
 
+To compile the modules below, on a RHEL/Rocky-based system you'll minimally need the following packages:
+
+       dnf install openssl-devel libcurl-devel
+
 Finally, install R with :fixedwidthplain:`dnf`::
 
        dnf install R-core R-core-devel
