@@ -1801,6 +1801,9 @@ public class DatasetsIT {
                 giveRandoPermission.prettyPrint();
         assertEquals(200, giveRandoPermission.getStatusCode());
 
+        //Asserting same role creation is covered
+        validateAssignExistingRole(datasetPersistentId,randomUsername,apiToken, "fileDownloader");
+
         // Create another random user to become curator:
 
         Response createCuratorUser = UtilIT.createRandomUser();
@@ -1935,6 +1938,14 @@ public class DatasetsIT {
 
         notPermittedToListRoleAssignmentOnDataverse = UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, contributorApiToken);
         assertEquals(UNAUTHORIZED.getStatusCode(), notPermittedToListRoleAssignmentOnDataverse.getStatusCode());
+    }
+
+    private static void validateAssignExistingRole(String datasetPersistentId, String randomUsername, String apiToken, String role) {
+        final Response failedGrantPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, role, "@" + randomUsername, apiToken);
+        failedGrantPermission.prettyPrint();
+        failedGrantPermission.then().assertThat()
+                .body("message", containsString("User already has this role for this dataset"))
+                .statusCode(FORBIDDEN.getStatusCode());
     }
 
     @Test

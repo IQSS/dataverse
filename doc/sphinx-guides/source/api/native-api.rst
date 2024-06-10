@@ -908,7 +908,46 @@ The following attributes are supported:
 * ``filePIDsEnabled`` ("true" or "false") Restricted to use by superusers and only when the :ref:`:AllowEnablingFilePIDsPerCollection <:AllowEnablingFilePIDsPerCollection>` setting is true. Enables or disables registration of file-level PIDs in datasets within the collection (overriding the instance-wide setting).
 
 .. _collection-storage-quotas:
-  
+
+Update Collection Input Levels
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Updates the dataset field type input levels in a collection.
+
+Please note that this endpoint overwrites all the input levels of the collection page, so if you want to keep the existing ones, you will need to add them to the JSON request body.
+
+If one of the input levels corresponds to a dataset field type belonging to a metadata block that does not exist in the collection, the metadata block will be added to the collection.
+
+This endpoint expects a JSON with the following format::
+
+  [
+    {
+      "datasetFieldTypeName": "datasetFieldTypeName1",
+      "required": true,
+      "include": true
+    },
+    {
+      "datasetFieldTypeName": "datasetFieldTypeName2",
+      "required": true,
+      "include": true
+    }
+  ]
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+  export JSON='[{"datasetFieldTypeName":"geographicCoverage", "required":true, "include":true}, {"datasetFieldTypeName":"country", "required":true, "include":true}]'
+
+  curl -X PUT -H "X-Dataverse-key: $API_TOKEN" -H "Content-Type:application/json" "$SERVER_URL/api/dataverses/$ID/inputLevels" -d "$JSON"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X PUT -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type:application/json" "https://demo.dataverse.org/api/dataverses/root/inputLevels" -d '[{"datasetFieldTypeName":"geographicCoverage", "required":true, "include":false}, {"datasetFieldTypeName":"country", "required":true, "include":false}]'
+
 Collection Storage Quotas
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1150,7 +1189,7 @@ See also :ref:`batch-exports-through-the-api` and the note below:
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
   export METADATA_FORMAT=ddi
 
-  curl "$SERVER_URL/api/datasets/export?exporter=$METADATA_FORMAT&persistentId=PERSISTENT_IDENTIFIER"
+  curl "$SERVER_URL/api/datasets/export?exporter=$METADATA_FORMAT&persistentId=$PERSISTENT_IDENTIFIER"
 
 The fully expanded example above (without environment variables) looks like this:
 
