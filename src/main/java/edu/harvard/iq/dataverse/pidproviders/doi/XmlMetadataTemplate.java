@@ -882,7 +882,7 @@ logger.info("Canonical type: " + pubIdType);
                     if (pubIdType != null) {
                         switch (pubIdType) {
                         case "DOI":
-                            if (!relatedIdentifier.startsWith("doi:") || !relatedIdentifier.startsWith("http")) {
+                            if (!(relatedIdentifier.startsWith("doi:") || relatedIdentifier.startsWith("http"))) {
                                 relatedIdentifier = "doi:" + relatedIdentifier;
                             }
                             logger.info("Intermediate Related identifier: " + relatedIdentifier);
