@@ -539,9 +539,7 @@ The fully expanded example above (without environment variables) looks like this
 Retrieve a Dataset JSON Schema for a Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Retrieves a JSON schema customized for a given collection in order to validate a dataset JSON file prior to creating the dataset. This
-first version of the schema only includes required elements and fields. In the future we plan to improve the schema by adding controlled
-vocabulary and more robust dataset field format testing:
+Retrieves a JSON schema customized for a given collection in order to validate a dataset JSON file prior to creating the dataset:
 
 .. code-block:: bash
 
@@ -567,17 +565,21 @@ Validate Dataset JSON File for a Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Validates a dataset JSON file customized for a given collection prior to creating the dataset.
+
 The validation tests for:
-Json formatting and the presence of required elements
-typeClass must follow these rules:
-- if multiple = true then value must be a list
-- if typeClass = ''primitive'' the value object is a String or a List of Strings depending on the multiple flag
-- if typeClass = ''compound'' the value object is a FieldDTO or a List of FieldDTOs depending on the multiple flag
-- if typeClass = ''controlledVocabulary'' the value(s) are checked against the list of known values stored in the database
-typeName validations (child objects with their required and allowed typeNames are configured automatically by the database schema). Examples include:
-- dsDescription validation includes checks for typeName = ''dsDescriptionValue'' (required) and ''dsDescriptionDate'' (optional)
-- datasetContact validation includes checks for typeName = ''datasetContactName'' (required) and ''datasetContactEmail''; ''datasetContactAffiliation'' (optional)
-- etc.
+
+- JSON formatting
+- required fields
+- typeClass must follow these rules:
+
+  - if multiple = true then value must be a list
+  - if typeClass = ``primitive`` the value object is a String or a List of Strings depending on the multiple flag
+  - if typeClass = ``compound`` the value object is a FieldDTO or a List of FieldDTOs depending on the multiple flag
+  - if typeClass = ``controlledVocabulary`` the values are checked against the list of allowed values stored in the database
+  - typeName validations (child objects with their required and allowed typeNames are configured automatically by the database schema). Examples include:
+
+    - dsDescription validation includes checks for typeName = ``dsDescriptionValue`` (required) and ``dsDescriptionDate`` (optional)
+    - datasetContact validation includes checks for typeName = ``datasetContactName`` (required) and ``datasetContactEmail``; ``datasetContactAffiliation`` (optional)
 
 .. code-block:: bash
 
