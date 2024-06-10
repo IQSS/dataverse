@@ -3192,7 +3192,7 @@ Note: you can use the combination of cURL's ``-J`` (``--remote-header-name``) an
 Restrict Files
 ~~~~~~~~~~~~~~
 
-Restrict or unrestrict an existing file where ``id`` is the database id of the file or ``pid`` is the persistent id (DOI or Handle) of the file to restrict. Note that some Dataverse installations do not allow the ability to restrict files.
+Restrict or unrestrict an existing file where ``id`` is the database id of the file or ``pid`` is the persistent id (DOI or Handle) of the file to restrict. Note that some Dataverse installations do not allow the ability to restrict files (see :ref:`:PublicInstall`).
 
 A curl example using an ``id``
 

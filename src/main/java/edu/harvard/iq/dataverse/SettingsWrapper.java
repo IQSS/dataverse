@@ -299,7 +299,6 @@ public class SettingsWrapper implements java.io.Serializable {
         return zipDownloadLimit;
     }
 
-    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isPublicInstall(){
         if (publicInstall == null) {
             publicInstall = systemConfig.isPublicInstall();

@@ -5,5 +5,4 @@ The following related database settings have been deprecated as well:
 - :DataCaptureModuleUrl
 - :DownloadMethods
 - :LocalDataAccessPath
-- :PublicInstall
 - :RepositoryStorageAbstractionLayerUrl

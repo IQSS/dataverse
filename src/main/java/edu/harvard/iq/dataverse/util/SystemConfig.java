@@ -896,8 +896,7 @@ public class SystemConfig {
         }
 
     }
-
-    @Deprecated(forRemoval = true, since = "2024-07-07")
+    
     public boolean isPublicInstall(){
         boolean saneDefault = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);

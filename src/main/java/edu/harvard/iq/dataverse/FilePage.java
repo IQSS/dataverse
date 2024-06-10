@@ -1546,7 +1546,6 @@ public class FilePage implements java.io.Serializable {
     }
     
     //Determines whether this File uses a public store and therefore doesn't support embargoed or restricted files
-    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isHasPublicStore() {
         return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(DataAccess.getStorageDriverFromIdentifier(file.getStorageIdentifier())));
     }

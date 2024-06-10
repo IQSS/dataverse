@@ -56,9 +56,10 @@ public class SettingsServiceBean {
         /**
          * Defines a public installation -- all datafiles are unrestricted
          *
-         * This was added for rsync, which is now deprecated.
+         * This was added along with CloudEnvironmentName and ComputeBaseUrl.
+         * See https://github.com/IQSS/dataverse/issues/3776 and
+         * https://github.com/IQSS/dataverse/pull/3967
          */
-        @Deprecated(forRemoval = true, since = "2024-07-07")
         PublicInstall,
         /**
          * Sets the name of your cloud computing environment.
