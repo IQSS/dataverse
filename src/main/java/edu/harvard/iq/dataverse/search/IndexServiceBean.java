@@ -41,7 +41,6 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import jakarta.ejb.AsyncResult;
 import jakarta.ejb.Asynchronous;
 import jakarta.ejb.EJB;
@@ -58,11 +57,9 @@ import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
@@ -146,33 +143,12 @@ public class IndexServiceBean {
     public static final String HARVESTED = "Harvested";
     private String rootDataverseName;
     private Dataverse rootDataverseCached;
-    SolrClient solrServer;
 
     private VariableMetadataUtil variableMetadataUtil;
 
     @PostConstruct
     public void init() {
-        // Get from MPCONFIG. Might be configured by a sysadmin or simply return the default shipped with
-        // resources/META-INF/microprofile-config.properties.
-        String protocol = JvmSettings.SOLR_PROT.lookup();
-        String path = JvmSettings.SOLR_PATH.lookup();
-    
-        String urlString = protocol + "://" + systemConfig.getSolrHostColonPort() + path;
-        solrServer = new HttpSolrClient.Builder(urlString).build();
-
         rootDataverseName = findRootDataverseCached().getName();
-    }
-
-    @PreDestroy
-    public void close() {
-        if (solrServer != null) {
-            try {
-                solrServer.close();
-            } catch (IOException e) {
-                logger.warning("Solr closing error: " + e);
-            }
-            solrServer = null;
-        }
     }
    
     @TransactionAttribute(REQUIRES_NEW)
@@ -312,7 +288,7 @@ public class IndexServiceBean {
         String status;
         try {
             if (dataverse.getId() != null) {
-                solrClientService.getSolrClient().add(docs);
+                solrClientService.doHeavyOperation(x -> x.add(docs));
             } else {
                 logger.info("WARNING: indexing of a dataverse with no id attempted");
             }
@@ -322,7 +298,7 @@ public class IndexServiceBean {
             return new AsyncResult<>(status);
         }
         try {
-            solrClientService.getSolrClient().commit();
+            solrClientService.doHeavyOperation(x -> x.commit());
         } catch (SolrServerException | IOException ex) {
             status = ex.toString();
             logger.info(status);
@@ -340,6 +316,8 @@ public class IndexServiceBean {
     public void indexDatasetInNewTransaction(Long datasetId) { //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
         Dataset dataset = datasetService.findDeep(datasetId);
+        // this call is not async because we call it the same bean, the loop calling indexDatasetInNewTransaction remains single-threaded
+        // we call asyncIndexDataset here because we want it to go through the semaphore permission wait, like all other index operations.
         asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
         dataset = null;
     }
@@ -1535,8 +1513,8 @@ public class IndexServiceBean {
         final SolrInputDocuments docs = toSolrDocs(indexableDataset, datafilesInDraftVersion);
 
         try {
-            solrClientService.getSolrClient().add(docs.getDocuments());
-            solrClientService.getSolrClient().commit();
+            solrClientService.doHeavyOperation(x -> x.add(docs.getDocuments()));
+            solrClientService.doHeavyOperation(x -> x.commit());
         } catch (SolrServerException | IOException ex) {
             if (ex.getCause() instanceof SolrServerException) {
                 throw new SolrServerException(ex);
@@ -1769,11 +1747,11 @@ public class IndexServiceBean {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, object.getId().toString()));
 
-        QueryResponse res = solrClientService.getSolrClient().query(solrQuery);
+        QueryResponse res = (QueryResponse) solrClientService.doHeavyOperation(x -> x.query(solrQuery));
         
         if (!res.getResults().isEmpty()) {            
             SolrDocument doc = res.getResults().get(0);
-            SolrInputDocument sid = new SolrInputDocument();
+            final SolrInputDocument sid = new SolrInputDocument();
 
             for (String fieldName : doc.getFieldNames()) {
                 sid.addField(fieldName, doc.getFieldValue(fieldName));
@@ -1788,22 +1766,22 @@ public class IndexServiceBean {
 
             sid.removeField(SearchFields.SUBTREE);
             sid.addField(SearchFields.SUBTREE, paths);
-            UpdateResponse addResponse = solrClientService.getSolrClient().add(sid);
-            UpdateResponse commitResponse = solrClientService.getSolrClient().commit();
+            solrClientService.doHeavyOperation(x -> x.add(sid));
+            solrClientService.doHeavyOperation(x -> x.commit());
             if (object.isInstanceofDataset()) {
                 for (DataFile df : dataset.getFiles()) {
                     solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, df.getId().toString()));
-                    res = solrClientService.getSolrClient().query(solrQuery);
+                    res = (QueryResponse) solrClientService.doHeavyOperation(x -> x.query(solrQuery));
                     if (!res.getResults().isEmpty()) {
                         doc = res.getResults().get(0);
-                        sid = new SolrInputDocument();
+                        final SolrInputDocument sid2 = new SolrInputDocument();
                         for (String fieldName : doc.getFieldNames()) {
-                            sid.addField(fieldName, doc.getFieldValue(fieldName));
+                            sid2.addField(fieldName, doc.getFieldValue(fieldName));
                         }
-                        sid.removeField(SearchFields.SUBTREE);
-                        sid.addField(SearchFields.SUBTREE, paths);
-                        addResponse = solrClientService.getSolrClient().add(sid);
-                        commitResponse = solrClientService.getSolrClient().commit();
+                        sid2.removeField(SearchFields.SUBTREE);
+                        sid2.addField(SearchFields.SUBTREE, paths);
+                        solrClientService.doHeavyOperation(x -> x.add(sid2));
+                        solrClientService.doHeavyOperation(x -> x.commit());
                     }
                 }
             }
@@ -1845,12 +1823,12 @@ public class IndexServiceBean {
         logger.fine("deleting Solr document for dataverse " + doomed.getId());
         UpdateResponse updateResponse;
         try {
-            updateResponse = solrClientService.getSolrClient().deleteById(solrDocIdentifierDataverse + doomed.getId());
+            updateResponse = (UpdateResponse) solrClientService.doHeavyOperation(x -> x.deleteById(solrDocIdentifierDataverse + doomed.getId()));
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
         try {
-            solrClientService.getSolrClient().commit();
+            solrClientService.doHeavyOperation(x -> x.commit());
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -1870,12 +1848,12 @@ public class IndexServiceBean {
         logger.fine("deleting Solr document: " + doomed);
         UpdateResponse updateResponse;
         try {
-            updateResponse = solrClientService.getSolrClient().deleteById(doomed);
+            updateResponse = (UpdateResponse) solrClientService.doHeavyOperation(x -> x.deleteById(doomed));
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
         try {
-            solrClientService.getSolrClient().commit();
+            solrClientService.doHeavyOperation(x -> x.commit());
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -2067,7 +2045,7 @@ public class IndexServiceBean {
             boolean done = false;
             while (!done) {
                 q.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
-                QueryResponse rsp = solrServer.query(q);
+                QueryResponse rsp = (QueryResponse) solrClientService.doHeavyOperation(x -> x.query(q));
                 String nextCursorMark = rsp.getNextCursorMark();
                 SolrDocumentList list = rsp.getResults();
                 for (SolrDocument doc: list) {
@@ -2102,7 +2080,7 @@ public class IndexServiceBean {
             solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
             QueryResponse rsp = null;
             try {
-                rsp = solrServer.query(solrQuery);
+                rsp = (QueryResponse) solrClientService.doHeavyOperation(x -> x.query(solrQuery));
              } catch (SolrServerException | IOException ex) {
                 throw new SearchException("Error searching Solr type: " + type, ex);
 
@@ -2143,7 +2121,7 @@ public class IndexServiceBean {
         List<String> dvObjectInSolrOnly = new ArrayList<>();
         QueryResponse queryResponse = null;
         try {
-            queryResponse = solrClientService.getSolrClient().query(solrQuery);
+            queryResponse = (QueryResponse) solrClientService.doHeavyOperation(x -> x.query(solrQuery));
         } catch (SolrServerException | IOException ex) {
             throw new SearchException("Error searching Solr for dataset parent id " + parentDatasetId, ex);
         }
