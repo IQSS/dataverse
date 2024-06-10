@@ -43,6 +43,7 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetRelPublication;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.api.Util;
@@ -934,10 +935,12 @@ logger.info("Canonical type: " + pubIdType);
                     }
                 }
             }
-            if (!dataset.getFiles().isEmpty() && !(dataset.getFiles().get(0).getIdentifier() == null)) {
+            List<FileMetadata> fmds = dataset.getLatestVersionForCopy().getFileMetadatas();
+            if (!(fmds==null) && fmds.isEmpty()) {
                 attributes.clear();
                 attributes.put("relationType", "HasPart");
-                for (DataFile dataFile : dataset.getFiles()) {
+                for (FileMetadata fmd : fmds) {
+                    DataFile dataFile = fmd.getDataFile();
                     GlobalId pid = dataFile.getGlobalId();
                     if (pid != null) {
                         String pubIdType = getCanonicalPublicationType(pid.getProtocol());
