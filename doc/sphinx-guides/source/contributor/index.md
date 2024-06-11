@@ -42,6 +42,10 @@ Please observe the following when writing documentation:
 
 [doc]: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source
 
+## Translations
+
+If you speak multiple languages, you are very welcome to help us translate Dataverse! Please see {ref}`help-translate` for details.
+
 ## Code and Pull Requests
 
 Dataverse is open source and we love code contributions. Developers are not limited to the main Dataverse code in this git repo. We have projects in C, C++, Go, Java, Javascript, Julia, PHP, Python, R, Ruby, TypeScript and more. To get started, please see the following pages:

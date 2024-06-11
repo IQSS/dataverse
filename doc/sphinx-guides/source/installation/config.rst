@@ -1741,6 +1741,8 @@ Now that you have a "languages.zip" file, you can load it into your Dataverse in
 
 Click on the languages using the drop down in the header to try them out.
 
+.. _help-translate:
+
 How to Help Translate the Dataverse Software Into Your Language
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
