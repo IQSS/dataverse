@@ -14,7 +14,7 @@ After following all the steps below, you can proceed to the :doc:`installation-m
 Linux
 -----
 
-We assume you plan to run your Dataverse installation on Linux and we recommend RHEL or a derivative such as RockyLinux, which is the distribution family tested by the Dataverse Project team. These instructions are written for RHEL9 and derivatives with notes for RHEL 8, but Dataverse is known to work well in Debian, Ubuntu, and most any modern Linux distribution.
+We assume you plan to run your Dataverse installation on Linux and we recommend RHEL or a derivative such as Rocky Linux, which is the distribution family tested by the Dataverse Project team. These instructions are written for RHEL9 and derivatives with notes for RHEL 8, but Dataverse is known to work well in Debian, Ubuntu, and most any modern Linux distribution.
 
 Java
 ----
