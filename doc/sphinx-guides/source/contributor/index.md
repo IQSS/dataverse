@@ -63,11 +63,21 @@ Please email us at <support@dataverse.org> or fill in our [feedback form][] if y
 
 ## Answering Questions
 
-People come along with questions on the [mailing list](https://groups.google.com/g/dataverse-community) and in [chat](https://chat.dataverse.org) all the time. You are very welcome to help out by answering these questions to the best of your ability.
+People come along with questions on the [mailing list](https://groups.google.com/g/dataverse-community) and in [chat][] all the time. You are very welcome to help out by answering these questions to the best of your ability.
+
+[chat]: https://chat.dataverse.org
+
+## Issue Triage
+
+New issues are coming in all the time, especially for the main issue tracker at <https://github.com/IQSS/dataverse/issues>.
+
+You can help by leaving comments that mention related issues or that answer questions.
 
 ## Giving Talks
 
-If you give a recorded talk about Dataverse, we are happy to add it to [DataverseTV](https://dataverse.org/dataversetv)
+If you give a recorded talk about Dataverse, we are happy to add it to [DataverseTV](https://dataverse.org/dataversetv). You can just leave a comment on the [spreadsheet](https://docs.google.com/spreadsheets/d/1uVk_57Ek_A49sLZ5OKdI6QASKloWNzykni3kcYNzpxA/edit#gid=0) or make some noise in [chat][].
+
+For non-recorded talks, we are happy to upload your slides to <https://dataverse.org/presentations>. Please email <support@dataverse.org>.
 
 ## Working Groups
 
