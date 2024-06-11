@@ -104,7 +104,7 @@ You are welcome to experiment with newer versions of PostgreSQL, but please note
 Installing PostgreSQL
 =====================
 
-The application is currently tested on PostgreSQL version 13, though versions 14-16 are supported as of v6.2. We recommend installing the latest version that is available for your OS distribution. *For example*, to install PostgreSQL 13 under RHEL9/derivative::
+The application is currently tested on PostgreSQL version 13, though versions 14-16 are supported as of v6.2. To install PostgreSQL 13 under RHEL9/derivative::
 
 	# sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# sudo dnf check-update
