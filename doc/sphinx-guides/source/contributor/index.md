@@ -60,3 +60,15 @@ code.md
 Please email us at <support@dataverse.org> or fill in our [feedback form][] if you are interested in participating in usability testing.
 
 [feedback form]: https://goo.gl/forms/p7uu3GfiWYSlJrsi1
+
+## Answering Questions
+
+People come along with questions on the [mailing list](https://groups.google.com/g/dataverse-community) and in [chat](https://chat.dataverse.org) all the time. You are very welcome to help out by answering these questions to the best of your ability.
+
+## Giving Talks
+
+If you give a recorded talk about Dataverse, we are happy to add it to [DataverseTV](https://dataverse.org/dataversetv)
+
+## Working Groups
+
+Most working groups are wide open to participation. For the current list of groups, please see <https://www.gdcc.io/working-groups.html>.
