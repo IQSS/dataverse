@@ -2,7 +2,7 @@
 Introduction
 ============
 
-Welcome! `The Dataverse Project <https://dataverse.org>`_ is an `open source <https://github.com/IQSS/dataverse/blob/master/LICENSE.md>`_ project that loves `contributors <https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md>`_!
+Welcome! `The Dataverse Project <https://dataverse.org>`_ is an `open source <https://github.com/IQSS/dataverse/blob/master/LICENSE.md>`_ project that loves contributors!
 
 .. contents:: |toctitle|
 	:local:
@@ -10,7 +10,7 @@ Welcome! `The Dataverse Project <https://dataverse.org>`_ is an `open source <ht
 Intended Audience
 -----------------
 
-This guide is intended primarily for developers who want to work on the main Dataverse Software code base at https://github.com/IQSS/dataverse but see "Related Projects" below for other code you can work on!
+This guide is intended primarily for developers who want to work on the main Dataverse codebase at https://github.com/IQSS/dataverse but see the :doc:`/contributor/code` section of the Contributor Guide for other code you can work on!
 
 To get started, you'll want to set up your :doc:`dev-environment` and make sure you understand the branching strategy described in the :doc:`version-control` section and how to make a pull request. :doc:`testing` is expected. Opinions about :doc:`coding-style` are welcome!
 
@@ -19,23 +19,23 @@ To get started, you'll want to set up your :doc:`dev-environment` and make sure 
 Getting Help
 ------------
 
-If you have any questions at all, please reach out to other developers via the channels listed in https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md such as https://chat.dataverse.org, the `dataverse-dev <https://groups.google.com/forum/#!forum/dataverse-dev>`_ mailing list, `community calls <https://dataverse.org/community-calls>`_, or support@dataverse.org.
+If you have any questions at all, please reach out to other developers via https://chat.dataverse.org, the `dataverse-dev <https://groups.google.com/g/dataverse-dev>`_ mailing list, the `dataverse-community <https://groups.google.com/g/dataverse-community>`_ mailing list, or `community calls <https://dataverse.org/community-calls>`_.
 
 .. _core-technologies:
 
 Core Technologies
 -----------------
 
-The Dataverse Software is a `Jakarta EE <https://en.wikipedia.org/wiki/Jakarta_EE>`_ application that is compiled into a WAR file and deployed to an application server (app server) which is configured to work with a relational database (PostgreSQL) and a search engine (Solr).
+Dataverse is a `Jakarta EE <https://en.wikipedia.org/wiki/Jakarta_EE>`_ application that is compiled into a WAR file and deployed to an application server (app server) which is configured to work with a relational database (PostgreSQL) and a search engine (Solr).
 
-We make use of a variety of Jakarta EE technologies such as JPA, JAX-RS, JMS, and JSF. The front end is built using PrimeFaces and Bootstrap.
+We make use of a variety of Jakarta EE technologies such as JPA, JAX-RS, JMS, and JSF. In addition, we use parts of Eclipse MicroProfile such as `MicroProfile Config <https://github.com/eclipse/microprofile-config>`_.
 
-In addition, we start to adopt parts of Eclipse MicroProfile, namely `MicroProfile Config <https://github.com/eclipse/microprofile-config>`_.
+The frontend is built using PrimeFaces and Bootstrap. A new frontend is being built using React at https://github.com/IQSS/dataverse-frontend
 
 Roadmap
 -------
 
-For the Dataverse Software development roadmap, please see https://www.iq.harvard.edu/roadmap-dataverse-project
+For the roadmap, please see https://www.iq.harvard.edu/roadmap-dataverse-project
 
 .. _kanban-board:
 
@@ -47,19 +47,25 @@ You can get a sense of what's currently in flight (in dev, in QA, etc.) by looki
 Issue Tracker
 -------------
 
-We use GitHub Issues as our issue tracker: https://github.com/IQSS/dataverse/issues
+The main issue tracker is https://github.com/IQSS/dataverse/issues but note that individual projects have their own issue trackers.
 
 Related Guides
 --------------
 
-If you are a developer who wants to make use of the Dataverse Software APIs, please see the :doc:`/api/index`. If you have front-end UI questions, please see the :doc:`/style/index`.
+If you are wondering about how to contribute generally, please see the :doc:`/contributor/index`.
 
-If you are a sysadmin who likes to code, you may be interested in hacking on installation scripts mentioned in the :doc:`/installation/index`.
+If you are a developer who wants to make use of the Dataverse APIs, please see the :doc:`/api/index`.
+
+If you have frontend UI questions, please see the :doc:`/style/index`. For the new frontend, see https://github.com/IQSS/dataverse-frontend
 
 If you are a Docker enthusiasts, please check out the :doc:`/container/index`.
 
+.. _related-projects:
+
 Related Projects
 ----------------
+
+Note: this list is somewhat old. Please see also the :doc:`/contributor/code` section of the Contributor Guide.
 
 As a developer, you also may be interested in these projects related to Dataverse:
 
