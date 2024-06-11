@@ -692,22 +692,27 @@ public class XmlMetadataTemplate {
                     }
                 }
                 if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
+                    //Minimal clean-up - useful? Parse/format would remove unused chars, and an exception would clear the date so we don't send nonsense
                     if(StringUtils.isNotBlank(startDate)) {
                         try {
-                        Date start = Util.getDateTimeFormat().parse(startDate);
+                        Date start = Util.getDateFormat().parse(startDate);
                         startDate = Util.getDateFormat().format(start);
                         } catch (ParseException e) {
                             logger.warning("Could not parse date: " + startDate);
+                            startDate = null;
                         }
                     }
                     if(StringUtils.isNotBlank(endDate)) {
                         try {
-                        Date end = Util.getDateTimeFormat().parse(endDate);
+                        Date end = Util.getDateFormat().parse(endDate);
                         endDate = Util.getDateFormat().format(end);
                         } catch (ParseException e) {
                             logger.warning("Could not parse date: " + endDate);
+                            endDate = null;
                         };
                     }
+                }
+                if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
                     datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
                     attributes.put("dateType", "Collected");
                     XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, (startDate + "/" + endDate).trim());
