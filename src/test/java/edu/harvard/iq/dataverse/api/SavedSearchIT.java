@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.api;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import io.smallrye.common.constraint.Assert;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -19,6 +18,7 @@ import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SavedSearchIT {
 
@@ -225,7 +225,7 @@ public class SavedSearchIT {
         getListReponse.prettyPrint();
         JsonPath path3 = JsonPath.from(getListReponse.body().asString());
         List<Object> listAfterDelete = path3.getList("data.savedSearches");
-        Assert.assertTrue(listBeforeDelete.size() - 1 == listAfterDelete.size());
+        assertTrue(listBeforeDelete.size() - 1 == listAfterDelete.size());
     }
 
     public String createSavedSearchJson(String query, Integer creatorId, Integer definitionPointId, String... filterQueries) {
