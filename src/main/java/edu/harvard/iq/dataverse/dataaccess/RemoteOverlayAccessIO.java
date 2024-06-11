@@ -124,8 +124,12 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                     logger.fine("Setting size");
                     this.setSize(retrieveSizeFromMedia());
                 }
-                if (dataFile.getContentType() != null && dataFile.getContentType().equals("text/tab-separated-values")
-                        && dataFile.isTabularData() && dataFile.getDataTable() != null && (!this.noVarHeader())) {
+                if (dataFile.getContentType() != null 
+                        && dataFile.getContentType().equals("text/tab-separated-values")
+                        && dataFile.isTabularData() 
+                        && dataFile.getDataTable() != null 
+                        && (!this.noVarHeader())
+                        && (!dataFile.getDataTable().isStoredWithVariableHeader())) {
 
                     List<DataVariable> datavariables = dataFile.getDataTable().getDataVariables();
                     String varHeaderLine = generateVariableHeader(datavariables);

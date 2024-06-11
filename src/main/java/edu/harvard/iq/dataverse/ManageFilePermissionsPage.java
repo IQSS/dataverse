@@ -422,7 +422,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                     // set request(s) granted, if they exist
                     for (AuthenticatedUser au : roleAssigneeService.getExplicitUsers(roleAssignee)) {
                         FileAccessRequest far = file.getAccessRequestForAssignee(au);
-                        far.setStateGranted();
+                        //There may not be a request, so do the null check
+                        if (far != null) {
+                            far.setStateGranted();
+                        }
                     }
                     datafileService.save(file);
                 }

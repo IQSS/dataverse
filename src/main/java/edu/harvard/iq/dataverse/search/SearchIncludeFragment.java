@@ -355,8 +355,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
              * https://github.com/IQSS/dataverse/issues/84
              */
             int numRows = 10;
-            HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), httpServletRequest);
+            DataverseRequest dataverseRequest = getDataverseRequest();
             List<Dataverse> dataverses = new ArrayList<>();
             dataverses.add(dataverse);
             solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null, !isFacetsDisabled(), true);
@@ -1243,6 +1242,12 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 friendlyNames.add(friendlyName.get());
                 return friendlyNames;
             }
+        } else if (key.equals(SearchFields.DATASET_LICENSE)) {
+            try {
+                friendlyNames.add(BundleUtil.getStringFromPropertyFile("license." + valueWithoutQuotes.toLowerCase().replace(" ","_") + ".name", "License"));
+            } catch (Exception e) {
+                logger.fine(String.format("action=getFriendlyNamesFromFilterQuery cannot find friendlyName for key=%s value=%s", key, value));
+            }
         }
 
         friendlyNames.add(valueWithoutQuotes);
@@ -1474,9 +1479,31 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return false;
         }
     }
+
+    public boolean isRetentionExpired(SolrSearchResult result) {
+        Long retentionEndDate = result.getRetentionEndDate();
+        if(retentionEndDate != null) {
+            return LocalDate.now().toEpochDay() > retentionEndDate;
+        } else {
+            return false;
+        }
+    }
     
+    private DataverseRequest getDataverseRequest() {
+        final HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        return new DataverseRequest(session.getUser(), httpServletRequest);
+    }
+
     public boolean isValid(SolrSearchResult result) {
-        return result.isValid();
+        return result.isValid(x -> {
+            Long id = x.getEntityId();
+            DvObject obj = dvObjectService.findDvObject(id);
+            if(obj != null && obj instanceof Dataset) {
+                return permissionsWrapper.canUpdateDataset(getDataverseRequest(), (Dataset) obj);
+            }
+            logger.fine("isValid called for dvObject that is null (or not a dataset), id: " + id + "This can occur if a dataset is deleted while a search is in progress");
+            return true;
+        });
     }
     
     public enum SortOrder {

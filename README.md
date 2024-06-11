@@ -3,11 +3,11 @@ Dataverse&#174;
 
 Dataverse is an [open source][] software platform for sharing, finding, citing, and preserving research data (developed by the [Dataverse team](https://dataverse.org/about) at the [Institute for Quantitative Social Science](https://iq.harvard.edu/) and the [Dataverse community][]).
 
-[dataverse.org][] is our home on the web and shows a map of Dataverse installations around the world, a list of [features][], [integrations][] that have been made possible through [REST APIs][], our development [roadmap][], and more.
+[dataverse.org][] is our home on the web and shows a map of Dataverse installations around the world, a list of [features][], [integrations][] that have been made possible through [REST APIs][], our [project board][], our development [roadmap][], and more.
 
 We maintain a demo site at [demo.dataverse.org][] which you are welcome to use for testing and evaluating Dataverse.
 
-To install Dataverse, please see our [Installation Guide][] which will prompt you to download our [latest release][].
+To install Dataverse, please see our [Installation Guide][] which will prompt you to download our [latest release][]. Docker users should consult the [Container Guide][].
 
 To discuss Dataverse with the community, please join our [mailing list][], participate in a [community call][], chat with us at [chat.dataverse.org][], or attend our annual [Dataverse Community Meeting][].
 
@@ -28,7 +28,9 @@ Dataverse is a trademark of President and Fellows of Harvard College and is regi
 [Dataverse community]: https://dataverse.org/developers
 [Installation Guide]: https://guides.dataverse.org/en/latest/installation/index.html
 [latest release]: https://github.com/IQSS/dataverse/releases
+[Container Guide]: https://guides.dataverse.org/en/latest/container/index.html
 [features]: https://dataverse.org/software-features
+[project board]: https://github.com/orgs/IQSS/projects/34
 [roadmap]: https://www.iq.harvard.edu/roadmap-dataverse-project
 [integrations]: https://dataverse.org/integrations
 [REST APIs]: https://guides.dataverse.org/en/latest/api/index.html

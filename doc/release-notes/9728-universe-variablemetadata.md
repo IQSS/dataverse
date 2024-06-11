@@ -1,1 +1,0 @@
-universe field in variablemetadata table was changed from varchar(255) to text. The change was made to support longer strings in "universe" metadata field, similar to the rest of text fields in variablemetadata table.
