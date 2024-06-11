@@ -18,6 +18,7 @@ import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SavedSearchIT {
@@ -225,7 +226,7 @@ public class SavedSearchIT {
         getListReponse.prettyPrint();
         JsonPath path3 = JsonPath.from(getListReponse.body().asString());
         List<Object> listAfterDelete = path3.getList("data.savedSearches");
-        assertTrue(listBeforeDelete.size() - 1 == listAfterDelete.size());
+        assertEquals(listBeforeDelete.size() - 1, listAfterDelete.size());
     }
 
     public String createSavedSearchJson(String query, Integer creatorId, Integer definitionPointId, String... filterQueries) {
