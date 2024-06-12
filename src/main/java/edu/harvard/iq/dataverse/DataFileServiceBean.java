@@ -384,7 +384,8 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (fileMetadatas == null || fileMetadatas.isEmpty()) {
             return null;
         } else {
-            return fileMetadatas.get(0);
+            // This assumes the order of filemetadatas is from first to most recent, which is true as of v6.3 
+            return fileMetadatas.get(fileMetadatas.size() - 1);
         }
     }
     
