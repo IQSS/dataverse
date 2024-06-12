@@ -710,7 +710,7 @@ public class ShapefileHandler{
                 // check if path is hidden
                 if (isDirectory && Files.isHidden(Paths.get(zentryFileName))) {
                     hiddenDirectories.add(zentryFileName);
-                    logger.info("Ignoring files under hidden directory: " + zentryFileName);
+                    logger.fine("Ignoring files under hidden directory: " + zentryFileName);
                 } else {
                     // check if the path was already found to be hidden
                     for (String hidden : hiddenDirectories) {
