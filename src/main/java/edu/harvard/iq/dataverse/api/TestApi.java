@@ -21,7 +21,7 @@ public class TestApi extends AbstractApiBean {
 
     @GET
     @Path("datasets/{id}/externalTools")
-    public Response getExternalToolsforFile(@PathParam("id") String idSupplied, @QueryParam("type") String typeSupplied) {
+    public Response getDatasetExternalToolsforFile(@PathParam("id") String idSupplied, @QueryParam("type") String typeSupplied) {
         ExternalTool.Type type;
         try {
             type = ExternalTool.Type.fromString(typeSupplied);

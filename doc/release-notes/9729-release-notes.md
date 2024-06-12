@@ -1,0 +1,1 @@
+An error is now correctly reported when an attempt is made to assign an identical role to the same collection, dataset, or file. #9729 #10465
