@@ -67,6 +67,10 @@ People come along with questions on the [mailing list](https://groups.google.com
 
 [chat]: https://chat.dataverse.org
 
+## Sample Data
+
+Consider contributing to <https://github.com/IQSS/dataverse-sample-data>, a git repo of realistic-looking data that is used for testing.
+
 ## Issue Triage
 
 New issues are coming in all the time, especially for the main issue tracker at <https://github.com/IQSS/dataverse/issues>.
@@ -82,3 +86,17 @@ For non-recorded talks, we are happy to upload your slides to <https://dataverse
 ## Working Groups
 
 Most working groups are wide open to participation. For the current list of groups, please see <https://www.gdcc.io/working-groups.html>.
+
+## Artwork
+
+Surely we can put artistic talent to use. See <https://github.com/IQSS/chat.dataverse.org/issues/18> for a story about drawing animals chatting about Dataverse.
+
+As [annnounced](https://groups.google.com/g/dataverse-community/c/pM39_9O5Rug/m/CK-gJqZFBgAJ), we have a [sticker template](https://dataverse.org/sites/projects.iq.harvard.edu/files/dataverseorg/files/dataverse_community_stickers_template.zip) you can use.
+
+See [Illustrations from The Turing Way](https://zenodo.org/doi/10.5281/zenodo.3332807) for how that community has created artwork. Perhaps we can do the same.
+
+## Other Contributions
+
+We consulted <https://opensource.guide/how-to-contribute/> but no list is comprehensive.
+
+What else should we list here? How to YOU want to contribute to Dataverse? 🎉
