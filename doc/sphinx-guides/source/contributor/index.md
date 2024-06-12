@@ -30,17 +30,12 @@ If you do not receive a reply to your new issue or comment in a timely manner, p
 
 ## Documentation
 
-The source for the documentation is in the GitHub repo under the "[doc][]" folder. If you find a typo or inaccuracy or something to clarify, please send us a pull request! For more on the tools used to write docs, please see the {doc}`/developers/documentation` section of the Developer Guide.
+Documentation is such a large topic (and important!) that we have a dedicate section on it:
 
-Please observe the following when writing documentation:
-
-- Use American English spelling.
-- Use examples when possible.
-- Break up longer paragraphs.
-- Use "double quotes" instead of 'single quotes'.
-- Favor "and" (data and code) over slashes (data/code).
-
-[doc]: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source
+```{toctree}
+:maxdepth: 1
+documentation.md
+```
 
 ## Translations
 

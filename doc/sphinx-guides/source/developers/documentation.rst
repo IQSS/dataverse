@@ -2,6 +2,8 @@
 Writing Documentation
 =====================
 
+Note: in the Contributor Guide, there is a section called :doc:`/contributor/documentation`.
+
 .. contents:: |toctitle|
 	:local:
 
