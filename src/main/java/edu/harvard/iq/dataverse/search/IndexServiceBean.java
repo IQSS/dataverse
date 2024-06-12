@@ -492,14 +492,12 @@ public class IndexServiceBean {
         boolean atLeastOnePublishedVersion = false;
         if (releasedVersion != null) {
             atLeastOnePublishedVersion = true;
-        } else {
-            atLeastOnePublishedVersion = false;
         }
-        List<String> solrIdsOfFilesToDelete = null;
+        List<String> solrIdsOfDocsToDelete = null;
 
         try {
-            solrIdsOfFilesToDelete = findFilesOfParentDataset(dataset.getId());
-            logger.fine("Existing file docs: " + String.join(", ", solrIdsOfFilesToDelete));
+            solrIdsOfDocsToDelete = findFilesOfParentDataset(dataset.getId());
+            logger.fine("Existing file docs: " + String.join(", ", solrIdsOfDocsToDelete));
             //We keep the latest version's docs unless it is deaccessioned and there is no published/released version
             //So skip the loop removing those docs from the delete list except in that case
             if ((!latestVersion.isDeaccessioned() || atLeastOnePublishedVersion)) {
@@ -507,20 +505,36 @@ public class IndexServiceBean {
                 String suffix = (new IndexableDataset(latestVersion)).getDatasetState().getSuffix();
                 for (FileMetadata fileMetadata : latestFileMetadatas) {
                     String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId() + suffix;
-                    solrIdsOfFilesToDelete.remove(solrIdOfPublishedFile);
+                    solrIdsOfDocsToDelete.remove(solrIdOfPublishedFile);
                 }
             }
             if (releasedVersion != null && !releasedVersion.equals(latestVersion)) {
                 List<FileMetadata> releasedFileMetadatas = releasedVersion.getFileMetadatas();
                 for (FileMetadata fileMetadata : releasedFileMetadatas) {
                     String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId();
-                    solrIdsOfFilesToDelete.remove(solrIdOfPublishedFile);
+                    solrIdsOfDocsToDelete.remove(solrIdOfPublishedFile);
                 }
+            }
+            //Clear any unused dataset docs
+            if (!latestVersion.isDraft()) {
+                // The latest version is released, so should delete any draft docs for the
+                // dataset
+                solrIdsOfDocsToDelete.add(solrDocIdentifierDataset + dataset.getId() + draftSuffix);
+            }
+            if (!atLeastOnePublishedVersion) {
+                // There's no released version, so should delete any normal state docs for the
+                // dataset
+                solrIdsOfDocsToDelete.add(solrDocIdentifierDataset + dataset.getId());
+            }
+            if (atLeastOnePublishedVersion || !latestVersion.isDeaccessioned()) {
+                // There's a released version or a draft, so should delete any deaccessioned
+                // state docs for the dataset
+                solrIdsOfDocsToDelete.add(solrDocIdentifierDataset + dataset.getId() + deaccessionedSuffix);
             }
         } catch (SearchException | NullPointerException ex) {
             logger.fine("could not run search of files to delete: " + ex);
         }
-        logger.fine("File docs to delete: " + String.join(", ", solrIdsOfFilesToDelete));
+        logger.fine("Solr docs to delete: " + String.join(", ", solrIdsOfDocsToDelete));
         int numPublishedVersions = 0;
         List<DatasetVersion> versions = dataset.getVersions();
         //List<String> solrIdsOfFilesToDelete = new ArrayList<>();
@@ -585,12 +599,17 @@ public class IndexServiceBean {
         }
         debug.append("numPublishedVersions: " + numPublishedVersions + "\n");
         if (doNormalSolrDocCleanUp) {
-            if(!solrIdsOfFilesToDelete.isEmpty()) {
-                for(String file: solrIdsOfFilesToDelete) {
+            
+            if(!solrIdsOfDocsToDelete.isEmpty()) {
+                List<String> solrIdsOfPermissionDocsToDelete = new ArrayList<>();
+                for(String file: solrIdsOfDocsToDelete) {
                     //Also remove associated permission docs
-                    solrIdsOfFilesToDelete.add(file+"_permission");
+                    solrIdsOfPermissionDocsToDelete.add(file + discoverabilityPermissionSuffix);
                 }
-                IndexResponse resultOfAttemptToPremptivelyDeletePublishedFiles = solrIndexService.deleteMultipleSolrIds(solrIdsOfFilesToDelete);
+                solrIdsOfDocsToDelete.addAll(solrIdsOfPermissionDocsToDelete);
+                logger.fine("Solr docs and perm docs to delete: " + String.join(", ", solrIdsOfDocsToDelete));
+                
+                IndexResponse resultOfAttemptToPremptivelyDeletePublishedFiles = solrIndexService.deleteMultipleSolrIds(solrIdsOfDocsToDelete);
                 debug.append("result of attempt to premptively deleted published files before reindexing: " + resultOfAttemptToPremptivelyDeletePublishedFiles + "\n");
             }
         }
@@ -2118,9 +2137,11 @@ public class IndexServiceBean {
                             } else {
                                 if (!states.contains(VersionState.RELEASED)) {
                                     permissionInSolrOnly.add(docId);
-                                } else if (!dataFileService.findMostRecentVersionFileIsIn(f).getDatasetVersion()
-                                        .equals(f.getOwner().getReleasedVersion())) {
-                                    permissionInSolrOnly.add(docId);
+                                } else {
+                                    if(dataFileService.findFileMetadataByDatasetVersionIdAndDataFileId(f.getOwner().getReleasedVersion().getId(), f.getId()) == null) {
+                                        logger.info("Adding doc " + docId + " to list of permissions in Solr only");
+                                        permissionInSolrOnly.add(docId);
+                                    }
                                 }
 
                             }
