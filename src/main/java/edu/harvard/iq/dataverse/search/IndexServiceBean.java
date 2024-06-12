@@ -2099,7 +2099,7 @@ public class IndexServiceBean {
                                     permissionInSolrOnly.add(docId);
                                 }
                             } else {
-                                if (d.getReleasedVersion() != null) {
+                                if (d.getReleasedVersion() == null) {
                                     permissionInSolrOnly.add(docId);
                                 }
                             }
