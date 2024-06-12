@@ -201,7 +201,7 @@ public class Admin extends AbstractApiBean {
 
 	@Path("settings/{name}/lang/{lang}")
 	@PUT
-	public Response putSetting(@PathParam("name") String name, @PathParam("lang") String lang, String content) {
+	public Response putSettingLang(@PathParam("name") String name, @PathParam("lang") String lang, String content) {
 		Setting s = settingsSvc.set(name, lang, content);
 		return ok("Setting " + name + " - " + lang + " - added.");
 	}
@@ -224,7 +224,7 @@ public class Admin extends AbstractApiBean {
 
 	@Path("settings/{name}/lang/{lang}")
 	@DELETE
-	public Response deleteSetting(@PathParam("name") String name, @PathParam("lang") String lang) {
+	public Response deleteSettingLang(@PathParam("name") String name, @PathParam("lang") String lang) {
 		settingsSvc.delete(name, lang);
 		return ok("Setting " + name + " - " + lang + " deleted.");
 	}

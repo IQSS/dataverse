@@ -34,6 +34,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -314,13 +315,18 @@ public class FilePage implements java.io.Serializable {
         }               
     }
     
+    Boolean valid = null;
+
     public boolean isValid() {
-        if (!fileMetadata.getDatasetVersion().isDraft()) {
-            return true;
+        if (valid == null) {
+            final DatasetVersion workingVersion = fileMetadata.getDatasetVersion();
+            if (workingVersion.isDraft() || (canUpdateDataset() && JvmSettings.UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED.lookupOptional(Boolean.class).orElse(true))) {
+                valid = workingVersion.isValid();
+            } else {
+                valid = true;
+            }
         }
-        DatasetVersion newVersion = fileMetadata.getDatasetVersion().cloneDatasetVersion();
-        newVersion.setDatasetFields(newVersion.initDatasetFields());
-        return newVersion.isValid();
+        return valid;
     }
 
     private boolean canViewUnpublishedDataset() {
@@ -516,10 +522,9 @@ public class FilePage implements java.io.Serializable {
             return null;
         }
 
-        DataFile dataFile = fileMetadata.getDataFile();
-        editDataset = dataFile.getOwner();
+        editDataset = file.getOwner();
         
-        if (dataFile.isTabularData()) {
+        if (file.isTabularData()) {
             JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.alreadyIngestedWarning"));
             return null;
         }
@@ -531,25 +536,25 @@ public class FilePage implements java.io.Serializable {
             return null;
         }
         
-        if (!FileUtil.canIngestAsTabular(dataFile)) {
+        if (!FileUtil.canIngestAsTabular(file)) {
             JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.ingest.cantIngestFileWarning"));
             return null;
             
         }
         
-        dataFile.SetIngestScheduled();
+        file.SetIngestScheduled();
                 
-        if (dataFile.getIngestRequest() == null) {
-            dataFile.setIngestRequest(new IngestRequest(dataFile));
+        if (file.getIngestRequest() == null) {
+            file.setIngestRequest(new IngestRequest(file));
         }
 
-        dataFile.getIngestRequest().setForceTypeCheck(true);
+        file.getIngestRequest().setForceTypeCheck(true);
         
         // update the datafile, to save the newIngest request in the database:
         datafileService.save(file);
         
         // queue the data ingest job for asynchronous execution: 
-        String status = ingestService.startIngestJobs(editDataset.getId(), new ArrayList<>(Arrays.asList(dataFile)), (AuthenticatedUser) session.getUser());
+        String status = ingestService.startIngestJobs(editDataset.getId(), new ArrayList<>(Arrays.asList(file)), (AuthenticatedUser) session.getUser());
         
         if (!StringUtil.isEmpty(status)) {
             // This most likely indicates some sort of a problem (for example, 
@@ -559,9 +564,9 @@ public class FilePage implements java.io.Serializable {
             // successfully gone through the process of trying to schedule the 
             // ingest job...
             
-            logger.warning("Ingest Status for file: " + dataFile.getId() + " : " + status);
+            logger.warning("Ingest Status for file: " + file.getId() + " : " + status);
         }
-        logger.fine("File: " + dataFile.getId() + " ingest queued");
+        logger.fine("File: " + file.getId() + " ingest queued");
 
         init();
         JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("file.ingest.ingestQueued"));

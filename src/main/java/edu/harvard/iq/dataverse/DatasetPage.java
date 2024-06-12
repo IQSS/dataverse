@@ -2296,13 +2296,11 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isValid() {
         if (valid == null) {
-            DatasetVersion version = dataset.getLatestVersion();
-            if (!version.isDraft()) {
+            if (workingVersion.isDraft() || (canUpdateDataset() && JvmSettings.UI_SHOW_VALIDITY_LABEL_WHEN_PUBLISHED.lookupOptional(Boolean.class).orElse(true))) {
+                valid = workingVersion.isValid();
+            } else {
                 valid = true;
             }
-            DatasetVersion newVersion = version.cloneDatasetVersion();
-            newVersion.setDatasetFields(newVersion.initDatasetFields());
-            valid = newVersion.isValid();
         }
         return valid;
     }
@@ -3932,12 +3930,6 @@ public class DatasetPage implements java.io.Serializable {
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             }
             dataset = commandEngine.submit(cmd);
-            for (DatasetField df : dataset.getLatestVersion().getFlatDatasetFields()) {
-                logger.fine("Found id: " + df.getDatasetFieldType().getId());
-                if (fieldService.getCVocConf(true).containsKey(df.getDatasetFieldType().getId())) {
-                    fieldService.registerExternalVocabValues(df);
-                }
-            }
             if (editMode == EditMode.CREATE) {
                 if (session.getUser() instanceof AuthenticatedUser) {
                     userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
