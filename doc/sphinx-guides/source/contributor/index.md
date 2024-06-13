@@ -1,6 +1,6 @@
 # Contributor Guide
 
-Thank you for your interest in contributing to Dataverse!  We are open to contributions from everyone. We welcome contributions of ideas, bug reports, usability research/feedback, documentation, code, and more!
+Thank you for your interest in contributing to Dataverse!  We are open to contributions from everyone. We welcome contributions of ideas, bug reports, documentation, code, and more!
 
 ```{contents} Contents:
 :local:
@@ -68,9 +68,11 @@ Consider contributing to <https://github.com/IQSS/dataverse-sample-data>, a git 
 
 ## Issue Triage
 
-New issues are coming in all the time, especially for the main issue tracker at <https://github.com/IQSS/dataverse/issues>.
+New issues come in all the time, especially for the main issue tracker at <https://github.com/IQSS/dataverse/issues>.
 
-You can help by leaving comments that mention related issues or that answer questions.
+You can help by leaving comments. You can mention related issues or answer questions.
+
+If you are interested in adding issue labels or related curation, please get in touch!
 
 ## Giving Talks
 
@@ -82,13 +84,15 @@ For non-recorded talks, we are happy to upload your slides to <https://dataverse
 
 Most working groups are wide open to participation. For the current list of groups, please see <https://www.gdcc.io/working-groups.html>.
 
+You're welcome to start your own working group, of course. We can help you get the word out.
+
 ## Artwork
 
-Surely we can put artistic talent to use. See <https://github.com/IQSS/chat.dataverse.org/issues/18> for a story about drawing animals chatting about Dataverse.
+Surely we can put artistic talent to use. A contributor [drew cartoon animals chatting about Dataverse](https://github.com/IQSS/chat.dataverse.org/issues/18), for example.
 
 As [annnounced](https://groups.google.com/g/dataverse-community/c/pM39_9O5Rug/m/CK-gJqZFBgAJ), we have a [sticker template](https://dataverse.org/sites/projects.iq.harvard.edu/files/dataverseorg/files/dataverse_community_stickers_template.zip) you can use.
 
-See [Illustrations from The Turing Way](https://zenodo.org/doi/10.5281/zenodo.3332807) for how that community has created artwork. Perhaps we can do the same.
+See [Illustrations from The Turing Way](https://zenodo.org/doi/10.5281/zenodo.3332807) for how that community has created artwork. Perhaps we can create a similar collection.
 
 ## Other Contributions
 
