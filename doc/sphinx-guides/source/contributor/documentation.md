@@ -122,7 +122,9 @@ Also, as of this writing we have enabled PDF builds from the "develop" branch. Y
 
 If you would like to help improve the PDF version of the guides, please get in touch! Please see {ref}`getting-help-developers` for ways to contact the developer community.
 
-## Writing Style Guidelines
+## Writing Guidelines
+
+### Writing Style Guidelines
 
 Please observe the following when writing documentation:
 
@@ -132,7 +134,7 @@ Please observe the following when writing documentation:
 - Use "double quotes" instead of 'single quotes'.
 - Favor "and" (data and code) over slashes (data/code).
 
-## Table of Contents
+### Table of Contents
 
 Every non-index page should use the following code to display a table of contents of internal sub-headings. This code should be placed below any introductory text and directly above the first subheading, much like a Wikipedia page.
 
@@ -148,7 +150,7 @@ If the page is written in Markdown (.md), use this form:
     :depth: 3
     ```
 
-## Images
+### Images
 
 A good documentation is just like a website enhanced and upgraded by adding high quality and self-explanatory images.  Often images depict a lot of written text in a simple manner. Within our Sphinx docs, you can add them in two ways: a) add a PNG image directly and include or b) use inline description languages like GraphViz (current only option).
 
@@ -156,6 +158,6 @@ While PNGs in the git repo can be linked directly via URL, Sphinx-generated imag
 
 TODO: The above covers "how" but what about "when"?
 
-## Cross References
+### Cross References
 
 When adding ReStructured Text (.rst) [cross references](https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html#ref-role), use the hyphen character (`-`) as the word separator for the cross reference label. For example, `my-reference-label` would be the preferred label for a cross reference as opposed to, for example, `my_reference_label`.
