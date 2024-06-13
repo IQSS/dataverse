@@ -486,8 +486,8 @@ public class IndexServiceBean {
         StringBuilder debug = new StringBuilder();
         debug.append("\ndebug:\n");
         DatasetVersion latestVersion = dataset.getLatestVersion();
-        String latestVersionStateString = latestVersion.getVersionState().name();
         DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
+        String latestVersionStateString = latestVersionState.name();
         DatasetVersion releasedVersion = dataset.getReleasedVersion();
         boolean atLeastOnePublishedVersion = false;
         if (releasedVersion != null) {
