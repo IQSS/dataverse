@@ -111,16 +111,6 @@ After Sphinx is done processing the files you should notice that the `html` fold
 
 Now you can make a commit with the changes to your own fork in GitHub and submit a pull request. See {ref}`how-to-make-a-pull-request`.
 
-## Versions
-
-For installations hosting their own copies of the guides, note that as each version of the Dataverse Software is released, there is an updated version of the guides released with it. Google and other search engines index all versions, which may confuse users who discover your guides in the search results as to which version they should be looking at. When learning about your installation from the search results, it is best to be viewing the *latest* version.
-
-In order to make it clear to the crawlers that we only want the latest version discoverable in their search results, we suggest adding this to your `robots.txt` file:
-
-    User-agent: *
-    Allow: /en/latest/
-    Disallow: /en/
-
 ## PDF Version of the Guides
 
 The HTML version of the guides is the official one. Any other formats are maintained on a best effort basis.
@@ -178,3 +168,17 @@ TODO: The above covers "how" but what about "when"?
 ### Cross References
 
 When adding ReStructured Text (.rst) [cross references](https://www.sphinx-doc.org/en/master/usage/restructuredtext/roles.html#ref-role), use the hyphen character (`-`) as the word separator for the cross reference label. For example, `my-reference-label` would be the preferred label for a cross reference as opposed to, for example, `my_reference_label`.
+
+## Hosting Your Own Version of the Guides
+
+Some installations of Dataverse maintain their own versions of the guides and use settings like {ref}`:NavbarGuidesUrl` or {ref}`:GuidesBaseUrl` to point their users to them.
+
+### Having Google Index the Latest Version
+
+As each version of the Dataverse software is released, there is an updated version of the guides released with it. Google and other search engines index all versions, which may confuse users who discover your guides in the search results as to which version they should be looking at. When learning about your installation from the search results, it is best to be viewing the *latest* version.
+
+In order to make it clear to the crawlers that we only want the latest version discoverable in their search results, we suggest adding this to your `robots.txt` file:
+
+    User-agent: *
+    Allow: /en/latest/
+    Disallow: /en/
