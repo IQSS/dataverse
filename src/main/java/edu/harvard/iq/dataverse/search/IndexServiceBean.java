@@ -2180,7 +2180,7 @@ public class IndexServiceBean {
                         } else if (obj instanceof DataFile f) {
                             List<VersionState> states = dataFileService.findVersionStates(f.getId());
                             Set<String> strings = states.stream().map(VersionState::toString).collect(Collectors.toSet());
-                            logger.info("for " + docId + " states: " + String.join(", ", strings));
+                            logger.fine("States for " + docId + ": " + String.join(", ", strings));
                             if (docId.endsWith("draft_permission")) {
                                 if (!states.contains(VersionState.DRAFT)) {
                                     permissionInSolrOnly.add(docId);
@@ -2194,7 +2194,7 @@ public class IndexServiceBean {
                                     permissionInSolrOnly.add(docId);
                                 } else {
                                     if(dataFileService.findFileMetadataByDatasetVersionIdAndDataFileId(f.getOwner().getReleasedVersion().getId(), f.getId()) == null) {
-                                        logger.info("Adding doc " + docId + " to list of permissions in Solr only");
+                                        logger.fine("Adding doc " + docId + " to list of permissions in Solr only");
                                         permissionInSolrOnly.add(docId);
                                     }
                                 }
