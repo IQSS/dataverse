@@ -914,6 +914,20 @@ public class IndexServiceBean {
 
             Set<String> langs = settingsService.getConfiguredLanguages();
             Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(true);
+            Map<Long, Set<String>> cvocManagedFieldMap = new HashMap<>();
+            for (Map.Entry<Long, JsonObject> cvocEntry : cvocMap.entrySet()) {
+                if(cvocEntry.getValue().containsKey("managed-fields")) {
+                    JsonObject managedFields = cvocEntry.getValue().getJsonObject("managed-fields");
+                    Set<String> managedFieldValues = new HashSet<>();
+                    for (String s : managedFields.keySet()) {
+                        managedFieldValues.add(managedFields.getString(s));
+                    }
+                    cvocManagedFieldMap.put(cvocEntry.getKey(), managedFieldValues);
+                }
+            }
+
+
+
             Set<String> metadataBlocksWithValue = new HashSet<>();
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
@@ -988,19 +1002,39 @@ public class IndexServiceBean {
                             }
                             solrInputDocument.addField(SearchFields.NAME_SORT, dsf.getValues());
                         }
-                        
+
+                        // If there is a CVOCConf for the field
                         if(cvocMap.containsKey(dsfType.getId())) {
                             List<String> vals = dsf.getValues_nondisplay();
-                            Set<String> searchStrings = new HashSet<String>();
+                            Set<String> searchStrings = new HashSet<>();
                             for (String val: vals) {
                                 searchStrings.add(val);
-                                searchStrings.addAll(datasetFieldService.getStringsFor(val));
+                                // Try to get string values from externalvocabularyvalue using val as termUri
+                                searchStrings.addAll(datasetFieldService.getIndexableStringsByTermUri(val, cvocMap.get(dsfType.getId()), dsfType.getName()));
+
+                                if(dsfType.getParentDatasetFieldType()!=null) {
+                                    List<DatasetField> childDatasetFields = dsf.getParentDatasetFieldCompoundValue().getChildDatasetFields();
+                                    for (DatasetField df : childDatasetFields) {
+                                        if(cvocManagedFieldMap.get(dsfType.getId()).contains(df.getDatasetFieldType().getName())) {
+                                            String solrManagedFieldSearchable = df.getDatasetFieldType().getSolrField().getNameSearchable();
+                                            // Try to get string values from externalvocabularyvalue but for a managed fields of the CVOCConf
+                                            Set<String> stringsForManagedField = datasetFieldService.getIndexableStringsByTermUri(val, cvocMap.get(dsfType.getId()), df.getDatasetFieldType().getName());
+                                            logger.fine(solrManagedFieldSearchable + " filled with externalvocabularyvalue : " + stringsForManagedField);
+                                            //.addField works as addition of value not a replace of value
+                                            // it allows to add mapped values by CVOCConf before or after indexing real DatasetField value(s) of solrManagedFieldSearchable
+                                            solrInputDocument.addField(solrManagedFieldSearchable, stringsForManagedField);
+                                        }
+                                    }
+                                }
                             }
+                            logger.fine(solrFieldSearchable + " filled with externalvocabularyvalue : " + searchStrings);
                             solrInputDocument.addField(solrFieldSearchable, searchStrings);
                             if (dsfType.getSolrField().isFacetable()) {
+                                logger.fine(solrFieldFacetable + " gets " + vals);
                                 solrInputDocument.addField(solrFieldFacetable, vals);
                             }
                         }
+
                         if (dsfType.isControlledVocabulary()) {
                             /** If the cvv list is empty but the dfv list is not then it is assumed this was harvested
                              *  from an installation that had controlled vocabulary entries that don't exist in our this db
