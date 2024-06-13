@@ -26,3 +26,19 @@ Please observe the following when writing documentation:
 - Break up longer paragraphs.
 - Use "double quotes" instead of 'single quotes'.
 - Favor "and" (data and code) over slashes (data/code).
+
+## Table of Contents
+
+Every non-index page should use the following code to display a table of contents of internal sub-headings. This code should be placed below any introductory text and directly above the first subheading, much like a Wikipedia page.
+
+If the page is written in reStructuredText (.rst), use this form:
+
+    .. contents:: |toctitle|
+        :local:
+
+If the page is written in Markdown (.md), use this form:
+
+    ```{contents} Contents:
+    :local:
+    :depth: 3
+    ```
