@@ -7,6 +7,23 @@ Thank you for your interest in contributing documentation to Dataverse! Good doc
 :depth: 3
 ```
 
+## Overview
+
+The Dataverse guides are written using [Sphinx](https://sphinx-doc.org).
+
+The source files are stored under [doc/sphinx-guides](https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides) in the main "dataverse" repo on GitHub.
+
+Historically, guides have been written in the default Sphinx format, [reStructuredText][] (.rst), but newer guides such as the {doc}`/contributor/index` are written in [Markdown][] (.md).
+
+[reStructuredText]: https://en.wikipedia.org/wiki/ReStructuredText
+[Markdown]: https://en.wikipedia.org/wiki/Markdown
+
+Below we'll present a technique for making quick edits to the guides using GitHub's web editor ("quick fix"). We'll also describe how to install Sphinx locally for more significant edits.
+
+Finally, we'll provide some guidelines on writing content.
+
+We could use some help on writing this very page and helping newcomers get started. Please don't be shy about suggesting improvements! You can open an issue at <https://github.com/IQSS/dataverse/issues>, post to <https://chat.dataverse.org>, write to the [mailing list](https://groups.google.com/g/dataverse-community), or suggest a change with a pull request.
+
 ## Quick Fix
 
 If you find a typo or a small error in the documentation you can fix it using GitHub's online web editor. Generally speaking, we will be following <https://docs.github.com/en/repositories/working-with-files/managing-files/editing-files#editing-files-in-another-users-repository>
@@ -33,7 +50,7 @@ If you would like to read more about the Dataverse Project's use of GitHub, plea
 
 ## Building the Guides with Sphinx
 
-The Dataverse guides are written using Sphinx (<https://sphinx-doc.org>). We recommend installing Sphinx on your computer or using a Sphinx Docker container to build the guides locally so you can get an accurate preview of your changes.
+While the "quick fix" technique shown above should work fine for minor changes, especially for larger changes, we recommend installing Sphinx on your computer or using a Sphinx Docker container to build the guides locally so you can get an accurate preview of your changes.
 
 In case you decide to use a Sphinx Docker container to build the guides, you can skip the next two installation sections, but you will need to have Docker installed.
 
