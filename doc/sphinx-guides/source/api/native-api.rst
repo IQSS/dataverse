@@ -5754,9 +5754,9 @@ List a saved search by database id. ::
 
   GET http://$SERVER/api/admin/savedsearches/$id
 
-Delete a saved search by database id::
+Delete a saved search by database id.
 
-The ``unlink=true`` query parameter unlinks all links (linked dataset or Dataverse collection) associated with the deleted saved search. Use of this parameter should be well considered as you cannot know if the links were created manually or by the saved search. After deleting a saved search with ``unlink=true``, we recommend running ``/makelinks/all`` just in case there was a dataset that was linked by another saved search. (Saved searched can link the same dataset.) Reindexing might be necessary as well.
+The ``unlink=true`` query parameter unlinks all links (linked dataset or Dataverse collection) associated with the deleted saved search. Use of this parameter should be well considered as you cannot know if the links were created manually or by the saved search. After deleting a saved search with ``unlink=true``, we recommend running ``/makelinks/all`` just in case there was a dataset that was linked by another saved search. (Saved searched can link the same dataset.) Reindexing might be necessary as well.::
 
   DELETE http://$SERVER/api/admin/savedsearches/$id?unlink=true
 
