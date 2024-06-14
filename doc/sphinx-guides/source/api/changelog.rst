@@ -30,6 +30,7 @@ v6.0
 ----
 
 - **/api/access/datafile**: When a null or invalid API token is provided to download a public (non-restricted) file with this API call, it will result on a ``401`` error response. Previously, the download was allowed (``200`` response). Please note that we noticed this change sometime between 5.9 and 6.0. If you can help us pinpoint the exact version (or commit!), please get in touch. See :doc:`dataaccess`.
+- **/openapi**: This endpoint is currently broken. See https://github.com/IQSS/dataverse/issues/9981
 
 v5.6
 ----

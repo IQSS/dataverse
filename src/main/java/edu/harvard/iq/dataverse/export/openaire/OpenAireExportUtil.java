@@ -437,7 +437,7 @@ public class OpenAireExportUtil {
                         for (String subject : fieldDTO.getMultipleVocab()) {
                             if (StringUtils.isNotBlank(subject)) {
                                 subject_check = writeOpenTag(xmlw, "subjects", subject_check);
-                                writeSubjectElement(xmlw, null, null, subject, language);
+                                writeSubjectElement(xmlw, null, null, null, subject, language);
                             }
                         }
                     }
@@ -446,7 +446,8 @@ public class OpenAireExportUtil {
                         for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
                             String subject = null;
                             String subjectScheme = null;
-                            String schemeURI = null;
+                            String keywordTermURI = null;
+                            String keywordVocabURI = null;
 
                             for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
@@ -454,18 +455,22 @@ public class OpenAireExportUtil {
                                     subject = next.getSinglePrimitive();
                                 }
 
+                                if (DatasetFieldConstant.keywordTermURI.equals(next.getTypeName())) {
+                                    keywordTermURI = next.getSinglePrimitive();
+                                }  
+
                                 if (DatasetFieldConstant.keywordVocab.equals(next.getTypeName())) {
                                     subjectScheme = next.getSinglePrimitive();
                                 }
-
+                                
                                 if (DatasetFieldConstant.keywordVocabURI.equals(next.getTypeName())) {
-                                    schemeURI = next.getSinglePrimitive();
+                                    keywordVocabURI = next.getSinglePrimitive();
                                 }
                             }
 
                             if (StringUtils.isNotBlank(subject)) {
                                 subject_check = writeOpenTag(xmlw, "subjects", subject_check);
-                                writeSubjectElement(xmlw, subjectScheme, schemeURI, subject, language);
+                                writeSubjectElement(xmlw, subjectScheme, keywordTermURI, keywordVocabURI, subject, language);
                             }
                         }
                     }
@@ -493,7 +498,7 @@ public class OpenAireExportUtil {
 
                             if (StringUtils.isNotBlank(subject)) {
                                 subject_check = writeOpenTag(xmlw, "subjects", subject_check);
-                                writeSubjectElement(xmlw, subjectScheme, schemeURI, subject, language);
+                                writeSubjectElement(xmlw, subjectScheme, null, schemeURI, subject, language);
                             }
                         }
                     }
@@ -513,7 +518,7 @@ public class OpenAireExportUtil {
      * @param language
      * @throws XMLStreamException
      */
-    private static void writeSubjectElement(XMLStreamWriter xmlw, String subjectScheme, String schemeURI, String value, String language) throws XMLStreamException {
+    private static void writeSubjectElement(XMLStreamWriter xmlw, String subjectScheme, String valueURI, String schemeURI, String value, String language) throws XMLStreamException {
         // write a subject
         Map<String, String> subject_map = new HashMap<String, String>();
 
@@ -523,6 +528,9 @@ public class OpenAireExportUtil {
 
         if (StringUtils.isNotBlank(subjectScheme)) {
             subject_map.put("subjectScheme", subjectScheme);
+        }
+        if (StringUtils.isNotBlank(valueURI)) {
+            subject_map.put("valueURI", valueURI);
         }
         if (StringUtils.isNotBlank(schemeURI)) {
             subject_map.put("schemeURI", schemeURI);
