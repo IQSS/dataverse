@@ -45,7 +45,7 @@ For other codebases, consult the README.
 
 ## Reviewing Code
 
-Reviewing code is a great way to learn about a codebase. For any codebase you can browse open pull requests, of course, but for the primary codebases, you can take a look at the "Ready for Review" and "In Review" columns at https://github.com/orgs/IQSS/projects/34
+Reviewing code is a great way to learn about a codebase. For any codebase you can browse open pull requests, of course, but for the primary codebases, you can take a look at the "Ready for Review" and "In Review" columns at <https://github.com/orgs/IQSS/projects/34>.
 
 You are welcome to review code informally or to leave an actual review. We're interested in what you think.
 

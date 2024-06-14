@@ -1,6 +1,6 @@
 # Writing Documentation
 
-Thank you for your interest in contributing documentation to Dataverse! Good documentation is absolutely critical to the success of a software project.
+Thank you for your interest in contributing documentation to Dataverse! Good documentation is absolutely critical to the success of software.
 
 ```{contents} Contents:
 :local:
@@ -26,23 +26,23 @@ We could use some help on writing this very page and helping newcomers get start
 
 ## Quick Fix
 
-If you find a typo or a small error in the documentation you can fix it using GitHub's online web editor. Generally speaking, we will be following <https://docs.github.com/en/repositories/working-with-files/managing-files/editing-files#editing-files-in-another-users-repository>
+If you find a typo or a small error in the documentation you can fix it using GitHub's online web editor. Generally speaking, we will be following [GitHub's guidance on editing files in another user's repository](https://docs.github.com/en/repositories/working-with-files/managing-files/editing-files#editing-files-in-another-users-repository).
 
 - Navigate to <https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source> where you will see folders for each of the guides: [admin][], [api][], [container][], etc.
 - Find the file you want to edit under one of the folders above.
-- Click the pencil icon in the upper-right corner. If this is your first contribution to the Dataverse Project, the hover text over the pencil icon will say "Fork this project and edit this file".
+- Click the pencil icon in the upper-right corner. If this is your first contribution to Dataverse, the hover text over the pencil icon will say "Fork this project and edit this file".
 - Make changes to the file and preview them.
 - In the **Commit changes** box, enter a description of the changes you have made and click **Propose file change**.
 - Under the **Write** tab, delete the long welcome message and write a few words about what you fixed.
 - Click **Create Pull Request**.
 
-That's it! Thank you for your contribution! Your pull request will be added manually to the main Dataverse Project board at <https://github.com/orgs/IQSS/projects/34> and will go through code review and QA before it is merged into the "develop" branch. Along the way, developers might suggest changes or make them on your behalf. Once your pull request has been merged you will be listed as a contributor at <https://github.com/IQSS/dataverse/graphs/contributors>! 🎉
+That's it! Thank you for your contribution! Your pull request will be added manually to the main Dataverse project board at <https://github.com/orgs/IQSS/projects/34> and will go through code review and QA before it is merged into the "develop" branch. Along the way, developers might suggest changes or make them on your behalf. Once your pull request has been merged you will be listed as a contributor at <https://github.com/IQSS/dataverse/graphs/contributors>! 🎉
 
 Please see <https://github.com/IQSS/dataverse/pull/5857> for an example of a quick fix that was merged (the "Files changed" tab shows how a typo was fixed).
 
 Preview your documentation changes which will be built automatically as part of your pull request in Github.  It will show up as a check entitled: `docs/readthedocs.org:dataverse-guide — Read the Docs build succeeded!`.  For example, this PR built to <https://dataverse-guide--9249.org.readthedocs.build/en/9249/>.
 
-If you would like to read more about the Dataverse Project's use of GitHub, please see the {doc}`/developers/version-control` section of the Developer Guide. For bug fixes and features we request that you create an issue before making a pull request but this is not at all necessary for quick fixes to the documentation.
+If you would like to read more about the Dataverse's use of GitHub, please see the {doc}`/developers/version-control` section of the Developer Guide. For bug fixes and features we request that you create an issue before making a pull request but this is not at all necessary for quick fixes to the documentation.
 
 [admin]: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/admin
 [api]: https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/api

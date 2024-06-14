@@ -86,6 +86,10 @@ Most working groups are wide open to participation. For the current list of grou
 
 You're welcome to start your own working group, of course. We can help you get the word out.
 
+## GDCC
+
+The popularity of the Dataverse software has resulted in a continuously growing community with different needs and requirements. The Global Dataverse Community Consortium (GDCC) helps coordinate community efforts and sustain the software and community in the long term. Please consider contributing to GDCC by joining as an institutional member (<https://www.gdcc.io/members.html>).
+
 ## Artwork
 
 Surely we can put artistic talent to use. A contributor [drew cartoon animals chatting about Dataverse](https://github.com/IQSS/chat.dataverse.org/issues/18), for example.
