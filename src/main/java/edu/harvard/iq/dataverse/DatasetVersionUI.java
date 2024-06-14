@@ -62,14 +62,14 @@ public class DatasetVersionUI implements Serializable {
     public DatasetVersionUI  initDatasetVersionUI(DatasetVersion datasetVersion, boolean createBlanks) {
         /*takes in the values of a dataset version 
          and apportions them into lists for 
-         viewing and editng in the dataset page.
+         viewing and editing in the dataset page.
          */
         
         setDatasetVersion(datasetVersion);
         //this.setDatasetAuthors(new ArrayList());
         this.setDatasetRelPublications(new ArrayList<>());
 
-        // loop through vaues to get fields for view mode
+        // loop through values to get fields for view mode
         for (DatasetField dsf : datasetVersion.getDatasetFields()) {
             //Special Handling for various fields displayed above tabs in dataset page view.
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
@@ -114,17 +114,23 @@ public class DatasetVersionUI implements Serializable {
                         datasetRelPublication.setTitle(dsf.getDatasetFieldType().getLocaleTitle());
                         datasetRelPublication.setDescription(dsf.getDatasetFieldType().getLocaleDescription());
                         for (DatasetField subField : relPubVal.getChildDatasetFields()) {
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationCitation)) {
+                            String value = subField.getValue();
+                            switch (subField.getDatasetFieldType().getName()) {
+                            case DatasetFieldConstant.publicationCitation:
                                 datasetRelPublication.setText(subField.getValue());
-                            }
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
+                                break;
+                            case DatasetFieldConstant.publicationIDNumber:
                                 datasetRelPublication.setIdNumber(subField.getValue());
-                            }
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDType)) {
+                                break;
+                            case DatasetFieldConstant.publicationIDType:
                                 datasetRelPublication.setIdType(subField.getValue());
-                            }
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
+                                break;
+                            case DatasetFieldConstant.publicationURL:
                                 datasetRelPublication.setUrl(subField.getValue());
+                                break;
+                            case DatasetFieldConstant.publicationRelationType:
+                                datasetRelPublication.setRelationType(subField.getValue());
+                                break;
                             }
                         }
                         this.getDatasetRelPublications().add(datasetRelPublication);
@@ -258,6 +264,14 @@ public class DatasetVersionUI implements Serializable {
     public String getRelPublicationUrl() {
         if (!this.datasetRelPublications.isEmpty()) {
             return this.getDatasetRelPublications().get(0).getUrl();
+        } else {
+            return "";
+        }
+    }
+
+    public String getRelPublicationRelationType() {
+        if (!this.datasetRelPublications.isEmpty()) {
+            return this.getDatasetRelPublications().get(0).getRelationType();
         } else {
             return "";
         }
