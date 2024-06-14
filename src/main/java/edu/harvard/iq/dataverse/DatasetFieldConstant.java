@@ -40,6 +40,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     
     public final static String note = "note";
     
+    public final static String publicationRelationType = "publicationRelationType";
     public final static String publicationCitation = "publicationCitation";
     public final static String publicationIDType = "publicationIDType";
     public final static String publicationIDNumber = "publicationIDNumber";

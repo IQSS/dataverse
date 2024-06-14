@@ -932,6 +932,7 @@ public class OpenAireExportUtil {
                             String relatedIdentifierType = null;
                             String relatedIdentifier = null; // is used when relatedIdentifierType variable is not URL
                             String relatedURL = null; // is used when relatedIdentifierType variable is URL
+                            String relationType = null; // is used when relatedIdentifierType variable is URL
 
                             for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
@@ -943,6 +944,9 @@ public class OpenAireExportUtil {
                                 }
                                 if (DatasetFieldConstant.publicationURL.equals(next.getTypeName())) {
                                     relatedURL = next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.publicationRelationType.equals(next.getTypeName())) {
+                                    relationType = next.getSinglePrimitive();
                                 }
                             }
 
@@ -956,7 +960,10 @@ public class OpenAireExportUtil {
                                 }
 
                                 relatedIdentifier_map.put("relatedIdentifierType", relatedIdentifierType);
-                                relatedIdentifier_map.put("relationType", "IsCitedBy");
+                                if(relationType== null) {
+                                    relationType = "IsCitedBy";
+                                }
+                                relatedIdentifier_map.put("relationType", relationType);
 
                                 if (StringUtils.containsIgnoreCase(relatedIdentifierType, "url")) {
                                     writeFullElement(xmlw, null, "relatedIdentifier", relatedIdentifier_map, relatedURL, language);
