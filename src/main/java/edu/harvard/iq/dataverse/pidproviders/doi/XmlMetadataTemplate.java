@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -872,6 +874,10 @@ public class XmlMetadataTemplate {
                     String pubIdType = relatedPub.getIdType();
                     String identifier = relatedPub.getIdNumber();
                     String url = relatedPub.getUrl();
+                    String relationType = relatedPub.getRelationType();
+                    if(StringUtils.isBlank(relationType)) {
+                        relationType = "IsSupplementTo";
+                    }
                     /*
                      * Note - with identifier and url fields, it's not clear that there's a single
                      * way those two fields are used for all identifier types. The code here is
@@ -921,13 +927,13 @@ logger.info("Canonical type: " + pubIdType);
 
                             // For non-URL types, if a URL is given, split the string to get a schemeUri
                             try {
-                                URL relatedUrl = new URL(relatedIdentifier);
+                                URL relatedUrl = new URI(relatedIdentifier).toURL();
                                 String protocol = relatedUrl.getProtocol();
                                 String authority = relatedUrl.getAuthority();
                                 String site = String.format("%s://%s", protocol, authority);
                                 relatedIdentifier = relatedIdentifier.substring(site.length());
                                 attributes.put("schemeURI", site);
-                            } catch (MalformedURLException e) {
+                            } catch (URISyntaxException | MalformedURLException e) {
                                 // Just an identifier
                             }
                         }
@@ -937,7 +943,7 @@ logger.info("Canonical type: " + pubIdType);
                         if (pubIdType != null) {
                             attributes.put("relatedIdentifierType", pubIdType);
                         }
-                        attributes.put("relationType", "IsSupplementTo");
+                        attributes.put("relationType", relationType);
                         relatedIdentifiersWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "relatedIdentifiers", relatedIdentifiersWritten);
                         XmlWriterUtil.writeFullElementWithAttributes(xmlw, "relatedIdentifier", attributes, relatedIdentifier);
                     }
