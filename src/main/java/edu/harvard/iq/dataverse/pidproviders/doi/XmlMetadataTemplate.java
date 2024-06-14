@@ -546,7 +546,10 @@ public class XmlMetadataTemplate {
                     contributor = subField.getValue();
                     break;
                 case DatasetFieldConstant.contributorType:
-                    contributorType = subField.getValue().replace(" ", "");
+                    contributorType = subField.getValue();
+                    if(contributorType!=null) {
+                        contributorType = contributorType.replace(" ", "");
+                    }
                     break;
                 }
             }
