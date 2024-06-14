@@ -651,9 +651,9 @@
                                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}"></span>
                                                         </th>
                                                         <td jsf:rendered="#{!DatasetPage.anonymizedAccess or !settingsWrapper.shouldBeAnonymized(dsf)}">
-                                                            <h:outputText value="#DatasetPage.datasetVersionUI.relPublicationRelationType: #{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
+                                                            <h:outputText value="#{DatasetPage.datasetVersionUI.relPublicationRelationType}: #{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
                                                             <a jsf:rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationUrl}" href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank" rel="noopener">#{DatasetPage.datasetVersionUI.relPublicationId}</a>
-                                                            <h"outputText rendered="#{empty DatasetPage.datasetVersionUI.relPublicationUrl}" value="#{DatasetPage.datasetVersionUI.relPublicationId"/>
+                                                            <h:outputText rendered="#{empty DatasetPage.datasetVersionUI.relPublicationUrl}" value="#{DatasetPage.datasetVersionUI.relPublicationId}"/>
                                                         </td>
                                                         <td jsf:rendered="#{DatasetPage.anonymizedAccess and settingsWrapper.shouldBeAnonymized(dsf)}">
                                                             <h:outputText value="#{bundle['dataset.anonymized.withheld']}"/>
