@@ -1146,11 +1146,21 @@ public class SystemConfig {
         return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.StorageQuotaSizeInBytes);
     }
     /**
-     * Should we store tab-delimited files produced during ingest *with* the 
-     * variable name header line included? 
+     * Should we store tab-delimited files produced during ingest *with* the
+     * variable name header line included?
      * @return boolean - defaults to false.
      */
     public boolean isStoringIngestedFilesWithHeaders() {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.StoreIngestedTabularFilesWithVarHeaders, false);
+    }
+
+    /**
+     * RateLimitUtil will parse the json to create a List<RateLimitSetting>
+     */
+    public String getRateLimitsJson() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.RateLimitingCapacityByTierAndAction, "");
+    }
+    public String getRateLimitingDefaultCapacityTiers() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.RateLimitingDefaultCapacityTiers, "");
     }
 }
