@@ -136,7 +136,7 @@ On Linux, you should just install PostgreSQL using your favorite package manager
 Install Solr
 ^^^^^^^^^^^^
 
-`Solr <https://lucene.apache.org/solr/>`_ 9.3.0 is required.
+`Solr <https://lucene.apache.org/solr/>`_ 9.4.1 is required.
 
 To install Solr, execute the following commands:
 
@@ -146,25 +146,23 @@ To install Solr, execute the following commands:
 
 ``cd /usr/local/solr``
 
-``curl -O https://archive.apache.org/dist/solr/solr/9.3.0/solr-9.3.0.tgz``
+``curl -O https://archive.apache.org/dist/solr/solr/9.4.1/solr-9.4.1.tgz``
 
-``tar xvfz solr-9.3.0.tgz``
+``tar xvfz solr-9.4.1.tgz``
 
-``cd solr-9.3.0/server/solr``
+``cd solr-9.4.1/server/solr``
 
 ``cp -r configsets/_default collection1``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/9.3.0/schema.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/schema.xml``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/9.3.0/schema_dv_mdb_fields.xml``
+``mv schema.xml collection1/conf``
 
-``mv schema*.xml collection1/conf``
-
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/9.3.0/solrconfig.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/solrconfig.xml``
 
 ``mv solrconfig.xml collection1/conf/solrconfig.xml``
 
-``cd /usr/local/solr/solr-9.3.0``
+``cd /usr/local/solr/solr-9.4.1``
 
 (Please note that the extra jetty argument below is a security measure to limit connections to Solr to only your computer. For extra security, run a firewall.)
 
