@@ -1246,7 +1246,9 @@ logger.info("Canonical type: " + pubIdType);
                     
                     ArrayList<String> placeList = new ArrayList<String>();
                     for (String placePart : place) {
-                        placeList.add(placePart);
+                        if (!StringUtils.isBlank(placePart)) {
+                            placeList.add(placePart);
+                        }
                     }
                     XmlWriterUtil.writeFullElement(xmlw, "geoLocationPlace", Strings.join(placeList, ", "));
                     xmlw.writeEndElement(); // </geoLocation>
