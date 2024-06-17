@@ -755,7 +755,7 @@ public class XmlMetadataTemplate {
             }
         }
         if (!kindOfDataValues.isEmpty()) {
-            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, String.join(", ", kindOfDataValues));
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, String.join(";", kindOfDataValues));
 
         } else {
             // Write an attribute only element if there are no kindOfData values.
