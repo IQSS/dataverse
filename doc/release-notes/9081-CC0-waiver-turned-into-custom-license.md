@@ -3,4 +3,4 @@ In an earlier Dataverse release, Datasets with only 'CC0 Waiver' in termsofuse f
 - The following terms fields must be empty: Confidentiality Declaration, Special Permissions, Restrictions, Citation Requirements, Depositor Requirements, Conditions, and Disclaimer.
 - The License ID must not be assigned.
 
-This process will set the License ID to that of the CC0 1.0 license and change the termsofuse field back to 'CC0 Waiver', which will be hidden in the UI do to the License ID being set.
+This process will set the License ID to that of the CC0 1.0 license and remove the contents of termsofuse field.
