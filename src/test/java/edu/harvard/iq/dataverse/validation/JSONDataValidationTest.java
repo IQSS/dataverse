@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.validation;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
@@ -29,132 +31,19 @@ public class JSONDataValidationTest {
     static DatasetFieldType datasetFieldTypeMock;
     static ControlledVocabularyValue cvv = new ControlledVocabularyValue();
     static Map<String, Map<String, List<String>>> schemaChildMap = new HashMap<>();
+
+    static String rawSchemaJson = null;
     static String rawSchema() {
-        return """
-         {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "$defs": {
-            "field": {
-                "type": "object",
-                "required": ["typeClass", "multiple", "typeName"],
-                "properties": {
-                    "value": {
-                        "anyOf": [
-                            {
-                                "type": "array"
-                            },
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/$defs/field"
-                            }
-                        ]
-                    },
-                    "typeClass": {
-                        "type": "string"
-                    },
-                    "multiple": {
-                        "type": "boolean"
-                    },
-                    "typeName": {
-                        "type": "string"
-                    }
-                }
+        if (rawSchemaJson == null) {
+            try {
+                rawSchemaJson = JsonUtil.prettyPrint(JsonUtil.getJsonObjectFromFile("doc/sphinx-guides/source/_static/api/dataset-schema.json"));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        },
-        "type": "object",
-        "properties": {
-            "datasetVersion": {
-                "type": "object",
-                "properties": {
-                   "license": {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "type": "string"
-                            },
-                            "uri": {
-                                "type": "string",
-                                "format": "uri"
-                           }
-                        },
-                        "required": ["name", "uri"]
-                    },
-                    "metadataBlocks": {
-                        "type": "object",
-                       "properties": {
-                                   "citation": {
-                                    "type": "object",
-                                    "properties": {
-                                        "fields": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/$defs/field"
-                                            },
-                                            "minItems": 5,
-                                            "allOf": [
-                                                {
-                                                    "contains": {
-                                                        "properties": {
-                                                            "typeName": {
-                                                                "const": "title"
-                                                            }
-                                                        }
-                                                    }
-                                                },
-                                                {
-                                                    "contains": {
-                                                        "properties": {
-                                                            "typeName": {
-                                                                "const": "author"
-                                                            }
-                                                        }
-                                                    }
-                                                },
-                                                {
-                                                    "contains": {
-                                                        "properties": {
-                                                            "typeName": {
-                                                                "const": "datasetContact"
-                                                            }
-                                                        }
-                                                    }
-                                                },
-                                                {
-                                                    "contains": {
-                                                        "properties": {
-                                                            "typeName": {
-                                                                "const": "dsDescription"
-                                                            }
-                                                        }
-                                                    }
-                                                },
-                                                {
-                                                    "contains": {
-                                                        "properties": {
-                                                            "typeName": {
-                                                                "const": "subject"
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    "required": ["fields"]
-                                }
-                             },
-                            "required": ["citation"]
-                        }
-                    },
-                    "required": ["metadataBlocks"]
-                }
-            },
-            "required": ["datasetVersion"]
         }
-        """;
+        return rawSchemaJson;
     }
+
     static String jsonInput() {
         return """
                    {
