@@ -3,12 +3,10 @@ package edu.harvard.iq.dataverse.validation;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -16,6 +14,9 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,16 +33,14 @@ public class JSONDataValidationTest {
     static ControlledVocabularyValue cvv = new ControlledVocabularyValue();
     static Map<String, Map<String, List<String>>> schemaChildMap = new HashMap<>();
 
-    static String rawSchemaJson = null;
-    static String rawSchema() {
-        if (rawSchemaJson == null) {
-            try {
-                rawSchemaJson = JsonUtil.prettyPrint(JsonUtil.getJsonObjectFromFile("doc/sphinx-guides/source/_static/api/dataset-schema.json"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    static JSONObject rawSchema = null;
+    static JSONObject rawSchema() throws IOException {
+        if (rawSchema == null) {
+                Path file = Path.of("doc/sphinx-guides/source/_static/api/dataset-schema.json");
+                String schema = Files.readString(file, StandardCharsets.UTF_8);
+                rawSchema = new JSONObject(schema);
         }
-        return rawSchemaJson;
+        return rawSchema;
     }
 
     static String jsonInput() {
@@ -164,19 +163,18 @@ public class JSONDataValidationTest {
 
     }
     @Test
-    public void testSchema() {
-        JSONObject rawSchema = new JSONObject(new JSONTokener(rawSchema()));
-        Schema schema = SchemaLoader.load(rawSchema);
+    public void testSchema() throws IOException {
+        Schema schema = SchemaLoader.load(rawSchema());
         schema.validate(new JSONObject(jsonInput()));
     }
     @Test
-    public void testValid() {
-        Schema schema = SchemaLoader.load(new JSONObject(rawSchema()));
+    public void testValid() throws IOException {
+        Schema schema = SchemaLoader.load(rawSchema());
         JSONDataValidation.validate(schema, schemaChildMap, jsonInput());
     }
     @Test
-    public void testInvalid() {
-        Schema schema = SchemaLoader.load(new JSONObject(rawSchema()));
+    public void testInvalid() throws IOException {
+        Schema schema = SchemaLoader.load(rawSchema());
         try {
             JSONDataValidation.validate(schema, schemaChildMap, jsonInput().replace("\"Social Sciences\"", "\"Social Sciences\",\"Bad\""));
             fail();
