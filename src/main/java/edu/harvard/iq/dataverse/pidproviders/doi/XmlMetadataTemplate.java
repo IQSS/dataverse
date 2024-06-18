@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -630,6 +631,7 @@ public class XmlMetadataTemplate {
         String dateOfDeposit = null;
         Date releaseDate = null;
         List<DatasetFieldCompoundValue> datesOfCollection = new ArrayList<DatasetFieldCompoundValue>();
+        List<DatasetFieldCompoundValue> timePeriods = new ArrayList<DatasetFieldCompoundValue>();
 
         if (dvObject instanceof Dataset d) {
             DatasetVersion dv = d.getLatestVersionForCopy();
@@ -647,6 +649,10 @@ public class XmlMetadataTemplate {
                     break;
                 case DatasetFieldConstant.dateOfCollection:
                     datesOfCollection = dsf.getDatasetFieldCompoundValues();
+                    break;
+                case DatasetFieldConstant.timePeriodCovered:
+                    timePeriods = dsf.getDatasetFieldCompoundValues();
+                    break;
                 }
             }
         }
@@ -691,27 +697,10 @@ public class XmlMetadataTemplate {
                         break;
                     }
                 }
-                if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
-                    //Minimal clean-up - useful? Parse/format would remove unused chars, and an exception would clear the date so we don't send nonsense
-                    if(StringUtils.isNotBlank(startDate)) {
-                        try {
-                        Date start = Util.getDateFormat().parse(startDate);
-                        startDate = Util.getDateFormat().format(start);
-                        } catch (ParseException e) {
-                            logger.warning("Could not parse date: " + startDate);
-                            startDate = null;
-                        }
-                    }
-                    if(StringUtils.isNotBlank(endDate)) {
-                        try {
-                        Date end = Util.getDateFormat().parse(endDate);
-                        endDate = Util.getDateFormat().format(end);
-                        } catch (ParseException e) {
-                            logger.warning("Could not parse date: " + endDate);
-                            endDate = null;
-                        };
-                    }
-                }
+                // Minimal clean-up - useful? Parse/format would remove unused chars, and an
+                // exception would clear the date so we don't send nonsense
+                startDate =cleanUpDate(startDate);
+                endDate =cleanUpDate(endDate);
                 if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
                     datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
                     attributes.put("dateType", "Collected");
@@ -719,8 +708,49 @@ public class XmlMetadataTemplate {
                 }
             }
         }
+        if (timePeriods != null) {
+            for (DatasetFieldCompoundValue timePeriodFieldValue : timePeriods) {
+                String startDate = null;
+                String endDate = null;
+
+                for (DatasetField subField : timePeriodFieldValue.getChildDatasetFields()) {
+                    switch (subField.getDatasetFieldType().getName()) {
+                    case DatasetFieldConstant.timePeriodCoveredStart:
+                        startDate = subField.getValue();
+                        break;
+                    case DatasetFieldConstant.timePeriodCoveredEnd:
+                        endDate = subField.getValue();
+                        break;
+                    }
+                }
+                // Minimal clean-up - useful? Parse/format would remove unused chars, and an
+                // exception would clear the date so we don't send nonsense
+                startDate = cleanUpDate(startDate);
+                endDate = cleanUpDate(endDate);
+                if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
+                    datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
+                    attributes.put("dateType", "Other");
+                    attributes.put("dateInformation", "Time period covered by the data");
+                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, (startDate + "/" + endDate).trim());
+                }
+            }
+        }
         if (datesWritten) {
             xmlw.writeEndElement();
+        }
+    }
+
+    private String cleanUpDate(String date) {
+        if(StringUtils.isBlank(date)) {
+            return null;
+        }
+        try {
+            SimpleDateFormat sdf = Util.getDateFormat();
+            Date start = sdf.parse(date);
+            date = sdf.format(start);
+        } catch (ParseException e) {
+            logger.warning("Could not parse date: " + date);
+            date = null;
         }
     }
 
