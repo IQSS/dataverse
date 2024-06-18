@@ -16,6 +16,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.TreeMap;
 
+import org.apache.commons.lang3.StringUtils;
+
 import jakarta.ejb.EJB;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
@@ -273,7 +275,7 @@ public class DatasetVersionUI implements Serializable {
         if (!this.datasetRelPublications.isEmpty()) {
             //Add ': ' formatting if relationType exists
             String relationType = this.getDatasetRelPublications().get(0).getRelationType();
-            if (!relationType.isEmpty()) {
+            if (!StringUtils.isBlank(relationType)) {
                 return relationType + ": ";
             }
         }
