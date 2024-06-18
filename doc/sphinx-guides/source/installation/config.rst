@@ -4218,20 +4218,6 @@ This is useful for specific cases where an installation's files are stored in pu
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:PublicInstall``
 
-:DataCaptureModuleUrl
-+++++++++++++++++++++
-
-The URL for your Data Capture Module (DCM) installation. This component is experimental and can be downloaded from https://github.com/sbgrid/data-capture-module .
-
-``curl -X PUT -d 'https://dcm.example.edu' http://localhost:8080/api/admin/settings/:DataCaptureModuleUrl``
-
-:RepositoryStorageAbstractionLayerUrl
-+++++++++++++++++++++++++++++++++++++
-
-The URL for your Repository Storage Abstraction Layer (RSAL) installation. This component is experimental and can be downloaded from https://github.com/sbgrid/rsal .
-
-``curl -X PUT -d 'https://rsal.example.edu' http://localhost:8080/api/admin/settings/:RepositoryStorageAbstractionLayerUrl``
-
 .. _:UploadMethods:
 
 :UploadMethods
@@ -4241,22 +4227,14 @@ This setting controls which upload methods are available to users of your Datave
 
 - ``native/http``: Corresponds to "Upload with HTTP via your browser" and APIs that use HTTP (SWORD and native).
 - ``dvwebloader``: Corresponds to :ref:`folder-upload`. Note that ``dataverse.files.<id>.upload-redirect`` must be set to "true" on an S3 store for this method to show up in the UI. In addition, :ref:`:WebloaderUrl` must be set. CORS allowed on the S3 bucket. See :ref:`cors-s3-bucket`.
-- ``dcm/rsync+ssh``: Corresponds to "Upload with rsync+ssh via Data Capture Module (DCM)". A lot of setup is required, as explained in the :doc:`/developers/big-data-support` section of the Developer Guide.
 
 Out of the box only ``native/http`` is enabled and will work without further configuration. To add multiple upload method, separate them using a comma like this:
 
-``curl -X PUT -d 'native/http,dcm/rsync+ssh' http://localhost:8080/api/admin/settings/:UploadMethods``
+``curl -X PUT -d 'native/http,dvwebloader' http://localhost:8080/api/admin/settings/:UploadMethods``
 
 You'll always want at least one upload method, so the easiest way to remove one of them is to simply ``PUT`` just the one you want, like this:
 
 ``curl -X PUT -d 'native/http' http://localhost:8080/api/admin/settings/:UploadMethods``
-
-:DownloadMethods
-++++++++++++++++
-
-This setting is experimental and related to Repository Storage Abstraction Layer (RSAL).
-
-``curl -X PUT -d 'rsal/rsync' http://localhost:8080/api/admin/settings/:DownloadMethods``
 
 :GuestbookResponsesPageDisplayLimit
 +++++++++++++++++++++++++++++++++++
