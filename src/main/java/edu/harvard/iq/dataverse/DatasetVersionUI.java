@@ -271,10 +271,14 @@ public class DatasetVersionUI implements Serializable {
 
     public String getRelPublicationRelationType() {
         if (!this.datasetRelPublications.isEmpty()) {
-            return this.getDatasetRelPublications().get(0).getRelationType();
-        } else {
-            return "";
+            //Add ': ' formatting if relationType exists
+            String relationType = this.getDatasetRelPublications().get(0).getRelationType();
+            if (!relationType.isEmpty()) {
+                return relationType + ": ";
+            }
         }
+        return "";
+
     }
 
     public String getUNF() {
