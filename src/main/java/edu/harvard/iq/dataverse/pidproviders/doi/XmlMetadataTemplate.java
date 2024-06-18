@@ -638,9 +638,11 @@ public class XmlMetadataTemplate {
         if (dvObject instanceof DataFile df) {
             // Find the first released version the file is in to give a published date
             List<FileMetadata> fmds = df.getFileMetadatas();
+            DatasetVersion initialVersion = null;
             for (FileMetadata fmd : fmds) {
                 DatasetVersion dv = fmd.getDatasetVersion();
                 if (dv.isReleased()) {
+                    initialVersion = dv;
                     publicationDate = Util.getDateFormat().format(dv.getReleaseTime());
                     break;
                 }
@@ -648,8 +650,9 @@ public class XmlMetadataTemplate {
             // And the last update is the most recent
             for (int i = fmds.size() - 1; i >= 0; i--) {
                 DatasetVersion dv = fmds.get(i).getDatasetVersion();
-                if (dv.isReleased()) {
+                if (dv.isReleased() && !dv.equals(initialVersion)) {
                     releaseDate = dv.getReleaseTime();
+                    isAnUpdate=true;
                     break;
                 }
             }
