@@ -630,12 +630,37 @@ public class XmlMetadataTemplate {
         String dateOfProduction = null;
         String dateOfDeposit = null;
         Date releaseDate = null;
+        String publicationDate = null;
+        boolean isAnUpdate=false;
         List<DatasetFieldCompoundValue> datesOfCollection = new ArrayList<DatasetFieldCompoundValue>();
         List<DatasetFieldCompoundValue> timePeriods = new ArrayList<DatasetFieldCompoundValue>();
 
-        if (dvObject instanceof Dataset d) {
+        if (dvObject instanceof DataFile df) {
+            // Find the first released version the file is in to give a published date
+            List<FileMetadata> fmds = df.getFileMetadatas();
+            for (FileMetadata fmd : fmds) {
+                DatasetVersion dv = fmd.getDatasetVersion();
+                if (dv.isReleased()) {
+                    publicationDate = Util.getDateFormat().format(dv.getReleaseTime());
+                    break;
+                }
+            }
+            // And the last update is the most recent
+            for (int i = fmds.size() - 1; i >= 0; i--) {
+                DatasetVersion dv = fmds.get(i).getDatasetVersion();
+                if (dv.isReleased()) {
+                    releaseDate = dv.getReleaseTime();
+                    break;
+                }
+            }
+        } else if (dvObject instanceof Dataset d) {
             DatasetVersion dv = d.getLatestVersionForCopy();
+            Long versionNumber = dv.getVersionNumber();
+            if (versionNumber != null && !(versionNumber.equals(1) && dv.getMinorVersionNumber().equals(0))) {
+                isAnUpdate = true;
+            }
             releaseDate = dv.getReleaseTime();
+            publicationDate = d.getPublicationDateFormattedYYYYMMDD();
             for (DatasetField dsf : dv.getDatasetFields()) {
                 switch (dsf.getDatasetFieldType().getName()) {
                 case DatasetFieldConstant.distributionDate:
@@ -675,11 +700,17 @@ public class XmlMetadataTemplate {
             XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, dateOfDeposit);
         }
 
-        if (releaseDate != null) {
-            String date = Util.getDateFormat().format(releaseDate);
+        if (publicationDate != null) {
             datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
 
             attributes.put("dateType", "Available");
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, publicationDate);
+        }
+        if (isAnUpdate) {
+            String date = Util.getDateFormat().format(releaseDate);
+            datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
+
+            attributes.put("dateType", "Updated");
             XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, date);
         }
         if (datesOfCollection != null) {
@@ -699,8 +730,8 @@ public class XmlMetadataTemplate {
                 }
                 // Minimal clean-up - useful? Parse/format would remove unused chars, and an
                 // exception would clear the date so we don't send nonsense
-                startDate =cleanUpDate(startDate);
-                endDate =cleanUpDate(endDate);
+                startDate = cleanUpDate(startDate);
+                endDate = cleanUpDate(endDate);
                 if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
                     datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
                     attributes.put("dateType", "Collected");
@@ -741,17 +772,17 @@ public class XmlMetadataTemplate {
     }
 
     private String cleanUpDate(String date) {
-        if(StringUtils.isBlank(date)) {
-            return null;
+        String newDate = null;
+        if (!StringUtils.isBlank(date)) {
+            try {
+                SimpleDateFormat sdf = Util.getDateFormat();
+                Date start = sdf.parse(date);
+                newDate = sdf.format(start);
+            } catch (ParseException e) {
+                logger.warning("Could not parse date: " + date);
+            }
         }
-        try {
-            SimpleDateFormat sdf = Util.getDateFormat();
-            Date start = sdf.parse(date);
-            date = sdf.format(start);
-        } catch (ParseException e) {
-            logger.warning("Could not parse date: " + date);
-            date = null;
-        }
+        return newDate;
     }
 
     // 9, Language (MA), language
