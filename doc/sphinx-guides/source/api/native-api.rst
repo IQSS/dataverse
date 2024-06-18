@@ -5194,6 +5194,8 @@ Delete the setting under ``name``::
 Manage Banner Messages
 ~~~~~~~~~~~~~~~~~~~~~~
 
+.. warning:: Adding a banner message with a language that is not supported by the installation will result in a 500-Internal Server Error response when trying to access to the /bannerMessage.
+
 Communications to users can be handled via banner messages that are displayed at the top of all pages within your Dataverse installation. Two types of banners can be configured:
 
 - A banner message where dismissibleByUser is set to false will be displayed to anyone viewing the application. These messages will be dismissible for a given session but will be displayed in any subsequent session until they are deleted by the Admin. This type of banner message is useful for situations such as upcoming maintenance windows and other downtime.
