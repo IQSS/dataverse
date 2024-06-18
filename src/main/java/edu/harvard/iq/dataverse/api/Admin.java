@@ -2337,6 +2337,13 @@ public class Admin extends AbstractApiBean {
 
         BannerMessage toAdd = new BannerMessage();
         try {
+
+            if(jsonObject == null){
+                String errorMessage = "Banner JSON object is not provided.";
+                logger.info(errorMessage);
+                return error(Status.BAD_REQUEST, errorMessage);
+            }
+
             String dismissible = jsonObject.getString("dismissibleByUser");
 
             boolean dismissibleByUser = false;
