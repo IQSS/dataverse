@@ -647,8 +647,11 @@ public class JsonPrinter {
             boolean requiredAsInputLevel = isInputLevel && ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldTypeId);
             boolean includedAsInputLevel = isInputLevel && ownerDataverse.isDatasetFieldTypeIncludedAsInputLevel(datasetFieldTypeId);
 
+            DatasetFieldType parentDatasetFieldType = datasetFieldType.getParentDatasetFieldType();
+            boolean isRequired = parentDatasetFieldType == null ? datasetFieldType.isRequired() : parentDatasetFieldType.isRequired();
+
             boolean displayCondition = printOnlyDisplayedOnCreateDatasetFieldTypes
-                    ? (datasetFieldType.isDisplayOnCreate() || datasetFieldType.isRequired() || requiredAsInputLevel)
+                    ? (datasetFieldType.isDisplayOnCreate() || isRequired || requiredAsInputLevel)
                     : !isInputLevel || includedAsInputLevel;
 
             if (displayCondition) {
