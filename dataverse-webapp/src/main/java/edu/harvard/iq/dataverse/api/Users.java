@@ -34,8 +34,9 @@ public class Users extends AbstractApiBean {
 
     @GET
     @Produces({"text/csv"})
+    @Path("csv")
     public Response listUsersCSV() throws WrappedResponse {
-        findSuperuserOrDie();
+        findSuperuserWithSessionFallbackOrDie();
 
         StreamingOutput csvContent = output -> authenticatedUserCsvWriter.write(output, authSvc.findAllAuthenticatedUsers());
 

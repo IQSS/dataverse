@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onelogin.saml2.Auth;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.UserServiceBean;
@@ -33,6 +35,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.SerializationException;
 
@@ -106,6 +109,9 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected DataverseLinkingService dvLinkingService;
+
+    @Inject
+    DataverseSession session;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
@@ -305,6 +311,28 @@ public abstract class AbstractApiBean {
             return authUser;
         }
         throw new WrappedResponse(badApiKey(key));
+    }
+
+    protected AuthenticatedUser findSuperuserWithSessionFallbackOrDie() throws WrappedResponse {
+        try {
+            return findSuperuserOrDie();
+        } catch (WrappedResponse e) {
+            User user = getSessionUserWithGuestFallback();
+            if (user.isAuthenticated() && user.isSuperuser() && user instanceof AuthenticatedUser) {
+                return (AuthenticatedUser) user;
+            }
+            throw e;
+        }
+    }
+
+    protected User getSessionUserWithGuestFallback() {
+        return Option.of(session)
+                .map(DataverseSession::getUser)
+                .peek(user -> logger.log(Level.FINE, "User associated with the session is {0}", user.getIdentifier()))
+                .getOrElse(() -> {
+                    logger.fine("Session is null. Assuming guest user");
+                    return GuestUser.get();
+                });
     }
 
     protected Dataverse findDataverseOrDie(String dvIdtf) throws WrappedResponse {

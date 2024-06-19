@@ -127,8 +127,6 @@ public class Access extends AbstractApiBean {
     DDIExportServiceBean ddiExportService;
     @EJB
     PermissionServiceBean permissionService;
-    @Inject
-    DataverseSession session;
     @EJB
     WorldMapTokenServiceBean worldMapTokenServiceBean;
     @Inject
@@ -1161,16 +1159,6 @@ public class Access extends AbstractApiBean {
         return Try.of(this::findUserOrDie)
                 .onFailure(throwable -> logger.log(Level.FINE, "Failed finding user with apiToken", throwable))
                 .getOrElse(GuestUser.get());
-    }
-
-    private User getSessionUserWithGuestFallback() {
-        return Option.of(session)
-                .map(DataverseSession::getUser)
-                .peek(user -> logger.log(Level.FINE, "User associated with the session is {0}", user.getIdentifier()))
-                .getOrElse(() -> {
-                    logger.fine("Session is null. Assuming guest user");
-                    return GuestUser.get();
-                });
     }
 
     private Optional<Dataset> getDatasetFromDataVariable(Long dataVariableId) {

@@ -24,6 +24,15 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <h:form id="dashboardUsersForm">
+
+                    <div class="margin-bottom">
+                        <h:outputLink value="#{DashboardUsersPage.downloadUsersCsvUrl}"
+                                      styleClass="btn btn-default"
+                                      target="_blank">
+                            <h:outputText value="#{bundle['dashboard.list_users.download.csv']}"/>
+                        </h:outputLink>
+                    </div>
+
                     <!-- users table-->
                     <p:dataTable id="userInfoTable"
                                  widgetVar="userInfoTable"

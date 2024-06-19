@@ -114,6 +114,10 @@ public class DashboardUsersPage implements java.io.Serializable {
         return BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.roles.removeAll.confirmationText");
     }
 
+    public String getDownloadUsersCsvUrl() {
+        return "/api/users/csv";
+    }
+
     /**
      * Number of total users
      *
