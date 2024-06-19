@@ -3,7 +3,6 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -18,7 +17,10 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -67,17 +69,38 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
                 throw new IllegalCommandException("User " + user.getUserIdentifier() + " is deactivated and cannot be given a role.", this);
             }
         }
+        if(isExistingRole(ctxt)){
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error"), this);
+        }
         // TODO make sure the role is defined on the dataverse.
         RoleAssignment roleAssignment = new RoleAssignment(role, grantee, defPoint, privateUrlToken, anonymizedAccess);
         return ctxt.roles().save(roleAssignment);
     }
 
+    private boolean isExistingRole(CommandContext ctxt) {
+        return ctxt.roles()
+                .directRoleAssignments(grantee, defPoint)
+                .stream()
+                .map(RoleAssignment::getRole)
+                .anyMatch(it -> it.equals(role));
+    }
+
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         // for data file check permission on owning dataset
-        return Collections.singletonMap("",
-                defPoint instanceof Dataverse ? Collections.singleton(Permission.ManageDataversePermissions)
-                : defPoint instanceof Dataset ? Collections.singleton(Permission.ManageDatasetPermissions) : Collections.singleton(Permission.ManageFilePermissions));
+        Set<Permission> requiredPermissions = new HashSet<Permission>();
+
+        if (defPoint instanceof Dataverse) {
+            requiredPermissions.add(Permission.ManageDataversePermissions);
+        } else if (defPoint instanceof Dataset) {
+            requiredPermissions.add(Permission.ManageDatasetPermissions);
+        } else {
+            requiredPermissions.add(Permission.ManageFilePermissions);
+        }
+
+        requiredPermissions.addAll(role.permissions());
+
+        return Collections.singletonMap("", requiredPermissions);
     }
 
     @Override

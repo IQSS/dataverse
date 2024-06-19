@@ -1,9 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command;
 
-import edu.harvard.iq.dataverse.DOIDataCiteServiceBean;
-import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
@@ -18,6 +16,7 @@ import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
+import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
@@ -32,8 +31,7 @@ import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
-import edu.harvard.iq.dataverse.pidproviders.PermaLinkPidProviderServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProviderFactoryBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
@@ -100,15 +98,7 @@ public interface CommandContext {
 
     public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels();
 
-    public DOIEZIdServiceBean doiEZId();
-
-    public DOIDataCiteServiceBean doiDataCite();
-
-    public FakePidProviderServiceBean fakePidProvider();
-
-    public HandlenetServiceBean handleNet();
-
-    public PermaLinkPidProviderServiceBean permaLinkProvider();
+    public PidProviderFactoryBean pidProviderFactory();
 
     public GuestbookServiceBean guestbooks();
 
@@ -145,7 +135,9 @@ public interface CommandContext {
     public ConfirmEmailServiceBean confirmEmail();
     
     public ActionLogServiceBean actionLog();
-    
+
+    public MetadataBlockServiceBean metadataBlocks();
+
     public void beginCommandSequence();
     
     public boolean completeCommandSequence(Command command);
@@ -155,4 +147,6 @@ public interface CommandContext {
     public Stack<Command> getCommandsCalled();
     
     public void addCommand(Command command);
+
+    public DatasetFieldServiceBean dsField();
 }
