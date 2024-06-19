@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -634,11 +635,40 @@ public class XmlMetadataTemplate {
         String dateOfProduction = null;
         String dateOfDeposit = null;
         Date releaseDate = null;
+        String publicationDate = null;
+        boolean isAnUpdate=false;
         List<DatasetFieldCompoundValue> datesOfCollection = new ArrayList<DatasetFieldCompoundValue>();
+        List<DatasetFieldCompoundValue> timePeriods = new ArrayList<DatasetFieldCompoundValue>();
 
-        if (dvObject instanceof Dataset d) {
+        if (dvObject instanceof DataFile df) {
+            // Find the first released version the file is in to give a published date
+            List<FileMetadata> fmds = df.getFileMetadatas();
+            DatasetVersion initialVersion = null;
+            for (FileMetadata fmd : fmds) {
+                DatasetVersion dv = fmd.getDatasetVersion();
+                if (dv.isReleased()) {
+                    initialVersion = dv;
+                    publicationDate = Util.getDateFormat().format(dv.getReleaseTime());
+                    break;
+                }
+            }
+            // And the last update is the most recent
+            for (int i = fmds.size() - 1; i >= 0; i--) {
+                DatasetVersion dv = fmds.get(i).getDatasetVersion();
+                if (dv.isReleased() && !dv.equals(initialVersion)) {
+                    releaseDate = dv.getReleaseTime();
+                    isAnUpdate=true;
+                    break;
+                }
+            }
+        } else if (dvObject instanceof Dataset d) {
             DatasetVersion dv = d.getLatestVersionForCopy();
+            Long versionNumber = dv.getVersionNumber();
+            if (versionNumber != null && !(versionNumber.equals(1) && dv.getMinorVersionNumber().equals(0))) {
+                isAnUpdate = true;
+            }
             releaseDate = dv.getReleaseTime();
+            publicationDate = d.getPublicationDateFormattedYYYYMMDD();
             for (DatasetField dsf : dv.getDatasetFields()) {
                 switch (dsf.getDatasetFieldType().getName()) {
                 case DatasetFieldConstant.distributionDate:
@@ -652,6 +682,10 @@ public class XmlMetadataTemplate {
                     break;
                 case DatasetFieldConstant.dateOfCollection:
                     datesOfCollection = dsf.getDatasetFieldCompoundValues();
+                    break;
+                case DatasetFieldConstant.timePeriodCovered:
+                    timePeriods = dsf.getDatasetFieldCompoundValues();
+                    break;
                 }
             }
         }
@@ -674,11 +708,17 @@ public class XmlMetadataTemplate {
             XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, dateOfDeposit);
         }
 
-        if (releaseDate != null) {
-            String date = Util.getDateFormat().format(releaseDate);
+        if (publicationDate != null) {
             datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
 
             attributes.put("dateType", "Available");
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, publicationDate);
+        }
+        if (isAnUpdate) {
+            String date = Util.getDateFormat().format(releaseDate);
+            datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
+
+            attributes.put("dateType", "Updated");
             XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, date);
         }
         if (datesOfCollection != null) {
@@ -696,27 +736,10 @@ public class XmlMetadataTemplate {
                         break;
                     }
                 }
-                if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
-                    //Minimal clean-up - useful? Parse/format would remove unused chars, and an exception would clear the date so we don't send nonsense
-                    if(StringUtils.isNotBlank(startDate)) {
-                        try {
-                        Date start = Util.getDateFormat().parse(startDate);
-                        startDate = Util.getDateFormat().format(start);
-                        } catch (ParseException e) {
-                            logger.warning("Could not parse date: " + startDate);
-                            startDate = null;
-                        }
-                    }
-                    if(StringUtils.isNotBlank(endDate)) {
-                        try {
-                        Date end = Util.getDateFormat().parse(endDate);
-                        endDate = Util.getDateFormat().format(end);
-                        } catch (ParseException e) {
-                            logger.warning("Could not parse date: " + endDate);
-                            endDate = null;
-                        };
-                    }
-                }
+                // Minimal clean-up - useful? Parse/format would remove unused chars, and an
+                // exception would clear the date so we don't send nonsense
+                startDate = cleanUpDate(startDate);
+                endDate = cleanUpDate(endDate);
                 if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
                     datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
                     attributes.put("dateType", "Collected");
@@ -724,9 +747,50 @@ public class XmlMetadataTemplate {
                 }
             }
         }
+        if (timePeriods != null) {
+            for (DatasetFieldCompoundValue timePeriodFieldValue : timePeriods) {
+                String startDate = null;
+                String endDate = null;
+
+                for (DatasetField subField : timePeriodFieldValue.getChildDatasetFields()) {
+                    switch (subField.getDatasetFieldType().getName()) {
+                    case DatasetFieldConstant.timePeriodCoveredStart:
+                        startDate = subField.getValue();
+                        break;
+                    case DatasetFieldConstant.timePeriodCoveredEnd:
+                        endDate = subField.getValue();
+                        break;
+                    }
+                }
+                // Minimal clean-up - useful? Parse/format would remove unused chars, and an
+                // exception would clear the date so we don't send nonsense
+                startDate = cleanUpDate(startDate);
+                endDate = cleanUpDate(endDate);
+                if (StringUtils.isNotBlank(startDate) || StringUtils.isNotBlank(endDate)) {
+                    datesWritten = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "dates", datesWritten);
+                    attributes.put("dateType", "Other");
+                    attributes.put("dateInformation", "Time period covered by the data");
+                    XmlWriterUtil.writeFullElementWithAttributes(xmlw, "date", attributes, (startDate + "/" + endDate).trim());
+                }
+            }
+        }
         if (datesWritten) {
             xmlw.writeEndElement();
         }
+    }
+
+    private String cleanUpDate(String date) {
+        String newDate = null;
+        if (!StringUtils.isBlank(date)) {
+            try {
+                SimpleDateFormat sdf = Util.getDateFormat();
+                Date start = sdf.parse(date);
+                newDate = sdf.format(start);
+            } catch (ParseException e) {
+                logger.warning("Could not parse date: " + date);
+            }
+        }
+        return newDate;
     }
 
     // 9, Language (MA), language
@@ -760,7 +824,7 @@ public class XmlMetadataTemplate {
             }
         }
         if (!kindOfDataValues.isEmpty()) {
-            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, String.join(", ", kindOfDataValues));
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "resourceType", attributes, String.join(";", kindOfDataValues));
 
         } else {
             // Write an attribute only element if there are no kindOfData values.
@@ -1255,7 +1319,9 @@ logger.info("Canonical type: " + pubIdType);
                     
                     ArrayList<String> placeList = new ArrayList<String>();
                     for (String placePart : place) {
-                        placeList.add(placePart);
+                        if (!StringUtils.isBlank(placePart)) {
+                            placeList.add(placePart);
+                        }
                     }
                     XmlWriterUtil.writeFullElement(xmlw, "geoLocationPlace", Strings.join(placeList, ", "));
                     xmlw.writeEndElement(); // </geoLocation>
