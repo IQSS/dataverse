@@ -632,7 +632,7 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse) {
-        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder();
         jsonObjectBuilder.add("id", metadataBlock.getId());
         jsonObjectBuilder.add("name", metadataBlock.getName());
         jsonObjectBuilder.add("displayName", metadataBlock.getDisplayName());
