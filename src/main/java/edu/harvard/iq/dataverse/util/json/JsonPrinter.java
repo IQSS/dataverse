@@ -632,7 +632,7 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(MetadataBlock metadataBlock, boolean printOnlyDisplayedOnCreateDatasetFieldTypes, Dataverse ownerDataverse) {
-        JsonObjectBuilder jsonObjectBuilder = jsonObjectBuilder();
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add("id", metadataBlock.getId());
         jsonObjectBuilder.add("name", metadataBlock.getName());
         jsonObjectBuilder.add("displayName", metadataBlock.getDisplayName());
@@ -640,18 +640,23 @@ public class JsonPrinter {
 
         JsonObjectBuilder fieldsBuilder = Json.createObjectBuilder();
         Set<DatasetFieldType> datasetFieldTypes = new TreeSet<>(metadataBlock.getDatasetFieldTypes());
+
         for (DatasetFieldType datasetFieldType : datasetFieldTypes) {
-            boolean requiredInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldType.getId());
-            boolean displayCondition = !printOnlyDisplayedOnCreateDatasetFieldTypes ||
-                    datasetFieldType.isDisplayOnCreate() ||
-                    requiredInOwnerDataverse;
+            Long datasetFieldTypeId = datasetFieldType.getId();
+            boolean isInputLevel = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeInInputLevels(datasetFieldTypeId);
+            boolean requiredAsInputLevel = isInputLevel && ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldTypeId);
+            boolean includedAsInputLevel = isInputLevel && ownerDataverse.isDatasetFieldTypeIncludedAsInputLevel(datasetFieldTypeId);
+
+            boolean displayCondition = printOnlyDisplayedOnCreateDatasetFieldTypes
+                    ? (datasetFieldType.isDisplayOnCreate() || datasetFieldType.isRequired() || requiredAsInputLevel)
+                    : !isInputLevel || includedAsInputLevel;
+
             if (displayCondition) {
                 fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
             }
         }
 
         jsonObjectBuilder.add("fields", fieldsBuilder);
-
         return jsonObjectBuilder;
     }
 
