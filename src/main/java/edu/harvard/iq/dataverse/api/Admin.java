@@ -2338,12 +2338,6 @@ public class Admin extends AbstractApiBean {
         BannerMessage toAdd = new BannerMessage();
         try {
 
-            if(jsonObject == null){
-                String errorMessage = "Banner JSON object is not provided.";
-                logger.info(errorMessage);
-                return error(Status.BAD_REQUEST, errorMessage);
-            }
-
             String dismissible = jsonObject.getString("dismissibleByUser");
 
             boolean dismissibleByUser = false;
@@ -2374,7 +2368,7 @@ public class Admin extends AbstractApiBean {
 
         } catch (Exception e) {
             logger.warning("Unexpected Exception: " + e.getMessage());
-            return error(Status.BAD_REQUEST, "Add Banner Message unexpected exception: " + e.getMessage());
+            return error(Status.BAD_REQUEST, "Add Banner Message unexpected exception: invalid or missing JSON object.");
         }
 
     }
