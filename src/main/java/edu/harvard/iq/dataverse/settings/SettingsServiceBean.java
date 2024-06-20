@@ -672,7 +672,7 @@ public class SettingsServiceBean {
          */
         DisableSolrFacets,
         DisableSolrFacetsForGuestUsers,
-        DisableSolrFacetsForAnonymousUsers,
+        DisableSolrFacetsWithoutJsession,
         DisableUncheckedTypesFacet,
         /**
          * When ingesting tabular data files, store the generated tab-delimited 

@@ -1113,7 +1113,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             // a guest user who came without the session cookie:
             Map<String, Object> cookies = FacesContext.getCurrentInstance().getExternalContext().getRequestCookieMap();
             if (!(cookies != null && cookies.containsKey("JSESSIONID"))) {
-                if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacetsForAnonymousUsers, false)) {
+                if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacetsWithoutJsession, false)) {
                     return this.solrFacetsDisabled = true; 
                 }
             }
