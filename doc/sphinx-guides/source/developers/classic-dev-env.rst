@@ -138,37 +138,7 @@ Install Solr
 
 `Solr <https://lucene.apache.org/solr/>`_ 9.4.1 is required.
 
-To install Solr, execute the following commands:
-
-``sudo mkdir /usr/local/solr``
-
-``sudo chown $USER /usr/local/solr``
-
-``cd /usr/local/solr``
-
-``curl -O https://archive.apache.org/dist/solr/solr/9.4.1/solr-9.4.1.tgz``
-
-``tar xvfz solr-9.4.1.tgz``
-
-``cd solr-9.4.1/server/solr``
-
-``cp -r configsets/_default collection1``
-
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/schema.xml``
-
-``mv schema.xml collection1/conf``
-
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/solrconfig.xml``
-
-``mv solrconfig.xml collection1/conf/solrconfig.xml``
-
-``cd /usr/local/solr/solr-9.4.1``
-
-(Please note that the extra jetty argument below is a security measure to limit connections to Solr to only your computer. For extra security, run a firewall.)
-
-``bin/solr start -j "-Djetty.host=127.0.0.1"``
-
-``bin/solr create_core -c collection1 -d server/solr/collection1/conf``
+Follow the instructions in the "Installing Solr" section of :doc:`/installation/prerequisites` in the main Installation guide.
 
 Install Service Dependencies Using Docker Compose
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
