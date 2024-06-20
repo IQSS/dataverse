@@ -1535,7 +1535,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public boolean isValid(SolrSearchResult result) {
-        return result.isValid(x -> permissionsWrapper.canUpdateDataset(getDataverseRequest(), datasetService.find(x.getEntityId())));
+        return result.isValid(x -> {
+            Long id = x.getEntityId();
+            DvObject obj = dvObjectService.findDvObject(id);
+            if(obj != null && obj instanceof Dataset) {
+                return permissionsWrapper.canUpdateDataset(getDataverseRequest(), (Dataset) obj);
+            }
+            logger.fine("isValid called for dvObject that is null (or not a dataset), id: " + id + "This can occur if a dataset is deleted while a search is in progress");
+            return true;
+        });
     }
     
     public enum SortOrder {
