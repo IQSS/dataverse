@@ -1,4 +1,5 @@
 #shellcheck shell=sh
+#shellcheck disable=SC2154
 
 update_fields() {
   ../../conf/solr/update-fields.sh "$@"
@@ -115,16 +116,16 @@ Describe "Update fields command"
     End
 
     Describe "succeeds because"
-      setup() { cp data/solr/minimal-schema.xml data/solr/minimal-schema-work.xml; }
-      cleanup() { rm data/solr/minimal-schema-work.xml; }
-      BeforeEach 'setup'
-      AfterEach 'cleanup'
+      setup1() { cp data/solr/minimal-schema.xml data/solr/minimal-schema-work.xml; }
+      cleanup1() { rm data/solr/minimal-schema-work.xml; }
+      BeforeEach 'setup1'
+      AfterEach 'cleanup1'
 
       deleteUpstreamSchema() { rm data/solr/upstream-schema.xml; }
       AfterAll 'deleteUpstreamSchema'
 
-      match_content() {
-        grep -q "$@" "${match_content}"
+      match_content1() {
+        grep -q "$@" "${match_content1}"
       }
 
       It "prints nothing when editing minimal schema"
@@ -133,8 +134,8 @@ Describe "Update fields command"
         The status should equal 0
         The output should equal ""
         The path data/solr/minimal-schema-work.xml should be file
-        The path data/solr/minimal-schema-work.xml should satisfy match_content "<field name=\"test\""
-        The path data/solr/minimal-schema-work.xml should satisfy match_content "<copyField source=\"test\""
+        The path data/solr/minimal-schema-work.xml should satisfy match_content1 "<field name=\"test\""
+        The path data/solr/minimal-schema-work.xml should satisfy match_content1 "<copyField source=\"test\""
       End
 
       It "prints nothing when editing upstream schema"
@@ -143,8 +144,8 @@ Describe "Update fields command"
         The status should equal 0
         The output should equal ""
         The path data/solr/upstream-schema.xml should be file
-        The path data/solr/upstream-schema.xml should satisfy match_content "<field name=\"test\""
-        The path data/solr/upstream-schema.xml should satisfy match_content "<copyField source=\"test\""
+        The path data/solr/upstream-schema.xml should satisfy match_content1 "<field name=\"test\""
+        The path data/solr/upstream-schema.xml should satisfy match_content1 "<copyField source=\"test\""
       End
     End
   End
