@@ -3876,7 +3876,7 @@ Similar to the above, but will disable the facets for Guest (unauthenticated) us
 
 Same idea as with the 2 settings above. For the purposes of this setting, a request is considered "anonymous", if it came in without the JSESSION cookie supplied. A UI user who is browsing the holdings without logging in will have a valid JSESSION cookie, tied to a guest session. The main purpose of this setting is to hide the facets from bots, scripted crawlers and such (most of which - though not all - do not use cookies). Not letting the bots anywhere near the facets can serve a dual purpose on a busy instance experiencing problems with such abuse - some CPU cycles and resources can be saved by not having to generate the facets. And, even more importantly, it can prevent bots from attempting to crawl the facet trees, which has a potential for multiplying the service load. 
 
-.. _:DisableUncheckedTypesFacet
+.. _:DisableUncheckedTypesFacet:
 
 :DisableUncheckedTypesFacet
 +++++++++++++++++++++++++++
