@@ -663,7 +663,7 @@ public class Dataverses extends AbstractApiBean {
             DatasetFieldType datasetFieldType = datasetFieldSvc.findByName(datasetFieldTypeName);
 
             if (datasetFieldType == null) {
-                String errorMessage = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.updateinputlevels.error.invalidfieldtypename"), datasetFieldTypeName);
+                String errorMessage = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.inputlevels.error.invalidfieldtypename"), datasetFieldTypeName);
                 throw new WrappedResponse(badRequest(errorMessage));
             }
 
@@ -681,9 +681,9 @@ public class Dataverses extends AbstractApiBean {
         for (JsonString facetId : facetsArray.getValuesAs(JsonString.class)) {
             DatasetFieldType dsfType = findDatasetFieldType(facetId.getString());
             if (dsfType == null) {
-                throw new WrappedResponse(badRequest("Can't find dataset field type '" + facetId + "'"));
+                throw new WrappedResponse(badRequest(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.facets.error.fieldtypenotfound"), facetId)));
             } else if (!dsfType.isFacetable()) {
-                throw new WrappedResponse(badRequest("Dataset field type '" + facetId + "' is not facetable"));
+                throw new WrappedResponse(badRequest(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.facets.error.fieldtypenotfacetable"), facetId)));
             }
             facets.add(dsfType);
         }
