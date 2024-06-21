@@ -36,9 +36,9 @@ public abstract class AbstractPidProvider implements PidProvider {
 
     private String datafilePidFormat = null;
 
-    private HashSet<String> managedSet;
+    protected HashSet<String> managedSet;
 
-    private HashSet<String> excludedSet;
+    protected HashSet<String> excludedSet;
 
     private String id;
     private String label;
@@ -313,9 +313,16 @@ public abstract class AbstractPidProvider implements PidProvider {
     }
 
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
+        return parsePersistentId(protocol, authority, identifier, false);
+    }
+    
+    public GlobalId parsePersistentId(String protocol, String authority, String identifier, boolean isCaseInsensitive) {
         logger.fine("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getId());
         if (!PidProvider.isValidGlobalId(protocol, authority, identifier)) {
             return null;
+        }
+        if(isCaseInsensitive) {
+            identifier = identifier.toUpperCase();
         }
         // Check authority/identifier if this is a provider that manages specific
         // identifiers
@@ -333,7 +340,7 @@ public abstract class AbstractPidProvider implements PidProvider {
             logger.fine("managed in " + getId() + ": " + getManagedSet().contains(cleanIdentifier));
             logger.fine("excluded from " + getId() + ": " + getExcludedSet().contains(cleanIdentifier));
 
-            if (!(((authority.equals(getAuthority()) && identifier.startsWith(getShoulder()))
+            if (!(((authority.equals(getAuthority()) && identifier.startsWith(getShoulder().toUpperCase()))
                     || getManagedSet().contains(cleanIdentifier)) && !getExcludedSet().contains(cleanIdentifier))) {
                 return null;
             }
