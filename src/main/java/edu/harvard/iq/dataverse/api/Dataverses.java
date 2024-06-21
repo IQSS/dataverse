@@ -123,35 +123,36 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}")
     public Response addDataverse(@Context ContainerRequestContext crc, String body, @PathParam("identifier") String parentIdtf) {
-
-        Dataverse d;
-        JsonObject dvJson;
+        Dataverse newDataverse;
+        JsonObject newDataverseJson;
         try {
-            dvJson = JsonUtil.getJsonObject(body);
-            d = jsonParser().parseDataverse(dvJson);
+            newDataverseJson = JsonUtil.getJsonObject(body);
+            newDataverse = jsonParser().parseDataverse(newDataverseJson);
         } catch (JsonParsingException jpe) {
             logger.log(Level.SEVERE, "Json: {0}", body);
             return error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Error parsing dataverse from json: " + ex.getMessage(), ex);
-            return error(Response.Status.BAD_REQUEST,
-                    "Error parsing the POSTed json into a dataverse: " + ex.getMessage());
+            return error(Response.Status.BAD_REQUEST, "Error parsing the POSTed json into a dataverse: " + ex.getMessage());
         }
 
         try {
+            JsonArray inputLevels = newDataverseJson.getJsonArray("inputLevels");
+            List<DataverseFieldTypeInputLevel> newInputLevels = inputLevels != null ? parseInputLevels(inputLevels, newDataverse) : null;
+
             if (!parentIdtf.isEmpty()) {
                 Dataverse owner = findDataverseOrDie(parentIdtf);
-                d.setOwner(owner);
+                newDataverse.setOwner(owner);
             }
 
             // set the dataverse - contact relationship in the contacts
-            for (DataverseContact dc : d.getDataverseContacts()) {
-                dc.setDataverse(d);
+            for (DataverseContact dc : newDataverse.getDataverseContacts()) {
+                dc.setDataverse(newDataverse);
             }
 
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
-            d = execCommand(new CreateDataverseCommand(d, createDataverseRequest(u), null, null));
-            return created("/dataverses/" + d.getAlias(), json(d));
+            newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), null, newInputLevels));
+            return created("/dataverses/" + newDataverse.getAlias(), json(newDataverse));
         } catch (WrappedResponse ww) {
 
             String error = ConstraintViolationUtil.getErrorStringForConstraintViolations(ww.getCause());
@@ -643,7 +644,7 @@ public class Dataverses extends AbstractApiBean {
     public Response updateInputLevels(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier, String jsonBody) {
         try {
             Dataverse dataverse = findDataverseOrDie(identifier);
-            List<DataverseFieldTypeInputLevel> newInputLevels = parseInputLevels(jsonBody, dataverse);
+            List<DataverseFieldTypeInputLevel> newInputLevels = parseInputLevels(Json.createReader(new StringReader(jsonBody)).readArray(), dataverse);
             execCommand(new UpdateDataverseInputLevelsCommand(dataverse, createDataverseRequest(getRequestUser(crc)), newInputLevels));
             return ok(BundleUtil.getStringFromBundle("dataverse.update.success"), JsonPrinter.json(dataverse));
         } catch (WrappedResponse e) {
@@ -651,9 +652,7 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
-    private List<DataverseFieldTypeInputLevel> parseInputLevels(String jsonBody, Dataverse dataverse) throws WrappedResponse {
-        JsonArray inputLevelsArray = Json.createReader(new StringReader(jsonBody)).readArray();
-
+    private List<DataverseFieldTypeInputLevel> parseInputLevels(JsonArray inputLevelsArray, Dataverse dataverse) throws WrappedResponse {
         List<DataverseFieldTypeInputLevel> newInputLevels = new ArrayList<>();
         for (JsonValue value : inputLevelsArray) {
             JsonObject inputLevel = (JsonObject) value;
