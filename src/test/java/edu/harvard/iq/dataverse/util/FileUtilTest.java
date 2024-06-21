@@ -1,13 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.Embargo;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.Guestbook;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.util.FileUtil.FileCitationExtension;
 
@@ -216,6 +209,42 @@ public class FileUtilTest {
         }
 
         @Test
+        public void testIsPubliclyDownloadable4() {
+
+            FileMetadata retentionFileMetadata = new FileMetadata();
+            DataFile df = new DataFile();
+            Retention r = new Retention();
+            r.setDateUnavailable(LocalDate.now().minusDays(1) );
+            df.setRetention(r);
+            retentionFileMetadata.setDataFile(df);
+            DatasetVersion dsv = new DatasetVersion();
+            dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
+            retentionFileMetadata.setDatasetVersion(dsv);
+            Dataset dataset = new Dataset();
+            dsv.setDataset(dataset);
+            retentionFileMetadata.setRestricted(false);
+            assertFalse(FileUtil.isPubliclyDownloadable(retentionFileMetadata));
+        }
+
+        @Test
+        public void testIsPubliclyDownloadable5() {
+
+            FileMetadata retentionFileMetadata = new FileMetadata();
+            DataFile df = new DataFile();
+            Retention r = new Retention();
+            r.setDateUnavailable(LocalDate.now());
+            df.setRetention(r);
+            retentionFileMetadata.setDataFile(df);
+            DatasetVersion dsv = new DatasetVersion();
+            dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
+            retentionFileMetadata.setDatasetVersion(dsv);
+            Dataset dataset = new Dataset();
+            dsv.setDataset(dataset);
+            retentionFileMetadata.setRestricted(false);
+            assertTrue(FileUtil.isPubliclyDownloadable(retentionFileMetadata));
+        }
+
+        @Test
         public void testgetFileDownloadUrl() {
             Long fileId = 42l;
             Long fileMetadataId = 2L;
@@ -369,6 +398,40 @@ public class FileUtilTest {
         File file = new File(pathAndFile);
         String contentType = FileUtil.determineFileType(file, pathAndFile);
         assertEquals("application/octet-stream", contentType);
+    }
+
+    @Test
+    public void testGZipFile() throws IOException {
+        String path = "src/test/resources/fits/";
+        String pathAndFile = path + "FOSy19g0309t_c2f.fits.gz";
+        File file = new File(pathAndFile);
+        String contentType = FileUtil.determineFileType(file, pathAndFile);
+        assertEquals("application/fits-gzipped", contentType);
+    }
+
+    @Test
+    public void testDetermineFileTypeROCrate() {
+        final String roCrateContentType = "application/ld+json; profile=\"http://www.w3.org/ns/json-ld#flattened http://www.w3.org/ns/json-ld#compacted https://w3id.org/ro/crate\"";
+        final DataFile rocrate = new DataFile(roCrateContentType);
+        
+        assertEquals(roCrateContentType, rocrate.getContentType());
+        assertEquals("RO-Crate metadata", FileUtil.getUserFriendlyFileType(rocrate));
+        assertEquals("Metadata", FileUtil.getIndexableFacetFileType(rocrate));
+
+        final File roCrateFile = new File("src/test/resources/fileutil/ro-crate-metadata.json");
+        try {
+            assertEquals(roCrateContentType, FileUtil.determineFileType(roCrateFile, "ro-crate-metadata.json"));
+        } catch (IOException ex) {
+            fail(ex);
+        }
+
+        // test ";" removal
+        final String dockerFileWithProfile = "application/x-docker-file; profile=\"http://www.w3.org/ns/json-ld#flattened http://www.w3.org/ns/json-ld#compacted https://w3id.org/ro/crate\"";
+        final DataFile dockerDataFile = new DataFile(dockerFileWithProfile);
+        
+        assertEquals(dockerFileWithProfile, dockerDataFile.getContentType());
+        assertEquals("Docker Image File", FileUtil.getUserFriendlyFileType(dockerDataFile));
+        assertEquals("Code", FileUtil.getIndexableFacetFileType(dockerDataFile));
     }
 
 }

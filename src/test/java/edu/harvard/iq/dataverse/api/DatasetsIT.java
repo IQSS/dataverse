@@ -1717,6 +1717,9 @@ public class DatasetsIT {
                 giveRandoPermission.prettyPrint();
         assertEquals(200, giveRandoPermission.getStatusCode());
 
+        //Asserting same role creation is covered
+        validateAssignExistingRole(datasetPersistentId,randomUsername,apiToken, "fileDownloader");
+
         // Create another random user to become curator:
 
         Response createCuratorUser = UtilIT.createRandomUser();
@@ -1851,6 +1854,14 @@ public class DatasetsIT {
 
         notPermittedToListRoleAssignmentOnDataverse = UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, contributorApiToken);
         assertEquals(UNAUTHORIZED.getStatusCode(), notPermittedToListRoleAssignmentOnDataverse.getStatusCode());
+    }
+
+    private static void validateAssignExistingRole(String datasetPersistentId, String randomUsername, String apiToken, String role) {
+        final Response failedGrantPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, role, "@" + randomUsername, apiToken);
+        failedGrantPermission.prettyPrint();
+        failedGrantPermission.then().assertThat()
+                .body("message", containsString("User already has this role for this dataset"))
+                .statusCode(FORBIDDEN.getStatusCode());
     }
 
     @Test
@@ -4135,6 +4146,21 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         fileMetadatasCount = getVersionFilesResponseEmbargoedThenRestricted.jsonPath().getList("data").size();
         assertEquals(1, fileMetadatasCount);
+
+
+        // Test Access Status Retention
+        UtilIT.setSetting(SettingsServiceBean.Key.MinRetentionDurationInMonths, "-1");
+        String retentionEndDate = LocalDate.now().plusMonths(240).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        // Create retention for test file 2 (Retention and Public)
+        Response createFileRetentionResponse = UtilIT.createFileRetention(datasetId, Integer.parseInt(testFileId2), retentionEndDate, apiToken);
+        createFileRetentionResponse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response getVersionFilesResponseRetentionPeriodExpired = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, FileSearchCriteria.FileAccessStatus.RetentionPeriodExpired.toString(), null, null, null, null, false, apiToken);
+        getVersionFilesResponseRetentionPeriodExpired.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("totalCount", equalTo(0));
 
         // Test Access Status Public
         Response getVersionFilesResponsePublic = UtilIT.getVersionFiles(datasetId, DS_VERSION_LATEST, null, null, null, FileSearchCriteria.FileAccessStatus.Public.toString(), null, null, null, null, false, apiToken);
