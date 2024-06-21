@@ -140,6 +140,9 @@ public class Dataverses extends AbstractApiBean {
             JsonArray inputLevels = newDataverseJson.getJsonArray("inputLevels");
             List<DataverseFieldTypeInputLevel> newInputLevels = inputLevels != null ? parseInputLevels(inputLevels, newDataverse) : null;
 
+            JsonArray facetIds = newDataverseJson.getJsonArray("facetIds");
+            List<DatasetFieldType> facetList = facetIds != null ? parseFacets(facetIds) : null;
+
             if (!parentIdtf.isEmpty()) {
                 Dataverse owner = findDataverseOrDie(parentIdtf);
                 newDataverse.setOwner(owner);
@@ -151,7 +154,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
-            newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), null, newInputLevels));
+            newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), facetList, newInputLevels));
             return created("/dataverses/" + newDataverse.getAlias(), json(newDataverse));
         } catch (WrappedResponse ww) {
 
@@ -673,6 +676,20 @@ public class Dataverses extends AbstractApiBean {
         return newInputLevels;
     }
 
+    private List<DatasetFieldType> parseFacets(JsonArray facetsArray) throws WrappedResponse {
+        List<DatasetFieldType> facets = new LinkedList<>();
+        for (JsonString facetId : facetsArray.getValuesAs(JsonString.class)) {
+            DatasetFieldType dsfType = findDatasetFieldType(facetId.getString());
+            if (dsfType == null) {
+                throw new WrappedResponse(badRequest("Can't find dataset field type '" + facetId + "'"));
+            } else if (!dsfType.isFacetable()) {
+                throw new WrappedResponse(badRequest("Dataset field type '" + facetId + "' is not facetable"));
+            }
+            facets.add(dsfType);
+        }
+        return facets;
+    }
+
     @DELETE
     @AuthRequired
     @Path("{linkingDataverseId}/deleteLink/{linkedDataverseId}")
@@ -921,16 +938,12 @@ public class Dataverses extends AbstractApiBean {
      * (judging by the UI). This triggers a 500 when '-d @foo.json' is used.
      */
     public Response setFacets(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String facetIds) {
-
-        List<DatasetFieldType> facets = new LinkedList<>();
-        for (JsonString facetId : Util.asJsonArray(facetIds).getValuesAs(JsonString.class)) {
-            DatasetFieldType dsfType = findDatasetFieldType(facetId.getString());
-            if (dsfType == null) {
-                return error(Response.Status.BAD_REQUEST, "Can't find dataset field type '" + facetId + "'");
-            } else if (!dsfType.isFacetable()) {
-                return error(Response.Status.BAD_REQUEST, "Dataset field type '" + facetId + "' is not facetable");
-            }
-            facets.add(dsfType);
+        JsonArray jsonArray = Util.asJsonArray(facetIds);
+        List<DatasetFieldType> facets;
+        try {
+            facets = parseFacets(jsonArray);
+        } catch (WrappedResponse e) {
+            return e.getResponse();
         }
 
         try {
