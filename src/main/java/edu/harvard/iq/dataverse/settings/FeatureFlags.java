@@ -58,6 +58,15 @@ public enum FeatureFlags {
      * @since Dataverse 6.3
      */
     ADD_PUBLICOBJECT_SOLR_FIELD("add-publicobject-solr-field"),
+    /**
+     * With this flag set, Dataverse will index the actual origin of harvested
+     * metadata records, instead of the "Harvested" string in all cases. 
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.index-harvested-metadata-source"
+     * @since Dataverse 6.3
+     */
+    INDEX_HARVESTED_METADATA_SOURCE("index-harvested-metadata-source"),
     ;
     
     final String flag;
