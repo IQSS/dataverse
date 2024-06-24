@@ -1005,7 +1005,7 @@ logger.info("Canonical type: " + pubIdType);
                 }
             }
             List<FileMetadata> fmds = dataset.getLatestVersionForCopy().getFileMetadatas();
-            if (!(fmds==null) && fmds.isEmpty()) {
+            if (!((fmds==null) && fmds.isEmpty())) {
                 attributes.clear();
                 attributes.put("relationType", "HasPart");
                 for (FileMetadata fmd : fmds) {
