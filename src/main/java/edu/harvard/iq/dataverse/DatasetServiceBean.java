@@ -39,11 +39,10 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.TypedQuery;
 import org.apache.commons.lang3.StringUtils;
 
@@ -60,9 +59,6 @@ public class DatasetServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
-
-    @EJB
-    DOIEZIdServiceBean doiEZIdServiceBean;
 
     @EJB
     SettingsServiceBean settingsService;
@@ -116,28 +112,34 @@ public class DatasetServiceBean implements java.io.Serializable {
      * @return a dataset with pre-fetched file objects
      */
     public Dataset findDeep(Object pk) {
-        return (Dataset) em.createNamedQuery("Dataset.findById")
-            .setParameter("id", pk)
-            // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files
-            .setHint("eclipselink.left-join-fetch", "o.files.ingestRequest")
-            .setHint("eclipselink.left-join-fetch", "o.files.thumbnailForDataset")
-            .setHint("eclipselink.left-join-fetch", "o.files.dataTables")
-            .setHint("eclipselink.left-join-fetch", "o.files.auxiliaryFiles")
-            .setHint("eclipselink.left-join-fetch", "o.files.ingestReports")
-            .setHint("eclipselink.left-join-fetch", "o.files.dataFileTags")
-            .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas")
-            .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.fileCategories")
-            //.setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses")
-            .setHint("eclipselink.left-join-fetch", "o.files.embargo")
-            .setHint("eclipselink.left-join-fetch", "o.files.fileAccessRequests")
-            .setHint("eclipselink.left-join-fetch", "o.files.owner")
-            .setHint("eclipselink.left-join-fetch", "o.files.releaseUser")
-            .setHint("eclipselink.left-join-fetch", "o.files.creator")
-            .setHint("eclipselink.left-join-fetch", "o.files.alternativePersistentIndentifiers")
-            .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
-            .getSingleResult();
+        try {
+            return (Dataset) em.createNamedQuery("Dataset.findById")
+                    .setParameter("id", pk)
+                    // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files
+                    .setHint("eclipselink.left-join-fetch", "o.files.ingestRequest")
+                    .setHint("eclipselink.left-join-fetch", "o.files.thumbnailForDataset")
+                    .setHint("eclipselink.left-join-fetch", "o.files.dataTables")
+                    .setHint("eclipselink.left-join-fetch", "o.files.auxiliaryFiles")
+                    .setHint("eclipselink.left-join-fetch", "o.files.ingestReports")
+                    .setHint("eclipselink.left-join-fetch", "o.files.dataFileTags")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.fileCategories")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.varGroups")
+                    //.setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses
+                    .setHint("eclipselink.left-join-fetch", "o.files.embargo")
+                    .setHint("eclipselink.left-join-fetch", "o.files.retention")
+                    .setHint("eclipselink.left-join-fetch", "o.files.fileAccessRequests")
+                    .setHint("eclipselink.left-join-fetch", "o.files.owner")
+                    .setHint("eclipselink.left-join-fetch", "o.files.releaseUser")
+                    .setHint("eclipselink.left-join-fetch", "o.files.creator")
+                    .setHint("eclipselink.left-join-fetch", "o.files.alternativePersistentIndentifiers")
+                    .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
+                    .getSingleResult();
+        } catch (NoResultException | NonUniqueResultException ex) {
+            return null;
+        }
     }
-
+    
     public List<Dataset> findByOwnerId(Long ownerId) {
         return findByOwnerId(ownerId, false);
     }
@@ -700,7 +702,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         Integer countError = 0;
         String logTimestamp = logFormatter.format(new Date());
         Logger exportLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
-        String logFileName = "../logs" + File.separator + "export_" + logTimestamp + ".log";
+        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "export_" + logTimestamp + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
         try {
@@ -788,13 +790,13 @@ public class DatasetServiceBean implements java.io.Serializable {
                 }
             }
         }
-        
+
     }
 
     //get a string to add to save success message
     //depends on page (dataset/file) and user privleges
     public String getReminderString(Dataset dataset, boolean canPublishDataset, boolean filePage, boolean isValid) {
-       
+
         String reminderString;
 
         if (canPublishDataset) {
@@ -861,18 +863,33 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.fine("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
             return null;
         }
+        // Just in case the previously designated thumbnail for the dataset was 
+        // a "custom" kind, i.e. an uploaded "dataset_logo" file, the following method 
+        // will try to delete it, and all the associated caches here (because there 
+        // are no other uses for the file). This method is apparently called in all 
+        // cases, without trying to check if the dataset was in fact using a custom 
+        // logo; probably under the assumption that it can't hurt.
         DatasetUtil.deleteDatasetLogo(dataset);
         dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
         dataset.setUseGenericThumbnail(false);
         return merge(dataset);
     }
 
-    public Dataset removeDatasetThumbnail(Dataset dataset) {
+    public Dataset clearDatasetLevelThumbnail(Dataset dataset) {
         if (dataset == null) {
-            logger.fine("In removeDatasetThumbnail but dataset is null! Returning null.");
+            logger.fine("In clearDatasetLevelThumbnail but dataset is null! Returning null.");
             return null;
         }
+        
+        // Just in case the thumbnail that was designated for the dataset was 
+        // a "custom logo" kind, i.e. an uploaded "dataset_logo" file, the following method 
+        // will try to delete it, and all the associated caches here (because there 
+        // are no other uses for the file). This method is apparently called in all 
+        // cases, without trying to check if the dataset was in fact using a custom 
+        // logo; probably under the assumption that it can't hurt.
         DatasetUtil.deleteDatasetLogo(dataset);
+        
+        // Clear any designated thumbnails for the dataset:
         dataset.setThumbnailFile(null);
         dataset.setUseGenericThumbnail(true);
         return merge(dataset);
@@ -937,80 +954,6 @@ public class DatasetServiceBean implements java.io.Serializable {
             commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, request, isPidPrePublished));
         } catch (CommandException cex) {
             logger.warning("CommandException caught when executing the asynchronous portion of the Dataset Publication Command.");
-        }
-    }
-
-    /*
-     Experimental asynchronous method for requesting persistent identifiers for
-     datafiles. We decided not to run this method on upload/create (so files
-     will not have persistent ids while in draft; when the draft is published,
-     we will force obtaining persistent ids for all the files in the version.
-
-     If we go back to trying to register global ids on create, care will need to
-     be taken to make sure the asynchronous changes below are not conflicting with
-     the changes from file ingest (which may be happening in parallel, also
-     asynchronously). We would also need to lock the dataset (similarly to how
-     tabular ingest logs the dataset), to prevent the user from publishing the
-     version before all the identifiers get assigned - otherwise more conflicts
-     are likely. (It sounds like it would make sense to treat these two tasks -
-     persistent identifiers for files and ingest - as one post-upload job, so that
-     they can be run in sequence). -- L.A. Mar. 2018
-    */
-    @Asynchronous
-    public void obtainPersistentIdentifiersForDatafiles(Dataset dataset) {
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());
-
-        //If the Id type is sequential and Dependent then write file idenitifiers outside the command
-        String datasetIdentifier = dataset.getIdentifier();
-        Long maxIdentifier = null;
-
-        if (systemConfig.isDataFilePIDSequentialDependent()) {
-            maxIdentifier = getMaximumExistingDatafileIdentifier(dataset);
-        }
-
-        for (DataFile datafile : dataset.getFiles()) {
-            logger.info("Obtaining persistent id for datafile id=" + datafile.getId());
-
-            if (datafile.getIdentifier() == null || datafile.getIdentifier().isEmpty()) {
-
-                logger.info("Obtaining persistent id for datafile id=" + datafile.getId());
-
-                if (maxIdentifier != null) {
-                    maxIdentifier++;
-                    datafile.setIdentifier(datasetIdentifier + "/" + maxIdentifier.toString());
-                } else {
-                    datafile.setIdentifier(idServiceBean.generateDataFileIdentifier(datafile));
-                }
-
-                if (datafile.getProtocol() == null) {
-                    datafile.setProtocol(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, ""));
-                }
-                if (datafile.getAuthority() == null) {
-                    datafile.setAuthority(settingsService.getValueForKey(SettingsServiceBean.Key.Authority, ""));
-                }
-
-                logger.info("identifier: " + datafile.getIdentifier());
-
-                String doiRetString;
-
-                try {
-                    logger.log(Level.FINE, "creating identifier");
-                    doiRetString = idServiceBean.createIdentifier(datafile);
-                } catch (Throwable e) {
-                    logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
-                    doiRetString = "";
-                }
-
-                // Check return value to make sure registration succeeded
-                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(datafile.getIdentifier())) {
-                    datafile.setIdentifierRegistered(true);
-                    datafile.setGlobalIdCreateTime(new Date());
-                }
-
-                DataFile merged = em.merge(datafile);
-                merged = null;
-            }
-
         }
     }
 
@@ -1126,5 +1069,5 @@ public class DatasetServiceBean implements java.io.Serializable {
             hdLogger.warning("Failed to destroy the dataset");
         }
     }
-
+    
 }

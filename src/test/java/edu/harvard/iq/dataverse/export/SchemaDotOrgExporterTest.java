@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 import jakarta.json.JsonObject;
 
 import edu.harvard.iq.dataverse.util.testing.JvmSetting;
+import edu.harvard.iq.dataverse.util.testing.LocalJvmSettings;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * For docs see {@link SchemaDotOrgExporter}.
  */
+@LocalJvmSettings
 public class SchemaDotOrgExporterTest {
 
     private static final Logger logger = Logger.getLogger(SchemaDotOrgExporterTest.class.getCanonicalName());
@@ -320,6 +322,7 @@ public class SchemaDotOrgExporterTest {
         DatasetFieldType keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> keywordChildTypes = new HashSet<>();
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordValue", DatasetFieldType.FieldType.TEXT, false)));
+        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordTermURI", DatasetFieldType.FieldType.TEXT, false)));
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabulary", DatasetFieldType.FieldType.TEXT, false)));
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabularyURI", DatasetFieldType.FieldType.TEXT, false)));
         keywordType.setChildDatasetFieldTypes(keywordChildTypes);

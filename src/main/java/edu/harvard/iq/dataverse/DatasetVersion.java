@@ -68,7 +68,13 @@ import org.apache.commons.lang3.StringUtils;
                query = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.dataset.harvestedFrom IS NULL and o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL"
     ), 
     @NamedQuery(name = "DatasetVersion.findById", 
-                query = "SELECT o FROM DatasetVersion o LEFT JOIN FETCH o.fileMetadatas WHERE o.id=:id")})
+                query = "SELECT o FROM DatasetVersion o LEFT JOIN FETCH o.fileMetadatas WHERE o.id=:id"), 
+    @NamedQuery(name = "DatasetVersion.findByDataset",
+                query = "SELECT o FROM DatasetVersion o WHERE o.dataset.id=:datasetId ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC"), 
+    @NamedQuery(name = "DatasetVersion.findReleasedByDataset",
+                query = "SELECT o FROM DatasetVersion o WHERE o.dataset.id=:datasetId AND o.versionState=edu.harvard.iq.dataverse.DatasetVersion.VersionState.RELEASED ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC")/*,
+    @NamedQuery(name = "DatasetVersion.findVersionElements",
+                query = "SELECT o.id, o.versionState, o.versionNumber, o.minorVersionNumber FROM DatasetVersion o WHERE o.dataset.id=:datasetId ORDER BY o.versionNumber DESC, o.minorVersionNumber DESC")*/})
     
     
 @Entity
@@ -1722,7 +1728,36 @@ public class DatasetVersion implements Serializable {
     }
     
     public boolean isValid() {
-        return validate().isEmpty();
+        // first clone to leave the original untouched
+        final DatasetVersion newVersion = this.cloneDatasetVersion();
+        // initDatasetFields
+        newVersion.setDatasetFields(newVersion.initDatasetFields());
+        // remove special "N/A" values and empty values
+        newVersion.removeEmptyValues();
+        // check validity of present fields and detect missing mandatory fields
+        return newVersion.validate().isEmpty();
+    }
+
+    private void removeEmptyValues() {
+        if (this.getDatasetFields() != null) {
+            for (DatasetField dsf : this.getDatasetFields()) {
+                removeEmptyValues(dsf);
+            }
+        }
+    }
+
+    private void removeEmptyValues(DatasetField dsf) {
+        if (dsf.getDatasetFieldType().isPrimitive()) { // primitive
+            final Iterator<DatasetFieldValue> i = dsf.getDatasetFieldValues().iterator();
+            while (i.hasNext()) {
+                final String v = i.next().getValue();
+                if (StringUtils.isBlank(v) || DatasetField.NA_VALUE.equals(v)) {
+                    i.remove();
+                }
+            }
+        } else {
+            dsf.getDatasetFieldCompoundValues().forEach(cv -> cv.getChildDatasetFields().forEach(v -> removeEmptyValues(v)));
+        }
     }
 
     public Set<ConstraintViolation> validate() {
