@@ -1,0 +1,1 @@
+The endpoint `api/admin/bannerMessage` has been extended so the ID is returned when created
