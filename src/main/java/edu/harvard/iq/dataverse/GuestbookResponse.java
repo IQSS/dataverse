@@ -331,7 +331,11 @@ public class GuestbookResponse implements Serializable {
         this.sessionId= sessionId;
     }
     
-    public String toHtmlFormattedResponse() {
+    public String toHtmlFormattedResponse(){
+        return toHtmlFormattedResponse(null);
+    }
+    
+    public String toHtmlFormattedResponse(AuthenticatedUser requestor) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -340,9 +344,17 @@ public class GuestbookResponse implements Serializable {
         sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.respondent") + "<br><ul style=\"list-style-type:none;\">\n<li>"
                 + BundleUtil.getStringFromBundle("name") + ": " + getName() + "</li>\n<li>");
         sb.append("  " + BundleUtil.getStringFromBundle("email") + ": " + getEmail() + "</li>\n<li>");
-        sb.append(
-                "  " + BundleUtil.getStringFromBundle("institution") + ": " + wrapNullAnswer(getInstitution()) + "</li>\n<li>");
-        sb.append("  " + BundleUtil.getStringFromBundle("position") + ": " + wrapNullAnswer(getPosition()) + "</li></ul>\n");
+        sb.append("  " + BundleUtil.getStringFromBundle("institution") + ": " + wrapNullAnswer(getInstitution()) + "</li>\n<li>");
+        sb.append("  " + BundleUtil.getStringFromBundle("position") + ": " + wrapNullAnswer(getPosition()) + "</li>");
+        
+        //Add requestor information to response to help dataset admin with request processing
+        if (requestor != null){
+            sb.append("\n<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.requestor.id") + ": " + requestor.getId()+ "</li>");
+            sb.append("\n<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.requestor.identifier") + ": " + requestor.getIdentifier()+ "</li></ul>\n");
+        } else {
+            sb.append("</ul>\n");
+        }
+
         sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.additionalQuestions")
                 + ":<ul style=\"list-style-type:none;\">\n");
 
