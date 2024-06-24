@@ -4839,7 +4839,10 @@ public class Datasets extends AbstractApiBean {
                     }
                 }
                 execCommand(new DeaccessionDatasetVersionCommand(req, datasetVersion, false));
-                return ok("Dataset " + datasetId + " deaccessioned for version " + versionId);
+                
+                return ok("Dataset " + 
+                        (":persistentId".equals(datasetId) ? datasetVersion.getDataset().getGlobalId().asString() : datasetId) + 
+                        " deaccessioned for version " + versionId);
             } catch (JsonParsingException jpe) {
                 return error(Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
             }
