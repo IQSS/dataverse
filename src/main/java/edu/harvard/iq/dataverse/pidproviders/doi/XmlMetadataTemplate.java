@@ -982,13 +982,13 @@ logger.info("Canonical type: " + pubIdType);
 
                             // For non-URL types, if a URL is given, split the string to get a schemeUri
                             try {
-                                URL relatedUrl = new URL(relatedIdentifier);
+                                URL relatedUrl = new URI(relatedIdentifier).toURL();
                                 String protocol = relatedUrl.getProtocol();
                                 String authority = relatedUrl.getAuthority();
                                 String site = String.format("%s://%s", protocol, authority);
                                 relatedIdentifier = relatedIdentifier.substring(site.length());
                                 attributes.put("schemeURI", site);
-                            } catch (MalformedURLException e) {
+                            } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
                                 // Just an identifier
                             }
                         }
