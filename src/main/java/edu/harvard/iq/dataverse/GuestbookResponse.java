@@ -17,6 +17,8 @@ import java.util.Date;
 import java.util.List;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  *
@@ -178,7 +180,7 @@ public class GuestbookResponse implements Serializable {
         this.setSessionId(source.getSessionId());
         List <CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
         if (!source.getCustomQuestionResponses().isEmpty()){
-            for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponses() ){
+            for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponsesSorted() ){
                 CustomQuestionResponse customQuestionResponseAdd = new CustomQuestionResponse();
                 customQuestionResponseAdd.setResponse(customQuestionResponse.getResponse());  
                 customQuestionResponseAdd.setCustomQuestion(customQuestionResponse.getCustomQuestion());
@@ -253,6 +255,18 @@ public class GuestbookResponse implements Serializable {
 
     public List<CustomQuestionResponse> getCustomQuestionResponses() {
         return customQuestionResponses;
+    }
+    
+    public List<CustomQuestionResponse> getCustomQuestionResponsesSorted(){
+        
+        Collections.sort(customQuestionResponses, (CustomQuestionResponse cqr1, CustomQuestionResponse cqr2) -> {
+            int a = cqr1.getCustomQuestion().getDisplayOrder();
+            int b = cqr2.getCustomQuestion().getDisplayOrder();
+            return Integer.valueOf(a).compareTo(b);
+        });
+       
+       
+       return customQuestionResponses;
     }
 
     public void setCustomQuestionResponses(List<CustomQuestionResponse> customQuestionResponses) {
@@ -332,7 +346,7 @@ public class GuestbookResponse implements Serializable {
         sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.additionalQuestions")
                 + ":<ul style=\"list-style-type:none;\">\n");
 
-        for (CustomQuestionResponse cqr : getCustomQuestionResponses()) {
+        for (CustomQuestionResponse cqr : getCustomQuestionResponsesSorted()) {
             sb.append("<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.question") + ": "
                     + cqr.getCustomQuestion().getQuestionString() + "<br>"
                     + BundleUtil.getStringFromBundle("dataset.guestbookResponse.answer") + ": "
