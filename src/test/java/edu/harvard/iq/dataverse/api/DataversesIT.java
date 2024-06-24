@@ -926,4 +926,40 @@ public class DataversesIT {
                 .body("message", equalTo("Error while updating dataverse input levels: Input level list cannot be null or empty"))
                 .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
     }
+
+    @Test
+    public void testAddDataverse() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String testAliasSuffix = "-add-dataverse";
+
+        // Without optional input levels and facet ids
+        String testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
+        Response createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root");
+        createSubDataverseWithInputLevelsAndFacetIdsResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        // With optional input levels and facet ids
+        String[] testInputLevelNames = {"geographicCoverage", "country"};
+        String[] testFacetIds = {"authorName", "authorAffiliation"};
+        testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
+        createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testFacetIds);
+        createSubDataverseWithInputLevelsAndFacetIdsResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        // Assert facets are configured
+        Response listDataverseFacetsResponse = UtilIT.listDataverseFacets(testDataverseAlias, apiToken);
+        String[] expectedFacetNames = {"Author Name", "Author Affiliation"};
+        String actualFacetName1 = listDataverseFacetsResponse.then().extract().path("data[0].name");
+        String actualFacetName2 = listDataverseFacetsResponse.then().extract().path("data[1].name");
+        assertNotEquals(actualFacetName1, actualFacetName2);
+        assertThat(expectedFacetNames, hasItemInArray(actualFacetName1));
+        assertThat(expectedFacetNames, hasItemInArray(actualFacetName2));
+
+        // Assert input levels are configured
+        Response listDataverseInputLevelsResponse = UtilIT.listDataverseInputLevels(testDataverseAlias, apiToken);
+        String actualInputLevelName1 = listDataverseInputLevelsResponse.then().extract().path("data[0].datasetFieldTypeName");
+        String actualInputLevelName2 = listDataverseInputLevelsResponse.then().extract().path("data[1].datasetFieldTypeName");
+        assertNotEquals(actualFacetName1, actualFacetName2);
+        assertThat(testInputLevelNames, hasItemInArray(actualInputLevelName1));
+        assertThat(testInputLevelNames, hasItemInArray(actualInputLevelName2));
+    }
 }

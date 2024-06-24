@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -60,8 +61,7 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
@@ -641,6 +641,19 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
+    @GET
+    @AuthRequired
+    @Path("{identifier}/inputLevels")
+    public Response getInputLevels(@Context ContainerRequestContext crc, @PathParam("identifier") String identifier) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(identifier);
+            List<DataverseFieldTypeInputLevel> inputLevels = execCommand(new ListDataverseInputLevelsCommand(createDataverseRequest(getRequestUser(crc)), dataverse));
+            return ok(jsonDataverseInputLevels(inputLevels));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
+        }
+    }
+
     @PUT
     @AuthRequired
     @Path("{identifier}/inputLevels")
@@ -954,6 +967,20 @@ public class Dataverses extends AbstractApiBean {
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
+        }
+    }
+
+    @GET
+    @AuthRequired
+    @Path("{identifier}/facets")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getFacets(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
+        try {
+            Dataverse dataverse = findDataverseOrDie(dvIdtf);
+            List<DataverseFacet> dataverseFacets = execCommand(new ListFacetsCommand(createDataverseRequest(getRequestUser(crc)), dataverse, false));
+            return ok(jsonDataverseFacets(dataverseFacets));
+        } catch (WrappedResponse e) {
+            return e.getResponse();
         }
     }
 

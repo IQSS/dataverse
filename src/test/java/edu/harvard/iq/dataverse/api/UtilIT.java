@@ -358,20 +358,45 @@ public class UtilIT {
     static Response createDataverse(String alias, String category, String apiToken) {
         return createSubDataverse(alias, category, apiToken, ":root");
     }
-    
+
     static Response createSubDataverse(String alias, String category, String apiToken, String parentDV) {
+        return createSubDataverse(alias, category, apiToken, parentDV, null, null);
+    }
+    
+    static Response createSubDataverse(String alias, String category, String apiToken, String parentDV, String[] inputLevelNames, String[] facetIds) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
         JsonArrayBuilder subjectArrayBuilder = Json.createArrayBuilder();
         subjectArrayBuilder.add("Other");
-        JsonObject dvData = Json.createObjectBuilder()
+        JsonObjectBuilder objectBuilder = Json.createObjectBuilder()
                 .add("alias", alias)
                 .add("name", alias)
                 .add("dataverseContacts", contactArrayBuilder)
                 .add("dataverseSubjects", subjectArrayBuilder)
                 // don't send "dataverseType" if category is null, must be a better way
-                .add(category != null ? "dataverseType" : "notTheKeyDataverseType", category != null ? category : "whatever")
-                .build();
+                .add(category != null ? "dataverseType" : "notTheKeyDataverseType", category != null ? category : "whatever");
+
+        if (inputLevelNames != null) {
+            JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
+            for(String inputLevelName : inputLevelNames) {
+                inputLevelsArrayBuilder.add(Json.createObjectBuilder()
+                        .add("datasetFieldTypeName", inputLevelName)
+                        .add("required", true)
+                        .add("include", true)
+                );
+            }
+            objectBuilder.add("inputLevels", inputLevelsArrayBuilder);
+        }
+
+        if (facetIds != null) {
+            JsonArrayBuilder facetIdsArrayBuilder = Json.createArrayBuilder();
+            for(String facetId : facetIds) {
+                facetIdsArrayBuilder.add(facetId);
+            }
+            objectBuilder.add("facetIds", facetIdsArrayBuilder);
+        }
+
+        JsonObject dvData = objectBuilder.build();
         Response createDataverseResponse = given()
                 .body(dvData.toString()).contentType(ContentType.JSON)
                 .when().post("/api/dataverses/" + parentDV + "?key=" + apiToken);
@@ -3940,9 +3965,9 @@ public class UtilIT {
     }
 
     static Response updateDataverseInputLevels(String dataverseAlias, String[] inputLevelNames, String apiToken) {
-        JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
         for(String inputLevelName : inputLevelNames) {
-            contactArrayBuilder.add(Json.createObjectBuilder()
+            inputLevelsArrayBuilder.add(Json.createObjectBuilder()
                     .add("datasetFieldTypeName", inputLevelName)
                     .add("required", true)
                     .add("include", true)
@@ -3950,7 +3975,7 @@ public class UtilIT {
         }
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(contactArrayBuilder.build().toString())
+                .body(inputLevelsArrayBuilder.build().toString())
                 .contentType(ContentType.JSON)
                 .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
     }
@@ -3961,5 +3986,19 @@ public class UtilIT {
                 .queryParam("format", format)
                 .get("/openapi");
         return response;
+    }
+
+    static Response listDataverseFacets(String dataverseAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/dataverses/" + dataverseAlias + "/facets");
+    }
+
+    static Response listDataverseInputLevels(String dataverseAlias, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/json")
+                .get("/api/dataverses/" + dataverseAlias + "/inputLevels");
     }
 }
