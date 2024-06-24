@@ -47,10 +47,10 @@ public class UningestFileCommand extends AbstractVoidCommand  {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         
-        // first check if  user is a superuser
-        if ( (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
-            throw new PermissionException("Uningest File can only be called by Superusers.",
-                this,  Collections.singleton(Permission.EditDataset), uningest);                
+        // first check if user is a superuser
+        if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
+            throw new PermissionException("Uningest File can only be called by Superusers.", this,
+                    Collections.singleton(Permission.EditDataset), uningest);
         }
         
         // is this actually a tabular data file?
@@ -105,6 +105,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         // all the attribute of the file that are stored in the database: 
         
         // the file size: 
+        long archivalFileSize = uningest.getFilesize();
         uningest.setFilesize(storedOriginalFileSize);
         
         // original file format:
@@ -170,8 +171,20 @@ public class UningestFileCommand extends AbstractVoidCommand  {
             logger.warning("Io Exception deleting all aux objects : " + uningest.getId());
         }
         
+        // Finally, adjust the recorded storage use for the ancestral 
+        // DvObjectContainers (the parent dataset + all the parent collections
+        // up to the root):
+        if (archivalFileSize > 0) {
+            ctxt.storageUse().incrementStorageSizeRecursively(uningest.getOwner().getId(), (0L - archivalFileSize));
+        }
+        
     }
     
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        
+        return true; 
+    }
     
     private void resetIngestStats(DataFile uningest, CommandContext ctxt){
         

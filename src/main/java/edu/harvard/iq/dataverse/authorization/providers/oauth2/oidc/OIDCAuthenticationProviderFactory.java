@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupExcep
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProviderFactory;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 
 import java.util.Map;
 
@@ -37,10 +38,38 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
     public AuthenticationProvider buildProvider( AuthenticationProviderRow aRow ) throws AuthorizationSetupException {
         Map<String, String> factoryData = OAuth2AuthenticationProviderFactory.parseFactoryData(aRow.getFactoryData());
         
-        OIDCAuthProvider oidc = new OIDCAuthProvider(factoryData.get("clientId"), factoryData.get("clientSecret"), factoryData.get("issuer"));
+        OIDCAuthProvider oidc = new OIDCAuthProvider(
+            factoryData.get("clientId"),
+            factoryData.get("clientSecret"),
+            factoryData.get("issuer"),
+            Boolean.parseBoolean(factoryData.getOrDefault("pkceEnabled", "false")),
+            factoryData.getOrDefault("pkceMethod", "S256")
+        );
+        
         oidc.setId(aRow.getId());
         oidc.setTitle(aRow.getTitle());
         oidc.setSubTitle(aRow.getSubtitle());
+        
+        return oidc;
+    }
+    
+    /**
+     * Build an OIDC provider from MicroProfile Config provisioned details
+     * @return The configured auth provider
+     * @throws AuthorizationSetupException
+     */
+    public static AuthenticationProvider buildFromSettings() throws AuthorizationSetupException {
+        OIDCAuthProvider oidc = new OIDCAuthProvider(
+            JvmSettings.OIDC_CLIENT_ID.lookup(),
+            JvmSettings.OIDC_CLIENT_SECRET.lookup(),
+            JvmSettings.OIDC_AUTH_SERVER_URL.lookup(),
+            JvmSettings.OIDC_PKCE_ENABLED.lookupOptional(Boolean.class).orElse(false),
+            JvmSettings.OIDC_PKCE_METHOD.lookupOptional().orElse("S256")
+        );
+        
+        oidc.setId("oidc-mpconfig");
+        oidc.setTitle(JvmSettings.OIDC_TITLE.lookupOptional().orElse("OpenID Connect"));
+        oidc.setSubTitle(JvmSettings.OIDC_SUBTITLE.lookupOptional().orElse("OpenID Connect"));
         
         return oidc;
     }

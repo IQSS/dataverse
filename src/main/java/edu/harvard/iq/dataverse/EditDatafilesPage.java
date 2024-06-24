@@ -28,6 +28,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDataFilesCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
@@ -36,6 +37,7 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.storageuse.UploadSessionQuotaLimit;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -186,7 +188,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     // Used to store results of permissions checks
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
 
+    // Size limit of an individual file: (set for the storage volume used)
     private Long maxFileUploadSizeInBytes = null;
+    // Total amount of data that the user should be allowed to upload.
+    // Will be calculated in real time based on various level quotas - 
+    // for this user and/or this collection/dataset, etc. We should 
+    // assume that it may change during the user session.
+    private Long maxTotalUploadSizeInBytes = null;
     private Long maxIngestSizeInBytes = null;
     // CSV: 4.8 MB, DTA: 976.6 KB, XLSX: 5.7 MB, etc.
     private String humanPerFormatTabularLimits = null;
@@ -198,6 +206,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private final int NUMBER_OF_SCROLL_ROWS = 25;
 
     private DataFile singleFile = null;
+    private UploadSessionQuotaLimit uploadSessionQuota = null; 
 
     public DataFile getSingleFile() {
         return singleFile;
@@ -339,6 +348,18 @@ public class EditDatafilesPage implements java.io.Serializable {
     public boolean isUnlimitedUploadFileSize() {
 
         return this.maxFileUploadSizeInBytes == null;
+    }
+    
+    public Long getMaxTotalUploadSizeInBytes() {
+        return maxTotalUploadSizeInBytes;
+    }
+    
+    public String getHumanMaxTotalUploadSizeInBytes() {
+        return FileSizeChecker.bytesToHumanReadable(maxTotalUploadSizeInBytes);
+    }
+    
+    public boolean isStorageQuotaEnforced() {
+        return uploadSessionQuota != null; 
     }
 
     public Long getMaxIngestSizeInBytes() {
@@ -508,14 +529,27 @@ public class EditDatafilesPage implements java.io.Serializable {
         selectedFiles = selectedFileMetadatasList;
 
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+        if (systemConfig.isStorageQuotasEnforced()) {
+            this.uploadSessionQuota = datafileService.getUploadSessionQuotaLimit(dataset);
+            if (this.uploadSessionQuota != null) {
+                this.maxTotalUploadSizeInBytes = uploadSessionQuota.getRemainingQuotaInBytes();
+            }
+        } else {
+            this.maxTotalUploadSizeInBytes = null; 
+        }
         this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
         this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
-
+        
         logger.fine("done");
 
         saveEnabled = true;
+        
         return null;
+    }
+    
+    public boolean isQuotaExceeded() {
+        return systemConfig.isStorageQuotasEnforced() && uploadSessionQuota != null && uploadSessionQuota.getRemainingQuotaInBytes() == 0;
     }
 
     public String init() {
@@ -559,10 +593,15 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         clone = workingVersion.cloneDatasetVersion();
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+        if (systemConfig.isStorageQuotasEnforced()) {
+            this.uploadSessionQuota = datafileService.getUploadSessionQuotaLimit(dataset);
+            if (this.uploadSessionQuota != null) {
+                this.maxTotalUploadSizeInBytes = uploadSessionQuota.getRemainingQuotaInBytes();
+            }
+        }
         this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
         this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();        
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
         
         hasValidTermsOfAccess = isHasValidTermsOfAccess();
         if (!hasValidTermsOfAccess) {
@@ -656,7 +695,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (isHasPublicStore()){
             JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.label.fileAccess"), getBundleString("dataset.message.publicInstall"));
         }
-
+       
         return null;
     }
 
@@ -1063,7 +1102,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
 
             // Try to save the NEW files permanently: 
-            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null, true);
+            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null, true); 
             
             // reset the working list of fileMetadatas, as to only include the ones
             // that have been added to the version successfully: 
@@ -1198,9 +1237,6 @@ public class EditDatafilesPage implements java.io.Serializable {
              - We decided not to bother obtaining persistent ids for new files 
              as they are uploaded and created. The identifiers will be assigned 
              later, when the version is published. 
-             
-            logger.info("starting async job for obtaining persistent ids for files.");
-            datasetService.obtainPersistentIdentifiersForDatafiles(dataset);
              */
         }
 
@@ -1493,14 +1529,16 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // for example, multiple files can be extracted from an uncompressed
                 // zip file.
                 //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", null, null, systemConfig);
+                //CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", null, null, systemConfig);
+                Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, dropBoxStream, fileName, "application/octet-stream", null, uploadSessionQuota, null);
+                CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
                 datafiles = createDataFilesResult.getDataFiles();
                 Optional.ofNullable(editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult)).ifPresent(errorMessage -> errorMessages.add(errorMessage));
 
-            } catch (IOException ex) {
+            } catch (CommandException ex) {
                 this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
                 continue;
-            }/*catch (FileExceedsMaxSizeException ex){
+            } /*catch (FileExceedsMaxSizeException ex){
                 this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}: {2}", new Object[]{fileName, fileLink, ex.getMessage()});
                 continue;
             }*/ finally {
@@ -2023,7 +2061,21 @@ public class EditDatafilesPage implements java.io.Serializable {
             // Note: A single uploaded file may produce multiple datafiles - 
             // for example, multiple files can be extracted from an uncompressed
             // zip file.
-            CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null, systemConfig);
+            ///CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null, systemConfig);
+            
+            Command<CreateDataFileResult> cmd;
+            if (mode == FileEditMode.CREATE) {
+                // This is a file upload in the context of creating a brand new
+                // dataset that does not yet exist in the database. We must 
+                // use the version of the Create New Files constructor that takes
+                // the parent Dataverse as the extra argument:
+                cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, uploadSessionQuota, null, null, null, workingVersion.getDataset().getOwner());
+            } else {
+                cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, uploadSessionQuota, null);
+            }
+            CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
+
+        
             dFileList = createDataFilesResult.getDataFiles();
             String createDataFilesError = editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult);
             if(createDataFilesError != null) {
@@ -2032,7 +2084,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
 
         } catch (IOException ioex) {
+            // shouldn't we try and communicate to the user what happened?
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
+            return;
+        } catch (CommandException cex) {
+            // shouldn't we try and communicate to the user what happened?
+            errorMessages.add(cex.getMessage());
+            uploadComponentId = event.getComponent().getClientId();
             return;
         }
         /*catch (FileExceedsMaxSizeException ex) {
@@ -2111,6 +2169,11 @@ public class EditDatafilesPage implements java.io.Serializable {
                 - Max size NOT specified in db: default is unlimited
                 - Max size specified in db: check too make sure file is within limits
             // ---------------------------- */
+            /**
+             * @todo: this file size limit check is now redundant here, since the new
+             * CreateNewFilesCommand is going to perform it (and the quota 
+             * checks too, if enabled
+             */
             if ((!this.isUnlimitedUploadFileSize()) && (fileSize > this.getMaxFileUploadSizeInBytes())) {
                 String warningMessage = "Uploaded file \"" + fileName + "\" exceeded the limit of " + fileSize + " bytes and was not uploaded.";
                 sio.delete();
@@ -2130,18 +2193,27 @@ public class EditDatafilesPage implements java.io.Serializable {
                 List<DataFile> datafiles = new ArrayList<>();
 
                 // -----------------------------------------------------------
-                // Send it through the ingest service
+                // Execute the CreateNewDataFiles command:
                 // -----------------------------------------------------------
+                
+                Dataverse parent = null; 
+                
+                if (mode == FileEditMode.CREATE) {
+                    // This is a file upload in the context of creating a brand new
+                    // dataset that does not yet exist in the database. We must 
+                    // pass the parent Dataverse to the CreateNewFiles command
+                    // constructor. The RequiredPermission on the command in this 
+                    // scenario = Permission.AddDataset on the parent dataverse.
+                    parent = workingVersion.getDataset().getOwner();
+                }
+                
                 try {
-
-                    // Note: A single uploaded file may produce multiple datafiles - 
-                    // for example, multiple files can be extracted from an uncompressed
-                    // zip file.
-                    //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                    CreateDataFileResult createDataFilesResult = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, checksumType, systemConfig);
+  
+                    Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, null, fileName, contentType, fullStorageIdentifier, uploadSessionQuota, checksumValue, checksumType, fileSize, parent);
+                    CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
                     datafiles = createDataFilesResult.getDataFiles();
                     Optional.ofNullable(editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult)).ifPresent(errorMessage -> errorMessages.add(errorMessage));
-                } catch (IOException ex) {
+                } catch (CommandException ex) {
                     logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
                 }
 

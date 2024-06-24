@@ -55,6 +55,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
+    FileAccessRequestServiceBean fileAccessRequestService;
+    @EJB
     DataverseRoleServiceBean roleService;
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;

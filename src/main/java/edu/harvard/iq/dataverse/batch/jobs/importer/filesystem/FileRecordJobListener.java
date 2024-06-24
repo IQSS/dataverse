@@ -450,7 +450,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         // We probably want package files to be able to use specific stores instead.
         // More importantly perhaps, the approach above does not take into account
         // if the dataset may have an AlternativePersistentIdentifier, that may be 
-        // designated isStorageLocationDesignator() - i.e., if a different identifer
+        // designated isStorageLocationDesignator() - i.e., if a different identifier
         // needs to be used to name the storage directory, instead of the main/current
         // persistent identifier above. 
         getJobLogger().log(Level.INFO, "Reading checksum manifest: " + manifestAbsolutePath);

@@ -11,7 +11,7 @@ As explained under "Auth Modes" in the :doc:`config` section, OAuth2 is one of t
 
 `OAuth2 <https://oauth.net/2/>`_ is an authentication protocol that allows systems to share user data, while letting the users control what data is being shared. When you see buttons stating "login with Google" or "login through Facebook", OAuth2 is probably involved. For the purposes of this section, we will shorten "OAuth2" to just "OAuth." OAuth can be compared and contrasted with :doc:`shibboleth`.
 
-The Dataverse Software supports four OAuth providers: `ORCID <http://orcid.org>`_, `Microsoft Azure Active Directory (AD) <https://docs.microsoft.com/azure/active-directory/>`_, `GitHub <https://github.com>`_, and `Google <https://console.developers.google.com>`_.
+The Dataverse Software supports four OAuth providers: `ORCID <https://orcid.org>`_, `Microsoft Azure Active Directory (AD) <https://docs.microsoft.com/azure/active-directory/>`_, `GitHub <https://github.com>`_, and `Google <https://console.developers.google.com>`_.
 
 In addition :doc:`oidc` are supported, using a standard based on OAuth2.
 

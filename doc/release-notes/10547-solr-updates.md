@@ -1,0 +1,1 @@
+Multiple improvements have ben made to they way Solr indexing and searching is done. Response times should be significantly improved. See the individual PRs in this release for details.

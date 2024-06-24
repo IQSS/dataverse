@@ -94,6 +94,13 @@ This series of Python scripts offers a starting point for migrating datasets fro
 
 https://github.com/scholarsportal/dataverse-migration-scripts
 
+idsc.dataverse
+~~~~~~~~~~~~~~
+
+This module can, among others, help you migrate one dataverse to another. (see `migrate.md <https://github.com/iza-institute-of-labor-economics/idsc.dataverse/blob/main/migrate.md>`_)
+
+https://github.com/iza-institute-of-labor-economics/idsc.dataverse
+
 Java
 ----
 
@@ -125,6 +132,13 @@ https://github.com/libis/rdm-integration
 
 PHP
 ---
+
+DOI2PMH
+~~~~~~~
+
+The DOI2PMH server allow Dataverse instances to harvest DOI through OAI-PMH from otherwise unharvestable sources.
+
+https://github.com/IQSS/doi2pmh-server
 
 OJS
 ~~~
