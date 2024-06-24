@@ -30,6 +30,7 @@ public class CustomQuestionResponse implements Serializable {
 
     @ManyToOne
     @JoinColumn(nullable = false)
+    @OrderBy("displayOrder")
     private CustomQuestion customQuestion;
     
     @Column(name = "response", columnDefinition = "TEXT", nullable = true)
