@@ -58,6 +58,17 @@ public enum FeatureFlags {
      * @since Dataverse 6.3
      */
     ADD_PUBLICOBJECT_SOLR_FIELD("add-publicobject-solr-field"),
+    /**
+     * With this flag enabled, the Return To Author pop-up will not have a required
+     * "Reason" field, and a reason will not be required in the 
+     * /api/datasets/{id}/returnToAuthor api call.
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.disable-return-to-author-reason"
+     * @since Dataverse 6.3
+     */
+    DISABLE_RETURN_TO_AUTHOR_REASON("disable-return-to-author-reason"),
+
     ;
     
     final String flag;
