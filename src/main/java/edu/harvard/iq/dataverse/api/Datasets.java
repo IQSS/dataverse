@@ -206,7 +206,7 @@ public class Datasets extends AbstractApiBean {
     // WORKS on published datasets, which are open to the world. -- L.A. 4.5
     @GET
     @Path("/export")
-    @Produces({"application/xml", "application/json", "application/html", "*/*" })
+    @Produces({"application/xml", "application/json", "application/html", "application/ld+json", "*/*" })
     public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         try {
