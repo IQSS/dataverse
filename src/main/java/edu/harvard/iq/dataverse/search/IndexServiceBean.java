@@ -1826,7 +1826,7 @@ public class IndexServiceBean {
                         }
                         sid.removeField(SearchFields.SUBTREE);
                         sid.addField(SearchFields.SUBTREE, paths);
-                        addResponse = solrClientService.getSolrClient().add(sid, COMMIT_WITHIN);
+                        addResponse = solrClientService.getSolrClient().add(sid);
                     }
                 }
             }
