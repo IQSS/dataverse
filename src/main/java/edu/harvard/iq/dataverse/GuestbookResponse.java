@@ -362,7 +362,7 @@ public class GuestbookResponse implements Serializable {
             sb.append("<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.question") + ": "
                     + cqr.getCustomQuestion().getQuestionString() + "<br>"
                     + BundleUtil.getStringFromBundle("dataset.guestbookResponse.answer") + ": "
-                    + wrapNullAnswer(cqr.getResponse()) + "</li>\n");
+                    + wrapNullAnswer(cqr.getResponse()) + "</li>\n<br>");
         }
         sb.append("</ul>");
         return sb.toString();
