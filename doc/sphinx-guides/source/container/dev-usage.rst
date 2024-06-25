@@ -144,43 +144,202 @@ Alternatives:
 Redeploying
 -----------
 
-Rebuild and Running Images
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+The safest and most reliable way to redeploy code is to stop the running containers (with Ctrl-c if you started them in the foreground) and then build and run them again with ``mvn -Pct clean package docker:run``.
+Safe, but also slowing down the development cycle a lot.
 
-The safest way to redeploy code is to stop the running containers (with Ctrl-c if you started them in the foreground) and then build and run them again with ``mvn -Pct clean package docker:run``.
+Triggering redeployment of changes using an IDE can greatly improve your feedback loop when changing code.
+You have at least two options:
 
-IntelliJ IDEA Ultimate and Payara Platform Tools
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#. Use builtin features of IDEs or `IDE plugins from Payara <https://docs.payara.fish/community/docs/documentation/ecosystem/ecosystem.html>`_.
+#. Use a paid product like `JRebel <https://www.jrebel.com/>`_.
 
-If you have IntelliJ IDEA Ultimate (note that `free educational licenses <https://www.jetbrains.com/community/education/>`_ are available), you can install `Payara Platform Tools <https://plugins.jetbrains.com/plugin/15114-payara-platform-tools>`_ which can dramatically improve your feedback loop when iterating on code.
+The main differences between the first and the second options are support for hot deploys of non-class files and limitations in what the JVM HotswapAgent can do for you.
+Find more details in a `blog article by JRebel <https://www.jrebel.com/blog/java-hotswap-guide>`_.
 
-The following steps are suggested:
+.. _ide-trigger-code-deploy:
 
-- Go to the Payara admin console (either at https://localhost:4848 or http://localhost:4849) and undeploy the dataverse application under "Applications".
-- Install Payara Platform Tools.
-- Under "Server":
+IDE Triggered Code Re-Deployments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  - Click "Run" then "Edit Configurations".
-  - Click the plus sign and scroll down to Payara Server and click "Remote".
-  - For "Name" put "Payara in Docker" or something reasonable.
-  - Under "Application server" select a local directory that has the same version of Payara used in the container. This should match the version of Payara mentioned in the Installation Guide under :ref:`payara`.
-  - Change "Admin Server Port" to 4849.
-  - For username, put "admin".
-  - For password, put "admin".
+To make use of builtin features or Payara IDE Tools (option 1), please follow steps below.
+Note that using this method, you may redeploy a complete WAR or single methods.
+Redeploying WARs supports swapping and adding classes and non-code materials, but is slower (still faster than rebuilding containers).
+Hotswapping methods requires using JDWP (Debug Mode), but does not allow switching non-code material or adding classes.
 
-- Under "Deployment":
+#. | Download the version of Payara shown in :ref:`install-payara-dev` and unzip it to a reasonable location such as ``/usr/local/payara6``.
+   | - Note that Payara can also be downloaded from `Maven Central <https://mvnrepository.com/artifact/fish.payara.distributions/payara>`_.
+   | - Note that another way to check the expected version of Payara is to run this command:
+   |   ``mvn help:evaluate -Dexpression=payara.version -q -DforceStdout``
 
-  - Click the plus button and clien "Artifact" then "dataverse:war".
+#. Install Payara Tools plugin in your IDE:
 
-- Under "Startup/Connection":
+   .. tabs::
+     .. group-tab:: Netbeans
 
-  - Click "Debug" and change the port to 9009.
+       This step is not necessary for Netbeans. The feature is builtin.
 
-- Click "Run" and then "Debug Payara in Docker". This initial deployment will take some time.
-- Go to http://localhost:8080/api/info/version and make sure the API is responding.
-- Edit ``Info.java`` and make a small change to the ``/api/info/version`` code.
-- Click "Run" then "Debugging Actions" then "Reload Changed Classes". The deployment should only take a few seconds.
-- Go to http://localhost:8080/api/info/version and verify the change you made.
+     .. group-tab:: IntelliJ
+
+       **Requires IntelliJ Ultimate!**
+       (Note that `free educational licenses <https://www.jetbrains.com/community/education/>`_ are available)
+
+       .. image:: img/intellij-payara-plugin-install.png
+
+#. Configure a connection to Payara:
+
+   .. tabs::
+     .. group-tab:: Netbeans
+
+        Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Payara Server" and set the installation location to ``/usr/local/payara6`` (or wherever you unzipped Payara). Choose "Remote Domain". Use the settings in the screenshot below. Most of the defaults are fine.
+
+        Under "Common", the username and password should be "admin". Make sure "Enable Hot Deploy" is checked.
+
+        .. image:: img/netbeans-servers-common.png
+
+        Under "Java", change the debug port to 9009.
+
+        .. image:: img/netbeans-servers-java.png
+
+        Open the project properties (under "File"), navigate to "Compile" and make sure "Compile on Save" is checked.
+
+        .. image:: img/netbeans-compile.png
+
+        Under "Run", under "Server", select "Payara Server". Make sure "Deploy on Save" is checked.
+
+        .. image:: img/netbeans-run.png
+
+     .. group-tab:: IntelliJ
+        Create a new running configuration with a "Remote Payara".
+        (Open dialog by clicking "Run", then "Edit Configurations")
+
+        .. image:: img/intellij-payara-add-new-config.png
+
+        Click on "Configure" next to "Application Server".
+        Add an application server and select unzipped local directory.
+
+        .. image:: img/intellij-payara-config-add-server.png
+
+        Add admin password "admin" and add "building artifact" before launch.
+        Make sure to select the WAR, *not* exploded!
+
+        .. image:: img/intellij-payara-config-server.png
+
+        Go to "Deployment" tab and add the Dataverse WAR, *not* exploded!.
+
+        .. image:: img/intellij-payara-config-deployment.png
+
+        Go to "Startup/Connection" tab, select "Debug" and change port to ``9009``.
+
+        .. image:: img/intellij-payara-config-startup.png
+
+        You might want to tweak the hot deploy behavior in the "Server" tab now.
+        "Update action" can be found in the run window (see below).
+        "Frame deactivation" means switching from IntelliJ window to something else, e.g. your browser.
+        *Note: static resources like properties, XHTML etc will only update when redeploying!*
+
+        .. image:: img/intellij-payara-config-server-behaviour.png
+
+#. Start all the containers, but take care to skip application deployment.
+
+   .. tabs::
+     .. group-tab:: Maven
+        ``mvn -Pct docker:run -Dapp.skipDeploy``
+
+        Run above command in your terminal to start containers in foreground and skip deployment.
+        See cheat sheet above for more options.
+        Note that this command either assumes you built the :doc:`app-image` first or will download it from Docker Hub.
+     .. group-tab:: Compose
+        ``SKIP_DEPLOY=1 docker compose -f docker-compose-dev.yml up``
+
+        Run above command in your terminal to start containers in foreground and skip deployment.
+        See cheat sheet above for more options.
+        Note that this command either assumes you built the :doc:`app-image` first or will download it from Docker Hub.
+     .. group-tab:: IntelliJ
+        You can create a service configuration to automatically start services for you.
+
+        **IMPORTANT**: This requires installation of the `Docker plugin <https://plugins.jetbrains.com/plugin/7724-docker>`_.
+
+        **NOTE**: You might need to change the Docker Compose executable in your IDE settings to ``docker`` if you have no ``docker-compose`` binary. Start from the ``File`` menu if you are on Linux/Windows or ``IntelliJ IDEA`` on Mac and then go to Settings > Build > Docker > Tools.
+
+        .. image:: img/intellij-compose-add-new-config.png
+
+        Give your configuration a meaningful name, select the compose file to use (in this case the default one), add the environment variable ``SKIP_DEPLOY=1``, and optionally select the services to start.
+        You might also want to change other options like attaching to containers to view the logs within the "Services" tab.
+
+        .. image:: img/intellij-compose-setup.png
+
+        Now run the configuration to prepare for deployment and watch it unfold in the "Services" tab.
+
+        .. image:: img/intellij-compose-run.png
+        .. image:: img/intellij-compose-services.png
+
+   Note: the Admin Console can be reached at http://localhost:4848 or https://localhost:4949
+
+#. To deploy the application to the running server, use the configured tools to deploy.
+   Using the "Run" configuration only deploys and enables redeploys, while running "Debug" enables hot swapping of classes via JDWP.
+
+   .. tabs::
+     .. group-tab:: Netbeans
+
+        Click "Debug" then "Debug Project". After some time, Dataverse will be deployed.
+
+        Try making a code change, perhaps to ``Info.java``.
+
+        Click "Debug" and then "Apply Code Changes". If the change was correctly applied, you should see output similar to this:
+
+        .. code-block::
+
+          Classes to reload:
+          edu.harvard.iq.dataverse.api.Info
+
+          Code updated
+
+        Check to make sure the change is live by visiting, for example, http://localhost:8080/api/info/version
+
+        See below for a `video <https://www.youtube.com/watch?v=yo3aKOg96f0>`_ demonstrating the steps above but please note that the ports used have changed and now that we have the concept of "skip deploy" the undeployment step shown is no longer necessary.
+
+        .. raw:: html
+
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/yo3aKOg96f0?si=2OCDj-_fmQFBMOLc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+     .. group-tab:: IntelliJ
+        Choose "Run" or "Debug" in the toolbar.
+
+        .. image:: img/intellij-payara-run-toolbar.png
+
+        Watch the WAR build and the deployment unfold.
+        Note the "Update" action button (see config to change its behavior).
+
+        .. image:: img/intellij-payara-run-output.png
+
+        Manually hotswap classes in "Debug" mode via "Run" > "Debugging Actions" > "Reload Changed Classes".
+
+        .. image:: img/intellij-payara-run-menu-reload.png
+
+Note: in the background, the bootstrap job will wait for Dataverse to be deployed and responsive.
+When your IDE automatically opens the URL a newly deployed, not bootstrapped Dataverse application, it might take some more time and page refreshes until the job finishes.
+
+IDE Triggered Non-Code Re-Deployments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Either redeploy the WAR (see above), use JRebel or look into copying files into the exploded WAR within the running container.
+The steps below describe options to enable the later in different IDEs.
+
+.. tabs::
+  .. group-tab:: IntelliJ
+
+    This imitates the Netbeans builtin function to copy changes to files under ``src/main/webapp`` into a destination folder.
+    It is different in the way that it will copy the files into the running container deployment without using a bind mount.
+
+    1. Install the `File Watchers plugin <https://plugins.jetbrains.com/plugin/7177-file-watchers>`_
+    2. Import the :download:`watchers.xml <../../../../docker/util/intellij/watchers.xml>` file at *File > Settings > Tools > File Watchers*
+    3. Once you have the deployment running (see above), editing files under ``src/main/webapp`` will be copied into the container after saving the edited file.
+       Note: by default, IDE auto-saves will not trigger the copy.
+    4. Changes are visible once you reload the browser window.
+
+    **IMPORTANT**: This tool assumes you are using the :ref:`ide-trigger-code-deploy` method to run Dataverse.
+
+    **IMPORTANT**: This tool uses a Bash shell script and is thus limited to Mac and Linux OS.
 
 Using a Debugger
 ----------------
