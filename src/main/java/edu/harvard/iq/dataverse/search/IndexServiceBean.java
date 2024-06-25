@@ -571,23 +571,26 @@ public class IndexServiceBean {
                 try {
                     solrIdsOfDocsToDelete = findFilesOfParentDataset(dataset.getId());
                     logger.fine("Existing file docs: " + String.join(", ", solrIdsOfDocsToDelete));
-                    // We keep the latest version's docs unless it is deaccessioned and there is no
-                    // published/released version
-                    // So skip the loop removing those docs from the delete list except in that case
-                    if ((!latestVersion.isDeaccessioned() || atLeastOnePublishedVersion)) {
-                        List<FileMetadata> latestFileMetadatas = latestVersion.getFileMetadatas();
-                        String suffix = (new IndexableDataset(latestVersion)).getDatasetState().getSuffix();
-                        for (FileMetadata fileMetadata : latestFileMetadatas) {
-                            String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId()
-                                    + suffix;
-                            solrIdsOfDocsToDelete.remove(solrIdOfPublishedFile);
+                    if (!solrIdsOfDocsToDelete.isEmpty()) {
+                        // We keep the latest version's docs unless it is deaccessioned and there is no
+                        // published/released version
+                        // So skip the loop removing those docs from the delete list except in that case
+                        if ((!latestVersion.isDeaccessioned() || atLeastOnePublishedVersion)) {
+                            List<FileMetadata> latestFileMetadatas = latestVersion.getFileMetadatas();
+                            String suffix = (new IndexableDataset(latestVersion)).getDatasetState().getSuffix();
+                            for (FileMetadata fileMetadata : latestFileMetadatas) {
+                                String solrIdOfPublishedFile = solrDocIdentifierFile
+                                        + fileMetadata.getDataFile().getId() + suffix;
+                                solrIdsOfDocsToDelete.remove(solrIdOfPublishedFile);
+                            }
                         }
-                    }
-                    if (releasedVersion != null && !releasedVersion.equals(latestVersion)) {
-                        List<FileMetadata> releasedFileMetadatas = releasedVersion.getFileMetadatas();
-                        for (FileMetadata fileMetadata : releasedFileMetadatas) {
-                            String solrIdOfPublishedFile = solrDocIdentifierFile + fileMetadata.getDataFile().getId();
-                            solrIdsOfDocsToDelete.remove(solrIdOfPublishedFile);
+                        if (releasedVersion != null && !releasedVersion.equals(latestVersion)) {
+                            List<FileMetadata> releasedFileMetadatas = releasedVersion.getFileMetadatas();
+                            for (FileMetadata fileMetadata : releasedFileMetadatas) {
+                                String solrIdOfPublishedFile = solrDocIdentifierFile
+                                        + fileMetadata.getDataFile().getId();
+                                solrIdsOfDocsToDelete.remove(solrIdOfPublishedFile);
+                            }
                         }
                     }
                     // Clear any unused dataset docs
