@@ -3274,6 +3274,9 @@ please find all known feature flags below. Any of these flags can be activated u
     * - add-publicobject-solr-field
       - Adds an extra boolean field `PublicObject_b:true` for public content (published Collections, Datasets and Files). Once reindexed with these fields, we can rely on it to remove a very expensive Solr join on all such documents in Solr queries, significantly improving overall performance (by enabling the feature flag above, `avoid-expensive-solr-join`). These two flags are separate so that an instance can reindex their holdings before enabling the optimization in searches, thus avoiding having their public objects temporarily disappear from search results while the reindexing is in progress. 
       - ``Off``
+    * - reduce-solr-deletes
+      - Avoids deleting and recreating solr documents for dataset files when reindexing. 
+      - ``Off``
     * - index-harvested-metadata-source
       - If enabled, this will index the name of the Harvesting Client as the "Metadata Source" of harvested datasets and files; so that the Metadata Source facet on the collection page will be showing separate entries for the content harvested from different sources/via different clients, instead of the current, default behavior where there is one "Harvested" facet for all such content. Requires a reindex.
       - ``Off``
