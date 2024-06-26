@@ -123,6 +123,26 @@ public class DatasetServiceTest {
         lock.setId(1L);
         dataset.addLock(lock);
         Date embargoDate = Date.from(Instant.now().truncatedTo(ChronoUnit.DAYS).plus(2, ChronoUnit.DAYS));
+        when(datasetDao.mergeAndFlush(dataset)).thenReturn(dataset);
+
+        // when
+        Dataset result = datasetService.setDatasetEmbargoDate(dataset, embargoDate);
+
+        // then
+        Assertions.assertEquals(embargoDate, result.getEmbargoDate().getOrNull());
+    }
+
+    @Test
+    public void setDatasetEmbargoDate_lockedDatasetByWorkflow() {
+        // given
+        Dataset dataset = new Dataset();
+        DatasetLock lock = new DatasetLock(DatasetLock.Reason.Workflow, MocksFactory.makeAuthenticatedUser("Jurek", "Kiler"));
+        lock.setId(1L);
+        dataset.addLock(lock);
+        DatasetLock reviewLock = new DatasetLock(DatasetLock.Reason.InReview, MocksFactory.makeAuthenticatedUser("Jurek", "Kiler"));
+        reviewLock.setId(2L);
+        dataset.addLock(reviewLock);
+        Date embargoDate = Date.from(Instant.now().truncatedTo(ChronoUnit.DAYS).plus(2, ChronoUnit.DAYS));
 
         // when & then
         Exception exception = Assertions.assertThrows(IllegalStateException.class, () -> {

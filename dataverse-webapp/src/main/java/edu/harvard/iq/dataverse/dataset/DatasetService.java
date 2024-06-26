@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
@@ -226,7 +227,7 @@ public class DatasetService {
     }
 
     private Dataset updateDatasetEmbargoDate(Dataset dataset, Date embargoDate) throws IllegalStateException {
-        if(dataset.isLocked()) {
+        if(dataset.isLocked() && dataset.getLocks().stream().anyMatch(l -> l.getReason() != DatasetLock.Reason.InReview)) {
             logger.log(Level.WARNING, "Dataset is locked. Cannot perform update embargo date");
             throw new IllegalStateException(getDatasetLockedMessage(dataset));
         }
