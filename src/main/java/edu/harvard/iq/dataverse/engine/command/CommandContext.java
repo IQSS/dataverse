@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
@@ -15,6 +16,7 @@ import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
+import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
@@ -133,7 +135,9 @@ public interface CommandContext {
     public ConfirmEmailServiceBean confirmEmail();
     
     public ActionLogServiceBean actionLog();
-    
+
+    public MetadataBlockServiceBean metadataBlocks();
+
     public void beginCommandSequence();
     
     public boolean completeCommandSequence(Command command);
@@ -143,4 +147,6 @@ public interface CommandContext {
     public Stack<Command> getCommandsCalled();
     
     public void addCommand(Command command);
+
+    public DatasetFieldServiceBean dsField();
 }

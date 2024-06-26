@@ -142,6 +142,8 @@ Generally speaking, unit tests have been flagged as non-essential because they a
 You should not feel obligated to run these tests continuously but you can use the ``mvn`` command above to run them.
 To iterate on the unit test in Netbeans and execute it with "Run -> Test File", you must temporarily comment out the annotation flagging the test as non-essential.
 
+.. _integration-tests:
+
 Integration Tests
 -----------------
 
@@ -392,10 +394,10 @@ Run this as the "dataverse" user.
 
 Note that after deployment the file "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
 
-Run API Tests
-~~~~~~~~~~~~~
+Run API Tests to Determine Code Coverage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Note that even though you see "docker-aio" in the command below, we assume you are not necessarily running the test suite within Docker. (Some day we'll probably move this script to another directory.) For this reason, we pass the URL with the normal port (8080) that app servers run on to the ``run-test-suite.sh`` script.
+Note that if you are looking for how to run API tests generally, you should refer to :ref:`integration-tests`.
 
 Note that "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Payara. You must stop and start Payara before every run of the integration test suite.
 
@@ -405,7 +407,8 @@ Note that "/usr/local/payara6/glassfish/domains/domain1/config/jacoco.exec" will
   /usr/local/payara6/bin/asadmin start-domain
   git clone https://github.com/IQSS/dataverse.git
   cd dataverse
-  conf/docker-aio/run-test-suite.sh http://localhost:8080
+  TESTS=$(<tests/integration-tests.txt)
+  mvn test -Dtest=$TESTS
 
 (As an aside, you are not limited to API tests for the purposes of learning which code paths are being executed. You could click around the GUI, for example. Jacoco doesn't know or care how you exercise the application.)
 
