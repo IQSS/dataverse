@@ -92,9 +92,20 @@ Open a terminal, change directories to ``doc/sphinx-guides``, activate (or react
 Building the Guides with a Sphinx Docker Container
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+**Building with Docker and Makefile:**
+
+We have added a Makefile to simplify the process of building the guides using a Docker container, you can use some of the following from the repository root:
+
+- `make docs-html`
+- `make docs-pdf`
+- `make docs-epub`
+- `make docs-all`
+
+**Building with Docker and CLI:**
+
 If you want to build the guides using a Docker container, execute the following command in the repository root:
 
-``docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx:3.5.4 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"``
+``docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx:7.2.6 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make html"``
 
 Previewing the Guides
 ^^^^^^^^^^^^^^^^^^^^^
@@ -148,7 +159,7 @@ The HTML version of the guides is the official one. Any other formats are mainta
 
 If you would like to build a PDF version of the guides and have Docker installed, please try the command below from the root of the git repo:
 
-``docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx-latexpdf:3.5.4 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make latexpdf LATEXMKOPTS=\"-interaction=nonstopmode\"; cd ../.. && ls -1 doc/sphinx-guides/build/latex/Dataverse.pdf"``
+``docker run -it --rm -v $(pwd):/docs sphinxdoc/sphinx-latexpdf:7.2.6 bash -c "cd doc/sphinx-guides && pip3 install -r requirements.txt && make latexpdf LATEXMKOPTS=\"-interaction=nonstopmode\"; cd ../.. && ls -1 doc/sphinx-guides/build/latex/Dataverse.pdf"``
 
 A few notes about the command above:
 
