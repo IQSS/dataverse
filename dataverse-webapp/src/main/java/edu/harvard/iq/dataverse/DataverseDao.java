@@ -297,7 +297,8 @@ public class DataverseDao implements java.io.Serializable {
 
         List<Dataverse> dataverseList = new ArrayList<>();
 
-        List<Dataverse> results = em.createNamedQuery("Dataverse.filterByName", Dataverse.class)
+        List<Dataverse> results = em.createNamedQuery("Dataverse.filterByAliasName", Dataverse.class)
+                .setParameter("alias", query.toLowerCase() + "%")
                 .setParameter("name", "%" + query.toLowerCase() + "%")
                 .getResultList();
 
