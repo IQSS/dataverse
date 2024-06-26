@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -547,7 +549,10 @@ public class XmlMetadataTemplate {
                     contributor = subField.getValue();
                     break;
                 case DatasetFieldConstant.contributorType:
-                    contributorType = subField.getValue().replace(" ", "");
+                    contributorType = subField.getValue();
+                    if(contributorType!=null) {
+                        contributorType = contributorType.replace(" ", "");
+                    }
                     break;
                 }
             }
