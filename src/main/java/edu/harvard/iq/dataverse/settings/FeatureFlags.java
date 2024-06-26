@@ -59,6 +59,19 @@ public enum FeatureFlags {
      */
     ADD_PUBLICOBJECT_SOLR_FIELD("add-publicobject-solr-field"),
     /**
+     * Dataverse normally deletes all solr documents related to a dataset's files
+     * when the dataset is reindexed. With this flag enabled, additional logic is
+     * added to the reindex process to delete only the solr documents that are no
+     * longer needed. (Required docs will be updated rather than deleted and 
+     * replaced.) Enabling this feature flag should make the reindex process 
+     * faster without impacting the search results.
+     *
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.reduce-solr-deletes"
+     * @since Dataverse 6.3
+     */
+    REDUCE_SOLR_DELETES("reduce-solr-deletes"),
+    /**
      * With this flag enabled, the Return To Author pop-up will not have a required
      * "Reason" field, and a reason will not be required in the 
      * /api/datasets/{id}/returnToAuthor api call.
@@ -68,7 +81,6 @@ public enum FeatureFlags {
      * @since Dataverse 6.3
      */
     DISABLE_RETURN_TO_AUTHOR_REASON("disable-return-to-author-reason"),
-
     ;
     
     final String flag;
