@@ -3277,6 +3277,9 @@ please find all known feature flags below. Any of these flags can be activated u
     * - reduce-solr-deletes
       - Avoids deleting and recreating solr documents for dataset files when reindexing. 
       - ``Off``
+    * - index-harvested-metadata-source
+      - If enabled, this will index the name of the Harvesting Client as the "Metadata Source" of harvested datasets and files; so that the Metadata Source facet on the collection page will be showing separate entries for the content harvested from different sources/via different clients, instead of the current, default behavior where there is one "Harvested" facet for all such content. Requires a reindex.
+      - ``Off``
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.

@@ -987,8 +987,14 @@ public class IndexServiceBean {
 
         if (dataset.isHarvested()) {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, true);
-            solrInputDocument.addField(SearchFields.METADATA_SOURCE,
+            if (FeatureFlags.INDEX_HARVESTED_METADATA_SOURCE.enabled()) {
+                // New - as of 6.3 - option of indexing the actual origin of 
+                // harvested objects as the metadata source:
+                solrInputDocument.addField(SearchFields.METADATA_SOURCE,
                                         dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getName() : HARVESTED);
+            } else {
+                solrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
+            }
         } else {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName); //rootDataverseName);
@@ -1495,7 +1501,14 @@ public class IndexServiceBean {
                         }
                         if (datafile.isHarvested()) {
                             datafileSolrInputDocument.addField(SearchFields.IS_HARVESTED, true);
-                            datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
+                            if (FeatureFlags.INDEX_HARVESTED_METADATA_SOURCE.enabled()) {
+                                // New - as of 6.3 - option of indexing the actual origin of 
+                                // harvested objects as the metadata source:
+                                datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE,
+                                        dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getName() : HARVESTED);
+                            } else {
+                                datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
+                            }
                         } else {
                             datafileSolrInputDocument.addField(SearchFields.IS_HARVESTED, false);
                             datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName);
