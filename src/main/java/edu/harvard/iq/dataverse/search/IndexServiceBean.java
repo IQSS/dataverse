@@ -315,7 +315,7 @@ public class IndexServiceBean {
         String status;
         try {
             if (dataverse.getId() != null) {
-                solrClientService.getSolrClient().add(docs, COMMIT_WITHIN);
+                solrClientService.getSolrClient().add(docs);
             } else {
                 logger.info("WARNING: indexing of a dataverse with no id attempted");
             }
@@ -348,7 +348,6 @@ public class IndexServiceBean {
     private static final Map<Long, Boolean> INDEXING_NOW = new ConcurrentHashMap<>();
     // semaphore for async indexing
     private static final Semaphore ASYNC_INDEX_SEMAPHORE = new Semaphore(JvmSettings.MAX_ASYNC_INDEXES.lookupOptional(Integer.class).orElse(4), true);
-    static final int COMMIT_WITHIN = 30000;  //Same as current autoHardIndex time
     
     @Inject
     @Metric(name = "index_permit_wait_time", absolute = true, unit = MetricUnits.NANOSECONDS,
@@ -1660,7 +1659,7 @@ public class IndexServiceBean {
         final SolrInputDocuments docs = toSolrDocs(indexableDataset, datafilesInDraftVersion);
 
         try {
-            solrClientService.getSolrClient().add(docs.getDocuments(), COMMIT_WITHIN);
+            solrClientService.getSolrClient().add(docs.getDocuments());
         } catch (SolrServerException | IOException ex) {
             if (ex.getCause() instanceof SolrServerException) {
                 throw new SolrServerException(ex);
@@ -1912,7 +1911,7 @@ public class IndexServiceBean {
 
             sid.removeField(SearchFields.SUBTREE);
             sid.addField(SearchFields.SUBTREE, paths);
-            UpdateResponse addResponse = solrClientService.getSolrClient().add(sid, COMMIT_WITHIN);
+            UpdateResponse addResponse = solrClientService.getSolrClient().add(sid);
             if (object.isInstanceofDataset()) {
                 for (DataFile df : dataset.getFiles()) {
                     solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, df.getId().toString()));
@@ -1925,7 +1924,7 @@ public class IndexServiceBean {
                         }
                         sid.removeField(SearchFields.SUBTREE);
                         sid.addField(SearchFields.SUBTREE, paths);
-                        addResponse = solrClientService.getSolrClient().add(sid, COMMIT_WITHIN);
+                        addResponse = solrClientService.getSolrClient().add(sid);
                     }
                 }
             }
@@ -1967,7 +1966,7 @@ public class IndexServiceBean {
         logger.fine("deleting Solr document for dataverse " + doomed.getId());
         UpdateResponse updateResponse;
         try {
-            updateResponse = solrClientService.getSolrClient().deleteById(solrDocIdentifierDataverse + doomed.getId(), COMMIT_WITHIN);
+            updateResponse = solrClientService.getSolrClient().deleteById(solrDocIdentifierDataverse + doomed.getId());
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -1987,7 +1986,7 @@ public class IndexServiceBean {
         logger.fine("deleting Solr document: " + doomed);
         UpdateResponse updateResponse;
         try {
-            updateResponse = solrClientService.getSolrClient().deleteById(doomed, COMMIT_WITHIN);
+            updateResponse = solrClientService.getSolrClient().deleteById(doomed);
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
