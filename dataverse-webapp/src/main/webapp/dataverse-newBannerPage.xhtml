@@ -75,12 +75,9 @@
                                 
                                 <div class="col-sm-4 col-no-padding">
                                     <h:outputLabel for="message-locale" value="Link: ">
-                                        <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                     </h:outputLabel>
                                     <p:inputText id="message-locale" styleClass="form-control"
                                                  value="#{lm.imageLink}"
-                                                 required="true"
-                                                 requiredMessage="#{bundle['dataversemessages.banners.linkError']}"
                                                  validator="#{EditBannerPage.validateLink}"/>
                                     <p:message style="margin: auto" for="message-locale"
                                                display="text"/>
