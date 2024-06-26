@@ -138,6 +138,10 @@ public class FileDownloadHelper implements java.io.Serializable {
         return StringUtils.EMPTY;
     }
 
+    public void requestDownloadOfWholeDatasetAsCSV(DatasetVersion dsv) {
+        PrimeFaces.current().ajax().addCallbackParam("apiDownloadLink", FileUtil.getDownloadWholeDatasetAsCSVUrlPath(dsv));
+    }
+
     /**
      * Starts downloading process according on values stored in {@link RequestedDownloadType}.
      * <p>

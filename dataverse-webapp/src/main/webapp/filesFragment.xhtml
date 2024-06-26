@@ -120,44 +120,38 @@
                         <!-- DOWNLOAD ALL FILES BUTTON -->
                         <p:outputPanel style="display: inline-block"
                              rendered="#{not empty datasetFilesTab.workingVersion.fileMetadatas
-                                        and datasetFilesTab.downloadButtonAvailable
-                                        and datasetFilesTab.hasTabular}">
+                                        and datasetFilesTab.downloadButtonAvailable}">
                             <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
                                 <span class="glyphicon glyphicon-download-alt"/> #{bundle['file.download.dataset']} <span class="caret"/>
                             </button>
                             <ul class="dropdown-menu multi-level text-left" style="left:auto" role="menu">
                                 <li>
                                     <p:commandLink action="#{datasetFilesTab.startDatasetFilesDownload(true)}"
-                                                   process="@this" update="@form"
                                                    oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }"
-                                                   id="downloadOriginalFiles">
-                                        <h:outputText value="#{bundle['file.download.dataset.original']}"/>
+                                                   process="@this" update="@form">
+                                        <h:outputText value="#{bundle['file.download.dataset.zip']}" rendered="#{!datasetFilesTab.hasTabular}" />
+                                        <h:outputText value="#{bundle['file.download.dataset.zip.original']}" rendered="#{datasetFilesTab.hasTabular}" />
                                         <o:skipValidators />
                                     </p:commandLink>
                                 </li>
-                                <li>
+                                <li jsf:rendered="#{datasetFilesTab.hasTabular}">
                                     <p:commandLink action="#{datasetFilesTab.startDatasetFilesDownload(false)}"
                                                    process="@this"
                                                    oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }"
                                                    id="downloadFormated">
-                                        <h:outputText value="#{bundle['file.download.dataset.tabular']}"/>
+                                        <h:outputText value="#{bundle['file.download.dataset.zip.tabular']}"/>
+                                        <o:skipValidators />
+                                    </p:commandLink>
+                                </li>
+                                <li jsf:rendered="#{datasetFilesTab.csvDownloadAvailable}">
+                                    <p:commandLink action="#{datasetFilesTab.startDatasetFilesDownloadAsCSV()}"
+                                                   oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }"
+                                                   process="@this" update="@form">
+                                        <h:outputText value="#{bundle['file.download.dataset.csv']}" />
                                         <o:skipValidators />
                                     </p:commandLink>
                                 </li>
                             </ul>
-                        </p:outputPanel>
-
-                        <p:outputPanel style="display: inline-block; margin-right: 1em"
-                                       rendered="#{not empty datasetFilesTab.workingVersion.fileMetadatas
-                                        and datasetFilesTab.downloadButtonAvailable
-                                        and !datasetFilesTab.hasTabular}">
-                            <p:commandLink type="button" styleClass="btn btn-default btn-download"
-                                           action="#{datasetFilesTab.startDatasetFilesDownload(true)}"
-                                           oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }"
-                                           process="@this" update="@form">
-                                <span class="glyphicon glyphicon-download-alt"/> #{bundle['file.download.dataset']}
-                                <o:skipValidators />
-                            </p:commandLink>
                         </p:outputPanel>
 
                         <!-- REORDER FILES BUTTON -->

@@ -180,6 +180,7 @@ public class DatasetFilesTab implements Serializable {
     private boolean fileAccessRequestMultiButtonRequired;
     private boolean fileAccessRequestMultiSignUpButtonRequired;
     private boolean downloadButtonAvailable;
+    private boolean csvDownloadAvailable;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -311,6 +312,10 @@ public class DatasetFilesTab implements Serializable {
 
     public boolean isHasTabular() {
         return hasTabular;
+    }
+
+    public boolean isCsvDownloadAvailable() {
+        return csvDownloadAvailable;
     }
 
     public FileDownloadHelper getFileDownloadHelper() {
@@ -492,6 +497,7 @@ public class DatasetFilesTab implements Serializable {
             fileAccessRequestMultiSignUpButtonRequired = !session.getUser().isAuthenticated();
         }
         downloadButtonAvailable = versionContainsDownloadableFiles;
+        csvDownloadAvailable = workingVersion.isReleased() && (dataset.getGuestbook() == null || !dataset.getGuestbook().isEnabled());
     }
 
     public String requestAccessMultipleFiles() {
@@ -576,6 +582,12 @@ public class DatasetFilesTab implements Serializable {
 
     public void startDatasetFilesDownload(boolean downloadOriginal) {
         fileDownloadHelper.requestDownloadOfWholeDataset(workingVersion, downloadOriginal);
+    }
+
+    public void startDatasetFilesDownloadAsCSV() {
+        if (csvDownloadAvailable) {
+            fileDownloadHelper.requestDownloadOfWholeDatasetAsCSV(workingVersion);
+        }
     }
 
     public boolean isDownloadButtonAvailable() {

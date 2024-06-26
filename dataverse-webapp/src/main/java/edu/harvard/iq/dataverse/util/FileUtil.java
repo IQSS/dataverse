@@ -461,6 +461,19 @@ public class FileUtil implements java.io.Serializable {
     }
 
     /**
+     * Returns the download URL for the whole dataset as CSV file. Only available if dataset version has been released.
+     * @return url or empty string if version unreleased
+     */
+    public static String getDownloadWholeDatasetAsCSVUrlPath(DatasetVersion dsv) {
+        if (dsv.isReleased()) {
+            String version = dsv.getVersionNumber() + "." + dsv.getMinorVersionNumber();
+            return String.format("/api/datasets/%s/versions/%s/files/urls", dsv.getDataset().getId(), version);
+        }
+
+        return StringUtils.EMPTY;
+    }
+
+    /**
      * This method tells you if thumbnail generation is *supported*
      * on this type of file. i.e., if true, it does not guarantee that a thumbnail
      * can/will be generated; but it means that we can try.
