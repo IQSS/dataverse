@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.dataverse;
 
-import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
+import edu.harvard.iq.dataverse.featured.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -44,6 +44,10 @@ public class FeaturedDataversesDialog implements java.io.Serializable {
         return featuredDataverses;
     }
 
+    public Dataverse.FeaturedDataversesSorting getFeaturedDataversesSorting() {
+        return dataverse.getFeaturedDataversesSorting();
+    }
+
     // -------------------- LOGIC --------------------
 
     public void init(Dataverse dataverse) {
@@ -75,9 +79,22 @@ public class FeaturedDataversesDialog implements java.io.Serializable {
         return JsfRedirectHelper.redirectToDataverse(dataverse.getAlias());
     }
 
+    public void updateSort() {
+        List<Dataverse> target = featuredDataverses.getTarget();
+        featuredDataverses.setTarget(featuredDataverseService.sortFeaturedDataverses(target, dataverse.getFeaturedDataversesSorting()));
+    }
+
+    public void manualReorder() {
+        dataverse.setFeaturedDataversesSorting(Dataverse.FeaturedDataversesSorting.BY_HAND);
+    }
+
     // -------------------- SETTERS --------------------
 
     public void setFeaturedDataverses(DualListModel<Dataverse> featuredDataverses) {
         this.featuredDataverses = featuredDataverses;
+    }
+
+    public void setFeaturedDataversesSorting(Dataverse.FeaturedDataversesSorting featuredDataversesSorting) {
+        this.dataverse.setFeaturedDataversesSorting(featuredDataversesSorting);
     }
 }

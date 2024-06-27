@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.persistence.dataverse;
 import edu.harvard.iq.dataverse.persistence.JpaRepository;
 
 import javax.ejb.Singleton;
-
 import java.util.List;
 
 @Singleton

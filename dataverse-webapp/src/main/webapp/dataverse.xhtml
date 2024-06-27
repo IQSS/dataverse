@@ -28,6 +28,7 @@
                 <f:viewAction action="#{DataversePage.init}"/>
                 <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DataversePage.dataverse)}"/>
             </f:metadata>
+            <o:importConstants type="edu.harvard.iq.dataverse.persistence.dataverse.Dataverse.FeaturedDataversesSorting"/>
 
             <h:form id="dataverseForm">
                 <!-- View Mode / Description Panel -->
@@ -319,25 +320,45 @@
                     <ui:fragment
                             rendered="#{!empty FeaturedDataversesDialog.featuredDataverses.source or !empty FeaturedDataversesDialog.featuredDataverses.target}">
                         <div class="form-group">
-                            <p class="help-block">#{bundle['dataverse.featuredDataverse.edit.tip']}</p>
-                            <p:pickList id="featuredDataverseList" value="#{FeaturedDataversesDialog.featuredDataverses}"
-                                        var="featureddataverse"
-                                        itemLabel="#{featureddataverse.name}"
-                                        itemValue="#{featureddataverse}" converter="dataverseConverter"
-                                        responsive="true"
-                                        showSourceFilter="true" showTargetFilter="true"
-                                        widgetVar="featuredDataversePicklist"
-                                        addLabel="#{bundle['dataverse.featuredDataverse.edit.add']}"
-                                        addAllLabel="#{bundle['dataverse.featuredDataverse.edit.addAll']}"
-                                        removeLabel="#{bundle['dataverse.featuredDataverse.edit.remove']}"
-                                        removeAllLabel="#{bundle['dataverse.featuredDataverse.edit.removeAll']}"
-                                        
-                                        onTransfer="PF('featuredDataversePicklist').updateListRole();"
-                                        >
-                                        
-                                        <f:facet name="sourceCaption">#{bundle['dataverse.featuredDataverse.edit.sourceLabel']}</f:facet>
-                                        <f:facet name="targetCaption">#{bundle['dataverse.featuredDataverse.edit.targetLabel']}</f:facet>
-                            </p:pickList>
+                            <div class="col-sm-12">
+                                <p class="help-block">#{bundle['dataverse.featuredDataverse.edit.tip']}</p>
+                                <p:pickList id="featuredDataverseList" value="#{FeaturedDataversesDialog.featuredDataverses}"
+                                            var="featureddataverse"
+                                            itemLabel="#{featureddataverse.name}"
+                                            itemValue="#{featureddataverse}" converter="dataverseConverter"
+                                            responsive="true"
+                                            showSourceFilter="true" showTargetFilter="true"
+                                            widgetVar="featuredDataversePicklist"
+                                            addLabel="#{bundle['dataverse.featuredDataverse.edit.add']}"
+                                            addAllLabel="#{bundle['dataverse.featuredDataverse.edit.addAll']}"
+                                            removeLabel="#{bundle['dataverse.featuredDataverse.edit.remove']}"
+                                            removeAllLabel="#{bundle['dataverse.featuredDataverse.edit.removeAll']}"
+
+                                            onTransfer="PF('featuredDataversePicklist').updateListRole();"
+                                >
+
+                                    <f:facet name="sourceCaption">#{bundle['dataverse.featuredDataverse.edit.sourceLabel']}</f:facet>
+                                    <f:facet name="targetCaption">#{bundle['dataverse.featuredDataverse.edit.targetLabel']}</f:facet>
+
+                                    <p:ajax event="transfer" update="featuredDataverseList" listener="#{FeaturedDataversesDialog.updateSort}" />
+                                    <p:ajax event="reorder" update="sortOptions" listener="#{FeaturedDataversesDialog.manualReorder}" />
+                                </p:pickList>
+                            </div>
+
+                            <div class="col-sm-12">
+                                <div class="field-radiobutton-spacer">
+                                </div>
+                                <div class="field-radiobutton-container">
+                                    <p>#{bundle['dataverse.featuredDataverse.sort.label']}</p>
+                                    <p:selectOneRadio id="sortOptions"
+                                                      value="#{FeaturedDataversesDialog.featuredDataversesSorting}"
+                                                      layout="pageDirection">
+                                        <p:ajax event="change" update="featuredDataverseList" listener="#{FeaturedDataversesDialog.updateSort}"/>
+                                        <f:selectItems value="#{FeaturedDataversesSorting}" var="sorting"
+                                                       itemValue="#{sorting}" itemLabel="#{bundle['dataverse.featuredDataverse.sort.' += sorting]}" />
+                                    </p:selectOneRadio>
+                                </div>
+                            </div>
                         </div>
                         <div class="button-block">
                             <p:commandButton value="#{bundle.saveChanges}"

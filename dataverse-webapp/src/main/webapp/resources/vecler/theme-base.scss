@@ -5465,5 +5465,30 @@ body.high-contrast-black-on-white {
 }
 
 .adjust-left {
-    padding-left: 4px
+    padding-left: 4px;
+}
+
+.field-radiobutton-spacer {
+    width: 55%;
+    float: left;
+    min-height: 1px;
+}
+
+.field-radiobutton-container {
+    float: left;
+    width: 45%;
+    padding-left: 1em;
+    padding-top: 1em;
+}
+
+@media (max-width: 640px) {
+    .field-radiobutton-spacer {
+        display: none;
+    }
+
+    .field-radiobutton-container {
+        display: block;
+        width: 100% !important;
+        padding-left: 0px;
+    }
 }

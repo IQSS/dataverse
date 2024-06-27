@@ -56,6 +56,34 @@ INSERT INTO guestbook (id, createtime, emailrequired, enabled, institutionrequir
 INSERT INTO dataversetheme (id, backgroundcolor, linkcolor, linkurl, logo, logoalignment, logobackgroundcolor, logoformat, tagline, textcolor, dataverse_id)
     VALUES (2,'FFFFFF','428BCA','http://google.com','nonExistingLogo.png','CENTER','9c519c','SQUARE','sefgdfgsdfgsdfg','888888',19);
 
+INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
+                      creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
+    VALUES (20, 'Dataverse', 1, false, NULL, NULL, NULL, NULL, false, NULL, 1, '2019-06-07 01:20:10.027',
+            1, '2019-06-08 08:27:17.588', '2019-06-08 08:27:17.588', '2019-06-08 08:27:17.588', NULL, NULL);
+INSERT INTO dataverse (id, alias, name, affiliation, dataversetype, description, defaultcontributorrole_id, defaulttemplate_id, facetroot, guestbookroot, metadatablockroot, permissionroot, templateroot, themeroot, allowmessagesbanners)
+    VALUES (20, 'wally', 'Wally', 'aff', 'ORGANIZATIONS_INSTITUTIONS', NULL, 6, NULL, false, false, true, true, false, true, false);
+
+INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
+                      creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
+    VALUES (21, 'Dataverse', 1, false, NULL, NULL, NULL, NULL, false, NULL, 1, '2019-06-07 01:20:10.027',
+            1, '2019-06-08 08:27:17.588', '2019-06-08 08:27:17.588', '2019-06-08 08:27:17.588', NULL, NULL);
+INSERT INTO dataverse (id, alias, name, affiliation, dataversetype, description, defaultcontributorrole_id, defaulttemplate_id, facetroot, guestbookroot, metadatablockroot, permissionroot, templateroot, themeroot, allowmessagesbanners)
+    VALUES (21, 'andromeda', 'Andromeda', 'aff', 'ORGANIZATIONS_INSTITUTIONS', NULL, 6, NULL, false, false, true, true, false, true, false);
+
+INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
+                      creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
+    VALUES (22, 'Dataverse', 1, false, NULL, NULL, NULL, NULL, false, NULL, 1, '2019-06-07 01:20:10.027',
+            1, '2019-06-08 08:27:17.588', '2019-06-08 08:27:17.588', '2019-06-08 08:27:17.588', NULL, NULL);
+INSERT INTO dataverse (id, alias, name, affiliation, dataversetype, description, defaultcontributorrole_id, defaulttemplate_id, facetroot, guestbookroot, metadatablockroot, permissionroot, templateroot, themeroot, allowmessagesbanners)
+    VALUES (22, 'zebra', 'Zebra', 'aff', 'ORGANIZATIONS_INSTITUTIONS', NULL, 6, NULL, false, false, true, true, false, true, false);
+
+INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
+                      creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
+    VALUES (23, 'Dataverse', 1, false, NULL, NULL, NULL, NULL, false, NULL, 1, '2019-06-07 01:20:10.027',
+            1, '2019-06-08 08:27:17.588', '2019-06-08 08:27:17.588', '2019-06-08 08:27:17.588', NULL, NULL);
+INSERT INTO dataverse (id, alias, name, affiliation, dataversetype, description, defaultcontributorrole_id, defaulttemplate_id, facetroot, guestbookroot, metadatablockroot, permissionroot, templateroot, themeroot, allowmessagesbanners)
+    VALUES (23, 'papo', 'Papo', 'aff', 'ORGANIZATIONS_INSTITUTIONS', NULL, 6, NULL, false, false, true, true, false, true, false);
+
 --- ROOT -> unreleased ---
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
                       creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
@@ -68,6 +96,9 @@ INSERT INTO dataverserole (id, alias, description, name, permissionbits, owner_i
 
 
 INSERT INTO dataversefeatureddataverse (id, displayorder, dataverse_id, featureddataverse_id) VALUES (3, 1, 1, 19);
+INSERT INTO dataversefeatureddataverse (id, displayorder, dataverse_id, featureddataverse_id) VALUES (4, 3, 1, 20);
+INSERT INTO dataversefeatureddataverse (id, displayorder, dataverse_id, featureddataverse_id) VALUES (5, 4, 1, 21);
+INSERT INTO dataversefeatureddataverse (id, displayorder, dataverse_id, featureddataverse_id) VALUES (6, 2, 1, 23);
 
 --- ROOT -> simple Dataverse - without Data (no Datasets or child Dataverses) ---
 
@@ -131,6 +162,33 @@ INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbna
 VALUES (71, NULL, NULL, false, NULL, 12, NULL, NULL);
 INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
 VALUES (61, 1, 71, 'DRAFT', 1, 0, NULL, NULL, NULL, NULL, '2019-09-26 11:43:58.204', '2019-09-26 11:43:58.204', NULL, NULL, NULL);
+
+INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
+                      creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
+VALUES (72, 'Dataset', 21, false, 'doi', '10.18151', 'FK2/RTVQKZ', NULL, false, 'file://10.18151/FK2/RTVQKZ', NULL, NULL,
+        1, '2019-09-26 11:43:58.194', '2019-09-26 11:43:58.194', '2019-09-26 11:43:58.194', NULL, NULL);
+INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
+VALUES (72, NULL, NULL, false, NULL, NULL, NULL, NULL);
+INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
+VALUES (62, 1, 72, 'RELEASED', 1, 0, NULL, NULL, NULL, NULL, '2024-06-10 10:00:01.000', '2024-06-10 11:00:01.000', '2024-06-10 12:00:01.000', NULL, NULL);
+
+INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
+                      creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
+VALUES (73, 'Dataset', 21, false, 'doi', '10.18152', 'FK2/STVQKZ', NULL, false, 'file://10.18152/FK2/STVQKZ', NULL, NULL,
+        1, '2019-09-26 11:43:58.194', '2019-09-26 11:43:58.194', '2019-09-26 11:43:58.194', NULL, NULL);
+INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
+VALUES (73, NULL, NULL, false, NULL, NULL, NULL, NULL);
+INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
+VALUES (63, 1, 73, 'RELEASED', 1, 0, NULL, NULL, NULL, NULL, '2024-06-11 10:00:01.000', '2024-06-11 11:00:01.000', '2024-06-11 12:00:01.000', NULL, NULL);
+
+INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
+                      creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
+VALUES (74, 'Dataset', 21, false, 'doi', '10.18153', 'FK2/TTVQKZ', NULL, false, 'file://10.18153/FK2/TTVQKZ', NULL, NULL,
+        1, '2019-09-26 11:43:58.194', '2019-09-26 11:43:58.194', '2019-09-26 11:43:58.194', NULL, NULL);
+INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
+VALUES (74, NULL, NULL, false, NULL, NULL, NULL, NULL);
+INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
+VALUES (64, 1, 74, 'RELEASED', 1, 0, NULL, NULL, NULL, NULL, '2024-06-12 10:00:01.000', '2024-06-12 11:00:01.000', '2024-06-12 12:00:01.000', NULL, NULL);
 
 
 --- DV:unreleased -> Draft with files ---

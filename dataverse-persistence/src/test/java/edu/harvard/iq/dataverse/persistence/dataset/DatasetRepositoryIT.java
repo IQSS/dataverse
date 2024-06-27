@@ -84,8 +84,8 @@ public class DatasetRepositoryIT extends PersistenceArquillianDeployment {
         List<Dataset> datasetsFound = datasetRepository.findByNonRegisteredIdentifier();
 
         // then
-        org.assertj.core.api.Assertions.assertThat(datasetsFound).size().isEqualTo(4);
+        org.assertj.core.api.Assertions.assertThat(datasetsFound).size().isEqualTo(7);
         org.assertj.core.api.Assertions.assertThat(datasetsFound).extracting(DvObject::getId)
-                .containsOnly(52L, 56L, 57L, 66L);
+                .containsOnly(52L, 56L, 57L, 66L, 72L, 73L, 74L);
     }
 }

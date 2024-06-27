@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.timer;
 
 import com.google.api.client.util.Preconditions;
 import edu.harvard.iq.dataverse.DatasetDao;
+import edu.harvard.iq.dataverse.featured.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.datafile.FileIntegrityChecker;
 import edu.harvard.iq.dataverse.datafile.pojo.FilesIntegrityReport;
@@ -79,6 +80,8 @@ public class DataverseTimerServiceBean implements Serializable {
     FileIntegrityChecker fileIntegrityChecker;
     @Inject
     DatasetCitationsCountUpdater datasetCitationsCountUpdater;
+    @Inject
+    FeaturedDataverseServiceBean featuredDataverseServiceBean;
 
     @Inject
     DatasetDao datasetDao;
@@ -106,6 +109,7 @@ public class DataverseTimerServiceBean implements Serializable {
 
             createIntegrityCheckTimer();
             createCitationCountUpdateTimer();
+            createFeaturedDataversesSortingUpdateTimer();
             
             createReindexAfterEmbargoTimer();
 
@@ -224,6 +228,8 @@ public class DataverseTimerServiceBean implements Serializable {
             datasetCitationsCountUpdater.updateCitationCount();
         } else if (timer.getInfo() instanceof AfterEmbargoReindexTimerInfo) {
             reindexAfterEmbargo();
+        } else if (timer.getInfo() instanceof FeaturedDataversesSortingUpdateTimerInfo) {
+            featuredDataverseServiceBean.refreshFeaturedDataversesAutomaticSorting();
         }
 
     }
@@ -386,6 +392,23 @@ public class DataverseTimerServiceBean implements Serializable {
             logger.info("CitationCountUpdateTimerExpression: timer created, initial expiration: " + timer.getNextTimeout());
         } else {
             logger.info("CitationCountUpdateTimerExpression is empty. Skipping creation of timer.");
+        }
+
+    }
+
+    public void createFeaturedDataversesSortingUpdateTimer() {
+        String cronExpression = settingsService.getValueForKey(Key.FeaturedDataversesSortingUpdateTimerExpression);
+
+        if (StringUtils.isNotBlank(cronExpression)) {
+            ScheduleExpression expression = cronToScheduleExpression(cronExpression);
+
+            TimerConfig timerConfig = new TimerConfig();
+            timerConfig.setPersistent(false);
+            timerConfig.setInfo(new FeaturedDataversesSortingUpdateTimerInfo());
+            Timer timer = timerService.createCalendarTimer(expression, timerConfig);
+            logger.info("FeaturedDataversesSortingUpdateTimerExpression: timer created, initial expiration: " + timer.getNextTimeout());
+        } else {
+            logger.info("FeaturedDataversesSortingUpdateTimerExpression is empty. Skipping creation of timer.");
         }
 
     }

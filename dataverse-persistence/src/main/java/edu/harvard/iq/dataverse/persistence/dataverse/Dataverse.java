@@ -94,6 +94,10 @@ public class Dataverse extends DvObjectContainer {
         RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED, LABORATORY, RESEARCH_GROUP, DEPARTMENT
     }
 
+    public enum FeaturedDataversesSorting {
+        BY_HAND, BY_NAME_ASC, BY_NAME_DESC, BY_DATASET_COUNT
+    }
+
     private static final long serialVersionUID = 1L;
 
     @NotBlank(message = "{dataverse.name}")
@@ -221,6 +225,9 @@ public class Dataverse extends DvObjectContainer {
     private boolean templateRoot;
 
     private boolean allowMessagesBanners;
+
+    @Enumerated(EnumType.STRING)
+    private FeaturedDataversesSorting featuredDataversesSorting;
 
     @OneToOne(mappedBy = "dataverse", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     private DataverseTheme dataverseTheme;
@@ -811,5 +818,16 @@ public class Dataverse extends DvObjectContainer {
 
     public void setAllowMessagesBanners(boolean allowMessagesBanners) {
         this.allowMessagesBanners = allowMessagesBanners;
+    }
+
+    public FeaturedDataversesSorting getFeaturedDataversesSorting() {
+        if (featuredDataversesSorting == null) {
+            featuredDataversesSorting = FeaturedDataversesSorting.BY_HAND;
+        }
+        return featuredDataversesSorting;
+    }
+
+    public void setFeaturedDataversesSorting(FeaturedDataversesSorting featuredDataversesSorting) {
+        this.featuredDataversesSorting = featuredDataversesSorting;
     }
 }
