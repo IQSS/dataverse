@@ -19,7 +19,7 @@ But we also recommend that you review the Payara upgrade instructions as it coul
 We assume you are already on a Dataverse 6.x installation, using a Payara 6.x release.
 
 ```shell
-export PAYARA=/usr/local/payara5
+export PAYARA=/usr/local/payara6
 ```
 
 (or `setenv PAYARA /usr/local/payara6` if you are using a `csh`-like shell)
@@ -91,7 +91,13 @@ export PAYARA=/usr/local/payara5
                  <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
 ```
 (You can also save this as a patch file and try to apply it.)
-
+TODO: For the combined 6.3 release note, I would consider replacing the patch format above with just the 4 specific options, for clarity etc+. (L.A.) As in: 
+```
+         <jvm-options>--add-opens=java.management/javax.management=ALL-UNNAMED</jvm-options>
+         <jvm-options>--add-opens=java.management/javax.management.openmbean=ALL-UNNAMED</jvm-options>
+         <jvm-options>[17|]--add-opens=java.base/java.io=ALL-UNNAMED</jvm-options>
+         <jvm-options>[21|]--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvm-options>
+```
 
 7\. Start Payara
 
