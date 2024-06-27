@@ -1,8 +1,11 @@
 package edu.harvard.iq.dataverse;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.common.BrandingUtil;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.feedback.Feedback;
+import edu.harvard.iq.dataverse.feedback.FeedbackInfo;
+import edu.harvard.iq.dataverse.feedback.FeedbackRecipient;
 import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
 import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.persistence.DvObject;
@@ -61,15 +64,17 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     /**
      * Either the dataverse or the dataset that the message is pertaining to.
-     * If there is no recipient, this is a general feedback message.
+     * If there is no target, the feedback message is about the repo as a whole.
      */
-    private DvObject recipient;
+    private DvObject feedbackTarget;
 
     /** Whether a copy of the message should be sent to user's mail */
     private boolean sendCopy;
 
     /** :SystemEmail (the main support address for an installation). */
     private InternetAddress systemAddress;
+
+    private FeedbackRecipient recipientOption;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -116,8 +121,12 @@ public class SendFeedbackDialog implements java.io.Serializable {
         return sendCopy;
     }
 
-    public DvObject getRecipient() {
-        return recipient;
+    public DvObject getFeedbackTarget() {
+        return feedbackTarget;
+    }
+
+    public FeedbackRecipient getRecipientOption() {
+        return recipientOption;
     }
 
     // -------------------- LOGIC --------------------
@@ -139,20 +148,32 @@ public class SendFeedbackDialog implements java.io.Serializable {
         initUserInput();
     }
 
-    public String getMessageTo() {
-        if (recipient == null) {
-            return BrandingUtil.getSupportTeamName(systemAddress, dataverseDao.findRootDataverse().getName());
-        } else if (recipient.isInstanceofDataverse()) {
-            return recipient.getDisplayName() + " " + BundleUtil.getStringFromBundle("contact.contact");
+
+    public List<FeedbackRecipient> getRecipientOptions() {
+        if (feedbackTarget == null) {
+            return Lists.newArrayList(FeedbackRecipient.SYSTEM_SUPPORT);
+        } else if (feedbackTarget.isInstanceofDataverse()) {
+            return Lists.newArrayList(FeedbackRecipient.SYSTEM_SUPPORT, FeedbackRecipient.DATAVERSE_CONTACT);
         } else {
-            return BundleUtil.getStringFromBundle("dataset") + " " + BundleUtil.getStringFromBundle("contact.contact");
+            return Lists.newArrayList(FeedbackRecipient.SYSTEM_SUPPORT, FeedbackRecipient.DATAVERSE_CONTACT,
+                    FeedbackRecipient.DATASET_CONTACT);
+        }
+    }
+
+    public String getRecipientOptionLabel(FeedbackRecipient option) {
+        if (option == FeedbackRecipient.SYSTEM_SUPPORT) {
+            return BundleUtil.getStringFromBundle("contact.to.option.repo", dataverseDao.findRootDataverse().getName());
+        } else if (option == FeedbackRecipient.DATAVERSE_CONTACT) {
+            return BundleUtil.getStringFromBundle("contact.to.option.dataverse");
+        } else {
+            return BundleUtil.getStringFromBundle("contact.to.option.dataset");
         }
     }
 
     public String getFormHeader() {
-        if (recipient == null) {
+        if (feedbackTarget == null) {
             return BrandingUtil.getContactHeader(systemAddress, dataverseDao.findRootDataverse().getName());
-        } else if (recipient.isInstanceofDataverse()) {
+        } else if (feedbackTarget.isInstanceofDataverse()) {
             return BundleUtil.getStringFromBundle("contact.dataverse.header");
         } else {
             return BundleUtil.getStringFromBundle("contact.dataset.header");
@@ -180,7 +201,16 @@ public class SendFeedbackDialog implements java.io.Serializable {
         String rootDataverseName = dataverseDao.findRootDataverse().getName();
         String installationBrandName = BrandingUtil.getInstallationBrandName(rootDataverseName);
         String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName);
-        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName);
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withFeedbackTarget(feedbackTarget)
+                .withRecipient(recipientOption)
+                .withUserEmail(dataverseSession, userEmail)
+                .withSystemEmail(systemAddress)
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withDataverseSiteUrl(systemConfig.getDataverseSiteUrl())
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
         if (feedbacks.isEmpty()) {
             logger.warning("No feedback has been sent!");
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("contact.send.failure"));
@@ -206,6 +236,18 @@ public class SendFeedbackDialog implements java.io.Serializable {
         return dataverseSession.getUser().getDisplayInfo().getEmailAddress();
     }
 
+    public void setFeedbackTarget(DvObject feedbackTarget) {
+        this.feedbackTarget = feedbackTarget;
+
+        if (feedbackTarget == null) {
+            recipientOption = FeedbackRecipient.SYSTEM_SUPPORT;
+        } else if (feedbackTarget.isInstanceofDataverse()) {
+            recipientOption = FeedbackRecipient.DATAVERSE_CONTACT;
+        } else {
+            recipientOption = FeedbackRecipient.DATASET_CONTACT;
+        }
+    }
+
     // -------------------- PRIVATE --------------------
 
     private void sendCopy(String rootDataverseName, Feedback feedback) {
@@ -214,13 +256,13 @@ public class SendFeedbackDialog implements java.io.Serializable {
         
         String header;
         String siteUrl = systemConfig.getDataverseSiteUrl();
-        if (recipient != null && recipient.isInstanceofDataverse()) {
-            Dataverse dataverse = (Dataverse) recipient;
+        if (feedbackTarget != null && feedbackTarget.isInstanceofDataverse()) {
+            Dataverse dataverse = (Dataverse) feedbackTarget;
             header = BundleUtil.getStringFromBundleWithLocale("contact.copy.message.header.dataverse", locale,
                     rootDataverseName, dataverse.getName(),
                     siteUrl + "/dataverse/" + dataverse.getAlias());
-        } else if (recipient != null && recipient.isInstanceofDataset()) {
-            Dataset dataset = (Dataset) recipient;
+        } else if (feedbackTarget != null && feedbackTarget.isInstanceofDataset()) {
+            Dataset dataset = (Dataset) feedbackTarget;
             header = BundleUtil.getStringFromBundleWithLocale("contact.copy.message.header.dataset", locale,
                     rootDataverseName, dataset.getDisplayName(),
                     siteUrl + "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString());
@@ -267,7 +309,8 @@ public class SendFeedbackDialog implements java.io.Serializable {
         this.sendCopy = sendCopy;
     }
 
-    public void setRecipient(DvObject recipient) {
-        this.recipient = recipient;
+    public void setRecipientOption(FeedbackRecipient recipientOption) {
+        this.recipientOption = recipientOption;
     }
+
 }

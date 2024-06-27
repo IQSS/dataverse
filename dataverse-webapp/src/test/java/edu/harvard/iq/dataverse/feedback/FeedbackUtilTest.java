@@ -48,7 +48,6 @@ public class FeedbackUtilTest {
     private static final String supportTeamName = "LibraScholar SWAT Team";
     private static final String baseUrl = "https://dataverse.librascholar.edu";
     private static final String userEmail = "personClickingContactOrSupportButton@example.com";
-    private static final DataverseSession dataverseSessionNull = null;
     private static DataverseSession dataverseSessionAuthenticated;
     private static DatasetVersion dsVersion;
     private static DatasetVersion dsVersion2;
@@ -163,6 +162,7 @@ public class FeedbackUtilTest {
 
     @Test
     public void testGatherFeedbackOnDataverse() {
+        // given
         Dataverse dataverse = new Dataverse();
         dataverse.setAlias("dvAlias1");
         List<DataverseContact> dataverseContacts = new ArrayList<>();
@@ -171,8 +171,19 @@ public class FeedbackUtilTest {
         dataverse.setDataverseContacts(dataverseContacts);
         String messageSubject = "nice dataverse";
         String userMessage = "Let's talk!";
-        System.out.println("first gather feedback");
-        List<Feedback> feedbacks1 = FeedbackUtil.gatherFeedback(dataverse, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+
+        // when
+        List<Feedback> feedbacks1 = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withFeedbackTarget(dataverse)
+                .withUserEmail(userEmail)
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withSystemEmail(systemAddress)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
+
+        // then
         Feedback feedback = feedbacks1.get(0);
         assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
         String expectedBody
@@ -188,31 +199,85 @@ public class FeedbackUtilTest {
                 + "If you believe this was an error, please contact "
                 + supportTeamName + " at " + systemEmail + ". "
                 + "To respond directly to the individual who sent the message, simply reply to this email.";
-        System.out.println("body:\n\n" + feedback.getBody());
         assertEquals(expectedBody, feedback.getBody());
         assertEquals("dvContact1@librascholar.edu", feedback.getToEmail());
         assertEquals("personClickingContactOrSupportButton@example.com", feedback.getFromEmail());
         JsonObject jsonObject = feedback.toJsonObjectBuilder().build();
-        System.out.println("json: " + jsonObject);
         assertEquals("personClickingContactOrSupportButton@example.com", jsonObject.getString("fromEmail"));
         assertEquals("dvContact1@librascholar.edu", jsonObject.getString("toEmail"));
         assertEquals(installationBrandName + " contact: " + "nice dataverse", jsonObject.getString("subject"));
+
+        // given
         dataverse.setDataverseContacts(new ArrayList<>());
-        System.out.println("second gather feedback");
-        List<Feedback> feedbacks2 = FeedbackUtil.gatherFeedback(dataverse, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
-        System.out.println("feedbacks2: " + feedbacks2);
+
+        // when
+        List<Feedback> feedbacks2 = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withFeedbackTarget(dataverse)
+                .withUserEmail(userEmail)
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withSystemEmail(systemAddress)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
+
+        // then
         feedback = feedbacks2.get(0);
         assertEquals("support@librascholar.edu", feedback.getToEmail());
-        System.out.println("body:\n\n" + feedback.getBody());
         assertTrue(feedback.getBody().startsWith("There is no contact address on file for this dataverse so this message is being sent to the system address."));
     }
 
     @Test
+    public void testGatherFeedbackOnDataverseToSupportTeam() {
+        // given
+        Dataverse dataverse = new Dataverse();
+        dataverse.setAlias("dvAlias1");
+        List<DataverseContact> dataverseContacts = new ArrayList<>();
+        dataverseContacts.add(new DataverseContact(dataverse, "dvContact1@librascholar.edu"));
+        dataverseContacts.add(new DataverseContact(dataverse, "dvContact2@librascholar.edu"));
+        dataverse.setDataverseContacts(dataverseContacts);
+        String messageSubject = "nice dataverse";
+        String userMessage = "Let's talk!";
+
+        // when
+        List<Feedback> feedbacks1 = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withFeedbackTarget(dataverse)
+                .withRecipient(FeedbackRecipient.SYSTEM_SUPPORT)
+                .withUserEmail(userEmail)
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withSystemEmail(systemAddress)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
+
+        // then
+        Feedback feedback = feedbacks1.get(0);
+        assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
+        String expectedBody
+                = "You have just been sent the following message from " + userEmail + " "
+                + "via the " + installationBrandName + " hosted dataverse named \"dvAlias1\":\n\n"
+                + "---\n\n"
+                + userMessage + "\n\n"
+                + "---\n\n"
+                + supportTeamName + "\n"
+                + systemEmail + "\n\n"
+                + "Go to dataverse https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n"
+                + "You received this email because you have been listed as a contact for the dataverse. "
+                + "If you believe this was an error, please contact "
+                + supportTeamName + " at " + systemEmail + ". "
+                + "To respond directly to the individual who sent the message, simply reply to this email.";
+        assertEquals(expectedBody, feedback.getBody());
+        assertEquals("support@librascholar.edu", feedback.getToEmail());
+        assertEquals("personClickingContactOrSupportButton@example.com", feedback.getFromEmail());
+    }
+
+    @Test
     public void testGatherFeedbackOnDataset() {
+        // given
         Dataset dataset = new Dataset();
 
         List<DatasetVersion> versions = new ArrayList<>();
-        System.out.println("dsversion: " + dsVersion2);
         DatasetVersion datasetVersionIn = dsVersion2;
         datasetVersionIn.setVersionState(DatasetVersion.VersionState.RELEASED);
         versions.add(datasetVersionIn);
@@ -224,17 +289,23 @@ public class FeedbackUtilTest {
         Dataverse dataverse = new Dataverse();
         dataset.setOwner(dataverse);
 
-        DataverseSession dataverseSession = null;
         String messageSubject = "nice dataset";
         String userMessage = "Let's talk!";
-        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(dataset, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
-        System.out.println("feedbacks: " + feedbacks);
+
+        // when
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withFeedbackTarget(dataset)
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withSystemEmail(systemAddress)
+                .withUserEmail(userEmail)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
+
+        // then
         assertEquals(2, feedbacks.size());
         Feedback feedback = feedbacks.get(0);
-        System.out.println("Subject: " + feedback.getSubject());
-        System.out.println("Body: " + feedback.getBody());
-        System.out.println("From: " + feedback.getFromEmail());
-        System.out.println("To: " + feedback.getToEmail());
         assertEquals("ContactEmail1@mailinator.com", feedback.getToEmail());
         assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
         String expected = "Hello Tom Brady,\n\n"
@@ -249,15 +320,120 @@ public class FeedbackUtilTest {
                 + systemEmail + "\n\n"
                 + "Go to dataset https://dataverse.librascholar.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/TJCLKP\n\n"
                 + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";
-        System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-        System.out.println("EXPECTED:\n\n" + expected);
-        System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
-        System.out.println("ACTUAL:\n\n" + feedback.getBody());
+        assertEquals(expected, feedback.getBody());
+    }
+
+    @Test
+    public void testGatherFeedbackOnDatasetToDataverseContact() {
+        // given
+        Dataset dataset = new Dataset();
+
+        List<DatasetVersion> versions = new ArrayList<>();
+        DatasetVersion datasetVersionIn = dsVersion2;
+        datasetVersionIn.setVersionState(DatasetVersion.VersionState.RELEASED);
+        versions.add(datasetVersionIn);
+        dataset.setVersions(versions);
+
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.7910/DVN");
+        dataset.setIdentifier("TJCLKP");
+        Dataverse dataverse = new Dataverse();
+        List<DataverseContact> dataverseContacts = new ArrayList<>();
+        dataverseContacts.add(new DataverseContact(dataverse, "dvContact1@librascholar.edu"));
+        dataverse.setDataverseContacts(dataverseContacts);
+        dataset.setOwner(dataverse);
+
+        String messageSubject = "nice dataset";
+        String userMessage = "Let's talk!";
+
+        // when
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withRecipient(FeedbackRecipient.DATAVERSE_CONTACT)
+                .withFeedbackTarget(dataset)
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withSystemEmail(systemAddress)
+                .withUserEmail(userEmail)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
+
+        // then
+        assertEquals(1, feedbacks.size());
+        Feedback feedback = feedbacks.get(0);
+        assertEquals("dvContact1@librascholar.edu", feedback.getToEmail());
+        assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
+        String expected = "Attention Dataset Contact:\n\n"
+                + "You have just been sent the following message from " + userEmail + " "
+                + "via the " + installationBrandName + " hosted dataset "
+                + "titled \"Darwin's Finches\" (doi:10.7910/DVN/TJCLKP):\n\n"
+                + "---\n\n"
+                + userMessage + "\n\n"
+                + "---\n\n"
+                + supportTeamName + "\n"
+                + systemEmail + "\n\n"
+                + "Go to dataset https://dataverse.librascholar.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/TJCLKP\n\n"
+                + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";
+        assertEquals(expected, feedback.getBody());
+    }
+
+    @Test
+    public void testGatherFeedbackOnDatasetToSupportTeam() {
+        // given
+        Dataset dataset = new Dataset();
+
+        List<DatasetVersion> versions = new ArrayList<>();
+        DatasetVersion datasetVersionIn = dsVersion2;
+        datasetVersionIn.setVersionState(DatasetVersion.VersionState.RELEASED);
+        versions.add(datasetVersionIn);
+        dataset.setVersions(versions);
+
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.7910/DVN");
+        dataset.setIdentifier("TJCLKP");
+        Dataverse dataverse = new Dataverse();
+        List<DataverseContact> dataverseContacts = new ArrayList<>();
+        dataverseContacts.add(new DataverseContact(dataverse, "dvContact1@librascholar.edu"));
+        dataverse.setDataverseContacts(dataverseContacts);
+        dataset.setOwner(dataverse);
+
+        String messageSubject = "nice dataset";
+        String userMessage = "Let's talk!";
+
+        // when
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withRecipient(FeedbackRecipient.SYSTEM_SUPPORT)
+                .withFeedbackTarget(dataset)
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withSystemEmail(systemAddress)
+                .withUserEmail(userEmail)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
+
+        // then
+        assertEquals(1, feedbacks.size());
+        Feedback feedback = feedbacks.get(0);
+        assertEquals("support@librascholar.edu", feedback.getToEmail());
+        assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
+        String expected = "Attention Dataset Contact:\n\n"
+                + "You have just been sent the following message from " + userEmail + " "
+                + "via the " + installationBrandName + " hosted dataset "
+                + "titled \"Darwin's Finches\" (doi:10.7910/DVN/TJCLKP):\n\n"
+                + "---\n\n"
+                + userMessage + "\n\n"
+                + "---\n\n"
+                + supportTeamName + "\n"
+                + systemEmail + "\n\n"
+                + "Go to dataset https://dataverse.librascholar.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/TJCLKP\n\n"
+                + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";
         assertEquals(expected, feedback.getBody());
     }
 
     @Test
     public void testGatherFeedbackOnDatasetNoContacts() {
+        // given
         Dataset dataset = new Dataset();
 
         List<DatasetVersion> versions = new ArrayList<>();
@@ -272,17 +448,23 @@ public class FeedbackUtilTest {
         Dataverse dataverse = new Dataverse();
         dataset.setOwner(dataverse);
 
-        DataverseSession dataverseSession = null;
         String messageSubject = "nice dataset";
         String userMessage = "Let's talk!";
-        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(dataset, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
-        System.out.println("feedbacks: " + feedbacks);
+
+        // when
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withFeedbackTarget(dataset)
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withSystemEmail(systemAddress)
+                .withUserEmail(userEmail)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
+
+        // then
         assertEquals(1, feedbacks.size());
         Feedback feedback = feedbacks.get(0);
-        System.out.println("Subject: " + feedback.getSubject());
-        System.out.println("Body: " + feedback.getBody());
-        System.out.println("From: " + feedback.getFromEmail());
-        System.out.println("To: " + feedback.getToEmail());
         assertEquals(systemEmail, feedback.getToEmail());
         assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
         String expected = "There is no contact address on file for this dataset so this message is being sent to the system address.\n\n"
@@ -298,16 +480,12 @@ public class FeedbackUtilTest {
                 + systemEmail + "\n\n"
                 + "Go to dataset https://dataverse.librascholar.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/TJCLKP\n\n"
                 + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";
-        System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-        System.out.println("EXPECTED:\n\n" + expected);
-        System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
-        System.out.println("ACTUAL:\n\n" + feedback.getBody());
         assertEquals(expected, feedback.getBody());
     }
 
     @Test
     public void testGatherFeedbackOnFile() {
-
+        // given
         // TODO: Consider switching to MocksFactory.makeDataFile()
         FileMetadata fmd = new FileMetadata();
 //        DatasetVersion dsVersion = new DatasetVersion();
@@ -334,7 +512,6 @@ public class FeedbackUtilTest {
         dataFile.setOwner(dataset);
 
         List<DatasetVersion> versions = new ArrayList<>();
-        System.out.println("dsversion: " + dsVersion);
         DatasetVersion datasetVersionIn = dsVersion;
         datasetVersionIn.setVersionState(DatasetVersion.VersionState.RELEASED);
         versions.add(datasetVersionIn);
@@ -348,13 +525,20 @@ public class FeedbackUtilTest {
 
         String messageSubject = "nice file";
         String userMessage = "Let's talk!";
-        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(dataFile, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+
+        // when
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withFeedbackTarget(dataFile)
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withSystemEmail(systemAddress)
+                .withUserEmail(userEmail)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
+
+        // then
         Feedback feedback = feedbacks.get(0);
-        System.out.println("feedback: " + feedback);
-        System.out.println("Subject: " + feedback.getSubject());
-        System.out.println("Body: " + feedback.getBody());
-        System.out.println("From: " + feedback.getFromEmail());
-        System.out.println("To: " + feedback.getToEmail());
         assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
         assertEquals("finch@mailinator.com", feedback.getToEmail());
         String expectedBody
@@ -369,14 +553,165 @@ public class FeedbackUtilTest {
                 + systemEmail + "\n\n"
                 + "Go to file https://dataverse.librascholar.edu/file.xhtml?fileId=42\n\n"
                 + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";
-        System.out.println("body:\n\n" + feedback.getBody());
+        assertEquals(expectedBody, feedback.getBody());
+
+    }
+
+    @Test
+    public void testGatherFeedbackOnFileToDataverseContact() {
+        // given
+        FileMetadata fmd = new FileMetadata();
+        DataFile dataFile = new DataFile();
+
+        dataFile.setId(42l);
+        List<DataFileTag> dataFileTags = new ArrayList<>();
+        DataFileTag tag = new DataFileTag();
+        tag.setTypeByLabel("Survey");
+        dataFileTags.add(tag);
+        dataFile.setTags(dataFileTags);
+        fmd.setDatasetVersion(dsVersion);
+        fmd.setDataFile(dataFile);
+        fmd.setLabel("file.txt");
+        List<DataFileCategory> fileCategories = new ArrayList<>();
+        DataFileCategory dataFileCategory = new DataFileCategory();
+        dataFileCategory.setName("Data");
+        fileCategories.add(dataFileCategory);
+        fmd.setCategories(fileCategories);
+        List<FileMetadata> fileMetadatas = new ArrayList<>();
+        fileMetadatas.add(fmd);
+        dataFile.setFileMetadatas(fileMetadatas);
+        Dataset dataset = new Dataset();
+        dataFile.setOwner(dataset);
+
+        List<DatasetVersion> versions = new ArrayList<>();
+        DatasetVersion datasetVersionIn = dsVersion;
+        datasetVersionIn.setVersionState(DatasetVersion.VersionState.RELEASED);
+        versions.add(datasetVersionIn);
+        dataset.setVersions(versions);
+
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.7910/DVN");
+        dataset.setIdentifier("TJCLKP");
+        Dataverse dataverse = new Dataverse();
+        List<DataverseContact> dataverseContacts = new ArrayList<>();
+        dataverseContacts.add(new DataverseContact(dataverse, "dvContact1@librascholar.edu"));
+        dataverse.setDataverseContacts(dataverseContacts);
+        dataset.setOwner(dataverse);
+
+        String messageSubject = "nice file";
+        String userMessage = "Let's talk!";
+
+        // when
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withFeedbackTarget(dataFile)
+                .withRecipient(FeedbackRecipient.DATAVERSE_CONTACT)
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withSystemEmail(systemAddress)
+                .withUserEmail(userEmail)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
+
+        // then
+        Feedback feedback = feedbacks.get(0);
+        assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
+        assertEquals("dvContact1@librascholar.edu", feedback.getToEmail());
+        String expectedBody
+                = "Attention Dataset Contact:\n\n"
+                + "You have just been sent the following message from " + userEmail + " "
+                + "via the LibraScholar hosted file named \"file.txt\" "
+                + "from the dataset titled \"Darwin's Finches\" (doi:10.7910/DVN/TJCLKP):\n\n"
+                + "---\n\n"
+                + userMessage + "\n\n"
+                + "---\n\n"
+                + supportTeamName + "\n"
+                + systemEmail + "\n\n"
+                + "Go to file https://dataverse.librascholar.edu/file.xhtml?fileId=42\n\n"
+                + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";
+        assertEquals(expectedBody, feedback.getBody());
+
+    }
+
+    @Test
+    public void testGatherFeedbackOnFileToSupportTeam() {
+        // given
+        FileMetadata fmd = new FileMetadata();
+        DataFile dataFile = new DataFile();
+
+        dataFile.setId(42l);
+        List<DataFileTag> dataFileTags = new ArrayList<>();
+        DataFileTag tag = new DataFileTag();
+        tag.setTypeByLabel("Survey");
+        dataFileTags.add(tag);
+        dataFile.setTags(dataFileTags);
+        fmd.setDatasetVersion(dsVersion);
+        fmd.setDataFile(dataFile);
+        fmd.setLabel("file.txt");
+        List<DataFileCategory> fileCategories = new ArrayList<>();
+        DataFileCategory dataFileCategory = new DataFileCategory();
+        dataFileCategory.setName("Data");
+        fileCategories.add(dataFileCategory);
+        fmd.setCategories(fileCategories);
+        List<FileMetadata> fileMetadatas = new ArrayList<>();
+        fileMetadatas.add(fmd);
+        dataFile.setFileMetadatas(fileMetadatas);
+        Dataset dataset = new Dataset();
+        dataFile.setOwner(dataset);
+
+        List<DatasetVersion> versions = new ArrayList<>();
+        DatasetVersion datasetVersionIn = dsVersion;
+        datasetVersionIn.setVersionState(DatasetVersion.VersionState.RELEASED);
+        versions.add(datasetVersionIn);
+        dataset.setVersions(versions);
+
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.7910/DVN");
+        dataset.setIdentifier("TJCLKP");
+        Dataverse dataverse = new Dataverse();
+        List<DataverseContact> dataverseContacts = new ArrayList<>();
+        dataverseContacts.add(new DataverseContact(dataverse, "dvContact1@librascholar.edu"));
+        dataverse.setDataverseContacts(dataverseContacts);
+        dataset.setOwner(dataverse);
+
+        String messageSubject = "nice file";
+        String userMessage = "Let's talk!";
+
+        // when
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withFeedbackTarget(dataFile)
+                .withRecipient(FeedbackRecipient.SYSTEM_SUPPORT)
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withSystemEmail(systemAddress)
+                .withUserEmail(userEmail)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
+
+        // then
+        Feedback feedback = feedbacks.get(0);
+        assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
+        assertEquals("support@librascholar.edu", feedback.getToEmail());
+        String expectedBody
+                = "Attention Dataset Contact:\n\n"
+                + "You have just been sent the following message from " + userEmail + " "
+                + "via the LibraScholar hosted file named \"file.txt\" "
+                + "from the dataset titled \"Darwin's Finches\" (doi:10.7910/DVN/TJCLKP):\n\n"
+                + "---\n\n"
+                + userMessage + "\n\n"
+                + "---\n\n"
+                + supportTeamName + "\n"
+                + systemEmail + "\n\n"
+                + "Go to file https://dataverse.librascholar.edu/file.xhtml?fileId=42\n\n"
+                + "You received this email because you have been listed as a contact for the dataset. If you believe this was an error, please contact " + supportTeamName + " at " + systemEmail + ". To respond directly to the individual who sent the message, simply reply to this email.";
         assertEquals(expectedBody, feedback.getBody());
 
     }
 
     @Test
     public void testGatherFeedbackOnFileNoContacts() {
-
+        // given
         // TODO: Consider switching to MocksFactory.makeDataFile()
         FileMetadata fmd = new FileMetadata();
 //        DatasetVersion dsVersion = new DatasetVersion();
@@ -416,13 +751,20 @@ public class FeedbackUtilTest {
 
         String messageSubject = "nice file";
         String userMessage = "Let's talk!";
-        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(dataFile, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+
+        // when
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withFeedbackTarget(dataFile)
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withSystemEmail(systemAddress)
+                .withUserEmail(userEmail)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
+
+        // then
         Feedback feedback = feedbacks.get(0);
-        System.out.println("feedback: " + feedback);
-        System.out.println("Subject: " + feedback.getSubject());
-        System.out.println("Body: " + feedback.getBody());
-        System.out.println("From: " + feedback.getFromEmail());
-        System.out.println("To: " + feedback.getToEmail());
         assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
         assertEquals("support@librascholar.edu", feedback.getToEmail());
         // TODO: Consider doing a more thorough test that just "starts with".
@@ -431,11 +773,21 @@ public class FeedbackUtilTest {
 
     @Test
     public void testGatherFeedbackFromSupportButtonNullSession() {
+        // given
         String messageSubject = "I'm clicking the support button.";
         String userMessage = "Help!";
-        DvObject nullDvObject = null;
-        List<Feedback> feedbacks1 = FeedbackUtil.gatherFeedback(nullDvObject, dataverseSessionNull, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
-        System.out.println("feedbacks1: " + feedbacks1);
+
+        // when
+        List<Feedback> feedbacks1 = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withSystemEmail(systemAddress)
+                .withUserEmail(userEmail)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
+
+        // then
         Feedback feedback = feedbacks1.get(0);
         assertEquals(installationBrandName + " support request: " + messageSubject, feedback.getSubject());
         String expectedBody
@@ -446,17 +798,26 @@ public class FeedbackUtilTest {
                 + "---\n\n"
                 + "Message sent from Support contact form."
                 + "";
-        System.out.println("body:\n\n" + feedback.getBody());
         assertEquals(expectedBody, feedback.getBody());
         assertEquals("support@librascholar.edu", feedback.getToEmail());
         assertEquals("personClickingContactOrSupportButton@example.com", feedback.getFromEmail());
-        InternetAddress nullSystemAddress = null;
-        List<Feedback> feedbacks2 = FeedbackUtil.gatherFeedback(nullDvObject, dataverseSessionNull, messageSubject, userMessage, nullSystemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+        List<Feedback> feedbacks2 = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withUserEmail(userEmail)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
         assertEquals(1, feedbacks2.size());
         feedback = feedbacks2.get(0);
         assertEquals(null, feedback.getToEmail());
         String nullUserMessage = null;
-        List<Feedback> feedbacks3 = FeedbackUtil.gatherFeedback(nullDvObject, dataverseSessionNull, messageSubject, nullUserMessage, nullSystemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+        List<Feedback> feedbacks3 = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withMessageSubject(messageSubject)
+                .withUserEmail(userEmail)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
         assertEquals(1, feedbacks3.size());
         feedback = feedbacks3.get(0);
         assertEquals(null, feedback.getToEmail());
@@ -470,7 +831,15 @@ public class FeedbackUtilTest {
         String messageSubject = "I'm clicking the support button.";
         String userMessage = "Help!";
         DvObject dvObject = null;
-        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(dvObject, dataverseSessionAuthenticated, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withFeedbackTarget(dvObject)
+                .withUserEmail(dataverseSessionAuthenticated, userEmail)
+                .withMessageSubject(messageSubject)
+                .withUserMessage(userMessage)
+                .withSystemEmail(systemAddress)
+                .withDataverseSiteUrl(baseUrl)
+                .withInstallationBrandName(installationBrandName)
+                .withSupportTeamName(supportTeamName));
         Feedback feedback = feedbacks.get(0);
         assertEquals(messageSubject, feedback.getSubject());
         assertEquals("Help!", feedback.getBody());

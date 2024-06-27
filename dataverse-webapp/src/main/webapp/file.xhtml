@@ -59,7 +59,7 @@
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{FilePage.fileMetadata.dataFile}"/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.feedbackTarget}" value="#{FilePage.fileMetadata.dataFile}"/>
                                         <span class="glyphicon glyphicon-envelope" aria-hidden="true"/> #{bundle['contact.contact']}
                                     </p:commandLink>
                                     <p:commandLink styleClass="text-button btn-share bootstrap-button-tooltip" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}"

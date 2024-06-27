@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.common.BrandingUtil;
 import edu.harvard.iq.dataverse.feedback.Feedback;
+import edu.harvard.iq.dataverse.feedback.FeedbackInfo;
 import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 
@@ -28,22 +28,22 @@ public class FeedbackApi extends AbstractApiBean {
     @POST
     public Response submitFeedback(JsonObject jsonObject) throws AddressException {
         JsonNumber jsonNumber = jsonObject.getJsonNumber("id");
-        DvObject recipient = null;
+        DvObject targetObject = null;
         if (jsonNumber != null) {
-            recipient = dvObjectSvc.findDvObject(jsonNumber.longValue());
+            targetObject = dvObjectSvc.findDvObject(jsonNumber.longValue());
         }
-        DataverseSession dataverseSession = null;
-        String userMessage = jsonObject.getString("body");
-        String systemEmail = "support@librascholar.edu";
-        InternetAddress systemAddress = new InternetAddress(systemEmail);
-        String userEmail = jsonObject.getString("fromEmail");
-        String messageSubject = jsonObject.getString("subject");
-        String baseUrl = systemConfig.getDataverseSiteUrl();
+        InternetAddress systemAddress = new InternetAddress("support@librascholar.edu");
         String rootDataverseName = dataverseSvc.findRootDataverse().getName();
-        String installationBrandName = BrandingUtil.getInstallationBrandName(rootDataverseName);
-        String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName);
         JsonArrayBuilder jab = Json.createArrayBuilder();
-        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, baseUrl, installationBrandName, supportTeamName);
+        List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(new FeedbackInfo<>()
+                .withFeedbackTarget(targetObject)
+                .withUserEmail(jsonObject.getString("fromEmail"))
+                .withSystemEmail(systemAddress)
+                .withMessageSubject(jsonObject.getString("subject"))
+                .withUserMessage(jsonObject.getString("body"))
+                .withDataverseSiteUrl(systemConfig.getDataverseSiteUrl())
+                .withInstallationBrandName(BrandingUtil.getInstallationBrandName(rootDataverseName))
+                .withSupportTeamName(BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName)));
         feedbacks.forEach((feedback) -> {
             jab.add(feedback.toJsonObjectBuilder());
         });

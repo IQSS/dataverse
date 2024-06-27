@@ -3,6 +3,7 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 
     <!-- Command that will fill and display contact dialog with initial values for contacting with main support team  -->
@@ -12,7 +13,7 @@
                 oncomplete="primeFacesShowModal('contactForm', this)"
                 update=":contactDialog">
             <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+            <f:setPropertyActionListener target="#{sendFeedbackDialog.feedbackTarget}" value="#{null}"/>
             <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
             <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
         </p:remoteCommand>
@@ -35,7 +36,16 @@
                 <div class="form-group">
                     <div class="col-sm-3 control-label section-title">#{bundle['contact.to']}</div>
                     <div class="col-sm-9">
-                        <p id="messageTo" class="form-control-static">#{sendFeedbackDialog.getMessageTo()}</p>
+                        <p id="messageTo" class="form-control-static" jsf:rendered="#{sendFeedbackDialog.recipientOptions.size() == 1}">
+                            #{sendFeedbackDialog.getRecipientOptionLabel(sendFeedbackDialog.recipientOption)}
+                        </p>
+                        <p:selectOneRadio id="recipientOptions"
+                                          value="#{sendFeedbackDialog.recipientOption}"
+                                          rendered="#{sendFeedbackDialog.recipientOptions.size() > 1}"
+                                          layout="pageDirection">
+                            <f:selectItems value="#{sendFeedbackDialog.recipientOptions}" var="recipientOption"
+                                           itemValue="#{recipientOption}" itemLabel="#{sendFeedbackDialog.getRecipientOptionLabel(recipientOption)}" />
+                        </p:selectOneRadio>
                     </div>
                 </div>
                 <ui:fragment rendered="#{sendFeedbackDialog.isLoggedIn()}">

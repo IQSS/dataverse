@@ -183,7 +183,7 @@
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}"
                                                                      value=""/>
-                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}"
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.feedbackTarget}"
                                                                      value="#{DatasetPage.dataset}"/>
                                         <span class="glyphicon glyphicon-envelope" aria-hidden="true"/> #{bundle['contact.contact']}
                                     </p:commandLink>
@@ -989,7 +989,7 @@
                                                    actionListener="#{sendFeedbackDialog.initUserInput}">
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}"
                                                                      value=""/>
-                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}"
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.feedbackTarget}"
                                                                      value="#{null}"/>
                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}"
                                                                      value=""/>
