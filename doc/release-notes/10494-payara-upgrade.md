@@ -91,7 +91,8 @@ export PAYARA=/usr/local/payara6
                  <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
 ```
 (You can also save this as a patch file and try to apply it.)
-TODO: For the combined 6.3 release note, I would consider replacing the patch format above with just the 4 specific options, for clarity etc+. (L.A.) As in: 
+
+TODO: For the combined 6.3 release note, I would consider replacing the patch format above with just the 4 specific options, for clarity etc. (L.A.) As in: 
 ```
          <jvm-options>--add-opens=java.management/javax.management=ALL-UNNAMED</jvm-options>
          <jvm-options>--add-opens=java.management/javax.management.openmbean=ALL-UNNAMED</jvm-options>
