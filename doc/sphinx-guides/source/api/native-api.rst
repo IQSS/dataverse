@@ -1179,7 +1179,7 @@ See also :ref:`batch-exports-through-the-api` and the note below:
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
   export METADATA_FORMAT=ddi
 
-  curl "$SERVER_URL/api/datasets/export?exporter=$METADATA_FORMAT&persistentId=PERSISTENT_IDENTIFIER"
+  curl "$SERVER_URL/api/datasets/export?exporter=$METADATA_FORMAT&persistentId=$PERSISTENT_IDENTIFIER"
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -2315,7 +2315,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl "https://demo.dataverse.org/api/datasets/24/locks?type=Ingest"
 
-Currently implemented lock types are ``Ingest``, ``Workflow``, ``InReview``, ``DcmUpload``, ``finalizePublication``, ``EditInProgress`` and ``FileValidationFailed``.
+Currently implemented lock types are ``Ingest``, ``Workflow``, ``InReview``, ``DcmUpload`` (deprecated), ``finalizePublication``, ``EditInProgress`` and ``FileValidationFailed``.
 
 The API will output the list of locks, for example:: 
 
@@ -2406,7 +2406,7 @@ Use the following API to list ALL the locks on all the datasets in your installa
 The listing can be filtered by specific lock type **and/or** user, using the following *optional* query parameters:
 
 * ``userIdentifier`` - To list the locks owned by a specific user
-* ``type`` - To list the locks of the type specified. If the supplied value does not match a known lock type, the API will return an error and a list of valid lock types. As of writing this, the implemented lock types are ``Ingest``, ``Workflow``, ``InReview``, ``DcmUpload``, ``finalizePublication``, ``EditInProgress`` and ``FileValidationFailed``.
+* ``type`` - To list the locks of the type specified. If the supplied value does not match a known lock type, the API will return an error and a list of valid lock types. As of writing this, the implemented lock types are ``Ingest``, ``Workflow``, ``InReview``, ``DcmUpload`` (deprecated), ``finalizePublication``, ``EditInProgress`` and ``FileValidationFailed``.
 
 For example:
 
@@ -3192,7 +3192,7 @@ Note: you can use the combination of cURL's ``-J`` (``--remote-header-name``) an
 Restrict Files
 ~~~~~~~~~~~~~~
 
-Restrict or unrestrict an existing file where ``id`` is the database id of the file or ``pid`` is the persistent id (DOI or Handle) of the file to restrict. Note that some Dataverse installations do not allow the ability to restrict files.
+Restrict or unrestrict an existing file where ``id`` is the database id of the file or ``pid`` is the persistent id (DOI or Handle) of the file to restrict. Note that some Dataverse installations do not allow the ability to restrict files (see :ref:`:PublicInstall`).
 
 A curl example using an ``id``
 
@@ -5193,6 +5193,8 @@ Delete the setting under ``name``::
   
 Manage Banner Messages
 ~~~~~~~~~~~~~~~~~~~~~~
+
+.. warning:: Adding a banner message with a language that is not supported by the installation will result in a 500-Internal Server Error response when trying to access to the /bannerMessage.
 
 Communications to users can be handled via banner messages that are displayed at the top of all pages within your Dataverse installation. Two types of banners can be configured:
 

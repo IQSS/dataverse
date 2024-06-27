@@ -11,6 +11,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
+
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 
 import java.nio.charset.StandardCharsets;
@@ -63,6 +64,7 @@ public class UtilIT {
     private static final String EMPTY_STRING = "";
     public static final int MAXIMUM_INGEST_LOCK_DURATION = 15;
     public static final int MAXIMUM_PUBLISH_LOCK_DURATION = 20;
+    public static final int GENERAL_LONG_DURATION = 45; //Useful when multiple adds/publishes, etc/ all get done in sequence
     public static final int MAXIMUM_IMPORT_DURATION = 1;
 
     private static SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
@@ -2844,6 +2846,13 @@ public class UtilIT {
                 i = repeats + 1;
             }
         } while ((i <= repeats) && stale);
+        try {
+            Thread.sleep(1000);  //Current autoSoftIndexTime - which adds a delay to when the new docs are visible 
+            i++;
+        } catch (InterruptedException ex) {
+            Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            i = repeats + 1;
+        }
         System.out.println("Waited " + (i * (sleepStep / 1000.0)) + " seconds");
         return i <= repeats;
 
@@ -2899,10 +2908,15 @@ public class UtilIT {
 
     //Helper function that returns true if a given search returns a non-zero response within a fixed time limit
     // a given duration returns false if still zero results after given duration
-    static Boolean sleepForSearch(String searchPart, String apiToken,  String subTree, int duration) {
+    static Boolean sleepForSearch(String searchPart, String apiToken,  String subTree, int count, int duration) {
         
 
         Response searchResponse = UtilIT.search(searchPart, apiToken, subTree);
+        //Leave early if search isn't working
+        if(searchResponse.statusCode()!=200) {
+            logger.warning("Non-200 status in sleepForSearch: " + searchResponse.statusCode());
+            return false;
+        }
         int i = 0;
         do {
             try {
@@ -2915,8 +2929,8 @@ public class UtilIT {
             } catch (InterruptedException ex) {
                 Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } while (UtilIT.getSearchCountFromResponse(searchResponse) == 0);
-
+        } while (UtilIT.getSearchCountFromResponse(searchResponse) != count);
+        logger.info("Waited " + i + " seconds in sleepForSearch");
         return i <= duration;
 
     }
@@ -3371,20 +3385,6 @@ public class UtilIT {
         Response deleteBannerMessageResponse = given()               
                 .delete("/api/admin/bannerMessage/"+id.toString());
         return deleteBannerMessageResponse;
-    }
-    
-    static String getBannerMessageIdFromResponse(String getBannerMessagesResponse) {
-        StringReader rdr = new StringReader(getBannerMessagesResponse);
-        JsonObject json = Json.createReader(rdr).readObject();
-
-        for (JsonObject obj : json.getJsonArray("data").getValuesAs(JsonObject.class)) {
-            String message = obj.getString("displayValue");
-            if (message.equals("Banner Message For Deletion")) {
-                return obj.getJsonNumber("id").toString();
-            }
-        }
-
-        return "0";
     }
     
     static Response getDatasetJsonLDMetadata(Integer datasetId, String apiToken) {
@@ -3845,17 +3845,38 @@ public class UtilIT {
                 .get("/api/files/" + dataFileId + "/hasBeenDeleted");
     }
 
-    static Response deaccessionDataset(Integer datasetId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+    static Response deaccessionDataset(int datasetId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+        return deaccessionDataset(String.valueOf(datasetId), version, deaccessionReason, deaccessionForwardURL, apiToken);
+    }
+
+    static Response deaccessionDataset(String datasetIdOrPersistentId, String versionId, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+        
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+    
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add("deaccessionReason", deaccessionReason);
         if (deaccessionForwardURL != null) {
             jsonObjectBuilder.add("deaccessionForwardURL", deaccessionForwardURL);
         }
+
         String jsonString = jsonObjectBuilder.build().toString();
+        StringBuilder query = new StringBuilder()
+            .append("/api/datasets/")
+            .append(idInPath)
+            .append("/versions/")
+            .append(versionId)
+            .append("/deaccession")
+            .append(optionalQueryParam);   
+                 
         return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(jsonString)
-                .post("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .body(jsonString)
+            .post(query.toString());
     }
 
     static Response getDownloadSize(Integer datasetId,
@@ -3953,5 +3974,13 @@ public class UtilIT {
                 .body(contactArrayBuilder.build().toString())
                 .contentType(ContentType.JSON)
                 .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
+    }
+
+    public static Response getOpenAPI(String accept, String format) {
+        Response response = given()
+                .header("Accept", accept)
+                .queryParam("format", format)
+                .get("/openapi");
+        return response;
     }
 }
