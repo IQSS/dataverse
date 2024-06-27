@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.search.query.SearchObjectType;
 import edu.harvard.iq.dataverse.search.query.SearchPublicationStatus;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -99,6 +100,8 @@ public class SolrSearchResult {
 
     private String filePersistentId = null;
     private List<String> matchedFields;
+
+    private Date embargoUntil;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -292,6 +295,10 @@ public class SolrSearchResult {
 
     public String getFileAccess() {
         return fileAccess;
+    }
+
+    public Date getEmbargoUntil() {
+        return embargoUntil;
     }
 
     // -------------------- SETTERS --------------------
@@ -492,6 +499,10 @@ public class SolrSearchResult {
         this.fileAccess = fileAccess;
     }
 
+    public void setEmbargoUntil(Date embargoUntil) {
+        this.embargoUntil = embargoUntil;
+    }
+
     // -------------------- LOGIC --------------------
 
     public void setPublicationStatuses(List<SearchPublicationStatus> statuses) {
@@ -612,6 +623,10 @@ public class SolrSearchResult {
         return parentDatasetGlobalId != null
                 ? "/dataset.xhtml?persistentId=" + parentDatasetGlobalId
                 : "/dataset.xhtml?id=" + parent.getId() + "&versionId=" + datasetVersionId;
+    }
+
+    public boolean isUnderEmbargo() {
+        return embargoUntil != null && Instant.now().isBefore(embargoUntil.toInstant());
     }
 
     // -------------------- toString --------------------

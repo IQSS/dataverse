@@ -313,6 +313,7 @@ public class SearchServiceBean {
             String dvTree = (String) solrDocument.getFirstValue(SearchFields.SUBTREE);
             String identifierOfDataverse = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER_OF_DATAVERSE);
             String nameOfDataverse = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_NAME);
+            Date embargoUntil = (Date) solrDocument.getFieldValue(SearchFields.EMBARGO_UNTIL);
 
             List<String> matchedFields = new ArrayList<>();
             List<Highlight> highlights = new ArrayList<>();
@@ -369,6 +370,7 @@ public class SearchServiceBean {
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setDeaccessionReason(deaccessionReason);
+            solrSearchResult.setEmbargoUntil(embargoUntil);
 
             String originSource = (String) solrDocument.getFieldValue(SearchFields.METADATA_SOURCE);
             if (IndexServiceBean.HARVESTED.equals(originSource)) {

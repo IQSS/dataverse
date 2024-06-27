@@ -461,6 +461,7 @@
                                     <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{result.deaccessionedState}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.published']}" styleClass="label label-success" rendered="#{result.publishedState}"/>
+                                    <h:outputText value="#{bundle['dataset.versionUI.embargo']}" styleClass="label label-primary" rendered="#{result.underEmbargo}"/>
                                     <ui:repeat value="#{MyDataSearchFragment.getRolesForEntity(result.entityId)}" var="role">
                                         <h:outputText value="#{role}" styleClass="label label-info"/>
                                     </ui:repeat>
@@ -538,6 +539,7 @@
                                     <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.published']}" styleClass="label label-success" rendered="#{result.publishedState}"/>
+                                    <h:outputText value="#{bundle['dataset.versionUI.embargo']}" styleClass="label label-primary" rendered="#{result.underEmbargo}"/>
                                     <ui:repeat value="#{MyDataSearchFragment.getRolesForEntity(result.entityId)}" var="role">
                                         <h:outputText value="#{role}" styleClass="label label-info"/>
                                     </ui:repeat>

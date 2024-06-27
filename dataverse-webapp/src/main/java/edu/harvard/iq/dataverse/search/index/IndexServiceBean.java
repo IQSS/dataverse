@@ -772,6 +772,8 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.IDENTIFIER_OF_DATAVERSE, dataset.getDataverseContext().getAlias());
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataset.getDataverseContext().getDisplayName());
 
+        dataset.getEmbargoDate().forEach(embargo -> solrInputDocument.addField(SearchFields.EMBARGO_UNTIL, embargo));
+
         Date datasetSortByDate;
         Date majorVersionReleaseDate = getMostRecentMajorVersionReleaseDate(dataset);
         if (majorVersionReleaseDate != null) {
@@ -1014,6 +1016,8 @@ public class IndexServiceBean {
                         } else if (fileTermsOfUse.getTermsOfUseType() == TermsOfUseType.RESTRICTED) {
                             datafileSolrInputDocument.addField(SearchFields.LICENSE, IndexedTermOfUse.RESTRICTED.getName());
                         }
+                    } else {
+                        datafileSolrInputDocument.addField(SearchFields.EMBARGO_UNTIL, dataset.getEmbargoDate().get());
                     }
 
                     /* Full-text indexing using Apache Tika */

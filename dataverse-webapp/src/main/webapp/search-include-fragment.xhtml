@@ -531,6 +531,7 @@
                                 <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{dsIsLinked}" role="img" aria-label="#{bundle.linked}" />
                                 <div class="label-container pull-right">
                                     <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{result.draftState}"/>
+                                    <h:outputText value="#{bundle['dataset.versionUI.embargo']}" styleClass="label label-primary" rendered="#{result.underEmbargo}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{result.deaccessionedState}"/>
@@ -605,6 +606,7 @@
                                 <span class="text-success icon-unlock" title="#{bundle.restrictedaccess}" jsf:rendered="#{result.fileAccess eq 'Restricted' and permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
                                 <div class="label-container pull-right">
                                     <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{result.draftState}"/>
+                                    <h:outputText value="#{bundle['dataset.versionUI.embargo']}" styleClass="label label-primary" rendered="#{result.underEmbargo}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                                 </div>
