@@ -175,6 +175,9 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         }
 
         if (inputLevelList != null) {
+            if (!inputLevelList.isEmpty()) {
+                managedDv.addInputLevelsMetadataBlocksIfNotPresent(inputLevelList);
+            }
             ctxt.fieldTypeInputLevels().deleteFacetsFor(managedDv);
             for (DataverseFieldTypeInputLevel inputLevel : inputLevelList) {
                 inputLevel.setDataverse(managedDv);
