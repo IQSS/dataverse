@@ -112,7 +112,6 @@ public class SamlConvertAccountPage implements Serializable {
         }
         authenticationService.updateAuthenticatedUser(authenticatedUser,
                 new AuthenticatedUserDisplayInfo(userData.getName(), userData.getSurname(), userData.getEmail(), null, null));
-        authenticatedUser.setSamlIdPEntityId(userData.getIdpEntityId());
         dataverseSession.setUser(authenticatedUser);
         consentService.executeActionsAndSaveAcceptedConsents(consents, authenticatedUser);
         logger.info("Local account validated and successfully converted to a Saml account. The old account username was "

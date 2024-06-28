@@ -205,16 +205,16 @@ public class AuthenticatedUserTest {
     @Test
     public void testGetShibIdentityProvider() {
         System.out.println("getShibIdentityProvider");
-        String expResult = testUser.getSamlIdPEntityId();
-        assertEquals(expResult, testUser.getSamlIdPEntityId());
+        String expResult = testUser.getShibIdentityProvider();
+        assertEquals(expResult, testUser.getShibIdentityProvider());
     }
 
     @Test
     public void testSetShibIdentityProvider() {
         System.out.println("setShibIdentityProvider");
         String shibIdentityProvider = "Davis";
-        testUser.setSamlIdPEntityId(shibIdentityProvider);
-        String result = testUser.getSamlIdPEntityId();
+        testUser.setShibIdentityProvider(shibIdentityProvider);
+        String result = testUser.getShibIdentityProvider();
         assertEquals("Davis", result);
     }
 

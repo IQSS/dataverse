@@ -7,12 +7,14 @@ import edu.harvard.iq.dataverse.persistence.group.SamlGroup;
 import edu.harvard.iq.dataverse.persistence.group.SamlGroupRepository;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
+import edu.harvard.iq.dataverse.users.SamlSessionRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,15 +29,19 @@ public class SamlGroupService {
 
     private SamlGroupRepository repository;
 
+    private SamlSessionRegistry samlSessionRegistry;
+
     // -------------------- CONSTRUCTORS --------------------
 
     public SamlGroupService() { }
 
     @Inject
-    public SamlGroupService(RoleAssigneeServiceBean roleAssigneeSvc, ActionLogServiceBean actionLogSvc, SamlGroupRepository repository) {
+    public SamlGroupService(RoleAssigneeServiceBean roleAssigneeSvc, ActionLogServiceBean actionLogSvc,
+                            SamlGroupRepository repository, SamlSessionRegistry samlSessionRegistry) {
         this.roleAssigneeSvc = roleAssigneeSvc;
         this.actionLogSvc = actionLogSvc;
         this.repository = repository;
+        this.samlSessionRegistry = samlSessionRegistry;
     }
 
     // -------------------- LOGIC --------------------
@@ -58,13 +64,9 @@ public class SamlGroupService {
     }
 
     public Set<SamlGroup> findFor(AuthenticatedUser authenticatedUser) {
-        Set<SamlGroup> groupsForUser = new HashSet<>();
-        String samlIdPEntityId = authenticatedUser.getSamlIdPEntityId();
-        logger.debug("IdP for user " + authenticatedUser.getIdentifier() + " is " + samlIdPEntityId);
-        if (samlIdPEntityId != null) {
-            groupsForUser.addAll(repository.findByEntityId(samlIdPEntityId));
-        }
-        return groupsForUser;
+        return samlSessionRegistry.findEntityId(authenticatedUser)
+                .map(entityId -> (Set<SamlGroup>) new HashSet<>(repository.findByEntityId(entityId)))
+                .getOrElse(Collections.emptySet());
     }
 
     public void delete(SamlGroup doomed) {

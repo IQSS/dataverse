@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.persistence.group.SamlGroup;
 import edu.harvard.iq.dataverse.persistence.group.SamlGroupRepository;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.users.SamlSessionRegistry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static io.vavr.API.Some;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,6 +35,9 @@ class SamlGroupServiceTest {
 
     @Mock
     private SamlGroupRepository repository;
+
+    @Mock
+    private SamlSessionRegistry samlSessionRegistry;
 
     @InjectMocks
     private SamlGroupService service;
@@ -87,7 +92,7 @@ class SamlGroupServiceTest {
         // given
         SamlGroup group = new SamlGroup("abc", "abcId");
         AuthenticatedUser user = new AuthenticatedUser();
-        user.setSamlIdPEntityId(group.getEntityId());
+        when(samlSessionRegistry.findEntityId(user)).thenReturn(Some("abcId"));
         when(repository.findByEntityId("abcId")).thenReturn(Collections.singletonList(group));
 
         // when

@@ -40,7 +40,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateEncodingException;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -156,6 +155,7 @@ public class SamlAuthenticationServlet extends HttpServlet {
             SamlUserData userData = SamlUserDataFactory.create(auth);
             ExternalIdpUserRecord userRecord = userData.toExternalIdpUserRecord();
             UserRecordIdentifier userRecordId = userRecord.toUserRecordIdentifier();
+            samlSessionRegistry.register(session, userData);
             AuthenticatedUser user = authenticationService.lookupUser(userRecordId);
             if (user == null) {
                 boolean emailExists = authenticationService.getAuthenticatedUserByEmail(userData.getEmail()) != null;
@@ -173,12 +173,11 @@ public class SamlAuthenticationServlet extends HttpServlet {
                     : samlDataUpdateService.updateUserIfNeeded(user, userData);
             if (updateResult.isLeft()) {
                 redirectOnLoginIssue(request, response, updateResult.getLeft());
+                samlSessionRegistry.unregister(session);
                 return;
             }
             AuthenticatedUser updatedUser = updateResult.get();
             session.setUser(updatedUser);
-            samlSessionRegistry.register(session);
-            updatedUser.setSamlIdPEntityId(userData.getIdpEntityId());
             String relayState = request.getParameter("RelayState");
             response.sendRedirect(StringUtils.isNotBlank(relayState)
                     ? relayState
