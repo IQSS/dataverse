@@ -63,8 +63,12 @@ public class IndexBatchServiceBean {
             response.add("SearchException ", msg);
             return new AsyncResult<>(response);
         }
-           
-        JsonObject permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr().build();
+        try {
+            JsonObject permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.warning(e.getLocalizedMessage());
+        }
     
         JsonObjectBuilder data = Json.createObjectBuilder()
                 .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
