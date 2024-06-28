@@ -952,7 +952,6 @@ public class DataversesIT {
 
         // Assert input levels are configured
         Response listDataverseInputLevelsResponse = UtilIT.listDataverseInputLevels(testDataverseAlias, apiToken);
-        listDataverseInputLevelsResponse.prettyPrint();
         String actualInputLevelName1 = listDataverseInputLevelsResponse.then().extract().path("data[0].datasetFieldTypeName");
         String actualInputLevelName2 = listDataverseInputLevelsResponse.then().extract().path("data[1].datasetFieldTypeName");
         assertNotEquals(actualFacetName1, actualFacetName2);
