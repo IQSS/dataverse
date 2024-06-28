@@ -50,39 +50,35 @@ public class IndexBatchServiceBean {
     public Future<JsonObjectBuilder> indexStatus() {
         JsonObjectBuilder response = Json.createObjectBuilder();
         logger.info("Beginning indexStatus()");
-        JsonObject contentInDatabaseButStaleInOrMissingFromSolr = getContentInDatabaseButStaleInOrMissingFromSolr().build();
-        JsonObject contentInSolrButNotDatabase = null;
-        JsonObject permissionsInSolrButNotDatabase = null;
         try {
+            JsonObject contentInDatabaseButStaleInOrMissingFromSolr = getContentInDatabaseButStaleInOrMissingFromSolr().build();
+            JsonObject contentInSolrButNotDatabase = null;
+            JsonObject permissionsInSolrButNotDatabase = null;
+
             contentInSolrButNotDatabase = getContentInSolrButNotDatabase().build();
             permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase().build();
-          
-        } catch (SearchException ex) {
+
+            JsonObject permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr().build();
+
+            response
+                    .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
+                    .add("contentInIndexButNotDatabase", contentInSolrButNotDatabase)
+                    .add("permissionsInDatabaseButStaleInOrMissingFromIndex", permissionsInDatabaseButStaleInOrMissingFromSolr)
+                    .add("permissionsInIndexButNotDatabase", permissionsInSolrButNotDatabase);
+
+            logger.log(Level.INFO, "contentInDatabaseButStaleInOrMissingFromIndex: {0}", contentInDatabaseButStaleInOrMissingFromSolr);
+            logger.log(Level.INFO, "contentInIndexButNotDatabase: {0}", contentInSolrButNotDatabase);
+            logger.log(Level.INFO, "permissionsInDatabaseButStaleInOrMissingFromIndex: {0}", permissionsInDatabaseButStaleInOrMissingFromSolr);
+            logger.log(Level.INFO, "permissionsInIndexButNotDatabase: {0}", permissionsInSolrButNotDatabase);
+        } catch (Exception ex) {
             String msg = "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage();
             logger.info(msg);
+            ex.printStackTrace();
             response.add("SearchException ", msg);
-            return new AsyncResult<>(response);
         }
-        try {
-            JsonObject permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr().build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.warning(e.getLocalizedMessage());
-        }
-    
-        JsonObjectBuilder data = Json.createObjectBuilder()
-                .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
-                .add("contentInIndexButNotDatabase", contentInSolrButNotDatabase)
-                .add("permissionsInDatabaseButStaleInOrMissingFromIndex", permissionsInDatabaseButStaleInOrMissingFromSolr)
-                .add("permissionsInIndexButNotDatabase", permissionsInSolrButNotDatabase);
-
-        logger.log(Level.INFO, "contentInDatabaseButStaleInOrMissingFromIndex: {0}", contentInDatabaseButStaleInOrMissingFromSolr);
-        logger.log(Level.INFO, "contentInIndexButNotDatabase: {0}", contentInSolrButNotDatabase);
-        logger.log(Level.INFO, "permissionsInDatabaseButStaleInOrMissingFromIndex: {0}", permissionsInDatabaseButStaleInOrMissingFromSolr);
-        logger.log(Level.INFO, "permissionsInIndexButNotDatabase: {0}", permissionsInSolrButNotDatabase);    
-      
-        return new AsyncResult<>(data);
+        return new AsyncResult<>(response);
     }
+
     @Asynchronous
     public Future<JsonObjectBuilder> clearOrphans() {
         JsonObjectBuilder response = Json.createObjectBuilder();
