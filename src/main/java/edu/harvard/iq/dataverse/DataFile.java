@@ -50,7 +50,7 @@ import jakarta.validation.constraints.NotBlank;
         @NamedQuery(name="DataFile.findDataFileThatReplacedId",
                 query="SELECT s.id FROM DataFile s WHERE s.previousDataFileId=:identifier"),
         @NamedQuery(name="DataFile.fileMetadataInReleasedVersion",
-                query="SELECT fm.id FROM FileMetadata fm, DvObject dvo WHERE fm.datasetversion_id=(SELECT max(id) FROM DatasetVersion WHERE dataset_id=dvo.owner_id and versionstate='RELEASED') AND dvo.id=fm.datafile_id AND datafile_id=:fid")
+                query="SELECT fm.id FROM FileMetadata fm, DvObject dvo WHERE fm.datasetversion_id=(SELECT max(dv.id) FROM DatasetVersion dv WHERE dv.dataset_id=dvo.owner_id and dv.versionstate='RELEASED') AND dvo.id=fm.datafile_id AND fm.datafile_id=:fid")
 })
 @Entity
 @Table(indexes = {@Index(columnList="ingeststatus")
