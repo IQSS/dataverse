@@ -58,6 +58,29 @@ public enum FeatureFlags {
      * @since Dataverse 6.3
      */
     ADD_PUBLICOBJECT_SOLR_FIELD("add-publicobject-solr-field"),
+    /**
+     * With this flag set, Dataverse will index the actual origin of harvested
+     * metadata records, instead of the "Harvested" string in all cases. 
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.index-harvested-metadata-source"
+     * @since Dataverse 6.3
+     */
+    INDEX_HARVESTED_METADATA_SOURCE("index-harvested-metadata-source"),
+
+    /**
+     * Dataverse normally deletes all solr documents related to a dataset's files
+     * when the dataset is reindexed. With this flag enabled, additional logic is
+     * added to the reindex process to delete only the solr documents that are no
+     * longer needed. (Required docs will be updated rather than deleted and 
+     * replaced.) Enabling this feature flag should make the reindex process 
+     * faster without impacting the search results.
+     *
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.reduce-solr-deletes"
+     * @since Dataverse 6.3
+     */
+    REDUCE_SOLR_DELETES("reduce-solr-deletes"),
     ;
     
     final String flag;

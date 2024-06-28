@@ -220,7 +220,7 @@ public class Datasets extends AbstractApiBean {
     // WORKS on published datasets, which are open to the world. -- L.A. 4.5
     @GET
     @Path("/export")
-    @Produces({"application/xml", "application/json", "application/html", "application/ld+json" })
+    @Produces({"application/xml", "application/json", "application/html", "application/ld+json", "*/*" })
     public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         try {
@@ -4839,7 +4839,10 @@ public class Datasets extends AbstractApiBean {
                     }
                 }
                 execCommand(new DeaccessionDatasetVersionCommand(req, datasetVersion, false));
-                return ok("Dataset " + datasetId + " deaccessioned for version " + versionId);
+                
+                return ok("Dataset " + 
+                        (":persistentId".equals(datasetId) ? datasetVersion.getDataset().getGlobalId().asString() : datasetId) + 
+                        " deaccessioned for version " + versionId);
             } catch (JsonParsingException jpe) {
                 return error(Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
             }
