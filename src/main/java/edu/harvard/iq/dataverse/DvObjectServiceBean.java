@@ -83,8 +83,8 @@ public class DvObjectServiceBean implements java.io.Serializable {
     }
     
     public String getDtype(Long id) {
-        Query query = em.createNativeQuery("SELECT dvo.dtype FROM dvobject dvo WHERE dvo.id=:id");
-        query.setParameter("id", id);
+        Query query = em.createNativeQuery("SELECT dvo.dtype FROM dvobject dvo WHERE dvo.id=?");
+        query.setParameter(1, id);
         try {
             return (String) query.getSingleResult();
         } catch (NoResultException e) {

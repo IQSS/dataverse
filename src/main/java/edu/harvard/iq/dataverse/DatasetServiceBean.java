@@ -1072,8 +1072,8 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     public List<String> getVersionStates(long id) {
         try {
-            Query query = em.createNativeQuery("SELECT dv.versionState FROM datasetversion dv WHERE dataset_id=:id ORDER BY id)");
-            query.setParameter("id",id);
+            Query query = em.createNativeQuery("SELECT dv.versionState FROM datasetversion dv WHERE dataset_id=? ORDER BY id)");
+            query.setParameter(1, id);
             return (List<String>) query.getResultList();
 
         } catch (Exception ex) {
