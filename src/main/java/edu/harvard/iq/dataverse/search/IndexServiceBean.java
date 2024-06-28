@@ -2220,49 +2220,48 @@ public class IndexServiceBean {
                 SolrDocumentList list = rsp.getResults();
                 for (SolrDocument doc: list) {
                     long id = Long.parseLong((String) doc.getFieldValue(SearchFields.DEFINITION_POINT_DVOBJECT_ID));
-                    String docId = (String)doc.getFieldValue(SearchFields.ID);
-                    if(!dvObjectService.checkExists(id)) {
+                    String docId = (String) doc.getFieldValue(SearchFields.ID);
+                    DvObject obj = dvObjectService.findDvObject(id);
+                    if (obj == null) {
                         permissionInSolrOnly.add(docId);
-                    } else {
-                        DvObject obj = dvObjectService.findDvObject(id);
-                        if (obj instanceof Dataset d) {
-                            DatasetVersion dv = d.getLatestVersion();
-                            if (docId.endsWith("draft_permission")) {
-                                if (!dv.isDraft()) {
-                                    permissionInSolrOnly.add(docId);
-                                }
-                            } else if (docId.endsWith("deaccessioned_permission")) {
-                                if (!dv.isDeaccessioned()) {
-                                    permissionInSolrOnly.add(docId);
-                                }
+                    }
+                    if (obj instanceof Dataset d) {
+                        DatasetVersion dv = d.getLatestVersion();
+                        if (docId.endsWith("draft_permission")) {
+                            if (!dv.isDraft()) {
+                                permissionInSolrOnly.add(docId);
+                            }
+                        } else if (docId.endsWith("deaccessioned_permission")) {
+                            if (!dv.isDeaccessioned()) {
+                                permissionInSolrOnly.add(docId);
+                            }
+                        } else {
+                            if (d.getReleasedVersion() == null) {
+                                permissionInSolrOnly.add(docId);
+                            }
+                        }
+                    } else if (obj instanceof DataFile f) {
+                        List<VersionState> states = dataFileService.findVersionStates(f.getId());
+                        Set<String> strings = states.stream().map(VersionState::toString).collect(Collectors.toSet());
+                        logger.fine("States for " + docId + ": " + String.join(", ", strings));
+                        if (docId.endsWith("draft_permission")) {
+                            if (!states.contains(VersionState.DRAFT)) {
+                                permissionInSolrOnly.add(docId);
+                            }
+                        } else if (docId.endsWith("deaccessioned_permission")) {
+                            if (!states.contains(VersionState.DEACCESSIONED) && states.size() == 1) {
+                                permissionInSolrOnly.add(docId);
+                            }
+                        } else {
+                            if (!states.contains(VersionState.RELEASED)) {
+                                permissionInSolrOnly.add(docId);
                             } else {
-                                if (d.getReleasedVersion() == null) {
+                                if (!dataFileService.isInReleasedVersion(f.getId())) {
+                                    logger.fine("Adding doc " + docId + " to list of permissions in Solr only");
                                     permissionInSolrOnly.add(docId);
                                 }
                             }
-                        } else if (obj instanceof DataFile f) {
-                            List<VersionState> states = dataFileService.findVersionStates(f.getId());
-                            Set<String> strings = states.stream().map(VersionState::toString).collect(Collectors.toSet());
-                            logger.fine("States for " + docId + ": " + String.join(", ", strings));
-                            if (docId.endsWith("draft_permission")) {
-                                if (!states.contains(VersionState.DRAFT)) {
-                                    permissionInSolrOnly.add(docId);
-                                }
-                            } else if (docId.endsWith("deaccessioned_permission")) {
-                                if (!states.contains(VersionState.DEACCESSIONED) && states.size() == 1) {
-                                    permissionInSolrOnly.add(docId);
-                                }
-                            } else {
-                                if (!states.contains(VersionState.RELEASED)) {
-                                    permissionInSolrOnly.add(docId);
-                                } else {
-                                    if(!dataFileService.isInReleasedVersion(f.getId())) {
-                                        logger.fine("Adding doc " + docId + " to list of permissions in Solr only");
-                                        permissionInSolrOnly.add(docId);
-                                    }
-                                }
 
-                            }
                         }
                     }
                 }
