@@ -2256,7 +2256,7 @@ public class IndexServiceBean {
                                 if (!states.contains(VersionState.RELEASED)) {
                                     permissionInSolrOnly.add(docId);
                                 } else {
-                                    if(dataFileService.findFileMetadataByDatasetVersionIdAndDataFileId(f.getOwner().getReleasedVersion().getId(), f.getId()) == null) {
+                                    if(!dataFileService.isInReleasedVersion(f.getId())) {
                                         logger.fine("Adding doc " + docId + " to list of permissions in Solr only");
                                         permissionInSolrOnly.add(docId);
                                     }
