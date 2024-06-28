@@ -2,7 +2,7 @@
 
 ### Life Science Metadata
 
-Re-adding value `cell counting` to Life Science metadatablock's Measurement Type vocabularies accidentally removed in `v5.1`. 
+Re-adding value `cell counting` to Life Science metadata block's Measurement Type vocabularies accidentally removed in `v5.1`. 
 
 ## Upgrade Instructions
 
