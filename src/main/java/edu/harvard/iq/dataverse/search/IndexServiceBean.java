@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.DvObject.DType;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
@@ -2221,27 +2222,30 @@ public class IndexServiceBean {
                 for (SolrDocument doc: list) {
                     long id = Long.parseLong((String) doc.getFieldValue(SearchFields.DEFINITION_POINT_DVOBJECT_ID));
                     String docId = (String) doc.getFieldValue(SearchFields.ID);
-                    DvObject obj = dvObjectService.findDvObject(id);
-                    if (obj == null) {
+                    String dtype = dvObjectService.getDtype(id);
+                    if (dtype == null) {
                         permissionInSolrOnly.add(docId);
                     }
-                    if (obj instanceof Dataset d) {
-                        DatasetVersion dv = d.getLatestVersion();
-                        if (docId.endsWith("draft_permission")) {
-                            if (!dv.isDraft()) {
-                                permissionInSolrOnly.add(docId);
-                            }
-                        } else if (docId.endsWith("deaccessioned_permission")) {
-                            if (!dv.isDeaccessioned()) {
-                                permissionInSolrOnly.add(docId);
-                            }
-                        } else {
-                            if (d.getReleasedVersion() == null) {
-                                permissionInSolrOnly.add(docId);
+                    if (dtype.equals(DType.Dataset.getDType())) {
+                        List<String> states = datasetService.getVersionStates(id);
+                        if (states != null) {
+                            String latestState = states.get(states.size() - 1);
+                            if (docId.endsWith("draft_permission")) {
+                                if (!latestState.equals(VersionState.DRAFT.toString())) {
+                                    permissionInSolrOnly.add(docId);
+                                }
+                            } else if (docId.endsWith("deaccessioned_permission")) {
+                                if (!latestState.equals(VersionState.DEACCESSIONED.toString())) {
+                                    permissionInSolrOnly.add(docId);
+                                }
+                            } else {
+                                if (!states.contains(VersionState.RELEASED.toString())) {
+                                    permissionInSolrOnly.add(docId);
+                                }
                             }
                         }
-                    } else if (obj instanceof DataFile f) {
-                        List<VersionState> states = dataFileService.findVersionStates(f.getId());
+                    } else if (dtype.equals(DType.DataFile.getDType())) {
+                        List<VersionState> states = dataFileService.findVersionStates(id);
                         Set<String> strings = states.stream().map(VersionState::toString).collect(Collectors.toSet());
                         logger.fine("States for " + docId + ": " + String.join(", ", strings));
                         if (docId.endsWith("draft_permission")) {
@@ -2256,7 +2260,7 @@ public class IndexServiceBean {
                             if (!states.contains(VersionState.RELEASED)) {
                                 permissionInSolrOnly.add(docId);
                             } else {
-                                if (!dataFileService.isInReleasedVersion(f.getId())) {
+                                if (!dataFileService.isInReleasedVersion(id)) {
                                     logger.fine("Adding doc " + docId + " to list of permissions in Solr only");
                                     permissionInSolrOnly.add(docId);
                                 }
@@ -2306,7 +2310,7 @@ public class IndexServiceBean {
                 if (idObject != null) {
                     try {
                         long id = (Long) idObject;
-                        if (!dvObjectService.checkExists(id)) {
+                        if (dvObjectService.getDtype(id) == null) {
                             dvObjectInSolrOnly.add((String)doc.getFieldValue(SearchFields.ID));
                         }
                     } catch (ClassCastException ex) {
