@@ -2209,7 +2209,7 @@ public class IndexServiceBean {
         logger.info("Checking for solr-only permissions");
         List<String> permissionInSolrOnly = new ArrayList<>();
         try {
-            int rows = 100;
+            int rows = 1000;
             SolrQuery q = (new SolrQuery(SearchFields.DEFINITION_POINT_DVOBJECT_ID+":*")).setRows(rows).setSort(SortClause.asc(SearchFields.ID));
             String cursorMark = CursorMarkParams.CURSOR_MARK_START;
             boolean done = false;
