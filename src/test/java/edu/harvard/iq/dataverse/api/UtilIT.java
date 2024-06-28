@@ -360,10 +360,10 @@ public class UtilIT {
     }
 
     static Response createSubDataverse(String alias, String category, String apiToken, String parentDV) {
-        return createSubDataverse(alias, category, apiToken, parentDV, null, null);
+        return createSubDataverse(alias, category, apiToken, parentDV, null, null, null);
     }
     
-    static Response createSubDataverse(String alias, String category, String apiToken, String parentDV, String[] inputLevelNames, String[] facetIds) {
+    static Response createSubDataverse(String alias, String category, String apiToken, String parentDV, String[] inputLevelNames, String[] facetIds, String[] metadataBlockNames) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
         JsonArrayBuilder subjectArrayBuilder = Json.createArrayBuilder();
@@ -376,6 +376,8 @@ public class UtilIT {
                 // don't send "dataverseType" if category is null, must be a better way
                 .add(category != null ? "dataverseType" : "notTheKeyDataverseType", category != null ? category : "whatever");
 
+        JsonObjectBuilder metadataBlocksObjectBuilder = Json.createObjectBuilder();
+
         if (inputLevelNames != null) {
             JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
             for(String inputLevelName : inputLevelNames) {
@@ -385,8 +387,18 @@ public class UtilIT {
                         .add("include", true)
                 );
             }
-            objectBuilder.add("inputLevels", inputLevelsArrayBuilder);
+            metadataBlocksObjectBuilder.add("inputLevels", inputLevelsArrayBuilder);
         }
+
+        if (metadataBlockNames != null) {
+            JsonArrayBuilder metadataBlockNamesArrayBuilder = Json.createArrayBuilder();
+            for(String metadataBlockName : metadataBlockNames) {
+                metadataBlockNamesArrayBuilder.add(metadataBlockName);
+            }
+            metadataBlocksObjectBuilder.add("metadataBlockNames", metadataBlockNamesArrayBuilder);
+        }
+
+        objectBuilder.add("metadataBlocks", metadataBlocksObjectBuilder);
 
         if (facetIds != null) {
             JsonArrayBuilder facetIdsArrayBuilder = Json.createArrayBuilder();

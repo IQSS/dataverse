@@ -933,16 +933,12 @@ public class DataversesIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         String testAliasSuffix = "-add-dataverse";
 
-        // Without optional input levels and facet ids
-        String testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
-        Response createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root");
-        createSubDataverseWithInputLevelsAndFacetIdsResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-
         // With optional input levels and facet ids
         String[] testInputLevelNames = {"geographicCoverage", "country"};
         String[] testFacetIds = {"authorName", "authorAffiliation"};
-        testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
-        createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testFacetIds);
+        String[] testMetadataBlockNames = {"citation", "geospatial"};
+        String testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
+        Response createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testFacetIds, testMetadataBlockNames);
         createSubDataverseWithInputLevelsAndFacetIdsResponse.then().assertThat().statusCode(CREATED.getStatusCode());
 
         // Assert facets are configured
@@ -956,6 +952,7 @@ public class DataversesIT {
 
         // Assert input levels are configured
         Response listDataverseInputLevelsResponse = UtilIT.listDataverseInputLevels(testDataverseAlias, apiToken);
+        listDataverseInputLevelsResponse.prettyPrint();
         String actualInputLevelName1 = listDataverseInputLevelsResponse.then().extract().path("data[0].datasetFieldTypeName");
         String actualInputLevelName2 = listDataverseInputLevelsResponse.then().extract().path("data[1].datasetFieldTypeName");
         assertNotEquals(actualFacetName1, actualFacetName2);

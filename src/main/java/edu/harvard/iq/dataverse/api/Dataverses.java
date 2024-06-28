@@ -137,11 +137,19 @@ public class Dataverses extends AbstractApiBean {
         }
 
         try {
-            JsonArray inputLevels = newDataverseJson.getJsonArray("inputLevels");
-            List<DataverseFieldTypeInputLevel> newInputLevels = inputLevels != null ? parseInputLevels(inputLevels, newDataverse) : null;
+            JsonObject metadataBlocksJson = newDataverseJson.getJsonObject("metadataBlocks");
+            List<DataverseFieldTypeInputLevel> inputLevels = null;
+            List<MetadataBlock> selectedMetadataBlocks = null;
+            if (metadataBlocksJson != null) {
+                JsonArray inputLevelsArray = metadataBlocksJson.getJsonArray("inputLevels");
+                inputLevels = inputLevelsArray != null ? parseInputLevels(inputLevelsArray, newDataverse) : null;
 
-            JsonArray facetIds = newDataverseJson.getJsonArray("facetIds");
-            List<DatasetFieldType> facetList = facetIds != null ? parseFacets(facetIds) : null;
+                JsonArray selectedMetadataBlocksArray = metadataBlocksJson.getJsonArray("metadataBlockNames");
+                selectedMetadataBlocks = selectedMetadataBlocksArray != null ? parseNewDataverseMetadataBlocks(selectedMetadataBlocksArray) : null;
+            }
+
+            JsonArray facetIdsArray = newDataverseJson.getJsonArray("facetIds");
+            List<DatasetFieldType> facetList = facetIdsArray != null ? parseFacets(facetIdsArray) : null;
 
             if (!parentIdtf.isEmpty()) {
                 Dataverse owner = findDataverseOrDie(parentIdtf);
@@ -154,7 +162,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
-            newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), facetList, newInputLevels));
+            newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), facetList, inputLevels, selectedMetadataBlocks));
             return created("/dataverses/" + newDataverse.getAlias(), json(newDataverse));
         } catch (WrappedResponse ww) {
 
@@ -183,7 +191,21 @@ public class Dataverses extends AbstractApiBean {
 
         }
     }
-    
+
+    private List<MetadataBlock> parseNewDataverseMetadataBlocks(JsonArray selectedMetadataBlocksArray) throws WrappedResponse {
+        List<MetadataBlock> selectedMetadataBlocks = new ArrayList<>();
+        for (JsonString metadataBlockName : selectedMetadataBlocksArray.getValuesAs(JsonString.class)) {
+            MetadataBlock metadataBlock = metadataBlockSvc.findByName(metadataBlockName.getString());
+            if (metadataBlock == null) {
+                // TODO
+                throw new WrappedResponse(badRequest("TODO"));
+            }
+            selectedMetadataBlocks.add(metadataBlock);
+        }
+
+        return selectedMetadataBlocks;
+    }
+
     @POST
     @AuthRequired
     @Path("{identifier}/validateDatasetJson")
