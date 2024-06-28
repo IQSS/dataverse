@@ -162,8 +162,12 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         managedDv.setPermissionModificationTime(new Timestamp(new Date().getTime()));
 
         if (facetList != null) {
-            managedDv.setFacetRoot(true);
             ctxt.facets().deleteFacetsFor(managedDv);
+
+            if (!facetList.isEmpty()) {
+                managedDv.setFacetRoot(true);
+            }
+
             int i = 0;
             for (DatasetFieldType df : facetList) {
                 ctxt.facets().create(i++, df, managedDv);
