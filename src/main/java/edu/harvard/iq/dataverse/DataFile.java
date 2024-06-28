@@ -48,9 +48,7 @@ import jakarta.validation.constraints.NotBlank;
         @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth",
                 query="SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority"),
         @NamedQuery(name="DataFile.findDataFileThatReplacedId",
-                query="SELECT s.id FROM DataFile s WHERE s.previousDataFileId=:identifier"),
-        @NamedQuery(name="DataFile.fileMetadataInReleasedVersion",
-                query="SELECT fm.id FROM FileMetadata fm, DvObject dvo WHERE fm.datasetVersion.id=(SELECT max(dv.id) FROM DatasetVersion dv WHERE dv.dataset.id=dvo.owner.id and dv.versionState=edu.harvard.iq.dataverse.DatasetVersion.VersionState.RELEASED) AND dvo.id=fm.dataFile.id AND fm.dataFile.id=:fid")
+                query="SELECT s.id FROM DataFile s WHERE s.previousDataFileId=:identifier")
 })
 @Entity
 @Table(indexes = {@Index(columnList="ingeststatus")
