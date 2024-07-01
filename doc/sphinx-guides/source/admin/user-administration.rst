@@ -112,6 +112,7 @@ This enables additional settings for each user in the notifications tab of their
 * ``SUBMITTEDDS`` Submitted for review
 * ``WORKFLOW_FAILURE`` External workflow run has failed
 * ``WORKFLOW_SUCCESS`` External workflow run has succeeded
+* ``PIDRECONCILED``   Dataset persistent identifier changed
 
 After enabling this feature, all notifications are enabled by default, until this is changed by the user.
 
