@@ -139,13 +139,13 @@ public class Dataverses extends AbstractApiBean {
         try {
             JsonObject metadataBlocksJson = newDataverseJson.getJsonObject("metadataBlocks");
             List<DataverseFieldTypeInputLevel> inputLevels = null;
-            List<MetadataBlock> selectedMetadataBlocks = null;
+            List<MetadataBlock> metadataBlocks = null;
             if (metadataBlocksJson != null) {
                 JsonArray inputLevelsArray = metadataBlocksJson.getJsonArray("inputLevels");
                 inputLevels = inputLevelsArray != null ? parseInputLevels(inputLevelsArray, newDataverse) : null;
 
-                JsonArray newMetadataBlockNamesArray = metadataBlocksJson.getJsonArray("metadataBlockNames");
-                selectedMetadataBlocks = newMetadataBlockNamesArray != null ? parseNewDataverseMetadataBlocks(newMetadataBlockNamesArray) : null;
+                JsonArray metadataBlockNamesArray = metadataBlocksJson.getJsonArray("metadataBlockNames");
+                metadataBlocks = metadataBlockNamesArray != null ? parseNewDataverseMetadataBlocks(metadataBlockNamesArray) : null;
             }
 
             JsonArray facetIdsArray = newDataverseJson.getJsonArray("facetIds");
@@ -162,7 +162,7 @@ public class Dataverses extends AbstractApiBean {
             }
 
             AuthenticatedUser u = getRequestAuthenticatedUserOrDie(crc);
-            newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), facetList, inputLevels, selectedMetadataBlocks));
+            newDataverse = execCommand(new CreateDataverseCommand(newDataverse, createDataverseRequest(u), facetList, inputLevels, metadataBlocks));
             return created("/dataverses/" + newDataverse.getAlias(), json(newDataverse));
         } catch (WrappedResponse ww) {
 
