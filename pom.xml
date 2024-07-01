@@ -21,7 +21,7 @@
         <skipUnitTests>false</skipUnitTests>
         <skipIntegrationTests>false</skipIntegrationTests>
         <it.groups>integration</it.groups>
-        
+
         <!-- By default, this module will produce a WAR file. -->
         <!-- This will be switched within the container profile! -->
         <packaging.type>war</packaging.type>
@@ -233,7 +233,7 @@
             <artifactId>jakarta.json</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+
         <!-- JSON-B -->
         <dependency>
             <groupId>jakarta.json.bind</groupId>
@@ -245,7 +245,7 @@
             <artifactId>yasson</artifactId>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- Jakarta Faces & related -->
         <dependency>
             <groupId>org.glassfish</groupId>
@@ -458,7 +458,7 @@
             <artifactId>caffeine</artifactId>
             <version>3.1.8</version>
         </dependency>
-        
+
         <!-- New and Improved GDCC XOAI library! -->
         <dependency>
             <groupId>io.gdcc</groupId>
@@ -679,7 +679,7 @@
             <version>4.0.4</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -708,6 +708,12 @@
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
             <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/edu.kit.datamanager/ro-crate-java -->
+        <dependency>
+            <groupId>edu.kit.datamanager</groupId>
+            <artifactId>ro-crate-java</artifactId>
+            <version>1.1.0-rc.1</version>
         </dependency>
     </dependencies>
     <build>
