@@ -53,6 +53,6 @@ If you've encountered a problem installing Dataverse and are ready to ask for he
 Improving this Guide
 --------------------
 
-If you spot a typo in this guide or would like to suggest an improvement, please find the appropriate file in https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/installation and send a pull request as explained in the :doc:`/developers/documentation` section of the Developer Guide. You are also welcome to simply open an issue at https://github.com/IQSS/dataverse/issues to describe the problem with this guide.
+If you spot a typo in this guide or would like to suggest an improvement, please find the appropriate file in https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/installation and send a pull request as explained in the :doc:`/contributor/documentation` section of the Contributor Guide. You are also welcome to simply open an issue at https://github.com/IQSS/dataverse/issues to describe the problem with this guide.
 
 Next is the :doc:`prep` section.

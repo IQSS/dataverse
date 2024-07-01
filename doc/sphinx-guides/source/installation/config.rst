@@ -1741,6 +1741,8 @@ Now that you have a "languages.zip" file, you can load it into your Dataverse in
 
 Click on the languages using the drop down in the header to try them out.
 
+.. _help-translate:
+
 How to Help Translate the Dataverse Software Into Your Language
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -3731,7 +3733,7 @@ Note: by default, the URL is composed from the settings ``:GuidesBaseUrl`` and `
 :GuidesBaseUrl
 ++++++++++++++
 
-Set ``:GuidesBaseUrl`` to override the default value "https://guides.dataverse.org". If you are interested in writing your own version of the guides, you may find the :doc:`/developers/documentation` section of the Developer Guide helpful.
+Set ``:GuidesBaseUrl`` to override the default value "https://guides.dataverse.org". If you are interested in writing your own version of the guides, you may find the :doc:`/contributor/documentation` section of the Contributor Guide helpful.
 
 ``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:GuidesBaseUrl``
 
