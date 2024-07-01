@@ -44,7 +44,6 @@ Start below this comment section.
 **Any related open or closed issues to this bug report?**
 
 
-
 **Screenshots:**
 
 No matter the issue, screenshots are always welcome.
