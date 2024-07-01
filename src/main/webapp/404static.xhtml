@@ -93,7 +93,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-sm-8 small">
-                        <p>Copyright &#169; 2023, The President &#38; Fellows of Harvard College | <a href="http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html" target="_blank">Privacy Policy</a>
+                        <p>Copyright &#169;<span id="current-year"></span>, The President &#38; Fellows of Harvard College | <a href="http://best-practices.dataverse.org/harvard-policies/harvard-privacy-policy.html" target="_blank">Privacy Policy</a>
                         </p>
                     </div>
                     <div class="col-sm-4 text-right">
@@ -106,4 +106,13 @@
             </div>
         </div>
     </body>
+
+    <script>
+        //<![CDATA[
+        const d = new Date();
+        let year = d.getFullYear();
+        document.getElementById("current-year").innerHTML = " " + d.getFullYear();
+        //]]>
+    </script>
+
 </html>
