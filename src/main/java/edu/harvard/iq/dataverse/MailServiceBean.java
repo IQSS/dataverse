@@ -117,10 +117,11 @@ public class MailServiceBean implements java.io.Serializable {
             return false;
         }
         InternetAddress systemAddress = optionalAddress.get();
+        InternetAddress supportAddress = getSupportAddress().orElse(systemAddress);
 
         String body = messageText +
             BundleUtil.getStringFromBundle(isHtmlContent ? "notification.email.closing.html" : "notification.email.closing",
-                List.of(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress)));
+                List.of(BrandingUtil.getSupportTeamEmailAddress(supportAddress), BrandingUtil.getSupportTeamName(supportAddress)));
 
         logger.fine(() -> "Sending email to %s. Subject: <<<%s>>>. Body: %s".formatted(to, subject, body));
         try {
