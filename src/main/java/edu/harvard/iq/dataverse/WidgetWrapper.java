@@ -18,8 +18,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @Named
 public class WidgetWrapper implements java.io.Serializable {
 
-    private final static String WIDGET_PARAMETER = "widget";
-    private final static char WIDGET_SEPARATOR = '@';
+    private static final String WIDGET_PARAMETER = "widget";
+    private static final char WIDGET_SEPARATOR = '@';
     
     private Boolean widgetView;
     private String widgetHome;
