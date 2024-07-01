@@ -27,7 +27,7 @@ import jakarta.persistence.Transient;
  * How to Make Your Data Count July 10th, 2018).
  *
  * The recommended starting point to implement Make Data Count is
- * https://github.com/CDLUC3/Make-Data-Count/blob/master/getting-started.md
+ * https://github.com/gdcc/Make-Data-Count/blob/master/getting-started.md
  * which specifically recommends reading the "COUNTER Code of Practice for
  * Research Data" mentioned in the user facing docs.
  *
@@ -35,7 +35,7 @@ import jakarta.persistence.Transient;
  * https://dash.ucmerced.edu/stash/dataset/doi:10.6071/M3RP49
  *
  * For processing logs we could try DASH's
- * https://github.com/CDLUC3/counter-processor
+ * https://github.com/gdcc/counter-processor
  *
  * Next, DataOne implemented it, and you can see an example dataset here:
  * https://search.dataone.org/view/doi:10.5063/F1Z899CZ

@@ -16,7 +16,7 @@ Architecture
 
 Dataverse installations who would like support for Make Data Count must install `Counter Processor`_, a Python project created by California Digital Library (CDL) which is part of the Make Data Count project and which runs the software in production as part of their `DASH`_ data sharing platform.
 
-.. _Counter Processor: https://github.com/CDLUC3/counter-processor
+.. _Counter Processor: https://github.com/gdcc/counter-processor
 .. _DASH: https://cdluc3.github.io/dash/
 
 The diagram below shows how Counter Processor interacts with your Dataverse installation and the DataCite hub, once configured. Dataverse installations using Handles rather than DOIs should note the limitations in the next section of this page.
@@ -84,9 +84,9 @@ Configure Counter Processor
 
 * Change to the directory where you installed Counter Processor.
 
-  * ``cd /usr/local/counter-processor-0.1.04``
+  * ``cd /usr/local/counter-processor-1.05``
 
-* Download :download:`counter-processor-config.yaml <../_static/admin/counter-processor-config.yaml>` to ``/usr/local/counter-processor-0.1.04``.
+* Download :download:`counter-processor-config.yaml <../_static/admin/counter-processor-config.yaml>` to ``/usr/local/counter-processor-1.05``.
 
 * Edit the config file and pay particular attention to the FIXME lines.
 
@@ -99,7 +99,7 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 
 * Change to the directory where you installed Counter Processor.
 
-  * ``cd /usr/local/counter-processor-0.1.04``
+  * ``cd /usr/local/counter-processor-1.05``
 
 * If you are running Counter Processor for the first time in the middle of a month, you will need create blank log files for the previous days. e.g.:
 

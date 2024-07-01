@@ -117,10 +117,10 @@ public class DatasetMetrics implements Serializable {
      * For an example of sending various metric types (total-dataset-requests,
      * unique-dataset-investigations, etc) for a given month (2018-04) per
      * country (DK, US, etc.) see
-     * https://github.com/CDLUC3/counter-processor/blob/5ce045a09931fb680a32edcc561f88a407cccc8d/good_test.json#L893
+     * https://github.com/gdcc/counter-processor/blob/5ce045a09931fb680a32edcc561f88a407cccc8d/good_test.json#L893
      *
      * counter-processor uses GeoLite2 for IP lookups according to their
-     * https://github.com/CDLUC3/counter-processor#download-the-free-ip-to-geolocation-database
+     * https://github.com/gdcc/counter-processor#download-the-free-ip-to-geolocation-database
      */
     @Column(nullable = true)
     private String countryCode;
