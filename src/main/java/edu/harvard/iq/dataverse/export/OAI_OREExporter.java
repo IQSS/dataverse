@@ -7,11 +7,11 @@ import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-import jakarta.json.JsonObject;
 import jakarta.ws.rs.core.MediaType;
 
 @AutoService(Exporter.class)
@@ -25,7 +25,7 @@ public class OAI_OREExporter implements Exporter {
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream)
             throws ExportException {
         try {
-            outputStream.write(dataProvider.getDatasetORE().toString().getBytes("UTF8"));
+            outputStream.write(dataProvider.getDatasetORE().toString().getBytes(StandardCharsets.UTF_8));
             outputStream.flush();
         } catch (Exception e) {
             logger.severe(e.getMessage());

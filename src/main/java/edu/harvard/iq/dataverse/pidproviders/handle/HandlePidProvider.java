@@ -120,21 +120,21 @@ public class HandlePidProvider extends AbstractPidProvider {
             
             try {
 
-                AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), handlenetIndex,
+                AdminRecord admin = new AdminRecord(authHandle.getBytes(StandardCharsets.UTF_8), handlenetIndex,
                         true, true, true, true, true, true,
                         true, true, true, true, true, true);
 
                 int timestamp = (int) (System.currentTimeMillis() / 1000);
 
-                HandleValue[] val = {new HandleValue(100, "HS_ADMIN".getBytes("UTF8"),
+                HandleValue[] val = {new HandleValue(100, "HS_ADMIN".getBytes(StandardCharsets.UTF_8),
                     Encoder.encodeAdminRecord(admin),
                     HandleValue.TTL_TYPE_RELATIVE, 86400,
-                    timestamp, null, true, true, true, false), new HandleValue(1, "URL".getBytes("UTF8"),
+                    timestamp, null, true, true, true, false), new HandleValue(1, "URL".getBytes(StandardCharsets.UTF_8),
                     datasetUrl.getBytes(),
                     HandleValue.TTL_TYPE_RELATIVE, 86400,
                     timestamp, null, true, true, true, false)};
 
-                ModifyValueRequest req = new ModifyValueRequest(handle.getBytes("UTF8"), val, auth);
+                ModifyValueRequest req = new ModifyValueRequest(handle.getBytes(StandardCharsets.UTF_8), val, auth);
 
                 resolver.traceMessages = true;
                 AbstractResponse response = resolver.processRequest(req);
@@ -168,22 +168,22 @@ public class HandlePidProvider extends AbstractPidProvider {
 
         try {
 
-            AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), handlenetIndex,
+            AdminRecord admin = new AdminRecord(authHandle.getBytes(StandardCharsets.UTF_8), handlenetIndex,
                     true, true, true, true, true, true,
                     true, true, true, true, true, true);
 
             int timestamp = (int) (System.currentTimeMillis() / 1000);
 
-            HandleValue[] val = {new HandleValue(100, "HS_ADMIN".getBytes("UTF8"),
+            HandleValue[] val = {new HandleValue(100, "HS_ADMIN".getBytes(StandardCharsets.UTF_8),
                 Encoder.encodeAdminRecord(admin),
                 HandleValue.TTL_TYPE_RELATIVE, 86400,
-                timestamp, null, true, true, true, false), new HandleValue(1, "URL".getBytes("UTF8"),
+                timestamp, null, true, true, true, false), new HandleValue(1, "URL".getBytes(StandardCharsets.UTF_8),
                 datasetUrl.getBytes(),
                 HandleValue.TTL_TYPE_RELATIVE, 86400,
                 timestamp, null, true, true, true, false)};
 
             CreateHandleRequest req
-                    = new CreateHandleRequest(handle.getBytes("UTF8"), val, auth);
+                    = new CreateHandleRequest(handle.getBytes(StandardCharsets.UTF_8), val, auth);
 
             resolver.traceMessages = true;
             AbstractResponse response = resolver.processRequest(req);
