@@ -434,4 +434,11 @@ public class FileUtilTest {
         assertEquals("Code", FileUtil.getIndexableFacetFileType(dockerDataFile));
     }
 
+    @Test
+    public void testSanitizeFileName() {
+        assertEquals(null, FileUtil.sanitizeFileName(null));
+        assertEquals("with_space", FileUtil.sanitizeFileName("with space"));
+        assertEquals("withcomma", FileUtil.sanitizeFileName("with,comma"));
+        assertEquals("with.txt", FileUtil.sanitizeFileName("with,\\?:;,.txt"));
+    }
 }

@@ -1816,5 +1816,13 @@ public class FileUtil implements java.io.Serializable  {
         String storageIdentifier = dataFile.getStorageIdentifier();
         return storageIdentifier.substring(0, storageIdentifier.indexOf(DataAccess.SEPARATOR));
     }
-    
+
+    /**
+     * Replace spaces with "_" and remove invalid chars
+     * @param fileNameIn - Name before sanitization NOTE: not full path since this method removes '/' and '\'
+     * @return filename without spaces or invalid chars
+     */
+    public static String sanitizeFileName(String fileNameIn) {
+        return fileNameIn == null ? null : fileNameIn.replace(' ', '_').replaceAll("[\\\\/:*?\"<>|,;]", "");
+    }
 }
