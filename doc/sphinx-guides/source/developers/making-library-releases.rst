@@ -69,6 +69,8 @@ These examples from the SWORD library. Below is what to expect from the interact
         What is the new development version for "SWORD v2 Common Server Library (forked)"? (sword2-server) 2.0.1-SNAPSHOT: :
         [INFO] 8/17 prepare:rewrite-poms-for-release
 
+Note that a commit or two will be made and pushed but if you do a ``git status`` you will see that locally you are behind by that number of commits. To fix this, you can just do a ``git pull``.
+
 It can take some time for the jar to be visible on Maven Central. You can start by looking on the repo1 server, like this: https://repo1.maven.org/maven2/io/gdcc/sword2-server/2.0.0/
 
 Don't bother putting the new version in a pom.xml until you see it on repo1.
@@ -80,10 +82,61 @@ Releasing a New Library to Maven Central
 
 At a high level:
 
+- Start with a snapshot release.
 - Use an existing pom.xml as a starting point.
 - Use existing GitHub Actions workflows as a starting point.
 - Create secrets in the new library's GitHub repo used by the workflow.
 - If you need an entire new namespace, look at previous issues such as https://issues.sonatype.org/browse/OSSRH-94575 and https://issues.sonatype.org/browse/OSSRH-94577
+
+Updating pom.xml for a Snapshot Release
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before publishing a final version to Maven Central, you should publish a snapshot release or two. For each snapshot release you publish, the jar name will be unique each time (e.g. ``foobar-0.0.1-20240430.175110-3.jar``), so you can safely publish over and over with the same version number.
+
+We use the `Nexus Staging Maven Plugin <https://github.com/sonatype/nexus-maven-plugins/blob/main/staging/maven-plugin/README.md>`_ to push snapshot releases to https://s01.oss.sonatype.org/content/groups/staging/io/gdcc/ and https://s01.oss.sonatype.org/content/groups/staging/org/dataverse/
+
+Add the following to your pom.xml:
+
+.. code-block:: xml
+
+    <version>0.0.1-SNAPSHOT</version>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+   <plugin>
+       <groupId>org.sonatype.plugins</groupId>
+       <artifactId>nexus-staging-maven-plugin</artifactId>
+       <version>${nexus-staging.version}</version>
+       <extensions>true</extensions>
+       <configuration>
+           <serverId>ossrh</serverId>
+           <nexusUrl>https://s01.oss.sonatype.org</nexusUrl>
+           <autoReleaseAfterClose>true</autoReleaseAfterClose>
+       </configuration>
+   </plugin>
+
+Configuring Secrets
+~~~~~~~~~~~~~~~~~~~
+
+In GitHub, you will likely need to configure the following secrets:
+
+- DATAVERSEBOT_GPG_KEY
+- DATAVERSEBOT_GPG_PASSWORD
+- DATAVERSEBOT_SONATYPE_TOKEN
+- DATAVERSEBOT_SONATYPE_USERNAME
+
+Note that some of these secrets might be configured at the org level (e.g. gdcc or IQSS).
+
+Many of the automated tasks are performed by the dataversebot account on GitHub: https://github.com/dataversebot
 
 npm (JavaScript/TypeScript)
 ---------------------------
