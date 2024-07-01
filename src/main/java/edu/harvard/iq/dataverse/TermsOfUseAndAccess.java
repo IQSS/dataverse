@@ -17,6 +17,28 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;
 
 import edu.harvard.iq.dataverse.license.License;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+
+@NamedQueries({
+    // TermsOfUseAndAccess.findByDatasetVersionIdAndDefaultTerms 
+    // is used to determine if the dataset terms were set by the multi license support update 
+    // as part of the 5.10 release.
+    
+    @NamedQuery(name = "TermsOfUseAndAccess.findByDatasetVersionIdAndDefaultTerms", 
+                query = "SELECT o FROM TermsOfUseAndAccess o, DatasetVersion dv WHERE "
+                        + "dv.id =:id "
+                        + "AND dv.termsOfUseAndAccess.id = o.id "
+                        + "AND o.termsOfUse =:defaultTerms "
+                        + "AND o.confidentialityDeclaration IS null " 
+                        + "AND o.specialPermissions IS null "
+                        + "AND o.restrictions IS null "
+                        + "AND o.citationRequirements IS null "
+                        + "AND o.depositorRequirements IS null "
+                        + "AND o.conditions IS null "
+                        + "AND o.disclaimer IS null "
+    )
+})
 
 /**
  *
@@ -26,6 +48,8 @@ import edu.harvard.iq.dataverse.license.License;
 @Entity
 @ValidateTermsOfUseAndAccess
 public class TermsOfUseAndAccess implements Serializable {
+    
+    public static final String DEFAULT_NOTERMS = "This dataset is made available without information on how it can be used. You should communicate with the Contact(s) specified before use.";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -22,7 +22,7 @@ xmlns:jsf="http://xmlns.jcp.org/jsf">
                         target="_blank">#{DatasetUtil:getLicenseName(DatasetPage.workingVersion)}
                     </a>
                     <ui:fragment rendered="#{empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
-                        <h:outputText value="#{bundle['file.dataFilesTab.terms.list.license.customterms.txt']}"
+                        <h:outputText rendered="#{!datasetVersionServiceBean.isVersionDefaultCustomTerms(DatasetPage.workingVersion)}" value="#{bundle['file.dataFilesTab.terms.list.license.customterms.txt']}"
                             escape="false" />
                     </ui:fragment>
                 </p>
