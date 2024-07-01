@@ -282,8 +282,14 @@ public class ShapefileHandlerTest {
         
         msg("Passed!");
     }
-    
 
+    @Test
+    public void testHiddenFiles() {
+        // test with shapefiles in hidden directory
+        ShapefileHandler shp_handler = new ShapefileHandler("src/test/resources/hiddenShapefiles.zip");
+        shp_handler.DEBUG= true;
+        assertFalse(shp_handler.containsShapefile());
+    }
     
     
     
