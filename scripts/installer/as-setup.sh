@@ -111,14 +111,12 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.fake.label=Fake DOI Provider"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.fake.authority=10.5072"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.fake.shoulder=FK2/"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.default-provider=fake"
   # jvm-options use colons as separators, escape as literal
   #DOI_DATACITERESTAPIURL_ESC=`echo $DOI_DATACITERESTAPIURL | sed -e 's/:/\\\:/'`
   #./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.pid.testDC.datacite.rest-api-url=$DOI_DATACITERESTAPIURL_ESC"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
-
-  # Workaround for FISH-7722: Failed to deploy war with @Stateless https://github.com/payara/Payara/issues/6337
-  ./asadmin $ASADMIN_OPTS create-jvm-options --add-opens=java.base/java.io=ALL-UNNAMED
 
   # enable comet support
   ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"

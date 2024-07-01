@@ -166,8 +166,6 @@ RUN <<EOF
     ${ASADMIN} create-jvm-options '-XX\:MetaspaceSize=${ENV=MEM_METASPACE_SIZE}'
     ${ASADMIN} create-jvm-options '-XX\:MaxMetaspaceSize=${ENV=MEM_MAX_METASPACE_SIZE}'
     ${ASADMIN} create-jvm-options '-XX\:+IgnoreUnrecognizedVMOptions'
-    # Workaround for FISH-7722: Failed to deploy war with @Stateless https://github.com/payara/Payara/issues/6337
-    ${ASADMIN} create-jvm-options --add-opens=java.base/java.io=ALL-UNNAMED
     # Disable autodeploy and hot reload
     ${ASADMIN} set configs.config.server-config.admin-service.das-config.dynamic-reload-enabled="false"
     ${ASADMIN} set configs.config.server-config.admin-service.das-config.autodeploy-enabled="false"
