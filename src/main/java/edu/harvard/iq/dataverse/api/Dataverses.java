@@ -144,8 +144,8 @@ public class Dataverses extends AbstractApiBean {
                 JsonArray inputLevelsArray = metadataBlocksJson.getJsonArray("inputLevels");
                 inputLevels = inputLevelsArray != null ? parseInputLevels(inputLevelsArray, newDataverse) : null;
 
-                JsonArray selectedMetadataBlocksArray = metadataBlocksJson.getJsonArray("metadataBlockNames");
-                selectedMetadataBlocks = selectedMetadataBlocksArray != null ? parseNewDataverseMetadataBlocks(selectedMetadataBlocksArray) : null;
+                JsonArray newMetadataBlockNamesArray = metadataBlocksJson.getJsonArray("metadataBlockNames");
+                selectedMetadataBlocks = newMetadataBlockNamesArray != null ? parseNewDataverseMetadataBlocks(newMetadataBlockNamesArray) : null;
             }
 
             JsonArray facetIdsArray = newDataverseJson.getJsonArray("facetIds");
@@ -192,13 +192,13 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
-    private List<MetadataBlock> parseNewDataverseMetadataBlocks(JsonArray selectedMetadataBlocksArray) throws WrappedResponse {
+    private List<MetadataBlock> parseNewDataverseMetadataBlocks(JsonArray metadataBlockNamesArray) throws WrappedResponse {
         List<MetadataBlock> selectedMetadataBlocks = new ArrayList<>();
-        for (JsonString metadataBlockName : selectedMetadataBlocksArray.getValuesAs(JsonString.class)) {
+        for (JsonString metadataBlockName : metadataBlockNamesArray.getValuesAs(JsonString.class)) {
             MetadataBlock metadataBlock = metadataBlockSvc.findByName(metadataBlockName.getString());
             if (metadataBlock == null) {
-                // TODO
-                throw new WrappedResponse(badRequest("TODO"));
+                String errorMessage = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.metadatablocks.error.invalidmetadatablockname"), metadataBlockName);
+                throw new WrappedResponse(badRequest(errorMessage));
             }
             selectedMetadataBlocks.add(metadataBlock);
         }
