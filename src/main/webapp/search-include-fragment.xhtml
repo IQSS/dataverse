@@ -132,9 +132,10 @@
 
                         <span class="icon-dataverse text-icon-inline"></span>
 
-                        <h:outputFormat styleClass="facetTypeDataverse" value="#{bundle['dataverse.results.types.dataverses']} &#40;{0}&#41;">
+                        <h:outputFormat rendered="#{!SearchIncludeFragment.uncheckedTypesFacetDisabled or SearchIncludeFragment.selectedTypesList.contains('dataverses')}" styleClass="facetTypeDataverse" value="#{bundle['dataverse.results.types.dataverses']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountDataverses}"/>
                         </h:outputFormat>
+                        <h:outputText rendered="#{SearchIncludeFragment.uncheckedTypesFacetDisabled and !SearchIncludeFragment.selectedTypesList.contains('dataverses')}" value="#{bundle['dataverse.results.types.dataverses']}" styleClass="facetTypeDataverse"/>
                     </h:outputLink>
                 </div>
                 <!--DATASETS TOGGLE-->
@@ -164,9 +165,10 @@
 
                         <span class="icon-dataset text-icon-inline"></span>
 
-                        <h:outputFormat styleClass="facetTypeDataset" value="#{bundle['dataverse.results.types.datasets']} &#40;{0}&#41;">
+                        <h:outputFormat rendered="#{!SearchIncludeFragment.uncheckedTypesFacetDisabled or SearchIncludeFragment.selectedTypesList.contains('datasets')}" styleClass="facetTypeDataset" value="#{bundle['dataverse.results.types.datasets']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountDatasets}"/>
                         </h:outputFormat>
+                        <h:outputText rendered="#{SearchIncludeFragment.uncheckedTypesFacetDisabled and !SearchIncludeFragment.selectedTypesList.contains('datasets')}" value="#{bundle['dataverse.results.types.datasets']}" styleClass="facetTypeDataset"/>
                     </h:outputLink>
                 </div>
                 <!--FILES TOGGLE-->
@@ -196,9 +198,10 @@
 
                         <span class="icon-file text-icon-inline"></span>
 
-                        <h:outputFormat styleClass="facetTypeFile" value="#{bundle['dataverse.results.types.files']} &#40;{0}&#41;">
+                        <h:outputFormat rendered="#{!SearchIncludeFragment.uncheckedTypesFacetDisabled or SearchIncludeFragment.selectedTypesList.contains('files')}" styleClass="facetTypeFile" value="#{bundle['dataverse.results.types.files']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountFiles}"/>
                         </h:outputFormat>
+                        <h:outputText rendered="#{SearchIncludeFragment.uncheckedTypesFacetDisabled and !SearchIncludeFragment.selectedTypesList.contains('files')}" value="#{bundle['dataverse.results.types.files']}" styleClass="facetTypeFile"/>
                     </h:outputLink>
                 </div>
             </h:form>
