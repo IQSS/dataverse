@@ -47,11 +47,11 @@ public class RoleDTO {
 		this.permissions = permissions;
 	}
 
-	public DataverseRole asRole() {
-		DataverseRole r = new DataverseRole();
+	public DataverseRole updateRoleFromDTO(DataverseRole r) {
 		r.setAlias(alias);
 		r.setDescription(description);
 		r.setName(name);
+		r.clearPermissions();
 		if (permissions != null) {
 			if (permissions.length > 0) {
 				if (permissions[0].trim().toLowerCase().equals("all")) {
@@ -64,6 +64,10 @@ public class RoleDTO {
 			}
 		}
 		return r;
+	}
+
+	public DataverseRole asRole() {
+		return updateRoleFromDTO(new DataverseRole());
 	}
 	
 }
