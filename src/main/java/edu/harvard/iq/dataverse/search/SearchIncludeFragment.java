@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -1231,40 +1232,33 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
     
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
-        
-        
-        if ((filterQuery == null)||
-            (datasetfieldFriendlyNamesBySolrField == null)||
-            (staticSolrFieldFriendlyNamesBySolrField==null)){
+
+        if ((filterQuery == null) ||
+                (datasetfieldFriendlyNamesBySolrField == null) ||
+                (staticSolrFieldFriendlyNamesBySolrField == null)) {
             return null;
         }
-        
-        if(!filterQuery.contains(":")) {
+
+        if (!filterQuery.contains(":")) {
             return null;
         }
-        
+
         int index = filterQuery.indexOf(":");
         String key = filterQuery.substring(0,index);
         String value = filterQuery.substring(index+1);
 
-        List<String> friendlyNames = new ArrayList<>();
+        // friendlyNames get 2 entries : key and value
+        List<String> friendlyNames = new ArrayList<>(2);
 
+        // Get dataset field friendly name from default ressource bundle file
         String datasetfieldFriendyName = datasetfieldFriendlyNamesBySolrField.get(key);
         if (datasetfieldFriendyName != null) {
             friendlyNames.add(datasetfieldFriendyName);
         } else {
+            // Get non dataset field friendly name from "staticSearchFields" ressource bundle file
             String nonDatasetSolrField = staticSolrFieldFriendlyNamesBySolrField.get(key);
             if (nonDatasetSolrField != null) {
                 friendlyNames.add(nonDatasetSolrField);
-            } else if (key.equals(SearchFields.PUBLICATION_STATUS)) {
-                /**
-                 * @todo Refactor this quick fix for
-                 * https://github.com/IQSS/dataverse/issues/618 . We really need
-                 * to get rid of all the reflection that's happening with
-                 * solrQueryResponse.getStaticSolrFieldFriendlyNamesBySolrField()
-                 * and
-                 */
-                friendlyNames.add("Publication Status");
             } else {
                 // meh. better than nuthin'
                 friendlyNames.add(key);
@@ -1276,9 +1270,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
         String valueWithoutQuotes = noTrailingQuote;
 
         if (key.equals(SearchFields.METADATA_TYPES) && getDataverse() != null && getDataverse().getMetadataBlockFacets() != null) {
-            Optional<String> friendlyName = getDataverse().getMetadataBlockFacets().stream().filter(block -> block.getMetadataBlock().getName().equals(valueWithoutQuotes)).findFirst().map(block -> block.getMetadataBlock().getLocaleDisplayFacet());
+            Optional<String> friendlyName = getDataverse().getMetadataBlockFacets()
+                    .stream()
+                    .filter(block -> block.getMetadataBlock().getName().equals(valueWithoutQuotes))
+                    .findFirst()
+                    .map(block -> block.getMetadataBlock().getLocaleDisplayFacet());
             logger.fine(String.format("action=getFriendlyNamesFromFilterQuery key=%s value=%s friendlyName=%s", key, value, friendlyName));
-            if(friendlyName.isPresent()) {
+            if (friendlyName.isPresent()) {
                 friendlyNames.add(friendlyName.get());
                 return friendlyNames;
             }
@@ -1290,7 +1288,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
         }
 
-        friendlyNames.add(valueWithoutQuotes);
+        // Get value friendly name from default ressource bundle file
+        String valueFriendlyName;
+        try {
+            valueFriendlyName = BundleUtil.getStringFromPropertyFile(noTrailingQuote, "Bundle");
+        } catch (MissingResourceException e) {
+            valueFriendlyName = noTrailingQuote;
+        }
+
+        friendlyNames.add(valueFriendlyName);
         return friendlyNames;
     }
     
