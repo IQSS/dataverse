@@ -1,0 +1,32 @@
+name: "Properties Check"
+on:
+    pull_request:
+        paths:
+            - "src/**/*.properties"
+            - "scripts/api/data/metadatablocks/*"
+jobs:
+    duplicate_keys:
+        name: Duplicate Keys
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Run duplicates detection script
+              shell: bash
+              run: tests/check_duplicate_properties.sh
+
+    metadata_blocks_properties:
+        name: Metadata Blocks Properties
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Setup GraalVM + Native Image
+              uses: graalvm/setup-graalvm@v1
+              with:
+                github-token: ${{ secrets.GITHUB_TOKEN }}
+                java-version: '21'
+                distribution: 'graalvm-community'
+            - name: Setup JBang
+              uses: jbangdev/setup-jbang@main
+            - name: Run metadata block properties verification script
+              shell: bash
+              run: tests/verify_mdb_properties.sh
