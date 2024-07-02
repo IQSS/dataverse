@@ -362,7 +362,7 @@ public class UtilIT {
     static Response createSubDataverse(String alias, String category, String apiToken, String parentDV) {
         return createSubDataverse(alias, category, apiToken, parentDV, null, null, null);
     }
-    
+
     static Response createSubDataverse(String alias, String category, String apiToken, String parentDV, String[] inputLevelNames, String[] facetIds, String[] metadataBlockNames) {
         JsonArrayBuilder contactArrayBuilder = Json.createArrayBuilder();
         contactArrayBuilder.add(Json.createObjectBuilder().add("contactEmail", getEmailFromUserName(getRandomIdentifier())));
@@ -3997,20 +3997,23 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/requestGlobusUploadPaths");
     }
 
-    static Response updateDataverseInputLevels(String dataverseAlias, String[] inputLevelNames, String apiToken) {
+    public static Response updateDataverseInputLevels(String dataverseAlias, String[] inputLevelNames, boolean[] requiredInputLevels, boolean[] includedInputLevels, String apiToken) {
         JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
-        for(String inputLevelName : inputLevelNames) {
-            inputLevelsArrayBuilder.add(Json.createObjectBuilder()
-                    .add("datasetFieldTypeName", inputLevelName)
-                    .add("required", true)
-                    .add("include", true)
-            );
+        for (int i = 0; i < inputLevelNames.length; i++) {
+            inputLevelsArrayBuilder.add(createInputLevelObject(inputLevelNames[i], requiredInputLevels[i], includedInputLevels[i]));
         }
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(inputLevelsArrayBuilder.build().toString())
                 .contentType(ContentType.JSON)
                 .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
+    }
+
+    private static JsonObjectBuilder createInputLevelObject(String name, boolean required, boolean include) {
+        return Json.createObjectBuilder()
+                .add("datasetFieldTypeName", name)
+                .add("required", required)
+                .add("include", include);
     }
 
     public static Response getOpenAPI(String accept, String format) {
