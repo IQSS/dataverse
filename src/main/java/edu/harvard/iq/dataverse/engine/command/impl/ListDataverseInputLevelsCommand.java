@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
+import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -14,35 +15,26 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * List the search facets {@link DataverseFacet} of a {@link Dataverse}.
- *
- * @author michaelsuo
+ * List the field type input levels {@link DataverseFieldTypeInputLevel} of a {@link Dataverse}.
  */
-// no annotations here, since permissions are dynamically decided
-public class ListFacetsCommand extends AbstractCommand<List<DataverseFacet>> {
+public class ListDataverseInputLevelsCommand extends AbstractCommand<List<DataverseFieldTypeInputLevel>> {
 
     private final Dataverse dataverse;
-    private boolean rootFacets;
 
-    public ListFacetsCommand(DataverseRequest request, Dataverse dataverse) {
-        this(request, dataverse, true);
-    }
-
-    public ListFacetsCommand(DataverseRequest request, Dataverse dataverse, boolean rootFacets) {
+    public ListDataverseInputLevelsCommand(DataverseRequest request, Dataverse dataverse) {
         super(request, dataverse);
         this.dataverse = dataverse;
-        this.rootFacets = rootFacets;
     }
 
     @Override
-    public List<DataverseFacet> execute(CommandContext ctxt) throws CommandException {
-        return dataverse.getDataverseFacets(!rootFacets);
+    public List<DataverseFieldTypeInputLevel> execute(CommandContext ctxt) throws CommandException {
+        return dataverse.getDataverseFieldTypeInputLevels();
     }
 
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         return Collections.singletonMap("",
-                dataverse.isReleased() ? Collections.<Permission>emptySet()
+                dataverse.isReleased() ? Collections.emptySet()
                         : Collections.singleton(Permission.ViewUnpublishedDataverse));
     }
 }

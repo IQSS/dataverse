@@ -30,7 +30,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -593,7 +592,7 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public void setMetadataBlocks(List<MetadataBlock> metadataBlocks) {
-        this.metadataBlocks = metadataBlocks;
+        this.metadataBlocks = new ArrayList<>(metadataBlocks);
     }
 
     public List<DatasetFieldType> getCitationDatasetFieldTypes() {
@@ -833,5 +832,18 @@ public class Dataverse extends DvObjectContainer {
     
     public String getLocalURL() {
         return  SystemConfig.getDataverseSiteUrlStatic() + "/dataverse/" + this.getAlias();
+    }
+
+    public void addInputLevelsMetadataBlocksIfNotPresent(List<DataverseFieldTypeInputLevel> inputLevels) {
+        for (DataverseFieldTypeInputLevel inputLevel : inputLevels) {
+            MetadataBlock inputLevelMetadataBlock = inputLevel.getDatasetFieldType().getMetadataBlock();
+            if (!hasMetadataBlock(inputLevelMetadataBlock)) {
+                metadataBlocks.add(inputLevelMetadataBlock);
+            }
+        }
+    }
+
+    private boolean hasMetadataBlock(MetadataBlock metadataBlock) {
+        return metadataBlocks.stream().anyMatch(block -> block.getId().equals(metadataBlock.getId()));
     }
 }

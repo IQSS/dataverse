@@ -948,4 +948,67 @@ public class DataversesIT {
                 .body("message", equalTo("Error while updating dataverse input levels: Input level list cannot be null or empty"))
                 .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
     }
+
+    @Test
+    public void testAddDataverse() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        String testAliasSuffix = "-add-dataverse";
+
+        // Without optional input levels and facet ids
+        String testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
+        Response createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root");
+        createSubDataverseWithInputLevelsAndFacetIdsResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        // With optional input levels and facet ids
+        String[] testInputLevelNames = {"geographicCoverage", "country"};
+        String[] testFacetIds = {"authorName", "authorAffiliation"};
+        String[] testMetadataBlockNames = {"citation", "geospatial"};
+        testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
+        createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testFacetIds, testMetadataBlockNames);
+        createSubDataverseWithInputLevelsAndFacetIdsResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        // Assert facets are configured
+        Response listDataverseFacetsResponse = UtilIT.listDataverseFacets(testDataverseAlias, apiToken);
+        String actualFacetName1 = listDataverseFacetsResponse.then().extract().path("data[0]");
+        String actualFacetName2 = listDataverseFacetsResponse.then().extract().path("data[1]");
+        assertNotEquals(actualFacetName1, actualFacetName2);
+        assertThat(testFacetIds, hasItemInArray(actualFacetName1));
+        assertThat(testFacetIds, hasItemInArray(actualFacetName2));
+
+        // Assert input levels are configured
+        Response listDataverseInputLevelsResponse = UtilIT.listDataverseInputLevels(testDataverseAlias, apiToken);
+        String actualInputLevelName1 = listDataverseInputLevelsResponse.then().extract().path("data[0].datasetFieldTypeName");
+        String actualInputLevelName2 = listDataverseInputLevelsResponse.then().extract().path("data[1].datasetFieldTypeName");
+        assertNotEquals(actualFacetName1, actualFacetName2);
+        assertThat(testInputLevelNames, hasItemInArray(actualInputLevelName1));
+        assertThat(testInputLevelNames, hasItemInArray(actualInputLevelName2));
+
+        // Should return error when an invalid facet id is sent
+        String invalidFacetId = "invalidFacetId";
+        String[] testInvalidFacetIds = {"authorName", invalidFacetId};
+        testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
+        createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testInvalidFacetIds, testMetadataBlockNames);
+        createSubDataverseWithInputLevelsAndFacetIdsResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Cant find dataset field type \"" + invalidFacetId + "\""));
+
+        // Should return error when an invalid input level is sent
+        String invalidInputLevelName = "wrongInputLevel";
+        String[] testInvalidInputLevelNames = {"geographicCoverage", invalidInputLevelName};
+        testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
+        createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInvalidInputLevelNames, testFacetIds, testMetadataBlockNames);
+        createSubDataverseWithInputLevelsAndFacetIdsResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Invalid dataset field type name: " + invalidInputLevelName));
+
+        // Should return error when an invalid metadata block name is sent
+        String invalidMetadataBlockName = "invalidMetadataBlockName";
+        String[] testInvalidMetadataBlockNames = {"citation", invalidMetadataBlockName};
+        testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
+        createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testInvalidFacetIds, testInvalidMetadataBlockNames);
+        createSubDataverseWithInputLevelsAndFacetIdsResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("Invalid metadata block name: \"" + invalidMetadataBlockName + "\""));
+    }
 }
