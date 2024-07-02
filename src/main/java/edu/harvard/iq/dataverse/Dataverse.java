@@ -586,7 +586,7 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public void setMetadataBlocks(List<MetadataBlock> metadataBlocks) {
-        this.metadataBlocks = metadataBlocks;
+        this.metadataBlocks = new ArrayList<>(metadataBlocks);
     }
 
     public List<DatasetFieldType> getCitationDatasetFieldTypes() {
