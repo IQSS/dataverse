@@ -1377,14 +1377,6 @@ public class JsonPrinter {
         return jsonArrayOfInputLevels;
     }
 
-    public static JsonArrayBuilder jsonDataverseFacets(List<DataverseFacet> facets) {
-        JsonArrayBuilder facetsArrayBuilder = Json.createArrayBuilder();
-        for (DataverseFacet facet : facets) {
-            facetsArrayBuilder.add(json(facet));
-        }
-        return facetsArrayBuilder;
-    }
-
     public static JsonArrayBuilder jsonDataverseInputLevels(List<DataverseFieldTypeInputLevel> inputLevels) {
         JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
         for (DataverseFieldTypeInputLevel inputLevel : inputLevels) {
