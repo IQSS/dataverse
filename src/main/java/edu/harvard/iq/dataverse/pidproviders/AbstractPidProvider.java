@@ -36,9 +36,9 @@ public abstract class AbstractPidProvider implements PidProvider {
 
     private String datafilePidFormat = null;
 
-    protected HashSet<String> managedSet;
+    protected HashSet<String> managedSet = new HashSet<String>();
 
-    protected HashSet<String> excludedSet;
+    protected HashSet<String> excludedSet = new HashSet<String>();
 
     private String id;
     private String label;
@@ -47,8 +47,6 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.id = id;
         this.label = label;
         this.protocol = protocol;
-        this.managedSet = new HashSet<String>();
-        this.excludedSet = new HashSet<String>();
     }
 
     protected AbstractPidProvider(String id, String label, String protocol, String authority, String shoulder,
@@ -61,10 +59,10 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.identifierGenerationStyle = identifierGenerationStyle;
         this.datafilePidFormat = datafilePidFormat;
         if(!managedList.isEmpty()) {
-            this.managedSet = new HashSet<String>(Arrays.asList(managedList.split(",\\s")));
+            this.managedSet.addAll(Arrays.asList(managedList.split(",\\s")));
         }
         if(!excludedList.isEmpty()) {
-            this.excludedSet = new HashSet<String>(Arrays.asList(excludedList.split(",\\s")));
+            this.excludedSet.addAll(Arrays.asList(excludedList.split(",\\s")));
         }
         if (logger.isLoggable(Level.FINE)) {
             Iterator<String> iter = managedSet.iterator();
