@@ -19,16 +19,14 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
-            - name: Install JBang
-              shell: bash
-              run: |
-                curl -Ls https://sh.jbang.dev | bash -s - app setup
-            - name: Install GraalVM + Native Image
+            - name: Setup GraalVM + Native Image
               uses: graalvm/setup-graalvm@v1
               with:
                 github-token: ${{ secrets.GITHUB_TOKEN }}
                 java-version: '21'
                 distribution: 'graalvm-community'
+            - name: Setup JBang
+              uses: jbangdev/setup-jbang@main
             - name: Run metadata block properties verification script
               shell: bash
               run: tests/verify_mdb_properties.sh
