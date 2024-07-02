@@ -78,7 +78,9 @@ while IFS= read -r -d '' MDB; do
     # Check CV entries
     while read -r LINE; do
         FIELD_NAME=$(echo "$LINE" | cut -f1)
-        FIELD_VALUE=$(echo "$LINE" | cut -f2 | tr '[:upper:]' '[:lower:]' | tr " " "_" | "$STRIP_BIN" )
+        # See https://github.com/IQSS/dataverse/blob/dddcf29188a5c35174f3c94ffc1c4cb1d7fc0552/src/main/java/edu/harvard/iq/dataverse/ControlledVocabularyValue.java#L139-L140
+        # Square brackets are special in grep with expressions activated, so escape them if present!
+        FIELD_VALUE=$(echo "$LINE" | cut -f2 | tr '[:upper:]' '[:lower:]' | tr " " "_" | "$STRIP_BIN" | sed -e 's/\([][]\)/\\\1/g' )
 
         if ! grep -q -a -e "^controlledvocabulary.$FIELD_NAME.$FIELD_VALUE=" "$PROPERTIES_FILE"; then
             echo "::error::Missing key 'controlledvocabulary.$FIELD_NAME.$FIELD_VALUE=...' in $PROPERTIES_FILE"
