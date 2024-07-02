@@ -211,7 +211,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
 	if (theDataset.getLatestVersion().getVersionState() != RELEASED) {
             // some imported datasets may already be released.
-
+	        theDataset.getLatestVersion().setVersionState(RELEASED);
             if (!datasetExternallyReleased) {
                 publicizeExternalIdentifier(theDataset, ctxt);
                 // Will throw a CommandException, unless successful.
@@ -220,7 +220,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 // a failure - it will remove any locks, and it will send a
                 // proper notification to the user(s). 
             }
-            theDataset.getLatestVersion().setVersionState(RELEASED);
         }
         
         final Dataset ds = ctxt.em().merge(theDataset);

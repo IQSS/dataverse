@@ -24,7 +24,12 @@ public class XmlValidator {
     private static final Logger logger = Logger.getLogger(XmlValidator.class.getCanonicalName());
 
     public static boolean validateXmlSchema(String fileToValidate, URL schemaToValidateAgainst) throws MalformedURLException, SAXException, IOException {
+        
         Source xmlFile = new StreamSource(new File(fileToValidate));
+        return validateXmlSchema(xmlFile, schemaToValidateAgainst);
+    }
+    
+    public static boolean validateXmlSchema(Source xmlFile, URL schemaToValidateAgainst) throws MalformedURLException, SAXException, IOException {
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         Schema schema = schemaFactory.newSchema(schemaToValidateAgainst);
         Validator validator = schema.newValidator();
