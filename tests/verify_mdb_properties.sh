@@ -42,7 +42,7 @@ while IFS= read -r -d '' MDB; do
     echo "::group::$MDB"
     BLOCK_NAME=$(sed -n "2p" "$MDB" | cut -f2)
     BLOCK_DISPLAY_NAME=$(sed -n "2p" "$MDB" | cut -f4)
-    PROPERTIES_FILE="$(git rev-parse --show-cdup)src/main/java/propertyFiles/$BLOCK_NAME.properties"
+    PROPERTIES_FILE="$(git rev-parse --show-toplevel)/src/main/java/propertyFiles/$BLOCK_NAME.properties"
 
     # Check correct file exists
     if [ ! -r "$PROPERTIES_FILE" ]; then
@@ -88,7 +88,7 @@ while IFS= read -r -d '' MDB; do
 
     echo "::endgroup::"
 
-done < <( find "$(git rev-parse --show-cdup)scripts/api/data/metadatablocks" -name '*.tsv' -print0 )
+done < <( find "$(git rev-parse --show-toplevel)/scripts/api/data/metadatablocks" -name '*.tsv' -print0 )
 
 rm "$SOURCE" "$STRIP_BIN"
 

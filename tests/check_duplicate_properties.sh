@@ -30,7 +30,7 @@ while IFS= read -r -d '' FILE; do
         done
         echo "::endgroup::"
     fi
-done < <( find "$(git rev-parse --show-cdup)" -wholename "*/src/*.properties" -print0 )
+done < <( find "$(git rev-parse --show-toplevel)" -wholename "*/src/*.properties" -print0 )
 
 if [ "$FAIL" -eq 1 ]; then
     exit 1
