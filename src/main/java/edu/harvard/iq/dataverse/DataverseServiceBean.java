@@ -22,7 +22,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.Properties;
 
+import edu.harvard.iq.dataverse.validation.JSONDataValidation;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -888,14 +889,16 @@ public class DataverseServiceBean implements java.io.Serializable {
         return em.createNativeQuery(cqString).getResultList();
     }
 
-        
     public  String getCollectionDatasetSchema(String dataverseAlias) {
+        return getCollectionDatasetSchema(dataverseAlias, null);
+    }
+    public  String getCollectionDatasetSchema(String dataverseAlias, Map<String, Map<String,List<String>>> schemaChildMap) {
         
         Dataverse testDV = this.findByAlias(dataverseAlias);
         
         while (!testDV.isMetadataBlockRoot()) {
             if (testDV.getOwner() == null) {
-                break; // we are at the root; which by defintion is metadata blcok root, regarldess of the value
+                break; // we are at the root; which by definition is metadata block root, regardless of the value
             }
             testDV = testDV.getOwner();
         }
@@ -932,6 +935,8 @@ public class DataverseServiceBean implements java.io.Serializable {
                         dsft.setRequiredDV(dsft.isRequired());
                         dsft.setInclude(true);
                     }
+                    List<String> childrenRequired = new ArrayList<>();
+                    List<String> childrenAllowed = new ArrayList<>();
                     if (dsft.isHasChildren()) {
                         for (DatasetFieldType child : dsft.getChildDatasetFieldTypes()) {
                             DataverseFieldTypeInputLevel dsfIlChild = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(testDV.getId(), child.getId());
@@ -944,7 +949,17 @@ public class DataverseServiceBean implements java.io.Serializable {
                                 child.setRequiredDV(child.isRequired() && dsft.isRequired());
                                 child.setInclude(true);
                             }
+                            if (child.isRequired()) {
+                                childrenRequired.add(child.getName());
+                            }
+                            childrenAllowed.add(child.getName());
                         }
+                    }
+                    if (schemaChildMap != null) {
+                        Map<String, List<String>> map = new HashMap<>();
+                        map.put("required", childrenRequired);
+                        map.put("allowed", childrenAllowed);
+                        schemaChildMap.put(dsft.getName(), map);
                     }
                     if(dsft.isRequiredDV()){
                         requiredDSFT.add(dsft);
@@ -1021,11 +1036,13 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
     
     public String isDatasetJsonValid(String dataverseAlias, String jsonInput) {
-        JSONObject rawSchema = new JSONObject(new JSONTokener(getCollectionDatasetSchema(dataverseAlias)));
+        Map<String, Map<String,List<String>>> schemaChildMap = new HashMap<>();
+        JSONObject rawSchema = new JSONObject(new JSONTokener(getCollectionDatasetSchema(dataverseAlias, schemaChildMap)));
         
-        try {               
+        try {
             Schema schema = SchemaLoader.load(rawSchema);
             schema.validate(new JSONObject(jsonInput)); // throws a ValidationException if this object is invalid
+            JSONDataValidation.validate(schema, schemaChildMap, jsonInput); // throws a ValidationException if any objects are invalid
         } catch (ValidationException vx) {
             logger.info(BundleUtil.getStringFromBundle("dataverses.api.validate.json.failed") + " " + vx.getErrorMessage()); 
             String accumulatedexceptions = "";
