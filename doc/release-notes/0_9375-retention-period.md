@@ -4,5 +4,3 @@ The Dataverse Software now supports file-level retention periods. The ability to
 
 - After the retention period expires, files can not be previewed or downloaded (as if restricted, with no option to allow access requests). The file (landing) page and all the metadata remains available.
 
-
-Release notes should mention that a Solr schema update is needed.
