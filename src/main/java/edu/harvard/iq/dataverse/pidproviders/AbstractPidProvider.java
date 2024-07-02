@@ -60,8 +60,12 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.shoulder = shoulder;
         this.identifierGenerationStyle = identifierGenerationStyle;
         this.datafilePidFormat = datafilePidFormat;
-        this.managedSet = new HashSet<String>(Arrays.asList(managedList.split(",\\s")));
-        this.excludedSet = new HashSet<String>(Arrays.asList(excludedList.split(",\\s")));
+        if(!managedList.isEmpty()) {
+            this.managedSet = new HashSet<String>(Arrays.asList(managedList.split(",\\s")));
+        }
+        if(!excludedList.isEmpty()) {
+            this.excludedSet = new HashSet<String>(Arrays.asList(excludedList.split(",\\s")));
+        }
         if (logger.isLoggable(Level.FINE)) {
             Iterator<String> iter = managedSet.iterator();
             while (iter.hasNext()) {
