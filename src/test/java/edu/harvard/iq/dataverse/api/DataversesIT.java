@@ -948,12 +948,11 @@ public class DataversesIT {
 
         // Assert facets are configured
         Response listDataverseFacetsResponse = UtilIT.listDataverseFacets(testDataverseAlias, apiToken);
-        String[] expectedFacetNames = {"Author Name", "Author Affiliation"};
-        String actualFacetName1 = listDataverseFacetsResponse.then().extract().path("data[0].name");
-        String actualFacetName2 = listDataverseFacetsResponse.then().extract().path("data[1].name");
+        String actualFacetName1 = listDataverseFacetsResponse.then().extract().path("data[0]");
+        String actualFacetName2 = listDataverseFacetsResponse.then().extract().path("data[1]");
         assertNotEquals(actualFacetName1, actualFacetName2);
-        assertThat(expectedFacetNames, hasItemInArray(actualFacetName1));
-        assertThat(expectedFacetNames, hasItemInArray(actualFacetName2));
+        assertThat(testFacetIds, hasItemInArray(actualFacetName1));
+        assertThat(testFacetIds, hasItemInArray(actualFacetName2));
 
         // Assert input levels are configured
         Response listDataverseInputLevelsResponse = UtilIT.listDataverseInputLevels(testDataverseAlias, apiToken);

@@ -994,20 +994,6 @@ public class Dataverses extends AbstractApiBean {
 
     @GET
     @AuthRequired
-    @Path("{identifier}/facets")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getFacets(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
-        try {
-            Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            List<DataverseFacet> dataverseFacets = execCommand(new ListFacetsCommand(createDataverseRequest(getRequestUser(crc)), dataverse, false));
-            return ok(jsonDataverseFacets(dataverseFacets));
-        } catch (WrappedResponse e) {
-            return e.getResponse();
-        }
-    }
-
-    @GET
-    @AuthRequired
     @Path("{identifier}/metadatablockfacets")
     @Produces(MediaType.APPLICATION_JSON)
     public Response listMetadataBlockFacets(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) {
