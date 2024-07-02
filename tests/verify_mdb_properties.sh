@@ -15,8 +15,8 @@ fi
 
 FAIL=0
 
-# We need a small Java app to replace UTF-8 chars with nearest ascii / strip accents because of
-# https://github.com/IQSS/dataverse/blob/dddcf29188a5c35174f3c94ffc1c4cb1d7fc0552/src/main/java/edu/harvard/iq/dataverse/ControlledVocabularyValue.java#L140
+# We need a small Java app here, replacing spaces, converting to lower case but especially to replace UTF-8 chars with nearest ascii / strip accents because of
+# https://github.com/IQSS/dataverse/blob/dddcf29188a5c35174f3c94ffc1c4cb1d7fc0552/src/main/java/edu/harvard/iq/dataverse/ControlledVocabularyValue.java#L139-L140
 # This cannot be replaced by another tool, as it behaves rather individually.
 DIR=$(mktemp -d)
 SOURCE="$DIR/stripaccents.java"
@@ -30,7 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 class stripaccents {
     public static void main(String[] args) throws IOException {
-        String input = new String(System.in.readAllBytes(), StandardCharsets.UTF_8);
+        String input = new String(System.in.readAllBytes(), StandardCharsets.UTF_8).toLowerCase().replace(" ", "_");
         System.out.println(StringUtils.stripAccents(input));
     }
 }
@@ -80,7 +80,7 @@ while IFS= read -r -d '' MDB; do
         FIELD_NAME=$(echo "$LINE" | cut -f1)
         # See https://github.com/IQSS/dataverse/blob/dddcf29188a5c35174f3c94ffc1c4cb1d7fc0552/src/main/java/edu/harvard/iq/dataverse/ControlledVocabularyValue.java#L139-L140
         # Square brackets are special in grep with expressions activated, so escape them if present!
-        FIELD_VALUE=$(echo "$LINE" | cut -f2 | tr '[:upper:]' '[:lower:]' | tr " " "_" | "$STRIP_BIN" | sed -e 's/\([][]\)/\\\1/g' )
+        FIELD_VALUE=$(echo "$LINE" | cut -f2 | "$STRIP_BIN" | sed -e 's/\([][]\)/\\\1/g' )
 
         if ! grep -q -a -e "^controlledvocabulary.$FIELD_NAME.$FIELD_VALUE=" "$PROPERTIES_FILE"; then
             echo "::error::Missing key 'controlledvocabulary.$FIELD_NAME.$FIELD_VALUE=...' in $PROPERTIES_FILE"
