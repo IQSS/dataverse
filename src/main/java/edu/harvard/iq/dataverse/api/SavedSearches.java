@@ -49,20 +49,8 @@ public class SavedSearches extends AbstractApiBean {
     }
 
     @GET
-    @AuthRequired
     @Path("list")
-    public Response list(@Context ContainerRequestContext crc) {
-
-        AuthenticatedUser superuser = null;
-        try {
-            superuser = getRequestAuthenticatedUserOrDie(crc);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        if (superuser == null || !superuser.isSuperuser()) {
-            return error(Response.Status.UNAUTHORIZED, "Superusers only.");
-        }
-
+    public Response list() {
         JsonArrayBuilder savedSearchesBuilder = Json.createArrayBuilder();
         List<SavedSearch> savedSearches = savedSearchSvc.findAll();
         for (SavedSearch savedSearch : savedSearches) {
@@ -75,20 +63,8 @@ public class SavedSearches extends AbstractApiBean {
     }
 
     @GET
-    @AuthRequired
     @Path("{id}")
-    public Response show(@Context ContainerRequestContext crc, @PathParam("id") long id) {
-
-        AuthenticatedUser superuser = null;
-        try {
-            superuser = getRequestAuthenticatedUserOrDie(crc);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        if (superuser == null || !superuser.isSuperuser()) {
-            return error(Response.Status.UNAUTHORIZED, "Superusers only.");
-        }
-
+    public Response show(@PathParam("id") long id) {
         SavedSearch savedSearch = savedSearchSvc.find(id);
         if (savedSearch != null) {
             JsonObjectBuilder response = toJson(savedSearch);
@@ -116,19 +92,7 @@ public class SavedSearches extends AbstractApiBean {
     }
 
     @POST
-    @AuthRequired
-    public Response add(@Context ContainerRequestContext crc, JsonObject body) {
-
-        AuthenticatedUser superuser = null;
-        try {
-            superuser = getRequestAuthenticatedUserOrDie(crc);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        if (superuser == null || !superuser.isSuperuser()) {
-            return error(Response.Status.UNAUTHORIZED, "Superusers only.");
-        }
-
+    public Response add(JsonObject body) {
         if (body == null) {
             return error(BAD_REQUEST, "JSON is expected.");
         }
@@ -210,20 +174,8 @@ public class SavedSearches extends AbstractApiBean {
     }
 
     @DELETE
-    @AuthRequired
     @Path("{id}")
-    public Response delete(@Context ContainerRequestContext crc, @PathParam("id") long doomedId, @QueryParam("unlink") boolean unlink) {
-
-        AuthenticatedUser superuser = null;
-        try {
-            superuser = getRequestAuthenticatedUserOrDie(crc);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        if (superuser == null || !superuser.isSuperuser()) {
-            return error(Response.Status.UNAUTHORIZED, "Superusers only.");
-        }
-
+    public Response delete(@PathParam("id") long doomedId, @QueryParam("unlink") boolean unlink) {
         SavedSearch doomed = savedSearchSvc.find(doomedId);
         if (doomed == null) {
             return error(NOT_FOUND, "Could not find saved search id " + doomedId);
@@ -243,20 +195,8 @@ public class SavedSearches extends AbstractApiBean {
     }
 
     @PUT
-    @AuthRequired
     @Path("makelinks/all")
-    public Response makeLinksForAllSavedSearches(@Context ContainerRequestContext crc, @QueryParam("debug") boolean debug) {
-
-        AuthenticatedUser superuser = null;
-        try {
-            superuser = getRequestAuthenticatedUserOrDie(crc);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        if (superuser == null || !superuser.isSuperuser()) {
-            return error(Response.Status.UNAUTHORIZED, "Superusers only.");
-        }
-
+    public Response makeLinksForAllSavedSearches(@QueryParam("debug") boolean debug) {
         JsonObjectBuilder makeLinksResponse;
         try {
             makeLinksResponse = savedSearchSvc.makeLinksForAllSavedSearches(debug);
@@ -269,20 +209,8 @@ public class SavedSearches extends AbstractApiBean {
     }
 
     @PUT
-    @AuthRequired
     @Path("makelinks/{id}")
-    public Response makeLinksForSingleSavedSearch(@Context ContainerRequestContext crc, @PathParam("id") long savedSearchIdToLookUp, @QueryParam("debug") boolean debug) {
-
-        AuthenticatedUser superuser = null;
-        try {
-            superuser = getRequestAuthenticatedUserOrDie(crc);
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        if (superuser == null || !superuser.isSuperuser()) {
-            return error(Response.Status.UNAUTHORIZED, "Superusers only.");
-        }
-
+    public Response makeLinksForSingleSavedSearch(@PathParam("id") long savedSearchIdToLookUp, @QueryParam("debug") boolean debug) {
         SavedSearch savedSearchToMakeLinksFor = savedSearchSvc.find(savedSearchIdToLookUp);
         if (savedSearchToMakeLinksFor == null) {
             return error(BAD_REQUEST, "Count not find saved search id " + savedSearchIdToLookUp);
