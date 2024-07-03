@@ -1741,6 +1741,8 @@ Now that you have a "languages.zip" file, you can load it into your Dataverse in
 
 Click on the languages using the drop down in the header to try them out.
 
+.. _help-translate:
+
 How to Help Translate the Dataverse Software Into Your Language
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -3277,6 +3279,13 @@ please find all known feature flags below. Any of these flags can be activated u
     * - reduce-solr-deletes
       - Avoids deleting and recreating solr documents for dataset files when reindexing. 
       - ``Off``
+    * - reduce-solr-deletes
+      - Avoids deleting and recreating solr documents for dataset files when reindexing. 
+      - ``Off``
+    * - disable-return-to-author-reason
+      - Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call. 
+      - ``Off``
+
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable
 ``DATAVERSE_FEATURE_XXX`` (e.g. ``DATAVERSE_FEATURE_API_SESSION_AUTH=1``). These environment variables can be set in your shell before starting Payara. If you are using :doc:`Docker for development </container/dev-usage>`, you can set them in the `docker compose <https://docs.docker.com/compose/environment-variables/set-environment-variables/>`_ file.
@@ -3724,7 +3733,7 @@ Note: by default, the URL is composed from the settings ``:GuidesBaseUrl`` and `
 :GuidesBaseUrl
 ++++++++++++++
 
-Set ``:GuidesBaseUrl`` to override the default value "https://guides.dataverse.org". If you are interested in writing your own version of the guides, you may find the :doc:`/developers/documentation` section of the Developer Guide helpful.
+Set ``:GuidesBaseUrl`` to override the default value "https://guides.dataverse.org". If you are interested in writing your own version of the guides, you may find the :doc:`/contributor/documentation` section of the Contributor Guide helpful.
 
 ``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:GuidesBaseUrl``
 
@@ -3860,7 +3869,7 @@ If ``:SolrFullTextIndexing`` is set to true, the content of files of any size wi
 :DisableSolrFacets
 ++++++++++++++++++
 
-Setting this to ``true`` will make the collection ("dataverse") page start showing search results without the usual search facets on the left side of the page. A message will be shown in that column informing the users that facets are temporarily unavailable. Generating the facets is more resource-intensive for Solr than the main search results themselves, so applying this measure will significantly reduce the load on the search engine when its performance becomes an issue.
+Setting this to ``true`` will make the collection ("dataverse") page start showing search results without the usual search facets on the left side of the page. A message will be shown in that column informing the users that facets are temporarily unavailable. Generating the facets may in some cases be more resource-intensive for Solr than the main search results themselves, so applying this measure will significantly reduce the load on the search engine when its performance becomes an issue.
 
 This setting can be used in combination with the "circuit breaker" mechanism on the Solr side (see the "Installing Solr" section of the Installation Prerequisites guide). An admin can choose to enable it, or even create an automated system for enabling it in response to Solr beginning to drop incoming requests with the HTTP code 503.
 
@@ -3868,6 +3877,23 @@ To enable the setting::
 
   curl -X PUT -d true "http://localhost:8080/api/admin/settings/:DisableSolrFacets"
 
+
+:DisableSolrFacetsForGuestUsers
++++++++++++++++++++++++++++++++
+
+Similar to the above, but will disable the facets for Guest (unauthenticated) users only. 
+
+:DisableSolrFacetsWithoutJsession
++++++++++++++++++++++++++++++++++
+
+Same idea as with the 2 settings above. For the purposes of this setting, a request is considered "anonymous", if it came in without the JSESSION cookie supplied. A UI user who is browsing the holdings without logging in will have a valid JSESSION cookie, tied to a guest session. The main purpose of this setting is to hide the facets from bots, scripted crawlers and such (most of which - though not all - do not use cookies). Not letting the bots anywhere near the facets can serve a dual purpose on a busy instance experiencing problems with such abuse - some CPU cycles and resources can be saved by not having to generate the facets. And, even more importantly, it can prevent bots from attempting to crawl the facet trees, which has a potential for multiplying the service load. 
+
+.. _:DisableUncheckedTypesFacet:
+
+:DisableUncheckedTypesFacet
++++++++++++++++++++++++++++
+
+Another option for reducing the load on solr on a busy instance. Rather than disabling all the search facets, this setting affects only one - the facet on the upper left of the collection page, where users can select the type of objects to search - Collections ("Dataverses"), Datasets and/or Files. With this option set to true, the numbers of results will only be shown for the types actually  selected (i.e. only for the search results currently shown to the user). This minor feature - being able to tell the user how many files (for example) they *would* find, *if* they chose to search for files, by clicking the Files facet - essentially doubles the expense of running the search. That may still be negligible on an instance with lighter holdings, but can make a significant difference for a large and heavily used archive.  
 
 .. _:SignUpUrl:
 

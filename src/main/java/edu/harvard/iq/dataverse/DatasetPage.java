@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -138,6 +139,7 @@ import jakarta.faces.component.UIInput;
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -786,6 +788,25 @@ public class DatasetPage implements java.io.Serializable {
         if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacets, false)) {
             return isIndexedVersion = false;
         }
+        
+        // plus we have mechanisms for disabling the facets selectively, just for 
+        // the guests, or anonymous users:
+        if (session.getUser() instanceof GuestUser) {
+            if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacetsForGuestUsers, false)) {
+                return isIndexedVersion = false; 
+            }
+            
+            // An even lower grade of user than Guest is a truly anonymous user -
+            // a guest user who came without the session cookie:
+            Map<String, Object> cookies = FacesContext.getCurrentInstance().getExternalContext().getRequestCookieMap();
+            if (!(cookies != null && cookies.containsKey("JSESSIONID"))) {
+                if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacetsWithoutJsession, false)) {
+                    return isIndexedVersion = false; 
+                }
+            }
+            
+        }
+        
         
         // The version is SUPPOSED to be indexed if it's the latest published version, or a
         // draft. So if none of the above is true, we can return false right away. 

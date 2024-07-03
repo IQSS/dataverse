@@ -290,4 +290,4 @@ If you have an idea for an integration, please ask on the `dataverse-community <
 
 Many integrations take the form of "external tools". See the :doc:`external-tools` section for details. External tool makers should check out the :doc:`/api/external-tools` section of the API Guide.
 
-Please help us keep this page up to date making a pull request! To get started, see the :doc:`/developers/documentation` section of the Developer Guide.
+Please help us keep this page up to date making a pull request! To get started, see the :doc:`/contributor/documentation` section of the Contributor Guide.
