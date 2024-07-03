@@ -1,19 +1,54 @@
 Dataverse&#174;  
 ===============
 
-Dataverse is an [open source][] software platform for sharing, finding, citing, and preserving research data (developed by the [Dataverse team](https://dataverse.org/about) at the [Institute for Quantitative Social Science](https://iq.harvard.edu/) and the [Dataverse community][]).
+Welcome to Dataverse®, the [open source][] software platform designed for sharing, finding, citing, and preserving research data. Developed by the Dataverse team at the [Institute for Quantitative Social Science](https://iq.harvard.edu/) and the [Dataverse community][], our platform is built to support researchers and institutions in sharing, finding, citing, and preserving research their data effectively.
 
-[dataverse.org][] is our home on the web and shows a map of Dataverse installations around the world, a list of [features][], [integrations][] that have been made possible through [REST APIs][], our [project board][], our development [roadmap][], and more.
+## ✔  Try Dataverse
 
-We maintain a demo site at [demo.dataverse.org][] which you are welcome to use for testing and evaluating Dataverse.
+We invite you to explore our demo site at [demo.dataverse.org][]. This site is ideal for testing and evaluating Dataverse in a risk-free environment.
 
-To install Dataverse, please see our [Installation Guide][] which will prompt you to download our [latest release][]. Docker users should consult the [Container Guide][].
+## 🌐  Our Web Presence
 
-To discuss Dataverse with the community, please join our [mailing list][], participate in a [community call][], chat with us at [chat.dataverse.org][], or attend our annual [Dataverse Community Meeting][].
+Visit [dataverse.org][], our home on the web, for a comprehensive overview of Dataverse. Here, you will find:
 
-We love contributors! Please see our [Contributing Guide][] for ways you can help.
+- An interactive map showcasing Dataverse installations worldwide.
+- A detailed list of [features][].
+- Information on [integrations][] that have been made possible through our [REST APIs][].
+- Our [project board][] and development [roadmap][].
+- News, events, and more.
+
+## 📥 Installation
+
+Ready to get started? Follow our [Installation Guide][] to download and install the latest release of Dataverse.
+
+If you are using Docker, please refer to our [Container Guide][] for detailed instructions.
+
+## 🏘 Community and Support
+
+Engage with the vibrant Dataverse community through various channels:
+
+- **[Mailing List][]**: Join the conversation on our [mailing list][].
+- **[Community Calls][]**: Participate in our regular [community calls][] to discuss new features, ask questions, and share your experiences.
+- **[Chat][]**: Connect with us and other users in real-time at [chat.dataverse.org][].
+- **[Dataverse Community Meeting][]**: Attend our annual [Dataverse Community Meeting][] to network, learn, and collaborate with peers and experts.
+- **[DataverseTV][]**: Watch the video content from the Dataverse community on [DataverseTV][] and on [Harvard's IQSS YouTube channel][].
+
+## 🧑‍💻️ Contribute to Dataverse
+
+We love contributors! Whether you are a developer, researcher, or enthusiast, there are many ways you can help.
+
+Visit our [Contributing Guide][] to learn how you can get involved.
+
+Join us in building and enhancing Dataverse to make research data more accessible and impactful. Your support and participation are crucial to our success!
+
+## ⚖️ Legal Information
 
 Dataverse is a trademark of President and Fellows of Harvard College and is registered in the United States.
+
+---
+For more detailed information, visit our website at [dataverse.org][].
+
+Feel free to reach out with any questions or feedback. Happy researching!
 
 [![Dataverse Project logo](src/main/webapp/resources/images/dataverseproject_logo.jpg "Dataverse Project")](http://dataverse.org)
 
@@ -37,6 +72,10 @@ Dataverse is a trademark of President and Fellows of Harvard College and is regi
 [Contributing Guide]: CONTRIBUTING.md
 [mailing list]: https://groups.google.com/group/dataverse-community
 [community call]: https://dataverse.org/community-calls
+[Chat]: https://chat.dataverse.org
 [chat.dataverse.org]: https://chat.dataverse.org
 [Dataverse Community Meeting]: https://dataverse.org/events
 [open source]: LICENSE.md
+[community calls]: https://dataverse.org/community-calls
+[DataverseTV]: https://dataverse.org/dataversetv
+[Harvard's IQSS YouTube channel]: https://www.youtube.com/@iqssatharvarduniversity8672
