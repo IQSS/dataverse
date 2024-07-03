@@ -98,6 +98,7 @@ public class SettingsWrapper implements java.io.Serializable {
     //External Vocabulary support
     private Map<Long, JsonObject> cachedCvocMap = null;
     private Map<Long, JsonObject> cachedCvocByTermFieldMap = null;
+    private Set<String> managedFieldSet;
     
     private Long zipDownloadLimit = null; 
     
@@ -804,6 +805,17 @@ public class SettingsWrapper implements java.io.Serializable {
             }
             return cachedCvocMap;
         }
+    }
+    
+    public boolean isManagedField(String fieldName) {
+
+        if(managedFieldSet == null) {
+            managedFieldSet = fieldService.getManagedFieldSet();
+        }
+        if(managedFieldSet == null) {
+         return false;
+        }
+        return managedFieldSet.contains(fieldName);
     }
     
     public String getMetricsUrl() {

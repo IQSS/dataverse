@@ -171,8 +171,11 @@
                                                                       rendered="#{(cvocOnDsf or cvocOnCvPart) and not (
                                                                             cvPart.key.datasetFieldType.name.equals(cvocConf.get(cvPart.key.datasetFieldType.id).getString('term-uri-field'))
                                                                             or cvPart.key.datasetFieldType.name.equals(cvocConf.get(dsf.datasetFieldType.id).getString('term-uri-field')))}"
-                                                                      styleClass="hidden">
-                                                            <f:passThroughAttribute name="hidden" value="hidden" />
+                                                                      >
+                                                            <c:if test="#{settingsWrapper.isManagedField(cvPart.key.datasetFieldType.name)}">
+                                                                <f:passThroughAttribute name="class" value="hidden" />
+                                                                <f:passThroughAttribute name="hidden" value="hidden" />
+                                                            </c:if>
                                                             <f:passThroughAttribute name="data-cvoc-metadata-name" value="#{cvPart.key.datasetFieldType.name}" />
                                                             <f:passThroughAttribute name="data-cvoc-index" value="#{compoundValuesStatus.index}" />
                                                         </h:outputText>

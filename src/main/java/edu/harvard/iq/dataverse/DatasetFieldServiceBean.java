@@ -84,6 +84,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     //Note that for primitive fields, the prent and term-uri-field are the same and these maps have the same entry
     Map <Long, JsonObject> cvocMapByTermUri = null;
     
+    //Flat list of cvoc managed fields
+    Set<String> managedFieldSet = null;
+    
     //The hash of the existing CVocConf setting. Used to determine when the setting has changed and it needs to be re-parsed to recreate the cvocMaps
     String oldHash = null;
 
@@ -282,6 +285,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         String cvocSetting = settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf);
         if (cvocSetting == null || cvocSetting.isEmpty()) {
             oldHash=null;
+            //Release old maps
+            cvocMap=null;
+            cvocMapByTermUri=null;
+            managedFieldSet = null;
             return new HashMap<>();
         }
         String newHash = DigestUtils.md5Hex(cvocSetting);
@@ -291,6 +298,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         oldHash=newHash;
         cvocMap=new HashMap<>();
         cvocMapByTermUri=new HashMap<>();
+        managedFieldSet = new HashSet<>();
         
         try (JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf)))) {
             JsonArray cvocConfJsonArray = jsonReader.readArray();
@@ -331,6 +339,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                                         + managedFields.getString(s));
                             } else {
                                 logger.fine("Found: " + dft.getName());
+                                managedFieldSet.add(dft.getName());
                             }
                         }
                     }
@@ -340,6 +349,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 logger.warning("Ignoring External Vocabulary setting due to parsing error: " + e.getLocalizedMessage());
             }
         return byTermUriField ? cvocMapByTermUri : cvocMap;
+    }
+
+    public Set<String> getManagedFieldSet() {
+        return managedFieldSet;
     }
 
     /**
