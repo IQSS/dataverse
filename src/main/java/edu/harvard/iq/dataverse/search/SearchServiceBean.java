@@ -61,6 +61,8 @@ public class SearchServiceBean {
 
     private static final Logger logger = Logger.getLogger(SearchServiceBean.class.getCanonicalName());
 
+    private static final String ALL_GROUPS = "*";
+
     /**
      * We're trying to make the SearchServiceBean lean, mean, and fast, with as
      * few injections of EJBs as possible.
@@ -978,8 +980,6 @@ public class SearchServiceBean {
             throw new NullPointerException("solrQuery cannot be null");
         }
         
-        String dangerZoneNoSolrJoin = null;
-
         if (user instanceof PrivateUrlUser) {
             user = GuestUser.get();
         }
@@ -988,8 +988,9 @@ public class SearchServiceBean {
         AuthenticatedUser au = null;
         Set<Group> groups;
 
-        if (user instanceof AuthenticatedUser) {
+        boolean avoidJoin = FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled();
 
+        if (user instanceof AuthenticatedUser) {
             au = (AuthenticatedUser) user;
 
             // ----------------------------------------------------
@@ -1001,7 +1002,7 @@ public class SearchServiceBean {
                 // to see everything in Solr with no regard to permissions. But it's
                 // been this way since Dataverse 4.0. So relax. :)
 
-                return dangerZoneNoSolrJoin;
+                return buildPermissionFilterQuery(avoidJoin, ALL_GROUPS);
             }
 
             // ----------------------------------------------------
@@ -1012,7 +1013,7 @@ public class SearchServiceBean {
             if (onlyDatatRelatedToMe == true) {
                 if (systemConfig.myDataDoesNotUsePermissionDocs()) {
                     logger.fine("old 4.2 behavior: MyData is not using Solr permission docs");
-                    return dangerZoneNoSolrJoin;
+                    return buildPermissionFilterQuery(avoidJoin, ALL_GROUPS);
                 } else {
                     // fall-through
                     logger.fine("new post-4.2 behavior: MyData is using Solr permission docs");
@@ -1028,8 +1029,6 @@ public class SearchServiceBean {
         // add joins on all the non-public groups that may exist for the
         // user:
 
-        boolean avoidJoin = FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled();
-        
         // Authenticated users and GuestUser may be part of one or more groups; such
         // as IP Groups.
         groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
@@ -1054,16 +1053,23 @@ public class SearchServiceBean {
             groupString = groupList.get(0);
         }
         logger.fine("Groups: " + groupString);
-        String query = avoidJoin ? SearchFields.PUBLIC_OBJECT + ":" + true : "";
-        if (groupString != null) {
+        return buildPermissionFilterQuery(avoidJoin, groupString);
+    }
+
+    private String buildPermissionFilterQuery(boolean avoidJoin, String permissionFilterGroups) {
+        String query = (avoidJoin&& !isAllGroups(permissionFilterGroups)) ? SearchFields.PUBLIC_OBJECT + ":" + true : "";
+        if (permissionFilterGroups != null && !isAllGroups(permissionFilterGroups)) {
             if (!query.isEmpty()) {
-                query = "(" + query + " OR " + "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" + groupString + ")";
+                query = "(" + query + " OR " + "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups + ")";
             } else {
-                query = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" + groupString;
+                query = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":" + permissionFilterGroups;
             }
         }
         return query;
     }
-
+    
+    private boolean isAllGroups(String groups) {
+        return (groups!=null &&groups.equals(ALL_GROUPS));
+    }
 }
 
