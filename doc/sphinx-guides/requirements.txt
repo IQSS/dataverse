@@ -8,3 +8,6 @@ myst-parser==2.0.0
 
 # tabs
 sphinx-tabs==3.4.5
+
+# jQuery
+sphinxcontrib-jquery

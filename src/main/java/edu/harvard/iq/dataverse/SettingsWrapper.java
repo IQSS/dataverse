@@ -78,6 +78,9 @@ public class SettingsWrapper implements java.io.Serializable {
     private boolean embargoDateChecked = false;
     private LocalDate maxEmbargoDate = null;
 
+    private boolean retentionDateChecked = false;
+    private LocalDate minRetentionDate = null;
+
     private String siteUrl = null; 
     
     private Dataverse rootDataverse = null; 
@@ -302,14 +305,16 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return publicInstall; 
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncUpload() {
         if (rsyncUpload == null) {
             rsyncUpload = getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
         return rsyncUpload; 
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncDownload() {
         if (rsyncDownload == null) {
             rsyncDownload = systemConfig.isRsyncDownload();
@@ -376,7 +381,8 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return webloaderUpload;
     }
-    
+
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public boolean isRsyncOnly() {
         if (rsyncOnly == null) {
             String downloadMethods = getValueForKey(SettingsServiceBean.Key.DownloadMethods);
@@ -395,7 +401,7 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return rsyncOnly;
     }
-    
+
     public boolean isHTTPUpload(){
         if (httpUpload == null) {
             httpUpload = getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());
@@ -572,6 +578,89 @@ public class SettingsWrapper implements java.io.Serializable {
                 // If we don't throw an exception here, the datePicker will use it's own
                 // vaidator and display a default message. The value for that can be set by
                 // adding validatorMessage="#{bundle['embargo.date.invalid']}" (a version with
+                // no params) to the datepicker
+                // element in file-edit-popup-fragment.html, but it would be better to catch all
+                // problems here (so we can show a message with the min/max dates).
+                FacesMessage msg = new FacesMessage(msgString);
+                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+                throw new ValidatorException(msg);
+            }
+        }
+    }
+
+    public LocalDate getMinRetentionDate() {
+        if (!retentionDateChecked) {
+            String months = getValueForKey(Key.MinRetentionDurationInMonths);
+            Long minMonths = null;
+            if (months != null) {
+                try {
+                    minMonths = Long.parseLong(months);
+                } catch (NumberFormatException nfe) {
+                    logger.warning("Cant interpret :MinRetentionDurationInMonths as a long");
+                }
+            }
+
+            if (minMonths != null && minMonths != 0) {
+                if (minMonths == -1) {
+                    minMonths = 0l; // Absolute minimum is 0
+                }
+                minRetentionDate = LocalDate.now().plusMonths(minMonths);
+            }
+            retentionDateChecked = true;
+        }
+        return minRetentionDate;
+    }
+
+    public LocalDate getMaxRetentionDate() {
+        Long maxMonths = 12000l; // Arbitrary cutoff at 1000 years - needs to keep maxDate < year 999999999 and
+        // somehwere 1K> x >10K years the datepicker widget stops showing a popup
+        // calendar
+        return LocalDate.now().plusMonths(maxMonths);
+    }
+
+    public boolean isValidRetentionDate(Retention r) {
+
+        if (r.getDateUnavailable()==null ||
+            isRetentionAllowed() && r.getDateUnavailable().isAfter(getMinRetentionDate())) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean isRetentionAllowed() {
+        //Need a valid :MinRetentionDurationInMonths setting to allow retentions
+        return getMinRetentionDate()!=null;
+    }
+
+    public void validateRetentionDate(FacesContext context, UIComponent component, Object value)
+            throws ValidatorException {
+        if (isRetentionAllowed()) {
+            UIComponent cb = component.findComponent("retentionCheckbox");
+            UIInput endComponent = (UIInput) cb;
+            boolean removedState = false;
+            if (endComponent != null) {
+                try {
+                    removedState = (Boolean) endComponent.getSubmittedValue();
+                } catch (NullPointerException npe) {
+                    // Do nothing - checkbox is not being shown (and is therefore not checked)
+                }
+            }
+            if (!removedState && value == null) {
+                String msgString = BundleUtil.getStringFromBundle("retention.date.required");
+                FacesMessage msg = new FacesMessage(msgString);
+                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+                throw new ValidatorException(msg);
+            }
+            Retention newR = new Retention(((LocalDate) value), null);
+            if (!isValidRetentionDate(newR)) {
+                String minDate = getMinRetentionDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                String maxDate = getMaxRetentionDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                String msgString = BundleUtil.getStringFromBundle("retention.date.invalid",
+                        Arrays.asList(minDate, maxDate));
+                // If we don't throw an exception here, the datePicker will use it's own
+                // vaidator and display a default message. The value for that can be set by
+                // adding validatorMessage="#{bundle['retention.date.invalid']}" (a version with
                 // no params) to the datepicker
                 // element in file-edit-popup-fragment.html, but it would be better to catch all
                 // problems here (so we can show a message with the min/max dates).

@@ -131,7 +131,7 @@
  
     <properties>
         <!-- This is a special Maven property name, do not change! -->
-        <revision>6.2</revision>
+        <revision>6.3</revision>
     
         <target.java.version>17</target.java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -148,14 +148,13 @@
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
     
         <!-- Major system components and dependencies -->
-        <payara.version>6.2023.8</payara.version>
+        <payara.version>6.2024.6</payara.version>
         <postgresql.version>42.7.2</postgresql.version>
-        <solr.version>9.3.0</solr.version>
-        <aws.version>1.12.290</aws.version>
+        <solr.version>9.4.1</solr.version>
+        <aws.version>1.12.748</aws.version>
         <google.library.version>26.30.0</google.library.version>
     
         <!-- Basic libs, logging -->
-        <jakartaee-api.version>8.0.0</jakartaee-api.version>
         <slf4j.version>1.7.35</slf4j.version>
         <commons.io.version>2.15.1</commons.io.version>
         <commons.logging.version>1.2</commons.logging.version>
@@ -379,18 +378,6 @@
             <id>payara-nexus-artifacts</id>
             <name>Payara Nexus Artifacts</name>
             <url>https://nexus.payara.fish/repository/payara-artifacts</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <!-- This repository is about to being phased out. See https://github.com/payara/Payara_PatchedProjects/issues/366 -->
-        <repository>
-            <id>payara-patched-externals</id>
-            <name>Payara Patched Externals</name>
-            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
             <releases>
                 <enabled>true</enabled>
             </releases>

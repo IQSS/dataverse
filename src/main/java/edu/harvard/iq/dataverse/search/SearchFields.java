@@ -218,6 +218,15 @@ public class SearchFields {
     public static final String DISCOVERABLE_BY = "discoverableBy";
 
     /**
+     * publicObject_b is an experimental field tied to the
+     * avoid-expensive-solr-join feature flag. Rather than discoverableBy which
+     * is a field on permission documents, publicObject_b is a field on content
+     * documents (dvObjects). By indexing publicObject_b=true, we can let guests
+     * search on it, avoiding an expensive join for those (common) users.
+     */
+    public static final String PUBLIC_OBJECT = "publicObject_b";
+
+    /**
      * i.e. "Unpublished", "Draft" (multivalued)
      */
     public static final String PUBLICATION_STATUS = "publicationStatus";
@@ -267,7 +276,7 @@ public class SearchFields {
 
     public static final String FULL_TEXT = "_text_";
     public static final String EMBARGO_END_DATE = "embargoEndDate";
-
+    public static final String RETENTION_END_DATE = "retentionEndDate";
     
     // SpatialRecursivePrefixTreeFieldType: https://solr.apache.org/guide/8_11/spatial-search.html#rpt
     public static final String GEOLOCATION = "geolocation";
