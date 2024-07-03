@@ -254,7 +254,7 @@ public class SavedSearchServiceBean {
     }
 
     public void unLinksForSingleSavedSearch(DataverseRequest dvReq, SavedSearch savedSearch) throws SearchException, CommandException {
-        logger.info("UNLINK SAVED SEARCH (" + savedSearch.getId() + ") START search and unlink process");
+        logger.fine("UNLINK SAVED SEARCH (" + savedSearch.getId() + ") START search and unlink process");
         Date start = new Date();
         Dataverse linkingDataverse = savedSearch.getDefinitionPoint();
 
@@ -281,7 +281,7 @@ public class SavedSearchServiceBean {
             }
         }
 
-        logger.info("UNLINK SAVED SEARCH (" + savedSearch.getId() + ") total time in ms: " + (new Date().getTime() - start.getTime()));
+        logger.fine("UNLINK SAVED SEARCH (" + savedSearch.getId() + ") total time in ms: " + (new Date().getTime() - start.getTime()));
     }
 
     private SolrQueryResponse findHits(SavedSearch savedSearch) throws SearchException {
