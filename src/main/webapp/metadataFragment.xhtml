@@ -129,8 +129,8 @@
                                                     
                                                     <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
                                                         <c:set var="cvocOnCvPart" value="#{cvocConf.containsKey(cvPart.key.datasetFieldType.id)}"/>
-                                                        <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first and !(cvocOnDsf or cvocOnCvPart)}"/>
-                                                        <ui:fragment rendered="#{!(cvocOnDsf or cvocOnCvPart)}">
+                                                        <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first and !!settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id)}"/>
+                                                        <ui:fragment rendered="#{!settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id)}">
                                                             <ui:fragment rendered="#{compoundValue.isLink(cvPart.key)}">
                                                                 <h:outputLink value="#{compoundValue.getLink()}" target="_blank">
                                                                     <h:outputText value="#{cvPart.value}"
@@ -171,11 +171,8 @@
                                                                       rendered="#{(cvocOnDsf or cvocOnCvPart) and not (
                                                                             cvPart.key.datasetFieldType.name.equals(cvocConf.get(cvPart.key.datasetFieldType.id).getString('term-uri-field'))
                                                                             or cvPart.key.datasetFieldType.name.equals(cvocConf.get(dsf.datasetFieldType.id).getString('term-uri-field')))}"
-                                                                      >
-                                                            <c:if test="#{settingsWrapper.isManagedField(cvPart.key.datasetFieldType.name)}">
-                                                                <f:passThroughAttribute name="class" value="hidden" />
-                                                                <f:passThroughAttribute name="hidden" value="hidden" />
-                                                            </c:if>
+                                                                      styleClass="hidden">
+                                                            <f:passThroughAttribute name="hidden" value="hidden" />
                                                             <f:passThroughAttribute name="data-cvoc-metadata-name" value="#{cvPart.key.datasetFieldType.name}" />
                                                             <f:passThroughAttribute name="data-cvoc-index" value="#{compoundValuesStatus.index}" />
                                                         </h:outputText>
