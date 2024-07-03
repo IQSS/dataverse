@@ -105,7 +105,7 @@ public class SavedSearchServiceBean {
         try {
             persisted = em.merge(toPersist);
         } catch (Exception ex) {
-            System.out.println("exeption: " + ex);
+            logger.fine("Failed to add SavedSearch" + ex);
         }
         return persisted;
     }
@@ -114,16 +114,16 @@ public class SavedSearchServiceBean {
         SavedSearch doomed = find(id);
         boolean wasDeleted = false;
         if (doomed != null) {
-            System.out.println("deleting saved search id " + doomed.getId());
+            logger.fine("Deleting saved search id " + doomed.getId());
             if(unlink) {
                 DataverseRequest dataverseRequest = new DataverseRequest(doomed.getCreator(), getHttpServletRequest());
-                unLinksForSingleSavedSearch(dataverseRequest, doomed);
+                removeLinks(dataverseRequest, doomed);
             }
             em.remove(doomed);
             em.flush();
             wasDeleted = true;
         } else {
-            System.out.println("problem deleting saved search id " + id);
+            logger.fine("Problem deleting saved search id " + id);
         }
         return wasDeleted;
     }
@@ -253,7 +253,15 @@ public class SavedSearchServiceBean {
         return response;
     }
 
-    public void unLinksForSingleSavedSearch(DataverseRequest dvReq, SavedSearch savedSearch) throws SearchException, CommandException {
+    /**
+     * This method to the reverse of a makeLinksForSingleSavedSearch method.
+     * It removes all Dataset and Dataverse links that match savedSearch's query.
+     * @param dvReq
+     * @param savedSearch
+     * @throws SearchException
+     * @throws CommandException
+     */
+    public void removeLinks(DataverseRequest dvReq, SavedSearch savedSearch) throws SearchException, CommandException {
         logger.fine("UNLINK SAVED SEARCH (" + savedSearch.getId() + ") START search and unlink process");
         Date start = new Date();
         Dataverse linkingDataverse = savedSearch.getDefinitionPoint();
