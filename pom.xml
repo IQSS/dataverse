@@ -224,9 +224,6 @@
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
             <scope>provided</scope>
-            <!-- Note: The version was provided by Payara BOM till 6.2023.7, when they removed the Core BOM from it as
-                       meant for internal use only. Simply referencing the version property here solves the problem. -->
-            <version>${payara.version}</version>
         </dependency>
         
         <!-- JSON-P -->
@@ -552,6 +549,11 @@
             <groupId>org.apache.opennlp</groupId>
             <artifactId>opennlp-tools</artifactId>
             <version>1.9.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-core</artifactId>
+            <version>2.9.1</version>
         </dependency>
         <dependency>
           <groupId>com.google.cloud</groupId>

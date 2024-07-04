@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.IOException;
@@ -26,7 +27,7 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
     public ReturnDatasetToAuthorCommand(DataverseRequest aRequest, Dataset anAffectedDvObject, String comment) {
         super(aRequest, anAffectedDvObject);
 
-        if (comment == null || comment.isEmpty()) {
+        if ((comment == null || comment.isEmpty()) && !FeatureFlags.DISABLE_RETURN_TO_AUTHOR_REASON.enabled()) {
             throw new IllegalArgumentException(BundleUtil.getStringFromBundle("dataset.reject.commentNull"));
         }
 
