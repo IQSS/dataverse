@@ -584,7 +584,7 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
                     DatasetField idType = e.get(DatasetFieldConstant.authorIdType);
                     author.setIdType(idType != null && !idType.getControlledVocabularyValues().isEmpty()
                             ? idType.getControlledVocabularyValues().get(0).getStrValue() : null);
-                    author.setIdValue(mapIfNotNull(e.get(DatasetFieldConstant.authorIdValue), DatasetField::getDisplayValue));
+                    author.setIdValue(mapIfNotNull(e.get(DatasetFieldConstant.authorIdValue), DatasetField::getValue));
                     return author;
                 })
                 .collect(Collectors.toList());

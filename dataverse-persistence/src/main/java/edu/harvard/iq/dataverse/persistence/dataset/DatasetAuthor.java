@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.persistence.dataset;
 
+import io.vavr.control.Option;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Comparator;
@@ -102,42 +103,53 @@ public class DatasetAuthor {
 
     public String getIdentifierAsUrl() {
         if (idType != null && !idType.isEmpty() && idValue != null && !idValue.isEmpty()) {
+            return getIdentifierAsUrl(idType, idValue)
+                    .getOrNull();
+        }
+        return null;
+    }
+
+    /**
+     * Returns the URL for the provided id value of the given type, or none if:
+     * - unknown type
+     * - invalid id
+     */
+    public static Option<String> getIdentifierAsUrl(String idType, String idValue) {
             switch (idType) {
                 case "ORCID":
                     if (isValidAuthorIdentifier(idValue, getValidPattern(REGEX_ORCID))) {
-                        return "https://orcid.org/" + idValue;
+                        return Option.some("https://orcid.org/" + idValue);
                     }
                     break;
                 case "ISNI":
                     if (isValidAuthorIdentifier(idValue, getValidPattern(REGEX_ISNI))) {
-                        return "http://www.isni.org/isni/" + idValue;
+                        return Option.some("http://www.isni.org/isni/" + idValue);
                     }
                     break;
                 case "LCNA":
                     if (isValidAuthorIdentifier(idValue, getValidPattern(REGEX_LCNA))) {
-                        return "http://id.loc.gov/authorities/names/" + idValue;
+                        return Option.some("http://id.loc.gov/authorities/names/" + idValue);
                     }
                     break;
                 case "VIAF":
                     if (isValidAuthorIdentifier(idValue, getValidPattern(REGEX_VIAF))) {
-                        return "https://viaf.org/viaf/" + idValue;
+                        return Option.some("https://viaf.org/viaf/" + idValue);
                     }
                     break;
                 case "GND":
                     if (isValidAuthorIdentifier(idValue, getValidPattern(REGEX_GND))) {
-                        return "https://d-nb.info/gnd/" + idValue;
+                        return Option.some("https://d-nb.info/gnd/" + idValue);
                     }
                     break;
                 default:
                     break;
             }
-        }
-        return null;
+            return Option.none();
     }
 
     // -------------------- PRIVATE --------------------
 
-    private boolean isValidAuthorIdentifier(String userInput, Pattern pattern) {
+    private static boolean isValidAuthorIdentifier(String userInput, Pattern pattern) {
         return pattern.matcher(userInput).matches();
     }
 

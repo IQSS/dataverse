@@ -1,7 +1,12 @@
 package edu.harvard.iq.dataverse.persistence.dataset;
 
+import com.google.common.collect.ImmutableMap;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.MarkupChecker;
+import edu.harvard.iq.dataverse.persistence.dataset.formatter.AuthorIdentifierUrlProvider;
+import edu.harvard.iq.dataverse.persistence.dataset.formatter.DatasetFieldFormattedValueDecorator;
+import edu.harvard.iq.dataverse.persistence.dataset.formatter.LinkFormattedValueDecorator;
 import io.vavr.control.Option;
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,6 +48,8 @@ public class DatasetField implements Serializable, ValidatableField {
 
     public static final String NA_VALUE = "N/A";
     public static final String DEFAULT_SOURCE = "PRIMARY";
+    private static final Map<String, DatasetFieldFormattedValueDecorator> FORMATTED_VALUE_DECORATORS = ImmutableMap.
+            of(DatasetFieldConstant.authorIdValue, new LinkFormattedValueDecorator(new AuthorIdentifierUrlProvider()));
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -439,10 +446,14 @@ public class DatasetField implements Serializable, ValidatableField {
                 format = "#VALUE";
             }
             String value = getValue();
-            retVal = format
+            String formattedVal = format
                     .replace("#NAME", getDatasetFieldType().getTitle() == null ? "" : getDatasetFieldType().getTitle())
                     .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
                     .replace("#VALUE", value);
+
+            retVal = resolveFormattedValueDecorator()
+                    .flatMap(decorator -> decorator.decorate(this, formattedVal))
+                    .getOrElse(formattedVal);
         }
         return retVal;
     }
@@ -465,14 +476,23 @@ public class DatasetField implements Serializable, ValidatableField {
             }
             // replace the special values in the format (note: we replace #VALUE last since we don't
             // want any issues if the value itself has #NAME in it)
-            retVal = format
+            String formattedVal = format
                     .replace("#NAME", fieldType.getLocaleTitle() == null ? "" : fieldType.getLocaleTitle())
                     .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
                     .replace("#VALUE", sanitizedValue);
+
+            retVal = resolveFormattedValueDecorator()
+                    .flatMap(decorator -> decorator.decorate(this, formattedVal))
+                    .getOrElse(formattedVal);
         }
 
         return retVal;
     }
+
+    private Option<DatasetFieldFormattedValueDecorator> resolveFormattedValueDecorator() {
+        return Option.of(FORMATTED_VALUE_DECORATORS.get(getTypeName()));
+    }
+
     // -------------------- SETTERS --------------------
 
     public void setId(Long id) {
