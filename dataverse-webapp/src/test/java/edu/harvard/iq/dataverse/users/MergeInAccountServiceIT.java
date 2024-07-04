@@ -1,4 +1,5 @@
 package edu.harvard.iq.dataverse.users;
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.AcceptedConsentDao;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
@@ -47,7 +48,6 @@ import org.jboss.arquillian.transaction.api.annotation.Transactional;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
-import org.testcontainers.shaded.com.google.common.collect.Lists;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;

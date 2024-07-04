@@ -15,6 +15,7 @@
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
+        <dataverse.repo.dir>${project.basedir}</dataverse.repo.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <additionalparam>-Xdoclint:none</additionalparam>
         <!-- Needed to avoid IDEA IDE compilation failures. See commits in GH #5059 -->
@@ -745,6 +746,96 @@
                         </archive>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>3.0.0-M5</version>
+                    <executions>
+                        <execution>
+                            <id>run-tests</id>
+                            <phase>integration-test</phase>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                            <configuration>
+                                <!-- https://github.com/arquillian/arquillian-container-glassfish/issues/24 -->
+                                <reuseForks>false</reuseForks>
+                                <groups>edu.harvard.iq.dataverse.test.arquillian.ArquillianIntegrationTests</groups>
+                                <systemProperties>
+                                    <test.solr.port>${test.solr.port}</test.solr.port>
+                                </systemProperties>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.44.0</version>
+                    <configuration>
+                        <verbose>true</verbose>
+                        <startParallel>false</startParallel>
+                        <images>
+                            <image>
+                                <name>postgres:12-alpine</name>
+                                <alias>postgres-it</alias>
+                                <run>
+                                    <ports>
+                                        <port>5432:5432</port>
+                                    </ports>
+                                    <env>
+                                        <POSTGRES_DB>dvndb-test</POSTGRES_DB>
+                                        <POSTGRES_USER>dvnapp</POSTGRES_USER>
+                                        <POSTGRES_PASSWORD>secret</POSTGRES_PASSWORD>
+                                    </env>
+                                    <wait>
+                                        <log>(?s)database system is ready to accept connections.*database system is ready to accept connections</log>
+                                        <time>10000</time>
+                                    </wait>
+                                    <log>
+                                        <enabled>true</enabled>
+                                    </log>
+                                </run>
+                            </image>
+                            <image>
+                                <name>solr:7.3.1</name>
+                                <alias>solr-it</alias>
+                                <build>
+                                    <dockerFile>${dataverse.repo.dir}/dataverse-webapp/src/test/resources/docker/test_solr/Dockerfile</dockerFile>
+                                </build>
+                                <run>
+                                    <ports>
+                                        <port>test.solr.port:8983</port>
+                                    </ports>
+                                    <wait>
+                                        <log>Opening new SolrCore</log>
+                                        <time>10000</time>
+                                    </wait>
+                                    <log>
+                                        <enabled>true</enabled>
+                                    </log>
+                                </run>
+                            </image>
+                        </images>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>docker-run</id>
+                            <goals>
+                                <goal>build</goal>
+                                <goal>start</goal>
+                            </goals>
+                            <phase>pre-integration-test</phase>
+                        </execution>
+                        <execution>
+                            <id>docker-stop</id>
+                            <goals>
+                                <goal>stop</goal>
+                            </goals>
+                            <phase>post-integration-test</phase>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -822,25 +913,6 @@
                     <!-- testsToExclude come from the profile-->
                     <excludedGroups>${testsToExclude}</excludedGroups>
                 </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.0.0-M5</version>
-                <executions>
-                    <execution>
-                        <id>run-tests</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                            <!-- https://github.com/arquillian/arquillian-container-glassfish/issues/24 -->
-                            <reuseForks>false</reuseForks>
-                            <groups>edu.harvard.iq.dataverse.test.arquillian.ArquillianIntegrationTests</groups>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

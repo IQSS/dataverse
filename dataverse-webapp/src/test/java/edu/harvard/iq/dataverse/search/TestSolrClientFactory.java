@@ -2,10 +2,6 @@ package edu.harvard.iq.dataverse.search;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
@@ -26,31 +22,15 @@ import java.util.logging.Logger;
 public class TestSolrClientFactory extends SolrClientFactory {
 
     private static final Logger LOGGER = Logger.getLogger(TestSolrClientFactory.class.getCanonicalName());
-    private static final org.slf4j.Logger SOLR_CONTAINER_LOGGER = org.slf4j.LoggerFactory.getLogger("SolrContainer");
-    
-    private static final GenericContainer<?> SOLR_CONTAINER;
-    
-    static {
-        SOLR_CONTAINER = new GenericContainer<>(new ImageFromDockerfile()
-                    .withFileFromClasspath("Dockerfile", "/docker/test_solr/Dockerfile")
-                    .withFileFromClasspath("schema.xml", "/docker/test_solr/schema.xml")
-                    .withFileFromClasspath("solrconfig.xml", "/docker/test_solr/solrconfig.xml")
-                    .withFileFromClasspath("ror/schema.xml", "/docker/test_solr/ror/schema.xml")
-                    .withFileFromClasspath("ror/solrconfig.xml", "/docker/test_solr/ror/solrconfig.xml")
-                )
-                .withLogConsumer(new Slf4jLogConsumer(SOLR_CONTAINER_LOGGER))
-                .withExposedPorts(8983)
-                .waitingFor(Wait.forHttp("/solr/collection1/select"));
 
-        SOLR_CONTAINER.start();
-    }
-    
+    private static final String DEFAULT_SOLR_TEST_PORT = "8984";
+
     // -------------------- LOGIC --------------------
     
     @Produces
     @Specializes
     public SolrClient produceSolrClient() throws IOException {
-        String urlString = "http://localhost:" + SOLR_CONTAINER.getMappedPort(8983) + "/solr/collection1";
+        String urlString = "http://localhost:" + resolveSolrPort() + "/solr/collection1";
         LOGGER.fine("Creating test SolrClient at url: " + urlString);
         
         return new HttpSolrClient.Builder(urlString).build();
@@ -60,7 +40,7 @@ public class TestSolrClientFactory extends SolrClientFactory {
     @Specializes
     @RorSolrClient
     public SolrClient produceRorSolrClient() {
-        String urlString = "http://localhost:" + SOLR_CONTAINER.getMappedPort(8983) + "/solr/rorSuggestions";
+        String urlString = "http://localhost:" + resolveSolrPort() + "/solr/rorSuggestions";
         LOGGER.fine("Creating test SolrClient at url: " + urlString);
 
         return new HttpSolrClient.Builder(urlString).build();
@@ -69,5 +49,15 @@ public class TestSolrClientFactory extends SolrClientFactory {
     public void disposeSolrClient(@Disposes SolrClient solrClient) throws IOException {
         solrClient.close();
     }
-    
+
+    // -------------------- PRIVATE --------------------
+
+    private static String resolveSolrPort() {
+        String port = System.getProperty("test.solr.port");
+        if (port == null) {
+            return DEFAULT_SOLR_TEST_PORT;
+        }
+        return port;
+    }
+
 }

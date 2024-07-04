@@ -215,7 +215,7 @@ public class SolrPermissionsFinder {
         return null;
     }
 
-    private enum SolrPermissionType {
+    public enum SolrPermissionType {
         SEARCH((dvo, p) -> p.contains(dvo.isInstanceofDataverse()
                 ? Permission.ViewUnpublishedDataverse
                 : Permission.ViewUnpublishedDataset)),

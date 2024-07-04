@@ -4,6 +4,7 @@
 
 package edu.harvard.iq.dataverse.util.json;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.api.dto.IpGroupDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
@@ -34,7 +35,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.json.Json;
 import javax.json.JsonArray;

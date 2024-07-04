@@ -2,10 +2,10 @@ package edu.harvard.iq.dataverse.util;
 
 import com.google.common.collect.ImmutableMap;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 
 import java.io.File;
 import java.io.IOException;

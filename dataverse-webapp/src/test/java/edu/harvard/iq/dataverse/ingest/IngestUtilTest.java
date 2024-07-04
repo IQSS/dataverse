@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
@@ -266,7 +265,6 @@ public class IngestUtilTest {
 
     // -------------------- PRIVATE --------------------
 
-    @NotNull
     private List<DataFile> createDataFilesNoDirectories(Dataset dataset, DatasetVersion datasetVersion) {
         List<DataFile> dataFileList = new ArrayList<>();
         DataFile datafile1 = createDataFile(dataset, "application/octet-stream", "datafile1.txt");
@@ -286,7 +284,6 @@ public class IngestUtilTest {
         return dataFileList;
     }
 
-    @NotNull
     private List<DataFile> createDataFilesWithEmptyDirectories(Dataset dataset, DatasetVersion datasetVersion) {
         List<DataFile> dataFileList = new ArrayList<>();
         DataFile datafile1 = createDataFile(dataset, "application/octet-stream", "datafile1.txt");
@@ -307,7 +304,6 @@ public class IngestUtilTest {
         return dataFileList;
     }
 
-    @NotNull
     private FileMetadata createDataFilesWithDirectories(Dataset dataset, DatasetVersion datasetVersion, List<DataFile> dataFileList) {
         DataFile datafile1 = createDataFile(dataset, "application/octet-stream", "subdir/datafile1.txt");
         FileMetadata fmd1 = createFileMetadata(datasetVersion, datafile1, 1L, "datafile1.txt");
@@ -336,7 +332,6 @@ public class IngestUtilTest {
         return fmd3;
     }
 
-    @NotNull
     private FileMetadata createFileMetadata(DatasetVersion datasetVersion, DataFile datafile1, long l, String s) {
         FileMetadata fmd1 = new FileMetadata();
         fmd1.setId(l);
@@ -346,12 +341,10 @@ public class IngestUtilTest {
         return fmd1;
     }
 
-    @NotNull
     private Predicate<DataFile> fileMetadataHasLabel(String s) {
         return df -> df.getFileMetadata().getLabel().equals(s);
     }
 
-    @NotNull
     private DataFile createDataFile(Dataset dataset, String s, String s2) {
         DataFile datafile1 = new DataFile(s);
         datafile1.setStorageIdentifier(s2);
@@ -366,7 +359,6 @@ public class IngestUtilTest {
         return datafile1;
     }
 
-    @NotNull
     private DataFile createTabularDataFile(Dataset dataset) {
         DataFile datafile1 = createDataFile(dataset, "application/x-strata", "foobar.dta");
         DataTable dt1 = new DataTable();

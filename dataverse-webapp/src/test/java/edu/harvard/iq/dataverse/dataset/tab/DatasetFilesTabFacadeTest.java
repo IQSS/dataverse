@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionRepository;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import org.assertj.core.api.Condition;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -299,7 +298,6 @@ class DatasetFilesTabFacadeTest {
 
     }
 
-    @NotNull
     private FileMetadata generateFileMetadata() {
         FileMetadata fileMetadata = new FileMetadata();
         fileMetadata.setId(new Random().nextLong());

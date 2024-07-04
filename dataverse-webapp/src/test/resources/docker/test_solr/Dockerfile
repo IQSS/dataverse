@@ -2,6 +2,8 @@ FROM solr:8.2
 
 USER root
 
+RUN curl -L -O https://repo1.maven.org/maven2/org/locationtech/jts/jts-core/1.19.0/jts-core-1.19.0.jar --output-dir /opt/solr/server/solr-webapp/webapp/WEB-INF/lib/
+
 RUN cp -r /opt/solr/server/solr/configsets/_default /opt/solr/server/solr/configsets/dataverse_config
 COPY schema.xml /opt/solr/server/solr/configsets/dataverse_config/conf/
 COPY solrconfig.xml /opt/solr/server/solr/configsets/dataverse_config/conf/

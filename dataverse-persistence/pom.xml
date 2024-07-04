@@ -12,6 +12,10 @@
     <artifactId>dataverse-persistence</artifactId>
     <name>dataverse-persistence</name>
 
+    <properties>
+        <dataverse.repo.dir>${project.parent.basedir}</dataverse.repo.dir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -72,6 +76,13 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

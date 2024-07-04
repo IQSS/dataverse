@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.search.dataversestree;
 
+import com.google.common.collect.ImmutableMap;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.primefaces.model.TreeNode;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import java.util.ArrayList;
 import java.util.Collections;

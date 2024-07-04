@@ -142,6 +142,7 @@
     <field name="definitionPointDvObjectId" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="discoverableBy" type="string" stored="true" indexed="true" multiValued="true"/>
     <field name="discoverableByPublicFrom" type="pdate" stored="true" indexed="true" multiValued="false"/>
+    <field name="addDatasetPerm" type="string" stored="true" indexed="true" multiValued="true"/>
 
     <field name="dvObjectType" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="metadataSource" type="string" stored="true" indexed="true" multiValued="false"/>
@@ -151,6 +152,7 @@
     <field name="dvAlias" type="text_en" stored="true" indexed="true" multiValued="false"/>
     <field name="dvAffiliation" type="text_en" stored="true" indexed="true" multiValued="false"/>
     <field name="dvDescription" type="text_en" stored="true" indexed="true" multiValued="false"/>
+    <field name="dvExtraDescription" type="text_en" stored="true" indexed="true" multiValued="false"/>
 
     <field name="dvCategory" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="categoryOfDataverse" type="string" stored="true" indexed="true" multiValued="false"/>
@@ -188,10 +190,14 @@
     <!-- TODO: store parentid as a long instead of a string  -->
     <field name="parentId" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="parentIdentifier" type="string" stored="true" indexed="true" multiValued="false"/>
-    <field name="parentName" type="string" stored="true" indexed="false" multiValued="false"/>
+    <field name="parentName" type="text_en" stored="true" indexed="true" multiValued="false"/>
+
+    <!-- Citations -->
     <dynamicField name="parentCitation_*" type="string" stored="true" indexed="false" multiValued="false"/>
     <dynamicField name="citation_*" type="string" stored="true" indexed="false" multiValued="false"/>
     <dynamicField name="citationHtml_*" type="string" stored="true" indexed="false" multiValued="false"/>
+    <!-- Citations END -->
+
     <field name="identifier" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="persistentUrl" type="string" stored="true" indexed="false" multiValued="false"/>
     <field name="unf" type="string" stored="true" indexed="true" multiValued="false"/>
@@ -201,6 +207,7 @@
     <field name="fileChecksumValue" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="fileContentType" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="deaccessionReason" type="string" stored="true" indexed="false" multiValued="false"/>
+    <field name="embargoUntil" type="pdate" stored="true" indexed="false" multiValued="false"/>
 
     <!-- Added for Dataverse 4.0 alpha 1. This is a required field so we don't have to go to the database to get the database id of the entity. On cards we use the id in links -->
     <field name="entityId" type="long" stored="true" indexed="true" multiValued="false"/>
@@ -223,6 +230,8 @@
 
     <field name="dsPersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="filePersistentId" type="text_en" multiValued="false" stored="true" indexed="true"/>
+    <field name="license" type="string" stored="true" indexed="true" multiValued="false"/>
+
     <!-- Dynamic Dataverse fields from http://localhost:8080/api/admin/index/solr/schema -->
 
     <!--    Dynamic data fields with respective copy fields for catchall -->
@@ -243,6 +252,7 @@
 
 
     <copyField source="description" dest="_text_" maxChars="3000"/>
+    <copyField source="dvExtraDescription" dest="_text_" maxChars="3000"/>
 
     <!-- Added for Dataverse 4.0 Beta: make variable names and labels searchable in basic search https://redmine.hmdc.harvard.edu/issues/3945 -->
     <copyField source="variableName" dest="_text_" maxChars="3000"/>
@@ -524,10 +534,10 @@
 
     <!-- A general text field that has reasonable, generic
          cross-language defaults: it tokenizes with StandardTokenizer,
-           removes stop words from case-insensitive "stopwords.txt"
-           (empty by default), and down cases.  At query time only, it
-           also applies synonyms.
-      -->
+	       removes stop words from case-insensitive "stopwords.txt"
+	       (empty by default), and down cases.  At query time only, it
+	       also applies synonyms.
+	  -->
     <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100" multiValued="true">
       <analyzer type="index">
         <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -671,7 +681,7 @@
     </fieldType>
 
     <!-- Just like text_general except it reverses the characters of
-           each token, to enable more efficient leading wildcard queries.
+	       each token, to enable more efficient leading wildcard queries.
     -->
     <dynamicField name="*_txt_rev" type="text_general_rev"  indexed="true"  stored="true"/>
     <fieldType name="text_general_rev" class="solr.TextField" positionIncrementGap="100">
@@ -778,6 +788,11 @@
         <filter class="solr.DelimitedPayloadTokenFilterFactory" encoder="identity"/>
       </analyzer>
     </fieldType>
+
+    <!-- Geobox -->
+    <dynamicField name="dsf_geobox_*" type="geobox" stored="false" indexed="true" multiValued="true"/>
+    <fieldType name="geobox" stored="false" indexed="true" class="solr.SpatialRecursivePrefixTreeFieldType"
+               spatialContextFactory="JTS" geo="true"/>
 
     <!-- some examples for different languages (generally ordered by ISO code) -->
 

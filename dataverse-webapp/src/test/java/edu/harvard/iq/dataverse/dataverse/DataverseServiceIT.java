@@ -108,7 +108,7 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
     @Transactional(TransactionMode.ROLLBACK)
     public void saveNewDataverse_WithWrongUser() {
         //given
-        final int EXPECTED_DV_COUNT = 5; // Root + 4 dataverses from dbinit
+        final int EXPECTED_DV_COUNT = 9; // Root + 8 dataverses from dbinit
 
         Dataverse dataverse = prepareDataverse();
         dataverseSession.setUser(GuestUser.get());
