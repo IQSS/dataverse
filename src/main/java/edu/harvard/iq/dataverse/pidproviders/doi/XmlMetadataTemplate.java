@@ -46,6 +46,7 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetRelPublication;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.ExternalIdentifier;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -262,10 +263,10 @@ public class XmlMetadataTemplate {
         boolean nothingWritten = true;
         if (authorList != null && !authorList.isEmpty()) {
             for (DatasetAuthor author : authorList) {
-                String creatorName = StringEscapeUtils.escapeXml10(author.getName().getDisplayValue());
+                String creatorName = author.getName().getDisplayValue();
                 String affiliation = null;
-                if (author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
-                    affiliation = StringEscapeUtils.escapeXml10(author.getAffiliation().getDisplayValue());
+                if (author.getAffiliation() != null && !author.getAffiliation().getValue().isEmpty()) {
+                    affiliation = author.getAffiliation().getValue();
                 }
                 String nameIdentifier = null;
                 String nameIdentifierScheme = null;
@@ -609,8 +610,14 @@ public class XmlMetadataTemplate {
         }
 
         if (StringUtils.isNotBlank(affiliation)) {
+            boolean isROR=false;
+            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
+            if (externalIdentifier.isValidIdentifier(affiliation)) {
+                isROR=true; 
+            }
+          
             attributeMap.clear();
-            if (affiliation.startsWith("https://ror.org/")) {
+            if (isROR) {
 
                 attributeMap.put("schemeURI", "https://ror.org");
                 attributeMap.put("affiliationIdentifierScheme", "ROR");
