@@ -456,7 +456,7 @@ public class MailServiceBean implements java.io.Serializable {
                 GuestbookResponse gbr = far.getGuestbookResponse();
                 if (gbr != null) {
                     messageText += MessageFormat.format(
-                            BundleUtil.getStringFromBundle("notification.email.requestFileAccess.guestbookResponse"), gbr.toHtmlFormattedResponse());
+                        BundleUtil.getStringFromBundle("notification.email.requestFileAccess.guestbookResponse"), gbr.toHtmlFormattedResponse(requestor));
                 }
                 return messageText;
             case GRANTFILEACCESS:

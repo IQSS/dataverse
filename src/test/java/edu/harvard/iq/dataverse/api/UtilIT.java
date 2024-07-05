@@ -11,6 +11,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
+
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 
 import java.nio.charset.StandardCharsets;
@@ -63,6 +64,7 @@ public class UtilIT {
     private static final String EMPTY_STRING = "";
     public static final int MAXIMUM_INGEST_LOCK_DURATION = 15;
     public static final int MAXIMUM_PUBLISH_LOCK_DURATION = 20;
+    public static final int GENERAL_LONG_DURATION = 45; //Useful when multiple adds/publishes, etc/ all get done in sequence
     public static final int MAXIMUM_IMPORT_DURATION = 1;
 
     private static SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
@@ -645,6 +647,21 @@ public class UtilIT {
                 .contentType("application/json")
                 .body(blocks.build().toString())
                 .post("/api/dataverses/" + dataverseAlias + "/metadatablocks");
+    }
+
+    static Response listMetadataBlocks(String dataverseAlias, boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("onlyDisplayedOnCreate", onlyDisplayedOnCreate)
+                .queryParam("returnDatasetFieldTypes", returnDatasetFieldTypes)
+                .get("/api/dataverses/" + dataverseAlias + "/metadatablocks");
+    }
+
+    static Response listMetadataBlocks(boolean onlyDisplayedOnCreate, boolean returnDatasetFieldTypes) {
+        return given()
+                .queryParam("onlyDisplayedOnCreate", onlyDisplayedOnCreate)
+                .queryParam("returnDatasetFieldTypes", returnDatasetFieldTypes)
+                .get("/api/metadatablocks");
     }
 
     static Response getMetadataBlock(String block) {
@@ -1520,8 +1537,14 @@ public class UtilIT {
                 .get("/api/datasets/:persistentId/versions/" + DS_VERSION_LATEST_PUBLISHED + "/metadata/citation?persistentId=" + persistentId);
     }
 
+    @Deprecated
     static Response makeSuperUser(String username) {
         Response response = given().post("/api/admin/superuser/" + username);
+        return response;
+    }
+
+    static Response setSuperuserStatus(String username, Boolean isSuperUser) {
+        Response response = given().body(isSuperUser).put("/api/admin/superuser/" + username);
         return response;
     }
 
@@ -2497,6 +2520,21 @@ public class UtilIT {
         return requestSpecification.get("/api/datasets/" + idInPath + "/uploadurls?size=" + sizeInBytes + optionalQueryParam);
     }
 
+    /**
+     * If you set dataverse.files.localstack1.disable-tagging=true you will see
+     * an error like below.
+     *
+     * To avoid it, don't send the x-amz-tagging header.
+     */
+    /*
+    <Error>
+      <Code>AccessDenied</Code>
+      <Message>There were headers present in the request which were not signed</Message>
+      <RequestId>25ff2bb0-13c7-420e-8ae6-3d92677e4bd9</RequestId>
+      <HostId>9Gjjt1m+cjU4OPvX9O9/8RuvnG41MRb/18Oux2o5H5MY7ISNTlXN+Dz9IG62/ILVxhAGI0qyPfg=</HostId>
+      <HeadersNotSigned>x-amz-tagging</HeadersNotSigned>
+    </Error>
+     */
     static Response uploadFileDirect(String url, InputStream inputStream) {
         return given()
                 .header("x-amz-tagging", "dv-state=temp")
@@ -2808,6 +2846,13 @@ public class UtilIT {
                 i = repeats + 1;
             }
         } while ((i <= repeats) && stale);
+        try {
+            Thread.sleep(1000);  //Current autoSoftIndexTime - which adds a delay to when the new docs are visible 
+            i++;
+        } catch (InterruptedException ex) {
+            Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            i = repeats + 1;
+        }
         System.out.println("Waited " + (i * (sleepStep / 1000.0)) + " seconds");
         return i <= repeats;
 
@@ -2863,10 +2908,15 @@ public class UtilIT {
 
     //Helper function that returns true if a given search returns a non-zero response within a fixed time limit
     // a given duration returns false if still zero results after given duration
-    static Boolean sleepForSearch(String searchPart, String apiToken,  String subTree, int duration) {
+    static Boolean sleepForSearch(String searchPart, String apiToken,  String subTree, int count, int duration) {
         
 
         Response searchResponse = UtilIT.search(searchPart, apiToken, subTree);
+        //Leave early if search isn't working
+        if(searchResponse.statusCode()!=200) {
+            logger.warning("Non-200 status in sleepForSearch: " + searchResponse.statusCode());
+            return false;
+        }
         int i = 0;
         do {
             try {
@@ -2879,8 +2929,8 @@ public class UtilIT {
             } catch (InterruptedException ex) {
                 Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } while (UtilIT.getSearchCountFromResponse(searchResponse) == 0);
-
+        } while (UtilIT.getSearchCountFromResponse(searchResponse) != count);
+        logger.info("Waited " + i + " seconds in sleepForSearch");
         return i <= duration;
 
     }
@@ -3263,6 +3313,33 @@ public class UtilIT {
                 .post("/api/roles?dvo="+dvAlias);
         return addBannerMessageResponse;
     }
+    
+    static Response addFeaturedDataverse (String dvAlias, String featuredDvAlias, String apiToken) {
+        
+        String jsonString = "[\"" + featuredDvAlias + "\"]";
+
+        Response addFeaturedDataverseResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .post("/api/dataverses/"+dvAlias+"/featured/");
+        return addFeaturedDataverseResponse;
+    }
+    
+    static Response deleteFeaturedDataverses (String dvAlias, String apiToken) {
+
+        Response deleteFeaturedDataversesResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/dataverses/"+dvAlias+"/featured/");
+        return deleteFeaturedDataversesResponse;
+    }
+    
+    static Response getFeaturedDataverses (String dvAlias, String apiToken) {
+
+        Response deleteFeaturedDataversesResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/dataverses/"+dvAlias+"/featured/");
+        return deleteFeaturedDataversesResponse;
+    }
 
     static Response deleteDataverseRole( String roleAlias, String apiToken) {
 
@@ -3308,20 +3385,6 @@ public class UtilIT {
         Response deleteBannerMessageResponse = given()               
                 .delete("/api/admin/bannerMessage/"+id.toString());
         return deleteBannerMessageResponse;
-    }
-    
-    static String getBannerMessageIdFromResponse(String getBannerMessagesResponse) {
-        StringReader rdr = new StringReader(getBannerMessagesResponse);
-        JsonObject json = Json.createReader(rdr).readObject();
-
-        for (JsonObject obj : json.getJsonArray("data").getValuesAs(JsonObject.class)) {
-            String message = obj.getString("displayValue");
-            if (message.equals("Banner Message For Deletion")) {
-                return obj.getJsonNumber("id").toString();
-            }
-        }
-
-        return "0";
     }
     
     static Response getDatasetJsonLDMetadata(Integer datasetId, String apiToken) {
@@ -3696,6 +3759,20 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/files/actions/:set-embargo");
     }
 
+    static Response createFileRetention(Integer datasetId, Integer fileId, String dateUnavailable, String apiToken) {
+        JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+        jsonBuilder.add("dateUnavailable", dateUnavailable);
+        jsonBuilder.add("reason", "This is a test retention");
+        jsonBuilder.add("fileIds", Json.createArrayBuilder().add(fileId));
+        String jsonString = jsonBuilder.build().toString();
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonString)
+                .contentType("application/json")
+                .urlEncodingEnabled(false)
+                .post("/api/datasets/" + datasetId + "/files/actions/:set-retention");
+    }
+
     static Response getVersionFileCounts(Integer datasetId,
                                          String version,
                                          String contentType,
@@ -3768,17 +3845,38 @@ public class UtilIT {
                 .get("/api/files/" + dataFileId + "/hasBeenDeleted");
     }
 
-    static Response deaccessionDataset(Integer datasetId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+    static Response deaccessionDataset(int datasetId, String version, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+        return deaccessionDataset(String.valueOf(datasetId), version, deaccessionReason, deaccessionForwardURL, apiToken);
+    }
+
+    static Response deaccessionDataset(String datasetIdOrPersistentId, String versionId, String deaccessionReason, String deaccessionForwardURL, String apiToken) {
+        
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+    
         JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
         jsonObjectBuilder.add("deaccessionReason", deaccessionReason);
         if (deaccessionForwardURL != null) {
             jsonObjectBuilder.add("deaccessionForwardURL", deaccessionForwardURL);
         }
+
         String jsonString = jsonObjectBuilder.build().toString();
+        StringBuilder query = new StringBuilder()
+            .append("/api/datasets/")
+            .append(idInPath)
+            .append("/versions/")
+            .append(versionId)
+            .append("/deaccession")
+            .append(optionalQueryParam);   
+                 
         return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(jsonString)
-                .post("/api/datasets/" + datasetId + "/versions/" + version + "/deaccession");
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .body(jsonString)
+            .post(query.toString());
     }
 
     static Response getDownloadSize(Integer datasetId,
@@ -3862,4 +3960,30 @@ public class UtilIT {
                 .post("/api/datasets/" + datasetId + "/requestGlobusUploadPaths");
     }
 
+    public static Response updateDataverseInputLevels(String dataverseAlias, String[] inputLevelNames, boolean[] requiredInputLevels, boolean[] includedInputLevels, String apiToken) {
+        JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
+        for (int i = 0; i < inputLevelNames.length; i++) {
+            inputLevelsArrayBuilder.add(createInputLevelObject(inputLevelNames[i], requiredInputLevels[i], includedInputLevels[i]));
+        }
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(inputLevelsArrayBuilder.build().toString())
+                .contentType(ContentType.JSON)
+                .put("/api/dataverses/" + dataverseAlias + "/inputLevels");
+    }
+
+    private static JsonObjectBuilder createInputLevelObject(String name, boolean required, boolean include) {
+        return Json.createObjectBuilder()
+                .add("datasetFieldTypeName", name)
+                .add("required", required)
+                .add("include", include);
+    }
+
+    public static Response getOpenAPI(String accept, String format) {
+        Response response = given()
+                .header("Accept", accept)
+                .queryParam("format", format)
+                .get("/openapi");
+        return response;
+    }
 }

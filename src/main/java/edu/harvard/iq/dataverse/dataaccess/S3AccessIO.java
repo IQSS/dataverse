@@ -40,6 +40,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import opennlp.tools.util.StringUtil;
 
@@ -991,7 +992,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         GeneratePresignedUrlRequest generatePresignedUrlRequest = 
                 new GeneratePresignedUrlRequest(bucketName, key).withMethod(HttpMethod.PUT).withExpiration(expiration);
         //Require user to add this header to indicate a temporary file
-        generatePresignedUrlRequest.putCustomRequestHeader(Headers.S3_TAGGING, "dv-state=temp");
+        final boolean taggingDisabled = JvmSettings.DISABLE_S3_TAGGING.lookupOptional(Boolean.class, this.driverId).orElse(false);
+        if (!taggingDisabled) {
+            generatePresignedUrlRequest.putCustomRequestHeader(Headers.S3_TAGGING, "dv-state=temp");
+        }
         
         URL presignedUrl; 
         try {
@@ -1040,7 +1044,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else {
             JsonObjectBuilder urls = Json.createObjectBuilder();
             InitiateMultipartUploadRequest initiationRequest = new InitiateMultipartUploadRequest(bucketName, key);
-            initiationRequest.putCustomRequestHeader(Headers.S3_TAGGING, "dv-state=temp");
+            final boolean taggingDisabled = JvmSettings.DISABLE_S3_TAGGING.lookupOptional(Boolean.class, this.driverId).orElse(false);
+            if (!taggingDisabled) {
+                initiationRequest.putCustomRequestHeader(Headers.S3_TAGGING, "dv-state=temp");
+            }
             InitiateMultipartUploadResult initiationResponse = s3.initiateMultipartUpload(initiationRequest);
             String uploadId = initiationResponse.getUploadId();
             for (int i = 1; i <= (fileSize / minPartSize) + (fileSize % minPartSize > 0 ? 1 : 0); i++) {

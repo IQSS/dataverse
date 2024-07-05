@@ -1,6 +1,0 @@
-{
-  "hostname": "dataverse.librascholar.edu",
-  "name": "LibraScholar, USA",
-  "primaryStorage": true,
-  "transferProtocols": "rsync,posix,globus"
-}

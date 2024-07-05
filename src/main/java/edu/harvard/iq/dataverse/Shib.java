@@ -59,6 +59,8 @@ public class Shib implements java.io.Serializable {
     SettingsServiceBean settingsService;
 	@EJB
 	SystemConfig systemConfig;
+    @EJB
+    UserServiceBean userService;
 
     HttpServletRequest request;
 
@@ -259,6 +261,7 @@ public class Shib implements java.io.Serializable {
             state = State.REGULAR_LOGIN_INTO_EXISTING_SHIB_ACCOUNT;
             logger.fine("Found user based on " + userPersistentId + ". Logging in.");
             logger.fine("Updating display info for " + au.getName());
+            userService.updateLastLogin(au);
             authSvc.updateAuthenticatedUser(au, displayInfo);
             logInUserAndSetShibAttributes(au);
             String prettyFacesHomePageString = getPrettyFacesHomePageString(false);

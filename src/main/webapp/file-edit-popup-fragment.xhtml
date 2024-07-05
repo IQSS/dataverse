@@ -168,7 +168,83 @@
                     PF('blockDatasetForm').hide();" action="#{bean.clearEmbargoPopup()}" update="#{updateElements}" immediate="true"/>
         </div>
     </p:dialog>
-    
+
+    <!-- Retention Period Dialog-->
+    <p:dialog id="fileRetentionPopup" styleClass="smallPopUp" resizable="false" header="#{bundle['file.editRetention']}" widgetVar="fileRetentionPopup" modal="true" rendered="#{bean != EditDatafilesPage}">
+        <p:focus for="fileRetentionDate"/>
+        <p class="help-block" jsf:rendered="#{bean.validRetentionSelection}">#{bundle['file.editRetentionDialog.tip']}</p>
+        <p class="text-warning retention" jsf:rendered="#{bean.validRetentionSelection and !bean.retentionForWholeSelection}"><span class="glyphicon glyphicon-warning-sign"/>#{bundle['file.editRetentionDialog.some.tip']} #{bundle['file.editRetentionDialog.partial.tip']}</p>
+        <p class="text-danger retention" jsf:rendered="#{!bean.validRetentionSelection}"><span class="glyphicon glyphicon-exclamation-sign"/>#{bundle['file.editRetentionDialog.none.tip']}</p>
+
+        <h:panelGroup id="retentionInputs">
+            <div class="retention">
+
+                <div class="form-horizontal"
+                     jsf:rendered="#{bean.validRetentionSelection}">
+                    <div class="col-lg-3">
+                        <h:outputText class="retentionlabel"
+                                      value="#{bundle[ 'file.editRetention.add']}" />
+                    </div>
+                    <div class="col-lg-9">
+                        <div>
+                            <label class="help-block" for="datasetForm:fileRetentionDate_input">
+                                #{bundle['file.editRetentionDialog.newDate']} <span
+                                    class="glyphicon glyphicon-asterisk text-danger"
+                                    jsf:rendered="#{!bean.removeRetention}" />
+                            </label>
+                            <p:datePicker id="fileRetentionDate"
+                                          value="#{bean.selectionRetention.dateUnavailable}"
+                                          locale="#{dataverseSession.localeCode}"
+                                          mindate="#{settingsWrapper.minRetentionDate}" pattern="yyyy-MM-dd"
+                                          maxdate="#{settingsWrapper.maxRetentionDate}"
+                                          disabled="#{bean.removeRetention}"
+                                          validator="#{settingsWrapper.validateRetentionDate}" >
+                                <p:ajax process="#{updateRetentionElements}"
+                                        update="#{updateRetentionElements}"
+                                />
+                            </p:datePicker>
+                            <div>
+                                <h:message for="fileRetentionDate"
+                                           styleClass="bg-danger text-danger" />
+                            </div>
+                        </div>
+                        <div class="p-field p-col-12 p-md-4">
+                            <p class="help-block">#{bundle['file.editRetentionDialog.reason.tip']}</p>
+                            <p:inputText id="fileRetentionAddReason" styleClass="form-control"
+                                         disabled="#{bean.removeRetention}" type="text"
+                                         value="#{bean.selectionRetention.reason}"
+                                         placeholder="#{bundle['file.editRetentionDialog.newReason']}"
+                                         onkeypress="if (event.keyCode == 13) { return false;}" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="retention">
+                <div jsf:rendered="#{bean.existingRetention}" class="retentioncheckbox">
+                    <div class="col-lg-3">
+                        <h:outputText class="retentionlabel"
+                                      value="#{bundle[ 'file.editRetention.delete']}" />
+                    </div>
+                    <div class="col-lg-9">
+                        <p:selectBooleanCheckbox value="#{bean.removeRetention}" id="retentionCheckbox"
+                                                 itemLabel="#{bundle['file.editRetentionDialog.remove']}"
+                                                 disabled="#{facesContext.validationFailed}">
+                            <p:ajax process="#{updateRetentionElements}"
+                                    update="#{updateRetentionElements}"
+                            />
+                        </p:selectBooleanCheckbox>
+                    </div>
+                </div>
+            </div>
+        </h:panelGroup>
+        <div class="button-block">
+            <p:commandButton rendered="#{bean.validRetentionSelection}" styleClass="btn btn-default" id="fileRetentionPopupSaveButton" value="#{bundle.saveChanges}"
+                             oncomplete="if (args &amp;&amp; !args.validationFailed) PF('fileRetentionPopup').hide();return false;" update="#{updateRetentionElements}" action="#{bean[saveRetentionAction]}"/>
+            <p:commandButton styleClass="btn btn-link" id="fileRetentionPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileRetentionPopup').hide();
+                    PF('blockDatasetForm').hide();" action="#{bean.clearRetentionPopup()}" update="#{updateRetentionElements}" immediate="true"/>
+        </div>
+    </p:dialog>
+
     <p:dialog id="deleteFileConfirm" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.immediate']}</p>
         <ui:fragment rendered="#{datasetVersion.dataset.released}">
