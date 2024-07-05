@@ -36,6 +36,61 @@ public enum FeatureFlags {
      * @since Dataverse @TODO:
      */
     API_BEARER_AUTH("api-bearer-auth"),
+    /**
+     * For published (public) objects, don't use a join when searching Solr. 
+     * Experimental! Requires a reindex with the following feature flag enabled,
+     * in order to add the boolean publicObject_b:true field to all the public
+     * Solr documents. 
+     *
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.avoid-expensive-solr-join"
+     * @since Dataverse 6.3
+     */
+    AVOID_EXPENSIVE_SOLR_JOIN("avoid-expensive-solr-join"),
+    /**
+     * With this flag enabled, the boolean field publicObject_b:true will be 
+     * added to all the indexed Solr documents for publicly-available collections,
+     * datasets and files. This flag makes it possible to rely on it in searches,
+     * instead of the very expensive join (the feature flag above).
+     *
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.add-publicobject-solr-field"
+     * @since Dataverse 6.3
+     */
+    ADD_PUBLICOBJECT_SOLR_FIELD("add-publicobject-solr-field"),
+    /**
+     * With this flag set, Dataverse will index the actual origin of harvested
+     * metadata records, instead of the "Harvested" string in all cases. 
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.index-harvested-metadata-source"
+     * @since Dataverse 6.3
+     */
+    INDEX_HARVESTED_METADATA_SOURCE("index-harvested-metadata-source"),
+
+    /**
+     * Dataverse normally deletes all solr documents related to a dataset's files
+     * when the dataset is reindexed. With this flag enabled, additional logic is
+     * added to the reindex process to delete only the solr documents that are no
+     * longer needed. (Required docs will be updated rather than deleted and 
+     * replaced.) Enabling this feature flag should make the reindex process 
+     * faster without impacting the search results.
+     *
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.reduce-solr-deletes"
+     * @since Dataverse 6.3
+     */
+    REDUCE_SOLR_DELETES("reduce-solr-deletes"),
+    /**
+     * With this flag enabled, the Return To Author pop-up will not have a required
+     * "Reason" field, and a reason will not be required in the 
+     * /api/datasets/{id}/returnToAuthor api call.
+     * 
+     * @apiNote Raise flag by setting
+     * "dataverse.feature.disable-return-to-author-reason"
+     * @since Dataverse 6.3
+     */
+    DISABLE_RETURN_TO_AUTHOR_REASON("disable-return-to-author-reason"),
     ;
     
     final String flag;

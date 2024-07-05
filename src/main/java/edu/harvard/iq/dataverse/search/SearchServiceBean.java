@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
@@ -499,6 +500,8 @@ public class SearchServiceBean {
             String identifierOfDataverse = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER_OF_DATAVERSE);
             String nameOfDataverse = (String) solrDocument.getFieldValue(SearchFields.DATAVERSE_NAME);
             Long embargoEndDate = (Long) solrDocument.getFieldValue(SearchFields.EMBARGO_END_DATE);
+            Long retentionEndDate = (Long) solrDocument.getFieldValue(SearchFields.RETENTION_END_DATE);
+            //
             Boolean datasetValid = (Boolean) solrDocument.getFieldValue(SearchFields.DATASET_VALID);
             
             List<String> matchedFields = new ArrayList<>();
@@ -574,13 +577,13 @@ public class SearchServiceBean {
             solrSearchResult.setDvTree(dvTree);
             solrSearchResult.setDatasetValid(datasetValid);
 
-            String originSource = (String) solrDocument.getFieldValue(SearchFields.METADATA_SOURCE);
-            if (IndexServiceBean.HARVESTED.equals(originSource)) {
+            if (Boolean.TRUE.equals((Boolean) solrDocument.getFieldValue(SearchFields.IS_HARVESTED))) {
                 solrSearchResult.setHarvested(true);
             }
 
             solrSearchResult.setEmbargoEndDate(embargoEndDate);
-            
+            solrSearchResult.setRetentionEndDate(retentionEndDate);
+
             /**
              * @todo start using SearchConstants class here
              */
@@ -998,14 +1001,132 @@ public class SearchServiceBean {
             user = GuestUser.get();
         }
 
+        AuthenticatedUser au = null; 
+        Set<Group> groups;
+        
+        if (user instanceof GuestUser) {
+            // Yes, GuestUser may be part of one or more groups; such as IP Groups.
+            groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
+        } else {
+            if (!(user instanceof AuthenticatedUser)) {
+                logger.severe("Should never reach here. A User must be an AuthenticatedUser or a Guest");
+                throw new IllegalStateException("A User must be an AuthenticatedUser or a Guest");
+            }
+
+            au = (AuthenticatedUser) user;
+            
+            // ----------------------------------------------------
+            // (3) Is this a Super User?
+            // If so, they can see everything
+            // ----------------------------------------------------
+            if (au.isSuperuser()) {
+                // Somewhat dangerous because this user (a superuser) will be able
+                // to see everything in Solr with no regard to permissions. But it's
+                // been this way since Dataverse 4.0. So relax. :)
+
+                return dangerZoneNoSolrJoin;
+            }
+           
+            // ----------------------------------------------------
+            // (4) User is logged in AND onlyDatatRelatedToMe == true
+            // Yes, give back everything -> the settings will be in
+            //          the filterqueries given to search
+            // ----------------------------------------------------
+            if (onlyDatatRelatedToMe == true) {
+                if (systemConfig.myDataDoesNotUsePermissionDocs()) {
+                    logger.fine("old 4.2 behavior: MyData is not using Solr permission docs");
+                    return dangerZoneNoSolrJoin;
+                } else {
+                    // fall-through
+                    logger.fine("new post-4.2 behavior: MyData is using Solr permission docs");
+                }
+            }
+            
+            // ----------------------------------------------------
+            // (5) Work with Authenticated User who is not a Superuser
+            // ----------------------------------------------------
+
+            groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
+        }
+        
+        if (FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled()) {
+            /**
+             * Instead of doing a super expensive join, we will rely on the 
+             * new boolean field PublicObject:true for public objects. This field 
+             * is indexed on the content document itself, rather than a permission 
+             * document. An additional join will be added only for any extra, 
+             * more restricted groups that the user may be part of.
+             * **Note the experimental nature of this optimization**. 
+             */
+            StringBuilder sb = new StringBuilder();
+            StringBuilder sbgroups = new StringBuilder();
+            
+            // All users, guests and authenticated, should see all the 
+            // documents marked as publicObject_b:true, at least:
+            sb.append(SearchFields.PUBLIC_OBJECT + ":" + true);
+
+            // One or more groups *may* also be available for this user. Once again,
+            // do note that Guest users may be part of some groups, such as 
+            // IP groups. 
+            
+            int groupCounter = 0;
+
+            // An AuthenticatedUser should also be able to see all the content 
+            // on which they have direct permissions:              
+            if (au != null) {
+                groupCounter++; 
+                sbgroups.append(IndexServiceBean.getGroupPerUserPrefix() + au.getId());
+            }
+ 
+            // In addition to the user referenced directly, we will also 
+            // add joins on all the non-public groups that may exist for the
+            // user:
+            for (Group group : groups) {
+                String groupAlias = group.getAlias();
+                if (groupAlias != null && !groupAlias.isEmpty() && !groupAlias.startsWith("builtIn")) {
+                    groupCounter++;
+                    if (groupCounter > 1) {
+                        sbgroups.append(" OR ");
+                    }
+                    sbgroups.append(IndexServiceBean.getGroupPrefix() + groupAlias);
+                }
+            }
+            
+            if (groupCounter > 1) {
+                // If there is more than one group, the parentheses must be added:
+                sbgroups.insert(0, "(");
+                sbgroups.append(")");
+            }
+            
+            if (groupCounter > 0) {
+                // If there are any groups for this user, an extra join must be
+                // added to the query, and the extra sub-query must be added to 
+                // the combined Solr query:
+                sb.append(" OR {!join from=" + SearchFields.DEFINITION_POINT + " to=id v=$q1}");
+                // Add the subquery to the combined Solr query: 
+                solrQuery.setParam("q1", SearchFields.DISCOVERABLE_BY + ":" + sbgroups.toString());
+                logger.info("The sub-query q1 set to " + SearchFields.DISCOVERABLE_BY + ":" + sbgroups.toString());
+            }
+            
+            String ret = sb.toString();
+            logger.fine("Returning experimental query: " + ret);
+            return ret;
+        }
+        
+        // END OF EXPERIMENTAL OPTIMIZATION 
+        
+        // Old, un-optimized way of handling permissions.
+        // Largely left intact, minus the lookups that have already been performed
+        // above.
+        
         // ----------------------------------------------------
         // (1) Is this a GuestUser?
-        // Yes, see if GuestUser is part of any groups such as IP Groups.
         // ----------------------------------------------------
         if (user instanceof GuestUser) {
-            String groupsFromProviders = "";
-            Set<Group> groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
+            
             StringBuilder sb = new StringBuilder();
+            
+            String groupsFromProviders = "";
             for (Group group : groups) {
                 logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());
                 String groupAlias = group.getAlias();
@@ -1023,50 +1144,10 @@ public class SearchServiceBean {
         }
 
         // ----------------------------------------------------
-        // (2) Retrieve Authenticated User
-        // ----------------------------------------------------
-        if (!(user instanceof AuthenticatedUser)) {
-            logger.severe("Should never reach here. A User must be an AuthenticatedUser or a Guest");
-            throw new IllegalStateException("A User must be an AuthenticatedUser or a Guest");
-        }
-
-        AuthenticatedUser au = (AuthenticatedUser) user;
-
-        // if (addFacets) {
-        //     // Logged in user, has publication status facet
-        //     //
-        //     solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
-        // }
-
-        // ----------------------------------------------------
-        // (3) Is this a Super User?
-        //      Yes, give back everything
-        // ----------------------------------------------------
-        if (au.isSuperuser()) {
-            // Somewhat dangerous because this user (a superuser) will be able
-            // to see everything in Solr with no regard to permissions. But it's
-            // been this way since Dataverse 4.0. So relax. :)
-
-            return dangerZoneNoSolrJoin;
-        }
-
-        // ----------------------------------------------------
-        // (4) User is logged in AND onlyDatatRelatedToMe == true
-        // Yes, give back everything -> the settings will be in
-        //          the filterqueries given to search
-        // ----------------------------------------------------
-        if (onlyDatatRelatedToMe == true) {
-            if (systemConfig.myDataDoesNotUsePermissionDocs()) {
-                logger.fine("old 4.2 behavior: MyData is not using Solr permission docs");
-                return dangerZoneNoSolrJoin;
-            } else {
-                logger.fine("new post-4.2 behavior: MyData is using Solr permission docs");
-            }
-        }
-
-        // ----------------------------------------------------
         // (5) Work with Authenticated User who is not a Superuser
-        // ----------------------------------------------------
+        // ----------------------------------------------------  
+        // It was already confirmed, that if the user is not GuestUser, we 
+        // have an AuthenticatedUser au which is not null. 
         /**
          * @todo all this code needs cleanup and clarification.
          */
@@ -1097,7 +1178,6 @@ public class SearchServiceBean {
          * a given "content document" (dataset version, etc) in Solr.
          */
         String groupsFromProviders = "";
-        Set<Group> groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
         StringBuilder sb = new StringBuilder();
         for (Group group : groups) {
             logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());

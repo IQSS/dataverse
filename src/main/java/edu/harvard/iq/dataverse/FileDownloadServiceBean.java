@@ -354,7 +354,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         ApiToken apiToken = null;
         User user = session.getUser();
         DatasetVersion version = fmd.getDatasetVersion();
-        if (version.isDraft() || fmd.getDatasetVersion().isDeaccessioned() || (fmd.getDataFile().isRestricted()) || (FileUtil.isActivelyEmbargoed(fmd))) {
+        if (version.isDraft() || fmd.getDatasetVersion().isDeaccessioned() || (fmd.getDataFile().isRestricted())
+                || (FileUtil.isActivelyEmbargoed(fmd)) || (FileUtil.isRetentionExpired(fmd))) {
             apiToken = authService.getValidApiTokenForUser(user);
         }
         DataFile dataFile = null;
@@ -382,28 +383,26 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
-    public void downloadDatasetCitationXML(Dataset dataset) {
-        downloadCitationXML(null, dataset, false);
+    public void downloadDatasetCitationXML(DatasetVersion version) {
+        // DatasetVersion-level citation: 
+        DataCitation citation=null;
+        citation = new DataCitation(version);
+        String fileNameString;
+        fileNameString = "attachment;filename=" + getFileNameFromPid(citation.getPersistentId()) + ".xml";
+        downloadXML(citation, fileNameString);
     }
 
     public void downloadDatafileCitationXML(FileMetadata fileMetadata) {
-        downloadCitationXML(fileMetadata, null, false);
+        downloadCitationXML(fileMetadata, false);
     }
     
     public void downloadDirectDatafileCitationXML(FileMetadata fileMetadata) {
-        downloadCitationXML(fileMetadata, null, true);
+        downloadCitationXML(fileMetadata,  true);
     }
 
-    public void downloadCitationXML(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
-    	DataCitation citation=null;
-        if (dataset != null){
-        	citation = new DataCitation(dataset.getLatestVersion());
-        } else {
-            citation= new DataCitation(fileMetadata, direct);
-        }
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        response.setContentType("text/xml");
+    public void downloadCitationXML(FileMetadata fileMetadata, boolean direct) {
+        DataCitation citation=null;
+        citation= new DataCitation(fileMetadata, direct);
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
@@ -412,43 +411,46 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             // Datafile-level citation:
             fileNameString = "attachment;filename=" + getFileNameFromPid(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.ENDNOTE);
         }
+        downloadXML(citation, fileNameString);
+    }
+
+    public void downloadXML(DataCitation citation, String fileNameString) {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("text/xml");
         response.setHeader("Content-Disposition", fileNameString);
+
         try {
             ServletOutputStream out = response.getOutputStream();
             citation.writeAsEndNoteCitation(out);
             out.flush();
             ctx.responseComplete();
         } catch (IOException e) {
-
         }
     }
-    
-    public void downloadDatasetCitationRIS(Dataset dataset) {
 
-        downloadCitationRIS(null, dataset, false);
+    public void downloadDatasetCitationRIS(DatasetVersion version) {
+        // DatasetVersion-level citation: 
+        DataCitation citation=null;
+        citation = new DataCitation(version);
 
+        String fileNameString;
+        fileNameString = "attachment;filename=" + getFileNameFromPid(citation.getPersistentId()) + ".ris";
+        downloadRIS(citation, fileNameString);
     }
 
     public void downloadDatafileCitationRIS(FileMetadata fileMetadata) {
-        downloadCitationRIS(fileMetadata, null, false);
+        downloadCitationRIS(fileMetadata, false);
     }
     
     public void downloadDirectDatafileCitationRIS(FileMetadata fileMetadata) {
-        downloadCitationRIS(fileMetadata, null, true);
+        downloadCitationRIS(fileMetadata, true);
     }
 
-    public void downloadCitationRIS(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
-    	DataCitation citation=null;
-        if (dataset != null){
-        	citation = new DataCitation(dataset.getLatestVersion());
-        } else {
-            citation= new DataCitation(fileMetadata, direct);
-        }
-
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        response.setContentType("application/download");
-
+    public void downloadCitationRIS(FileMetadata fileMetadata, boolean direct) {
+        DataCitation citation=null;
+        citation= new DataCitation(fileMetadata, direct);
+        
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
@@ -457,6 +459,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             // Datafile-level citation:
             fileNameString = "attachment;filename=" + getFileNameFromPid(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.RIS);
         }
+        downloadRIS(citation, fileNameString);
+    }
+    
+    public void downloadRIS(DataCitation citation, String fileNameString) {
+        //SEK 12/3/2018 changing this to open the json in a new tab. 
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("application/download");
         response.setHeader("Content-Disposition", fileNameString);
 
         try {
@@ -468,38 +478,33 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         }
     }
-    
+
     private String getFileNameFromPid(GlobalId id) {
         return id.asString();
     }
 
-    public void downloadDatasetCitationBibtex(Dataset dataset) {
 
-        downloadCitationBibtex(null, dataset, false);
+    public void downloadDatasetCitationBibtex(DatasetVersion version) {
+        // DatasetVersion-level citation: 
+        DataCitation citation=null;
+        citation = new DataCitation(version);
 
+        String fileNameString;
+        fileNameString = "inline;filename=" + getFileNameFromPid(citation.getPersistentId()) + ".bib";
+        downloadBibtex(citation, fileNameString);
     }
 
     public void downloadDatafileCitationBibtex(FileMetadata fileMetadata) {
-        downloadCitationBibtex(fileMetadata, null, false);
+        downloadCitationBibtex(fileMetadata, false);
     }
 
     public void downloadDirectDatafileCitationBibtex(FileMetadata fileMetadata) {
-        downloadCitationBibtex(fileMetadata, null, true);
+        downloadCitationBibtex(fileMetadata, true);
     }
     
-    public void downloadCitationBibtex(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
-    	DataCitation citation=null;
-        if (dataset != null){
-        	citation = new DataCitation(dataset.getLatestVersion());
-        } else {
-            citation= new DataCitation(fileMetadata, direct);
-        }
-        //SEK 12/3/2018 changing this to open the json in a new tab. 
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        
-        //Fix for 6029 FireFox was failing to parse it when content type was set to json 
-        response.setContentType("text/plain");
+    public void downloadCitationBibtex(FileMetadata fileMetadata, boolean direct) {
+        DataCitation citation=null;
+        citation= new DataCitation(fileMetadata, direct);
         
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
@@ -509,6 +514,16 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             // Datafile-level citation:
             fileNameString = "inline;filename=" + getFileNameFromPid(citation.getPersistentId()) + "-" + FileUtil.getCiteDataFileFilename(citation.getFileTitle(), FileUtil.FileCitationExtension.BIBTEX);
         }
+        downloadBibtex(citation, fileNameString);
+    }
+
+    public void downloadBibtex(DataCitation citation, String fileNameString) {
+        //SEK 12/3/2018 changing this to open the json in a new tab. 
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        
+        //Fix for 6029 FireFox was failing to parse it when content type was set to json 
+        response.setContentType("text/plain");
         response.setHeader("Content-Disposition", fileNameString);
 
         try {
@@ -558,7 +573,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
         Timestamp ts = new Timestamp(new Date().getTime());
-        permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
+        permissionService.getUsersWithPermissionOn(Permission.ManageFilePermissions, dataset).stream().forEach((au) -> {
             userNotificationService.sendNotification(au, ts, UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, true);
         });
         //send the user that requested access a notification that they requested the access

@@ -18,21 +18,18 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.core.Response.Status;
-import static jakarta.ws.rs.core.Response.Status.OK;
-import static jakarta.ws.rs.core.Response.Status.CREATED;
-import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
-import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
-import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
-import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static jakarta.ws.rs.core.Response.Status.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItemInArray;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.nio.file.Files;
 import io.restassured.path.json.JsonPath;
 import org.hamcrest.CoreMatchers;
@@ -416,12 +413,13 @@ public class DataversesIT {
         Response superuserResponse = UtilIT.makeSuperUser(username);
         
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
-        createDataverseResponse.prettyPrint();
+        assertTrue(createDataverseResponse.prettyPrint().contains("isReleased\": false"));
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
         
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);//.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
+        assertTrue(publishDataverse.prettyPrint().contains("isReleased\": true"));
         
         Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse2.prettyPrint();
@@ -440,7 +438,7 @@ public class DataversesIT {
         while (checkIndex) {
             try {   
                     try {
-                        Thread.sleep(4000);
+                        Thread.sleep(6000);
                     } catch (InterruptedException ex) {
                     }                
                 Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);
@@ -691,5 +689,263 @@ public class DataversesIT {
         deleteCollectionResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), deleteCollectionResponse.getStatusCode());
     }
-    
+
+    @Test
+    public void testListMetadataBlocks() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
+        setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String[] testInputLevelNames = {"geographicCoverage", "country", "city"};
+        boolean[] testRequiredInputLevels = {false, true, false};
+        boolean[] testIncludedInputLevels = {false, true, true};
+        Response updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
+        updateDataverseInputLevelsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Dataverse not found
+        Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks("-1", false, false, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        // Existent dataverse and no optional params
+        String[] expectedAllMetadataBlockDisplayNames = {"Astronomy and Astrophysics Metadata", "Citation Metadata", "Geospatial Metadata"};
+
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, false, false, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", equalTo(null))
+                .body("data[1].fields", equalTo(null))
+                .body("data[2].fields", equalTo(null))
+                .body("data.size()", equalTo(3));
+
+        String actualMetadataBlockDisplayName1 = listMetadataBlocksResponse.then().extract().path("data[0].displayName");
+        String actualMetadataBlockDisplayName2 = listMetadataBlocksResponse.then().extract().path("data[1].displayName");
+        String actualMetadataBlockDisplayName3 = listMetadataBlocksResponse.then().extract().path("data[2].displayName");
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName2);
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName3);
+        assertNotEquals(actualMetadataBlockDisplayName2, actualMetadataBlockDisplayName3);
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName1));
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName2));
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName3));
+
+        // Existent dataverse and onlyDisplayedOnCreate=true
+        String[] expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames = {"Citation Metadata", "Geospatial Metadata"};
+
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, false, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", equalTo(null))
+                .body("data[1].fields", equalTo(null))
+                .body("data.size()", equalTo(2));
+
+        actualMetadataBlockDisplayName1 = listMetadataBlocksResponse.then().extract().path("data[0].displayName");
+        actualMetadataBlockDisplayName2 = listMetadataBlocksResponse.then().extract().path("data[1].displayName");
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName2);
+        assertThat(expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName1));
+        assertThat(expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName2));
+
+        // Existent dataverse and returnDatasetFieldTypes=true
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, false, true, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data[1].fields", not(equalTo(null)))
+                .body("data[2].fields", not(equalTo(null)))
+                .body("data.size()", equalTo(3));
+
+        actualMetadataBlockDisplayName1 = listMetadataBlocksResponse.then().extract().path("data[0].displayName");
+        actualMetadataBlockDisplayName2 = listMetadataBlocksResponse.then().extract().path("data[1].displayName");
+        actualMetadataBlockDisplayName3 = listMetadataBlocksResponse.then().extract().path("data[2].displayName");
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName2);
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName3);
+        assertNotEquals(actualMetadataBlockDisplayName2, actualMetadataBlockDisplayName3);
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName1));
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName2));
+        assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName3));
+
+        // Check dataset fields for the updated input levels are retrieved
+        int geospatialMetadataBlockIndex = actualMetadataBlockDisplayName1.equals("Geospatial Metadata") ? 0 : actualMetadataBlockDisplayName2.equals("Geospatial Metadata") ? 1 : 2;
+
+        // Since the included property of geographicCoverage is set to false, we should retrieve the total number of fields minus one
+        listMetadataBlocksResponse.then().assertThat()
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(10));
+
+        String actualMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
+        String actualMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
+        String actualMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+
+        assertNull(actualMetadataField1);
+        assertNotNull(actualMetadataField2);
+        assertNotNull(actualMetadataField3);
+
+        // Existent dataverse and onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        listMetadataBlocksResponse.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data[0].fields", not(equalTo(null)))
+                .body("data[1].fields", not(equalTo(null)))
+                .body("data.size()", equalTo(2));
+
+        actualMetadataBlockDisplayName1 = listMetadataBlocksResponse.then().extract().path("data[0].displayName");
+        actualMetadataBlockDisplayName2 = listMetadataBlocksResponse.then().extract().path("data[1].displayName");
+        assertNotEquals(actualMetadataBlockDisplayName1, actualMetadataBlockDisplayName2);
+        assertThat(expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName1));
+        assertThat(expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName2));
+
+        // Check dataset fields for the updated input levels are retrieved
+        geospatialMetadataBlockIndex = actualMetadataBlockDisplayName2.equals("Geospatial Metadata") ? 1 : 0;
+
+        listMetadataBlocksResponse.then().assertThat()
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(1));
+
+        actualMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
+        actualMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
+        actualMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+
+        assertNull(actualMetadataField1);
+        assertNotNull(actualMetadataField2);
+        assertNull(actualMetadataField3);
+
+        // User has no permissions on the requested dataverse
+        Response createSecondUserResponse = UtilIT.createRandomUser();
+        String secondApiToken = UtilIT.getApiTokenFromResponse(createSecondUserResponse);
+
+        createDataverseResponse = UtilIT.createRandomDataverse(secondApiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String secondDataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(secondDataverseAlias, true, true, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    public void testFeatureDataverse() throws Exception {
+
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+
+
+        Response createSubDVToBeFeatured = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-feature", null, apiToken, dataverseAlias);
+        String subDataverseAlias = UtilIT.getAliasFromResponse(createSubDVToBeFeatured);
+
+        //publish a sub dataverse so that the owner will have something to feature
+        Response createSubDVToBePublished = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-pub", null, apiToken, dataverseAlias);
+        assertEquals(201, createSubDVToBePublished.getStatusCode());
+        String subDataverseAliasPub = UtilIT.getAliasFromResponse(createSubDVToBePublished);
+        publishDataverse = UtilIT.publishDataverseViaNativeApi(subDataverseAliasPub, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+
+        //can't feature a dataverse that is unpublished
+        Response featureSubDVResponseUnpublished = UtilIT.addFeaturedDataverse(dataverseAlias, subDataverseAlias, apiToken);
+        featureSubDVResponseUnpublished.prettyPrint();
+        assertEquals(400, featureSubDVResponseUnpublished.getStatusCode());
+        featureSubDVResponseUnpublished.then().assertThat()
+                .body(containsString("may not be featured"));
+
+        //can't feature a dataverse you don't own
+        Response featureSubDVResponseNotOwned = UtilIT.addFeaturedDataverse(dataverseAlias, "root", apiToken);
+        featureSubDVResponseNotOwned.prettyPrint();
+        assertEquals(400, featureSubDVResponseNotOwned.getStatusCode());
+        featureSubDVResponseNotOwned.then().assertThat()
+                .body(containsString("may not be featured"));
+
+        //can't feature a dataverse that doesn't exist
+        Response featureSubDVResponseNotExist = UtilIT.addFeaturedDataverse(dataverseAlias, "dummy-alias-sek-foobar-333", apiToken);
+        featureSubDVResponseNotExist.prettyPrint();
+        assertEquals(400, featureSubDVResponseNotExist.getStatusCode());
+        featureSubDVResponseNotExist.then().assertThat()
+                .body(containsString("Can't find dataverse collection"));
+
+        publishDataverse = UtilIT.publishDataverseViaNativeApi(subDataverseAlias, apiToken);
+        assertEquals(200, publishDataverse.getStatusCode());
+
+        //once published it should work
+        Response featureSubDVResponse = UtilIT.addFeaturedDataverse(dataverseAlias, subDataverseAlias, apiToken);
+        featureSubDVResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), featureSubDVResponse.getStatusCode());
+
+
+        Response getFeaturedDataverseResponse = UtilIT.getFeaturedDataverses(dataverseAlias, apiToken);
+        getFeaturedDataverseResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), getFeaturedDataverseResponse.getStatusCode());
+        getFeaturedDataverseResponse.then().assertThat()
+                .body("data[0]", equalTo(subDataverseAlias));
+
+        Response deleteFeaturedDataverseResponse = UtilIT.deleteFeaturedDataverses(dataverseAlias, apiToken);
+        deleteFeaturedDataverseResponse.prettyPrint();
+
+        assertEquals(OK.getStatusCode(), deleteFeaturedDataverseResponse.getStatusCode());
+        deleteFeaturedDataverseResponse.then().assertThat()
+                .body(containsString("Featured dataverses have been removed"));
+
+        Response deleteSubCollectionResponse = UtilIT.deleteDataverse(subDataverseAlias, apiToken);
+        deleteSubCollectionResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), deleteSubCollectionResponse.getStatusCode());
+
+        Response deleteSubCollectionPubResponse = UtilIT.deleteDataverse(subDataverseAliasPub, apiToken);
+        deleteSubCollectionResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), deleteSubCollectionPubResponse.getStatusCode());
+
+        Response deleteCollectionResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteCollectionResponse.prettyPrint();
+        assertEquals(OK.getStatusCode(), deleteCollectionResponse.getStatusCode());
+    }
+
+    @Test
+    public void testUpdateInputLevels() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Update valid input levels
+        String[] testInputLevelNames = {"geographicCoverage", "country"};
+        boolean[] testRequiredInputLevels = {true, false};
+        boolean[] testIncludedInputLevels = {true, false};
+        Response updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
+        String actualInputLevelName = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
+        int geographicCoverageInputLevelIndex = actualInputLevelName.equals("geographicCoverage") ? 0 : 1;
+        updateDataverseInputLevelsResponse.then().assertThat()
+                .body(String.format("data.inputLevels[%d].include", geographicCoverageInputLevelIndex), equalTo(true))
+                .body(String.format("data.inputLevels[%d].required", geographicCoverageInputLevelIndex), equalTo(true))
+                .body(String.format("data.inputLevels[%d].include", 1 - geographicCoverageInputLevelIndex), equalTo(false))
+                .body(String.format("data.inputLevels[%d].required", 1 - geographicCoverageInputLevelIndex), equalTo(false))
+                .statusCode(OK.getStatusCode());
+        String actualFieldTypeName1 = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
+        String actualFieldTypeName2 = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[1].datasetFieldTypeName");
+        assertNotEquals(actualFieldTypeName1, actualFieldTypeName2);
+        assertThat(testInputLevelNames, hasItemInArray(actualFieldTypeName1));
+        assertThat(testInputLevelNames, hasItemInArray(actualFieldTypeName2));
+
+        // Update input levels with an invalid field type name
+        String[] testInvalidInputLevelNames = {"geographicCoverage", "invalid1"};
+        updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInvalidInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
+        updateDataverseInputLevelsResponse.then().assertThat()
+                .body("message", equalTo("Invalid dataset field type name: invalid1"))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // Update invalid empty input levels
+        testInputLevelNames = new String[]{};
+        updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
+        updateDataverseInputLevelsResponse.then().assertThat()
+                .body("message", equalTo("Error while updating dataverse input levels: Input level list cannot be null or empty"))
+                .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
+    }
 }
