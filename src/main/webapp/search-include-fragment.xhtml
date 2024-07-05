@@ -132,9 +132,10 @@
 
                         <span class="icon-dataverse text-icon-inline"></span>
 
-                        <h:outputFormat styleClass="facetTypeDataverse" value="#{bundle['dataverse.results.types.dataverses']} &#40;{0}&#41;">
+                        <h:outputFormat rendered="#{!SearchIncludeFragment.uncheckedTypesFacetDisabled or SearchIncludeFragment.selectedTypesList.contains('dataverses')}" styleClass="facetTypeDataverse" value="#{bundle['dataverse.results.types.dataverses']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountDataverses}"/>
                         </h:outputFormat>
+                        <h:outputText rendered="#{SearchIncludeFragment.uncheckedTypesFacetDisabled and !SearchIncludeFragment.selectedTypesList.contains('dataverses')}" value="#{bundle['dataverse.results.types.dataverses']}" styleClass="facetTypeDataverse"/>
                     </h:outputLink>
                 </div>
                 <!--DATASETS TOGGLE-->
@@ -164,9 +165,10 @@
 
                         <span class="icon-dataset text-icon-inline"></span>
 
-                        <h:outputFormat styleClass="facetTypeDataset" value="#{bundle['dataverse.results.types.datasets']} &#40;{0}&#41;">
+                        <h:outputFormat rendered="#{!SearchIncludeFragment.uncheckedTypesFacetDisabled or SearchIncludeFragment.selectedTypesList.contains('datasets')}" styleClass="facetTypeDataset" value="#{bundle['dataverse.results.types.datasets']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountDatasets}"/>
                         </h:outputFormat>
+                        <h:outputText rendered="#{SearchIncludeFragment.uncheckedTypesFacetDisabled and !SearchIncludeFragment.selectedTypesList.contains('datasets')}" value="#{bundle['dataverse.results.types.datasets']}" styleClass="facetTypeDataset"/>
                     </h:outputLink>
                 </div>
                 <!--FILES TOGGLE-->
@@ -196,9 +198,10 @@
 
                         <span class="icon-file text-icon-inline"></span>
 
-                        <h:outputFormat styleClass="facetTypeFile" value="#{bundle['dataverse.results.types.files']} &#40;{0}&#41;">
+                        <h:outputFormat rendered="#{!SearchIncludeFragment.uncheckedTypesFacetDisabled or SearchIncludeFragment.selectedTypesList.contains('files')}" styleClass="facetTypeFile" value="#{bundle['dataverse.results.types.files']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountFiles}"/>
                         </h:outputFormat>
+                        <h:outputText rendered="#{SearchIncludeFragment.uncheckedTypesFacetDisabled and !SearchIncludeFragment.selectedTypesList.contains('files')}" value="#{bundle['dataverse.results.types.files']}" styleClass="facetTypeFile"/>
                     </h:outputLink>
                 </div>
             </h:form>
@@ -213,6 +216,7 @@
                                 <c:if test="#{!cvocConf.isEmpty()}">
                                     <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(facetCategory.datasetFieldTypeId).getString('languages'))}" />
                                     <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('cvoc-url','')}" />
+                                    <f:passThroughAttribute name="data-cvoc-headers" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).containsKey('headers') ? cvocConf.get(facetCategory.datasetFieldTypeId).get('headers').toString() : '{}'}"/>
                                     <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('protocol','')}" />
                                 </c:if>
                             </h:outputText>
@@ -234,6 +238,7 @@
                                 <c:if test="#{!cvocConf.isEmpty()}">
                                     <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(facetCategory.datasetFieldTypeId).getString('languages'))}" />
                                     <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('cvoc-url','')}" />
+                                    <f:passThroughAttribute name="data-cvoc-headers" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).containsKey('headers') ? cvocConf.get(facetCategory.datasetFieldTypeId).get('headers').toString() : '{}'}"/>
                                     <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('protocol','')}" />
                                 </c:if>
                             </h:outputText>
@@ -384,6 +389,7 @@
                         <h:outputText value="#{friendlyNames.get(1)}">
                                 <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(SearchIncludeFragment.getFieldTypeId(friendlyNames.get(0))).getString('languages'))}" />
                                 <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(SearchIncludeFragment.getFieldTypeId(friendlyNames.get(0))).getString('cvoc-url','')}" />
+                                <f:passThroughAttribute name="data-cvoc-headers" value="#{cvocConf.get(SearchIncludeFragment.getFieldTypeId(friendlyNames.get(0))).containsKey('headers') ? cvocConf.get(SearchIncludeFragment.getFieldTypeId(friendlyNames.get(0))).get('headers').toString() : '{}'}"/>
                                 <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(SearchIncludeFragment.getFieldTypeId(friendlyNames.get(0))).getString('protocol','')}" />
                         </h:outputText>
                         <span class="glyphicon glyphicon-remove"></span>
@@ -573,6 +579,7 @@
                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{result.deaccessionedState}"/>
                             <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{SearchIncludeFragment.isActivelyEmbargoed(result)}"/>
+                            <h:outputText value="#{bundle['retentionExpired']}" styleClass="label label-warning" rendered="#{SearchIncludeFragment.isRetentionExpired(result)}"/>
                             <h:outputText value="#{DatasetUtil:getLocaleExternalStatus(result.externalStatus)}" styleClass="label label-info" rendered="#{!empty result.externalStatus and SearchIncludeFragment.canPublishDataset(result.entityId)}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                             <h:outputText value="#{bundle['incomplete']}" styleClass="label label-danger" rendered="#{!SearchIncludeFragment.isValid(result)}"/>
@@ -621,6 +628,7 @@
                                         <c:if test="#{!cvocConf.isEmpty()}">
                                             <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(datasetFieldServiceBean.findByName(highlight.solrField.nameSearchable).id).getString('languages'))}" />
                                             <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(datasetFieldServiceBean.findByName(highlight.solrField.nameSearchable).id).getString('cvoc-url','')}" />
+                                            <f:passThroughAttribute name="data-cvoc-headers" value="#{cvocConf.get(datasetFieldServiceBean.findByName(highlight.solrField.nameSearchable).id).containsKey('headers') ? cvocConf.get(datasetFieldServiceBean.findByName(highlight.solrField.nameSearchable).id).get('headers').toString() : '{}'}"/>
                                             <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(datasetFieldServiceBean.findByName(highlight.solrField.nameSearchable).id).getString('protocol','')}" />
                                         </c:if>
                                     </h:outputText>
@@ -649,6 +657,7 @@
                             <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                             <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{SearchIncludeFragment.isActivelyEmbargoed(result)}"/>
+                            <h:outputText value="#{bundle['retentionExpired']}" styleClass="label label-danger" rendered="#{SearchIncludeFragment.isRetentionExpired(result)}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                         </div>
 

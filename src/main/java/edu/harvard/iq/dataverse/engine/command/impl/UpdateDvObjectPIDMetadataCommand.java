@@ -50,7 +50,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
         PidProvider pidProvider = PidUtil.getPidProvider(target.getGlobalId().getProviderId());
         
         try {
-            Boolean doiRetString = pidProvider.publicizeIdentifier(target);
+            Boolean doiRetString = pidProvider.updateIdentifier(target);
             if (doiRetString) {
                 target.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                 ctxt.em().merge(target);
@@ -71,7 +71,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                             (!(df.getIdentifier() == null || df.getIdentifier().isEmpty()) || // identifier exists, or
                                      canCreatePidsForFiles) // we can create PIDs for files
                     ) {
-                        doiRetString = pidProvider.publicizeIdentifier(df);
+                        doiRetString = pidProvider.updateIdentifier(df);
                         if (doiRetString) {
                             df.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                             ctxt.em().merge(df);

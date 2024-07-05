@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.api.auth.AuthRequired;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.validation.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.Template;
@@ -200,7 +201,7 @@ public class Admin extends AbstractApiBean {
 
 	@Path("settings/{name}/lang/{lang}")
 	@PUT
-	public Response putSetting(@PathParam("name") String name, @PathParam("lang") String lang, String content) {
+	public Response putSettingLang(@PathParam("name") String name, @PathParam("lang") String lang, String content) {
 		Setting s = settingsSvc.set(name, lang, content);
 		return ok("Setting " + name + " - " + lang + " - added.");
 	}
@@ -223,7 +224,7 @@ public class Admin extends AbstractApiBean {
 
 	@Path("settings/{name}/lang/{lang}")
 	@DELETE
-	public Response deleteSetting(@PathParam("name") String name, @PathParam("lang") String lang) {
+	public Response deleteSettingLang(@PathParam("name") String name, @PathParam("lang") String lang) {
 		settingsSvc.delete(name, lang);
 		return ok("Setting " + name + " - " + lang + " deleted.");
 	}
@@ -1029,29 +1030,49 @@ public class Admin extends AbstractApiBean {
         }, getRequestUser(crc));
     }
 
-	@Path("superuser/{identifier}")
-	@POST
-	public Response toggleSuperuser(@PathParam("identifier") String identifier) {
-		ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "toggleSuperuser")
-				.setInfo(identifier);
-		try {
-			AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
-                        if (user.isDeactivated()) {
-                            return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
-                        }
+    @Path("superuser/{identifier}")
+    @Deprecated
+    @POST
+    public Response toggleSuperuser(@PathParam("identifier") String identifier) {
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "toggleSuperuser")
+                .setInfo(identifier);
+        try {
+            final AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+            return setSuperuserStatus(user, !user.isSuperuser());
+        } catch (Exception e) {
+            alr.setActionResult(ActionLogRecord.Result.InternalError);
+            alr.setInfo(alr.getInfo() + "// " + e.getMessage());
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        } finally {
+            actionLogSvc.log(alr);
+        }
+    }
 
-			user.setSuperuser(!user.isSuperuser());
+    private Response setSuperuserStatus(AuthenticatedUser user, Boolean isSuperuser) {
+        if (user.isDeactivated()) {
+            return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
+        }
+        user.setSuperuser(isSuperuser);
+        return ok("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set" : "removed")
+                + " as a superuser.");
+    }
 
-			return ok("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set" : "removed")
-					+ " as a superuser.");
-		} catch (Exception e) {
-			alr.setActionResult(ActionLogRecord.Result.InternalError);
-			alr.setInfo(alr.getInfo() + "// " + e.getMessage());
-			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
-		} finally {
-			actionLogSvc.log(alr);
-		}
-	}
+    @Path("superuser/{identifier}")
+    @PUT
+    // Using string instead of boolean so user doesn't need to add a Content-type header in their request
+    public Response setSuperuserStatus(@PathParam("identifier") String identifier, String isSuperuser) {
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "setSuperuserStatus")
+                .setInfo(identifier + ":" + isSuperuser);
+        try {
+            return setSuperuserStatus(authSvc.getAuthenticatedUser(identifier), StringUtil.isTrue(isSuperuser));
+        } catch (Exception e) {
+            alr.setActionResult(ActionLogRecord.Result.InternalError);
+            alr.setInfo(alr.getInfo() + "// " + e.getMessage());
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        } finally {
+            actionLogSvc.log(alr);
+        }
+    }
 
     @GET
     @Path("validate/datasets")
@@ -1332,26 +1353,24 @@ public class Admin extends AbstractApiBean {
 
 	}
 
-	@Path("permissions/{dvo}")
-	@AuthRequired
-	@GET
-	public Response findPermissonsOn(@Context ContainerRequestContext crc, @PathParam("dvo") String dvo) {
-		try {
-			DvObject dvObj = findDvo(dvo);
-			if (dvObj == null) {
-				return notFound("DvObject " + dvo + " not found");
-			}
-			User aUser = getRequestUser(crc);
-			JsonObjectBuilder bld = Json.createObjectBuilder();
-			bld.add("user", aUser.getIdentifier());
-			bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
-			return ok(bld);
-
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error while testing permissions", e);
-			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
-		}
-	}
+    @Path("permissions/{dvo}")
+    @AuthRequired
+    @GET
+    public Response findPermissonsOn(@Context final ContainerRequestContext crc, @PathParam("dvo") final String dvo) {
+        try {
+            final DvObject dvObj = findDvo(dvo);
+            final User aUser = getRequestUser(crc);
+            final JsonObjectBuilder bld = Json.createObjectBuilder();
+            bld.add("user", aUser.getIdentifier());
+            bld.add("permissions", json(permissionSvc.permissionsFor(createDataverseRequest(aUser), dvObj)));
+            return ok(bld);
+        } catch (WrappedResponse r) {
+            return r.getResponse();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error while testing permissions", e);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
 
 	@Path("assignee/{idtf}")
 	@GET
@@ -2318,6 +2337,7 @@ public class Admin extends AbstractApiBean {
 
         BannerMessage toAdd = new BannerMessage();
         try {
+
             String dismissible = jsonObject.getString("dismissibleByUser");
 
             boolean dismissibleByUser = false;
@@ -2338,12 +2358,17 @@ public class Admin extends AbstractApiBean {
                 messageText.setBannerMessage(toAdd);
                 toAdd.getBannerMessageTexts().add(messageText);
             }
-                bannerMessageService.save(toAdd);
-                return ok("Banner Message added successfully.");
+            bannerMessageService.save(toAdd);
+
+            JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder()
+                .add("message", "Banner Message added successfully.")
+                .add("id", toAdd.getId());
+
+            return ok(jsonObjectBuilder);
 
         } catch (Exception e) {
             logger.warning("Unexpected Exception: " + e.getMessage());
-            return error(Status.BAD_REQUEST, "Add Banner Message unexpected exception: " + e.getMessage());
+            return error(Status.BAD_REQUEST, "Add Banner Message unexpected exception: invalid or missing JSON object.");
         }
 
     }
@@ -2379,10 +2404,19 @@ public class Admin extends AbstractApiBean {
     @Path("/bannerMessage")
     public Response getBannerMessages(@PathParam("id") Long id) throws WrappedResponse {
 
-        return ok(bannerMessageService.findAllBannerMessages().stream()
-                .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
-                .collect(toJsonArray()));
+        List<BannerMessage> messagesList = bannerMessageService.findAllBannerMessages();
 
+        for (BannerMessage message : messagesList) {
+            if ("".equals(message.getDisplayValue())) {
+               return error(Response.Status.INTERNAL_SERVER_ERROR, "No banner messages found for this locale.");
+            }
+        }
+
+        JsonArrayBuilder messages = messagesList.stream()
+        .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
+        .collect(toJsonArray());
+        
+        return ok(messages);
     }
     
     @POST
