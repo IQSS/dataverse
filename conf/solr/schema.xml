@@ -157,7 +157,8 @@
     <field name="publicationStatus" type="string" stored="true" indexed="true" multiValued="true"/>
     <field name="externalStatus" type="string" stored="true" indexed="true" multiValued="false"/>
     <field name="embargoEndDate" type="plong" stored="true" indexed="true" multiValued="false"/>
-    
+    <field name="retentionEndDate" type="plong" stored="true" indexed="true" multiValued="false"/>
+
     <field name="subtreePaths" type="string" stored="true" indexed="true" multiValued="true"/>
 
     <field name="fileName" type="text_en" stored="true" indexed="true" multiValued="true"/>
@@ -325,6 +326,7 @@
     <field name="journalVolumeIssue" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="keyword" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="keywordValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="keywordTermURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="keywordVocabulary" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="keywordVocabularyURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="kindOfData" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -564,6 +566,7 @@
     <copyField source="journalVolumeIssue" dest="_text_" maxChars="3000"/>
     <copyField source="keyword" dest="_text_" maxChars="3000"/>
     <copyField source="keywordValue" dest="_text_" maxChars="3000"/>
+    <copyField source="keywordTermURI" dest="_text_" maxChars="3000"/>
     <copyField source="keywordVocabulary" dest="_text_" maxChars="3000"/>
     <copyField source="keywordVocabularyURI" dest="_text_" maxChars="3000"/>
     <copyField source="kindOfData" dest="_text_" maxChars="3000"/>

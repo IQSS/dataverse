@@ -41,7 +41,7 @@ public class URLValidator implements ConstraintValidator<ValidateURL, String> {
      * @return true when valid (null is also valid) or false
      */
     public static boolean isURLValid(String value, String[] schemes) {
-        UrlValidator urlValidator = new UrlValidator(schemes);
+        UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_2_SLASHES);
         return value == null || urlValidator.isValid(value);
     }
 

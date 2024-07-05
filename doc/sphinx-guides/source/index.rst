@@ -17,6 +17,7 @@ These documentation guides are for the |version| version of Dataverse. To find g
   admin/index
   api/index
   installation/index
+  contributor/index
   developers/index
   container/index
   style/index

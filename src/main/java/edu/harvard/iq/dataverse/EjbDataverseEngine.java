@@ -124,12 +124,18 @@ public class EjbDataverseEngine {
     
     @EJB
     GuestbookResponseServiceBean responses;
+
+    @EJB
+    MetadataBlockServiceBean metadataBlockService;
     
     @EJB
     DataverseLinkingServiceBean dvLinking;
     
     @EJB
     DatasetLinkingServiceBean dsLinking;
+
+    @EJB
+    DatasetFieldServiceBean dsField;
 
     @EJB
     ExplicitGroupServiceBean explicitGroups;
@@ -506,7 +512,12 @@ public class EjbDataverseEngine {
                 public DatasetLinkingServiceBean dsLinking() {
                     return dsLinking;
                 }
-                
+
+                @Override
+                public DatasetFieldServiceBean dsField() {
+                    return dsField;
+                }
+
                 @Override
                 public StorageUseServiceBean storageUse() {
                     return storageUseService;
@@ -585,6 +596,11 @@ public class EjbDataverseEngine {
                 @Override
                 public ActionLogServiceBean actionLog() {
                     return logSvc;
+                }
+
+                @Override
+                public MetadataBlockServiceBean metadataBlocks() {
+                    return metadataBlockService;
                 }
 
                 @Override
