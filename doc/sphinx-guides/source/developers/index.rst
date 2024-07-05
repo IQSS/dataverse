@@ -18,7 +18,6 @@ Developer Guide
    version-control
    sql-upgrade-scripts
    testing
-   documentation
    api-design
    security
    performance

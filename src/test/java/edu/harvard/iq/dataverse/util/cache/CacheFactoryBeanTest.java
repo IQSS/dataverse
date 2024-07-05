@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -154,6 +155,7 @@ public class CacheFactoryBeanTest {
 
     @Test
     @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
+    @ResourceLock(value = "cache")
     public void testAuthenticatedUserGettingRateLimited() throws InterruptedException {
         Command action = new ListFacetsCommand(null,null);
         authUser.setRateLimitTier(2); // 120 cals per hour - 1 added token every 30 seconds

@@ -177,7 +177,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
             StorageIO<DvObject> storageIO = null;
             try {
                 storageIO = DataAccess.getStorageIO(dataset);
-                if (storageIO.isAuxObjectCached(DatasetUtil.datasetLogoFilenameFinal)) {
+                if (storageIO != null && storageIO.isAuxObjectCached(DatasetUtil.datasetLogoFilenameFinal)) {
                     // If not, return null/use the default, otherwise pass the logo URL
                     hasDatasetLogo = true;
                 }
