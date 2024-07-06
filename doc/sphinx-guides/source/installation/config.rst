@@ -781,7 +781,7 @@ Basic Database Settings
      - | ``dataverse``
        | (installer sets to ``dvndb``)
    * - dataverse.db.parameters
-     - Connection parameters, such as ``sslmode=require``. See `Postgres JDBC docs <https://jdbc.postgresql.org/documentation/head/connect.html>`_
+     - Connection parameters, such as ``sslmode=require``. See `Postgres JDBC docs <https://jdbc.postgresql.org/documentation/head/connect.html>`
        Note: you don't need to provide the initial "?".
      - *Empty string*
 
@@ -2441,6 +2441,15 @@ The PostgreSQL server port to connect to.
 Defaults to ``5432``, the default PostgreSQL port.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PORT``.
+
+dataverse.db.parameters
++++++++++++++++++++++++
+
+The PostgreSQL server connection parameters.
+
+Defaults to *Empty string*
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PARAMETERS``.
 
 .. _dataverse.solr.host:
 
