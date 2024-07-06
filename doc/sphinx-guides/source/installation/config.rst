@@ -2447,7 +2447,7 @@ dataverse.db.parameters
 
 The PostgreSQL server connection parameters.
 
-Defaults to *Empty string*
+Defaults to *empty string*
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PARAMETERS``.
 
