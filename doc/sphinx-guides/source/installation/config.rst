@@ -781,7 +781,7 @@ Basic Database Settings
      - | ``dataverse``
        | (installer sets to ``dvndb``)
    * - dataverse.db.parameters
-     - Connection parameters, such as ``sslmode=require``. See `Postgres JDBC docs <https://jdbc.postgresql.org/documentation/head/connect.html>`
+     - Connection parameters, such as ``sslmode=require``. See `Postgres JDBC docs <https://jdbc.postgresql.org/documentation/head/connect.html>`_
        Note: you don't need to provide the initial "?".
      - *Empty string*
 
