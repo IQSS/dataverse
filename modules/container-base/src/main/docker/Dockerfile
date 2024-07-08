@@ -78,16 +78,18 @@ RUN <<EOF
     # Create pathes
     mkdir -p "${HOME_DIR}" "${PAYARA_DIR}" "${DEPLOY_DIR}" "${CONFIG_DIR}" "${SCRIPT_DIR}"
     mkdir -p "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
+    # Remove the default user if present (do not fail build if not, introduced by Ubuntu 24.04)
+    userdel --force --remove ubuntu || true
+    groupdel -f ubuntu || true # for some reason, groupdel on Ubuntu 22.04 does not like --force
     # Create user
-    addgroup --gid ${GID} payara
-    adduser --system --uid ${UID} --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara
+    groupadd --gid ${GID} payara
+    useradd --system --uid ${UID} --no-create-home --shell /bin/false --home "${HOME_DIR}" --gid payara payara
     echo payara:payara | chpasswd
     # Set permissions
     # Note: Following OpenShift best practices for arbitrary user id support:
     #       https://docs.openshift.com/container-platform/4.14/openshift_images/create-images.html#use-uid_create-images
     chown -R payara:0 "${HOME_DIR}" "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
     chmod -R g=u "${HOME_DIR}" "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
-
 EOF
 
 ARG JATTACH_VERSION="v2.1"
