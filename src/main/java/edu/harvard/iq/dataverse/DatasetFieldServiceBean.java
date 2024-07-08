@@ -487,7 +487,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 logger.warning("Problem parsing external vocab value for uri: " + termUri + " : " + e.getMessage());
             }
         } catch (NoResultException nre) {
-            logger.warning("No external vocab value for uri: " + termUri);
+            //Could just be a plain text value
+            logger.fine("No external vocab value for uri: " + termUri);
         }
         return null;
     }
