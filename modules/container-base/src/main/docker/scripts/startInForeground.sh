@@ -33,7 +33,8 @@
 
 # Check required variables are set
 if [ -z "$ADMIN_USER" ]; then echo "Variable ADMIN_USER is not set."; exit 1; fi
-if [ -z "$PASSWORD_FILE" ]; then echo "Variable PASSWORD_FILE is not set."; exit 1; fi
+if [ -z "$ADMIN_PASSWORD" ]; then echo "Variable ADMIN_PASSWORD is not set."; exit 1; fi
+if [ -z "$DOMAIN_MASTER_PASSWORD" ]; then echo "Variable DOMAIN_MASTER_PASSWORD is not set."; exit 1; fi
 if [ -z "$PREBOOT_COMMANDS_FILE" ]; then echo "Variable PREBOOT_COMMANDS_FILE is not set."; exit 1; fi
 if [ -z "$POSTBOOT_COMMANDS_FILE" ]; then echo "Variable POSTBOOT_COMMANDS_FILE is not set."; exit 1; fi
 if [ -z "$DOMAIN_NAME" ]; then echo "Variable DOMAIN_NAME is not set."; exit 1; fi
@@ -42,6 +43,13 @@ if [ -z "$DOMAIN_NAME" ]; then echo "Variable DOMAIN_NAME is not set."; exit 1; 
 if [ -n "${ENABLE_DUMPS}" ] && [ "${ENABLE_DUMPS}" = "1" ]; then
   JVM_ARGS="${JVM_DUMPS_ARG} ${JVM_ARGS}"
 fi
+
+# For safety reasons, do no longer expose the passwords - malicious code could extract it!
+# (We need to save the master password for booting the server though)
+MASTER_PASSWORD="${DOMAIN_MASTER_PASSWORD}"
+export LINUX_USER_PASSWORD="have-some-scrambled-eggs"
+export ADMIN_PASSWORD="have-some-scrambled-eggs"
+export DOMAIN_MASTER_PASSWORD="have-some-scrambled-eggs"
 
 # The following command gets the command line to be executed by start-domain
 # - print the command line to the server with --dry-run, each argument on a separate line
@@ -53,15 +61,21 @@ fi
 touch "$POSTBOOT_COMMANDS_FILE" || exit 1
 touch "$PREBOOT_COMMANDS_FILE" || exit 1
 
+# This workaround is necessary due to limitations of asadmin
+PASSWORD_FILE=$(mktemp)
+echo "AS_ADMIN_MASTERPASSWORD=$MASTER_PASSWORD" > "$PASSWORD_FILE"
 # shellcheck disable=SC2068
 #   -- Using $@ is necessary here as asadmin cannot deal with options enclosed in ""!
 OUTPUT=$("${PAYARA_DIR}"/bin/asadmin --user="${ADMIN_USER}" --passwordfile="$PASSWORD_FILE" start-domain --dry-run --prebootcommandfile="${PREBOOT_COMMANDS_FILE}" --postbootcommandfile="${POSTBOOT_COMMANDS_FILE}" $@ "$DOMAIN_NAME")
 STATUS=$?
+rm "$PASSWORD_FILE"
 if [ "$STATUS" -ne 0 ]
   then
     echo ERROR: "$OUTPUT" >&2
     exit 1
 fi
+
+echo "Booting now..."
 
 COMMAND=$(echo "$OUTPUT"\
  | sed -n -e '2,/^$/p'\
@@ -72,18 +86,6 @@ echo "$COMMAND" | tr ' ' '\n'
 echo
 
 # Run the server in foreground - read master password from variable or file or use the default "changeit" password
-
-set +x
-if test "$AS_ADMIN_MASTERPASSWORD"x = x -a -f "$PASSWORD_FILE"
-  then
-    # shellcheck disable=SC1090
-    source "$PASSWORD_FILE"
-fi
-if test "$AS_ADMIN_MASTERPASSWORD"x = x
-  then
-    AS_ADMIN_MASTERPASSWORD=changeit
-fi
-echo "AS_ADMIN_MASTERPASSWORD=$AS_ADMIN_MASTERPASSWORD" > /tmp/masterpwdfile
 # shellcheck disable=SC2086
 #   -- Unquoted exec var is necessary, as otherwise things get escaped that may not be escaped (parameters for Java)
-exec ${COMMAND} < /tmp/masterpwdfile
+exec ${COMMAND} < <(echo "AS_ADMIN_MASTERPASSWORD=$MASTER_PASSWORD")
