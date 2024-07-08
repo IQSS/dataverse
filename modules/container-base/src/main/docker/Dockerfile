@@ -96,7 +96,7 @@ ARG JATTACH_VERSION="v2.1"
 ARG JATTACH_CHECKSUM="07885fdc782e02e7302c6d190f54c3930afa10a38140365adf54076ec1086a8e"
 ARG WAIT_FOR_VERSION="v2.2.3"
 ARG WAIT_FOR_CHECKSUM="70271181be69cd2c7265b2746f97fccfd7e8aa1059894138a775369c23589ff4"
-ARG PKGS="jq imagemagick curl unzip wget acl dirmngr gpg lsof procps netcat dumb-init"
+ARG PKGS="jq imagemagick curl unzip wget acl lsof procps netcat-openbsd dumb-init"
 
 # Installing the packages in an extra container layer for better caching
 RUN <<EOF
