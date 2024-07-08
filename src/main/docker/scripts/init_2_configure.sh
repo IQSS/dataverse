@@ -22,9 +22,12 @@ if [ "${dataverse_files_storage__driver__id}" = "local" ]; then
   export dataverse_files_local_directory="${dataverse_files_local_directory:-${STORAGE_DIR}/store}"
 fi
 
-# 0. Define postboot commands file to be read by Payara and clear it
-DV_POSTBOOT=${PAYARA_DIR}/dataverse_postboot
-echo "# Dataverse postboot configuration for Payara" > "${DV_POSTBOOT}"
+# If reload is enable via ENABLE_RELOAD=1, set according Jakarta Faces options
+ENABLE_RELOAD=${ENABLE_RELOAD:-0}
+if [ "${ENABLE_RELOAD}" = "1" ]; then
+  export DATAVERSE_JSF_PROJECT_STAGE=${DATAVERSE_JSF_PROJECT_STAGE:-"Development"}
+  export DATAVERSE_JSF_REFRESH_PERIOD=${DATAVERSE_JSF_REFRESH_PERIOD:-"0"}
+fi
 
 # Check prerequisites for commands handling
 if [ -z "$POSTBOOT_COMMANDS_FILE" ]; then echo "Variable POSTBOOT_COMMANDS_FILE is not set."; exit 1; fi

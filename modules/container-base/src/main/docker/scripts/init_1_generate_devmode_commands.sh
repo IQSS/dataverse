@@ -65,8 +65,6 @@ fi
 # 3. Enable hot reload
 if [ "${ENABLE_RELOAD}" = "1" ]; then
   echo "Enabling hot reload of deployments."
-  export DATAVERSE_JSF_PROJECT_STAGE=${DATAVERSE_JSF_PROJECT_STAGE:-"Development"}
-  export DATAVERSE_JSF_REFRESH_PERIOD=${DATAVERSE_JSF_REFRESH_PERIOD:-"0"}
   inject "set configs.config.server-config.admin-service.das-config.dynamic-reload-enabled=true"
   inject "set configs.config.server-config.admin-service.das-config.autodeploy-enabled=true"
 fi
