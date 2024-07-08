@@ -1,24 +1,19 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
-import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
-import java.io.IOException;
 import java.util.Objects;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.solr.client.solrj.SolrServerException;
 
 /**;
  * An abstract base class for commands that creates {@link Dataset}s.
@@ -81,9 +76,10 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         additionalParameterTests(ctxt);
         
         Dataset theDataset = getDataset();
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
+        PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(theDataset);
+        
         if ( isEmpty(theDataset.getIdentifier()) ) {
-            theDataset.setIdentifier(idServiceBean.generateDatasetIdentifier(theDataset));
+            pidProvider.generatePid(theDataset);
         }
         
         DatasetVersion dsv = getVersionToPersist(theDataset);
@@ -94,6 +90,8 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         if(!harvested) {
             checkSystemMetadataKeyIfNeeded(dsv, null);
         }
+
+        registerExternalVocabValuesIfAny(ctxt, dsv);
         
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
         
@@ -105,19 +103,18 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         
-        String nonNullDefaultIfKeyNotFound = "";
         if (theDataset.getProtocol()==null) {
-            theDataset.setProtocol(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound));
+            theDataset.setProtocol(pidProvider.getProtocol());
         }
         if (theDataset.getAuthority()==null) {
-            theDataset.setAuthority(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound));
+            theDataset.setAuthority(pidProvider.getAuthority());
         }
         if (theDataset.getStorageIdentifier() == null) {
         	String driverId = theDataset.getEffectiveStorageDriverId();
         	theDataset.setStorageIdentifier(driverId  + DataAccess.SEPARATOR + theDataset.getAuthorityForFileStorage() + "/" + theDataset.getIdentifierForFileStorage());
         }
         if (theDataset.getIdentifier()==null) {
-            theDataset.setIdentifier(idServiceBean.generateDatasetIdentifier(theDataset));
+            pidProvider.generatePid(theDataset);
         }
         
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)

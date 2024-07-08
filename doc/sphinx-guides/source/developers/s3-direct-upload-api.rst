@@ -67,6 +67,8 @@ Multiple URLs: when the file must be uploaded in multiple parts. The part size i
     "storageIdentifier":"s3://demo-dataverse-bucket:177883b000e-49cedef268ac"
   }
 
+The call will return a 400 (BAD REQUEST) response if the file is larger than what is allowed by the :ref:`:MaxFileUploadSizeInBytes`) and/or a quota (see :doc:`/admin/collectionquotas`).
+
 In the example responses above, the URLs, which are very long, have been omitted. These URLs reference the S3 server and the specific object identifier that will be used, starting with, for example, https://demo-dataverse-bucket.s3.amazonaws.com/10.5072/FK2FOQPJS/177883b000e-49cedef268ac?...
 
 The client must then use the URL(s) to PUT the file, or if the file is larger than the specified partSize, parts of the file. 
@@ -76,6 +78,12 @@ In the single part case, only one call to the supplied URL is required:
 .. code-block:: bash
 
     curl -i -H 'x-amz-tagging:dv-state=temp' -X PUT -T <filename> "<supplied url>"
+
+Or, if you have disabled S3 tagging (see :ref:`s3-tagging`), you should omit the header like this:
+
+.. code-block:: bash
+
+    curl -i -X PUT -T <filename> "<supplied url>"
 
 Note that without the ``-i`` flag, you should not expect any output from the command above. With the ``-i`` flag, you should expect to see a "200 OK" response.
 

@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import jakarta.persistence.TypedQuery;
 
 /**
  * Update an existing dataverse.
@@ -30,10 +29,10 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 	
 	private final Dataverse editedDv;
 	private final List<DatasetFieldType> facetList;
-        private final List<Dataverse> featuredDataverseList;
-        private final List<DataverseFieldTypeInputLevel> inputLevelList;
-        
-        private boolean datasetsReindexRequired = false; 
+    private final List<Dataverse> featuredDataverseList;
+    private final List<DataverseFieldTypeInputLevel> inputLevelList;
+
+    private boolean datasetsReindexRequired = false;
 
 	public UpdateDataverseCommand(Dataverse editedDv, List<DatasetFieldType> facetList, List<Dataverse> featuredDataverseList, 
                     DataverseRequest aRequest,  List<DataverseFieldTypeInputLevel> inputLevelList ) {

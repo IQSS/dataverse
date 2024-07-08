@@ -132,6 +132,32 @@ Globus transfer uses an efficient transfer mechanism and has additional features
 Users can transfer files via `Globus <https://www.globus.org>`_ into and out of datasets, or reference files on a remote Globus endpoint, when their Dataverse installation is configured to use a Globus accessible store(s) 
 and a community-developed `dataverse-globus <https://github.com/scholarsportal/dataverse-globus>`_ app has been properly installed and configured.
 
+DataLad
++++++++
+
+`DataLad`_ is a free and open source decentralized data management system that is built on `git`_
+and `git-annex`_ and provides a unified interface for version control, deposition, content retrieval,
+provenance tracking, reproducible execution, and further collaborative management of distributed and
+arbitrarily large datasets.
+
+If your dataset is structured as a `DataLad dataset`_ and you have a local DataLad installation,
+the `datalad-dataverse`_ extension package provides interoperability with Dataverse for the purpose
+of depositing DataLad datasets to and retrieving DataLad datasets from Dataverse instances, together
+with full version history.
+
+For further information, visit the ``datalad-dataverse`` extension's `documentation page`_, see the
+`quickstart`_ for installation details, or follow the step-by-step `tutorial`_ to get hands-on
+experience.
+
+.. _DataLad: https://www.datalad.org
+.. _git: https://git-scm.com
+.. _git-annex: https://git-annex.branchable.com
+.. _DataLad dataset: https://handbook.datalad.org/en/latest/basics/basics-datasets.html
+.. _datalad-dataverse: https://github.com/datalad/datalad-dataverse
+.. _documentation page: https://docs.datalad.org/projects/dataverse/en/latest/index.html
+.. _quickstart: https://docs.datalad.org/projects/dataverse/en/latest/settingup.html
+.. _tutorial: https://docs.datalad.org/projects/dataverse/en/latest/tutorial.html
+
 
 Embedding Data on Websites
 --------------------------
@@ -264,4 +290,4 @@ If you have an idea for an integration, please ask on the `dataverse-community <
 
 Many integrations take the form of "external tools". See the :doc:`external-tools` section for details. External tool makers should check out the :doc:`/api/external-tools` section of the API Guide.
 
-Please help us keep this page up to date making a pull request! To get started, see the :doc:`/developers/documentation` section of the Developer Guide.
+Please help us keep this page up to date making a pull request! To get started, see the :doc:`/contributor/documentation` section of the Contributor Guide.
