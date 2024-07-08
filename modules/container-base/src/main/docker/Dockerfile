@@ -41,11 +41,16 @@ ENV PAYARA_DIR="${HOME_DIR}/appserver" \
     STORAGE_DIR="/dv" \
     SECRETS_DIR="/secrets" \
     DUMPS_DIR="/dumps" \
-    PASSWORD_FILE="${HOME_DIR}/passwordFile" \
     ADMIN_USER="admin" \
+    # This is a public default, easy to change via this env var at runtime
     ADMIN_PASSWORD="admin" \
     DOMAIN_NAME="domain1" \
-    PAYARA_ARGS=""
+    # This is the public default as per https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Security%20Guide/Administering%20System%20Security.html#to-change-the-master-password
+    # Can be changed at runtime via this env var
+    DOMAIN_MASTER_PASSWORD="changeit" \
+    PAYARA_ARGS="" \
+    # This is a public default and can be changed at runtime using this env var
+    LINUX_USER_PASSWORD="payara"
 ENV PATH="${PATH}:${PAYARA_DIR}/bin:${SCRIPT_DIR}" \
     DOMAIN_DIR="${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}" \
     DEPLOY_PROPS="" \
@@ -84,7 +89,7 @@ RUN <<EOF
     # Create user
     groupadd --gid ${GID} payara
     useradd --system --uid ${UID} --no-create-home --shell /bin/false --home "${HOME_DIR}" --gid payara payara
-    echo payara:payara | chpasswd
+    echo "payara:$LINUX_USER_PASSWORD" | chpasswd
     # Set permissions
     # Note: Following OpenShift best practices for arbitrary user id support:
     #       https://docs.openshift.com/container-platform/4.14/openshift_images/create-images.html#use-uid_create-images
@@ -118,9 +123,6 @@ EOF
 
 ### PART 2: PAYARA ###
 # After setting up system, now configure Payara
-
-ARG ASADMIN="${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE}"
-
 USER payara
 WORKDIR ${HOME_DIR}
 
@@ -137,8 +139,13 @@ RUN <<EOF
     # Set admin password
     echo "AS_ADMIN_PASSWORD=" > /tmp/password-change-file.txt
     echo "AS_ADMIN_NEWPASSWORD=${ADMIN_PASSWORD}" >> /tmp/password-change-file.txt
-    echo "AS_ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> ${PASSWORD_FILE}
     asadmin --user=${ADMIN_USER} --passwordfile=/tmp/password-change-file.txt change-admin-password --domain_name=${DOMAIN_NAME}
+
+    # Prepare shorthand
+    PASSWORD_FILE=$(mktemp)
+    echo "AS_ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> ${PASSWORD_FILE}
+    ASADMIN="${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE}"
+
     # Start domain for configuration
     ${ASADMIN} start-domain ${DOMAIN_NAME}
     # Allow access to admin with password only
@@ -215,6 +222,7 @@ RUN <<EOF
     ${SCRIPT_DIR}/removeExpiredCaCerts.sh
     # Delete generated files
     rm -rf \
+        "$PASSWORD_FILE" \
         "/tmp/password-change-file.txt" \
         "${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/osgi-cache" \
         "${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/logs"
