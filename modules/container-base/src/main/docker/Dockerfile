@@ -226,6 +226,7 @@ USER root
 RUN true && \
     chgrp -R 0 "${DOMAIN_DIR}" && \
     chmod -R g=u "${DOMAIN_DIR}"
+USER payara
 
 # Set the entrypoint to tini (as a process supervisor)
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
