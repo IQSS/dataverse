@@ -35,7 +35,10 @@ public class MailUtil {
             case CREATEDV:
                 return BundleUtil.getStringFromBundle("notification.email.create.dataverse.subject", rootDvNameAsList);
             case REQUESTFILEACCESS:
-                return BundleUtil.getStringFromBundle("notification.email.request.file.access.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
+                String userNameFirst = userNotification.getRequestor().getFirstName();
+                String userNameLast = userNotification.getRequestor().getLastName();
+                String userIdentifier = userNotification.getRequestor().getIdentifier();
+                return BundleUtil.getStringFromBundle("notification.email.request.file.access.subject", Arrays.asList(rootDvNameAsList.get(0), userNameFirst, userNameLast, userIdentifier, datasetDisplayName));
             case REQUESTEDFILEACCESS:
                 return BundleUtil.getStringFromBundle("notification.email.requested.file.access.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case GRANTFILEACCESS:

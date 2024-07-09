@@ -271,6 +271,12 @@
                   "typeClass": "primitive",
                   "value": "KeywordTerm1"
                 },
+                "keywordTermURI": {
+                  "typeName": "keywordTermURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://keywordTermURI1.org"
+                },
                 "keywordVocabulary": {
                   "typeName": "keywordVocabulary",
                   "multiple": false,
@@ -290,6 +296,12 @@
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "KeywordTerm2"
+                },
+                "keywordTermURI": {
+                  "typeName": "keywordTermURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://keywordTermURI2.org"
                 },
                 "keywordVocabulary": {
                   "typeName": "keywordVocabulary",

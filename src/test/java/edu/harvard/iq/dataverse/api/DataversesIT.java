@@ -438,7 +438,7 @@ public class DataversesIT {
         while (checkIndex) {
             try {   
                     try {
-                        Thread.sleep(4000);
+                        Thread.sleep(6000);
                     } catch (InterruptedException ex) {
                     }                
                 Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);
@@ -702,8 +702,10 @@ public class DataversesIT {
         Response setMetadataBlocksResponse = UtilIT.setMetadataBlocks(dataverseAlias, Json.createArrayBuilder().add("citation").add("astrophysics"), apiToken);
         setMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
 
-        String[] testInputLevelNames = {"geographicCoverage", "country"};
-        Response updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, apiToken);
+        String[] testInputLevelNames = {"geographicCoverage", "country", "city"};
+        boolean[] testRequiredInputLevels = {false, true, false};
+        boolean[] testIncludedInputLevels = {false, true, true};
+        Response updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
         updateDataverseInputLevelsResponse.then().assertThat().statusCode(OK.getStatusCode());
 
         // Dataverse not found
@@ -769,6 +771,21 @@ public class DataversesIT {
         assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName2));
         assertThat(expectedAllMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName3));
 
+        // Check dataset fields for the updated input levels are retrieved
+        int geospatialMetadataBlockIndex = actualMetadataBlockDisplayName1.equals("Geospatial Metadata") ? 0 : actualMetadataBlockDisplayName2.equals("Geospatial Metadata") ? 1 : 2;
+
+        // Since the included property of geographicCoverage is set to false, we should retrieve the total number of fields minus one
+        listMetadataBlocksResponse.then().assertThat()
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(10));
+
+        String actualMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
+        String actualMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
+        String actualMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
+
+        assertNull(actualMetadataField1);
+        assertNotNull(actualMetadataField2);
+        assertNotNull(actualMetadataField3);
+
         // Existent dataverse and onlyDisplayedOnCreate=true and returnDatasetFieldTypes=true
         listMetadataBlocksResponse = UtilIT.listMetadataBlocks(dataverseAlias, true, true, apiToken);
         listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -785,16 +802,18 @@ public class DataversesIT {
         assertThat(expectedOnlyDisplayedOnCreateMetadataBlockDisplayNames, hasItemInArray(actualMetadataBlockDisplayName2));
 
         // Check dataset fields for the updated input levels are retrieved
-        int geospatialMetadataBlockIndex = actualMetadataBlockDisplayName2.equals("Geospatial Metadata") ? 1 : 0;
+        geospatialMetadataBlockIndex = actualMetadataBlockDisplayName2.equals("Geospatial Metadata") ? 1 : 0;
 
         listMetadataBlocksResponse.then().assertThat()
-                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(2));
+                .body(String.format("data[%d].fields.size()", geospatialMetadataBlockIndex), equalTo(1));
 
-        String actualMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
-        String actualMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
+        actualMetadataField1 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.geographicCoverage.name", geospatialMetadataBlockIndex));
+        actualMetadataField2 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.country.name", geospatialMetadataBlockIndex));
+        actualMetadataField3 = listMetadataBlocksResponse.then().extract().path(String.format("data[%d].fields.city.name", geospatialMetadataBlockIndex));
 
-        assertNotNull(actualMetadataField1);
+        assertNull(actualMetadataField1);
         assertNotNull(actualMetadataField2);
+        assertNull(actualMetadataField3);
 
         // User has no permissions on the requested dataverse
         Response createSecondUserResponse = UtilIT.createRandomUser();
@@ -898,12 +917,16 @@ public class DataversesIT {
 
         // Update valid input levels
         String[] testInputLevelNames = {"geographicCoverage", "country"};
-        Response updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, apiToken);
+        boolean[] testRequiredInputLevels = {true, false};
+        boolean[] testIncludedInputLevels = {true, false};
+        Response updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
+        String actualInputLevelName = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
+        int geographicCoverageInputLevelIndex = actualInputLevelName.equals("geographicCoverage") ? 0 : 1;
         updateDataverseInputLevelsResponse.then().assertThat()
-                .body("data.inputLevels[0].required", equalTo(true))
-                .body("data.inputLevels[0].include", equalTo(true))
-                .body("data.inputLevels[1].required", equalTo(true))
-                .body("data.inputLevels[1].include", equalTo(true))
+                .body(String.format("data.inputLevels[%d].include", geographicCoverageInputLevelIndex), equalTo(true))
+                .body(String.format("data.inputLevels[%d].required", geographicCoverageInputLevelIndex), equalTo(true))
+                .body(String.format("data.inputLevels[%d].include", 1 - geographicCoverageInputLevelIndex), equalTo(false))
+                .body(String.format("data.inputLevels[%d].required", 1 - geographicCoverageInputLevelIndex), equalTo(false))
                 .statusCode(OK.getStatusCode());
         String actualFieldTypeName1 = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[0].datasetFieldTypeName");
         String actualFieldTypeName2 = updateDataverseInputLevelsResponse.then().extract().path("data.inputLevels[1].datasetFieldTypeName");
@@ -913,15 +936,14 @@ public class DataversesIT {
 
         // Update input levels with an invalid field type name
         String[] testInvalidInputLevelNames = {"geographicCoverage", "invalid1"};
-        updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInvalidInputLevelNames, apiToken);
+        updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInvalidInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
         updateDataverseInputLevelsResponse.then().assertThat()
                 .body("message", equalTo("Invalid dataset field type name: invalid1"))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         // Update invalid empty input levels
         testInputLevelNames = new String[]{};
-        updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, apiToken);
-        updateDataverseInputLevelsResponse.prettyPrint();
+        updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
         updateDataverseInputLevelsResponse.then().assertThat()
                 .body("message", equalTo("Error while updating dataverse input levels: Input level list cannot be null or empty"))
                 .statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
