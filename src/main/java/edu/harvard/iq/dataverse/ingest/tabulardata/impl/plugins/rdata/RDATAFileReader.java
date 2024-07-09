@@ -506,7 +506,7 @@ public class RDATAFileReader extends TabularDataFileReader {
             BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(localCsvFile), StandardCharsets.UTF_8));
 
             File tabFileDestination = File.createTempFile("data-", ".tab");
-            PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath(), "UTF-8");
+            PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath(), StandardCharsets.UTF_8);
         
             int lineCount = csvFileReader.read(localBufferedReader, dataTable, saveWithVariableHeader, tabFileWriter);
 
