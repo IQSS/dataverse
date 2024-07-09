@@ -69,6 +69,8 @@ Find or Create a GitHub Issue
 
 An issue represents a bug (unexpected behavior) or a new feature in Dataverse. We'll use the issue number in the branch we create for our pull request.
 
+.. _finding-github-issues-to-work-on:
+
 Finding GitHub Issues to Work On
 ********************************
 
