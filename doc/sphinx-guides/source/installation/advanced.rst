@@ -136,35 +136,7 @@ Use the :ref:`dataverse.spi.exporters.directory` configuration option to specify
 Inventory of External Exporters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In the list below, the name of each exporter is followed by the machine-readable name in parentheses for use in APIs (see :ref:`export-dataset-metadata-api` in the API Guide).
-
-Croissant (``croissant``)
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-`Croissant <https://github.com/mlcommons/croissant>`_ is oriented toward machine learning and exposes variable-level metadata. When enabled, it replaces the Schema.org JSON-LD shown in the ``<head>`` of a dataset page, as described under :ref:`schema.org-head` in the Admin Guide.
-
-You can download the Croissant exporter JAR from the following locations:
-
-- released/stable: https://repo1.maven.org/maven2/io/gdcc/export/croissant/
-- unreleased/snapshot: https://s01.oss.sonatype.org/content/groups/staging/io/gdcc/export/croissant/
-
-The Maven Central landing page can be found at https://central.sonatype.com/artifact/io.gdcc.export/croissant
-
-The source code and additional information can be found at https://github.com/gdcc/exporter-croissant where you are welcome to open issues and create pull requests.
-
-Debug (``debug``)
-~~~~~~~~~~~~~~~~~
-
-The "Debug" exporter is intended to help developers of future external exporters. It produces a JSON file that contains all available formats that are available to exporter authors such as datasetJson, datasetORE, datasetSchemaDotOrg, etc.
-
-You can download the Debug exporter JAR from the following locations:
-
-- released/stable: https://repo1.maven.org/maven2/io/gdcc/export/debug/
-- unreleased/snapshot: https://s01.oss.sonatype.org/content/groups/staging/io/gdcc/export/debug/
-
-The Maven Central landing page can be found at https://central.sonatype.com/artifact/io.gdcc.export/debug
-
-The source code and additional information can be found at https://github.com/gdcc/exporter-debug where you are welcome to open issues and create pull requests.
+For a list of external exporters, see the README at https://github.com/gdcc/dataverse-exporters
 
 Developing New Exporters
 ^^^^^^^^^^^^^^^^^^^^^^^^
