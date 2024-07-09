@@ -23,9 +23,11 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -58,6 +60,9 @@ public class PidProviderFactoryBean {
     protected DvObjectServiceBean dvObjectService;
     @Inject
     SystemConfig systemConfig;
+    //QDR - adding to support use of ExternalVocabularyValues in DataCite provider/ DataCite XML generation
+    @EJB
+    DatasetFieldServiceBean datasetFieldServiceBean;
 
     private ServiceLoader<PidProviderFactory> loader;
     private Map<String, PidProviderFactory> pidProviderFactoryMap = new HashMap<>();
@@ -246,5 +251,9 @@ public class PidProviderFactoryBean {
 
             return PidUtil.getPidProvider(protocol, authority, shoulder);
         }
+    }
+    
+    public JsonObject getExternalVocabularyValue(String name) {
+        return datasetFieldServiceBean.getExternalVocabularyValue(name);
     }
 }

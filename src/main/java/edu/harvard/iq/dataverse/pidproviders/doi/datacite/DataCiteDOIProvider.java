@@ -17,6 +17,8 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import jakarta.json.JsonObject;
+
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 
@@ -338,6 +340,10 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
             logger.log(Level.WARNING, "updateIdentifier failed: " + e.getMessage(), e);
             return false;
         }
+    }
+    
+    public JsonObject getExternalVocabularyValue(String name) {
+        return pidProviderService.getExternalVocabularyValue(name);
     }
 
 }
