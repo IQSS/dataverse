@@ -17,6 +17,8 @@ import java.util.Date;
 import java.util.List;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  *
@@ -178,7 +180,7 @@ public class GuestbookResponse implements Serializable {
         this.setSessionId(source.getSessionId());
         List <CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
         if (!source.getCustomQuestionResponses().isEmpty()){
-            for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponses() ){
+            for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponsesSorted() ){
                 CustomQuestionResponse customQuestionResponseAdd = new CustomQuestionResponse();
                 customQuestionResponseAdd.setResponse(customQuestionResponse.getResponse());  
                 customQuestionResponseAdd.setCustomQuestion(customQuestionResponse.getCustomQuestion());
@@ -254,6 +256,18 @@ public class GuestbookResponse implements Serializable {
     public List<CustomQuestionResponse> getCustomQuestionResponses() {
         return customQuestionResponses;
     }
+    
+    public List<CustomQuestionResponse> getCustomQuestionResponsesSorted(){
+        
+        Collections.sort(customQuestionResponses, (CustomQuestionResponse cqr1, CustomQuestionResponse cqr2) -> {
+            int a = cqr1.getCustomQuestion().getDisplayOrder();
+            int b = cqr2.getCustomQuestion().getDisplayOrder();
+            return Integer.valueOf(a).compareTo(b);
+        });
+       
+       
+       return customQuestionResponses;
+    }
 
     public void setCustomQuestionResponses(List<CustomQuestionResponse> customQuestionResponses) {
         this.customQuestionResponses = customQuestionResponses;
@@ -317,7 +331,11 @@ public class GuestbookResponse implements Serializable {
         this.sessionId= sessionId;
     }
     
-    public String toHtmlFormattedResponse() {
+    public String toHtmlFormattedResponse(){
+        return toHtmlFormattedResponse(null);
+    }
+    
+    public String toHtmlFormattedResponse(AuthenticatedUser requestor) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -326,17 +344,25 @@ public class GuestbookResponse implements Serializable {
         sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.respondent") + "<br><ul style=\"list-style-type:none;\">\n<li>"
                 + BundleUtil.getStringFromBundle("name") + ": " + getName() + "</li>\n<li>");
         sb.append("  " + BundleUtil.getStringFromBundle("email") + ": " + getEmail() + "</li>\n<li>");
-        sb.append(
-                "  " + BundleUtil.getStringFromBundle("institution") + ": " + wrapNullAnswer(getInstitution()) + "</li>\n<li>");
-        sb.append("  " + BundleUtil.getStringFromBundle("position") + ": " + wrapNullAnswer(getPosition()) + "</li></ul>\n");
+        sb.append("  " + BundleUtil.getStringFromBundle("institution") + ": " + wrapNullAnswer(getInstitution()) + "</li>\n<li>");
+        sb.append("  " + BundleUtil.getStringFromBundle("position") + ": " + wrapNullAnswer(getPosition()) + "</li>");
+        
+        //Add requestor information to response to help dataset admin with request processing
+        if (requestor != null){
+            sb.append("\n<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.requestor.id") + ": " + requestor.getId()+ "</li>");
+            sb.append("\n<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.requestor.identifier") + ": " + requestor.getIdentifier()+ "</li></ul>\n");
+        } else {
+            sb.append("</ul>\n");
+        }
+
         sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.additionalQuestions")
                 + ":<ul style=\"list-style-type:none;\">\n");
 
-        for (CustomQuestionResponse cqr : getCustomQuestionResponses()) {
+        for (CustomQuestionResponse cqr : getCustomQuestionResponsesSorted()) {
             sb.append("<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.question") + ": "
                     + cqr.getCustomQuestion().getQuestionString() + "<br>"
                     + BundleUtil.getStringFromBundle("dataset.guestbookResponse.answer") + ": "
-                    + wrapNullAnswer(cqr.getResponse()) + "</li>\n");
+                    + wrapNullAnswer(cqr.getResponse()) + "</li>\n<br>");
         }
         sb.append("</ul>");
         return sb.toString();

@@ -234,7 +234,7 @@ public class Users extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/traces/{element}")
     @Produces("text/csv, application/json")
-    public Response getTraces(@Context ContainerRequestContext crc, @Context Request req, @PathParam("identifier") String identifier, @PathParam("element") String element) {
+    public Response getTracesElement(@Context ContainerRequestContext crc, @Context Request req, @PathParam("identifier") String identifier, @PathParam("element") String element) {
         try {
             AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
             if(!elements.contains(element)) {

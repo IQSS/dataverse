@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -395,7 +396,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 }
             }
             
-            if (!wasSolrErrorEncountered() && selectedTypesList.size() < 3 && !isSolrTemporarilyUnavailable() && !isFacetsDisabled()) {
+            if (!wasSolrErrorEncountered() && selectedTypesList.size() < 3 && !isSolrTemporarilyUnavailable() && !isFacetsDisabled() && !isUncheckedTypesFacetDisabled()) {
                 // If some types are NOT currently selected, we will need to 
                 // run a second search to obtain the numbers of the unselected types:
                 
@@ -1086,19 +1087,58 @@ public class SearchIncludeFragment implements java.io.Serializable {
         this.solrIsTemporarilyUnavailable = solrIsTemporarilyUnavailable; 
     }
 
+    Boolean solrFacetsDisabled = null; 
     /**
      * Indicates that the fragment should not be requesting facets in Solr 
      * searches and rendering them on the page.
      * @return true if disabled; false by default 
      */
     public boolean isFacetsDisabled() {
-        // The method is used in rendered="..." logic. So we are using 
-        // SettingsWrapper to make sure we are not looking it up repeatedly 
-        // (settings are not expensive to look up, but 
-        // still).
+        if (this.solrFacetsDisabled != null) {
+            return this.solrFacetsDisabled;
+        }
         
-        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacets, false);
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacets, false)) {
+            return this.solrFacetsDisabled = true;
+        }
+        
+        // We also have mechanisms for disabling the facets selectively, just for 
+        // the guests, or anonymous users:
+        if (session.getUser() instanceof GuestUser) {
+            if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacetsForGuestUsers, false)) {
+                return this.solrFacetsDisabled = true; 
+            }
+            
+            // An even lower grade of user than Guest is a truly anonymous user -
+            // a guest user who came without the session cookie:
+            Map<String, Object> cookies = FacesContext.getCurrentInstance().getExternalContext().getRequestCookieMap();
+            if (!(cookies != null && cookies.containsKey("JSESSIONID"))) {
+                if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacetsWithoutJsession, false)) {
+                    return this.solrFacetsDisabled = true; 
+                }
+            }
+        }
+        
+        return this.solrFacetsDisabled = false;
     }
+    
+    Boolean disableSecondPassSearch = null; 
+    
+    /**
+     * Indicates that we do not need to run the second search query to populate 
+     * the counts for *unchecked* type facets.
+     * @return true if disabled; false by default 
+     */
+    public boolean isUncheckedTypesFacetDisabled() {
+        if (this.disableSecondPassSearch != null) {
+            return this.disableSecondPassSearch; 
+        }
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableUncheckedTypesFacet, false)) {
+            return this.disableSecondPassSearch = true;
+        }
+        return this.disableSecondPassSearch = false;
+    }
+    
     
     public boolean isRootDv() {
         return rootDv;

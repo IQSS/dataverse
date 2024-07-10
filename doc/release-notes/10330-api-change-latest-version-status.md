@@ -1,1 +1,0 @@
-The API endpoint for getting the Dataset version has been extended to include latestVersionPublishingStatus.
