@@ -1,2 +1,0 @@
-Dataverse can now be configured (via the dataverse.files.guestbook-at-request option) to display any configured guestbook to users when they request restricted file(s) or when they download files (the historic default).
-The global default defined by this setting can be overridden at the collection level on the collection page and at the individual dataset level by a superuser using the API. The default - showing guestbooks when files are downloaded - remains as it was in prior Dataverse versions. 

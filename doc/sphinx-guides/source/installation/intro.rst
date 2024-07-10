@@ -2,7 +2,7 @@
 Introduction
 ============
 
-Welcome! Thanks for installing `The Dataverse Project <http://dataverse.org>`_!
+Welcome! Thanks for installing `The Dataverse Project <https://dataverse.org>`_!
 
 .. contents:: |toctitle|
 	:local:
@@ -36,7 +36,7 @@ Getting Help
 To get help installing or configuring a Dataverse installation, please try one or more of:
 
 - posting to the `dataverse-community <https://groups.google.com/forum/#!forum/dataverse-community>`_ Google Group.
-- asking at http://chat.dataverse.org
+- asking at https://chat.dataverse.org
 - emailing support@dataverse.org to open a private ticket at https://help.hmdc.harvard.edu
 
 Information to Send to Support When Installation Fails
@@ -53,6 +53,6 @@ If you've encountered a problem installing Dataverse and are ready to ask for he
 Improving this Guide
 --------------------
 
-If you spot a typo in this guide or would like to suggest an improvement, please find the appropriate file in https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/installation and send a pull request as explained in the :doc:`/developers/documentation` section of the Developer Guide. You are also welcome to simply open an issue at https://github.com/IQSS/dataverse/issues to describe the problem with this guide.
+If you spot a typo in this guide or would like to suggest an improvement, please find the appropriate file in https://github.com/IQSS/dataverse/tree/develop/doc/sphinx-guides/source/installation and send a pull request as explained in the :doc:`/contributor/documentation` section of the Contributor Guide. You are also welcome to simply open an issue at https://github.com/IQSS/dataverse/issues to describe the problem with this guide.
 
 Next is the :doc:`prep` section.

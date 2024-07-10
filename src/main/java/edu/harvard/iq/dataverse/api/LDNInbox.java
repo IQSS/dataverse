@@ -1,12 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.GlobalIdServiceBean;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -15,6 +12,9 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
@@ -134,13 +134,13 @@ public class LDNInbox extends AbstractApiBean {
                                     .getString("@id");
                             if (citedResource.getString("@type").equals(JsonLDTerm.schemaOrg("Dataset").getUrl())) {
                                 logger.fine("Raw PID: " + pid);
-                                if (pid.startsWith(DOIServiceBean.DOI_RESOLVER_URL)) {
-                                    pid = pid.replace(DOIServiceBean.DOI_RESOLVER_URL, DOIServiceBean.DOI_PROTOCOL + ":");
-                                } else if (pid.startsWith(HandlenetServiceBean.HDL_RESOLVER_URL)) {
-                                    pid = pid.replace(HandlenetServiceBean.HDL_RESOLVER_URL, HandlenetServiceBean.HDL_PROTOCOL + ":");
+                                if (pid.startsWith(AbstractDOIProvider.DOI_RESOLVER_URL)) {
+                                    pid = pid.replace(AbstractDOIProvider.DOI_RESOLVER_URL, AbstractDOIProvider.DOI_PROTOCOL + ":");
+                                } else if (pid.startsWith(HandlePidProvider.HDL_RESOLVER_URL)) {
+                                    pid = pid.replace(HandlePidProvider.HDL_RESOLVER_URL, HandlePidProvider.HDL_PROTOCOL + ":");
                                 }
                                 logger.fine("Protocol PID: " + pid);
-                                Optional<GlobalId> id = GlobalIdServiceBean.parse(pid);
+                                Optional<GlobalId> id = PidProvider.parse(pid);
                                 Dataset dataset = datasetSvc.findByGlobalId(pid);
                                 if (dataset != null) {
                                     JsonObject citingResource = Json.createObjectBuilder().add("@id", citingPID)

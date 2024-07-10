@@ -163,6 +163,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataTables")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.fileCategories")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.embargo")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.retention")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.datasetVersion")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.releaseUser")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.creator")
@@ -495,10 +496,24 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
          }
     } // end getDatasetVersionByQuery
     
-    
-    
-    
-    public DatasetVersion retrieveDatasetVersionByIdentiferClause(String identifierClause, String version){
+    /**
+     * @deprecated because of a typo; use {@link #retrieveDatasetVersionByIdentifierClause(String, String) retrieveDatasetVersionByIdentifierClause} instead
+     * @see #retrieveDatasetVersionByIdentifierClause(String, String)
+     * @param identifierClause
+     * @param version
+     * @return a DatasetVersion if found, or {@code null} otherwise
+     */
+    @Deprecated
+    public DatasetVersion retrieveDatasetVersionByIdentiferClause(String identifierClause, String version) {
+        return retrieveDatasetVersionByIdentifierClause(identifierClause, version);
+    }
+
+    /**
+     * @param identifierClause
+     * @param version
+     * @return a DatasetVersion if found, or {@code null} otherwise
+     */
+    public DatasetVersion retrieveDatasetVersionByIdentifierClause(String identifierClause, String version) {
         
         if (identifierClause == null){
             return null;
@@ -620,7 +635,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         identifierClause += " AND ds.identifier = '" + parsedId.getIdentifier() + "'"; 
         
 
-        DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
+        DatasetVersion ds = retrieveDatasetVersionByIdentifierClause(identifierClause, version);
         
         if (ds != null){
             msg("retrieved dataset: " + ds.getId() + " semantic: " + ds.getSemanticVersion());
@@ -718,7 +733,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         
         String identifierClause = this.getIdClause(datasetId);
 
-        DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
+        DatasetVersion ds = retrieveDatasetVersionByIdentifierClause(identifierClause, version);
         
         return ds;
 
@@ -788,6 +803,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                     + "AND fm.datafile_id = df.id "
                     + "AND df.restricted = false "
                     + "AND df.embargo_id is null "
+                    + "AND df.retention_id is null "
                     + "AND o.previewImageAvailable = true "
                     + "ORDER BY df.id LIMIT 1;").getSingleResult();
         } catch (Exception ex) {
@@ -811,9 +827,10 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         + "AND df.id = o.id "
                         + "AND fm.datasetversion_id = dv.id "
                         + "AND fm.datafile_id = df.id "
-                        // + "AND o.previewImageAvailable = false "
+                        + "AND o.previewimagefail = false "
                         + "AND df.restricted = false "
                         + "AND df.embargo_id is null "
+                        + "AND df.retention_id is null "
                         + "AND df.contenttype LIKE 'image/%' "
                         + "AND NOT df.contenttype = 'image/fits' "
                         + "AND df.filesize < " + imageThumbnailSizeLimit + " "
@@ -845,9 +862,10 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         + "AND df.id = o.id "
                         + "AND fm.datasetversion_id = dv.id "
                         + "AND fm.datafile_id = df.id "
-                        // + "AND o.previewImageAvailable = false "
+                        + "AND o.previewimagefail = false "
                         + "AND df.restricted = false "
                         + "AND df.embargo_id is null "
+                        + "AND df.retention_id is null "
                         + "AND df.contenttype = 'application/pdf' "
                         + "AND df.filesize < " + imageThumbnailSizeLimit + " "
                         + "ORDER BY df.filesize ASC LIMIT 1;").getSingleResult();

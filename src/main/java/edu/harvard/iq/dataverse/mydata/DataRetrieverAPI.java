@@ -3,6 +3,7 @@
  */
 package edu.harvard.iq.dataverse.mydata;
 
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
@@ -26,10 +27,10 @@ import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.Locale;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.json.Json;
@@ -39,7 +40,6 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 
@@ -64,7 +64,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     private static final String retrieveDataPartialAPIPath = "retrieve";
 
     @Inject
-    DataverseSession session;    
+    DataverseSession session;
 
     @EJB
     DataverseRoleServiceBean dataverseRoleService;
@@ -82,6 +82,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
     //MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     @EJB
     GroupServiceBean groupService;
+    @EJB
+    DatasetServiceBean datasetService;
     
     private List<DataverseRole> roleList;
     private DataverseRolePermissionHelper rolePermissionHelper;
@@ -226,7 +228,12 @@ public class DataRetrieverAPI extends AbstractApiBean {
                     //SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
                     0, //paginationStart,
                     true, // dataRelatedToMe
-                    SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                    SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE, //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
+                    true, 
+                    null,
+                    null,
+                    false, // no need to request facets here ...
+                    false  // ... same for highlights
             );
         } catch (SearchException ex) {
             logger.severe("Search for total counts failed with filter query");
@@ -270,9 +277,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
             @QueryParam("dataset_valid") List<Boolean> datasetValidities) {
         boolean OTHER_USER = false;
 
-        String localeCode = session.getLocaleCode();
-        String noMsgResultsFound = BundleUtil.getStringFromPropertyFile("dataretrieverAPI.noMsgResultsFound",
-                "Bundle", new Locale(localeCode));
+        String noMsgResultsFound = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
 
         if ((session.getUser() != null) && (session.getUser().isAuthenticated())) {
             authUser = (AuthenticatedUser) session.getUser();
@@ -280,7 +285,10 @@ public class DataRetrieverAPI extends AbstractApiBean {
             try {
                 authUser = getRequestAuthenticatedUserOrDie(crc);
             } catch (WrappedResponse e) {
-                return this.getJSONErrorString("Requires authentication.  Please login.", "retrieveMyDataAsJsonString. User not found!  Shouldn't be using this anyway");
+                return this.getJSONErrorString(
+                    BundleUtil.getStringFromBundle("dataretrieverAPI.authentication.required"),
+                    BundleUtil.getStringFromBundle("dataretrieverAPI.authentication.required.opt")
+                );
             }
         }
 
@@ -293,7 +301,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
                 authUser = searchUser;
                 OTHER_USER = true;
             } else {
-                return this.getJSONErrorString("No user found for: \"" + userIdentifier + "\"", null);
+                return this.getJSONErrorString(
+                        BundleUtil.getStringFromBundle("dataretrieverAPI.user.not.found", Arrays.asList(userIdentifier)),
+                        null);
             }
         }
 
@@ -333,8 +343,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         myDataFinder = new MyDataFinder(rolePermissionHelper,
                                         roleAssigneeService,
                                         dvObjectServiceBean, 
-                                        groupService,
-                                        noMsgResultsFound);
+                                        groupService);
         this.myDataFinder.runFindDataSteps(filterParams);
         if (myDataFinder.hasError()){
             return this.getJSONErrorString(myDataFinder.getErrorMessage(), myDataFinder.getErrorMessage());
@@ -389,11 +398,14 @@ public class DataRetrieverAPI extends AbstractApiBean {
                          
         } catch (SearchException ex) {
             solrQueryResponse = null;   
-            this.logger.severe("Solr SearchException: " + ex.getMessage());
+            logger.severe("Solr SearchException: " + ex.getMessage());
         }
         
-        if (solrQueryResponse==null){
-            return this.getJSONErrorString("Sorry!  There was an error with the search service.", "Sorry!  There was a SOLR Error");
+        if (solrQueryResponse == null) {
+            return this.getJSONErrorString(
+                BundleUtil.getStringFromBundle("dataretrieverAPI.solr.error"),
+                BundleUtil.getStringFromBundle("dataretrieverAPI.solr.error.opt")
+            );
         }
                 
          // ---------------------------------
@@ -487,9 +499,10 @@ public class DataRetrieverAPI extends AbstractApiBean {
             // -------------------------------------------
             // (a) Get core card data from solr
             // -------------------------------------------
-            myDataCardInfo = doc.getJsonForMyData();
             
-            if (!doc.getEntity().isInstanceofDataFile()){
+            myDataCardInfo = doc.getJsonForMyData(isValid(doc));
+            
+            if (doc.getEntity() != null && !doc.getEntity().isInstanceofDataFile()){
                 String parentAlias = dataverseService.getParentAliasString(doc);
                 myDataCardInfo.add("parent_alias",parentAlias);
             }
@@ -509,5 +522,9 @@ public class DataRetrieverAPI extends AbstractApiBean {
         }
         return jsonSolrDocsArrayBuilder;
         
+    }
+
+    private boolean isValid(SolrSearchResult result) {
+        return result.isValid(x -> true);
     }
 }        
