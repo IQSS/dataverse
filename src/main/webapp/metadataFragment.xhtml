@@ -377,7 +377,7 @@
                                                                 <ui:include src="datasetFieldForEditFragment.xhtml">
                                                                     <ui:param name="dsfv" value="#{subdsf.singleValue}"/>
                                                                     <ui:param name="dsfvIndex" value="0"/>
-                                                                    <ui:param name="cvoc" value="#{cvocConf.containsKey(dsf.datasetFieldType.id)? cvocConf.get(dsf.datasetFieldType.id): cvocConf.containsKey(dsfv.datasetField.datasetFieldType.id)? cvocConf.get(dsfv.datasetField.datasetFieldType.id): null}"/>
+                                                                    <ui:param name="cvoc" value="#{cvocConf.containsKey(subdsf.datasetFieldType.id) ? cvocConf.get(subdsf.datasetFieldType.id) : cvocConf.containsKey(dsf.datasetFieldType.id)? cvocConf.get(dsf.datasetFieldType.id): cvocConf.containsKey(dsfv.datasetField.datasetFieldType.id)? cvocConf.get(dsfv.datasetField.datasetFieldType.id): null}"/>
                                                                 </ui:include>
                                                             </ui:fragment>
                                                             <!-- MOVED SELECT ONE TO dataFieldForEdit -->
