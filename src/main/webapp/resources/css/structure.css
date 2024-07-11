@@ -1069,7 +1069,7 @@ progress::-webkit-progress-value {
 .select2-selection__clear, .select2-selection__rendered {
         vertical-align: -webkit-baseline-middle;
 }
-.select2-results li {
+.select2-results ul > li {
         font-weight:400;
         font-size:14px;
 }
