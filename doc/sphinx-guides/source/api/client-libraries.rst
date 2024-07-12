@@ -62,6 +62,8 @@ There are multiple Python modules for interacting with Dataverse APIs.
 
 `Pooch <https://github.com/fatiando/pooch>`_ is a Python library that allows library and application developers to download data. Among other features, it takes care of various protocols, caching in OS-specific locations, checksum verification and adds optional features like progress bars or log messages. Among other popular repositories, Pooch supports Dataverse in the sense that you can reference Dataverse-hosted datasets by just a DOI and Pooch will determine the data repository type, query the Dataverse API for contained files and checksums, giving you an easy interface to download them.
 
+`idsc.dataverse <https://github.com/iza-institute-of-labor-economics/idsc.dataverse>`_ reads metadata and files of datasets from a dataverse dataverse.example1.com and writes them into ~/.idsc/dataverse/api/dataverse.example1.com organized in directories PID_type/prefix/suffix, where PID_type is one of: hdl, doi or ark. It can then ''export'' the local copy of the dataverse from ~/.idsc/dataverse/api/dataverse.example1.com to ~/.idsc/.cache/dataverse.example2.com so that one can upload them to dataverse.example2.com.
+
 R
 -
 

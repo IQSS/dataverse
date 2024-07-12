@@ -20,10 +20,13 @@
 
 package edu.harvard.iq.dataverse.ingest.tabulardata;
 
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.*;
 //import edu.harvard.iq.dataverse.ingest.plugin.metadata.*;
 import java.io.*;
 import static java.lang.System.*;
+import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 
 /**
@@ -98,7 +101,7 @@ public abstract class TabularDataFileReader {
      *
      * @throws java.io.IOException if a reading error occurs.
      */
-    public abstract TabularDataIngest read(BufferedInputStream stream, File dataFile)
+    public abstract TabularDataIngest read(BufferedInputStream stream, boolean storeWithVariableHeader, File dataFile)
         throws IOException;
 
     
@@ -175,6 +178,27 @@ public abstract class TabularDataFileReader {
         escapedString = "\"" + escapedString + "\"";
         
         return escapedString;
+    }
+    
+    protected String generateVariableHeader(List<DataVariable> dvs) {
+        String varHeader = null;
+
+        if (dvs != null) {
+            Iterator<DataVariable> iter = dvs.iterator();
+            DataVariable dv;
+
+            if (iter.hasNext()) {
+                dv = iter.next();
+                varHeader = dv.getName();
+            }
+
+            while (iter.hasNext()) {
+                dv = iter.next();
+                varHeader = varHeader + "\t" + dv.getName();
+            }
+        }
+
+        return varHeader;
     }
 
 }

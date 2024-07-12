@@ -160,17 +160,25 @@ Authorization Options
 
 When called for datasets or data files that are not public (i.e. in a draft dataset or for a restricted file), external tools are allowed access via the user's credentials. This is accomplished by one of two mechanisms:
 
-* Signed URLs (more secure, recommended)
+.. _signed-urls:
 
-  - Configured via the ``allowedApiCalls`` section of the manifest. The tool will be provided with signed URLs allowing the specified access to the given dataset or datafile for the specified amount of time. The tool will not be able to access any other datasets or files the user may have access to and will not be able to make calls other than those specified.
-  - For tools invoked via a GET call, Dataverse will include a callback query parameter with a Base64 encoded value. The decoded value is a signed URL that can be called to retrieve a JSON response containing all of the queryParameters and allowedApiCalls specified in the manfiest.
-  - For tools invoked via POST, Dataverse will send a JSON body including the requested queryParameters and allowedApiCalls. Dataverse expects the response to the POST to indicate a redirect which Dataverse will use to open the tool.
+Signed URLs
+^^^^^^^^^^^
 
-* API Token (deprecated, less secure, not recommended)
+The signed URL mechanism is more secure than exposing API tokens and therefore recommended.
 
-  - Configured via the ``queryParameters`` by including an ``{apiToken}`` value. When this is present Dataverse will send the user's apiToken to the tool. With the user's API token, the tool can perform any action via the Dataverse API that the user could. External tools configured via this method should be assessed for their trustworthiness.
-  - For tools invoked via GET, this will be done via a query parameter in the request URL which could be cached in the browser's history. Dataverse expects the response to the POST to indicate a redirect which Dataverse will use to open the tool.
-  - For tools invoked via POST, Dataverse will send a JSON body including the apiToken.
+- Configured via the ``allowedApiCalls`` section of the manifest. The tool will be provided with signed URLs allowing the specified access to the given dataset or datafile for the specified amount of time. The tool will not be able to access any other datasets or files the user may have access to and will not be able to make calls other than those specified.
+- For tools invoked via a GET call, Dataverse will include a callback query parameter with a Base64 encoded value. The decoded value is a signed URL that can be called to retrieve a JSON response containing all of the queryParameters and allowedApiCalls specified in the manfiest.
+- For tools invoked via POST, Dataverse will send a JSON body including the requested queryParameters and allowedApiCalls. Dataverse expects the response to the POST to indicate a redirect which Dataverse will use to open the tool.
+
+API Token
+^^^^^^^^^
+
+The API token mechanism is deprecated. Because it is less secure than signed URLs, it is not recommended for new external tools.
+
+- Configured via the ``queryParameters`` by including an ``{apiToken}`` value. When this is present Dataverse will send the user's apiToken to the tool. With the user's API token, the tool can perform any action via the Dataverse API that the user could. External tools configured via this method should be assessed for their trustworthiness.
+- For tools invoked via GET, this will be done via a query parameter in the request URL which could be cached in the browser's history. Dataverse expects the response to the POST to indicate a redirect which Dataverse will use to open the tool.
+- For tools invoked via POST, Dataverse will send a JSON body including the apiToken.
 
 Internationalization of Your External Tool
 ++++++++++++++++++++++++++++++++++++++++++
@@ -187,6 +195,7 @@ Using Example Manifests to Get Started
 ++++++++++++++++++++++++++++++++++++++
 
 Again, you can use :download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` or :download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` as a starting point for your own manifest file.
+Additional working examples, including ones using :ref:`signed-urls`, are available at https://github.com/gdcc/dataverse-previewers .
 
 Testing Your External Tool
 --------------------------

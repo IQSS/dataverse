@@ -271,6 +271,12 @@
                   "typeClass": "primitive",
                   "value": "KeywordTerm1"
                 },
+                "keywordTermURI": {
+                  "typeName": "keywordTermURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://keywordTermURI1.org"
+                },
                 "keywordVocabulary": {
                   "typeName": "keywordVocabulary",
                   "multiple": false,
@@ -290,6 +296,12 @@
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "KeywordTerm2"
+                },
+                "keywordTermURI": {
+                  "typeName": "keywordTermURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://keywordTermURI2.org"
                 },
                 "keywordVocabulary": {
                   "typeName": "keywordVocabulary",
@@ -893,14 +905,14 @@
                   "typeClass": "primitive",
                   "value": "20"
                 },
-                "northLongitude": {
-                  "typeName": "northLongitude",
+                "northLatitude": {
+                  "typeName": "northLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "30"
                 },
-                "southLongitude": {
-                  "typeName": "southLongitude",
+                "southLatitude": {
+                  "typeName": "southLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "40"
@@ -919,14 +931,14 @@
                   "typeClass": "primitive",
                   "value": "60"
                 },
-                "northLongitude": {
-                  "typeName": "northLongitude",
+                "northLatitude": {
+                  "typeName": "northLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "70"
                 },
-                "southLongitude": {
-                  "typeName": "southLongitude",
+                "southLatitude": {
+                  "typeName": "southLatitude",
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "80"
