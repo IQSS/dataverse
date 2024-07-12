@@ -126,7 +126,7 @@
                                                 </ui:fragment>
           
                                                 <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="compoundValuesStatus">
-                                                    <c:set var="cvocOnDsfApplies" value="#{compoundValue.hasChildOfType(cvocConf.get(dsf.datasetFieldType.id).get('term-uri-field'))}"/>
+                                                    <c:set var="cvocOnDsfApplies" value="#{compoundValue.hasChildOfType(cvocConf.get(dsf.datasetFieldType.id).getString('term-uri-field'))}"/>
                                                     <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
                                                         <c:set var="cvocOnCvPart" value="#{cvocConf.containsKey(cvPart.key.datasetFieldType.id)}"/>
                                                         <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first and !settingsWrapper.isCvocField(cvPart.key.datasetFieldType.id)}"/>
