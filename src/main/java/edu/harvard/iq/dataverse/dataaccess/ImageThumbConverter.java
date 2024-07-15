@@ -59,14 +59,14 @@ import java.util.Base64;
  * @author Leonid Andreev
  */
 public class ImageThumbConverter {
-    public static String THUMBNAIL_SUFFIX = "thumb";
-    public static String THUMBNAIL_MIME_TYPE = "image/png";
-    public static String THUMBNAIL_FILE_EXTENSION = ".png";
+    public static final String THUMBNAIL_SUFFIX = "thumb";
+    public static final String THUMBNAIL_MIME_TYPE = "image/png";
+    public static final String THUMBNAIL_FILE_EXTENSION = ".png";
 
-    public static int DEFAULT_CARDIMAGE_SIZE = 48;
-    public static int DEFAULT_THUMBNAIL_SIZE = 64;
-    public static int DEFAULT_DATASETLOGO_SIZE = 140;
-    public static int DEFAULT_PREVIEW_SIZE = 400;
+    public static final int DEFAULT_CARDIMAGE_SIZE = 48;
+    public static final int DEFAULT_THUMBNAIL_SIZE = 64;
+    public static final int DEFAULT_DATASETLOGO_SIZE = 140;
+    public static final int DEFAULT_PREVIEW_SIZE = 400;
 
     private static final Logger logger = Logger.getLogger(ImageThumbConverter.class.getCanonicalName());
 

@@ -121,6 +121,11 @@ public class DatasetUtil {
             return null;
         }
 
+        if (size == 0) {
+            //Size 0 will fail (and set the failure flag) and should never be sent
+            logger.warning("getThumbnail called with size 0");
+            return null;
+        }
         StorageIO<Dataset> dataAccess = null;
                 
         try{

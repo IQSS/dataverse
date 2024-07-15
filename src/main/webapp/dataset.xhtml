@@ -83,6 +83,7 @@
             </ui:define>
             <ui:define name="og_header">
                 <ui:fragment rendered="#{!DatasetPage.anonymizedAccess}">
+                    <o:importConstants type="edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter" />
                     <meta property="og:title" content="#{DatasetPage.title}" />
                     <meta property="og:type" content="article" />
                     <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
