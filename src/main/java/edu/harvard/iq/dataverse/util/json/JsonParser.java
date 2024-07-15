@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
@@ -331,7 +332,7 @@ public class JsonParser {
         String datasetType = obj.getString("datasetType",null);
         logger.info("datasetType: " + datasetType);
         if (datasetType != null) {
-            dataset.setDatasetType(datasetType);
+            dataset.setDatasetType(new DatasetType(DatasetType.Type.fromString(datasetType)));
         }
 
         DatasetVersion dsv = new DatasetVersion(); 

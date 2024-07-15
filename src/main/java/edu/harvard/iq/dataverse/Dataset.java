@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.license.License;
@@ -38,7 +39,6 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.storageuse.StorageUse;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import jakarta.persistence.Transient;
 
 /**
  *
@@ -129,8 +129,9 @@ public class Dataset extends DvObjectContainer {
      */
     private boolean useGenericThumbnail;
 
-    @Transient
-    private String datasetType;
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name = "datasettype_id", nullable = true)
+    private DatasetType datasetType;
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "guestbook_id", unique = false, nullable = true, insertable = true, updatable = true)
@@ -741,11 +742,11 @@ public class Dataset extends DvObjectContainer {
         this.useGenericThumbnail = useGenericThumbnail;
     }
 
-    public String getDatasetType() {
+    public DatasetType getDatasetType() {
         return datasetType;
     }
 
-    public void setDatasetType(String datasetType) {
+    public void setDatasetType(DatasetType datasetType) {
         this.datasetType = datasetType;
     }
 

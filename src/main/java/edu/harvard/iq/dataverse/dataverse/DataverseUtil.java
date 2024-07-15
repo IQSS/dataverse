@@ -125,13 +125,12 @@ public class DataverseUtil {
 
     public static void checkDatasetType(Dataset ds, boolean enabled) {
         logger.info("called checkDatasetType...");
-        String datasetType = ds.getDatasetType();
+        String datasetType = ds.getDatasetType().getBaseType().name();
         logger.info("datasetType: " + datasetType);
         if (datasetType != null) {
             if (!enabled) {
                 throw new BadRequestException("The dataset types feature is not enabled but a type was sent: " + datasetType);
             }
-            // TODO: check for valid types.
             logger.info("The dataset type sent was: " + datasetType);
         }
     }

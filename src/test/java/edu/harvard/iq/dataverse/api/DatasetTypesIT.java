@@ -5,6 +5,8 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -28,20 +30,23 @@ public class DatasetTypesIT {
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
         Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
 
-//        String datasetJsonPath = "doc/sphinx-guides/source/_static/api/dataset-create-software.json";
         String jsonIn = UtilIT.getDatasetJson("doc/sphinx-guides/source/_static/api/dataset-create-software.json");
-//        System.out.println("native: " + datasetJsonPath);
 
         Response createSoftware = UtilIT.createDataset(dataverseAlias, jsonIn, apiToken);
         createSoftware.prettyPrint();
         createSoftware.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
-        
-        //TODO: try sending "junk" instead of "software".
 
+        //TODO: try sending "junk" instead of "software".
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createSoftware);
         String datasetPid = JsonPath.from(createSoftware.getBody().asString()).getString("data.persistentId");
 
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat().statusCode(OK.getStatusCode());
+        String dataseType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
+        System.out.println("datasetType: " + dataseType);
+        assertEquals("software", dataseType);
     }
 
     @Disabled
