@@ -25,7 +25,6 @@ import org.hamcrest.CoreMatchers;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import static java.lang.Thread.sleep;
 import javax.imageio.ImageIO;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
@@ -599,7 +598,7 @@ public class SearchIT {
 
         String datasetLogo = "src/main/webapp/resources/images/cc0.png";
         File datasetLogoFile = new File(datasetLogo);
-        String datasetLogoAsBase64 = datasetLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(datasetLogoFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+        String datasetLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(datasetLogoFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
         if (datasetLogoAsBase64 == null) {
             Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file dataverseproject.png");

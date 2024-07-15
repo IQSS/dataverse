@@ -17,7 +17,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -326,8 +325,8 @@ public class DatasetUtil {
             return null;
         }
         FileChannel dest = null;
-        try (FileInputStream fis = new FileInputStream(tmpFile)) {
-            dest = fis.getChannel();
+        try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
+            dest = fos.getChannel();
         } catch (IOException ex) {
         	IOUtils.closeQuietly(inputStream);
             logger.severe(ex.getMessage());
