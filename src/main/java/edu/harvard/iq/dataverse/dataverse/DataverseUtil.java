@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
@@ -119,6 +120,19 @@ public class DataverseUtil {
                 throw new BadRequestException("Specified metadatalanguage ( metadataLanguage, "
                         + JsonLDTerm.schemaOrg("inLanguage").getUrl() + ") not allowed in this collection.");
             }
+        }
+    }
+
+    public static void checkDatasetType(Dataset ds, boolean enabled) {
+        logger.info("called checkDatasetType...");
+        String datasetType = ds.getDatasetType();
+        logger.info("datasetType: " + datasetType);
+        if (datasetType != null) {
+            if (!enabled) {
+                throw new BadRequestException("The dataset types feature is not enabled but a type was sent: " + datasetType);
+            }
+            // TODO: check for valid types.
+            logger.info("The dataset type sent was: " + datasetType);
         }
     }
 

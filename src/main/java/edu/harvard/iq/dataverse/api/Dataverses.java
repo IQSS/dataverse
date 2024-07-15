@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -239,6 +240,13 @@ public class Dataverses extends AbstractApiBean {
 
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
             DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
+
+            try {
+                logger.info("about to call checkDatasetType...");
+                DataverseUtil.checkDatasetType(ds, FeatureFlags.DATASET_TYPES.enabled());
+            } catch (BadRequestException ex) {
+                return badRequest(ex.getLocalizedMessage());
+            }
 
             // clean possible version metadata
             DatasetVersion version = ds.getVersions().get(0);

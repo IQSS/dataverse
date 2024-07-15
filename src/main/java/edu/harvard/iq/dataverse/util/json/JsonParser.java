@@ -328,7 +328,12 @@ public class JsonParser {
         }else {
             throw new JsonParseException("Specified metadatalanguage not allowed.");
         }
-        
+        String datasetType = obj.getString("datasetType",null);
+        logger.info("datasetType: " + datasetType);
+        if (datasetType != null) {
+            dataset.setDatasetType(datasetType);
+        }
+
         DatasetVersion dsv = new DatasetVersion(); 
         dsv.setDataset(dataset);
         dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv);

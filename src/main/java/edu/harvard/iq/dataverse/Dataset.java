@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.storageuse.StorageUse;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import jakarta.persistence.Transient;
 
 /**
  *
@@ -127,6 +128,9 @@ public class Dataset extends DvObjectContainer {
      * will result in a generic dataset thumbnail appearing instead.
      */
     private boolean useGenericThumbnail;
+
+    @Transient
+    private String datasetType;
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "guestbook_id", unique = false, nullable = true, insertable = true, updatable = true)
@@ -736,7 +740,15 @@ public class Dataset extends DvObjectContainer {
     public void setUseGenericThumbnail(boolean useGenericThumbnail) {
         this.useGenericThumbnail = useGenericThumbnail;
     }
-    
+
+    public String getDatasetType() {
+        return datasetType;
+    }
+
+    public void setDatasetType(String datasetType) {
+        this.datasetType = datasetType;
+    }
+
     public List<DatasetMetrics> getDatasetMetrics() {
         return datasetMetrics;
     }

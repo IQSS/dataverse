@@ -91,6 +91,11 @@ public enum FeatureFlags {
      * @since Dataverse 6.3
      */
     DISABLE_RETURN_TO_AUTHOR_REASON("disable-return-to-author-reason"),
+    /**
+     * With this flag enabled, datasets can be created with various dataset
+     * types such as "dataset", "software", or "workflow".
+     */
+    DATASET_TYPES("dataset-types"),
     ;
     
     final String flag;
