@@ -43,7 +43,7 @@ jobs:
         name: "RockyLinux 9"
         runs-on: ubuntu-latest
         container:
-            image: rockylinux/rockylinux:8
+            image: rockylinux/rockylinux:9
         steps:
             - uses: actions/checkout@v2
             - name: Install shellspec
