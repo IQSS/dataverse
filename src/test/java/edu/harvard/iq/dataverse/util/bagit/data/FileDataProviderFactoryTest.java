@@ -23,21 +23,21 @@ public class FileDataProviderFactoryTest {
     public void should_return_FolderDataProvider_when_parameter_is_path() {
         FileDataProvider result = target.getFileDataProvider(Path.of(UUID.randomUUID().toString()));
 
-        MatcherAssert.assertThat(result.getClass().getName(), Matchers.is(FolderDataProvider.class.getName()));
+        MatcherAssert.assertThat("should return FolderDataProvider when parameter is path", result instanceof FolderDataProvider);
     }
 
     @Test
     public void should_return_ZipFileDataProvider_when_parameter_is_file() throws IOException {
         FileDataProvider result = target.getFileDataProvider(Path.of(FIXTURE_DIRECTORY, "FileDataProviderFactoryTest.zip").toFile());
 
-        MatcherAssert.assertThat(result.getClass().getName(), Matchers.is(ZipFileDataProvider.class.getName()));
+        MatcherAssert.assertThat("should return ZipFileDataProvider when parameter is file", result instanceof ZipFileDataProvider);
     }
 
     @Test
     public void should_return_DataFileDataProvider_when_parameter_is_datafiles() {
         FileDataProvider result = target.getFileDataProvider("test-name", Collections.emptyList());
 
-        MatcherAssert.assertThat(result.getClass().getName(), Matchers.is(DataFileDataProvider.class.getName()));
+        MatcherAssert.assertThat("should return DataFileDataProvider when parameter is datafiles", result instanceof DataFileDataProvider);
     }
 
 }
