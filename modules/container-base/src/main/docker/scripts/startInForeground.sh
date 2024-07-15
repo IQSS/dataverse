@@ -32,9 +32,9 @@
 ##########################################################################################################
 
 # Check required variables are set
-if [ -z "$ADMIN_USER" ]; then echo "Variable ADMIN_USER is not set."; exit 1; fi
-if [ -z "$ADMIN_PASSWORD" ]; then echo "Variable ADMIN_PASSWORD is not set."; exit 1; fi
-if [ -z "$DOMAIN_MASTER_PASSWORD" ]; then echo "Variable DOMAIN_MASTER_PASSWORD is not set."; exit 1; fi
+if [ -z "$PAYARA_ADMIN_USER" ]; then echo "Variable ADMIN_USER is not set."; exit 1; fi
+if [ -z "$PAYARA_ADMIN_PASSWORD" ]; then echo "Variable ADMIN_PASSWORD is not set."; exit 1; fi
+if [ -z "$DOMAIN_PASSWORD" ]; then echo "Variable DOMAIN_PASSWORD is not set."; exit 1; fi
 if [ -z "$PREBOOT_COMMANDS_FILE" ]; then echo "Variable PREBOOT_COMMANDS_FILE is not set."; exit 1; fi
 if [ -z "$POSTBOOT_COMMANDS_FILE" ]; then echo "Variable POSTBOOT_COMMANDS_FILE is not set."; exit 1; fi
 if [ -z "$DOMAIN_NAME" ]; then echo "Variable DOMAIN_NAME is not set."; exit 1; fi
@@ -46,10 +46,10 @@ fi
 
 # For safety reasons, do no longer expose the passwords - malicious code could extract it!
 # (We need to save the master password for booting the server though)
-MASTER_PASSWORD="${DOMAIN_MASTER_PASSWORD}"
-export LINUX_USER_PASSWORD="have-some-scrambled-eggs"
-export ADMIN_PASSWORD="have-some-scrambled-eggs"
-export DOMAIN_MASTER_PASSWORD="have-some-scrambled-eggs"
+MASTER_PASSWORD="${DOMAIN_PASSWORD}"
+export LINUX_PASSWORD="have-some-scrambled-eggs"
+export PAYARA_ADMIN_PASSWORD="have-some-scrambled-eggs"
+export DOMAIN_PASSWORD="have-some-scrambled-eggs"
 
 # The following command gets the command line to be executed by start-domain
 # - print the command line to the server with --dry-run, each argument on a separate line
@@ -66,7 +66,7 @@ PASSWORD_FILE=$(mktemp)
 echo "AS_ADMIN_MASTERPASSWORD=$MASTER_PASSWORD" > "$PASSWORD_FILE"
 # shellcheck disable=SC2068
 #   -- Using $@ is necessary here as asadmin cannot deal with options enclosed in ""!
-OUTPUT=$("${PAYARA_DIR}"/bin/asadmin --user="${ADMIN_USER}" --passwordfile="$PASSWORD_FILE" start-domain --dry-run --prebootcommandfile="${PREBOOT_COMMANDS_FILE}" --postbootcommandfile="${POSTBOOT_COMMANDS_FILE}" $@ "$DOMAIN_NAME")
+OUTPUT=$("${PAYARA_DIR}"/bin/asadmin --user="${PAYARA_ADMIN_USER}" --passwordfile="$PASSWORD_FILE" start-domain --dry-run --prebootcommandfile="${PREBOOT_COMMANDS_FILE}" --postbootcommandfile="${POSTBOOT_COMMANDS_FILE}" $@ "$DOMAIN_NAME")
 STATUS=$?
 rm "$PASSWORD_FILE"
 if [ "$STATUS" -ne 0 ]

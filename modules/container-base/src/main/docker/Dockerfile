@@ -41,16 +41,18 @@ ENV PAYARA_DIR="${HOME_DIR}/appserver" \
     STORAGE_DIR="/dv" \
     SECRETS_DIR="/secrets" \
     DUMPS_DIR="/dumps" \
-    ADMIN_USER="admin" \
+    PAYARA_ADMIN_USER="admin" \
     # This is a public default, easy to change via this env var at runtime
-    ADMIN_PASSWORD="admin" \
+    PAYARA_ADMIN_PASSWORD="admin" \
     DOMAIN_NAME="domain1" \
     # This is the public default as per https://docs.payara.fish/community/docs/Technical%20Documentation/Payara%20Server%20Documentation/Security%20Guide/Administering%20System%20Security.html#to-change-the-master-password
     # Can be changed at runtime via this env var
-    DOMAIN_MASTER_PASSWORD="changeit" \
+    DOMAIN_PASSWORD="changeit" \
     PAYARA_ARGS="" \
+    LINUX_USER="payara" \
+    LINUX_GROUP="payara" \
     # This is a public default and can be changed at runtime using this env var
-    LINUX_USER_PASSWORD="payara"
+    LINUX_PASSWORD="payara"
 ENV PATH="${PATH}:${PAYARA_DIR}/bin:${SCRIPT_DIR}" \
     DOMAIN_DIR="${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}" \
     DEPLOY_PROPS="" \
@@ -77,6 +79,7 @@ ARG GID=1000
 # Auto-populated by BuildKit / buildx
 #ARG TARGETARCH="amd64"
 ARG TARGETARCH
+
 USER root
 WORKDIR /
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
@@ -90,13 +93,13 @@ RUN <<EOF
     userdel --force --remove ubuntu || true
     groupdel -f ubuntu || true # for some reason, groupdel on Ubuntu 22.04 does not like --force
     # Create user
-    groupadd --gid ${GID} payara
-    useradd --system --uid ${UID} --no-create-home --shell /bin/false --home "${HOME_DIR}" --gid payara payara
-    echo "payara:$LINUX_USER_PASSWORD" | chpasswd
+    groupadd --gid "${GID}" "${LINUX_GROUP}"
+    useradd --system --uid "${UID}" --no-create-home --shell /bin/false --home "${HOME_DIR}" --gid "${LINUX_GROUP}" "${LINUX_USER}"
+    echo "${LINUX_USER}:$LINUX_PASSWORD" | chpasswd
     # Set permissions
     # Note: Following OpenShift best practices for arbitrary user id support:
     #       https://docs.openshift.com/container-platform/4.14/openshift_images/create-images.html#use-uid_create-images
-    chown -R payara:0 "${HOME_DIR}" "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
+    chown -R "${LINUX_USER}:0" "${HOME_DIR}" "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
     chmod -R g=u "${HOME_DIR}" "${STORAGE_DIR}" "${SECRETS_DIR}" "${DUMPS_DIR}"
 EOF
 
@@ -132,14 +135,14 @@ EOF
 
 ### PART 2: PAYARA ###
 # After setting up system, now configure Payara
-USER payara
+USER ${LINUX_USER}
 WORKDIR ${HOME_DIR}
 
 # Copy Payara from build context (cached by Maven)
-COPY --chown=payara:payara maven/appserver ${PAYARA_DIR}/
+COPY --chown=${LINUX_USER}:${LINUX_GROUP} maven/appserver ${PAYARA_DIR}/
 
 # Copy the system (appserver level) scripts like entrypoint, etc
-COPY --chown=payara:payara maven/scripts ${SCRIPT_DIR}/
+COPY --chown=${LINUX_USER}:${LINUX_USER} maven/scripts ${SCRIPT_DIR}/
 
 # Configure the domain to be container and production ready
 # -- This is mostly inherited from the "production domain template", experience with Dataverse and
@@ -147,13 +150,13 @@ COPY --chown=payara:payara maven/scripts ${SCRIPT_DIR}/
 RUN <<EOF
     # Set admin password
     echo "AS_ADMIN_PASSWORD=" > /tmp/password-change-file.txt
-    echo "AS_ADMIN_NEWPASSWORD=${ADMIN_PASSWORD}" >> /tmp/password-change-file.txt
-    asadmin --user=${ADMIN_USER} --passwordfile=/tmp/password-change-file.txt change-admin-password --domain_name=${DOMAIN_NAME}
+    echo "AS_ADMIN_NEWPASSWORD=${PAYARA_ADMIN_PASSWORD}" >> /tmp/password-change-file.txt
+    asadmin --user=${PAYARA_ADMIN_USER} --passwordfile=/tmp/password-change-file.txt change-admin-password --domain_name=${DOMAIN_NAME}
 
     # Prepare shorthand
     PASSWORD_FILE=$(mktemp)
-    echo "AS_ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> ${PASSWORD_FILE}
-    ASADMIN="${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE}"
+    echo "AS_ADMIN_PASSWORD=${PAYARA_ADMIN_PASSWORD}" >> ${PASSWORD_FILE}
+    ASADMIN="${PAYARA_DIR}/bin/asadmin --user=${PAYARA_ADMIN_USER} --passwordfile=${PASSWORD_FILE}"
 
     # Start domain for configuration
     ${ASADMIN} start-domain ${DOMAIN_NAME}
@@ -243,7 +246,7 @@ USER root
 RUN true && \
     chgrp -R 0 "${DOMAIN_DIR}" && \
     chmod -R g=u "${DOMAIN_DIR}"
-USER payara
+USER ${LINUX_USER}
 
 # Set the entrypoint to tini (as a process supervisor)
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
