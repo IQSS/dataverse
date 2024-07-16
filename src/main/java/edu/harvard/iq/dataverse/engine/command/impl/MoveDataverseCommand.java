@@ -259,7 +259,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                         break;
                     }
                     boolean index = false;
-                    ctxt.engine().submit(new DeleteDatasetLinkingDataverseCommand(getRequest(), dsld.getDataset(), dsld, index));
+                    ctxt.engine().submit(new DeleteDatasetLinkingDataverseCommand(getRequest(), dsld.getDataset(), dsld, index, false));
                     (dsld.getDataset()).getDatasetLinkingDataverses().remove(dsld);
                 }
             }

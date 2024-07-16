@@ -31,17 +31,19 @@ public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Datase
     private final DatasetLinkingDataverse doomed;
     private final Dataset editedDs;
     private final boolean index;
+    private final boolean preAuthorized;
     
-    public DeleteDatasetLinkingDataverseCommand(DataverseRequest aRequest, Dataset editedDs , DatasetLinkingDataverse doomed, boolean index) {
+    public DeleteDatasetLinkingDataverseCommand(DataverseRequest aRequest, Dataset editedDs , DatasetLinkingDataverse doomed, boolean index, boolean preAuthorized) {
         super(aRequest, editedDs);
         this.editedDs = editedDs;
         this.doomed = doomed;
         this.index = index;
+        this.preAuthorized = preAuthorized;
     }
     
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
+        if (!preAuthorized && (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException("Delete dataset linking dataverse can only be called by superusers.",
                     this, Collections.singleton(Permission.EditDataset), editedDs);
         }
