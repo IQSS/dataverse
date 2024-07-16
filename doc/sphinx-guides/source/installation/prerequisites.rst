@@ -113,7 +113,7 @@ The application is currently tested on PostgreSQL version 13, though versions 14
 	# sudo /usr/bin/systemctl start postgresql-13
 	# sudo /usr/bin/systemctl enable postgresql-13
 
-For RHEL8/derivative the process would be identical but requires a disabling the OS' built-in postgresql module with ``dnf -qy module disable postgresql``.
+For RHEL8/derivative the process would be identical but requires a disabling the OS's built-in postgresql module with ``dnf -qy module disable postgresql``.
 
 Configuring Database Access for the Dataverse Installation (and the Dataverse Software Installer)
 =================================================================================================
