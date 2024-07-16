@@ -32,7 +32,7 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - name: install curl
-              apt-get -y install curl
+              run: apt-get -y install curl
             - name: Install shellspec
               run: |
                   curl -fsSL https://github.com/shellspec/shellspec/releases/download/${{ env.SHELLSPEC_VERSION }}/shellspec-dist.tar.gz | tar -xz -C /usr/share
