@@ -85,6 +85,8 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
     private DataFile.ChecksumType newCheckSumType;
     private final Long newFileSize;
 
+    private static final String OVERWRITE_MIME_TYPE_PREFIX = "force-";
+
     public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum) {
         this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, null);
     }
@@ -183,25 +185,33 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
             // -- L.A.
             String recognizedType = null;
 
-            try {
-                recognizedType = determineFileType(tempFile.toFile(), fileName);
-                logger.fine("File utility recognized the file as " + recognizedType);
-                if (recognizedType != null && !recognizedType.equals("")) {
-                    if (useRecognizedType(suppliedContentType, recognizedType)) {
-                        finalType = recognizedType;
+            // If we detect the dataverse prefix in the supplied mimetype we do no 
+            // further recognition
+            if (suppliedContentType.toLowerCase().startsWith(OVERWRITE_MIME_TYPE_PREFIX)) {
+            	finalType = suppliedContentType.toLowerCase().substring(OVERWRITE_MIME_TYPE_PREFIX.length());
+            	logger.fine("Overwrite prefix detected. Using supplied mime type.");
+            }
+            else {
+                try {
+                    recognizedType = determineFileType(tempFile.toFile(), fileName);
+                    logger.fine("File utility recognized the file as " + recognizedType);
+                    if (recognizedType != null && !recognizedType.equals("")) {
+                        if (useRecognizedType(suppliedContentType, recognizedType)) {
+                            finalType = recognizedType;
+                        }
                     }
+
+                } catch (Exception ex) {
+                    logger.warning("Failed to run the file utility mime type check on file " + fileName);
                 }
 
-            } catch (Exception ex) {
-                logger.warning("Failed to run the file utility mime type check on file " + fileName);
+                if (finalType == null) {
+                    finalType = (suppliedContentType == null || suppliedContentType.equals(""))
+                            ? MIME_TYPE_UNDETERMINED_DEFAULT
+                            : suppliedContentType;
+                }
             }
-
-            if (finalType == null) {
-                finalType = (suppliedContentType == null || suppliedContentType.equals(""))
-                        ? MIME_TYPE_UNDETERMINED_DEFAULT
-                        : suppliedContentType;
-            }
-
+            
             // A few special cases:
             // if this is a gzipped FITS file, we'll uncompress it, and ingest it as
             // a regular FITS file:
