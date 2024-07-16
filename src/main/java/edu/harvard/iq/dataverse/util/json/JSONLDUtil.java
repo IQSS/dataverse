@@ -49,6 +49,7 @@ import com.apicatalog.jsonld.JsonLdError;
 import com.apicatalog.jsonld.document.JsonDocument;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
@@ -95,6 +96,17 @@ public class JSONLDUtil {
         
         //Store the metadatalanguage if sent - the caller needs to check whether it is allowed (as with any GlobalID)
         ds.setMetadataLanguage(jsonld.getString(JsonLDTerm.schemaOrg("inLanguage").getUrl(),null));
+
+        try (StringReader rdr = new StringReader(jsonLDBody)) {
+            try (JsonReader jsonReader = Json.createReader(rdr)) {
+                JsonObject jsonObject = jsonReader.readObject();
+                String datasetType = jsonObject.getString("datasetType", null);
+                logger.info("datasetType: " + datasetType);
+                if (datasetType != null) {
+                    ds.setDatasetType(new DatasetType(DatasetType.Type.fromString(datasetType)));
+                }
+            }
+        }
 
         dsv = updateDatasetVersionMDFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating, licenseSvc);
         dsv.setDataset(ds);

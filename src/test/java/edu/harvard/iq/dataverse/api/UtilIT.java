@@ -497,6 +497,15 @@ public class UtilIT {
         return createDatasetResponse;
     }
 
+    static Response createDatasetSemantic(String dataverseAlias, String datasetJson, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(datasetJson)
+                .contentType("application/ld+json")
+                .post("/api/dataverses/" + dataverseAlias + "/datasets");
+        return response;
+    }
+
     static String getDatasetJson(String pathToJsonFile) {
         File datasetVersionJson = new File(pathToJsonFile);
         try {
