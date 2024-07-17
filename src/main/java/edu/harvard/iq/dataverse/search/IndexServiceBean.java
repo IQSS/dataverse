@@ -1849,8 +1849,12 @@ public class IndexServiceBean {
             }
             
             String licenseName = "Custom Terms";
-            if(datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
+            if (datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
                 licenseName = datasetVersion.getTermsOfUseAndAccess().getLicense().getName();
+            } else if (datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null) {
+                // this fixes #10513 for datasets harvested in oai_dc - these 
+                // have neither the license id, nor any actual custom terms 
+                return; 
             }
             solrInputDocument.addField(SearchFields.DATASET_LICENSE, licenseName);
         }
