@@ -3551,6 +3551,31 @@ public class UtilIT {
         return field;
     }
 
+    static Response importDatasetNativeJson(String apiToken, String dataverseAlias, String jsonString, String pid, String release) {
+
+        String postString = "/api/dataverses/" + dataverseAlias + "/datasets/:import";
+        if (pid != null || release != null) {
+            //postString = postString + "?";
+            if (pid != null) {
+                postString = postString + "?pid=" + pid;
+                if (release != null && release.compareTo("yes") == 0) {
+                    postString = postString + "&release=" + release.toString();
+                }
+            } else {
+                if (release != null && release.compareTo("yes") == 0) {
+                    postString = postString + "?release=" + release.toString();
+                }
+            }
+        }
+
+        RequestSpecification importJson = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .body(jsonString)
+                .contentType("application/json");
+
+        return importJson.post(postString);
+    }
 
     static Response importDatasetDDIViaNativeApi(String apiToken, String dataverseAlias, String xml, String pid, String release) {
 

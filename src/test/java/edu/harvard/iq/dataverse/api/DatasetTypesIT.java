@@ -44,7 +44,7 @@ public class DatasetTypesIT {
         getDatasetJson.then().assertThat().statusCode(OK.getStatusCode());
         String dataseType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
         System.out.println("datasetType: " + dataseType);
-        assertEquals("SOFTWARE", dataseType);
+        assertEquals("software", dataseType);
     }
 
     @Test
@@ -75,7 +75,40 @@ public class DatasetTypesIT {
         getDatasetJson.then().assertThat().statusCode(OK.getStatusCode());
         String dataseType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
         System.out.println("datasetType: " + dataseType);
-        assertEquals("SOFTWARE", dataseType);
+        assertEquals("software", dataseType);
     }
 
+    @Test
+    public void testImportJson() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+
+        String jsonIn = UtilIT.getDatasetJson("doc/sphinx-guides/source/_static/api/dataset-create-software.json");
+
+        String randomString = UtilIT.getRandomString(6);
+
+        Response importJson = UtilIT.importDatasetNativeJson(apiToken, dataverseAlias, jsonIn, "doi:10.5072/FK2/" + randomString, "no");
+        importJson.prettyPrint();
+        importJson.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = JsonPath.from(importJson.getBody().asString()).getInt("data.id");
+        String datasetPid = JsonPath.from(importJson.getBody().asString()).getString("data.persistentId");
+
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat().statusCode(OK.getStatusCode());
+        String dataseType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
+        System.out.println("datasetType: " + dataseType);
+        assertEquals("software", dataseType);
+
+    }
 }
