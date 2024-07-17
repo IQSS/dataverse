@@ -42,9 +42,9 @@ public class DatasetTypesIT {
         Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetJson.prettyPrint();
         getDatasetJson.then().assertThat().statusCode(OK.getStatusCode());
-        String dataseType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
-        System.out.println("datasetType: " + dataseType);
-        assertEquals("software", dataseType);
+        String datasetType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
+        System.out.println("datasetType: " + datasetType);
+        assertEquals("software", datasetType);
     }
 
     @Test
@@ -73,9 +73,9 @@ public class DatasetTypesIT {
         Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetJson.prettyPrint();
         getDatasetJson.then().assertThat().statusCode(OK.getStatusCode());
-        String dataseType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
-        System.out.println("datasetType: " + dataseType);
-        assertEquals("software", dataseType);
+        String datasetType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
+        System.out.println("datasetType: " + datasetType);
+        assertEquals("software", datasetType);
     }
 
     @Test
@@ -106,9 +106,9 @@ public class DatasetTypesIT {
         Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetJson.prettyPrint();
         getDatasetJson.then().assertThat().statusCode(OK.getStatusCode());
-        String dataseType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
-        System.out.println("datasetType: " + dataseType);
-        assertEquals("software", dataseType);
+        String datasetType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
+        System.out.println("datasetType: " + datasetType);
+        assertEquals("software", datasetType);
 
     }
 }
