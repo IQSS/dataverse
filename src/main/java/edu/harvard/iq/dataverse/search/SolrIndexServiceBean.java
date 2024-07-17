@@ -384,6 +384,7 @@ public class SolrIndexServiceBean {
 
         // We don't create a Solr "primary/content" doc for the root dataverse
         // so don't create a Solr "permission" doc either.
+        int i = 0;
         if (definitionPoint.isInstanceofDataverse()) {
             Dataverse selfDataverse = (Dataverse) definitionPoint;
             if (!selfDataverse.equals(dataverseService.findRootDataverse())) {
@@ -394,6 +395,11 @@ public class SolrIndexServiceBean {
                 dvObjectsToReindexPermissionsFor.add(dataset);
                 for (DataFile datafile : filesToReIndexPermissionsFor(dataset)) {
                     filesToReindexAsBatch.add(datafile);
+                    i++;
+                    if (i % 100 == 0) {
+                        reindexFilesInBatches(filesToReindexAsBatch);
+                        filesToReindexAsBatch.clear();
+                    }
                 }
             }
         } else if (definitionPoint.isInstanceofDataset()) {
@@ -402,6 +408,11 @@ public class SolrIndexServiceBean {
             Dataset dataset = (Dataset) definitionPoint;
             for (DataFile datafile : filesToReIndexPermissionsFor(dataset)) {
                 filesToReindexAsBatch.add(datafile);
+                i++;
+                if (i % 100 == 0) {
+                    reindexFilesInBatches(filesToReindexAsBatch);
+                    filesToReindexAsBatch.clear();
+                }
             }
         } else {
             dvObjectsToReindexPermissionsFor.add(definitionPoint);
@@ -414,7 +425,7 @@ public class SolrIndexServiceBean {
          * files, see https://github.com/IQSS/dataverse/issues/2421
          */
         String response = reindexFilesInBatches(filesToReindexAsBatch);
-
+        logger.fine("Reindexed permissions for " + i + " files");
         for (DvObject dvObject : dvObjectsToReindexPermissionsFor) {
             /**
              * @todo do something with this response
@@ -464,7 +475,6 @@ public class SolrIndexServiceBean {
                         if (i % 20 == 0) {
                             persistToSolr(docs);
                             docs = new ArrayList<>();
-                            i = 0;
                         }
                     }
                 }
