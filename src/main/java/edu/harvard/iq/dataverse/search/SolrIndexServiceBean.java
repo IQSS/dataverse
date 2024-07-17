@@ -204,6 +204,7 @@ public class SolrIndexServiceBean {
                 } else {
                     perms = searchPermissionsService.findDatasetVersionPerms(datasetVersionFileIsAttachedTo);
                 }
+
                 for (FileMetadata fileMetadata : datasetVersionFileIsAttachedTo.getFileMetadatas()) {
                     Long fileId = fileMetadata.getDataFile().getId();
                     String solrIdStart = IndexServiceBean.solrDocIdentifierFile + fileId;
@@ -430,46 +431,55 @@ public class SolrIndexServiceBean {
         List<SolrInputDocument> docs = new ArrayList<>();
         Map<Long, List<Long>> byParentId = new HashMap<>();
         Map<Long, List<String>> permStringByDatasetVersion = new HashMap<>();
-        for (DataFile file : filesToReindexPermissionsFor) {
-            Dataset dataset = (Dataset) file.getOwner();
-            Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataset);
-            for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataset)) {
-                boolean cardShouldExist = desiredCards.get(datasetVersionFileIsAttachedTo.getVersionState());
-                if (cardShouldExist) {
-                    List<String> cachedPermission = permStringByDatasetVersion.get(datasetVersionFileIsAttachedTo.getId());
-                    if (cachedPermission == null) {
-                        logger.fine("no cached permission! Looking it up...");
-                        List<DvObjectSolrDoc> fileSolrDocs = constructDatafileSolrDocs((DataFile) file, permStringByDatasetVersion);
-                        for (DvObjectSolrDoc fileSolrDoc : fileSolrDocs) {
-                            Long datasetVersionId = fileSolrDoc.getDatasetVersionId();
-                            if (datasetVersionId != null) {
-                                permStringByDatasetVersion.put(datasetVersionId, fileSolrDoc.getPermissions());
+        int i = 0;
+        try {
+            for (DataFile file : filesToReindexPermissionsFor) {
+                Dataset dataset = (Dataset) file.getOwner();
+                Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataset);
+                for (DatasetVersion datasetVersionFileIsAttachedTo : datasetVersionsToBuildCardsFor(dataset)) {
+                    boolean cardShouldExist = desiredCards.get(datasetVersionFileIsAttachedTo.getVersionState());
+                    if (cardShouldExist) {
+                        List<String> cachedPermission = permStringByDatasetVersion.get(datasetVersionFileIsAttachedTo.getId());
+                        if (cachedPermission == null) {
+                            logger.fine("no cached permission! Looking it up...");
+                            List<DvObjectSolrDoc> fileSolrDocs = constructDatafileSolrDocs((DataFile) file, permStringByDatasetVersion);
+                            for (DvObjectSolrDoc fileSolrDoc : fileSolrDocs) {
+                                Long datasetVersionId = fileSolrDoc.getDatasetVersionId();
+                                if (datasetVersionId != null) {
+                                    permStringByDatasetVersion.put(datasetVersionId, fileSolrDoc.getPermissions());
+                                    SolrInputDocument solrDoc = SearchUtil.createSolrDoc(fileSolrDoc);
+                                    docs.add(solrDoc);
+                                    i++;
+                                }
+                            }
+                        } else {
+                            logger.fine("cached permission is " + cachedPermission);
+                            List<DvObjectSolrDoc> fileSolrDocsBasedOnCachedPermissions = constructDatafileSolrDocs((DataFile) file, permStringByDatasetVersion);
+                            for (DvObjectSolrDoc fileSolrDoc : fileSolrDocsBasedOnCachedPermissions) {
                                 SolrInputDocument solrDoc = SearchUtil.createSolrDoc(fileSolrDoc);
                                 docs.add(solrDoc);
+                                i++;
                             }
                         }
-                    } else {
-                        logger.fine("cached permission is " + cachedPermission);
-                        List<DvObjectSolrDoc> fileSolrDocsBasedOnCachedPermissions = constructDatafileSolrDocs((DataFile) file, permStringByDatasetVersion);
-                        for (DvObjectSolrDoc fileSolrDoc : fileSolrDocsBasedOnCachedPermissions) {
-                            SolrInputDocument solrDoc = SearchUtil.createSolrDoc(fileSolrDoc);
-                            docs.add(solrDoc);
+                        if (i % 20 == 0) {
+                            persistToSolr(docs);
+                            docs = new ArrayList<>();
+                            i = 0;
                         }
                     }
                 }
+                Long parent = file.getOwner().getId();
+                List<Long> existingList = byParentId.get(parent);
+                if (existingList == null) {
+                    List<Long> empty = new ArrayList<>();
+                    byParentId.put(parent, empty);
+                } else {
+                    List<Long> updatedList = existingList;
+                    updatedList.add(file.getId());
+                    byParentId.put(parent, updatedList);
+                }
             }
-            Long parent = file.getOwner().getId();
-            List<Long> existingList = byParentId.get(parent);
-            if (existingList == null) {
-                List<Long> empty = new ArrayList<>();
-                byParentId.put(parent, empty);
-            } else {
-                List<Long> updatedList = existingList;
-                updatedList.add(file.getId());
-                byParentId.put(parent, updatedList);
-            }
-        }
-        try {
+
             persistToSolr(docs);
             return " " + filesToReindexPermissionsFor.size() + " files indexed across " + docs.size() + " Solr documents ";
         } catch (SolrServerException | IOException ex) {
