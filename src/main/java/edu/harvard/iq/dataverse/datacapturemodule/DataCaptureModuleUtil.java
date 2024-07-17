@@ -12,10 +12,12 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 
+@Deprecated(forRemoval = true, since = "2024-07-07")
 public class DataCaptureModuleUtil {
 
     private static final Logger logger = Logger.getLogger(DataCaptureModuleUtil.class.getCanonicalName());
 
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public static boolean rsyncSupportEnabled(String uploadMethodsSettings) {
         logger.fine("uploadMethodsSettings: " + uploadMethodsSettings);; 
         if (uploadMethodsSettings==null){
@@ -28,6 +30,7 @@ public class DataCaptureModuleUtil {
     /**
      * generate JSON to send to DCM
      */
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public static JsonObject generateJsonForUploadRequest(AuthenticatedUser user, Dataset dataset) {
         JsonObjectBuilder jab = Json.createObjectBuilder();
         // The general rule should be to always pass the user id and dataset identifier to the DCM.
@@ -39,6 +42,7 @@ public class DataCaptureModuleUtil {
     /**
      * transfer script from DCM
      */
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public static ScriptRequestResponse getScriptFromRequest(HttpResponse<JsonNode> uploadRequest) {
         int status = uploadRequest.getStatus();
         JsonNode body = uploadRequest.getBody();
@@ -54,6 +58,7 @@ public class DataCaptureModuleUtil {
         return scriptRequestResponse;
     }
 
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     static UploadRequestResponse makeUploadRequest(HttpResponse<String> uploadRequest) {
         int status = uploadRequest.getStatus();
         String body = uploadRequest.getBody();
@@ -61,6 +66,7 @@ public class DataCaptureModuleUtil {
         return new UploadRequestResponse(uploadRequest.getStatus(), body);
     }
 
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public static String getMessageFromException(DataCaptureModuleException ex) {
         if (ex == null) {
             return "DataCaptureModuleException was null!";
@@ -76,6 +82,7 @@ public class DataCaptureModuleUtil {
         return message + " was caused by " + cause.getMessage();
     }
 
+    @Deprecated(forRemoval = true, since = "2024-07-07")
     public static String getScriptName(DatasetVersion datasetVersion) {
         return "upload-" + datasetVersion.getDataset().getIdentifier().replace("/", "_") + ".bash";
     }

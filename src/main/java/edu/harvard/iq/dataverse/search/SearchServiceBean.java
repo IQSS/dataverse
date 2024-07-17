@@ -577,8 +577,7 @@ public class SearchServiceBean {
             solrSearchResult.setDvTree(dvTree);
             solrSearchResult.setDatasetValid(datasetValid);
 
-            String originSource = (String) solrDocument.getFieldValue(SearchFields.METADATA_SOURCE);
-            if (IndexServiceBean.HARVESTED.equals(originSource)) {
+            if (Boolean.TRUE.equals((Boolean) solrDocument.getFieldValue(SearchFields.IS_HARVESTED))) {
                 solrSearchResult.setHarvested(true);
             }
 
@@ -1110,7 +1109,7 @@ public class SearchServiceBean {
             }
             
             String ret = sb.toString();
-            logger.info("Returning experimental query: " + ret);
+            logger.fine("Returning experimental query: " + ret);
             return ret;
         }
         
