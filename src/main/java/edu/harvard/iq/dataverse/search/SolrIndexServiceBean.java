@@ -34,7 +34,7 @@ import org.apache.solr.common.SolrInputDocument;
 public class SolrIndexServiceBean {
 
     private static final Logger logger = Logger.getLogger(SolrIndexServiceBean.class.getCanonicalName());
-    
+
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
@@ -54,27 +54,29 @@ public class SolrIndexServiceBean {
     public static String messageString = "message";
 
     /**
-     * @deprecated Now that MyData has shipped in 4.1 we have no plans to change
-     * the unpublishedDataRelatedToMeModeEnabled boolean to false. We should
-     * probably remove the boolean altogether to simplify the code.
+     * @deprecated Now that MyData has shipped in 4.1 we have no plans to change the
+     *             unpublishedDataRelatedToMeModeEnabled boolean to false. We should
+     *             probably remove the boolean altogether to simplify the code.
      *
-     * This non-default mode changes the behavior of the "Data Related To Me"
-     * feature to be more like "**Unpublished** Data Related to Me" after you
-     * have changed this boolean to true and run "index all".
+     *             This non-default mode changes the behavior of the "Data Related
+     *             To Me" feature to be more like "**Unpublished** Data Related to
+     *             Me" after you have changed this boolean to true and run "index
+     *             all".
      *
-     * The "Data Related to Me" feature relies on *always* indexing permissions
-     * regardless of if the DvObject is published or not.
+     *             The "Data Related to Me" feature relies on *always* indexing
+     *             permissions regardless of if the DvObject is published or not.
      *
-     * In "Unpublished Data Related to Me" mode, we first check if the DvObject
-     * is published. If it's published, we set the search permissions to *only*
-     * contain "group_public", which is quick and cheap to do. If the DvObject
-     * in question is *not* public, we perform the expensive operation of
-     * rooting around in the system to determine who should be able to
-     * "discover" the unpublished version of DvObject. By default this mode is
-     * *not* enabled. If you want to enable it, change the boolean to true and
-     * run "index all".
+     *             In "Unpublished Data Related to Me" mode, we first check if the
+     *             DvObject is published. If it's published, we set the search
+     *             permissions to *only* contain "group_public", which is quick and
+     *             cheap to do. If the DvObject in question is *not* public, we
+     *             perform the expensive operation of rooting around in the system
+     *             to determine who should be able to "discover" the unpublished
+     *             version of DvObject. By default this mode is *not* enabled. If
+     *             you want to enable it, change the boolean to true and run "index
+     *             all".
      *
-     * See also https://github.com/IQSS/dataverse/issues/50
+     *             See also https://github.com/IQSS/dataverse/issues/50
      */
     @Deprecated
     private boolean unpublishedDataRelatedToMeModeEnabled = true;
@@ -116,8 +118,8 @@ public class SolrIndexServiceBean {
     }
 
     /**
-     * @todo should this method return a List? The equivalent methods for
-     * datasets and files return lists.
+     * @todo should this method return a List? The equivalent methods for datasets
+     *       and files return lists.
      */
     private DvObjectSolrDoc constructDataverseSolrDoc(Dataverse dataverse) {
         List<String> perms = new ArrayList<>();
@@ -149,7 +151,7 @@ public class SolrIndexServiceBean {
         return solrDocs;
     }
 
-//    private List<DvObjectSolrDoc> constructDatafileSolrDocs(DataFile dataFile) {
+    // private List<DvObjectSolrDoc> constructDatafileSolrDocs(DataFile dataFile) {
     private List<DvObjectSolrDoc> constructDatafileSolrDocs(DataFile dataFile, Map<Long, List<String>> permStringByDatasetVersion) {
         List<DvObjectSolrDoc> datafileSolrDocs = new ArrayList<>();
         Map<DatasetVersion.VersionState, Boolean> desiredCards = searchPermissionsService.getDesiredCards(dataFile.getOwner());
@@ -305,8 +307,8 @@ public class SolrIndexServiceBean {
         try {
             persistToSolr(docs);
             /**
-             * @todo Do we need a separate permissionIndexTime timestamp?
-             * Probably. Update it here.
+             * @todo Do we need a separate permissionIndexTime timestamp? Probably. Update
+             *       it here.
              */
             for (DvObject dvObject : all) {
                 dvObjectService.updatePermissionIndexTime(dvObject);
@@ -362,14 +364,14 @@ public class SolrIndexServiceBean {
 
     public IndexResponse indexPermissionsOnSelfAndChildren(long definitionPointId) {
         DvObject definitionPoint = dvObjectService.findDvObject(definitionPointId);
-        if ( definitionPoint == null ) {
+        if (definitionPoint == null) {
             logger.log(Level.WARNING, "Cannot find a DvOpbject with id of {0}", definitionPointId);
             return null;
         } else {
             return indexPermissionsOnSelfAndChildren(definitionPoint);
         }
     }
-    
+
     /**
      * We use the database to determine direct children since there is no
      * inheritance
@@ -378,64 +380,50 @@ public class SolrIndexServiceBean {
         List<DvObject> dvObjectsToReindexPermissionsFor = new ArrayList<>();
         List<DataFile> filesToReindexAsBatch = new ArrayList<>();
         /**
-         * @todo Re-indexing the definition point itself seems to be necessary
-         * for revoke but not necessarily grant.
+         * @todo Re-indexing the definition point itself seems to be necessary for
+         *       revoke but not necessarily grant.
          */
 
         // We don't create a Solr "primary/content" doc for the root dataverse
         // so don't create a Solr "permission" doc either.
-        int i = 0;
+        int numObjects = 0;
         if (definitionPoint.isInstanceofDataverse()) {
             Dataverse selfDataverse = (Dataverse) definitionPoint;
             if (!selfDataverse.equals(dataverseService.findRootDataverse())) {
-                dvObjectsToReindexPermissionsFor.add(definitionPoint);
+                indexPermissionsForOneDvObject(definitionPoint);
+                numObjects++;
             }
             List<Dataset> directChildDatasetsOfDvDefPoint = datasetService.findByOwnerId(selfDataverse.getId());
             for (Dataset dataset : directChildDatasetsOfDvDefPoint) {
-                dvObjectsToReindexPermissionsFor.add(dataset);
+                indexPermissionsForOneDvObject(dataset);
+                numObjects++;
                 for (DataFile datafile : filesToReIndexPermissionsFor(dataset)) {
                     filesToReindexAsBatch.add(datafile);
-                    i++;
-                    if (i % 100 == 0) {
-                        reindexFilesInBatches(filesToReindexAsBatch);
-                        filesToReindexAsBatch.clear();
-                    }
                 }
             }
         } else if (definitionPoint.isInstanceofDataset()) {
-            dvObjectsToReindexPermissionsFor.add(definitionPoint);
+            indexPermissionsForOneDvObject(definitionPoint);
+            numObjects++;
             // index files
             Dataset dataset = (Dataset) definitionPoint;
             for (DataFile datafile : filesToReIndexPermissionsFor(dataset)) {
                 filesToReindexAsBatch.add(datafile);
-                i++;
-                if (i % 100 == 0) {
-                    reindexFilesInBatches(filesToReindexAsBatch);
-                    filesToReindexAsBatch.clear();
-                }
             }
         } else {
-            dvObjectsToReindexPermissionsFor.add(definitionPoint);
+            indexPermissionsForOneDvObject(definitionPoint);
+            numObjects++;
         }
 
         /**
          * @todo Error handling? What to do with response?
          *
-         * @todo Should update timestamps, probably, even thought these are
-         * files, see https://github.com/IQSS/dataverse/issues/2421
+         * @todo Should update timestamps, probably, even thought these are files, see
+         *       https://github.com/IQSS/dataverse/issues/2421
          */
-        String response = reindexFilesInBatches(filesToReindexAsBatch);
-        logger.fine("Reindexed permissions for " + i + " files");
-        for (DvObject dvObject : dvObjectsToReindexPermissionsFor) {
-            /**
-             * @todo do something with this response
-             */
-            IndexResponse indexResponse = indexPermissionsForOneDvObject(dvObject);
-        }
-        
+        reindexFilesInBatches(filesToReindexAsBatch);
+
         return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
-                + ": " + dvObjectsToReindexPermissionsFor.size()
-        );
+                + ": " + numObjects);
     }
 
     private String reindexFilesInBatches(List<DataFile> filesToReindexPermissionsFor) {
@@ -475,6 +463,7 @@ public class SolrIndexServiceBean {
                         if (i % 20 == 0) {
                             persistToSolr(docs);
                             docs = new ArrayList<>();
+                            i = 0;
                         }
                     }
                 }
@@ -539,27 +528,26 @@ public class SolrIndexServiceBean {
     /**
      * 
      *
-     * @return A list of dvobject ids that should have their permissions
-     * re-indexed because Solr was down when a permission was added. The permission
-     * should be added to Solr. The id of the permission contains the type of
-     * DvObject and the primary key of the dvObject.
-     * DvObjects of type DataFile are currently skipped because their index
-     * time isn't stored in the database, since they are indexed along 
-     * with their parent dataset (this may change).
+     * @return A list of dvobject ids that should have their permissions re-indexed
+     *         because Solr was down when a permission was added. The permission
+     *         should be added to Solr. The id of the permission contains the type
+     *         of DvObject and the primary key of the dvObject. DvObjects of type
+     *         DataFile are currently skipped because their index time isn't stored
+     *         in the database, since they are indexed along with their parent
+     *         dataset (this may change).
      */
     public List<Long> findPermissionsInDatabaseButStaleInOrMissingFromSolr() {
         List<Long> indexingRequired = new ArrayList<>();
         long rootDvId = dataverseService.findRootDataverse().getId();
         List<Long> missingDataversePermissionIds = dataverseService.findIdStalePermission();
         List<Long> missingDatasetPermissionIds = datasetService.findIdStalePermission();
-        for (Long id : missingDataversePermissionIds) {          
+        for (Long id : missingDataversePermissionIds) {
             if (!id.equals(rootDvId)) {
-            indexingRequired.add(id);
+                indexingRequired.add(id);
             }
         }
         indexingRequired.addAll(missingDatasetPermissionIds);
         return indexingRequired;
     }
 
-  
 }
