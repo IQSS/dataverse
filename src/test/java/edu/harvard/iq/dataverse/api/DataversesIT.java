@@ -941,6 +941,13 @@ public class DataversesIT {
                 .body("message", equalTo("Invalid dataset field type name: invalid1"))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
+        // Update input levels with invalid configuration (field required but not included)
+        testIncludedInputLevels = new boolean[]{false, false};
+        updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
+        updateDataverseInputLevelsResponse.then().assertThat()
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataverse.inputlevels.error.cannotberequiredifnotincluded", List.of("geographicCoverage"))))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
         // Update invalid empty input levels
         testInputLevelNames = new String[]{};
         updateDataverseInputLevelsResponse = UtilIT.updateDataverseInputLevels(dataverseAlias, testInputLevelNames, testRequiredInputLevels, testIncludedInputLevels, apiToken);
