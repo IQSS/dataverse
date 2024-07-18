@@ -130,10 +130,10 @@ public class Dataverses extends AbstractApiBean {
             newDataverse = jsonParser().parseDataverse(newDataverseJson);
         } catch (JsonParsingException jpe) {
             logger.log(Level.SEVERE, "Json: {0}", body);
-            return error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
+            return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.create.error.jsonparse"), jpe.getMessage()));
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Error parsing dataverse from json: " + ex.getMessage(), ex);
-            return error(Response.Status.BAD_REQUEST, "Error parsing the POSTed json into a dataverse: " + ex.getMessage());
+            return error(Status.BAD_REQUEST, MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.create.error.jsonparsetodataverse"), ex.getMessage()));
         }
 
         try {
