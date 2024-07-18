@@ -957,16 +957,20 @@ public class DataversesIT {
 
         // Without optional input levels and facet ids
         String testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
-        Response createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root");
-        createSubDataverseWithInputLevelsAndFacetIdsResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Response createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root");
+        createSubDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        Response listMetadataBlocksResponse = UtilIT.listMetadataBlocks(testDataverseAlias, false, false, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String actualMetadataBlockName = listMetadataBlocksResponse.then().extract().path("data[0].name");
+        assertEquals(actualMetadataBlockName, "citation");
 
         // With optional input levels and facet ids
         String[] testInputLevelNames = {"geographicCoverage", "country"};
         String[] testFacetIds = {"authorName", "authorAffiliation"};
         String[] testMetadataBlockNames = {"citation", "geospatial"};
         testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
-        createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testFacetIds, testMetadataBlockNames);
-        createSubDataverseWithInputLevelsAndFacetIdsResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testFacetIds, testMetadataBlockNames);
+        createSubDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
 
         // Assert facets are configured
         Response listDataverseFacetsResponse = UtilIT.listDataverseFacets(testDataverseAlias, apiToken);
@@ -984,12 +988,35 @@ public class DataversesIT {
         assertThat(testInputLevelNames, hasItemInArray(actualInputLevelName1));
         assertThat(testInputLevelNames, hasItemInArray(actualInputLevelName2));
 
+        // Assert metadata blocks are configured
+        listMetadataBlocksResponse = UtilIT.listMetadataBlocks(testDataverseAlias, false, false, apiToken);
+        listMetadataBlocksResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String actualMetadataBlockName1 = listMetadataBlocksResponse.then().extract().path("data[0].name");
+        String actualMetadataBlockName2 = listMetadataBlocksResponse.then().extract().path("data[1].name");
+        assertNotEquals(actualMetadataBlockName1, actualMetadataBlockName2);
+        assertThat(testMetadataBlockNames, hasItemInArray(actualMetadataBlockName1));
+        assertThat(testMetadataBlockNames, hasItemInArray(actualMetadataBlockName2));
+
+        // Setting metadata blocks without citation
+        testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
+        String[] testMetadataBlockNamesWithoutCitation = {"geospatial"};
+        createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", null, null, testMetadataBlockNamesWithoutCitation);
+        createSubDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        // Assert metadata blocks including citation are configured
+        String[] testExpectedBlockNames = {"citation", "geospatial"};
+        actualMetadataBlockName1 = listMetadataBlocksResponse.then().extract().path("data[0].name");
+        actualMetadataBlockName2 = listMetadataBlocksResponse.then().extract().path("data[1].name");
+        assertNotEquals(actualMetadataBlockName1, actualMetadataBlockName2);
+        assertThat(testExpectedBlockNames, hasItemInArray(actualMetadataBlockName1));
+        assertThat(testExpectedBlockNames, hasItemInArray(actualMetadataBlockName2));
+
         // Should return error when an invalid facet id is sent
         String invalidFacetId = "invalidFacetId";
         String[] testInvalidFacetIds = {"authorName", invalidFacetId};
         testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
-        createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testInvalidFacetIds, testMetadataBlockNames);
-        createSubDataverseWithInputLevelsAndFacetIdsResponse.then().assertThat()
+        createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testInvalidFacetIds, testMetadataBlockNames);
+        createSubDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("Cant find dataset field type \"" + invalidFacetId + "\""));
 
@@ -997,8 +1024,8 @@ public class DataversesIT {
         String invalidInputLevelName = "wrongInputLevel";
         String[] testInvalidInputLevelNames = {"geographicCoverage", invalidInputLevelName};
         testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
-        createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInvalidInputLevelNames, testFacetIds, testMetadataBlockNames);
-        createSubDataverseWithInputLevelsAndFacetIdsResponse.then().assertThat()
+        createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInvalidInputLevelNames, testFacetIds, testMetadataBlockNames);
+        createSubDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("Invalid dataset field type name: " + invalidInputLevelName));
 
@@ -1006,8 +1033,8 @@ public class DataversesIT {
         String invalidMetadataBlockName = "invalidMetadataBlockName";
         String[] testInvalidMetadataBlockNames = {"citation", invalidMetadataBlockName};
         testDataverseAlias = UtilIT.getRandomDvAlias() + testAliasSuffix;
-        createSubDataverseWithInputLevelsAndFacetIdsResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testInvalidFacetIds, testInvalidMetadataBlockNames);
-        createSubDataverseWithInputLevelsAndFacetIdsResponse.then().assertThat()
+        createSubDataverseResponse = UtilIT.createSubDataverse(testDataverseAlias, null, apiToken, "root", testInputLevelNames, testInvalidFacetIds, testInvalidMetadataBlockNames);
+        createSubDataverseResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("Invalid metadata block name: \"" + invalidMetadataBlockName + "\""));
     }
