@@ -1,23 +1,17 @@
 Dataverse&#174;  
 ===============
-<br />
-<div align="center">
-  <a href="#">
-    <img src="https://github.com/IQSS/dataverse-frontend/assets/7512607/6c4d79e4-7be5-4102-88bd-dfa167dc79d3" alt="Logo" width="500">
-  </a>
-</div>
+
+![309827846-6c4d79e4-7be5-4102-88bd-dfa167dc79d3](https://github.com/user-attachments/assets/cd5d0e97-47cf-45be-9639-179839adafe0)
 
 ## Table of Contents
 
-  <ol>
-    <li><a href="#what-is-dataverse">❓ What is Dataverse?</a></li>
-    <li><a href="#try-dataverse">✔ Try Dataverse</a></li>
-    <li><a href="#our-web-presence">🌐 Our Web Presence</a></li>
-    <li><a href="#installation">📥 Installation</a></li>
-    <li><a href="#community-and-support">🏘 Community and Support</a></li>
-    <li><a href="#contributing">🧑‍💻️ Contributing</a></li>
-    <li><a href="#legal-informations">⚖️ Legal Information</a></li>
-  </ol>
+1. [❓ What is Dataverse?](#what-is-dataverse)
+2. [✔ Try Dataverse](#try-dataverse)
+3. [🌐 Our Web Presence](#our-web-presence)
+4. [📥 Installation](#installation)
+5. [🏘 Community and Support](#community-and-support)
+6. [🧑‍💻️ Contributing](#contributing)
+7. [⚖️ Legal Information](#legal-informations)
 
 <a name="what-is-dataverse"></a>
 
