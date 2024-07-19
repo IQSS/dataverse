@@ -1,7 +1,7 @@
 Dataverse&#174;  
 ===============
 
-![309827846-6c4d79e4-7be5-4102-88bd-dfa167dc79d3](https://github.com/user-attachments/assets/cd5d0e97-47cf-45be-9639-179839adafe0)
+![Dataverse-logo](https://github.com/IQSS/dataverse-frontend/assets/7512607/6c4d79e4-7be5-4102-88bd-dfa167dc79d3)
 
 ## Table of Contents
 
