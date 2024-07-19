@@ -1,11 +1,37 @@
 Dataverse&#174;  
 ===============
+<br />
+<div align="center">
+  <a href="#">
+    <img src="https://github.com/IQSS/dataverse-frontend/assets/7512607/6c4d79e4-7be5-4102-88bd-dfa167dc79d3" alt="Logo" width="500">
+  </a>
+</div>
+
+## Table of Contents
+
+  <ol>
+    <li><a href="#what-is-dataverse">❓ What is Dataverse?</a></li>
+    <li><a href="#try-dataverse">✔ Try Dataverse</a></li>
+    <li><a href="#our-web-presence">🌐 Our Web Presence</a></li>
+    <li><a href="#installation">📥 Installation</a></li>
+    <li><a href="#community-and-support">🏘 Community and Support</a></li>
+    <li><a href="#contributing">🧑‍💻️ Contributing</a></li>
+    <li><a href="#legal-informations">⚖️ Legal Information</a></li>
+  </ol>
+
+<a name="what-is-dataverse"></a>
+
+## ❓  What is Dataverse?
 
 Welcome to Dataverse®, the [open source][] software platform designed for sharing, finding, citing, and preserving research data. Developed by the Dataverse team at the [Institute for Quantitative Social Science](https://iq.harvard.edu/) and the [Dataverse community][], our platform is built to support researchers and institutions in sharing, finding, citing, and preserving research their data effectively.
+
+<a name="try-dataverse"></a>
 
 ## ✔  Try Dataverse
 
 We invite you to explore our demo site at [demo.dataverse.org][]. This site is ideal for testing and evaluating Dataverse in a risk-free environment.
+
+<a name="our-web-presence"></a>
 
 ## 🌐  Our Web Presence
 
@@ -17,11 +43,15 @@ Visit [dataverse.org][], our home on the web, for a comprehensive overview of Da
 - Our [project board][] and development [roadmap][].
 - News, events, and more.
 
+<a name="installation"></a>
+
 ## 📥 Installation
 
 Ready to get started? Follow our [Installation Guide][] to download and install the latest release of Dataverse.
 
 If you are using Docker, please refer to our [Container Guide][] for detailed instructions.
+
+<a name="community-and-support"></a>
 
 ## 🏘 Community and Support
 
@@ -33,6 +63,7 @@ Engage with the vibrant Dataverse community through various channels:
 - **[Dataverse Community Meeting][]**: Attend our annual [Dataverse Community Meeting][] to network, learn, and collaborate with peers and experts.
 - **[DataverseTV][]**: Watch the video content from the Dataverse community on [DataverseTV][] and on [Harvard's IQSS YouTube channel][].
 
+<a name="contributing"></a>
 ## 🧑‍💻️ Contribute to Dataverse
 
 We love contributors! Whether you are a developer, researcher, or enthusiast, there are many ways you can help.
@@ -41,6 +72,7 @@ Visit our [Contributing Guide][] to learn how you can get involved.
 
 Join us in building and enhancing Dataverse to make research data more accessible and impactful. Your support and participation are crucial to our success!
 
+<a name="legal-informations"></a>
 ## ⚖️ Legal Information
 
 Dataverse is a trademark of President and Fellows of Harvard College and is registered in the United States.
