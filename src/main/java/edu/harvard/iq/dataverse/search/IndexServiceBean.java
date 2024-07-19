@@ -100,6 +100,8 @@ public class IndexServiceBean {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
+    DatasetVersionServiceBean datasetVersionService;
+    @EJB
     BuiltinUserServiceBean dataverseUserServiceBean;
     @EJB
     PermissionServiceBean permissionService;
@@ -987,8 +989,14 @@ public class IndexServiceBean {
 
         if (dataset.isHarvested()) {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, true);
-            solrInputDocument.addField(SearchFields.METADATA_SOURCE,
+            if (FeatureFlags.INDEX_HARVESTED_METADATA_SOURCE.enabled()) {
+                // New - as of 6.3 - option of indexing the actual origin of 
+                // harvested objects as the metadata source:
+                solrInputDocument.addField(SearchFields.METADATA_SOURCE,
                                         dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getName() : HARVESTED);
+            } else {
+                solrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
+            }
         } else {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName); //rootDataverseName);
@@ -1495,7 +1503,14 @@ public class IndexServiceBean {
                         }
                         if (datafile.isHarvested()) {
                             datafileSolrInputDocument.addField(SearchFields.IS_HARVESTED, true);
-                            datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
+                            if (FeatureFlags.INDEX_HARVESTED_METADATA_SOURCE.enabled()) {
+                                // New - as of 6.3 - option of indexing the actual origin of 
+                                // harvested objects as the metadata source:
+                                datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE,
+                                        dataset.getHarvestedFrom() != null ? dataset.getHarvestedFrom().getName() : HARVESTED);
+                            } else {
+                                datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, HARVESTED);
+                            }
                         } else {
                             datafileSolrInputDocument.addField(SearchFields.IS_HARVESTED, false);
                             datafileSolrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName);
@@ -1827,9 +1842,19 @@ public class IndexServiceBean {
 
     private void addLicenseToSolrDoc(SolrInputDocument solrInputDocument, DatasetVersion datasetVersion) {
         if (datasetVersion != null && datasetVersion.getTermsOfUseAndAccess() != null) {
+            //test to see if the terms of use are the default set in 5.10 - if so and there's no license then don't add license to solr doc.   
+            //fixes 10513
+            if (datasetVersionService.isVersionDefaultCustomTerms(datasetVersion)){
+                return; 
+            }
+            
             String licenseName = "Custom Terms";
-            if(datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
+            if (datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
                 licenseName = datasetVersion.getTermsOfUseAndAccess().getLicense().getName();
+            } else if (datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null) {
+                // this fixes #10513 for datasets harvested in oai_dc - these 
+                // have neither the license id, nor any actual custom terms 
+                return; 
             }
             solrInputDocument.addField(SearchFields.DATASET_LICENSE, licenseName);
         }
