@@ -1053,7 +1053,9 @@ public class SearchServiceBean {
             groupString = groupList.get(0);
         }
         logger.fine("Groups: " + groupString);
-        return buildPermissionFilterQuery(avoidJoin, groupString);
+        String permissionQuery = buildPermissionFilterQuery(avoidJoin, groupString);
+        logger.fine("Permission Query: " + permissionQuery);
+        return permissionQuery;
     }
 
     private String buildPermissionFilterQuery(boolean avoidJoin, String permissionFilterGroups) {
