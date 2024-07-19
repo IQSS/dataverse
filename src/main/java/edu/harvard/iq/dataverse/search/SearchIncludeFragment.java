@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -355,8 +356,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
              * https://github.com/IQSS/dataverse/issues/84
              */
             int numRows = 10;
-            HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), httpServletRequest);
+            DataverseRequest dataverseRequest = getDataverseRequest();
             List<Dataverse> dataverses = new ArrayList<>();
             dataverses.add(dataverse);
             solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null, !isFacetsDisabled(), true);
@@ -396,7 +396,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 }
             }
             
-            if (!wasSolrErrorEncountered() && selectedTypesList.size() < 3 && !isSolrTemporarilyUnavailable() && !isFacetsDisabled()) {
+            if (!wasSolrErrorEncountered() && selectedTypesList.size() < 3 && !isSolrTemporarilyUnavailable() && !isFacetsDisabled() && !isUncheckedTypesFacetDisabled()) {
                 // If some types are NOT currently selected, we will need to 
                 // run a second search to obtain the numbers of the unselected types:
                 
@@ -1087,19 +1087,58 @@ public class SearchIncludeFragment implements java.io.Serializable {
         this.solrIsTemporarilyUnavailable = solrIsTemporarilyUnavailable; 
     }
 
+    Boolean solrFacetsDisabled = null; 
     /**
      * Indicates that the fragment should not be requesting facets in Solr 
      * searches and rendering them on the page.
      * @return true if disabled; false by default 
      */
     public boolean isFacetsDisabled() {
-        // The method is used in rendered="..." logic. So we are using 
-        // SettingsWrapper to make sure we are not looking it up repeatedly 
-        // (settings are not expensive to look up, but 
-        // still).
+        if (this.solrFacetsDisabled != null) {
+            return this.solrFacetsDisabled;
+        }
         
-        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacets, false);
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacets, false)) {
+            return this.solrFacetsDisabled = true;
+        }
+        
+        // We also have mechanisms for disabling the facets selectively, just for 
+        // the guests, or anonymous users:
+        if (session.getUser() instanceof GuestUser) {
+            if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacetsForGuestUsers, false)) {
+                return this.solrFacetsDisabled = true; 
+            }
+            
+            // An even lower grade of user than Guest is a truly anonymous user -
+            // a guest user who came without the session cookie:
+            Map<String, Object> cookies = FacesContext.getCurrentInstance().getExternalContext().getRequestCookieMap();
+            if (!(cookies != null && cookies.containsKey("JSESSIONID"))) {
+                if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableSolrFacetsWithoutJsession, false)) {
+                    return this.solrFacetsDisabled = true; 
+                }
+            }
+        }
+        
+        return this.solrFacetsDisabled = false;
     }
+    
+    Boolean disableSecondPassSearch = null; 
+    
+    /**
+     * Indicates that we do not need to run the second search query to populate 
+     * the counts for *unchecked* type facets.
+     * @return true if disabled; false by default 
+     */
+    public boolean isUncheckedTypesFacetDisabled() {
+        if (this.disableSecondPassSearch != null) {
+            return this.disableSecondPassSearch; 
+        }
+        if (settingsWrapper.isTrueForKey(SettingsServiceBean.Key.DisableUncheckedTypesFacet, false)) {
+            return this.disableSecondPassSearch = true;
+        }
+        return this.disableSecondPassSearch = false;
+    }
+    
     
     public boolean isRootDv() {
         return rootDv;
@@ -1480,9 +1519,31 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return false;
         }
     }
+
+    public boolean isRetentionExpired(SolrSearchResult result) {
+        Long retentionEndDate = result.getRetentionEndDate();
+        if(retentionEndDate != null) {
+            return LocalDate.now().toEpochDay() > retentionEndDate;
+        } else {
+            return false;
+        }
+    }
     
+    private DataverseRequest getDataverseRequest() {
+        final HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        return new DataverseRequest(session.getUser(), httpServletRequest);
+    }
+
     public boolean isValid(SolrSearchResult result) {
-        return result.isValid();
+        return result.isValid(x -> {
+            Long id = x.getEntityId();
+            DvObject obj = dvObjectService.findDvObject(id);
+            if(obj != null && obj instanceof Dataset) {
+                return permissionsWrapper.canUpdateDataset(getDataverseRequest(), (Dataset) obj);
+            }
+            logger.fine("isValid called for dvObject that is null (or not a dataset), id: " + id + "This can occur if a dataset is deleted while a search is in progress");
+            return true;
+        });
     }
     
     public enum SortOrder {

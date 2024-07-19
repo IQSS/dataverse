@@ -86,7 +86,7 @@
                     <meta property="og:title" content="#{DatasetPage.title}" />
                     <meta property="og:type" content="article" />
                     <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
-                    <meta property="og:image" content="#{DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-1200.png'])}" />
+                    <meta property="og:image" content="#{DatasetPage.dataset.getDatasetThumbnail(ImageThumbConverter.DEFAULT_PREVIEW_SIZE) == null ? DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-1200.png']): DatasetPage.dataverseSiteUrl.concat('/api/datasets/:persistentId/thumbnail?persistentId=').concat(DatasetPage.dataset.getGlobalId().asString())}" />
                     <meta property="og:site_name" content="#{DatasetPage.publisher}" />
                     <meta property="og:description" content="#{(DatasetPage.description.length()>150 ? DatasetPage.description.substring(0,147).concat('...') : DatasetPage.description)}" />
                     <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
@@ -139,6 +139,7 @@
                                             <!-- DATASET Publication Status -->
                                             <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
                                             <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{DatasetPage.isActivelyEmbargoed(DatasetPage.workingVersion.fileMetadatas)}"/>
+                                            <h:outputText value="#{bundle['retentionExpired']}" styleClass="label label-warning" rendered="#{DatasetPage.isRetentionExpired(DatasetPage.workingVersion.fileMetadatas)}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
@@ -1004,8 +1005,10 @@
                         <ui:param name="bean" value="#{DatasetPage}"/>
                         <ui:param name="restrictFileAction" value="restrictFiles"/>
                         <ui:param name="deleteFileAction" value="deleteFiles"/>
-                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/> 
+                        <ui:param name="saveEmbargoAction" value="saveEmbargo"/>
+                        <ui:param name="saveRetentionAction" value="saveRetention"/>
                         <ui:param name="updateElements" value=":datasetForm:embargoInputs"/>
+                        <ui:param name="updateRetentionElements" value=":datasetForm:retentionInputs"/>
                     </ui:include>
                     <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                         <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
@@ -1859,19 +1862,23 @@
                         </div>
                     </p:dialog>
                     <p:dialog id="sendBackToContributor" header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor" modal="true">
+                    <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
+                    <ui:param name="disableReasonField" value="#{FeatureFlags.DISABLE_RETURN_TO_AUTHOR_REASON.enabled()}"/>
                         <p class="text-warning">
-                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']}
+                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']} #{disableReasonField ? '':bundle['dataset.rejectMessageReason']}
                         </p>
-
-                        <p:inputTextarea id="returnReason" rows="4" value="#{DatasetPage.returnReason}" title="#{bundle['dataset.rejectMessage.label']}" maxlength="2000" widgetVar="returnReason"
-                                         cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"
-                                         required="#{param['DO_RETURN_TO_AUTHOR_VALIDATION']}"
-                                         requiredMessage="#{bundle['dataset.reject.enterReason.error']}"/>
-                        <p>
-                            <h:outputText id="display"/>
-                        </p>
-                        <p:watermark for="returnReason" value="#{bundle['dataset.rejectWatermark']}" id="returnReasonWatermark"/>
-                        <h:message for="returnReason" styleClass="bg-danger text-danger"/>
+                        
+                        <ui:fragment  rendered="#{!disableReasonField}">
+                            <p:inputTextarea id="returnReason" rows="4" value="#{DatasetPage.returnReason}" title="#{bundle['dataset.rejectMessage.label']}" maxlength="2000" widgetVar="returnReason"
+                                             cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"
+                                             required="#{param['DO_RETURN_TO_AUTHOR_VALIDATION']}"
+                                             requiredMessage="#{bundle['dataset.reject.enterReason.error']}"/>
+                            <p>
+                                <h:outputText id="display"/>
+                            </p>
+                            <p:watermark for="returnReason" value="#{bundle['dataset.rejectWatermark']}" id="returnReasonWatermark"/>
+                            <h:message for="returnReason" styleClass="bg-danger text-danger"/>
+                        </ui:fragment>
                         
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}"
