@@ -43,7 +43,8 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
           Arrays.asList(
           "cites",
           "references",
-          "supplements"));
+          "supplements",
+          "is-supplement-to"));
   static ArrayList<String> outboundRelationships = new ArrayList<String>( 
           Arrays.asList(
           "is-cited-by",
