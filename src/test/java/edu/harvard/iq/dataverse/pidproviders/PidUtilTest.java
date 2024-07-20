@@ -237,7 +237,8 @@ public class PidUtilTest {
         assertEquals(pid1String, pid3.asString());
         assertEquals("dc1", pid3.getProviderId());
         
-        String pid4String = "doi:10.5072/FK3ABCDEF";
+        //Also test case insensitive
+        String pid4String = "doi:10.5072/fk3ABCDEF";
         GlobalId pid4 = PidUtil.parseAsGlobalID(pid4String);
         assertEquals(pid4String, pid4.asString());
         assertEquals("dc2", pid4.getProviderId());
