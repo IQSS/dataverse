@@ -2217,7 +2217,7 @@ public class IndexServiceBean {
                 q.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
                 QueryResponse rsp = solrServer.query(q);
                 String nextCursorMark = rsp.getNextCursorMark();
-                logger.info("Next cursor mark: " + nextCursorMark);
+                logger.fine("Next cursor mark (1K entries): " + nextCursorMark);
                 SolrDocumentList list = rsp.getResults();
                 for (SolrDocument doc: list) {
                     long id = Long.parseLong((String) doc.getFieldValue(SearchFields.DEFINITION_POINT_DVOBJECT_ID));
