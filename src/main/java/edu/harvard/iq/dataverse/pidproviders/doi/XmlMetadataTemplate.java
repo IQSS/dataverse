@@ -46,6 +46,7 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetRelPublication;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.ExternalIdentifier;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
@@ -57,8 +58,10 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.export.DDIExporter;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
+import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.doi.datacite.DataCiteDOIProvider;
 import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -78,6 +81,8 @@ public class XmlMetadataTemplate {
     public static final String XML_SCHEMA_VERSION = "4.5";
 
     private DoiMetadata doiMetadata;
+    //QDR - used to get ROR name from ExternalVocabularyValue via pidProvider.get
+    private PidProvider pidProvider = null;
 
     public XmlMetadataTemplate() {
     }
@@ -104,6 +109,14 @@ public class XmlMetadataTemplate {
         // Could/should use dataset metadata language for metadata from DvObject itself?
         String language = null; // machine locale? e.g. for Publisher which is global
         String metadataLanguage = null; // when set, otherwise = language?
+        
+        //QDR - used to get ROR name from ExternalVocabularyValue via pidProvider.get
+        GlobalId pid = null;
+        pid = dvObject.getGlobalId();
+        if ((pid == null) && (dvObject instanceof DataFile df)) {
+                pid = df.getOwner().getGlobalId();
+            }
+        pidProvider = PidUtil.getPidProvider(pid.getProviderId());
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         xmlw.writeStartElement("resource");
         boolean deaccessioned=false;
@@ -262,10 +275,10 @@ public class XmlMetadataTemplate {
         boolean nothingWritten = true;
         if (authorList != null && !authorList.isEmpty()) {
             for (DatasetAuthor author : authorList) {
-                String creatorName = StringEscapeUtils.escapeXml10(author.getName().getDisplayValue());
+                String creatorName = author.getName().getDisplayValue();
                 String affiliation = null;
-                if (author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
-                    affiliation = StringEscapeUtils.escapeXml10(author.getAffiliation().getDisplayValue());
+                if (author.getAffiliation() != null && !author.getAffiliation().getValue().isEmpty()) {
+                    affiliation = author.getAffiliation().getValue();
                 }
                 String nameIdentifier = null;
                 String nameIdentifierScheme = null;
@@ -609,13 +622,27 @@ public class XmlMetadataTemplate {
         }
 
         if (StringUtils.isNotBlank(affiliation)) {
+            boolean isROR=false;
+            String orgName = affiliation;
+            ExternalIdentifier externalIdentifier = ExternalIdentifier.ROR;
+            if (externalIdentifier.isValidIdentifier(affiliation)) {
+                isROR=true; 
+                if(pidProvider instanceof DataCiteDOIProvider dcProvider) {
+                    JsonObject jo = dcProvider.getExternalVocabularyValue(affiliation);
+                    if(jo!=null) {
+                        orgName = jo.getString("termName");
+                    }
+                }
+            }
+          
             attributeMap.clear();
-            if (affiliation.startsWith("https://ror.org/")) {
+            if (isROR) {
 
                 attributeMap.put("schemeURI", "https://ror.org");
                 attributeMap.put("affiliationIdentifierScheme", "ROR");
+                attributeMap.put("affiliationIdentifier", affiliation);
             }
-            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "affiliation", attributeMap, StringEscapeUtils.escapeXml10(affiliation));
+            XmlWriterUtil.writeFullElementWithAttributes(xmlw, "affiliation", attributeMap, StringEscapeUtils.escapeXml10(orgName));
         }
         xmlw.writeEndElement();
     }
