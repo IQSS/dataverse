@@ -609,7 +609,7 @@ public class DatasetUtil {
         
         try {
             File tempFile = File.createTempFile("datasetMetadataCheck", ".tmp");
-            FileUtils.writeStringToFile(tempFile, jsonMetadata);
+            FileUtils.writeStringToFile(tempFile, jsonMetadata, StandardCharsets.UTF_8);
             
             // run the external executable: 
             String[] params = { executable, tempFile.getAbsolutePath() };
