@@ -280,7 +280,7 @@ public class DatasetUtil {
         try {
             tmpFile = FileUtil.inputStreamToFile(inputStream);
         } catch (IOException ex) {
-        	logger.severe(ex.getMessage());
+        	logger.severe("FileUtil.inputStreamToFile failed for tmpFile: " + ex.getMessage());
         }
 
         StorageIO<Dataset> dataAccess = null;
@@ -306,7 +306,7 @@ public class DatasetUtil {
             fullSizeImage = ImageIO.read(tmpFile);
         } catch (IOException ex) {
         	IOUtils.closeQuietly(inputStream);
-            logger.severe(ex.getMessage());
+            logger.severe("ImageIO.read failed for tmpFile: " + ex.getMessage());
             return null;
         }
         if (fullSizeImage == null) {
@@ -321,7 +321,7 @@ public class DatasetUtil {
             src = fis.getChannel();
         } catch (IOException ex) {
         	IOUtils.closeQuietly(inputStream);
-            logger.severe(ex.getMessage());
+            logger.severe("fis.getChannel failed: " + ex.getMessage());
             return null;
         }
         FileChannel dest = null;
@@ -329,13 +329,13 @@ public class DatasetUtil {
             dest = fos.getChannel();
         } catch (IOException ex) {
         	IOUtils.closeQuietly(inputStream);
-            logger.severe(ex.getMessage());
+            logger.severe("fos.getChannel failed: " + ex.getMessage());
             return null;
         }
         try {
             dest.transferFrom(src, 0, src.size());
         } catch (IOException ex) {
-            logger.severe(ex.getMessage());
+            logger.severe("dest.transferFrom failed: " + ex.getMessage());
             return null;
         }
         File tmpFileForResize = null;
@@ -343,7 +343,7 @@ public class DatasetUtil {
         	//The stream was used around line 274 above, so this creates an empty file (OK since all it is used for is getting a path, but not reusing it here would make it easier to close it above.)
             tmpFileForResize = FileUtil.inputStreamToFile(inputStream);
         } catch (IOException ex) {
-            logger.severe(ex.getMessage());
+            logger.severe("FileUtil.inputStreamToFile failed for tmpFileForResize: " + ex.getMessage());
             return null;
         } finally {
         	IOUtils.closeQuietly(inputStream);
