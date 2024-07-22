@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.*;
 
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -695,33 +696,42 @@ public class ShapefileHandler{
        this.filesListInDir.clear();
        this.filesizeHash.clear();
        this.fileGroups.clear();
-       
-       try{
+
+        try{
             ZipInputStream zipStream = new ZipInputStream(zip_file_stream);
             ZipEntry entry;
-            
+            List<String> hiddenDirectories = new ArrayList<>();
             while((entry = zipStream.getNextEntry())!=null){
+                String zentryFileName = entry.getName();
+                boolean isDirectory = entry.isDirectory();
 
-                 String zentryFileName = entry.getName();
-                 //msg("zip entry: " + entry.getName());
-                 // Skip files or folders starting with __
-                 if (this.isFileToSkip(zentryFileName)){
-                     continue;
-                 }
+                Boolean skip = isDirectory || this.isFileToSkip(zentryFileName);
 
-                if (entry.isDirectory()) {
-                   //String dirpath = outputFolder + "/" + zentryFileName;
-                   //createDirectory(dirpath);
-                   continue;       
+                // check if path is hidden
+                if (isDirectory && Files.isHidden(Paths.get(zentryFileName))) {
+                    hiddenDirectories.add(zentryFileName);
+                    logger.fine("Ignoring files under hidden directory: " + zentryFileName);
+                } else {
+                    // check if the path was already found to be hidden
+                    for (String hidden : hiddenDirectories) {
+                        if (zentryFileName.startsWith(hidden)) {
+                            skip = true;
+                            break;
+                        }
+                    }
                 }
-                                
+
+                if (skip) {
+                    continue;
+                }
+
                 String unzipFileName = this.getFileBasename(zentryFileName);
                 if (unzipFileName==null){
                     logger.warning("Zip Entry Basename is an empty string: " + zentryFileName);
                     continue;
                 }
                 String unzipFolderName = this.getFolderName(zentryFileName);
-                                
+
                 String unzipFilePath = unzipFileName; 
                 if (unzipFolderName != null) {
                     unzipFilePath = unzipFolderName + "/" + unzipFileName; 

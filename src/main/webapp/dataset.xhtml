@@ -1862,19 +1862,23 @@
                         </div>
                     </p:dialog>
                     <p:dialog id="sendBackToContributor" header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor" modal="true">
+                    <o:importConstants type="edu.harvard.iq.dataverse.settings.FeatureFlags" />
+                    <ui:param name="disableReasonField" value="#{FeatureFlags.DISABLE_RETURN_TO_AUTHOR_REASON.enabled()}"/>
                         <p class="text-warning">
-                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']}
+                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']} #{disableReasonField ? '':bundle['dataset.rejectMessageReason']}
                         </p>
-
-                        <p:inputTextarea id="returnReason" rows="4" value="#{DatasetPage.returnReason}" title="#{bundle['dataset.rejectMessage.label']}" maxlength="2000" widgetVar="returnReason"
-                                         cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"
-                                         required="#{param['DO_RETURN_TO_AUTHOR_VALIDATION']}"
-                                         requiredMessage="#{bundle['dataset.reject.enterReason.error']}"/>
-                        <p>
-                            <h:outputText id="display"/>
-                        </p>
-                        <p:watermark for="returnReason" value="#{bundle['dataset.rejectWatermark']}" id="returnReasonWatermark"/>
-                        <h:message for="returnReason" styleClass="bg-danger text-danger"/>
+                        
+                        <ui:fragment  rendered="#{!disableReasonField}">
+                            <p:inputTextarea id="returnReason" rows="4" value="#{DatasetPage.returnReason}" title="#{bundle['dataset.rejectMessage.label']}" maxlength="2000" widgetVar="returnReason"
+                                             cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"
+                                             required="#{param['DO_RETURN_TO_AUTHOR_VALIDATION']}"
+                                             requiredMessage="#{bundle['dataset.reject.enterReason.error']}"/>
+                            <p>
+                                <h:outputText id="display"/>
+                            </p>
+                            <p:watermark for="returnReason" value="#{bundle['dataset.rejectWatermark']}" id="returnReasonWatermark"/>
+                            <h:message for="returnReason" styleClass="bg-danger text-danger"/>
+                        </ui:fragment>
                         
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}"
