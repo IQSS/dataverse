@@ -29,8 +29,13 @@ Semantic API
 
 An example JSON-LD file is available at :download:`dataset-create-software.jsonld <../_static/api/dataset-create-software.jsonld>`
 
-DDI Import
-----------
+Import with Native JSON
+-----------------------
+
+The same native JSON file as above can be used when importing a dataset: :download:`dataset-create-software.json <../_static/api/dataset-create-software.json>`
+
+Import with DDI
+---------------
 
 An example DDI file is available at :download:`dataset-create-software-ddi.xml <../_static/api/dataset-create-software-ddi.xml>`
 
