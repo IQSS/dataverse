@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
@@ -429,8 +430,13 @@ public class Dataverses extends AbstractApiBean {
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = null;
             try {
-                ds = jsonParser().parseDataset(importService.ddiToJson(xml));
+                JsonObject jsonObject = importService.ddiToJson(xml);
+                ds = jsonParser().parseDataset(jsonObject);
                 DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
+                DatasetType datasetType = getDatasetTypeFromJson(jsonObject);
+                if (datasetType != null) {
+                    ds.setDatasetType(datasetType);
+                }
             } catch (JsonParseException jpe) {
                 return badRequest("Error parsing data as Json: "+jpe.getMessage());
             } catch (ImportException e) {
@@ -491,7 +497,31 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
+    public DatasetType getDatasetTypeFromJson(JsonObject jsonObject) {
+        JsonArray citationFields = jsonObject.getJsonObject("datasetVersion")
+                .getJsonObject("metadataBlocks")
+                .getJsonObject("citation")
+                .getJsonArray("fields");
+        for (JsonValue citationField : citationFields) {
+            JsonObject field = (JsonObject) citationField;
+            String name = field.getString("typeName");
+            if (name.equals(DatasetFieldConstant.kindOfData)) {
+                JsonArray values = field.getJsonArray("value");
+                for (JsonString value : values.getValuesAs(JsonString.class)) {
+                    try {
+                        // return the first DatasetType you find
+                        DatasetType.Type type = DatasetType.Type.fromString(value.getString());
+                        return new DatasetType(type);
+                    } catch (IllegalArgumentException ex) {
+                        // No worries, it's just some other kind of data.
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     @POST
     @AuthRequired
     @Path("{identifier}/datasets/:startmigration")

@@ -111,4 +111,39 @@ public class DatasetTypesIT {
         assertEquals("software", datasetType);
 
     }
+
+    @Test
+    public void testImportDDI() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+
+        String jsonIn = UtilIT.getDatasetJson("doc/sphinx-guides/source/_static/api/dataset-create-software-ddi.xml");
+
+        String randomString = UtilIT.getRandomString(6);
+
+        Response importJson = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, jsonIn, "doi:10.5072/FK2/" + randomString, "no");
+        importJson.prettyPrint();
+        importJson.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = JsonPath.from(importJson.getBody().asString()).getInt("data.id");
+        String datasetPid = JsonPath.from(importJson.getBody().asString()).getString("data.persistentId");
+
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.prettyPrint();
+        getDatasetJson.then().assertThat().statusCode(OK.getStatusCode());
+        String datasetType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
+        System.out.println("datasetType: " + datasetType);
+        assertEquals("software", datasetType);
+
+    }
+
 }

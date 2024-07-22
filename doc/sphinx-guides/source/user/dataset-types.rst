@@ -28,3 +28,10 @@ Semantic API
 ---------------------------------
 
 An example JSON-LD file is available at :download:`dataset-create-software.jsonld <../_static/api/dataset-create-software.jsonld>`
+
+DDI Import
+----------
+
+An example DDI file is available at :download:`dataset-create-software-ddi.xml <../_static/api/dataset-create-software-ddi.xml>`
+
+Note that for DDI import to work ``dataKind`` must be set to one of the valid types. The first valid type wins.
