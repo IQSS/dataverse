@@ -175,8 +175,6 @@ public class ImportGenericServiceBean {
             //while (xmlr.next() == XMLStreamConstants.COMMENT); // skip pre root comments
             xmlr.nextTag();
 
-            xmlr.require(XMLStreamConstants.START_ELEMENT, null, OAI_DC_OPENING_TAG);
-
             processXMLElement(xmlr, ":", OAI_DC_OPENING_TAG, dublinCoreMapping, datasetDTO);
         } catch (XMLStreamException ex) {
             throw new EJBException("ERROR occurred while parsing XML fragment  (" + DcXmlToParse.substring(0, 64) + "...); ", ex);
@@ -205,10 +203,24 @@ public class ImportGenericServiceBean {
     
     private void processXMLElement(XMLStreamReader xmlr, String currentPath, String openingTag, ForeignMetadataFormatMapping foreignFormatMapping, DatasetDTO datasetDTO) throws XMLStreamException {
         logger.fine("entering processXMLElement; ("+currentPath+")");
-        
-        for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+
+        while (xmlr.hasNext()) {
+
+            int event;
+            try {
+                event = xmlr.next();
+            } catch (XMLStreamException ex) {
+                continue; // Skip Undeclared namespace prefix and Unexpected close tag related to com.ctc.wstx.exc.WstxParsingException
+            }
+
             if (event == XMLStreamConstants.START_ELEMENT) {
+                String prefix = xmlr.getPrefix();
                 String currentElement = xmlr.getLocalName();
+
+                if (prefix != null && !prefix.equals(OAI_DC_OPENING_TAG)) { // Ignore non "dc:" prefix
+                    logger.warning("Element " + prefix + ":" + currentElement + " is ignored");
+                    continue;
+                }
                 
                 ForeignMetadataFieldMapping mappingDefined = datasetfieldService.findFieldMapping(foreignFormatMapping.getName(), currentPath+currentElement);
                 
