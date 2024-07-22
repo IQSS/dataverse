@@ -54,15 +54,18 @@ public class DatasetField implements Serializable {
                                     o2.getDatasetFieldType().getDisplayOrder() );
     }};
 
-    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, Object dsv) {
+    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, DatasetVersion dsv) {
         
         DatasetField dsfv = createNewEmptyDatasetField(dsfType);
-        //TODO - a better way to handle this?
-        if (dsv.getClass().getName().equals("edu.harvard.iq.dataverse.DatasetVersion")){
-                   dsfv.setDatasetVersion((DatasetVersion)dsv); 
-        } else {
-            dsfv.setTemplate((Template)dsv);
-        }
+        dsfv.setDatasetVersion(dsv);
+
+        return dsfv;
+    }
+
+    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, Template dsv) {
+        
+        DatasetField dsfv = createNewEmptyDatasetField(dsfType);
+        dsfv.setTemplate(dsv);
 
         return dsfv;
     }
@@ -545,8 +548,11 @@ public class DatasetField implements Serializable {
         return "edu.harvard.iq.dataverse.DatasetField[ id=" + id + " ]";
     }
 
-    public DatasetField copy(Object version) {
+    public DatasetField copy(DatasetVersion version) {
         return copy(version, null);
+    }
+    public DatasetField copy(Template template) {
+        return copy(template, null);
     }
     
     // originally this was an overloaded method, but we renamed it to get around an issue with Bean Validation
@@ -555,15 +561,15 @@ public class DatasetField implements Serializable {
         return copy(null, parent);
     }
 
-    private DatasetField copy(Object version, DatasetFieldCompoundValue parent) {
+    private DatasetField copy(Object versionOrTemplate, DatasetFieldCompoundValue parent) {
         DatasetField dsf = new DatasetField();
         dsf.setDatasetFieldType(datasetFieldType);
         
-        if (version != null) {
-            if (version.getClass().getName().equals("edu.harvard.iq.dataverse.DatasetVersion")) {
-                dsf.setDatasetVersion((DatasetVersion) version);               
+        if (versionOrTemplate != null) {
+            if (versionOrTemplate instanceof DatasetVersion) {
+                dsf.setDatasetVersion((DatasetVersion) versionOrTemplate);               
             } else {
-                dsf.setTemplate((Template) version);
+                dsf.setTemplate((Template) versionOrTemplate);
             }
         }
         
