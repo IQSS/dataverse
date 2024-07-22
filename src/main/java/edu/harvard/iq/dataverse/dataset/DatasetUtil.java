@@ -317,25 +317,14 @@ public class DatasetUtil {
         int width = fullSizeImage.getWidth();
         int height = fullSizeImage.getHeight();
         FileChannel src = null;
-        try (FileInputStream fis = new FileInputStream(tmpFile)) {
-            src = fis.getChannel();
-        } catch (IOException ex) {
-        	IOUtils.closeQuietly(inputStream);
-            logger.severe("fis.getChannel failed: " + ex.getMessage());
-            return null;
-        }
         FileChannel dest = null;
-        try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
+        try (FileInputStream fis = new FileInputStream(tmpFile); FileOutputStream fos = new FileOutputStream(tmpFile)) {
+            src = fis.getChannel();
             dest = fos.getChannel();
-        } catch (IOException ex) {
-        	IOUtils.closeQuietly(inputStream);
-            logger.severe("fos.getChannel failed: " + ex.getMessage());
-            return null;
-        }
-        try {
             dest.transferFrom(src, 0, src.size());
         } catch (IOException ex) {
-            logger.severe("dest.transferFrom failed: " + ex.getMessage());
+        	IOUtils.closeQuietly(inputStream);
+            logger.severe("Error occurred during transfer using FileChannels: " + ex.getMessage());
             return null;
         }
         File tmpFileForResize = null;
