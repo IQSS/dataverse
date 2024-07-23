@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
@@ -998,6 +999,13 @@ public class IndexServiceBean {
         } else {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, false);
             solrInputDocument.addField(SearchFields.METADATA_SOURCE, rdvName); //rootDataverseName);
+        }
+
+        if (FeatureFlags.DATASET_TYPES.enabled()) {
+            DatasetType datasetType = dataset.getDatasetType();
+            if (datasetType != null) {
+                solrInputDocument.addField(SearchFields.DATASET_TYPE, datasetType.getBaseType().toString());
+            }
         }
 
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();

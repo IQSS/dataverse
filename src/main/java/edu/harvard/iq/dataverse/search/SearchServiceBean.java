@@ -224,6 +224,9 @@ public class SearchServiceBean {
             // Facets to Retrieve
             // -----------------------------------
             solrQuery.addFacetField(SearchFields.METADATA_TYPES);
+            if (FeatureFlags.DATASET_TYPES.enabled()) {
+                solrQuery.addFacetField(SearchFields.DATASET_TYPE);
+            }
             solrQuery.addFacetField(SearchFields.DATAVERSE_CATEGORY);
             solrQuery.addFacetField(SearchFields.METADATA_SOURCE);
             solrQuery.addFacetField(SearchFields.PUBLICATION_YEAR);
@@ -484,6 +487,7 @@ public class SearchServiceBean {
             String identifier = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER);
             String citation = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION);
             String citationPlainHtml = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION_HTML);
+            String datasetType = (String) solrDocument.getFieldValue(SearchFields.DATASET_TYPE);
             String persistentUrl = (String) solrDocument.getFieldValue(SearchFields.PERSISTENT_URL);
             String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
             String nameSort = (String) solrDocument.getFieldValue(SearchFields.NAME_SORT);
@@ -640,6 +644,9 @@ public class SearchServiceBean {
                 List<String> authors = (List) solrDocument.getFieldValues(DatasetFieldConstant.authorName);
                 if (authors != null) {
                     solrSearchResult.setDatasetAuthors(authors);
+                }
+                if (datasetType != null) {
+                    solrSearchResult.setDatasetType(datasetType);
                 }
             } else if (type.equals("files")) {
                 String parentGlobalId = null;

@@ -264,6 +264,10 @@ public class SearchFields {
     public static final String DATASET_PUBLICATION_DATE = "dsPublicationDate";
     public static final String DATASET_PERSISTENT_ID = "dsPersistentId";
     public static final String DATASET_VERSION_ID = "datasetVersionId";
+    /**
+     * Datasets can be software, workflow, etc. See the DatasetType object.
+     */
+    public static final String DATASET_TYPE = "datasetType_s";
 
     public static final String VARIABLE_NAME = "variableName";
     public static final String VARIABLE_LABEL = "variableLabel";

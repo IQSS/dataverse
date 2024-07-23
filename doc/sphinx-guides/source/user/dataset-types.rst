@@ -11,6 +11,8 @@ Intro
 
 Datasets can have a dataset type such as "dataset", "software", or "workflow".
 
+When browsing or searching, these types appear under a facet called "Dataset Type".
+
 Enabling Dataset Types
 ======================
 

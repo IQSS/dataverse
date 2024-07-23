@@ -80,7 +80,7 @@
         <collDate cycle="P1" event="end" date="1006-01-01">1006-01-01</collDate>
         <collDate cycle="P2" event="start" date="1006-02-01">1006-02-01</collDate>
         <collDate cycle="P2" event="end" date="1006-02-02">1006-02-02</collDate>
-        <dataKind>software</dataKind>
+        <dataKind>workflow</dataKind>
         <nation>Afghanistan</nation>
         <geogCover>GeographicCoverageCity1</geogCover>
         <geogCover>GeographicCoverageStateProvince1</geogCover>

@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 public class SolrSearchResult {
+    // TODO: remove all tabs from this file
 	private static final Logger logger = Logger.getLogger(SolrSearchResult.class.getCanonicalName());
 
 	private String id;
@@ -72,6 +73,7 @@ public class SolrSearchResult {
 	private String dataverseAffiliation;
 	private String citation;
 	private String citationHtml;
+	private String datasetType;
 	/**
 	 * Files and datasets might have a UNF. Dataverses don't.
 	 */
@@ -947,6 +949,14 @@ public class SolrSearchResult {
 	public void setCitationHtml(String citationHtml) {
 		this.citationHtml = citationHtml;
 	}
+
+    public String getDatasetType() {
+        return datasetType;
+    }
+
+    public void setDatasetType(String datasetType) {
+        this.datasetType = datasetType;
+    }
 
 	public String getFiletype() {
 		return filetype;

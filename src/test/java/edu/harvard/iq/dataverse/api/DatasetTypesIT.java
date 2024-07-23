@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.search.SearchFields;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import org.hamcrest.CoreMatchers;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -45,10 +48,31 @@ public class DatasetTypesIT {
         String datasetType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
         System.out.println("datasetType: " + datasetType);
         assertEquals("software", datasetType);
+
+        Response searchDraft = UtilIT.searchAndShowFacets("id:dataset_" + datasetId + "_draft", apiToken);
+        searchDraft.prettyPrint();
+        searchDraft.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(1))
+                .body("data.count_in_response", CoreMatchers.is(1))
+                .body("data.facets[0].datasetType_s.friendly", CoreMatchers.is("Dataset Type"))
+                .body("data.facets[0].datasetType_s.labels[0].software", CoreMatchers.is(1))
+                .statusCode(OK.getStatusCode());
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+//        Response searchAsGuest = UtilIT.search(SearchFields.DATASET_TYPE + ":software", null);
+//        searchAsGuest.prettyPrint();
+//        searchAsGuest.then().assertThat()
+//                .body("data.total_count", CoreMatchers.is(1))
+//                .body("data.count_in_response", CoreMatchers.is(1))
+//                .body("data.facets[0].datasetType_s.friendly", CoreMatchers.is("Dataset Type"))
+//                .body("data.facets[0].datasetType_s.labels[0].software", CoreMatchers.is(1))
+//                .statusCode(OK.getStatusCode());
     }
 
     @Test
-    public void testCreateSoftwareDatasetSemantic() {
+    public void testCreateWorkflowDatasetSemantic() {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -76,6 +100,7 @@ public class DatasetTypesIT {
         String datasetType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
         System.out.println("datasetType: " + datasetType);
         assertEquals("software", datasetType);
+
     }
 
     @Test
@@ -113,7 +138,7 @@ public class DatasetTypesIT {
     }
 
     @Test
-    public void testImportDDI() {
+    public void testImportDdiWorkflow() {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -126,11 +151,13 @@ public class DatasetTypesIT {
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
         Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
 
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
         String jsonIn = UtilIT.getDatasetJson("doc/sphinx-guides/source/_static/api/dataset-create-software-ddi.xml");
 
         String randomString = UtilIT.getRandomString(6);
 
-        Response importJson = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, jsonIn, "doi:10.5072/FK2/" + randomString, "no");
+        Response importJson = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, jsonIn, "doi:10.5072/FK2/" + randomString, "yes");
         importJson.prettyPrint();
         importJson.then().assertThat().statusCode(CREATED.getStatusCode());
 
@@ -142,7 +169,16 @@ public class DatasetTypesIT {
         getDatasetJson.then().assertThat().statusCode(OK.getStatusCode());
         String datasetType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
         System.out.println("datasetType: " + datasetType);
-        assertEquals("software", datasetType);
+        assertEquals("workflow", datasetType);
+
+        Response search = UtilIT.searchAndShowFacets("id:dataset_" + datasetId, apiToken);
+        search.prettyPrint();
+        search.then().assertThat()
+                .body("data.total_count", CoreMatchers.is(1))
+                .body("data.count_in_response", CoreMatchers.is(1))
+                .body("data.facets[0].datasetType_s.friendly", CoreMatchers.is("Dataset Type"))
+                .body("data.facets[0].datasetType_s.labels[0].workflow", CoreMatchers.is(1))
+                .statusCode(OK.getStatusCode());
 
     }
 
