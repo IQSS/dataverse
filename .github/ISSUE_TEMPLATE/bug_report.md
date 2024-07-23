@@ -14,7 +14,7 @@ Thank you for contributing to the Dataverse Project through the creation of a bu
 WARNING: If this is a security issue it should be reported privately to security@dataverse.org
 
 More information on bug issues and contributions can be found in the "Contributing to Dataverse" page:
-https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md#bug-reportsissues
+https://guides.dataverse.org/en/latest/contributor/index.html
 
 Please fill out as much of the template as you can.
 Start below this comment section.
