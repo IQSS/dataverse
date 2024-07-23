@@ -52,3 +52,6 @@ To add a screenshot, please use one of the following formats and/or methods desc
 
 * https://help.github.com/en/articles/file-attachments-on-issues-and-pull-requests
 *
+
+**Will you be able to contribute a Pull Request for this issue?**  
+Help is always welcome, is this bug something you or your organization plan to fix ?
