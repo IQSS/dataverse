@@ -612,6 +612,8 @@ The fully expanded example above (without environment variables) looks like this
 
 Note: you must have "Add Dataset" permission in the given collection to invoke this endpoint.
 
+.. _featured-collections:
+
 List Featured Collections for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -1,1 +1,0 @@
-A bug that prevented the Ingest option in the File page Edit File menu from working has been fixed

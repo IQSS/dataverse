@@ -1292,8 +1292,8 @@ Reported Working S3-Compatible Storage
  Note that for direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``. Also, note that if you choose to enable ``dataverse.files.<id>.download-redirect`` the S3 URLs expire after 60 minutes by default. You can change that minute value to reflect a timeout value that’s more appropriate by using ``dataverse.files.<id>.url-expiration-minutes``.
 
 `Surf Object Store v2019-10-30 <https://www.surf.nl/en>`_
-  Set ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false`` to use Surf Object
-  Store.
+  Set ``dataverse.files.<id>.payload-signing=true``, ``dataverse.files.<id>.chunked-encoding=false`` and ``dataverse.files.<id>.path-style-request=true`` to use Surf Object
+  Store. You will need the Swift client (documented at <http://doc.swift.surfsara.nl/en/latest/Pages/Clients/s3cred.html>) to create the access key and secret key for the S3 interface.
 
 Note that the ``dataverse.files.<id>.proxy-url`` setting can be used in installations where the object store is proxied, but it should be considered an advanced option that will require significant expertise to properly configure. 
 For direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``.
@@ -2441,6 +2441,15 @@ The PostgreSQL server port to connect to.
 Defaults to ``5432``, the default PostgreSQL port.
 
 Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PORT``.
+
+dataverse.db.parameters
++++++++++++++++++++++++
+
+The PostgreSQL server connection parameters.
+
+Defaults to *empty string*
+
+Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PARAMETERS``.
 
 .. _dataverse.solr.host:
 
