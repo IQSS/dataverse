@@ -9,7 +9,7 @@
       "citation": {
         "fields": [
           {
-            "value": "Darwin's Finches",
+            "value": "pyDataverse",
             "typeClass": "primitive",
             "multiple": false,
             "typeName": "title"
@@ -18,13 +18,13 @@
             "value": [
               {
                 "authorName": {
-                  "value": "Finch, Fiona",
+                  "value": "Range, Jan",
                   "typeClass": "primitive",
                   "multiple": false,
                   "typeName": "authorName"
                 },
                 "authorAffiliation": {
-                  "value": "Birds Inc.",
+                  "value": "University of Stuttgart",
                   "typeClass": "primitive",
                   "multiple": false,
                   "typeName": "authorAffiliation"
@@ -41,13 +41,13 @@
                     "typeClass": "primitive",
                     "multiple": false,
                     "typeName": "datasetContactEmail",
-                    "value" : "finch@mailinator.com"
+                    "value" : "jan@mailinator.com"
                 },
                 "datasetContactName" : {
                     "typeClass": "primitive",
                     "multiple": false,
                     "typeName": "datasetContactName",
-                    "value": "Finch, Fiona"
+                    "value": "Range, Jan"
                 }
             }],
             "typeClass": "compound",
@@ -57,7 +57,7 @@
           {
             "value": [ {
                "dsDescriptionValue":{
-                "value":   "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
+                "value": "A Python module for Dataverse.",
                 "multiple":false,
                "typeClass": "primitive",
                "typeName": "dsDescriptionValue"
@@ -68,7 +68,7 @@
           },
           {
             "value": [
-              "Medicine, Health and Life Sciences"
+              "Computer and Information Science"
             ],
             "typeClass": "controlledVocabulary",
             "multiple": true,
