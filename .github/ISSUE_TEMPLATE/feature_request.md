@@ -11,8 +11,7 @@ assignees: ''
 Thank you for contributing to the Dataverse Project through the creation of a feature request!
 
 More information on ideas/feature requests and contributions can be found in the "Contributing to Dataverse" page:
-https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md#ideasfeature-requests
-
+https://guides.dataverse.org/en/latest/contributor/index.html
 Please fill out as much of the template as you can.
 Start below this comment section.
 -->
@@ -34,3 +33,6 @@ Start below this comment section.
 
 
 **Any open or closed issues related to this feature request?**
+
+**Will you be able to contribute a Pull Request for this issue?**  
+Help is always welcome, is this bug something you or your organization plan to fix ?
