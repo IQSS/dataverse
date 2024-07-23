@@ -24,3 +24,4 @@ API Guide
    linkeddatanotification
    apps
    faq
+   changelog

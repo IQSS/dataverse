@@ -163,6 +163,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.dataTables")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.fileCategories")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.embargo")
+            .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.retention")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.datasetVersion")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.releaseUser")
             .setHint("eclipselink.left-join-fetch", "o.fileMetadatas.dataFile.creator")
@@ -312,6 +313,23 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     
     private void msg(String s){
         //logger.fine(s);
+    }
+    
+    public boolean isVersionDefaultCustomTerms(DatasetVersion datasetVersion) {
+
+        if (datasetVersion.getId() != null) {
+            try {
+                TermsOfUseAndAccess toua = (TermsOfUseAndAccess) em.createNamedQuery("TermsOfUseAndAccess.findByDatasetVersionIdAndDefaultTerms")
+                        .setParameter("id", datasetVersion.getId()).setParameter("defaultTerms", TermsOfUseAndAccess.DEFAULT_NOTERMS).getSingleResult();
+                if (toua != null && datasetVersion.getTermsOfUseAndAccess().getLicense() == null) {
+                    return true;
+                }
+
+            } catch (NoResultException e) {
+                return false;
+            }
+        }
+        return false;
     }
     
     /**
@@ -802,6 +820,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                     + "AND fm.datafile_id = df.id "
                     + "AND df.restricted = false "
                     + "AND df.embargo_id is null "
+                    + "AND df.retention_id is null "
                     + "AND o.previewImageAvailable = true "
                     + "ORDER BY df.id LIMIT 1;").getSingleResult();
         } catch (Exception ex) {
@@ -825,9 +844,10 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         + "AND df.id = o.id "
                         + "AND fm.datasetversion_id = dv.id "
                         + "AND fm.datafile_id = df.id "
-                        // + "AND o.previewImageAvailable = false "
+                        + "AND o.previewimagefail = false "
                         + "AND df.restricted = false "
                         + "AND df.embargo_id is null "
+                        + "AND df.retention_id is null "
                         + "AND df.contenttype LIKE 'image/%' "
                         + "AND NOT df.contenttype = 'image/fits' "
                         + "AND df.filesize < " + imageThumbnailSizeLimit + " "
@@ -859,9 +879,10 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                         + "AND df.id = o.id "
                         + "AND fm.datasetversion_id = dv.id "
                         + "AND fm.datafile_id = df.id "
-                        // + "AND o.previewImageAvailable = false "
+                        + "AND o.previewimagefail = false "
                         + "AND df.restricted = false "
                         + "AND df.embargo_id is null "
+                        + "AND df.retention_id is null "
                         + "AND df.contenttype = 'application/pdf' "
                         + "AND df.filesize < " + imageThumbnailSizeLimit + " "
                         + "ORDER BY df.filesize ASC LIMIT 1;").getSingleResult();

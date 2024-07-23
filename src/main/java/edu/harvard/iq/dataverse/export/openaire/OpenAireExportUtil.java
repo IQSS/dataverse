@@ -13,16 +13,16 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
 
-import edu.harvard.iq.dataverse.DOIServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.GlobalId;
-import edu.harvard.iq.dataverse.HandlenetServiceBean;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.util.PersonOrOrgUtil;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import edu.harvard.iq.dataverse.pidproviders.doi.AbstractDOIProvider;
+import edu.harvard.iq.dataverse.pidproviders.handle.HandlePidProvider;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -189,10 +189,10 @@ public class OpenAireExportUtil {
         if (StringUtils.isNotBlank(identifier)) {
             Map<String, String> identifier_map = new HashMap<String, String>();
 
-            if (StringUtils.containsIgnoreCase(identifier, DOIServiceBean.DOI_RESOLVER_URL)) {
+            if (StringUtils.containsIgnoreCase(identifier, AbstractDOIProvider.DOI_RESOLVER_URL)) {
                 identifier_map.put("identifierType", "DOI");
                 identifier = StringUtils.substring(identifier, identifier.indexOf("10."));
-            } else if (StringUtils.containsIgnoreCase(identifier, HandlenetServiceBean.HDL_RESOLVER_URL)) {
+            } else if (StringUtils.containsIgnoreCase(identifier, HandlePidProvider.HDL_RESOLVER_URL)) {
                 identifier_map.put("identifierType", "Handle");
                 if (StringUtils.contains(identifier, "http")) {
                     identifier = identifier.replace(identifier.substring(0, identifier.indexOf("/") + 2), "");
@@ -437,7 +437,7 @@ public class OpenAireExportUtil {
                         for (String subject : fieldDTO.getMultipleVocab()) {
                             if (StringUtils.isNotBlank(subject)) {
                                 subject_check = writeOpenTag(xmlw, "subjects", subject_check);
-                                writeSubjectElement(xmlw, null, null, subject, language);
+                                writeSubjectElement(xmlw, null, null, null, subject, language);
                             }
                         }
                     }
@@ -446,7 +446,8 @@ public class OpenAireExportUtil {
                         for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
                             String subject = null;
                             String subjectScheme = null;
-                            String schemeURI = null;
+                            String keywordTermURI = null;
+                            String keywordVocabURI = null;
 
                             for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
@@ -454,18 +455,22 @@ public class OpenAireExportUtil {
                                     subject = next.getSinglePrimitive();
                                 }
 
+                                if (DatasetFieldConstant.keywordTermURI.equals(next.getTypeName())) {
+                                    keywordTermURI = next.getSinglePrimitive();
+                                }  
+
                                 if (DatasetFieldConstant.keywordVocab.equals(next.getTypeName())) {
                                     subjectScheme = next.getSinglePrimitive();
                                 }
-
+                                
                                 if (DatasetFieldConstant.keywordVocabURI.equals(next.getTypeName())) {
-                                    schemeURI = next.getSinglePrimitive();
+                                    keywordVocabURI = next.getSinglePrimitive();
                                 }
                             }
 
                             if (StringUtils.isNotBlank(subject)) {
                                 subject_check = writeOpenTag(xmlw, "subjects", subject_check);
-                                writeSubjectElement(xmlw, subjectScheme, schemeURI, subject, language);
+                                writeSubjectElement(xmlw, subjectScheme, keywordTermURI, keywordVocabURI, subject, language);
                             }
                         }
                     }
@@ -493,7 +498,7 @@ public class OpenAireExportUtil {
 
                             if (StringUtils.isNotBlank(subject)) {
                                 subject_check = writeOpenTag(xmlw, "subjects", subject_check);
-                                writeSubjectElement(xmlw, subjectScheme, schemeURI, subject, language);
+                                writeSubjectElement(xmlw, subjectScheme, null, schemeURI, subject, language);
                             }
                         }
                     }
@@ -513,7 +518,7 @@ public class OpenAireExportUtil {
      * @param language
      * @throws XMLStreamException
      */
-    private static void writeSubjectElement(XMLStreamWriter xmlw, String subjectScheme, String schemeURI, String value, String language) throws XMLStreamException {
+    private static void writeSubjectElement(XMLStreamWriter xmlw, String subjectScheme, String valueURI, String schemeURI, String value, String language) throws XMLStreamException {
         // write a subject
         Map<String, String> subject_map = new HashMap<String, String>();
 
@@ -523,6 +528,9 @@ public class OpenAireExportUtil {
 
         if (StringUtils.isNotBlank(subjectScheme)) {
             subject_map.put("subjectScheme", subjectScheme);
+        }
+        if (StringUtils.isNotBlank(valueURI)) {
+            subject_map.put("valueURI", valueURI);
         }
         if (StringUtils.isNotBlank(schemeURI)) {
             subject_map.put("schemeURI", schemeURI);
