@@ -36,5 +36,5 @@ Start below this comment section.
 **Any open or closed issues related to this suggestion?**
 
 
-**Will you be able to contribute a Pull Request for this issue?**  
-Help is always welcome, is this suggestion something you or your organization plan to implement ?
+**Are you thinking about creating a pull request for this issue?**
+Help is always welcome, is this idea something you or your organization plan to implement?
