@@ -102,6 +102,7 @@
                                         </buildx>
                                         <dockerFile>Dockerfile</dockerFile>
                                         <args>
+                                            <!--Not clear if JAVA_IMAGE is working. See Dockerfile.-->
                                             <JAVA_IMAGE>${java.image}</JAVA_IMAGE>
                                             <UID>${base.image.uid}</UID>
                                             <GID>${base.image.gid}</GID>

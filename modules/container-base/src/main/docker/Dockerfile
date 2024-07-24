@@ -21,9 +21,10 @@
 #  - We provide some tweaks for development and monitoring
 #
 
-# Make the Java base image and version configurable (useful for trying newer Java versions and flavors)
-ARG JAVA_IMAGE="eclipse-temurin:17-jre-jammy"
-FROM $JAVA_IMAGE
+# There was a $JAVA_IMAGE variable here but it stopped working.
+# modules/container-base/pom.xml still has this but it might not
+# work anymore: <JAVA_IMAGE>${java.image}</JAVA_IMAGE>
+FROM eclipse-temurin:17-jre-jammy
 
 # Default payara ports to expose
 # 4848: admin console
