@@ -12,6 +12,7 @@ Thank you for contributing to the Dataverse Project through the creation of a fe
 
 More information on ideas/feature requests and contributions can be found in the "Contributing to Dataverse" page:
 https://guides.dataverse.org/en/latest/contributor/index.html
+
 Please fill out as much of the template as you can.
 Start below this comment section.
 -->
