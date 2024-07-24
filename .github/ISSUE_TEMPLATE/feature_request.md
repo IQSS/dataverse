@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: Suggest an idea or new feature for the Dataverse software!
-title: 'Feature Request/Idea:'
+title: 'Feature Request:'
 labels: 'Type: Feature'
 assignees: ''
 
@@ -34,5 +34,5 @@ Start below this comment section.
 
 **Any open or closed issues related to this feature request?**
 
-**Will you be able to contribute a Pull Request for this issue?**  
-Help is always welcome, is this bug something you or your organization plan to fix ?
+**Are you thinking about creating a pull request for this feature?**  
+Help is always welcome, is this feature something you or your organization plan to implement?
