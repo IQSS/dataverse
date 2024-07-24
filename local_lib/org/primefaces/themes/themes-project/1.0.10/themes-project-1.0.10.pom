@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.primefaces.themes</groupId>
+	<artifactId>themes-project</artifactId>
+	<packaging>pom</packaging>
+	<version>1.0.10</version>
+	<name>primefaces themes</name>
+	
+	<modules>
+		<module>afterdark</module>
+        <module>afternoon</module>
+        <module>afterwork</module>
+		<module>black-tie</module>
+		<module>blitzer</module>
+		<module>bluesky</module>
+        <module>bootstrap</module>
+		<module>casablanca</module>
+        <module>cruze</module>
+		<module>cupertino</module>
+		<module>dark-hive</module>
+        <module>delta</module>
+		<module>dot-luv</module>
+		<module>eggplant</module>
+		<module>excite-bike</module>
+		<module>flick</module>
+        <module>glass-x</module>
+        <module>home</module>
+		<module>hot-sneaks</module>
+		<module>humanity</module>
+		<module>le-frog</module>
+		<module>midnight</module>
+		<module>mint-choc</module>
+		<module>overcast</module>
+		<module>pepper-grinder</module>
+		<module>redmond</module>
+		<module>rocket</module>
+        <module>sam</module>
+		<module>smoothness</module>
+		<module>south-street</module>
+		<module>start</module>
+		<module>sunny</module>
+		<module>swanky-purse</module>
+		<module>trontastic</module>
+		<module>ui-darkness</module>
+		<module>ui-lightness</module>
+		<module>vader</module>
+        <module>all-themes</module>
+	</modules>
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>1.0</version>
+            </extension>
+        </extensions>
+
+        <plugins>
+            <plugin>
+                <groupId>org.primefaces</groupId>
+                <artifactId>maven-jsf-plugin</artifactId>
+                <version>1.3.0</version>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <theme>true</theme>
+                        </configuration>
+                        <id>css-compressor</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>compress-css</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <distributionManagement>
+   		<repository>
+			<id>prime-repo</id>
+            <name>PrimeFaces Maven Repository</name>
+            <url>sftp://primefaces.org/var/www/repository</url>
+            <uniqueVersion>false</uniqueVersion>
+		</repository>
+    </distributionManagement>
+    
+    <pluginRepositories>
+   		<pluginRepository>
+			<id>prime-repo</id>
+            <name>PrimeFaces Maven Repository</name>
+            <url>http://repository.primefaces.org</url>
+		</pluginRepository>
+    </pluginRepositories>
+	
+</project>

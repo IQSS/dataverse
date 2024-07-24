@@ -1,0 +1,7 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Tue Jul 16 17:29:18 EDT 2024
+https\://nexus.payara.fish/repository/payara-artifacts/.error=
+https\://repo1.maven.org/maven2/.error=
+https\://repository.primefaces.org/.lastUpdated=1721165358914
+https\://repo1.maven.org/maven2/.lastUpdated=1721165358149
+https\://nexus.payara.fish/repository/payara-artifacts/.lastUpdated=1721165358131
