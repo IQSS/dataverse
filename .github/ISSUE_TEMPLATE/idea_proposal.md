@@ -1,8 +1,8 @@
 ---
-name: Feature request
-about: Suggest an idea or new feature for the Dataverse software!
-title: 'Feature Request:'
-labels: 'Type: Feature'
+name: Idea proposal
+about: Propose a new idea for discussion to improve the Dataverse software!
+title: 'Suggestion:'
+labels: 'Type: Suggestion'
 assignees: ''
 
 ---
@@ -17,14 +17,14 @@ Please fill out as much of the template as you can.
 Start below this comment section.
 -->
 
-**Overview of the Feature Request**
+**Overview of the Suggestion**
 
 
-**What kind of user is the feature intended for?**
+**What kind of user is the suggestion intended for?**
 (Example users roles: API User, Curator, Depositor, Guest, Superuser, Sysadmin)
 
 
-**What inspired the request?**
+**What inspired this idea?**
 
 
 **What existing behavior do you want changed?**
@@ -33,7 +33,8 @@ Start below this comment section.
 **Any brand new behavior do you want to add to Dataverse?**
 
 
-**Any open or closed issues related to this feature request?**
+**Any open or closed issues related to this suggestion?**
 
-**Are you thinking about creating a pull request for this feature?**  
-Help is always welcome, is this feature something you or your organization plan to implement?
+
+**Are you thinking about creating a pull request for this issue?**
+Help is always welcome, is this idea something you or your organization plan to implement?
