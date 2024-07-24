@@ -35,10 +35,3 @@ Import with Native JSON
 -----------------------
 
 The same native JSON file as above can be used when importing a dataset: :download:`dataset-create-software.json <../_static/api/dataset-create-software.json>`
-
-Import with DDI
----------------
-
-An example DDI file is available at :download:`dataset-create-software-ddi.xml <../_static/api/dataset-create-software-ddi.xml>`
-
-Note that for DDI import to work ``dataKind`` must be set to one of the valid types. The first valid type wins.

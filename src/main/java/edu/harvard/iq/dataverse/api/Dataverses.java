@@ -430,13 +430,8 @@ public class Dataverses extends AbstractApiBean {
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = null;
             try {
-                JsonObject jsonObject = importService.ddiToJson(xml);
-                ds = jsonParser().parseDataset(jsonObject);
+                ds = jsonParser().parseDataset(importService.ddiToJson(xml));
                 DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
-                DatasetType datasetType = getDatasetTypeFromJson(jsonObject);
-                if (datasetType != null) {
-                    ds.setDatasetType(datasetType);
-                }
             } catch (JsonParseException jpe) {
                 return badRequest("Error parsing data as Json: "+jpe.getMessage());
             } catch (ImportException e) {
@@ -496,30 +491,6 @@ public class Dataverses extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-    }
-
-    public DatasetType getDatasetTypeFromJson(JsonObject jsonObject) {
-        JsonArray citationFields = jsonObject.getJsonObject("datasetVersion")
-                .getJsonObject("metadataBlocks")
-                .getJsonObject("citation")
-                .getJsonArray("fields");
-        for (JsonValue citationField : citationFields) {
-            JsonObject field = (JsonObject) citationField;
-            String name = field.getString("typeName");
-            if (name.equals(DatasetFieldConstant.kindOfData)) {
-                JsonArray values = field.getJsonArray("value");
-                for (JsonString value : values.getValuesAs(JsonString.class)) {
-                    try {
-                        // return the first DatasetType you find
-                        DatasetType.Type type = DatasetType.Type.fromString(value.getString());
-                        return new DatasetType(type);
-                    } catch (IllegalArgumentException ex) {
-                        // No worries, it's just some other kind of data.
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     @POST
