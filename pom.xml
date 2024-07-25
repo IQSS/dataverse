@@ -258,6 +258,7 @@
             <version>11.0.0</version>
             <classifier>jakarta</classifier>
         </dependency>
+	<!-- On Maven Central: https://github.com/orgs/primefaces/discussions/2382 -->
         <dependency>
             <groupId>org.primefaces.themes</groupId>
             <artifactId>all-themes</artifactId>
