@@ -1187,11 +1187,20 @@ public class JsonPrinter {
                     .add("displayName", eg.getDisplayName())
                     .add("containedRoleAssignees", ras);
     }
-    
-    public static JsonObjectBuilder json( DataverseFacet aFacet ) {
+
+    public static JsonArrayBuilder jsonDataverseFacets(List<DataverseFacet> dataverseFacets) {
+        JsonArrayBuilder dataverseFacetsJson = Json.createArrayBuilder();
+        for(DataverseFacet facet: dataverseFacets) {
+            dataverseFacetsJson.add(json(facet));
+        }
+        return dataverseFacetsJson;
+    }
+
+    public static JsonObjectBuilder json(DataverseFacet aFacet) {
         return jsonObjectBuilder()
                     .add("id", String.valueOf(aFacet.getId())) // TODO should just be id I think
-                    .add("name", aFacet.getDatasetFieldType().getDisplayName());
+                    .add("displayName", aFacet.getDatasetFieldType().getDisplayName())
+                    .add("name", aFacet.getDatasetFieldType().getName());
     }
 
     public static JsonObjectBuilder json(Embargo embargo) {

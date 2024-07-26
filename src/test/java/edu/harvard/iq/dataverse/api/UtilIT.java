@@ -4037,4 +4037,11 @@ public class UtilIT {
                 .contentType("application/json")
                 .get("/api/dataverses/" + dataverseAlias + "/inputLevels");
     }
+
+    static Response listFacets(String dataverseAlias, boolean returnDetails, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("returnDetails", returnDetails)
+                .get("/api/dataverses/" + dataverseAlias + "/facets");
+    }
 }

@@ -1045,4 +1045,32 @@ public class DataversesIT {
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("Invalid metadata block name: \"" + invalidMetadataBlockName + "\""));
     }
+
+    @Test
+    public void testListFacets() {
+        Response createUserResponse = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        String[] expectedFacetNames = {"authorName", "subject", "keywordValue", "dateOfDeposit"};
+
+        // returnDetails is false
+        Response listFacetsResponse = UtilIT.listFacets(dataverseAlias, false, apiToken);
+        listFacetsResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String actualFacetName = listFacetsResponse.then().extract().path("data[0]");
+        assertThat(expectedFacetNames, hasItemInArray(actualFacetName));
+
+        // returnDetails is true
+        String[] expectedDisplayNames = {"Author Name", "Subject", "Keyword Term", "Deposit Date"};
+        listFacetsResponse = UtilIT.listFacets(dataverseAlias, true, apiToken);
+        listFacetsResponse.then().assertThat().statusCode(OK.getStatusCode());
+        actualFacetName = listFacetsResponse.then().extract().path("data[0].name");
+        assertThat(expectedFacetNames, hasItemInArray(actualFacetName));
+        String actualDisplayName = listFacetsResponse.then().extract().path("data[0].displayName");
+        assertThat(expectedDisplayNames, hasItemInArray(actualDisplayName));
+        String actualId = listFacetsResponse.then().extract().path("data[0].id");
+        assertNotNull(actualId);
+    }
 }
