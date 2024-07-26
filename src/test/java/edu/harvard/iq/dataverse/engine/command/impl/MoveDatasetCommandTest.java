@@ -6,7 +6,10 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.Guestbook;
@@ -14,6 +17,8 @@ import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
@@ -25,6 +30,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeAuthenticatedUser;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRole;
+import static edu.harvard.iq.dataverse.mocks.MocksFactory.nextId;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -48,6 +55,9 @@ import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.metamodel.Metamodel;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Context;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -61,8 +71,8 @@ import org.junit.jupiter.api.Test;
  * @author skraffmi
  */
 public class MoveDatasetCommandTest {
-        Dataset moved, movedResponses;
-    	Dataverse root, childA, childB, grandchildAA, childDraft, grandchildBB;
+        Dataset moved, movedResponses, movedPerms, movedSamePerms;
+    	Dataverse root, childA, childB, grandchildAA, childDraft, grandchildBB, childEditor, sibEditor;
 	DataverseEngine testEngine;
         MetadataBlock blockA, blockB, blockC, blockD;
         AuthenticatedUser auth, nobody;
@@ -85,6 +95,7 @@ public class MoveDatasetCommandTest {
         root.setName("root");
         root.setId(1l);
         root.setPublicationDate(new Timestamp(new Date().getTime()));
+        root.setDefaultContributorRole(roles.findBuiltinRoleByAlias(DataverseRole.CURATOR));
         
         childA = new Dataverse();
         childA.setName("childA");
@@ -104,13 +115,31 @@ public class MoveDatasetCommandTest {
         childDraft = new Dataverse();
         childDraft.setName("childDraft");
         childDraft.setId(5l);
-        
+               
         grandchildBB = new Dataverse();
         grandchildBB.setName("grandchildBB");
         grandchildBB.setId(6l);
         grandchildBB.setPublicationDate(new Timestamp(new Date().getTime()));
-
         
+        childEditor = new Dataverse();
+        childEditor.setName("childEditor");
+        childEditor.setId(7l);
+        childEditor.setDefaultContributorRole(roles.findBuiltinRoleByAlias(DataverseRole.EDITOR));
+        
+        sibEditor = new Dataverse();
+        sibEditor.setName("sibEditor");
+        sibEditor.setId(8l);
+        sibEditor.setDefaultContributorRole(roles.findBuiltinRoleByAlias(DataverseRole.EDITOR));
+        
+        movedPerms = new Dataset();
+        movedPerms.setOwner(childEditor);
+        DatasetLock lock = new DatasetLock(DatasetLock.Reason.InReview, nobody, null);        
+        movedPerms.addLock(lock);
+        
+        movedSamePerms = new Dataset();
+        movedSamePerms.setOwner(childEditor);        
+        movedSamePerms.addLock(lock);
+       
         moved = new Dataset();
         moved.setOwner(root);
         moved.setPublicationDate(new Timestamp(new Date().getTime()));
@@ -172,6 +201,21 @@ public class MoveDatasetCommandTest {
             }
             
             @Override
+            public DatasetServiceBean datasets() {
+                return new DatasetServiceBean() {
+                    @Override
+                    public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) {
+                        new HashSet<>(dataset.getLocks()).stream()
+                                .filter(l -> l.getReason() == aReason)
+                                .forEach(lock -> {
+                                    dataset.removeLock(lock);
+                                });
+
+                    }
+                };
+            }
+            
+            @Override
             public GuestbookServiceBean guestbooks() {
                 return new GuestbookServiceBean() {
                     @Override
@@ -220,6 +264,48 @@ public class MoveDatasetCommandTest {
             
         });
     }
+    
+    DataverseRoleServiceBean roles = new DataverseRoleServiceBean(){
+        
+        List<RoleAssignment> assignments = new LinkedList<>();
+        
+        Map<String, DataverseRole> builtInRoles;
+        
+        {
+            builtInRoles = new HashMap<>();
+            builtInRoles.put( DataverseRole.EDITOR, makeRole("default-editor", false));
+            builtInRoles.put( DataverseRole.ADMIN, makeRole("default-admin"));
+            builtInRoles.put( DataverseRole.MANAGER, makeRole("default-manager"));
+            builtInRoles.put( DataverseRole.CURATOR, makeRole("curator"));
+        }
+        
+        @Override
+        public DataverseRole findBuiltinRoleByAlias(String alias) {
+            return builtInRoles.get(alias);
+        }
+
+        @Override
+        public RoleAssignment save(RoleAssignment assignment) {
+            assignment.setId( nextId() );
+            assignments.add(assignment);
+            return assignment;
+        }
+        
+        @Override
+        public RoleAssignment save(RoleAssignment assignment, boolean index) {
+            return save (assignment);
+        }        
+
+        @Override
+        public List<RoleAssignment> directRoleAssignments(DvObject dvo) {
+            // works since there's only one dataverse involved in the context 
+            // of this unit test.
+            return assignments;
+        }
+        
+        
+        
+    };
 	
 	/**
 	 * Moving ChildB to ChildA
@@ -277,6 +363,23 @@ public class MoveDatasetCommandTest {
         assertNull( moved.getGuestbook());
 
     }
+    
+        
+    @Test
+    public void testMoveToDifferentPerms() throws Exception  {
+        DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
+        testEngine.submit(new MoveDatasetCommand(aRequest, movedPerms, root, true));
+        assertTrue(movedPerms.getLocks().isEmpty());
+        assertTrue(movedPerms.getOwner().equals(root));
+    }
+    
+    @Test
+    public void testMoveToSamePerms() throws Exception  {
+        DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
+        testEngine.submit(new MoveDatasetCommand(aRequest, movedSamePerms, sibEditor, true));
+        assertTrue(movedSamePerms.getLocks().size() == 1);
+        assertTrue(movedSamePerms.getOwner().equals(sibEditor));
+    }
     	
 	
 	/**
@@ -332,6 +435,7 @@ public class MoveDatasetCommandTest {
         assertThrows(IllegalCommandException.class,
             () -> testEngine.submit(new MoveDatasetCommand(aRequest, moved, childDraft, null)));
     }
+
          
         
         private static class EntityManagerImpl implements EntityManager {
