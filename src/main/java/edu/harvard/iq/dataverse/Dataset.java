@@ -129,8 +129,8 @@ public class Dataset extends DvObjectContainer {
      */
     private boolean useGenericThumbnail;
 
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinColumn(name = "datasettype_id", nullable = true)
+    @ManyToOne
+    @JoinColumn(name="datasettype_id", nullable = false)
     private DatasetType datasetType;
 
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})

@@ -4020,4 +4020,31 @@ public class UtilIT {
                 .get("/openapi");
         return response;
     }
+
+    public static Response getDatasetTypes() {
+        Response response = given()
+                .get("/api/datasets/datasetTypes");
+        return response;
+    }
+
+    static Response getDatasetTypeByName(String name) {
+        return given()
+                .get("/api/datasets/datasetTypes/byName/" + name);
+    }
+
+    static Response addDatasetType(String jsonIn, String apiToken) {
+        System.out.println("called addDatasetType...");
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonIn)
+                .contentType(ContentType.JSON)
+                .post("/api/datasets/datasetTypes");
+    }
+
+    static Response deleteDatasetTypes(long doomed, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/datasets/datasetTypes/" + doomed);
+    }
+
 }

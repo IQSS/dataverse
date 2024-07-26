@@ -56,7 +56,6 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import java.math.BigDecimal;
 
 /**
  * Convert objects to Json.
@@ -409,7 +408,7 @@ public class JsonPrinter {
         }
         DatasetType datasetType = ds.getDatasetType();
         if (datasetType != null) {
-            bld.add("datasetType", datasetType.getBaseType().toString());
+            bld.add("datasetType", datasetType.getName());
         }
         return bld;
     }

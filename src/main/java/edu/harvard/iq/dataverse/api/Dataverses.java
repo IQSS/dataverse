@@ -242,13 +242,6 @@ public class Dataverses extends AbstractApiBean {
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
             DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
-            try {
-                logger.info("about to call checkDatasetType...");
-                DataverseUtil.checkDatasetType(ds, FeatureFlags.DATASET_TYPES.enabled());
-            } catch (BadRequestException ex) {
-                return badRequest(ex.getLocalizedMessage());
-            }
-
             // clean possible version metadata
             DatasetVersion version = ds.getVersions().get(0);
 
@@ -311,7 +304,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
-            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false, licenseSvc);
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false, licenseSvc, datasetTypeSvc);
             
             ds.setOwner(owner);
 
@@ -508,7 +501,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
-            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true, licenseSvc);
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, true, licenseSvc, datasetTypeSvc);
           //ToDo - verify PID is one Dataverse can manage (protocol/authority/shoulder match)
           if (!PidUtil.getPidProvider(ds.getGlobalId().getProviderId()).canManagePID()) {
               throw new BadRequestException(
@@ -551,6 +544,8 @@ public class Dataverses extends AbstractApiBean {
         try {
             return jsonParser().parseDataset(JsonUtil.getJsonObject(datasetJson));
         } catch (JsonParsingException | JsonParseException jpe) {
+            String message = jpe.getLocalizedMessage();
+            logger.log(Level.SEVERE, "Error parsing dataset JSON. message: {0}", message);
             logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", datasetJson);
             throw new WrappedResponse(error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage()));
         }

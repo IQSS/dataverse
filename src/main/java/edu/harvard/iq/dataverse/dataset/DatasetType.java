@@ -1,25 +1,41 @@
 package edu.harvard.iq.dataverse.dataset;
 
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.io.Serializable;
-import java.util.Arrays;
 
+@NamedQueries({
+    @NamedQuery(name = "DatasetType.findAll",
+            query = "SELECT d FROM DatasetType d"),
+    @NamedQuery(name = "DatasetType.findByName",
+            query = "SELECT d FROM DatasetType d WHERE d.name=:name"),
+    @NamedQuery(name = "DatasetType.deleteById",
+            query = "DELETE FROM DatasetType d WHERE d.id=:id"),})
 @Entity
+@Table(uniqueConstraints = {
+    @UniqueConstraint(columnNames = "name"),}
+)
+
 public class DatasetType implements Serializable {
+
+    public static final String DEFAULT_DATASET_TYPE = "dataset";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Any constraints? @Pattern regexp?
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Type baseType;
+    private String name;
 
     /**
      * This default constructor is only here to prevent this error at
@@ -35,45 +51,26 @@ public class DatasetType implements Serializable {
     public DatasetType() {
     }
 
-    public DatasetType(Type baseType) {
-        this.baseType = baseType;
+    public Long getId() {
+        return id;
     }
 
-    public enum Type {
-
-        DATASET("dataset"),
-        SOFTWARE("software"),
-        WORKFLOW("workflow");
-
-        private final String text;
-
-        private Type(final String text) {
-            this.text = text;
-        }
-
-        public static Type fromString(String text) {
-            if (text != null) {
-                for (Type type : Type.values()) {
-                    if (text.equals(type.text)) {
-                        return type;
-                    }
-                }
-            }
-            throw new IllegalArgumentException("Type must be one of these values: " + Arrays.asList(Type.values()) + ".");
-        }
-
-        @Override
-        public String toString() {
-            return text;
-        }
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public Type getBaseType() {
-        return baseType;
+    public String getName() {
+        return name;
     }
 
-    public void setBaseType(Type baseType) {
-        this.baseType = baseType;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public JsonObjectBuilder toJson() {
+        return Json.createObjectBuilder()
+                .add("id", getId())
+                .add("name", getName());
     }
 
 }

@@ -1004,7 +1004,7 @@ public class IndexServiceBean {
         if (FeatureFlags.DATASET_TYPES.enabled()) {
             DatasetType datasetType = dataset.getDatasetType();
             if (datasetType != null) {
-                solrInputDocument.addField(SearchFields.DATASET_TYPE, datasetType.getBaseType().toString());
+                solrInputDocument.addField(SearchFields.DATASET_TYPE, datasetType.getName());
             }
         }
 

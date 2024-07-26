@@ -50,6 +50,7 @@ import com.apicatalog.jsonld.document.JsonDocument;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import edu.harvard.iq.dataverse.license.License;
 import edu.harvard.iq.dataverse.license.LicenseServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
@@ -78,7 +79,7 @@ public class JSONLDUtil {
 
     public static Dataset updateDatasetMDFromJsonLD(Dataset ds, String jsonLDBody,
             MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append,
-            boolean migrating, LicenseServiceBean licenseSvc) {
+            boolean migrating, LicenseServiceBean licenseSvc, DatasetTypeServiceBean datasetTypeSvc) {
 
         DatasetVersion dsv = new DatasetVersion();
 
@@ -100,10 +101,21 @@ public class JSONLDUtil {
         try (StringReader rdr = new StringReader(jsonLDBody)) {
             try (JsonReader jsonReader = Json.createReader(rdr)) {
                 JsonObject jsonObject = jsonReader.readObject();
-                String datasetType = jsonObject.getString("datasetType", null);
-                logger.info("datasetType: " + datasetType);
-                if (datasetType != null) {
-                    ds.setDatasetType(new DatasetType(DatasetType.Type.fromString(datasetType)));
+                String datasetTypeIn = jsonObject.getString("datasetType", null);
+                logger.fine("datasetTypeIn: " + datasetTypeIn);
+                DatasetType defaultDatasetType = datasetTypeSvc.getByName(DatasetType.DEFAULT_DATASET_TYPE);
+                if (defaultDatasetType == null) {
+                    throw new RuntimeException("Couldn't find default dataset type: " + DatasetType.DEFAULT_DATASET_TYPE);
+                }
+                if (datasetTypeIn == null) {
+                    ds.setDatasetType(defaultDatasetType);
+                } else {
+                    DatasetType datasetType = datasetTypeSvc.getByName(datasetTypeIn);
+                    if (datasetType != null) {
+                        ds.setDatasetType(datasetType);
+                    } else {
+                        throw new RuntimeException("Invalid dataset type: " + datasetTypeIn);
+                    }
                 }
             }
         }

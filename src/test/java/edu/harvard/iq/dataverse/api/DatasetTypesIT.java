@@ -1,11 +1,15 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.dataset.DatasetType;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import jakarta.json.Json;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import java.util.UUID;
 import org.hamcrest.CoreMatchers;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -36,7 +40,6 @@ public class DatasetTypesIT {
         createSoftware.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
 
-        //TODO: try sending "junk" instead of "software".
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createSoftware);
         String datasetPid = JsonPath.from(createSoftware.getBody().asString()).getString("data.persistentId");
 
@@ -88,7 +91,6 @@ public class DatasetTypesIT {
         createSoftware.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
 
-        //TODO: try sending "junk" instead of "software".
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createSoftware);
         String datasetPid = JsonPath.from(createSoftware.getBody().asString()).getString("data.persistentId");
 
@@ -132,6 +134,49 @@ public class DatasetTypesIT {
         String datasetType = JsonPath.from(getDatasetJson.getBody().asString()).getString("data.datasetType");
         System.out.println("datasetType: " + datasetType);
         assertEquals("software", datasetType);
+
+    }
+
+    @Test
+    public void testGetDatasetTypes() {
+        Response getTypes = UtilIT.getDatasetTypes();
+        getTypes.prettyPrint();
+        getTypes.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // non-null because types were added by a Flyway script
+                .body("data", CoreMatchers.not(equalTo(null)));
+    }
+
+    @Test
+    public void testGetDefaultDatasetType() {
+        Response getType = UtilIT.getDatasetTypeByName(DatasetType.DEFAULT_DATASET_TYPE);
+        getType.prettyPrint();
+        getType.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.name", equalTo(DatasetType.DEFAULT_DATASET_TYPE));
+    }
+
+    @Test
+    public void testAddAndDeleteDatasetType() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
+
+        String randomName = UUID.randomUUID().toString().substring(0, 8);
+        String jsonIn = Json.createObjectBuilder().add("name", randomName).build().toString();
+
+        System.out.println("adding type with name " + randomName);
+        Response typeAdded = UtilIT.addDatasetType(jsonIn, apiToken);
+        typeAdded.prettyPrint();
+        typeAdded.then().assertThat().statusCode(OK.getStatusCode());
+
+        long doomed = JsonPath.from(typeAdded.getBody().asString()).getLong("data.id");
+        System.out.println("deleting type with id " + doomed);
+        Response typeDeleted = UtilIT.deleteDatasetTypes(doomed, apiToken);
+        typeDeleted.prettyPrint();
+        typeDeleted.then().assertThat().statusCode(OK.getStatusCode());
 
     }
 

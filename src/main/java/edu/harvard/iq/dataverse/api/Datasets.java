@@ -99,9 +99,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.api.ApiConstants.*;
+import edu.harvard.iq.dataverse.dataset.DatasetType;
+import edu.harvard.iq.dataverse.dataset.DatasetTypeServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -186,6 +189,9 @@ public class Datasets extends AbstractApiBean {
 
     @Inject
     DatasetVersionFilesServiceBean datasetVersionFilesServiceBean;
+
+    @Inject
+    DatasetTypeServiceBean datasetTypeSvc;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -5069,6 +5075,105 @@ public class Datasets extends AbstractApiBean {
         dataset.setPidGenerator(null);
         datasetService.merge(dataset);
         return ok("Pid Generator reset to default: " + dataset.getEffectivePidGenerator().getId());
+    }
+
+    @GET
+    @Path("datasetTypes")
+    public Response getDatasetTypes() {
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        List<DatasetType> datasetTypes = datasetTypeSvc.listAll();
+        for (DatasetType datasetType : datasetTypes) {
+            JsonObjectBuilder job = Json.createObjectBuilder();
+            job.add("id", datasetType.getId());
+            job.add("name", datasetType.getName());
+            jab.add(job);
+        }
+        return ok(jab.build());
+    }
+
+    @GET
+    @Path("datasetTypes/byName/{name}")
+    public Response getDatasetTypes(@PathParam("name") String name) {
+        DatasetType datasetType = datasetTypeSvc.getByName(name);
+        if (datasetType != null) {
+            return ok(datasetType.toJson());
+        } else {
+            return error(NOT_FOUND, "Could not find a dataset type with name " + name);
+        }
+    }
+
+    @POST
+    @AuthRequired
+    @Path("datasetTypes")
+    public Response addDatasetType(@Context ContainerRequestContext crc, String jsonIn) {
+        System.out.println("json in: " + jsonIn);
+        AuthenticatedUser user;
+        try {
+            user = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+
+        if (jsonIn == null || jsonIn.isEmpty()) {
+            throw new IllegalArgumentException("JSON input was null or empty!");
+        }
+        JsonObject jsonObject = JsonUtil.getJsonObject(jsonIn);
+        String nameIn = jsonObject.getString("name", null);
+        if (nameIn == null) {
+            throw new IllegalArgumentException("A name for the dataset type is required");
+        }
+
+        try {
+            DatasetType datasetType = new DatasetType();
+            datasetType.setName(nameIn);
+            DatasetType saved = datasetTypeSvc.save(datasetType);
+            Long typeId = saved.getId();
+            String name = saved.getName();
+            actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "addDatasetType").setInfo("Dataset type added with id " + typeId + " and name " + name + "."));
+            return ok(saved.toJson());
+        } catch (WrappedResponse ex) {
+            return error(BAD_REQUEST, ex.getMessage());
+        }
+    }
+
+    @DELETE
+    @AuthRequired
+    @Path("datasetTypes/{id}")
+    public Response deleteDatasetType(@Context ContainerRequestContext crc, @PathParam("id") String doomed) {
+        AuthenticatedUser user;
+        try {
+            user = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+
+        if (doomed == null || doomed.isEmpty()) {
+            throw new IllegalArgumentException("ID is required!");
+        }
+
+        long idToDelete;
+        try {
+            idToDelete = Long.parseLong(doomed);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("ID must be a number");
+        }
+
+        try {
+            int numDeleted = datasetTypeSvc.deleteById(idToDelete);
+            if (numDeleted == 1) {
+                return ok("deleted");
+            } else {
+                return error(BAD_REQUEST, "Something went wrong. Number of dataset types deleted: " + numDeleted);
+            }
+        } catch (WrappedResponse ex) {
+            return error(BAD_REQUEST, ex.getMessage());
+        }
     }
 
 }
