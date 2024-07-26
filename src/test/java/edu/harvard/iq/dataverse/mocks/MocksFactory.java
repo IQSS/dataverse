@@ -196,6 +196,7 @@ public class MocksFactory {
         DatasetFieldType retVal = new DatasetFieldType("SampleType-"+id, FieldType.TEXT, false);
         retVal.setId(id);
         MetadataBlock mdb = new MetadataBlock();
+        mdb.setId(new Random().nextLong());
         mdb.setName("Test");
         retVal.setMetadataBlock(mdb);
         return retVal;
