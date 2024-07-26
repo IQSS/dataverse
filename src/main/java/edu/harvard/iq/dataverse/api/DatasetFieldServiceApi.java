@@ -20,22 +20,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import org.apache.commons.lang3.StringUtils;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
+
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.util.logging.Level;
@@ -52,6 +49,8 @@ import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 
 @Path("admin/datasetfield")
 public class DatasetFieldServiceApi extends AbstractApiBean {
@@ -525,7 +524,14 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         return Response.status(200).entity("Uploaded the file successfully ").build();
     }
 
-    public static String getDataverseLangDirectory() {
+    @GET
+    @Path("facetables")
+    public Response getAllFacetable() {
+        List<DatasetFieldType> datasetFieldTypes = datasetFieldService.findAllFacetableFieldTypes();
+        return ok(jsonDatasetFieldTypes(datasetFieldTypes));
+    }
+
+    private static String getDataverseLangDirectory() {
         String dataverseLangDirectory = System.getProperty("dataverse.lang.directory");
         if (dataverseLangDirectory == null || dataverseLangDirectory.equals("")) {
             dataverseLangDirectory = "/tmp/files";
