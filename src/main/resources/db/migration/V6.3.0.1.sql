@@ -1,9 +1,10 @@
--- Dataset types have been added. See #10517 and #10694
---
--- First, insert some types (dataset is the default).
-INSERT INTO datasettype (name) VALUES ('dataset');
-INSERT INTO datasettype (name) VALUES ('software');
-INSERT INTO datasettype (name) VALUES ('workflow');
---
--- Then, give existing datasets a type of "dataset".
-UPDATE dataset SET datasettype_id = (SELECT id FROM datasettype WHERE name = 'dataset');
+UPDATE termsofuseandaccess SET license_id = (SELECT license.id FROM license WHERE license.name = 'CC0 1.0'), termsofuse = NULL
+WHERE termsofuse = 'This dataset is made available under a Creative Commons CC0 license with the following additional/modified terms and conditions: CC0 Waiver'
+  AND license_id IS null
+  AND confidentialitydeclaration IS null
+  AND specialpermissions IS null
+  AND restrictions IS null
+  AND citationrequirements IS null
+  AND depositorrequirements IS null
+  AND conditions IS null
+  AND disclaimer IS null;

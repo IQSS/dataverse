@@ -101,6 +101,8 @@ public class IndexServiceBean {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
+    DatasetVersionServiceBean datasetVersionService;
+    @EJB
     BuiltinUserServiceBean dataverseUserServiceBean;
     @EJB
     PermissionServiceBean permissionService;
@@ -1848,9 +1850,19 @@ public class IndexServiceBean {
 
     private void addLicenseToSolrDoc(SolrInputDocument solrInputDocument, DatasetVersion datasetVersion) {
         if (datasetVersion != null && datasetVersion.getTermsOfUseAndAccess() != null) {
+            //test to see if the terms of use are the default set in 5.10 - if so and there's no license then don't add license to solr doc.   
+            //fixes 10513
+            if (datasetVersionService.isVersionDefaultCustomTerms(datasetVersion)){
+                return; 
+            }
+            
             String licenseName = "Custom Terms";
-            if(datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
+            if (datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
                 licenseName = datasetVersion.getTermsOfUseAndAccess().getLicense().getName();
+            } else if (datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null) {
+                // this fixes #10513 for datasets harvested in oai_dc - these 
+                // have neither the license id, nor any actual custom terms 
+                return; 
             }
             solrInputDocument.addField(SearchFields.DATASET_LICENSE, licenseName);
         }

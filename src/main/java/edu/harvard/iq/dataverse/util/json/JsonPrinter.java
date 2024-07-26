@@ -1388,4 +1388,20 @@ public class JsonPrinter {
         }
         return jsonArrayOfInputLevels;
     }
+
+    public static JsonArrayBuilder jsonDataverseInputLevels(List<DataverseFieldTypeInputLevel> inputLevels) {
+        JsonArrayBuilder inputLevelsArrayBuilder = Json.createArrayBuilder();
+        for (DataverseFieldTypeInputLevel inputLevel : inputLevels) {
+            inputLevelsArrayBuilder.add(jsonDataverseInputLevel(inputLevel));
+        }
+        return inputLevelsArrayBuilder;
+    }
+
+    private static JsonObjectBuilder jsonDataverseInputLevel(DataverseFieldTypeInputLevel inputLevel) {
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        jsonObjectBuilder.add("datasetFieldTypeName", inputLevel.getDatasetFieldType().getName());
+        jsonObjectBuilder.add("required", inputLevel.isRequired());
+        jsonObjectBuilder.add("include", inputLevel.isInclude());
+        return jsonObjectBuilder;
+    }
 }
