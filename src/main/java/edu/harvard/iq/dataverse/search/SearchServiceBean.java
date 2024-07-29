@@ -777,7 +777,7 @@ public class SearchServiceBean {
                         try {
                             // This is where facets are capitalized.
                             // This will be a problem for the API clients because they get back a string like this from the Search API...
-                            // {"datasetType_s":{"friendly":"Dataset Type","labels":[{"Dataset":1},{"Software":1}]}
+                            // {"datasetType":{"friendly":"Dataset Type","labels":[{"Dataset":1},{"Software":1}]}
                             // ... but they will need to use the lower case version (e.g. "software") to narrow results.
                            localefriendlyName = BundleUtil.getStringFromPropertyFile(facetFieldCount.getName(), "Bundle");
                         } catch (Exception e) {

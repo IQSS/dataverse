@@ -55,8 +55,8 @@ public class DatasetTypesIT {
         searchDraft.then().assertThat()
                 .body("data.total_count", CoreMatchers.is(1))
                 .body("data.count_in_response", CoreMatchers.is(1))
-                .body("data.facets[0].datasetType_s.friendly", CoreMatchers.is("Dataset Type"))
-                .body("data.facets[0].datasetType_s.labels[0].software", CoreMatchers.is(1))
+                .body("data.facets[0].datasetType.friendly", CoreMatchers.is("Dataset Type"))
+                .body("data.facets[0].datasetType.labels[0].Software", CoreMatchers.is(1))
                 .statusCode(OK.getStatusCode());
 
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
@@ -67,8 +67,8 @@ public class DatasetTypesIT {
 //        searchAsGuest.then().assertThat()
 //                .body("data.total_count", CoreMatchers.is(1))
 //                .body("data.count_in_response", CoreMatchers.is(1))
-//                .body("data.facets[0].datasetType_s.friendly", CoreMatchers.is("Dataset Type"))
-//                .body("data.facets[0].datasetType_s.labels[0].software", CoreMatchers.is(1))
+//                .body("data.facets[0].datasetType.friendly", CoreMatchers.is("Dataset Type"))
+//                .body("data.facets[0].datasetType.labels[0].software", CoreMatchers.is(1))
 //                .statusCode(OK.getStatusCode());
     }
 

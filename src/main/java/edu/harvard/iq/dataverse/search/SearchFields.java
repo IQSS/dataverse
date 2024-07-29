@@ -267,7 +267,7 @@ public class SearchFields {
     /**
      * Datasets can be software, workflow, etc. See the DatasetType object.
      */
-    public static final String DATASET_TYPE = "datasetType_s";
+    public static final String DATASET_TYPE = "datasetType";
 
     public static final String VARIABLE_NAME = "variableName";
     public static final String VARIABLE_LABEL = "variableLabel";
