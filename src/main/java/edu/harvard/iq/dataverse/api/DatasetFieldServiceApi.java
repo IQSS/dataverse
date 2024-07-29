@@ -20,19 +20,22 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import org.apache.commons.lang3.StringUtils;
-
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.util.logging.Level;
@@ -50,8 +53,6 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
-
 @Path("admin/datasetfield")
 public class DatasetFieldServiceApi extends AbstractApiBean {
 
@@ -68,7 +69,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     ControlledVocabularyValueServiceBean controlledVocabularyValueService;
 
     private static final Logger logger = Logger.getLogger(DatasetFieldServiceApi.class.getName());
-    
+
     @GET
     public Response getAll() {
         try {
@@ -97,7 +98,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                     .add("doesNotAllowMultiples", asJsonArray(listOfIsAllowsMultiplesFalse))
                     .add("required", asJsonArray(requiredFieldNames))
             );
-            
+
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -159,10 +160,10 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                     .add("solrFieldFacetable", solrFieldFacetable)
                     .add("isRequired", isRequired)
                     .add("uri", uri));
-        
+
         } catch ( NoResultException nre ) {
             return notFound(name);
-            
+
         } catch (EJBException | NullPointerException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -199,8 +200,8 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         }
         return ok(possibleSubjects);
     }
-    
-    
+
+
     // TODO consider replacing with a @Startup method on the datasetFieldServiceBean
     @GET
     @Path("loadNAControlledVocabularyValue")
@@ -209,7 +210,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
 //            datasetFieldService.findNAControlledVocabularyValue();
         TypedQuery<ControlledVocabularyValue> naValueFinder = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.datasetFieldType is null AND o.strValue = :strvalue", ControlledVocabularyValue.class);
         naValueFinder.setParameter("strvalue", DatasetField.NA_VALUE);
-        
+
         if ( naValueFinder.getResultList().isEmpty() ) {
             ControlledVocabularyValue naValue = new ControlledVocabularyValue();
             naValue.setStrValue(DatasetField.NA_VALUE);
@@ -261,22 +262,22 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                     switch (header) {
                         case METADATABLOCK:
                             responseArr.add( Json.createObjectBuilder()
-                                                    .add("name", parseMetadataBlock(values))
-                                                    .add("type", "MetadataBlock"));
+                                    .add("name", parseMetadataBlock(values))
+                                    .add("type", "MetadataBlock"));
                             break;
-                            
+
                         case DATASETFIELD:
                             responseArr.add( Json.createObjectBuilder()
-                                                    .add("name", parseDatasetField(values))
-                                                    .add("type", "DatasetField") );
+                                    .add("name", parseDatasetField(values))
+                                    .add("type", "DatasetField") );
                             break;
-                            
+
                         case CONTROLLEDVOCABULARY:
                             responseArr.add( Json.createObjectBuilder()
-                                                    .add("name", parseControlledVocabulary(values))
-                                                    .add("type", "Controlled Vocabulary") );
+                                    .add("name", parseControlledVocabulary(values))
+                                    .add("type", "Controlled Vocabulary") );
                             break;
-                            
+
                         default:
                             throw new IOException("No #header defined in file.");
 
@@ -301,7 +302,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo( alr.getInfo() + "// " + message);
             return error(Status.INTERNAL_SERVER_ERROR, message);
-            
+
         } finally {
             if (br != null) {
                 try {
@@ -343,7 +344,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                                                  int wrongIndex) {
 
         List<String> columns = getColumnsByHeader(header);
-        
+
         String column = columns.get(wrongIndex - 1);
         List<String> arguments = new ArrayList<>();
         arguments.add(header.name());
@@ -351,8 +352,8 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         arguments.add(column);
         arguments.add(String.valueOf(wrongIndex + 1));
         return BundleUtil.getStringFromBundle(
-            "api.admin.datasetfield.load.ArrayIndexOutOfBoundMessage",
-            arguments
+                "api.admin.datasetfield.load.ArrayIndexOutOfBoundMessage",
+                arguments
         );
     }
 
@@ -367,9 +368,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             columns = Arrays.asList("name", "dataverseAlias", "displayName");
         } else if (header.equals(HeaderType.DATASETFIELD)) {
             columns = Arrays.asList("name", "title", "description", "watermark",
-              "fieldType", "displayOrder", "displayFormat", "advancedSearchField",
-              "allowControlledVocabulary", "allowmultiples", "facetable",
-              "displayoncreate", "required", "parent", "metadatablock_id");
+                    "fieldType", "displayOrder", "displayFormat", "advancedSearchField",
+                    "allowControlledVocabulary", "allowmultiples", "facetable",
+                    "displayoncreate", "required", "parent", "metadatablock_id");
         } else if (header.equals(HeaderType.CONTROLLEDVOCABULARY)) {
             columns = Arrays.asList("DatasetField", "Value", "identifier", "displayOrder");
         }
@@ -397,7 +398,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     }
 
     private String parseDatasetField(String[] values) {
-        
+
         //First see if it exists
         DatasetFieldType dsf = datasetFieldService.findByName(values[1]);
         if (dsf == null) {
@@ -425,29 +426,29 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         }
         dsf.setMetadataBlock(dataverseService.findMDBByName(values[15]));
         if(values.length>16 && !StringUtils.isEmpty(values[16])) {
-          dsf.setUri(values[16]);
+            dsf.setUri(values[16]);
         }
         datasetFieldService.save(dsf);
         return dsf.getName();
     }
 
     private String parseControlledVocabulary(String[] values) {
-        
+
         DatasetFieldType dsv = datasetFieldService.findByName(values[1]);
         //See if it already exists
         /*
          Matching relies on assumption that only one cv value will exist for a given identifier or display value
-        If the lookup queries return multiple matches then retval is null 
+        If the lookup queries return multiple matches then retval is null
         */
         //First see if cvv exists based on display name
         ControlledVocabularyValue cvv = datasetFieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(dsv, values[2], true);
-        
+
         //then see if there's a match on identifier
         ControlledVocabularyValue cvvi = null;
         if (values[3] != null && !values[3].trim().isEmpty()){
             cvvi = datasetFieldService.findControlledVocabularyValueByDatasetFieldTypeAndIdentifier(dsv, values[3]);
         }
-        
+
         //if there's a match on identifier use it
         if (cvvi != null){
             cvv = cvvi;
@@ -458,14 +459,14 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             cvv = new ControlledVocabularyValue();
             cvv.setDatasetFieldType(dsv);
         }
-        
-        // Alternate variants for this controlled vocab. value: 
-        
+
+        // Alternate variants for this controlled vocab. value:
+
         // Note that these are overwritten every time:
         cvv.getControlledVocabAlternates().clear();
-        // - meaning, if an alternate has been removed from the tsv file, 
+        // - meaning, if an alternate has been removed from the tsv file,
         // it will be removed from the database! -- L.A. 5.4
-        
+
         for (int i = 5; i < values.length; i++) {
             ControlledVocabAlternate alt = new ControlledVocabAlternate();
             alt.setDatasetFieldType(dsv);
@@ -473,7 +474,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             alt.setStrValue(values[i]);
             cvv.getControlledVocabAlternates().add(alt);
         }
-        
+
         cvv.setStrValue(values[2]);
         cvv.setIdentifier(values[3]);
         cvv.setDisplayOrder(Integer.parseInt(values[4]));
@@ -524,14 +525,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         return Response.status(200).entity("Uploaded the file successfully ").build();
     }
 
-    @GET
-    @Path("facetables")
-    public Response getAllFacetable() {
-        List<DatasetFieldType> datasetFieldTypes = datasetFieldService.findAllFacetableFieldTypes();
-        return ok(jsonDatasetFieldTypes(datasetFieldTypes));
-    }
-
-    private static String getDataverseLangDirectory() {
+    public static String getDataverseLangDirectory() {
         String dataverseLangDirectory = System.getProperty("dataverse.lang.directory");
         if (dataverseLangDirectory == null || dataverseLangDirectory.equals("")) {
             dataverseLangDirectory = "/tmp/files";

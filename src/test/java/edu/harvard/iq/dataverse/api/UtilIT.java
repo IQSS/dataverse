@@ -4044,4 +4044,9 @@ public class UtilIT {
                 .queryParam("returnDetails", returnDetails)
                 .get("/api/dataverses/" + dataverseAlias + "/facets");
     }
+
+    static Response listAllFacetableDatasetFields() {
+        return given()
+                .get("/api/datasetfields/facetables");
+    }
 }
