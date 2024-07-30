@@ -5219,6 +5219,51 @@ Delete Database Setting
 Delete the setting under ``name``::
 
   DELETE http://$SERVER/api/admin/settings/$name
+
+.. _list-all-feature-flags:
+
+List All Feature Flags
+~~~~~~~~~~~~~~~~~~~~~~
+
+Experimental and preview features are sometimes hidden behind feature flags. See :ref:`feature-flags` in the Installation Guide for a list of flags and how to configure them.
+
+This API endpoint provides a list of feature flags and "enabled" or "disabled" for each one.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost:8080
+  
+  curl "$SERVER_URL/api/admin/featureFlags"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "http://localhost:8080/api/admin/featureFlags"
+
+.. _show-feature-flag-status:
+
+Show Feature Flag Status
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+This endpoint reports "enabled" as true for false for a single feature flag. (For all flags, see :ref:`list-all-feature-flags`.)
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost:8080
+  export FLAG=DATASET_TYPES
+  
+  curl "$SERVER_URL/api/admin/featureFlags/$FLAG"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "http://localhost:8080/api/admin/featureFlags/DATASET_TYPES"
   
 Manage Banner Messages
 ~~~~~~~~~~~~~~~~~~~~~~

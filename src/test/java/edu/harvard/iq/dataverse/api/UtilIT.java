@@ -46,6 +46,7 @@ import static io.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.settings.FeatureFlags;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
 import java.util.Collections;
@@ -2216,6 +2217,16 @@ public class UtilIT {
      */
     public static Response setSetting(String settingKey, String value) {
         Response response = given().body(value).when().put("/api/admin/settings/" + settingKey);
+        return response;
+    }
+
+    static Response getFeatureFlags() {
+        Response response = given().when().get("/api/admin/featureFlags");
+        return response;
+    }
+
+    static Response getFeatureFlag(FeatureFlags featureFlag) {
+        Response response = given().when().get("/api/admin/featureFlags/" + featureFlag);
         return response;
     }
 
