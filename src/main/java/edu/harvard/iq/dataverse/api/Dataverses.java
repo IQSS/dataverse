@@ -268,6 +268,13 @@ public class Dataverses extends AbstractApiBean {
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
             DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
+            try {
+                logger.fine("in createDataset, about to call checkDatasetType...");
+                DataverseUtil.checkDatasetType(ds, FeatureFlags.DATASET_TYPES.enabled());
+            } catch (BadRequestException ex) {
+                return badRequest(ex.getLocalizedMessage());
+            }
+
             // clean possible version metadata
             DatasetVersion version = ds.getVersions().get(0);
 
@@ -359,6 +366,8 @@ public class Dataverses extends AbstractApiBean {
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
+        } catch (Exception ex) {
+            return error(Status.BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
 
@@ -381,6 +390,13 @@ public class Dataverses extends AbstractApiBean {
 
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
             DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
+
+            try {
+                logger.fine("in importDataset, about to call checkDatasetType...");
+                DataverseUtil.checkDatasetType(ds, FeatureFlags.DATASET_TYPES.enabled());
+            } catch (BadRequestException ex) {
+                return badRequest(ex.getLocalizedMessage());
+            }
 
             DatasetVersion version = ds.getVersions().get(0);
             if (version.getVersionState() == null) {

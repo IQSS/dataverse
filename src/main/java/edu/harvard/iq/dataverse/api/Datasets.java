@@ -5080,6 +5080,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("datasetTypes")
     public Response getDatasetTypes() {
+        if (!FeatureFlags.DATASET_TYPES.enabled()) {
+            return error(Status.FORBIDDEN, "Dataset type feature not enabled. Listing types not allowed.");
+        }
         JsonArrayBuilder jab = Json.createArrayBuilder();
         List<DatasetType> datasetTypes = datasetTypeSvc.listAll();
         for (DatasetType datasetType : datasetTypes) {
@@ -5094,6 +5097,9 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("datasetTypes/byName/{name}")
     public Response getDatasetTypes(@PathParam("name") String name) {
+        if (!FeatureFlags.DATASET_TYPES.enabled()) {
+            return error(Status.FORBIDDEN, "Dataset type feature not enabled. Showing a type not allowed.");
+        }
         DatasetType datasetType = datasetTypeSvc.getByName(name);
         if (datasetType != null) {
             return ok(datasetType.toJson());
@@ -5106,7 +5112,9 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("datasetTypes")
     public Response addDatasetType(@Context ContainerRequestContext crc, String jsonIn) {
-        System.out.println("json in: " + jsonIn);
+        if (!FeatureFlags.DATASET_TYPES.enabled()) {
+            return error(Status.FORBIDDEN, "Dataset type feature not enabled. Creating types not allowed.");
+        }
         AuthenticatedUser user;
         try {
             user = getRequestAuthenticatedUserOrDie(crc);
@@ -5143,6 +5151,9 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("datasetTypes/{id}")
     public Response deleteDatasetType(@Context ContainerRequestContext crc, @PathParam("id") String doomed) {
+        if (!FeatureFlags.DATASET_TYPES.enabled()) {
+            return error(Status.FORBIDDEN, "Dataset type feature not enabled. Deleting types not allowed.");
+        }
         AuthenticatedUser user;
         try {
             user = getRequestAuthenticatedUserOrDie(crc);
