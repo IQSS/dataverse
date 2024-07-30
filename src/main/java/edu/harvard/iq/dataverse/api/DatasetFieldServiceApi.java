@@ -12,14 +12,10 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+
+import java.io.*;
+import java.util.*;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.EJBException;
 import jakarta.json.Json;
@@ -34,6 +30,7 @@ import jakarta.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -44,12 +41,8 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.ws.rs.core.Response.Status;
 
-import java.io.BufferedInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -543,4 +536,86 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         return dataverseLangDirectory;
     }
 
+    @POST
+    @Consumes("text/tab-separated-values")
+    @Path("mergeLanguageList")
+    public Response mergeLanguagePropertyFile(File file) {
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "mergeLanguageList");
+        alr.setInfo( file.getName() );
+        JsonArrayBuilder responseArr = Json.createArrayBuilder();
+
+        BufferedReader br = null;
+        String line = null;
+        String splitBy = "\t";
+        int lineNumber = 0;
+        int offset = 200; // number of existing languages // TODO: get the number from db
+
+        DatasetFieldType dsv = datasetFieldService.findByName("language");
+
+        try {
+            // Load the new language tab file
+            // The format of the file is: Id<tab>Part2b<tab>Part2t<tab>Part1<tab>Scope<tab>Language_Type<tab>Ref_Name<tab>Comment
+            // Example: aaa\t\t\t\tI\tL\tGhotuo
+            logger.fine("Loading ISOTabFile from " + file);
+
+            br = new BufferedReader(new FileReader("/" + file));
+            br.readLine(); // ignore first line as it is a header
+            while ((line = br.readLine()) != null) {
+                String[] fields = line.split(splitBy);
+                if (fields.length >= 7) {
+                    String code = fields[0];
+                    Set<String> codes = new HashSet<>();
+                    codes.addAll(List.of(code, fields[1], fields[2], fields[3]));
+                    codes.removeAll(Arrays.asList("", null));
+                    String name = fields[6];
+                    // get controlledvocabularyvalue by name or by codes
+                    ControlledVocabularyValue cvv = datasetFieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(dsv, name, true);
+                    // if not found, find using main code and alternate codes
+                    Iterator<String> codesIterator = codes.iterator();
+                    while (cvv == null && codesIterator.hasNext()) {
+                        cvv = datasetFieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(dsv, codesIterator.next(), true);
+                    }
+
+                    // if it is found we need to merge the alternate codes since the next step will delete all existing alternate codes before adding the new ones
+                    if (cvv != null) {
+                        cvv.getControlledVocabAlternates().stream().forEach(alt -> {
+                            codes.add(alt.getStrValue());
+                        });
+                    }
+
+                    // Now call parseControlledVocabulary to create/update the Controlled Vocabulary Language
+                    // values: unused, type, displayName, identifier, display order, alt codes...
+                    String displayName = cvv != null ? cvv.getStrValue() : name;
+                    String displayOrder = String.valueOf(cvv != null ? cvv.getDisplayOrder(): lineNumber + offset);
+                    String[] values = ArrayUtils.addAll(new String[]{"", "language", displayName, code, displayOrder}, codes.stream().toArray(String[]::new));
+                    responseArr.add( Json.createObjectBuilder()
+                            .add("name", parseControlledVocabulary(values))
+                            .add("type", "Controlled Vocabulary") );
+
+                } else if (fields.length < 7) {
+                    throw new IOException("File format does not match the required: 'Id<tab>Part2b<tab>Part2t<tab>Part1<tab>Scope<tab>Language_Type<tab>Ref_Name<tab>Comment'  fields.length="+fields.length + " " + line);
+                }
+                lineNumber++;
+            }
+
+        } catch (FileNotFoundException e) {
+            alr.setActionResult(ActionLogRecord.Result.BadRequest);
+            alr.setInfo( alr.getInfo() + "// file not found");
+            return error(Status.EXPECTATION_FAILED, "File not found");
+        } catch (IOException e) {
+            alr.setActionResult(ActionLogRecord.Result.BadRequest);
+            alr.setInfo( alr.getInfo() + "// " + e.getMessage());
+            return error(Status.EXPECTATION_FAILED, e.getMessage());
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    logger.log(Level.WARNING, "Error closing the reader while merging controlled vocabulary languages.");
+                }
+            }
+            actionLogSvc.log(alr);
+        }
+        return ok( Json.createObjectBuilder().add("added", responseArr) );
+    }
 }

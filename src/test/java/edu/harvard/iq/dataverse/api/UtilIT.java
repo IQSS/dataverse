@@ -641,6 +641,14 @@ public class UtilIT {
           .post("/api/admin/datasetfield/load");
     }
 
+    static Response mergeLanguages(String apiToken, byte[] body) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("text/tab-separated-values; charset=utf-8")
+                .body(body)
+                .post("/api/admin/datasetfield/mergeLanguageList");
+    }
+
     static Response setMetadataBlocks(String dataverseAlias, JsonArrayBuilder blocks, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
