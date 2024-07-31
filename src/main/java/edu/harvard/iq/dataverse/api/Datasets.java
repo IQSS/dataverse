@@ -5126,12 +5126,18 @@ public class Datasets extends AbstractApiBean {
         }
 
         if (jsonIn == null || jsonIn.isEmpty()) {
-            throw new IllegalArgumentException("JSON input was null or empty!");
+            return error(BAD_REQUEST, "JSON input was null or empty!");
         }
-        JsonObject jsonObject = JsonUtil.getJsonObject(jsonIn);
-        String nameIn = jsonObject.getString("name", null);
+
+        String nameIn = null;
+        try {
+            JsonObject jsonObject = JsonUtil.getJsonObject(jsonIn);
+            nameIn = jsonObject.getString("name", null);
+        } catch (JsonParsingException ex) {
+            return error(BAD_REQUEST, "Problem parsing supplied JSON: " + ex.getLocalizedMessage());
+        }
         if (nameIn == null) {
-            throw new IllegalArgumentException("A name for the dataset type is required");
+            return error(BAD_REQUEST, "A name for the dataset type is required");
         }
 
         try {

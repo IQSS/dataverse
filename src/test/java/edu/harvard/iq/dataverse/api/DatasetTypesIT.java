@@ -218,6 +218,10 @@ public class DatasetTypesIT {
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         UtilIT.setSuperuserStatus(username, true).then().assertThat().statusCode(OK.getStatusCode());
 
+        Response badJson = UtilIT.addDatasetType("this isn't even JSON", apiToken);
+        badJson.prettyPrint();
+        badJson.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
         String randomName = UUID.randomUUID().toString().substring(0, 8);
         String jsonIn = Json.createObjectBuilder().add("name", randomName).build().toString();
 
