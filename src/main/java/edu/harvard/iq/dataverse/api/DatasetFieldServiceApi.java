@@ -593,7 +593,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                             .add("type", "Controlled Vocabulary") );
 
                 } else if (fields.length < 7) {
-                    throw new IOException("File format does not match the required: 'Id<tab>Part2b<tab>Part2t<tab>Part1<tab>Scope<tab>Language_Type<tab>Ref_Name<tab>Comment'  fields.length="+fields.length + " " + line);
+                    throw new IOException("File format does not match the required: 'Id<tab>Part2b<tab>Part2t<tab>Part1<tab>Scope<tab>Language_Type<tab>Ref_Name<tab>Comment'  fields.length="+fields.length + " " + line + " near line " + lineNumber);
                 }
                 lineNumber++;
             }

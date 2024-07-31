@@ -71,11 +71,11 @@ public class ISO639IT {
         byte[] updatedContent = Files.readAllBytes(Paths.get("scripts/api/data/metadatablocks/iso-639-3_Code_Tables_20240415/iso-639-3.tab"));
 
         Response response = UtilIT.mergeLanguages(superuserApiToken, updatedContent);
+        String body = response.getBody().asString();
 
-        assertEquals(200, response.getStatusCode());
+        assertTrue(200 == response.getStatusCode(), body);
         response.then().assertThat().statusCode(OK.getStatusCode());
 
-        String body = response.getBody().asString();
         String status = JsonPath.from(body).getString("status");
         assertEquals("OK", status);
 
