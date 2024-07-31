@@ -693,6 +693,8 @@ To create a dataset, you must supply a JSON file that contains at least the foll
 - Description Text
 - Subject
 
+.. _api-create-dataset-incomplete:
+
 Submit Incomplete Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -750,6 +752,8 @@ The following is an example HTTP call with deactivated validation:
 
 **Note:** You may learn about an instance's support for deposition of incomplete datasets via :ref:`info-incomplete-metadata`.
 
+.. _api-create-dataset:
+
 Submit Dataset
 ^^^^^^^^^^^^^^
 
@@ -778,6 +782,17 @@ The fully expanded example above (without the environment variables) looks like 
 You should expect an HTTP 200 ("OK") response and JSON indicating the database ID and Persistent ID (PID such as DOI or Handle) that has been assigned to your newly created dataset.
 
 .. note:: Only a Dataverse installation account with superuser permissions is allowed to include files when creating a dataset via this API. Adding files this way only adds their file metadata to the database, you will need to manually add the physical files to the file system.
+
+.. _api-create-dataset-with-type:
+
+Create a Dataset with a Dataset Type (Software, etc.)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Note: this feature is only available if your installation has the dataset types feature enabled. See :ref:`dataset-types`.
+
+Follow :ref:`api-create-dataset` as normal but include a line like `"datasetType": "software"` in your JSON. You can check which types are supported by your installation using the :ref:`api-list-dataset-types` API endpoint.
+
+Here is an example JSON file for reference: :download:`dataset-create-software.json <../_static/api/dataset-create-software.json>`.
 
 .. _api-import-dataset:
 
@@ -821,6 +836,16 @@ Before calling the API, make sure the data files referenced by the ``POST``\ ed 
   * This API endpoint does not support importing *files'* persistent identifiers.
   * A Dataverse installation can import datasets with a valid PID that uses a different protocol or authority than said server is configured for. However, the server will not update the PID metadata on subsequent update and publish actions.
 
+.. _import-dataset-with-type:
+
+Import a Dataset with a Dataset Type (Software, etc.)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Note: this feature is only available if your installation has the dataset types feature enabled. See :ref:`dataset-types`.
+
+The same native JSON file as above under :ref:`api-create-dataset-with-type` can be used when importing a dataset.
+
+A file like this is the only difference. Otherwise, follow :ref:`api-import-dataset` as normal.
 
 Import a Dataset into a Dataverse Installation with a DDI file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2984,6 +3009,96 @@ The API can also be used to reset the dataset to use the default/inherited value
   curl -X DELETE -H "X-Dataverse-key:$API_TOKEN" -H Content-type:application/json "$SERVER_URL/api/datasets/:persistentId/pidGenerator?persistentId=$PERSISTENT_IDENTIFIER"
 
 The default will always be the same provider as for the dataset PID if that provider can generate new PIDs, and will be the PID Provider set for the collection or the global default otherwise.
+
+.. _api-dataset-types:
+
+Dataset Types
+~~~~~~~~~~~~~
+
+See :ref:`dataset-types` in the User Guide for an overview of the feature.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
+
+.. _api-list-dataset-types:
+
+List Dataset Types
+^^^^^^^^^^^^^^^^^^
+
+Show which dataset types are available.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl "$SERVER_URL/api/datasets/datasetTypes"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/datasetTypes"
+
+.. _api-list-dataset-type:
+
+Get Dataset Type by Name
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Show a single dataset type based on its name.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export TYPE=software
+
+  curl $SERVER_URL/api/datasets/datasetTypes/byName/$TYPE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/datasetTypes/byName/software"
+
+.. _api-add-dataset-type:
+
+Add Dataset Type
+^^^^^^^^^^^^^^^^
+
+Superuser only.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export JSON='{"name": "newType"}'
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -H "Content-Type: application/json" "$SERVER_URL/api/datasets/datasetTypes" -X POST -d $JSON
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -H "Content-Type: application/json" "https://demo.dataverse.org/api/datasets/datasetTypes" -X POST -d '{"name": "newType"}'
+
+.. _api-delete-dataset-type:
+
+Delete Dataset Type
+^^^^^^^^^^^^^^^^^^^
+
+Superuser only.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export TYPE_ID=3
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/datasets/datasetTypes/$TYPE_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/datasets/datasetTypes/3"
 
 Files
 -----

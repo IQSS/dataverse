@@ -3294,6 +3294,9 @@ please find all known feature flags below. Any of these flags can be activated u
     * - disable-return-to-author-reason
       - Removes the reason field in the `Publish/Return To Author` dialog that was added as a required field in v6.2 and makes the reason an optional parameter in the :ref:`return-a-dataset` API call. 
       - ``Off``
+    * - dataverse.feature.dataset-types
+      - At dataset creation time when using the API, a dataset can be specified as "dataset", "software", or "workflow". See :ref:`dataset-types` in the User Guide for more.
+      - ``Off``
 
 
 **Note:** Feature flags can be set via any `supported MicroProfile Config API source`_, e.g. the environment variable

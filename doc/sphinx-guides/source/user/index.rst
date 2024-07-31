@@ -16,4 +16,3 @@ User Guide
    dataset-management
    tabulardataingest/index
    appendix
-   dataset-types
