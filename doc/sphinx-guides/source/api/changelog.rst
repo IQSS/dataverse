@@ -7,6 +7,15 @@ This API changelog is experimental and we would love feedback on its usefulness.
     :local:
     :depth: 1
 
+v6.4
+----
+
+- For the ``oai_dc`` metadata export and harvesting (OAI-PMH) format:
+
+  - dc:type was mapped to the field "Kind of Data". Now it is hard-coded to the word "Dataset".
+  - dc:date was mapped to the field "Production Date" when available and otherwise to "Publication Date". Now it is mapped only to the field "Publication Date".
+  - dc:rights was not mapped to anything. Now it is mapped (when available) to terms of use, restrictions, and license.
+
 v6.3
 ----
 
