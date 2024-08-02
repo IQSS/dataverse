@@ -123,7 +123,7 @@ Expanding the number of languages available to the Citation Metadata Block
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 As of Dataverse Software 6.4, the list of referable languages can be extended to include roughly 7900 ISO 639-3 languages. Pre 6.4 Dataverse came pre loaded with just under 200 languages.
-For information on `ISO 639-3 see: https://iso639-3.sil.org/about`_
+For information on ISO 639-3 see: https://iso639-3.sil.org/about
 The benefits of adding the additional languages are:
 - Allowing more languages available in the Citation Metadata Language Dropdown
 - Helps when harvesting a dataset from another installation.  Missing languages cause harvesting to fail.
