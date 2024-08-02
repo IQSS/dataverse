@@ -143,3 +143,20 @@ JSON.(Note that the ``MyJSON in <locale>`` label will appear in the dataset Meta
 but the content for already published datasets will only be updated after you delete the cached exports and/or use a
 reExport API call (see :ref:`batch-exports-through-the-api`).)
 
+.. _optional-iso639-3-languages:
+Expanding the number of languages available to the Citation Metadata Block
+++++++++++++++++++++++++++++++++
+
+As of Dataverse Software 6.4, the list of referable languages can be extended to include roughly 7900 ISO 639-3 languages. Pre 6.4 Dataverse came pre loaded with just under 200 languages.
+For information on `ISO 639-3 see: https://iso639-3.sil.org/about`_
+The benefits of adding the additional languages are:
+- Allowing more languages available in the Citation Metadata Language Dropdown
+- Helps when harvesting a dataset from another installation.  Missing languages cause harvesting to fail.
+If you would like to include this comprehensive list, an Administrator can merge them into Dataverse.
+Be advised that this list is not internationalized and may require addition work if your installation is using custom languages.
+
+```
+wget https://raw.githubusercontent.com/IQSS/dataverse/v6.4/scripts/api/data/metadatablocks/iso-639-3_Code_Tables_20240415/iso-639-3.tab
+curl http://localhost:8080/api/admin/datasetfield/mergeLanguageList -H "Content-type: text/tab-separated-values" -X POST --upload-file iso-639-3.tab
+```
+
