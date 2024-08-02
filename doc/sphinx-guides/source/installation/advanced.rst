@@ -148,3 +148,15 @@ Enabling External Exporters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Use the :ref:`dataverse.spi.exporters.directory` configuration option to specify a directory from which external exporters (JAR files) should be loaded.
+
+.. _inventory-of-external-exporters:
+
+Inventory of External Exporters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For a list of external exporters, see the README at https://github.com/gdcc/dataverse-exporters
+
+Developing New Exporters
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+See :doc:`/developers/metadataexport` for details about how to develop new exporters.
