@@ -546,8 +546,7 @@ public class DatasetsIT {
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPersistentId, "oai_dc", apiToken);
         exportDatasetAsDublinCore.prettyPrint();
         exportDatasetAsDublinCore.then().assertThat()
-                // FIXME: Get this working. See https://github.com/rest-assured/rest-assured/wiki/Usage#example-3---complex-parsing-and-validation
-                //                .body("oai_dc:dc.find { it == 'dc:title' }.item", hasItems("Darwin's Finches"))
+                .body("oai_dc.title", is("Darwin's Finches"))
                 .statusCode(OK.getStatusCode());
 
         Response exportDatasetAsDdi = UtilIT.exportDataset(datasetPersistentId, "ddi", apiToken);
@@ -1111,8 +1110,7 @@ public class DatasetsIT {
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPersistentId, "oai_dc", apiToken);
         exportDatasetAsDublinCore.prettyPrint();
         exportDatasetAsDublinCore.then().assertThat()
-                // FIXME: Get this working. See https://github.com/rest-assured/rest-assured/wiki/Usage#example-3---complex-parsing-and-validation
-                //                .body("oai_dc:dc.find { it == 'dc:title' }.item", hasItems("Darwin's Finches"))
+                .body("oai_dc.title", is("Dataset One"))
                 .statusCode(OK.getStatusCode());
 
         Response exportDatasetAsDdi = UtilIT.exportDataset(datasetPersistentId, "ddi", apiToken);
@@ -3955,7 +3953,72 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .assertThat().body("data.message", containsString(String.valueOf(persistentId)));
     }
 
-    
+    @Test
+    public void testCitationDate() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.then().assertThat().statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.then().assertThat().statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverse);
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.then().assertThat().statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.getBody().asString()).getString("data.persistentId");
+
+        Path pathToAddDateOfDepositJson = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "dateOfDeposit.json");
+        String dateOfDeposit = """
+{
+  "fields": [
+    {
+      "typeName": "dateOfDeposit",
+      "value": "1999-12-31"
+    }
+  ]
+}
+""";
+        java.nio.file.Files.write(pathToAddDateOfDepositJson, dateOfDeposit.getBytes());
+
+        Response addDateOfDeposit = UtilIT.addDatasetMetadataViaNative(datasetPid, pathToAddDateOfDepositJson.toString(), apiToken);
+        addDateOfDeposit.prettyPrint();
+        addDateOfDeposit.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.metadataBlocks.citation.fields[5].value", equalTo("1999-12-31"));
+
+        Response setCitationDate = UtilIT.setDatasetCitationDateField(datasetPid, "dateOfDeposit", apiToken);
+        setCitationDate.prettyPrint();
+        setCitationDate.then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getCitationAfter = UtilIT.getDatasetVersionCitation(datasetId, DS_VERSION_LATEST_PUBLISHED, true, apiToken);
+        getCitationAfter.prettyPrint();
+
+        String doi = datasetPid.substring(4);
+
+        // Note that the year 1999 appears in the citation because we
+        // set the citation date field to a field that has that year.
+        String expectedCitation = "Finch, Fiona, 1999, \"Darwin's Finches\", <a href=\"https://doi.org/" + doi + "\" target=\"_blank\">https://doi.org/" + doi + "</a>, Root, V1";
+
+        getCitationAfter.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", is(expectedCitation));
+
+        Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken);
+        exportDatasetAsDublinCore.prettyPrint();
+        String todayDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        exportDatasetAsDublinCore.then().assertThat()
+                .body("oai_dc.type", equalTo("Dataset"))
+                .body("oai_dc.date", equalTo(todayDate))
+                .body("oai_dc.rights", equalTo("CC0 1.0"))
+                .statusCode(OK.getStatusCode());
+    }
+
     @Test
     public void getVersionFiles() throws IOException, InterruptedException {
         Response createUser = UtilIT.createRandomUser();

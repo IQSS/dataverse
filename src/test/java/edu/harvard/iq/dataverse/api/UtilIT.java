@@ -3672,6 +3672,20 @@ public class UtilIT {
         return response;
     }
 
+    static Response setDatasetCitationDateField(String datasetIdOrPersistentId, String dateField, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isCreatable(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(dateField)
+                .put("/api/datasets/" + idInPath + "/citationdate" + optionalQueryParam);
+        return response;
+    }
+
     static Response getFileCitation(Integer fileId, String datasetVersion, String apiToken) {
         Boolean includeDeaccessioned = null;
         return getFileCitation(fileId, datasetVersion, includeDeaccessioned, apiToken);
