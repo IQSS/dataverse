@@ -18,7 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.concurrent.Future;
+
 import org.apache.solr.client.solrj.SolrServerException;
 
 /**
@@ -31,19 +31,19 @@ public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Datase
     private final DatasetLinkingDataverse doomed;
     private final Dataset editedDs;
     private final boolean index;
-    private final boolean preAuthorized;
+    private final boolean hasPermission;
     
-    public DeleteDatasetLinkingDataverseCommand(DataverseRequest aRequest, Dataset editedDs , DatasetLinkingDataverse doomed, boolean index, boolean preAuthorized) {
+    public DeleteDatasetLinkingDataverseCommand(DataverseRequest aRequest, Dataset editedDs , DatasetLinkingDataverse doomed, boolean index, boolean hasPermission) {
         super(aRequest, editedDs);
         this.editedDs = editedDs;
         this.doomed = doomed;
         this.index = index;
-        this.preAuthorized = preAuthorized;
+        this.hasPermission = hasPermission;
     }
     
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        if (!preAuthorized && (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
+        if (!hasPermission && (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException("Delete dataset linking dataverse can only be called by superusers.",
                     this, Collections.singleton(Permission.EditDataset), editedDs);
         }
