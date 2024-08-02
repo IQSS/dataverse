@@ -12,12 +12,14 @@ import java.util.logging.Logger;
 import jakarta.ws.rs.Produces;
 import org.apache.commons.io.IOUtils;
 
+import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.ejb.EJB;
 import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -90,6 +92,14 @@ public class Info extends AbstractApiBean {
     public Response getZipDownloadLimit() {
         long zipDownloadLimit = SystemConfig.getLongLimitFromStringOrDefault(settingsSvc.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit), SystemConfig.defaultZipDownloadLimit);
         return ok(zipDownloadLimit);
+    }
+
+    @GET
+    @Path("exportFormats")
+    public Response getExportFormats() {
+        JsonArrayBuilder responseModel = Json.createArrayBuilder();
+        ExportService.getInstance().getExportersLabels().forEach(labels -> responseModel.add(Json.createObjectBuilder().add("displayName", labels[0]).add("formatName", labels[1])));
+        return ok(responseModel);
     }
 
     private Response getSettingResponseByKey(SettingsServiceBean.Key key) {
