@@ -190,7 +190,7 @@ public class FileRecordReader extends AbstractItemReader {
     }
     
     private Logger getJobLogger() {
-        return Logger.getLogger("job-"+jobContext.getInstanceId());
+        return Logger.getLogger("job-" + jobContext.getInstanceId());
     }
     
 }

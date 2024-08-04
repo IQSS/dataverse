@@ -21,7 +21,7 @@ public class ExplicitGroupProvider implements GroupProvider {
     private final ExplicitGroupServiceBean explicitGroupSvc;
     private final RoleAssigneeServiceBean roleAssigneeSvc;
 
-    public ExplicitGroupProvider(ExplicitGroupServiceBean anExplicitGroupSvc, RoleAssigneeServiceBean aRoleAssigneeSvc ) {
+    public ExplicitGroupProvider(ExplicitGroupServiceBean anExplicitGroupSvc, RoleAssigneeServiceBean aRoleAssigneeSvc) {
         explicitGroupSvc = anExplicitGroupSvc;
         roleAssigneeSvc = aRoleAssigneeSvc;
     }
@@ -93,7 +93,7 @@ public class ExplicitGroupProvider implements GroupProvider {
      * @param roleAssigneeIdtf The identifier of the role assignee.
      * @return The role assignee whose ID is passed.
      */
-    RoleAssignee findRoleAssignee( String roleAssigneeIdtf ) {
+    RoleAssignee findRoleAssignee(String roleAssigneeIdtf) {
         return roleAssigneeSvc.getRoleAssignee(roleAssigneeIdtf);
     }
     
@@ -102,7 +102,7 @@ public class ExplicitGroupProvider implements GroupProvider {
      * @param eg the collection
      * @return the passed group, updated.
      */
-    ExplicitGroup updateProvider( ExplicitGroup eg ) {
+    ExplicitGroup updateProvider(ExplicitGroup eg) {
         if (eg == null) {
             return null; 
         }
@@ -116,8 +116,8 @@ public class ExplicitGroupProvider implements GroupProvider {
      * @param egs the collection
      * @return the collection, with all the groups updated.
      */
-    <T extends Collection<ExplicitGroup>> T updateProvider( T egs ) {
-        for ( ExplicitGroup eg : egs ) {
+    <T extends Collection<ExplicitGroup>> T updateProvider(T egs) {
+        for (ExplicitGroup eg : egs) {
             updateProvider(eg);
         }
         return egs;

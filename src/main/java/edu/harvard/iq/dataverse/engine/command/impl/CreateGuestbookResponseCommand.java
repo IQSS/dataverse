@@ -20,7 +20,7 @@ import java.util.Date;
  * @author skraffmiller
  */
 @RequiredPermissions({})
-public class CreateGuestbookResponseCommand extends AbstractVoidCommand  {
+public class CreateGuestbookResponseCommand extends AbstractVoidCommand {
     private final GuestbookResponse response;
     public CreateGuestbookResponseCommand(DataverseRequest aRequest, GuestbookResponse responseIn, Dataset affectedDataset) {
         super(aRequest, affectedDataset);

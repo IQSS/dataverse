@@ -22,7 +22,7 @@ import jakarta.persistence.Table;
  * @author ellenk
  */
 @Entity
-@Table(indexes = {@Index(columnList="controlledvocabularyvalue_id"), @Index(columnList="datasetfieldtype_id")})
+@Table(indexes = {@Index(columnList = "controlledvocabularyvalue_id"), @Index(columnList = "datasetfieldtype_id")})
 public class ControlledVocabAlternate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +36,7 @@ public class ControlledVocabAlternate implements Serializable {
         this.id = id;
     }
     
-    @Column(columnDefinition="TEXT", nullable = false) 
+    @Column(columnDefinition = "TEXT", nullable = false) 
     private String strValue;
 
     public String getStrValue() {
@@ -48,7 +48,7 @@ public class ControlledVocabAlternate implements Serializable {
     }
     
     @ManyToOne
-    @JoinColumn( nullable = false )
+    @JoinColumn(nullable = false)
     private DatasetFieldType datasetFieldType;
     
     public DatasetFieldType getDatasetFieldType() {
@@ -59,7 +59,7 @@ public class ControlledVocabAlternate implements Serializable {
     }
     
     @ManyToOne
-    @JoinColumn( nullable = false )
+    @JoinColumn(nullable = false)
     private ControlledVocabularyValue controlledVocabularyValue;
 
     public ControlledVocabularyValue getControlledVocabularyValue() {

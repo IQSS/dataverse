@@ -62,7 +62,7 @@ public class IngestUtil {
         // unique path name: directoryLabel + file separator + fileLabel
         Set<String> pathNamesExisting = existingPathNamesAsSet(version, ((fileToReplace == null) ? null : fileToReplace.getFileMetadata()));
         // Step 2: check each new DataFile against the list of path names, if a duplicate create a new unique file name
-        for (Iterator<DataFile> dfIt = newFiles.iterator(); dfIt.hasNext();) {
+        for (Iterator<DataFile> dfIt = newFiles.iterator(); dfIt.hasNext(); ) {
 
             FileMetadata fm = dfIt.next().getFileMetadata();
 
@@ -252,9 +252,9 @@ public class IngestUtil {
         // (skipping the one specified fileMetadata, if supplied. That's in order to 
         // be able to call this method 
         // #6942 added proxy for existing files to a boolean set when dataset version copy is done
-        for (Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator(); fmIt.hasNext();) {
+        for (Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator(); fmIt.hasNext(); ) {
             FileMetadata fm = fmIt.next();
-            if((fm.isInPriorVersion() || fm.getId() != null) && (replacedFmd==null || !fm.getDataFile().equals(replacedFmd.getDataFile()))) {
+            if ((fm.isInPriorVersion() || fm.getId() != null) && (replacedFmd == null || !fm.getDataFile().equals(replacedFmd.getDataFile()))) {
                 String existingName = fm.getLabel();
                 String existingDir = fm.getDirectoryLabel();
 

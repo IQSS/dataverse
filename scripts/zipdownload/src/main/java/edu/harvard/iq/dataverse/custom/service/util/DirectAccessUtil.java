@@ -38,7 +38,7 @@ import java.io.InputStream;
  * 
  * @author Leonid Andreev
  */
-public class DirectAccessUtil implements java.io.Serializable  {
+public class DirectAccessUtil implements java.io.Serializable {
 
     private AmazonS3 s3 = null;
     

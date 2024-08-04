@@ -65,34 +65,34 @@ public class PasswordValidatorTest {
             // set expiration again
             Arguments.of(0, "potato", 0, 0, 0, dictionary, 0, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
             Arguments.of(4, "one potato", 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
-            Arguments.of(3, "Two potato",  0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
-            Arguments.of(0, "Three.potato",  0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
-            Arguments.of(0, "F0ur.potato",  0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
-            Arguments.of(0, "F0ur.potatos",  0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
-            Arguments.of(0, "F0ur.potato",  0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
-            Arguments.of(0, "4.potato",  0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
-            Arguments.of(0, "55Potato",  0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(3, "Two potato", 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(0, "Three.potato", 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(0, "F0ur.potato", 0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(0, "F0ur.potatos", 0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(0, "F0ur.potato", 0, maxLength, 10, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(0, "4.potato", 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(0, "55Potato", 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
             // password in dictionary
-            Arguments.of(1, "56pOtAtO",  0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(1, "56pOtAtO", 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
             // password in dictionary case insensitive
-            Arguments.of(1, "56Potato",  0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(1, "56Potato", 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
             // substring of password in dictionary
-            Arguments.of(1, "56pOtAtOs",  0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
-            Arguments.of(0, "6 Potato",  goodStrength20, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(1, "56pOtAtOs", 0, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(0, "6 Potato", goodStrength20, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
             // add a fourth characteristic
-            Arguments.of(3, "7 Potato",  goodStrength20, maxLength, minLength, dictionary, 4, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(3, "7 Potato", goodStrength20, maxLength, minLength, dictionary, 4, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
             // Now it does not matter: 20 characters
             Arguments.of(0, "7 Potato901234567890", goodStrength20, maxLength, minLength, dictionary, 4, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
             // Now we use all four
-            Arguments.of(0, "8.Potato",  goodStrength20, maxLength, minLength, dictionary, 4, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(0, "8.Potato", goodStrength20, maxLength, minLength, dictionary, 4, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
             Arguments.of(2, "Potato.Too.12345.Short", 0, maxLength, 23, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
             Arguments.of(0, "Potatoes on my plate with beef", 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
             Arguments.of(0, "Potatoes on my plate with pie.", 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
-            Arguments.of(0, "Potatoes on a plate  .",  30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(0, "Potatoes on a plate  .", 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
             // Pass when repeating character maximum is 5
-            Arguments.of(0, "Repeated Potatoes:0000",  30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, 5),
+            Arguments.of(0, "Repeated Potatoes:0000", 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, 5),
             // Allow no more than 3 repeating characters (default)
-            Arguments.of(0, "Repeated Potatoes:000",  30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
+            Arguments.of(0, "Repeated Potatoes:000", 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
             //For some reason, whitespace doesn't count in the repeating rule?
             Arguments.of(6, "          ", 30, maxLength, minLength, dictionary, numberOfCharacters, characterRulesHarvardLevel3, numConsecutiveDigitsAllowed),
             // Good enough for Dataverse 4.0.

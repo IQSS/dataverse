@@ -39,7 +39,7 @@ public class GetLatestPublishedDatasetVersionCommandTest {
         
         Dataset ds = MocksFactory.makeDataset();
         List<DatasetVersion> versions = make10Versions(ds);
-        versions.add( MocksFactory.makeDatasetVersion(ds.getCategories()) );
+        versions.add(MocksFactory.makeDatasetVersion(ds.getCategories()));
         ds.setVersions(versions);
         
         assertEquals(10L, engine.submit(new GetLatestPublishedDatasetVersionCommand(makeRequest(), ds)).getVersionNumber().longValue());
@@ -52,17 +52,17 @@ public class GetLatestPublishedDatasetVersionCommandTest {
         
         Dataset ds = MocksFactory.makeDataset();
         
-        assertNull( engine.submit(new GetLatestPublishedDatasetVersionCommand(makeRequest(), ds)) );
+        assertNull(engine.submit(new GetLatestPublishedDatasetVersionCommand(makeRequest(), ds)));
     }
 
     private List<DatasetVersion> make10Versions(Dataset ds) {
         // setup: make 10 versions.
         List<DatasetVersion> versions = new ArrayList<>(10);
-        for ( int i=10; i>0; i-- ) {
+        for (int i = 10; i > 0; i--) {
             DatasetVersion v = MocksFactory.makeDatasetVersion(ds.getCategories());
-            v.setVersionNumber((long)i);
+            v.setVersionNumber((long) i);
             v.setMinorVersionNumber(0l);
-            v.setReleaseTime( MocksFactory.date(1990, i, 1) );
+            v.setReleaseTime(MocksFactory.date(1990, i, 1));
             v.setVersionState(DatasetVersion.VersionState.RELEASED);
             versions.add(v);
         }

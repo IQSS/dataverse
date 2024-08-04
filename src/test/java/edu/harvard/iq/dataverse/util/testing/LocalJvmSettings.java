@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * This is mostly true for unit tests.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE })
+@Target({ElementType.TYPE})
 @ExtendWith(JvmSettingExtension.class)
 @Inherited
 public @interface LocalJvmSettings {

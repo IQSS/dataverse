@@ -79,7 +79,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     public OAISet findBySpec(String spec) {
         String query = "SELECT o FROM OAISet o where o.spec = :specName";
         OAISet oaiSet = null;
-        logger.fine("Query: "+query+"; spec: "+spec);
+        logger.fine("Query: " + query + "; spec: " + spec);
         try {
             oaiSet = (OAISet) em.createQuery(query).setParameter("specName", spec).getSingleResult();
         } catch (Exception e) {
@@ -153,7 +153,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     }
     
     public OAISet findById(Long id) {
-       return em.find(OAISet.class,id);
+       return em.find(OAISet.class, id);
     }   
     
     @Asynchronous

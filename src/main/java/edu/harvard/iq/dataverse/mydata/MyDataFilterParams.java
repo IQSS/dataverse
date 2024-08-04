@@ -49,7 +49,7 @@ public class MyDataFilterParams {
                                                     IndexServiceBean.getIN_REVIEW_STRING(),
                                                     IndexServiceBean.getDEACCESSIONED_STRING());*/
             
-    public static final HashMap<DvObject.DType, String> sqlToSolrSearchMap ;
+    public static final HashMap<DvObject.DType, String> sqlToSolrSearchMap;
     static
     {
         sqlToSolrSearchMap = new HashMap<>();
@@ -58,7 +58,7 @@ public class MyDataFilterParams {
         sqlToSolrSearchMap.put(DvObject.DType.DataFile, SearchConstants.FILES);
     }
     
-    public static final HashMap<DvObject.DType, String> userInterfaceToSqlSearchMap ;
+    public static final HashMap<DvObject.DType, String> userInterfaceToSqlSearchMap;
     static
     {
         userInterfaceToSqlSearchMap = new HashMap<>();
@@ -99,15 +99,15 @@ public class MyDataFilterParams {
      * @param authenticatedUser
      * @param userIdentifier 
      */
-    public MyDataFilterParams(DataverseRequest dataverseRequest, DataverseRolePermissionHelper roleHelper){
-        if (dataverseRequest==null){
+    public MyDataFilterParams(DataverseRequest dataverseRequest, DataverseRolePermissionHelper roleHelper) {
+        if (dataverseRequest == null) {
             throw new NullPointerException("MyDataFilterParams constructor: dataverseRequest cannot be null ");
         }
         this.dataverseRequest = dataverseRequest;
         this.setAuthenticatedUserFromDataverseRequest(dataverseRequest);
         this.userIdentifier = authenticatedUser.getIdentifier();
 
-        if (roleHelper==null){
+        if (roleHelper == null) {
             throw new NullPointerException("MyDataFilterParams constructor: roleHelper cannot be null");
         }
         this.dvObjectTypes = MyDataFilterParams.allDvObjectTypes;
@@ -125,22 +125,22 @@ public class MyDataFilterParams {
      * @param datasetValidities
      */
     public MyDataFilterParams(DataverseRequest dataverseRequest, List<DvObject.DType> dvObjectTypes, List<String> publicationStatuses, List<Long> roleIds, String searchTerm, List<Boolean> datasetValidities) {
-        if (dataverseRequest==null){
+        if (dataverseRequest == null) {
             throw new NullPointerException("MyDataFilterParams constructor: dataverseRequest cannot be null ");
         }
         this.dataverseRequest = dataverseRequest;
         this.setAuthenticatedUserFromDataverseRequest(dataverseRequest);
         this.userIdentifier = authenticatedUser.getIdentifier();
 
-        if (dvObjectTypes==null){
+        if (dvObjectTypes == null) {
             throw new NullPointerException("MyDataFilterParams constructor: dvObjectTypes cannot be null");
         }
 
         this.dvObjectTypes = dvObjectTypes;
 
-        if (publicationStatuses == null){
+        if (publicationStatuses == null) {
             this.publicationStatuses = MyDataFilterParams.defaultPublishedStates;
-        }else{
+        } else {
             this.publicationStatuses = publicationStatuses;
         }
 
@@ -149,9 +149,9 @@ public class MyDataFilterParams {
         // Do something here if none chosen!
         this.roleIds = roleIds;
         
-        if ((searchTerm == null)||(searchTerm.trim().isEmpty())){
+        if ((searchTerm == null) || (searchTerm.trim().isEmpty())) {
             this.searchTerm = MyDataFilterParams.defaultSearchTerm;
-        }else{
+        } else {
             this.searchTerm = searchTerm;
         }
         
@@ -159,21 +159,21 @@ public class MyDataFilterParams {
     }
     
     
-    private void setAuthenticatedUserFromDataverseRequest(DataverseRequest dvRequest){
+    private void setAuthenticatedUserFromDataverseRequest(DataverseRequest dvRequest) {
         
-        if (dvRequest == null){
+        if (dvRequest == null) {
             throw new NullPointerException("MyDataFilterParams getAuthenticatedUserFromDataverseRequest: dvRequest cannot be null");
         }
         
         this.authenticatedUser = dvRequest.getAuthenticatedUser();
         
-        if (this.authenticatedUser == null){
+        if (this.authenticatedUser == null) {
             throw new NullPointerException("MyDataFilterParams getAuthenticatedUserFromDataverseRequest: Hold on! dvRequest must be associated with an AuthenticatedUser be null");
         }
     }  
     
     
-    public List<Long> getRoleIds(){
+    public List<Long> getRoleIds() {
         
         return this.roleIds;
     }
@@ -202,11 +202,11 @@ public class MyDataFilterParams {
         }
     }
     
-    public List<DvObject.DType> getDvObjectTypes(){
+    public List<DvObject.DType> getDvObjectTypes() {
         return this.dvObjectTypes;
     }
     
-    public String getUserIdentifier(){
+    public String getUserIdentifier() {
         return this.userIdentifier;
     }
     
@@ -215,15 +215,15 @@ public class MyDataFilterParams {
         return authenticatedUser;
     }
     
-    public String getErrorMessage(){
+    public String getErrorMessage() {
         return this.errorMessage;
     }
     
-    public boolean hasError(){
+    public boolean hasError() {
         return this.errorFound;
     }
 
-    public void addError(String s){
+    public void addError(String s) {
         this.errorFound = true;
         this.errorMessage = s;
     }
@@ -233,79 +233,79 @@ public class MyDataFilterParams {
     // --------------------------------------------
     // start: Convenience methods for dvObjectTypes
     // --------------------------------------------
-    public boolean areDataversesIncluded(){
-        if (this.dvObjectTypes.contains(DvObject.DType.Dataverse)){
+    public boolean areDataversesIncluded() {
+        if (this.dvObjectTypes.contains(DvObject.DType.Dataverse)) {
             return true;
         }
         return false;
     }
-    public boolean areDatasetsIncluded(){
-        if (this.dvObjectTypes.contains(DvObject.DType.Dataset)){
+    public boolean areDatasetsIncluded() {
+        if (this.dvObjectTypes.contains(DvObject.DType.Dataset)) {
             return true;
         }
         return false;
     }
-    public boolean areFilesIncluded(){
-        if (this.dvObjectTypes.contains(DvObject.DType.DataFile)){
+    public boolean areFilesIncluded() {
+        if (this.dvObjectTypes.contains(DvObject.DType.DataFile)) {
             return true;
         }
         return false;
     }
     
-    public String getSolrFragmentForDvObjectType(){
-        if ((this.dvObjectTypes == null)||(this.dvObjectTypes.isEmpty())){
+    public String getSolrFragmentForDvObjectType() {
+        if ((this.dvObjectTypes == null) || (this.dvObjectTypes.isEmpty())) {
             throw new IllegalStateException("Error encountered earlier.  Before calling this method, first check 'hasError()'");
         }
         
         List<String> solrTypes = new ArrayList<>();
-        for (DvObject.DType dtype : this.dvObjectTypes){
+        for (DvObject.DType dtype : this.dvObjectTypes) {
             solrTypes.add(MyDataFilterParams.sqlToSolrSearchMap.get(dtype));
         }
                 
         String valStr = StringUtils.join(solrTypes, " OR ");
-        if (this.dvObjectTypes.size() > 1){
+        if (this.dvObjectTypes.size() > 1) {
             valStr = "(" + valStr + ")";
         }
         
         return  SearchFields.TYPE + ":" + valStr;// + ")";
     }
 
-    public String getSolrFragmentForPublicationStatus(){
-        if ((this.publicationStatuses == null)||(this.publicationStatuses.isEmpty())){
+    public String getSolrFragmentForPublicationStatus() {
+        if ((this.publicationStatuses == null) || (this.publicationStatuses.isEmpty())) {
             throw new IllegalStateException("Error encountered earlier.  Before calling this method, first check 'hasError()'");
         }
 
         // Add quotes around each publication status
         //
         List<String> solrPublicationStatuses = new ArrayList<>();
-        for (String pubStatus : this.publicationStatuses){
+        for (String pubStatus : this.publicationStatuses) {
             solrPublicationStatuses.add("\"" + pubStatus + "\"");
         }
         
         
         String valStr = StringUtils.join(solrPublicationStatuses, " OR ");
-        if (this.publicationStatuses.size() > 1){
+        if (this.publicationStatuses.size() > 1) {
             valStr = "(" + valStr + ")";
         }
 
         return  "(" + SearchFields.PUBLICATION_STATUS + ":" + valStr + ")";
     }
 
-    public String getSolrFragmentForDatasetValidity(){
-        if ((this.datasetValidities == null) || (this.datasetValidities.isEmpty()) || (this.datasetValidities.size() > 1)){
+    public String getSolrFragmentForDatasetValidity() {
+        if ((this.datasetValidities == null) || (this.datasetValidities.isEmpty()) || (this.datasetValidities.size() > 1)) {
             return "";
         }
     
         
         String valStr = StringUtils.join(datasetValidities, " OR ");
-        if (this.datasetValidities.size() > 1){
+        if (this.datasetValidities.size() > 1) {
             valStr = "(" + valStr + ")";
         }
 
         return  "(" + SearchFields.DATASET_VALID + ":" + valStr + ")";
     }
 
-    public String getDvObjectTypesAsJSONString(){
+    public String getDvObjectTypesAsJSONString() {
         
         return this.getDvObjectTypesAsJSON().build().toString();
     }
@@ -315,11 +315,11 @@ public class MyDataFilterParams {
      * 
      * @return 
      */
-    public JsonArrayBuilder getListofSelectedPublicationStatuses(){
+    public JsonArrayBuilder getListofSelectedPublicationStatuses() {
         
         JsonArrayBuilder jsonArray = Json.createArrayBuilder();
         
-        for (String pubStatus : this.publicationStatuses){
+        for (String pubStatus : this.publicationStatuses) {
             jsonArray.add(pubStatus);            
         }
         return jsonArray;
@@ -332,21 +332,21 @@ public class MyDataFilterParams {
      *
      * @return
      */
-    public JsonArrayBuilder getListofSelectedValidities(){
+    public JsonArrayBuilder getListofSelectedValidities() {
         if (this.datasetValidities == null || this.datasetValidities.isEmpty()) {
             return null;
         }
 
         JsonArrayBuilder jsonArray = Json.createArrayBuilder();
 
-        for (Boolean valid : this.datasetValidities){
+        for (Boolean valid : this.datasetValidities) {
             jsonArray.add(valid);
         }
         return jsonArray;
     }
     
     
-    public JsonObjectBuilder getDvObjectTypesAsJSON(){
+    public JsonObjectBuilder getDvObjectTypesAsJSON() {
         
         JsonArrayBuilder jsonArray = Json.createArrayBuilder();
 
@@ -371,25 +371,25 @@ public class MyDataFilterParams {
     // end: Convenience methods for dvObjectTypes
     // --------------------------------------------
 
-    public String getSearchTerm(){
+    public String getSearchTerm() {
        return this.searchTerm;
    }
     
-    public static List<String[]> getPublishedStatesForMyDataPage(){
-        if (defaultPublishedStates==null){
+    public static List<String[]> getPublishedStatesForMyDataPage() {
+        if (defaultPublishedStates == null) {
             throw new NullPointerException("defaultPublishedStates cannot be null");
         }
         List<String[]> publicationStateInfoList = new ArrayList<String[]>();
         String stateNameAsVariable;
-        for (String displayState : defaultPublishedStates){
+        for (String displayState : defaultPublishedStates) {
             stateNameAsVariable = displayState.toLowerCase().replace(" ", "_");
-            String[] singleInfoRow = { displayState, stateNameAsVariable };
+            String[] singleInfoRow = {displayState, stateNameAsVariable};
             publicationStateInfoList.add(singleInfoRow);
         }
         return publicationStateInfoList;
     }
   
-    public DataverseRequest getDataverseRequest(){
+    public DataverseRequest getDataverseRequest() {
         return this.dataverseRequest;
     }
   

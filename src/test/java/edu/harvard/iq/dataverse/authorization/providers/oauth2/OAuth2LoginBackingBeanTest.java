@@ -228,9 +228,9 @@ class OAuth2LoginBackingBeanTest {
             // encrypted nonsense
             Arguments.of(testIdp.getId() + "~" + StringUtil.encrypt("test", testIdp.getClientSecret())),
             // expired timestamp < 0
-            Arguments.of(testIdp.getId() + "~" + StringUtil.encrypt(testIdp.getId()+"~-1", testIdp.getClientSecret())),
+            Arguments.of(testIdp.getId() + "~" + StringUtil.encrypt(testIdp.getId() + "~-1", testIdp.getClientSecret())),
             // expired timestamp (10 milliseconds to old...)
-            Arguments.of(testIdp.getId() + "~" + StringUtil.encrypt(testIdp.getId()+"~"+(System.currentTimeMillis()-OAuth2LoginBackingBean.STATE_TIMEOUT-10), testIdp.getClientSecret()))
+            Arguments.of(testIdp.getId() + "~" + StringUtil.encrypt(testIdp.getId() + "~" + (System.currentTimeMillis() - OAuth2LoginBackingBean.STATE_TIMEOUT - 10), testIdp.getClientSecret()))
         );
     }
     @ParameterizedTest

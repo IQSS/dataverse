@@ -126,15 +126,15 @@ public class SwordConfigurationImpl implements SwordConfiguration {
          */ 
         Long maxUploadInBytes = systemConfig.getMaxFileUploadSizeForStore("default");
 
-        if (maxUploadInBytes == null){
+        if (maxUploadInBytes == null) {
             // (a) No setting, return unlimited           
             return unlimited;      
         
-        }else if (maxUploadInBytes > Integer.MAX_VALUE){
+        } else if (maxUploadInBytes > Integer.MAX_VALUE) {
             // (b) setting returns the limit of int, return max int value  (BUG)
             return Integer.MAX_VALUE;
             
-        }else{            
+        } else {            
             // (c) Return the setting as an int
             return maxUploadInBytes.intValue();
 

@@ -126,7 +126,7 @@ public class PidProviderFactoryBean {
         } else {
             for (String id : providers.get()) {
                 //Allows spaces in PID_PROVIDERS setting
-                id=id.trim();
+                id = id.trim();
                 Optional<String> type = JvmSettings.PID_PROVIDER_TYPE.lookupOptional(id);
                 if (!type.isPresent()) {
                     logger.warning("PidProvider " + id

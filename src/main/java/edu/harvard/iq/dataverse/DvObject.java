@@ -27,7 +27,7 @@ import jakarta.persistence.*;
     @NamedQuery(name = "DvObject.checkExists", 
             query = "SELECT count(o) from DvObject o WHERE o.id=:id"),
     @NamedQuery(name = "DvObject.ownedObjectsById",
-			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
+			query = "SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
     @NamedQuery(name = "DvObject.findByGlobalId",
             query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol and o.dtype=:dtype"),
     @NamedQuery(name = "DvObject.findIdByGlobalId",
@@ -51,12 +51,12 @@ import jakarta.persistence.*;
 // dataverse, dataset and datafile. The ids from the main table will be reused
 // in the child tables. (i.e., the id sequences will be "sparse" in the 3 
 // child tables). Tested, appears to be working properly. -- L.A. Nov. 4 2014
-@Inheritance(strategy=InheritanceType.JOINED)
-@Table(indexes = {@Index(columnList="dtype")
-		, @Index(columnList="owner_id")
-		, @Index(columnList="creator_id")
-		, @Index(columnList="releaseuser_id")},
-		uniqueConstraints = {@UniqueConstraint(columnNames = {"authority,protocol,identifier"}),@UniqueConstraint(columnNames = {"owner_id,storageidentifier"})})
+@Inheritance(strategy = InheritanceType.JOINED)
+@Table(indexes = {@Index(columnList = "dtype")
+		, @Index(columnList = "owner_id")
+		, @Index(columnList = "creator_id")
+		, @Index(columnList = "releaseuser_id")},
+		uniqueConstraints = {@UniqueConstraint(columnNames = {"authority,protocol,identifier"}), @UniqueConstraint(columnNames = {"owner_id,storageidentifier"})})
 public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(DvObject.class.getCanonicalName());
@@ -121,7 +121,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     @ManyToOne
     private AuthenticatedUser releaseUser;
     
-    @Column( nullable = false )
+    @Column(nullable = false)
     private Timestamp createDate;
 
     @Column(nullable = false)
@@ -178,7 +178,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      */
     private boolean previewImageAvailable;
     
-    @OneToOne(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
+    @OneToOne(mappedBy = "definitionPoint", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     private StorageQuota storageQuota;
     
     public boolean isPreviewImageAvailable() {
@@ -252,7 +252,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     }
 
     public DvObjectContainer getOwner() {
-        return (DvObjectContainer)owner;
+        return (DvObjectContainer) owner;
     }
 
     public Long getId() {
@@ -311,7 +311,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     public void setProtocol(String protocol) {
         this.protocol = protocol;
         //Remove cached value
-        globalId=null;
+        globalId = null;
     }
 
     public String getAuthority() {
@@ -321,7 +321,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     public void setAuthority(String authority) {
         this.authority = authority;
         //Remove cached value
-        globalId=null;
+        globalId = null;
     }
 
     public Date getGlobalIdCreateTime() {
@@ -339,7 +339,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
         //Remove cached value
-        globalId=null;
+        globalId = null;
     }
 
     public boolean isIdentifierRegistered() {
@@ -350,8 +350,8 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         this.identifierRegistered = identifierRegistered;
     }  
     
-    public void setGlobalId( GlobalId pid ) {
-        if ( pid == null ) {
+    public void setGlobalId(GlobalId pid) {
+        if (pid == null) {
             setProtocol(null);
             setAuthority(null);
             setIdentifier(null);
@@ -433,35 +433,35 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     public Dataverse getDataverseContext() {
         if (this instanceof Dataverse) {
             return (Dataverse) this;
-        } else if (this.getOwner() != null){
+        } else if (this.getOwner() != null) {
             return this.getOwner().getDataverseContext();
         }
         
         return null;
     }
     
-    public String getAuthorString(){
-        if (this instanceof Dataverse){
+    public String getAuthorString() {
+        if (this instanceof Dataverse) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        if (this instanceof Dataset){
+        if (this instanceof Dataset) {
             Dataset dataset = (Dataset) this;
             return dataset.getLatestVersion().getAuthorsStr();
         }
-        if (this instanceof DataFile){
+        if (this instanceof DataFile) {
             Dataset dataset = (Dataset) this.getOwner();
             return dataset.getLatestVersion().getAuthorsStr();
         }
         throw new UnsupportedOperationException("Not supported yet. New DVObject Instance?");
     }
     
-    public String getTargetUrl(){
+    public String getTargetUrl() {
         throw new UnsupportedOperationException("Not supported yet. New DVObject Instance?");
     }
     
-    public String getYearPublishedCreated(){
+    public String getYearPublishedCreated() {
         //if published get the year if draft get when created
-        if (this.isReleased()){
+        if (this.isReleased()) {
             return new SimpleDateFormat("yyyy").format(this.getPublicationDate());
         } else if (this.getCreateDate() != null) {
            return  new SimpleDateFormat("yyyy").format(this.getCreateDate());
@@ -491,10 +491,10 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      * @param other 
      * @return {@code true} iff {@code other} is {@code this} or below {@code this} in the containment hierarchy.
      */
-    public abstract boolean isAncestorOf( DvObject other );
+    public abstract boolean isAncestorOf(DvObject other);
     
 
-    @OneToMany(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
+    @OneToMany(mappedBy = "definitionPoint", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     List<RoleAssignment> roleAssignments;
     
 }

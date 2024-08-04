@@ -69,18 +69,18 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
 
     @Override
     public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) throws Exception {
-        logger.log(Level.FINE,"alreadyRegistered");
+        logger.log(Level.FINE, "alreadyRegistered");
         try {
             HashMap<String, String> result = ezidService.getMetadata(pid.asString());
             return result != null && !result.isEmpty();
             // TODO just check for HTTP status code 200/404, sadly the status code is swept under the carpet
-        } catch (EZIDException e ){
+        } catch (EZIDException e) {
             //No such identifier is treated as an exception
             //but if that is the case then we want to just return false
-            if(pid.getIdentifier() == null){
+            if (pid.getIdentifier() == null) {
                 return false;
             }
-            if (e.getLocalizedMessage().contains("no such identifier")){
+            if (e.getLocalizedMessage().contains("no such identifier")) {
                 return false;
             }
             logger.log(Level.WARNING, "alreadyRegistered failed");
@@ -95,7 +95,7 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
 
     @Override
     public Map<String, String> getIdentifierMetadata(DvObject dvObject) {
-        logger.log(Level.FINE,"getIdentifierMetadata");
+        logger.log(Level.FINE, "getIdentifierMetadata");
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = new HashMap<>();
         try {
@@ -124,7 +124,7 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put("_target", getTargetUrl(dvObject));
         try {
-            ezidService.setMetadata(identifier,metadata);
+            ezidService.setMetadata(identifier, metadata);
             return identifier;
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "modifyMetadata failed");
@@ -138,7 +138,7 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
         
     @Override
     public void deleteIdentifier(DvObject dvObject) throws Exception {
-                logger.log(Level.FINE,"deleteIdentifier");
+                logger.log(Level.FINE, "deleteIdentifier");
         String identifier = getIdentifier(dvObject);
         HashMap<String, String> doiMetadata;
         try {
@@ -193,11 +193,11 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
     
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
-        logger.log(Level.FINE,"publicizeIdentifier - dvObject");
-        if(!dvObject.isIdentifierRegistered()){
+        logger.log(Level.FINE, "publicizeIdentifier - dvObject");
+        if (!dvObject.isIdentifierRegistered()) {
             try {
                 createIdentifier(dvObject);
-            } catch (Throwable e){
+            } catch (Throwable e) {
                 return false; 
             }
         }
@@ -231,14 +231,14 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
     }
     
     @Override
-    public List<String> getProviderInformation(){
+    public List<String> getProviderInformation() {
         return List.of(getId(), this.baseUrl);
     }
 
     @Override
     public String createIdentifier(DvObject dvObject) throws Throwable {
         logger.log(Level.FINE, "createIdentifier");
-        if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
+        if (dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty()) {
             dvObject = generatePid(dvObject);
         }
         String identifier = getIdentifier(dvObject);
@@ -275,8 +275,8 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
      * @param map
      * @return A HashMap with the same values as {@code map}
      */
-    private <T> HashMap<T,T> asHashMap(Map<T,T> map) {
-        return (map instanceof HashMap) ? (HashMap<T, T>)map : new HashMap<>(map);
+    private <T> HashMap<T, T> asHashMap(Map<T, T> map) {
+        return (map instanceof HashMap) ? (HashMap<T, T>) map : new HashMap<>(map);
     }
 
     @Override

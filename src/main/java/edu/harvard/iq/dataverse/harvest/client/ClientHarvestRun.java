@@ -90,9 +90,9 @@ public class ClientHarvestRun implements Serializable {
         if (isSuccess() || isInterrupted()) {
             String resultLabel = getResultLabel();
             
-            resultLabel = resultLabel.concat("; "+harvestedDatasetCount+" harvested, ");
-            resultLabel = resultLabel.concat(deletedDatasetCount+" deleted, ");
-            resultLabel = resultLabel.concat(failedDatasetCount+" failed.");
+            resultLabel = resultLabel.concat("; " + harvestedDatasetCount + " harvested, ");
+            resultLabel = resultLabel.concat(deletedDatasetCount + " deleted, ");
+            resultLabel = resultLabel.concat(failedDatasetCount + " failed.");
             return resultLabel;
         } else if (isFailed()) {
             return RESULT_LABEL_FAILURE;

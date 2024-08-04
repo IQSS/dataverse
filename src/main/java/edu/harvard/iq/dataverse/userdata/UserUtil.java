@@ -23,12 +23,12 @@ public class UserUtil {
      * @param dbResult
      * @return 
      */
-    public static String getStringOrNull(Object dbResult){
+    public static String getStringOrNull(Object dbResult) {
         
-        if (dbResult == null){
+        if (dbResult == null) {
             return null;
         }
-        return (String)dbResult;
+        return (String) dbResult;
     }
     
     /**
@@ -36,12 +36,12 @@ public class UserUtil {
      * @param dbResult
      * @return 
      */
-    public static String getStringOrBlankForNull(Object dbResult){
+    public static String getStringOrBlankForNull(Object dbResult) {
         
-        if (dbResult == null){
+        if (dbResult == null) {
             return "";
         }
-        return (String)dbResult;
+        return (String) dbResult;
     }
     
     /**
@@ -49,12 +49,12 @@ public class UserUtil {
      * @param dbResult
      * @return 
      */
-    public static String getTimestampStringOrNull(Object dbResult){
+    public static String getTimestampStringOrNull(Object dbResult) {
         
-        if (dbResult == null){
+        if (dbResult == null) {
             return null;
         }
-        return ((Timestamp)dbResult).toString();
+        return ((Timestamp) dbResult).toString();
     }
 
         /**
@@ -62,11 +62,11 @@ public class UserUtil {
      * @param dbResult
      * @return 
      */
-    public static Timestamp getTimestampOrNull(Object dbResult){
+    public static Timestamp getTimestampOrNull(Object dbResult) {
         
-        if (dbResult == null){
+        if (dbResult == null) {
             return null;
         }
-        return (Timestamp)dbResult;
+        return (Timestamp) dbResult;
     }
 }

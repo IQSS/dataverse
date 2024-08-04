@@ -797,7 +797,7 @@ public class SearchIT {
         String searchPart = "*"; 
         assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + dataverseAlias, 1, UtilIT.GENERAL_LONG_DURATION), "Missing subDV");
         
-        Response searchUnpublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
+        Response searchUnpublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree=" + dataverseAlias2);
         searchUnpublishedSubtree2.prettyPrint();
         searchUnpublishedSubtree2.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -834,13 +834,13 @@ public class SearchIT {
         publishDataverse2.then().assertThat()
                 .statusCode(OK.getStatusCode());
         
-        Response searchPublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
+        Response searchPublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree=" + dataverseAlias);
         searchPublishedSubtree.prettyPrint();
         searchPublishedSubtree.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
         
-        Response searchPublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias2);
+        Response searchPublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree=" + dataverseAlias2);
         searchPublishedSubtree2.prettyPrint();
         searchPublishedSubtree2.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -898,15 +898,15 @@ public class SearchIT {
         
         String searchPart = "*"; 
         
-        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree="+parentDataverseAlias, 1, UtilIT.GENERAL_LONG_DURATION), "Failed test if search exceeds max duration " + searchPart);
+        assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + parentDataverseAlias, 1, UtilIT.GENERAL_LONG_DURATION), "Failed test if search exceeds max duration " + searchPart);
         
-        Response searchPublishedSubtreeSuper = UtilIT.search(searchPart, apiTokenSuper, "&subtree="+parentDataverseAlias);
+        Response searchPublishedSubtreeSuper = UtilIT.search(searchPart, apiTokenSuper, "&subtree=" + parentDataverseAlias);
         searchPublishedSubtreeSuper.prettyPrint();
         searchPublishedSubtreeSuper.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
         
-        Response searchPublishedSubtreeCurator = UtilIT.search(searchPart, apiToken, "&subtree="+parentDataverseAlias);
+        Response searchPublishedSubtreeCurator = UtilIT.search(searchPart, apiToken, "&subtree=" + parentDataverseAlias);
         searchPublishedSubtreeCurator.prettyPrint();
         searchPublishedSubtreeCurator.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -970,26 +970,26 @@ public class SearchIT {
         searchFakeSubtreeNoAPI.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
 
-        Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
+        Response searchUnpublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree=" + dataverseAlias);
         searchUnpublishedSubtree.prettyPrint();
         searchUnpublishedSubtree.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
         
-        Response searchUnpublishedSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias);
+        Response searchUnpublishedSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree=" + dataverseAlias);
         searchUnpublishedSubtreeNoAPI.prettyPrint();
         searchUnpublishedSubtreeNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
         
-        Response searchUnpublishedSubtrees = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias +"&subtree="+dataverseAlias2);
+        Response searchUnpublishedSubtrees = UtilIT.search(searchPart, apiToken, "&subtree=" + dataverseAlias + "&subtree=" + dataverseAlias2);
         searchUnpublishedSubtrees.prettyPrint();
         searchUnpublishedSubtrees.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(2));
         
-        Response searchUnpublishedSubtreesNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias +"&subtree="+dataverseAlias2);
+        Response searchUnpublishedSubtreesNoAPI = UtilIT.search(searchPart, null, "&subtree=" + dataverseAlias + "&subtree=" + dataverseAlias2);
         searchUnpublishedSubtreesNoAPI.prettyPrint();
         searchUnpublishedSubtreesNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -1044,19 +1044,19 @@ public class SearchIT {
         publishDataset2.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response searchPublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias);
+        Response searchPublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree=" + dataverseAlias);
         searchPublishedSubtree.prettyPrint();
         searchPublishedSubtree.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
         
-        Response searchPublishedSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias);
+        Response searchPublishedSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree=" + dataverseAlias);
         searchPublishedSubtreeNoAPI.prettyPrint();
         searchPublishedSubtreeNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
         
-        Response searchPublishedSubtrees = UtilIT.search(searchPart, apiToken, "&subtree="+dataverseAlias+"&subtree="+dataverseAlias2);
+        Response searchPublishedSubtrees = UtilIT.search(searchPart, apiToken, "&subtree=" + dataverseAlias + "&subtree=" + dataverseAlias2);
         searchPublishedSubtrees.prettyPrint();
         searchPublishedSubtrees.then().assertThat()
                 .statusCode(OK.getStatusCode())
@@ -1064,7 +1064,7 @@ public class SearchIT {
         
         assertTrue(UtilIT.sleepForSearch(searchPart, null, "&subtree=" + dataverseAlias2, 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Missing dataset w/no apiKey");
         
-        Response searchPublishedSubtreesNoAPI = UtilIT.search(searchPart, null, "&subtree="+dataverseAlias+"&subtree="+dataverseAlias2);
+        Response searchPublishedSubtreesNoAPI = UtilIT.search(searchPart, null, "&subtree=" + dataverseAlias + "&subtree=" + dataverseAlias2);
         searchPublishedSubtreesNoAPI.prettyPrint();
         searchPublishedSubtreesNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())

@@ -48,7 +48,7 @@ public class HarvestingServerIT {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 	// enable harvesting server
 	//  Gave some thought to storing the original response, and resetting afterwards - but that appears to be more complexity than it's worth
-	Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled,"true");
+	Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled, "true");
         
         // Create users:
         setupUsers();
@@ -61,7 +61,7 @@ public class HarvestingServerIT {
     @AfterAll
     public static void afterClass() {
 	// disable harvesting server (default value)
-	Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled,"false");
+	Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled, "false");
     }
 
     private static void setupUsers() {
@@ -140,7 +140,7 @@ public class HarvestingServerIT {
     }
 
     private XmlPath validateOaiVerbResponse(Response oaiResponse, String verb) {
-        logger.info(verb+" response: "+oaiResponse.prettyPrint());
+        logger.info(verb + " response: " + oaiResponse.prettyPrint());
         // confirm that the response is in fact XML:
         XmlPath responseXmlPath = oaiResponse.getBody().xmlPath();
         assertNotNull(responseXmlPath);
@@ -150,7 +150,7 @@ public class HarvestingServerIT {
         // TODO: validate the formatting of the date string in the record
         // header, above. (could be slightly tricky - since this formatting
         // is likely locale-specific)
-        logger.fine("date string from the OAI output:"+dateString);
+        logger.fine("date string from the OAI output:" + dateString);
         //assertEquals("http://localhost:8080/oai", responseXmlPath.getString("OAI-PMH.request"));
         assertEquals(verb, responseXmlPath.getString("OAI-PMH.request.@verb"));
         return responseXmlPath;
@@ -198,7 +198,7 @@ public class HarvestingServerIT {
         List<String> metadataPrefixes = new ArrayList<>(); 
         
         for (int i = 0; i < listFormats.size(); i++) {
-            metadataPrefixes.add(responseXmlPath.getString("OAI-PMH.ListMetadataFormats.metadataFormat["+i+"].metadataPrefix"));
+            metadataPrefixes.add(responseXmlPath.getString("OAI-PMH.ListMetadataFormats.metadataFormat[" + i + "].metadataPrefix"));
         }
         Collections.sort(metadataPrefixes);
         
@@ -218,7 +218,7 @@ public class HarvestingServerIT {
  
         // API Test 1. Make sure the set does not exist yet
         String setPath = String.format("/api/harvest/server/oaisets/%s", setName);
-        String createPath ="/api/harvest/server/oaisets/add";
+        String createPath = "/api/harvest/server/oaisets/add";
         Response getSetResponse = given()
                 .get(setPath);
         assertEquals(404, getSetResponse.getStatusCode());
@@ -305,7 +305,7 @@ public class HarvestingServerIT {
 
         // Make sure the set does not exist
         String setPath = String.format("/api/harvest/server/oaisets/%s", setName);
-        String createPath ="/api/harvest/server/oaisets/add";
+        String createPath = "/api/harvest/server/oaisets/add";
         Response getSetResponse = given()
                 .get(setPath);
         assertEquals(404, getSetResponse.getStatusCode());
@@ -322,7 +322,7 @@ public class HarvestingServerIT {
         // Dataverse OAI Sets API
         
         String persistentId = extraDatasetsIdentifiers.get(0); 
-        String newDefinition = "dsPersistentId:"+persistentId;
+        String newDefinition = "dsPersistentId:" + persistentId;
         String newDescription = "updated";
         
         // API Test 1. Try to modify the set as normal user, should fail
@@ -337,7 +337,7 @@ public class HarvestingServerIT {
         // should fail
         editSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
-                .body(jsonForEditSpec(setName, "",""))
+                .body(jsonForEditSpec(setName, "", ""))
                 .put(setPath);
         logger.info("invalid values editSetResponse.getStatusCode(): " + editSetResponse.getStatusCode());
         assertEquals(400, editSetResponse.getStatusCode());
@@ -375,7 +375,7 @@ public class HarvestingServerIT {
         // 2. The set hasn't been exported yet, so it shouldn't be listed in 
         // ListSets (#3322). Let's confirm that: 
         
-        List<Node> listSets = responseXmlPath.getList("OAI-PMH.ListSets.set.list().findAll{it.setName=='"+setName+"'}", Node.class);
+        List<Node> listSets = responseXmlPath.getList("OAI-PMH.ListSets.set.list().findAll{it.setName=='" + setName + "'}", Node.class);
         // 2a. Confirm that our set is listed:
         assertNotNull(listSets, "Unexpected response from ListSets");
         assertEquals(0, listSets.size(), "An unexported OAI set is listed in ListSets");
@@ -395,7 +395,7 @@ public class HarvestingServerIT {
         // we created and modified, above, is being listed by the OAI server 
         // and its xml record is properly formatted
         
-        listSets = responseXmlPath.getList("OAI-PMH.ListSets.set.list().findAll{it.setName=='"+setName+"'}", Node.class);
+        listSets = responseXmlPath.getList("OAI-PMH.ListSets.set.list().findAll{it.setName=='" + setName + "'}", Node.class);
         
         // 3a. Confirm that our set is listed:
         assertNotNull(listSets, "Unexpected response from ListSets");
@@ -430,7 +430,7 @@ public class HarvestingServerIT {
         String setName = singleSetDatasetIdentifier;
         String setQuery = "dsPersistentId:" + singleSetDatasetIdentifier;
         String apiPath = String.format("/api/harvest/server/oaisets/%s", setName);
-        String createPath ="/api/harvest/server/oaisets/add";
+        String createPath = "/api/harvest/server/oaisets/add";
         Response createSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .body(jsonForTestSpec(setName, setQuery))
@@ -462,7 +462,7 @@ public class HarvestingServerIT {
         
         Thread.sleep(1000L); // initial sleep interval
         int i = 0;
-        int maxWait=10;
+        int maxWait = 10;
         do {
 
             // OAI Test 1. Run ListIdentifiers on this newly-created set:
@@ -496,7 +496,7 @@ public class HarvestingServerIT {
                 break;
             }
             Thread.sleep(1000L);
-        } while (i<maxWait); 
+        } while (i < maxWait); 
         
         System.out.println("Waited " + i + " seconds for OIA export.");
         //Fail if we didn't find the exported record before the timeout
@@ -552,7 +552,7 @@ public class HarvestingServerIT {
         // OAI Test 4. run and validate GetRecord response
         
         Response getRecordResponse = UtilIT.getOaiRecord(singleSetDatasetPersistentId, "oai_dc");
-        System.out.println("GetRecord response in its entirety: "+getRecordResponse.getBody().prettyPrint());
+        System.out.println("GetRecord response in its entirety: " + getRecordResponse.getBody().prettyPrint());
          
         // Validate the service section of the OAI response: 
         responseXmlPath = validateOaiVerbResponse(getRecordResponse, "GetRecord");
@@ -709,7 +709,7 @@ public class HarvestingServerIT {
         assertNotNull(ret);
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.info("listIdentifiersResponse.prettyPrint: "+listIdentifiersResponse.prettyPrint());
+            logger.info("listIdentifiersResponse.prettyPrint: " + listIdentifiersResponse.prettyPrint());
         }
 
         // Validate the payload of the ListIdentifiers response:
@@ -755,7 +755,7 @@ public class HarvestingServerIT {
         assertNotNull(ret);
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.info("listIdentifiersResponse.prettyPrint: "+listIdentifiersResponse.prettyPrint());
+            logger.info("listIdentifiersResponse.prettyPrint: " + listIdentifiersResponse.prettyPrint());
         }
         
         // Validate the payload of the ListIdentifiers response:
@@ -794,7 +794,7 @@ public class HarvestingServerIT {
         assertNotNull(ret);
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.info("listIdentifiersResponse.prettyPrint: "+listIdentifiersResponse.prettyPrint());
+            logger.info("listIdentifiersResponse.prettyPrint: " + listIdentifiersResponse.prettyPrint());
         }
         
         // Validate the payload of the ListIdentifiers response:
@@ -844,7 +844,7 @@ public class HarvestingServerIT {
         assertNotNull(ret);
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.info("listRecordsResponse.prettyPrint: "+listRecordsResponse.prettyPrint());
+            logger.info("listRecordsResponse.prettyPrint: " + listRecordsResponse.prettyPrint());
         }
         
         // Validate the payload of the ListRecords response:
@@ -884,7 +884,7 @@ public class HarvestingServerIT {
         assertNotNull(ret);
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.info("listRecordsResponse.prettyPrint: "+listRecordsResponse.prettyPrint());
+            logger.info("listRecordsResponse.prettyPrint: " + listRecordsResponse.prettyPrint());
         }
         
         // Validate the payload of the ListRecords response:
@@ -923,7 +923,7 @@ public class HarvestingServerIT {
         assertNotNull(ret);
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.info("listRecordsResponse.prettyPrint: "+listRecordsResponse.prettyPrint());
+            logger.info("listRecordsResponse.prettyPrint: " + listRecordsResponse.prettyPrint());
         }
         
         // Validate the payload of the ListRecords response:
@@ -979,7 +979,7 @@ public class HarvestingServerIT {
                 .body("oai.error", equalTo("No argument 'verb' found"));
 
         // The query parameter "verb" cannot appear more than once.
-        Response repeated = given().get( "/oai?verb=foo&verb=bar");
+        Response repeated = given().get("/oai?verb=foo&verb=bar");
         repeated.prettyPrint();
         repeated.then().assertThat()
                 .statusCode(OK.getStatusCode())

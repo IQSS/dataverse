@@ -36,10 +36,10 @@ public class CreateDatasetVersionCommandTest {
         
         // Populate the Initial version
         DatasetVersion dsvInitial = ds.getOrCreateEditVersion();
-        dsvInitial.setCreateTime( dateFmt.parse("20001012") );
-        dsvInitial.setLastUpdateTime( dsvInitial.getLastUpdateTime() );
-        dsvInitial.setId( MocksFactory.nextId() );
-        dsvInitial.setReleaseTime( dateFmt.parse("20010101") );
+        dsvInitial.setCreateTime(dateFmt.parse("20001012"));
+        dsvInitial.setLastUpdateTime(dsvInitial.getLastUpdateTime());
+        dsvInitial.setId(MocksFactory.nextId());
+        dsvInitial.setReleaseTime(dateFmt.parse("20010101"));
         dsvInitial.setVersionState(DatasetVersion.VersionState.RELEASED);
         dsvInitial.setMinorVersionNumber(0l);
         dsvInitial.setVersionNumber(1l);
@@ -59,15 +59,15 @@ public class CreateDatasetVersionCommandTest {
         testEngine.submit(sut);
         
         // asserts
-        assertTrue( serviceBean.storeVersionCalled );
+        assertTrue(serviceBean.storeVersionCalled);
         Date dsvCreationDate = dsvNew.getCreateTime();
-        assertEquals( dsvCreationDate, dsvNew.getLastUpdateTime() );
-        assertEquals( dsvCreationDate.getTime(), ds.getModificationTime().getTime() );
-        assertEquals( ds, dsvNew.getDataset() );
-        assertEquals( dsvNew, ds.getOrCreateEditVersion() );
+        assertEquals(dsvCreationDate, dsvNew.getLastUpdateTime());
+        assertEquals(dsvCreationDate.getTime(), ds.getModificationTime().getTime());
+        assertEquals(ds, dsvNew.getDataset());
+        assertEquals(dsvNew, ds.getOrCreateEditVersion());
         Map<DvObject, Set<Permission>> expected = new HashMap<>();
         expected.put(ds, Collections.singleton(Permission.AddDataset));
-        assertEquals(expected, testEngine.getReqiredPermissionsForObjects() );
+        assertEquals(expected, testEngine.getReqiredPermissionsForObjects());
     }
     
     @Test
@@ -100,7 +100,7 @@ public class CreateDatasetVersionCommandTest {
         @Override
         public DatasetVersion storeVersion(DatasetVersion dsv) {
             storeVersionCalled = true;
-            dsv.setId( nextId() );
+            dsv.setId(nextId());
             return dsv;
         }
         

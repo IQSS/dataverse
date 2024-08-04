@@ -42,7 +42,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
     private final DatasetServiceBean datasetService;
     private final String serverUrl; 
 
-    public DataverseXoaiItemRepository (OAIRecordServiceBean recordService, DatasetServiceBean datasetService, String serverUrl) {
+    public DataverseXoaiItemRepository(OAIRecordServiceBean recordService, DatasetServiceBean datasetService, String serverUrl) {
         this.recordService = recordService;
         this.datasetService = datasetService;
         this.serverUrl = serverUrl; 
@@ -103,17 +103,17 @@ public class DataverseXoaiItemRepository implements ItemRepository {
     @Override
     public ResultsPage<ItemIdentifier> getItemIdentifiers(List<ScopedFilter> filters, MetadataFormat metadataFormat, int maxResponseLength, ResumptionToken.Value resumptionToken) throws HandlerException {
         
-        return (ResultsPage<ItemIdentifier>)getRepositoryRecords(metadataFormat, maxResponseLength, resumptionToken, false);
+        return (ResultsPage<ItemIdentifier>) getRepositoryRecords(metadataFormat, maxResponseLength, resumptionToken, false);
 
     }
  
     @Override
     public ResultsPage<Item> getItems(List<ScopedFilter> filters, MetadataFormat metadataFormat, int maxResponseLength, ResumptionToken.Value resumptionToken) throws HandlerException {
         
-        return (ResultsPage<Item>)getRepositoryRecords(metadataFormat, maxResponseLength, resumptionToken, true);
+        return (ResultsPage<Item>) getRepositoryRecords(metadataFormat, maxResponseLength, resumptionToken, true);
     }
     
-    private ResultsPage<? extends ItemIdentifier> getRepositoryRecords (
+    private ResultsPage<? extends ItemIdentifier> getRepositoryRecords(
             MetadataFormat metadataFormat, 
             int maxResponseLength, 
             ResumptionToken.Value resumptionToken,
@@ -171,7 +171,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
     
     private void addExtraSets(Object xoaiItemsList, String setSpec, Instant from, Instant until) {
         
-        List<DataverseXoaiItem> xoaiItems = (List<DataverseXoaiItem>)xoaiItemsList;
+        List<DataverseXoaiItem> xoaiItems = (List<DataverseXoaiItem>) xoaiItemsList;
         
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsNotInThisSet(setSpec, from, until);
         

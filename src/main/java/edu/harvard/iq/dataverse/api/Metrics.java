@@ -58,7 +58,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -83,7 +83,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -109,7 +109,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -138,7 +138,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -165,7 +165,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -201,7 +201,7 @@ public class Metrics extends AbstractApiBean {
 
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "dataLocation", "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation", "parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -226,7 +226,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "dataLocation", "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation", "parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -253,7 +253,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "dataLocation", "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation", "parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -290,7 +290,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "dataLocation", "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation", "parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -325,7 +325,7 @@ public class Metrics extends AbstractApiBean {
     public Response getFilesTimeSeries(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -351,7 +351,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -363,7 +363,7 @@ public class Metrics extends AbstractApiBean {
         JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
         logger.fine("Returned");
         if (null == jsonObj) { // run query and save
-            logger.fine("Getting filesToMonth : " + sanitizedyyyymm + " dvId=" + ((d==null) ? "not sent" : d.getId()));
+            logger.fine("Getting filesToMonth : " + sanitizedyyyymm + " dvId=" + ((d == null) ? "not sent" : d.getId()));
             Long count = metricsSvc.filesToMonth(sanitizedyyyymm, d);
             logger.fine("count = " + count);
             jsonObj = MetricsUtil.countToJson(count).build();
@@ -379,7 +379,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -408,7 +408,7 @@ public class Metrics extends AbstractApiBean {
     public Response getFilesByTypeTimeSeries(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -434,7 +434,7 @@ public class Metrics extends AbstractApiBean {
     public Response getFilesByType(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -469,7 +469,7 @@ public class Metrics extends AbstractApiBean {
     public Response getDownloadsTimeSeries(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -496,7 +496,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -526,7 +526,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -560,7 +560,7 @@ public class Metrics extends AbstractApiBean {
     public Response getAccountsToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm) {
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -588,7 +588,7 @@ public class Metrics extends AbstractApiBean {
     public Response getAccountsPastDays(@Context UriInfo uriInfo, @PathParam("days") int days) {
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -616,7 +616,7 @@ public class Metrics extends AbstractApiBean {
     public Response getAccountsTimeSeries(@Context Request req, @Context UriInfo uriInfo) {
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -652,7 +652,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         MakeDataCountUtil.MetricType metricType = null;
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias", "country" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias", "country"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -683,7 +683,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         MakeDataCountUtil.MetricType metricType = null;
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias", "country" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias", "country"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -730,7 +730,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -757,7 +757,7 @@ public class Metrics extends AbstractApiBean {
     public Response getFileDownloadsTimeSeries(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -790,7 +790,7 @@ public class Metrics extends AbstractApiBean {
     public Response getUniqueDownloadsTimeSeries(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -817,7 +817,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -852,7 +852,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -879,7 +879,7 @@ public class Metrics extends AbstractApiBean {
     public Response getUniqueFileDownloadsTimeSeries(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
@@ -912,7 +912,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }

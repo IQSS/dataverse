@@ -90,7 +90,7 @@ public class CustomizationFilesServlet extends HttpServlet {
 
     }
     
-    private String getFilePath(String fileTypeParam){
+    private String getFilePath(String fileTypeParam) {
 
         String nonNullDefaultIfKeyNotFound = "";
         

@@ -87,7 +87,7 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
         
         ctxt.actionLog().changeUserIdentifierInHistory("@" + oldIdentifier, "@" + newIdentifier);
         
-        for(RoleAssignment ra : raList) {
+        for (RoleAssignment ra : raList) {
             ra.setAssigneeIdentifier("@" + newIdentifier);
         }
     }

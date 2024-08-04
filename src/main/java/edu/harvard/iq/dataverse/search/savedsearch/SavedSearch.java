@@ -17,8 +17,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(indexes = {@Index(columnList="definitionpoint_id")
-		, @Index(columnList="creator_id")})
+@Table(indexes = {@Index(columnList = "definitionpoint_id")
+		, @Index(columnList = "creator_id")})
 public class SavedSearch implements Serializable {
 
     @Id

@@ -43,7 +43,7 @@ public class DatasetVersionDTO {
     LicenseDTO license;
     boolean inReview;
     
-    Map<String,MetadataBlockDTO> metadataBlocks;
+    Map<String, MetadataBlockDTO> metadataBlocks;
     List<FileMetadataDTO> fileMetadatas;
     List<FileDTO> files;
 

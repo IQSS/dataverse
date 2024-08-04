@@ -35,7 +35,7 @@ import org.apache.commons.lang3.tuple.Pair;
  * @author gdurand
  */
 @Entity
-@Table(indexes = {@Index(columnList="parentdatasetfield_id")})
+@Table(indexes = {@Index(columnList = "parentdatasetfield_id")})
 public class DatasetFieldCompoundValue implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -176,8 +176,8 @@ public class DatasetFieldCompoundValue implements Serializable {
                 if (StringUtils.isBlank(format)) {
                     format = "#VALUE";
                 }
-                String sanitizedValue = childDatasetField.getDatasetFieldType().isSanitizeHtml() ? MarkupChecker.sanitizeBasicHTML(childDatasetField.getValue()) :  childDatasetField.getValue();
-                if (!childDatasetField.getDatasetFieldType().isSanitizeHtml() && childDatasetField.getDatasetFieldType().isEscapeOutputText()){
+                String sanitizedValue = childDatasetField.getDatasetFieldType().isSanitizeHtml() ? MarkupChecker.sanitizeBasicHTML(childDatasetField.getValue()) : childDatasetField.getValue();
+                if (!childDatasetField.getDatasetFieldType().isSanitizeHtml() && childDatasetField.getDatasetFieldType().isEscapeOutputText()) {
                     sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
                 }
                 //if a series of child values is comma delimited we want to strip off the final entry's comma
@@ -191,7 +191,7 @@ public class DatasetFieldCompoundValue implements Serializable {
                         //todo: this should be handled in more generic way for any other text that can then be internationalized
                         // if we need to use replaceAll for regexp, then make sure to use: java.util.regex.Matcher.quoteReplacement(<target string>)
                         .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
-                        .replace("#VALUE",  sanitizedValue);
+                        .replace("#VALUE", sanitizedValue);
                 fieldMap.put(childDatasetField, displayValue);
             }
         }

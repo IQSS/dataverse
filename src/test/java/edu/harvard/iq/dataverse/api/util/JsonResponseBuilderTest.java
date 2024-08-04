@@ -19,10 +19,10 @@ class JsonResponseBuilderTest {
     @EmptySource
     @ValueSource(strings = {
         "test",
-        ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM+"=supersecret",
-        ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM+"=supersecret&hello=1234",
-        "hello=1234&"+ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM+"=supersecret",
-        "hello=1234&"+ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM+"=supersecret&test=1234"})
+        ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM + "=supersecret",
+        ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM + "=supersecret&hello=1234",
+        "hello=1234&" + ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM + "=supersecret",
+        "hello=1234&" + ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM + "=supersecret&test=1234"})
     void testMaskingOriginalURL(String query) {
         HttpServletRequest test = Mockito.mock(HttpServletRequest.class);
         when(test.getQueryString()).thenReturn(query);

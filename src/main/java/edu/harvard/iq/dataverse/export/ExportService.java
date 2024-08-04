@@ -256,14 +256,14 @@ public class ExportService {
 
             for (Exporter e : exporterMap.values()) {
                 String formatName = e.getFormatName();
-                if(e.getPrerequisiteFormatName().isPresent()) {
+                if (e.getPrerequisiteFormatName().isPresent()) {
                     String prereqFormatName = e.getPrerequisiteFormatName().get();
                     try (InputStream preReqStream = getExport(dataset, prereqFormatName)) {
                         dataProvider.setPrerequisiteInputStream(preReqStream);
                         cacheExport(dataset, dataProvider, formatName, e);
                         dataProvider.setPrerequisiteInputStream(null);
                     } catch (IOException ioe) {
-                        throw new ExportException ("Could not get prerequisite " + e.getPrerequisiteFormatName() + " to create " + formatName + "export for dataset " + dataset.getId(), ioe);
+                        throw new ExportException("Could not get prerequisite " + e.getPrerequisiteFormatName() + " to create " + formatName + "export for dataset " + dataset.getId(), ioe);
                     }
                 } else {
                     cacheExport(dataset, dataProvider, formatName, e);
@@ -311,13 +311,13 @@ public class ExportService {
                     throw new ExportException(
                             "No published version found during export. " + dataset.getGlobalId().toString());
                 }
-                if(e.getPrerequisiteFormatName().isPresent()) {
+                if (e.getPrerequisiteFormatName().isPresent()) {
                     String prereqFormatName = e.getPrerequisiteFormatName().get();
                     try (InputStream preReqStream = getExport(dataset, prereqFormatName)) {
                         InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion, preReqStream);
                         cacheExport(dataset, dataProvider, formatName, e);
                     } catch (IOException ioe) {
-                        throw new ExportException ("Could not get prerequisite " + e.getPrerequisiteFormatName() + " to create " + formatName + "export for dataset " + dataset.getId(), ioe);
+                        throw new ExportException("Could not get prerequisite " + e.getPrerequisiteFormatName() + " to create " + formatName + "export for dataset " + dataset.getId(), ioe);
                     }
                 } else {
                     InternalExportDataProvider dataProvider = new InternalExportDataProvider(releasedVersion);

@@ -133,7 +133,7 @@ public class SwordIT {
     }
     
     @Test
-    public void testSwordAuthUserLastApiUse(){
+    public void testSwordAuthUserLastApiUse() {
         Response createUser = UtilIT.createRandomUser();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apitoken = UtilIT.getApiTokenFromResponse(createUser);

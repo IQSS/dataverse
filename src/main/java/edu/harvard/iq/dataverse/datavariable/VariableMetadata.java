@@ -21,10 +21,10 @@ import java.util.ArrayList;
 import edu.harvard.iq.dataverse.FileMetadata;
 
 @Entity
-@Table(indexes = {@Index(columnList="datavariable_id"), @Index(columnList="filemetadata_id"),
-                  @Index(columnList="datavariable_id,filemetadata_id")},
-        uniqueConstraints={@UniqueConstraint(columnNames={"datavariable_id", "filemetadata_id"})})
-public class VariableMetadata implements Serializable  {
+@Table(indexes = {@Index(columnList = "datavariable_id"), @Index(columnList = "filemetadata_id"),
+                  @Index(columnList = "datavariable_id,filemetadata_id")},
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"datavariable_id", "filemetadata_id"})})
+public class VariableMetadata implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,50 +34,50 @@ public class VariableMetadata implements Serializable  {
      * dataVariable: DataVariable to which this metadata belongs.
      */
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataVariable dataVariable;
 
     /**
      * fileMetadta: FileMetadata to which this metadata belongs.
      */
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private FileMetadata fileMetadata;
 
     /**
      * label: variable label.
      */
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String label;
 
     /**
      * literalquestion: literal question, metadata variable field.
      */
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String literalquestion;
 
     /**
      * postquestion: post question, metadata variable field.
      */
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String postquestion;
 
     /**
      * interviewinstruction: Interview Instruction, metadata variable field.
      */
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String interviewinstruction;
 
     /**
      * universe: metadata variable field.
      */
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String universe;
 
     /**
      * notes: notes, metadata variable field (CDATA).
      */
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String notes;
 
     /**
@@ -93,7 +93,7 @@ public class VariableMetadata implements Serializable  {
     /**
      * categoriesMetadata: variable metadata for categories that includes weighted frequencies
      */
-    @OneToMany (mappedBy="VariableMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @OneToMany(mappedBy = "VariableMetadata", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<CategoryMetadata> categoriesMetadata;
 
     /**
@@ -101,14 +101,14 @@ public class VariableMetadata implements Serializable  {
      */
     private DataVariable weightvariable;
 
-    public VariableMetadata () {
-        categoriesMetadata = new ArrayList<CategoryMetadata>() ;
+    public VariableMetadata() {
+        categoriesMetadata = new ArrayList<CategoryMetadata>();
     }
 
-    public VariableMetadata (DataVariable dataVariable, FileMetadata fileMetadata) {
+    public VariableMetadata(DataVariable dataVariable, FileMetadata fileMetadata) {
         this.dataVariable = dataVariable;
         this.fileMetadata = fileMetadata;
-        categoriesMetadata = new ArrayList<CategoryMetadata>() ;
+        categoriesMetadata = new ArrayList<CategoryMetadata>();
     }
 
     /**
@@ -220,8 +220,8 @@ public class VariableMetadata implements Serializable  {
             return false;
         }
 
-        VariableMetadata other = (VariableMetadata)object;
-        if (this.id != other.id ) {
+        VariableMetadata other = (VariableMetadata) object;
+        if (this.id != other.id) {
             if (this.id == null || !this.id.equals(other.id)) {
                 return false;
             }

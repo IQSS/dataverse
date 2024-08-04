@@ -81,7 +81,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
             } catch (URISyntaxException e) {
                 return new Failure("LDNAnnounceDatasetVersion workflow step failed: unable to parse inbox in :LDNTarget setting.");
             }
-            if(announcement==null) {
+            if (announcement == null) {
                 logger.info(context.getDataset().getGlobalId().asString() + "does not have metadata required to send LDN message. Nothing sent.");
                 return OK;
             }
@@ -130,7 +130,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         }
         Set<String> reqFields = fields.keySet();
         for (DatasetField df : dvf) {
-            if(!df.isEmpty() && reqFields.contains(df.getDatasetFieldType().getName())) {
+            if (!df.isEmpty() && reqFields.contains(df.getDatasetFieldType().getName())) {
                 fields.put(df.getDatasetFieldType().getName(), df);
             }
         }

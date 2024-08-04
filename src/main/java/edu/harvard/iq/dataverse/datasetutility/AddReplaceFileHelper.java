@@ -108,7 +108,7 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
  * 
  * @author rmp553
  */
-public class AddReplaceFileHelper{
+public class AddReplaceFileHelper {
     
     private static final Logger logger = Logger.getLogger(AddReplaceFileHelper.class.getCanonicalName());
     
@@ -214,7 +214,7 @@ public class AddReplaceFileHelper{
         this.duplicateFileWarningString = duplicateFileWarningString;
     }
     
-    public void resetFileHelper(){
+    public void resetFileHelper() {
         
         initErrorHandling();
         
@@ -255,34 +255,34 @@ public class AddReplaceFileHelper{
                             DataFileServiceBean fileService,
                             PermissionServiceBean permissionService,
                             EjbDataverseEngine commandEngine,
-                            SystemConfig systemConfig){
+                            SystemConfig systemConfig) {
 
         // ---------------------------------
         // make sure DataverseRequest isn't null and has a user
         // ---------------------------------
-        if (dvRequest == null){
+        if (dvRequest == null) {
             throw new NullPointerException("dvRequest cannot be null");
         }
-        if (dvRequest.getUser() == null){
+        if (dvRequest.getUser() == null) {
             throw new NullPointerException("dvRequest cannot have a null user");
         }
 
         // ---------------------------------
         // make sure services aren't null
         // ---------------------------------
-        if (ingestService == null){
+        if (ingestService == null) {
             throw new NullPointerException("ingestService cannot be null");
         }
-        if (datasetService == null){
+        if (datasetService == null) {
             throw new NullPointerException("datasetService cannot be null");
         }
-        if (fileService == null){
+        if (fileService == null) {
             throw new NullPointerException("fileService cannot be null");
         }
-        if (permissionService == null){
+        if (permissionService == null) {
             throw new NullPointerException("ingestService cannot be null");
         }
-        if (commandEngine == null){
+        if (commandEngine == null) {
             throw new NullPointerException("commandEngine cannot be null");
         }
         if (systemConfig == null) {
@@ -320,8 +320,8 @@ public class AddReplaceFileHelper{
                                        String newFileContentType,
                                        String newStorageIdentifier,
                                        InputStream newFileInputStream,
-                                       OptionalFileParams optionalFileParams){
-        return this.runAddFileByDataset(chosenDataset,newFileName,newFileContentType,newStorageIdentifier,newFileInputStream,optionalFileParams,false);
+                                       OptionalFileParams optionalFileParams) {
+        return this.runAddFileByDataset(chosenDataset, newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams, false);
 
     }
 
@@ -337,10 +337,10 @@ public class AddReplaceFileHelper{
 
         initErrorHandling();
 
-        multifile=multipleFiles;
+        multifile = multipleFiles;
         this.currentOperation = FILE_ADD_OPERATION;
 
-        if (!this.step_001_loadDataset(chosenDataset)){
+        if (!this.step_001_loadDataset(chosenDataset)) {
             return false;
         }
 
@@ -400,26 +400,26 @@ public class AddReplaceFileHelper{
                         InputStream newFileInputStream,
                         Dataset ds,
                         OptionalFileParams optionalFileParams,
-                        boolean multipleFiles){
+                        boolean multipleFiles) {
         
         msgt(">> runForceReplaceFile");
         initErrorHandling();
 
-        multifile=multipleFiles;
+        multifile = multipleFiles;
         this.currentOperation = FILE_REPLACE_FORCE_OPERATION;
 
                
-        if (oldFileId==null){
+        if (oldFileId == null) {
             this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
             return false;
         }
        
         // Loads local variable "fileToReplace"
         //
-        if (!this.step_005_loadFileToReplaceById(oldFileId)){
+        if (!this.step_005_loadFileToReplaceById(oldFileId)) {
             return false;
         }
-        if(!ds.getId().equals(fileToReplace.getOwner().getId())) {
+        if (!ds.getId().equals(fileToReplace.getOwner().getId())) {
             this.addErrorSevere(getBundleErr("existing_file_to_replace_not_in_dataset"));
             return false;
         }
@@ -442,15 +442,15 @@ public class AddReplaceFileHelper{
                             InputStream newFileInputStream,
                             Dataset ds,
                             OptionalFileParams optionalFileParams,
-                            boolean multipleFiles){
+                            boolean multipleFiles) {
     
         msgt(">> runReplaceFile");
 
         initErrorHandling();
-        multifile=multipleFiles;
+        multifile = multipleFiles;
         this.currentOperation = FILE_REPLACE_OPERATION;
         
-        if (oldFileId==null){
+        if (oldFileId == null) {
             this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
             return false;
         }
@@ -458,11 +458,11 @@ public class AddReplaceFileHelper{
          
         // Loads local variable "fileToReplace"
         //
-        if (!this.step_005_loadFileToReplaceById(oldFileId)){
+        if (!this.step_005_loadFileToReplaceById(oldFileId)) {
             return false;
         }
 
-        if(!ds.getId().equals(fileToReplace.getOwner().getId())) {
+        if (!ds.getId().equals(fileToReplace.getOwner().getId())) {
             this.addErrorSevere(getBundleErr("existing_file_to_replace_not_in_dataset"));
             return false;
         }
@@ -495,7 +495,7 @@ public class AddReplaceFileHelper{
     private boolean runAddReplaceFile(Dataset owner,  
             String newFileName, String newFileContentType, 
             String newStorageIdentifier, InputStream newFileInputStream,
-            OptionalFileParams optionalFileParams){
+            OptionalFileParams optionalFileParams) {
         
         // Run "Phase 1" - Initial ingest of file + error check
         // But don't save the dataset version yet
@@ -507,7 +507,7 @@ public class AddReplaceFileHelper{
                                         newFileInputStream,
                                         optionalFileParams
                                         );
-        if (!phase1Success){
+        if (!phase1Success) {
             return false;
         }
         boolean tabIngest = true;
@@ -534,13 +534,13 @@ public class AddReplaceFileHelper{
             String newFileContentType,
             InputStream newFileInputStream,
             String fullStorageId,
-            OptionalFileParams optionalFileParams){
+            OptionalFileParams optionalFileParams) {
         
         
         initErrorHandling();
         this.currentOperation = FILE_REPLACE_FORCE_OPERATION;
         
-        if (oldFileId==null){
+        if (oldFileId == null) {
             this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
             return false;
         }
@@ -548,11 +548,11 @@ public class AddReplaceFileHelper{
          
         // Loads local variable "fileToReplace"
         //
-        if (!this.step_005_loadFileToReplaceById(oldFileId)){
+        if (!this.step_005_loadFileToReplaceById(oldFileId)) {
             return false;
         }
         //Update params to match existing file (except checksum, which should match the new file)
-        if(fileToReplace != null) {
+        if (fileToReplace != null) {
             String checksum = optionalFileParams.getCheckSum();
             ChecksumType checkSumType = optionalFileParams.getCheckSumType();
             try {
@@ -588,48 +588,48 @@ public class AddReplaceFileHelper{
             String newFileName, 
             String newFileContentType,
             String newStorageIdentifier, InputStream newFileInputStream,
-            OptionalFileParams optionalFileParams){
+            OptionalFileParams optionalFileParams) {
         
-        if (this.hasError()){
+        if (this.hasError()) {
             return false;   // possible to have errors already...
         }
 
         msgt("step_001_loadDataset");
-        if (!this.step_001_loadDataset(owner)){
+        if (!this.step_001_loadDataset(owner)) {
             return false;
         }
         
         msgt("step_010_VerifyUserAndPermissions");
-        if (!this.step_010_VerifyUserAndPermissions()){
+        if (!this.step_010_VerifyUserAndPermissions()) {
             return false;
             
         }
 
         msgt("step_020_loadNewFile");
-        if (!this.step_020_loadNewFile(newFileName, newFileContentType, newStorageIdentifier, newFileInputStream)){
+        if (!this.step_020_loadNewFile(newFileName, newFileContentType, newStorageIdentifier, newFileInputStream)) {
             return false;
             
         }
-        if(optionalFileParams != null) {
-        	if(optionalFileParams.hasCheckSum()) {
+        if (optionalFileParams != null) {
+        	if (optionalFileParams.hasCheckSum()) {
         		newCheckSum = optionalFileParams.getCheckSum();
         		newCheckSumType = optionalFileParams.getCheckSumType();
         	}
         }
 
         msgt("step_030_createNewFilesViaIngest");
-        if (!this.step_030_createNewFilesViaIngest()){
+        if (!this.step_030_createNewFilesViaIngest()) {
             return false;
             
         }
 
         msgt("step_050_checkForConstraintViolations");
-        if (!this.step_050_checkForConstraintViolations()){
+        if (!this.step_050_checkForConstraintViolations()) {
             return false;            
         }
 
         msgt("step_055_loadOptionalFileParams");
-        if (!this.step_055_loadOptionalFileParams(optionalFileParams)){
+        if (!this.step_055_loadOptionalFileParams(optionalFileParams)) {
             return false;            
         }
         
@@ -653,7 +653,7 @@ public class AddReplaceFileHelper{
             }
         }
         
-        if(fileToReplace != null && fileToReplace.getEmbargo() != null) {
+        if (fileToReplace != null && fileToReplace.getEmbargo() != null) {
             DataFile df = finalFileList.get(0); // step_055 uses a loop and assumes only one file
             df.setEmbargo(fileToReplace.getEmbargo());
         }
@@ -663,7 +663,7 @@ public class AddReplaceFileHelper{
     }
     
     
-    public boolean runReplaceFromUI_Phase2(){
+    public boolean runReplaceFromUI_Phase2() {
         return runAddReplacePhase2(true);
     }
     
@@ -674,30 +674,30 @@ public class AddReplaceFileHelper{
      * @param categoriesList
      * @return 
      */
-    public boolean updateCategoriesFromUI(List<String> categoriesList){
-        if (hasError()){
+    public boolean updateCategoriesFromUI(List<String> categoriesList) {
+        if (hasError()) {
             logger.severe("Should not be calling this method");
             return false;
         }
         
-        if ((finalFileList==null)||(finalFileList.size()==0)){
+        if ((finalFileList == null) || (finalFileList.size() == 0)) {
             throw new NullPointerException("finalFileList needs at least 1 file!!");
         }
         
         // don't need to make updates
         //
-        if (categoriesList ==null){
+        if (categoriesList == null) {
             return true;           
         }
         
         // remove nulls, dupes, etc.
         //
         categoriesList = Util.removeDuplicatesNullsEmptyStrings(categoriesList);
-        if (categoriesList.isEmpty()){
+        if (categoriesList.isEmpty()) {
             return true;
         }
         
-        for (DataFile df : finalFileList){
+        for (DataFile df : finalFileList) {
             
             df.getFileMetadata().setCategoriesByName(categoriesList);
         }
@@ -713,32 +713,32 @@ public class AddReplaceFileHelper{
      * @param restricted
      * @return 
      */
-    public boolean updateLabelDescriptionRestrictedFromUI(String label, String description, Boolean restricted){
+    public boolean updateLabelDescriptionRestrictedFromUI(String label, String description, Boolean restricted) {
                 
-        if (hasError()){
+        if (hasError()) {
             logger.severe("Should not be calling this method");
             return false;
         }
         
-        if ((finalFileList==null)||(finalFileList.size()==0)){
+        if ((finalFileList == null) || (finalFileList.size() == 0)) {
             throw new NullPointerException("finalFileList needs at least 1 file!!");
         }
         
         
-        for (DataFile df : finalFileList){
+        for (DataFile df : finalFileList) {
             
             // update description
-            if (description != null){
+            if (description != null) {
                 df.getFileMetadata().setDescription(description.trim());
             }        
 
             // update label
-            if (label != null){
+            if (label != null) {
                 df.getFileMetadata().setLabel(label.trim());
             }               
             
             // update restriction
-            if (restricted == null){
+            if (restricted == null) {
                 restricted = false;
             }
             
@@ -755,19 +755,19 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean runAddReplacePhase2(boolean tabIngest){
+    private boolean runAddReplacePhase2(boolean tabIngest) {
         
-        if (this.hasError()){
+        if (this.hasError()) {
             return false;   // possible to have errors already...
         }
 
-        if ((finalFileList ==  null)||(finalFileList.isEmpty())){
+        if ((finalFileList == null) || (finalFileList.isEmpty())) {
             addError(getBundleErr("phase2_called_early_no_new_files"));
             return false;
         }
         
          msgt("step_060_addFilesViaIngestService");
-        if (!this.step_060_addFilesViaIngestService(tabIngest)){
+        if (!this.step_060_addFilesViaIngestService(tabIngest)) {
             return false;
             
         }
@@ -784,12 +784,12 @@ public class AddReplaceFileHelper{
         }
 
         msgt("step_090_notifyUser");
-        if (!this.step_090_notifyUser()){
+        if (!this.step_090_notifyUser()) {
             return false;            
         }
 
         msgt("step_100_startIngestJobs");
-        if (!this.step_100_startIngestJobs()){
+        if (!this.step_100_startIngestJobs()) {
             return false;            
         }
 
@@ -801,7 +801,7 @@ public class AddReplaceFileHelper{
      *  Get for currentOperation
      *  @return String
      */
-    public String getCurrentOperation(){
+    public String getCurrentOperation() {
         return this.currentOperation;
     }
 
@@ -813,7 +813,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    public boolean isForceFileOperation(){
+    public boolean isForceFileOperation() {
         
         return this.currentOperation.equals(FILE_REPLACE_FORCE_OPERATION);
     }
@@ -822,11 +822,11 @@ public class AddReplaceFileHelper{
      * Is this a file replace operation?
      * @return 
      */
-    public boolean isFileReplaceOperation(){
+    public boolean isFileReplaceOperation() {
     
-        if (this.currentOperation.equals(FILE_REPLACE_OPERATION)){
+        if (this.currentOperation.equals(FILE_REPLACE_OPERATION)) {
             return true;
-        }else if (this.currentOperation.equals(FILE_REPLACE_FORCE_OPERATION)){
+        } else if (this.currentOperation.equals(FILE_REPLACE_FORCE_OPERATION)) {
             return true;
         }
         return false;
@@ -837,7 +837,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    public boolean isFileAddOperation(){
+    public boolean isFileAddOperation() {
     
         return this.currentOperation.equals(FILE_ADD_OPERATION);
     }
@@ -845,7 +845,7 @@ public class AddReplaceFileHelper{
     /**
      * Initialize error handling vars
      */
-    private void initErrorHandling(){
+    private void initErrorHandling() {
 
         this.errorFound = false;
         this.errorMessages = new ArrayList<>();
@@ -863,9 +863,9 @@ public class AddReplaceFileHelper{
      * 
      * @param errMsg 
      */
-    private void addError(String errMsg){
+    private void addError(String errMsg) {
         
-        if (errMsg == null){
+        if (errMsg == null) {
             throw new NullPointerException("errMsg cannot be null");
         }
         this.errorFound = true;
@@ -880,12 +880,12 @@ public class AddReplaceFileHelper{
      * @param badHttpResponse, e.g. Response.Status.FORBIDDEN
      * @param errMsg 
      */
-    private void addError(Response.Status badHttpResponse, String errMsg){
+    private void addError(Response.Status badHttpResponse, String errMsg) {
         
-        if (badHttpResponse == null){
+        if (badHttpResponse == null) {
             throw new NullPointerException("badHttpResponse cannot be null");
         }
-        if (errMsg == null){
+        if (errMsg == null) {
             throw new NullPointerException("errMsg cannot be null");
         }
       
@@ -896,8 +896,8 @@ public class AddReplaceFileHelper{
         
     }
     
-    private void addErrorWarning(String errMsg){
-        if (errMsg == null){
+    private void addErrorWarning(String errMsg) {
+        if (errMsg == null) {
             throw new NullPointerException("errMsg cannot be null");
         }
  
@@ -908,9 +908,9 @@ public class AddReplaceFileHelper{
     }
     
     
-    private void addErrorSevere(String errMsg){
+    private void addErrorSevere(String errMsg) {
         
-        if (errMsg == null){
+        if (errMsg == null) {
             throw new NullPointerException("errMsg cannot be null");
         }
         this.errorFound = true;
@@ -925,7 +925,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    public boolean hasError(){
+    public boolean hasError() {
         return this.errorFound;
         
     }
@@ -935,7 +935,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    public List<String> getErrorMessages(){
+    public List<String> getErrorMessages() {
         return this.errorMessages;
     }   
 
@@ -945,8 +945,8 @@ public class AddReplaceFileHelper{
      * @param joinString
      * @return 
      */
-    public String getErrorMessagesAsString(String joinString){
-        if (joinString==null){
+    public String getErrorMessagesAsString(String joinString) {
+        if (joinString == null) {
             joinString = "\n";
         }
         return String.join(joinString, this.errorMessages);
@@ -960,15 +960,15 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    public Response.Status getHttpErrorCode(){
+    public Response.Status getHttpErrorCode() {
        
-        if (!hasError()){
+        if (!hasError()) {
             logger.severe("Do not call this method unless there is an error!  check '.hasError()'");
         }
         
-        if (httpErrorCode == null){
+        if (httpErrorCode == null) {
             return Response.Status.BAD_REQUEST;
-        }else{
+        } else {
             return httpErrorCode;
         }
     }
@@ -985,13 +985,13 @@ public class AddReplaceFileHelper{
      * that the bundle key is not used.
      */
     @Deprecated
-    private String getBundleMsg(String msgName, boolean isErr){
-        if (msgName == null){
+    private String getBundleMsg(String msgName, boolean isErr) {
+        if (msgName == null) {
             throw new NullPointerException("msgName cannot be null");
         }
-        if (isErr){        
+        if (isErr) {        
             return BundleUtil.getStringFromBundle("file.addreplace.error." + msgName);
-        }else{
+        } else {
             return BundleUtil.getStringFromBundle("file.addreplace.success." + msgName);
         }
        
@@ -1003,7 +1003,7 @@ public class AddReplaceFileHelper{
      * @param msgName
      * @return 
      */
-    private String getBundleErr(String msgName){
+    private String getBundleErr(String msgName) {
         return this.getBundleMsg(msgName, true);
     }
     
@@ -1012,13 +1012,13 @@ public class AddReplaceFileHelper{
     /**
      * 
      */
-    private boolean step_001_loadDataset(Dataset selectedDataset){
+    private boolean step_001_loadDataset(Dataset selectedDataset) {
 
-        if (this.hasError()){
+        if (this.hasError()) {
             return false;
         }
 
-        if (selectedDataset == null){
+        if (selectedDataset == null) {
             this.addErrorSevere(getBundleErr("dataset_is_null"));
             return false;
         }
@@ -1036,9 +1036,9 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean step_010_VerifyUserAndPermissions(){
+    private boolean step_010_VerifyUserAndPermissions() {
         
-        if (this.hasError()){
+        if (this.hasError()) {
             return false;
         }
                 
@@ -1046,13 +1046,13 @@ public class AddReplaceFileHelper{
 
     }
     
-    private boolean step_015_auto_check_permissions(Dataset datasetToCheck){
+    private boolean step_015_auto_check_permissions(Dataset datasetToCheck) {
         
-        if (this.hasError()){
+        if (this.hasError()) {
             return false;
         }
         
-        if (datasetToCheck == null){
+        if (datasetToCheck == null) {
             addError(getBundleErr("dataset_is_null"));
             return false;
         }
@@ -1065,7 +1065,7 @@ public class AddReplaceFileHelper{
         // Can this user run the command?
         //
         if (!permissionService.isUserAllowedOn(dvRequest.getUser(), updateDatasetVersionCommand, datasetToCheck)) {
-            addError(Response.Status.FORBIDDEN,getBundleErr("no_edit_dataset_permission"));
+            addError(Response.Status.FORBIDDEN, getBundleErr("no_edit_dataset_permission"));
            return false;
         }
         
@@ -1074,19 +1074,19 @@ public class AddReplaceFileHelper{
     }
     
     
-    private boolean step_020_loadNewFile(String fileName, String fileContentType, String storageIdentifier, InputStream fileInputStream){
+    private boolean step_020_loadNewFile(String fileName, String fileContentType, String storageIdentifier, InputStream fileInputStream) {
         
-        if (this.hasError()){
+        if (this.hasError()) {
             return false;
         }
         
-        if (fileName == null){
+        if (fileName == null) {
             this.addErrorSevere(getBundleErr("filename_undetermined"));
             return false;
             
         }
 
-        if (fileContentType == null){
+        if (fileContentType == null) {
             this.addErrorSevere(getBundleErr("file_content_type_undetermined"));
             return false;
             
@@ -1116,15 +1116,15 @@ public class AddReplaceFileHelper{
      * @param oldFile
      * @return 
      */
-    private boolean step_005_loadFileToReplaceById(Long dataFileId){
+    private boolean step_005_loadFileToReplaceById(Long dataFileId) {
         
-        if (this.hasError()){
+        if (this.hasError()) {
             return false;
         }
         
         //  Check for Null
         //
-        if (dataFileId == null){
+        if (dataFileId == null) {
             this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
             return false;
         }
@@ -1133,7 +1133,7 @@ public class AddReplaceFileHelper{
         //
         DataFile existingFile = fileService.find(dataFileId);
         
-        if (existingFile == null){           
+        if (existingFile == null) {           
             this.addError(BundleUtil.getStringFromBundle("file.addreplace.error.existing_file_to_replace_not_found_by_id", Collections.singletonList(dataFileId.toString())));
             return false;
         } 
@@ -1141,12 +1141,12 @@ public class AddReplaceFileHelper{
 
         // Do we have permission to replace this file? e.g. Edit the file's dataset
         //
-        if (!step_015_auto_check_permissions(existingFile.getOwner())){
+        if (!step_015_auto_check_permissions(existingFile.getOwner())) {
             return false;
         };
         // Is the file in the latest dataset version?
         //
-        if (!step_007_auto_isReplacementInLatestVersion(existingFile)){
+        if (!step_007_auto_isReplacementInLatestVersion(existingFile)) {
             return false;
         }
         
@@ -1162,13 +1162,13 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean step_007_auto_isReplacementInLatestVersion(DataFile existingFile){
+    private boolean step_007_auto_isReplacementInLatestVersion(DataFile existingFile) {
         
-        if (existingFile == null){
+        if (existingFile == null) {
             throw new NullPointerException("existingFile cannot be null!");
         }
 
-        if (this.hasError()){
+        if (this.hasError()) {
             return false;
         }
         
@@ -1176,14 +1176,14 @@ public class AddReplaceFileHelper{
         DatasetVersion latestVersion = existingFile.getOwner().getLatestVersion();
         
         boolean fileInLatestVersion = false;
-        for (FileMetadata fm : latestVersion.getFileMetadatas()){
-            if (fm.getDataFile().getId() != null){
-                if (Objects.equals(existingFile.getId(),fm.getDataFile().getId())){
+        for (FileMetadata fm : latestVersion.getFileMetadatas()) {
+            if (fm.getDataFile().getId() != null) {
+                if (Objects.equals(existingFile.getId(), fm.getDataFile().getId())) {
                     fileInLatestVersion = true;
                 }
             }
         }
-        if (!fileInLatestVersion){
+        if (!fileInLatestVersion) {
             addError(getBundleErr("existing_file_not_in_latest_published_version"));
             return false;                        
         }
@@ -1191,15 +1191,15 @@ public class AddReplaceFileHelper{
     }
     
     
-    private boolean step_030_createNewFilesViaIngest(){
+    private boolean step_030_createNewFilesViaIngest() {
         
-        if (this.hasError()){
+        if (this.hasError()) {
             return false;
         }
 
         // Load the working version of the Dataset
         workingVersion = dataset.getOrCreateEditVersion();
-        if(!multifile) {
+        if (!multifile) {
             //Don't repeatedly update the clone (losing changes) in multifile case
             clone = workingVersion.cloneDatasetVersion();
         }
@@ -1238,7 +1238,7 @@ public class AddReplaceFileHelper{
          *  (1) the dataset was empty
          *  (2) the new file (or new file unzipped) did not ingest via "createDataFiles"
          */
-        if (initialFileList.isEmpty()){
+        if (initialFileList.isEmpty()) {
             this.addErrorSevere(getBundleErr("initial_file_list_empty"));
             this.runMajorCleanup();
             return false;
@@ -1250,8 +1250,8 @@ public class AddReplaceFileHelper{
          * ADD: When adding files, some types of individual files
          * are broken into several files--which is OK
          */
-        if (isFileReplaceOperation()){
-            if (initialFileList.size() > 1){
+        if (isFileReplaceOperation()) {
+            if (initialFileList.size() > 1) {
                 this.addError(getBundleErr("initial_file_list_more_than_one"));
                 this.runMajorCleanup();
                 return false;
@@ -1259,7 +1259,7 @@ public class AddReplaceFileHelper{
             }
         }
         
-        if (this.step_040_auto_checkForDuplicates()){
+        if (this.step_040_auto_checkForDuplicates()) {
             return true;
         }
                        
@@ -1281,18 +1281,18 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean step_040_auto_checkForDuplicates(){
+    private boolean step_040_auto_checkForDuplicates() {
         this.duplicateFileErrorString = "";
         this.duplicateFileErrorFound = false;
         
         msgt("step_040_auto_checkForDuplicates");
-        if (this.hasError()){
+        if (this.hasError()) {
             return false;
         }
         
         // Double checked -- this check also happens in step 30
         //
-        if (initialFileList.isEmpty()){
+        if (initialFileList.isEmpty()) {
             this.addErrorSevere(getBundleErr("initial_file_list_empty"));
             return false;
         }
@@ -1300,7 +1300,7 @@ public class AddReplaceFileHelper{
         // Initialize new file list
         this.finalFileList = new ArrayList<>();
 
-        if (isFileReplaceOperation() && this.fileToReplace == null){
+        if (isFileReplaceOperation() && this.fileToReplace == null) {
             // This error shouldn't happen if steps called correctly
             this.addErrorSevere(getBundleErr("existing_file_to_replace_is_null") + " (This error shouldn't happen if steps called in sequence....checkForFileReplaceDuplicate)");
             return false;
@@ -1309,7 +1309,7 @@ public class AddReplaceFileHelper{
         // -----------------------------------------------------------
         // Iterate through the recently ingest files
         // -----------------------------------------------------------
-        for (DataFile df : initialFileList){
+        for (DataFile df : initialFileList) {
              msg("Checking file: " + df.getFileMetadata().getLabel());
 
             // -----------------------------------------------------------
@@ -1328,14 +1328,14 @@ public class AddReplaceFileHelper{
             // (2) Check for duplicates
             // Only a warning now
             // -----------------------------------------------------------     
-            if (isFileReplaceOperation() && Objects.equals(df.getChecksumValue(), fileToReplace.getChecksumValue())){
+            if (isFileReplaceOperation() && Objects.equals(df.getChecksumValue(), fileToReplace.getChecksumValue())) {
                 this.addError(getBundleErr("replace.new_file_same_as_replacement"));                
                 this.duplicateFileErrorFound = true;
                 this.duplicateFileErrorString = getBundleErr("replace.new_file_same_as_replacement");
                 break;
             } 
             
-            if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
+            if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())) {
                 String dupeName = df.getFileMetadata().getLabel();
                 this.duplicateFileWarningFound = true;
                 this.duplicateFileWarningString = BundleUtil.getStringFromBundle("file.addreplace.warning.duplicate_file", 
@@ -1346,7 +1346,7 @@ public class AddReplaceFileHelper{
             finalFileList.add(df);
         }
         
-        if (this.hasError()){
+        if (this.hasError()) {
             // We're recovering from the duplicate check.
             msg("We're recovering from a duplicate check 1");
             runMajorCleanup();
@@ -1367,9 +1367,9 @@ public class AddReplaceFileHelper{
         *  file. Treat this as a fatal error, unless this is a "force replace" 
         *  operation; then it should be treated as merely a warning.
         */
-        if (isFileReplaceOperation()){
+        if (isFileReplaceOperation()) {
         
-            if (finalFileList.size() > 1){     
+            if (finalFileList.size() > 1) {     
                 String errMsg = "(This shouldn't happen -- error should have been detected in 030_createNewFilesViaIngest)";
                 this.addErrorSevere(getBundleErr("initial_file_list_more_than_one") + " " + errMsg);            
                 return false;
@@ -1387,10 +1387,10 @@ public class AddReplaceFileHelper{
                 String contentTypeErr = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", 
                                 errParams);
                                         
-                if (isForceFileOperation()){
+                if (isForceFileOperation()) {
                     // for force replace, just give a warning
                     this.setContentTypeWarning(contentTypeErr);
-                }else{
+                } else {
                     // not a force replace? it's an error
                     this.addError(contentTypeErr);
                     runMajorCleanup();
@@ -1399,7 +1399,7 @@ public class AddReplaceFileHelper{
             }
         }
         
-        if (finalFileList.isEmpty()){
+        if (finalFileList.isEmpty()) {
             this.addErrorSevere("There are no files to add.  (This error shouldn't happen if steps called in sequence....step_040_auto_checkForDuplicates)");                
             return false;
         }
@@ -1491,13 +1491,13 @@ public class AddReplaceFileHelper{
     
     
     
-    private boolean step_050_checkForConstraintViolations(){
+    private boolean step_050_checkForConstraintViolations() {
                 
-        if (this.hasError()){
+        if (this.hasError()) {
             return false;
         }
         
-        if (finalFileList.isEmpty()){
+        if (finalFileList.isEmpty()) {
             // This error shouldn't happen if steps called in sequence....
             this.addErrorSevere(getBundleErr("final_file_list_empty"));
             return false;
@@ -1512,7 +1512,7 @@ public class AddReplaceFileHelper{
         // -----------------------------------------------------------   
         // No violations found
         // -----------------------------------------------------------   
-        if (constraintViolations.isEmpty()){
+        if (constraintViolations.isEmpty()) {
             return true;
         }
         
@@ -1523,7 +1523,7 @@ public class AddReplaceFileHelper{
             due to terms of use/access out of compliance
             */
             if (workingVersion.getTermsOfUseAndAccess().getValidationMessage() != null) {
-                addError(Response.Status.CONFLICT,workingVersion.getTermsOfUseAndAccess().getValidationMessage());
+                addError(Response.Status.CONFLICT, workingVersion.getTermsOfUseAndAccess().getValidationMessage());
             } else {
                 this.addError(violation.getMessage());
             }
@@ -1539,16 +1539,16 @@ public class AddReplaceFileHelper{
      * @param optionalFileParams
      * @return 
      */
-    private boolean step_055_loadOptionalFileParams(OptionalFileParams optionalFileParams){
+    private boolean step_055_loadOptionalFileParams(OptionalFileParams optionalFileParams) {
         
-        if (hasError()){
+        if (hasError()) {
             return false;
         }
 
         // --------------------------------------------
         // OK, the object may be null
         // --------------------------------------------
-        if (optionalFileParams == null){
+        if (optionalFileParams == null) {
             return true;
         }
         
@@ -1557,7 +1557,7 @@ public class AddReplaceFileHelper{
         // Iterate through files (should only be 1 for now)
         // Add tags, description, etc
         // --------------------------------------------
-        for (DataFile df : finalFileList){
+        for (DataFile df : finalFileList) {
             try {
                 optionalFileParams.addOptionalParams(df);
                 
@@ -1580,13 +1580,13 @@ public class AddReplaceFileHelper{
         return true;
     }
     
-    private boolean step_060_addFilesViaIngestService(boolean tabIngest){
+    private boolean step_060_addFilesViaIngestService(boolean tabIngest) {
                        
-        if (this.hasError()){
+        if (this.hasError()) {
             return false;
         }
                 
-        if (finalFileList.isEmpty()){
+        if (finalFileList.isEmpty()) {
             // This error shouldn't happen if steps called in sequence....
             this.addErrorSevere(getBundleErr("final_file_list_empty"));                
             return false;
@@ -1672,7 +1672,7 @@ public class AddReplaceFileHelper{
             }
         }
 
-        if (isFileReplaceOperation() && deleteFileId!=-1 && !multifile) {
+        if (isFileReplaceOperation() && deleteFileId != -1 && !multifile) {
             // Finalize the delete of the physical file
             // (File service will double-check that the datafile no
             // longer exists in the database, before proceeding to
@@ -1688,7 +1688,7 @@ public class AddReplaceFileHelper{
     }
     
 
-    private boolean runMajorCleanup(){
+    private boolean runMajorCleanup() {
         
         // (1) remove unsaved files from the working version
         removeUnSavedFilesFromWorkingVersion();
@@ -1702,7 +1702,7 @@ public class AddReplaceFileHelper{
         msgt("Clear Files");
         while (versionIterator.hasNext()) {
             DatasetVersion dsv = versionIterator.next();
-            if (dsv.getId() == null){
+            if (dsv.getId() == null) {
                 versionIterator.remove();
             }
         }
@@ -1716,7 +1716,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean removeUnSavedFilesFromWorkingVersion(){
+    private boolean removeUnSavedFilesFromWorkingVersion() {
         msgt("Clean up: removeUnSavedFilesFromWorkingVersion");
         
         // -----------------------------------------------------------
@@ -1726,7 +1726,7 @@ public class AddReplaceFileHelper{
         Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator(); //dataset.getEditVersion().getFileMetadatas().iterator();//  
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
-            if (fm.getDataFile().getId() == null){
+            if (fm.getDataFile().getId() == null) {
                 fmIt.remove();
             }
         }
@@ -1738,7 +1738,7 @@ public class AddReplaceFileHelper{
         msgt("Clear Files");
         while (dfIt.hasNext()) {
             DataFile df = dfIt.next();
-            if (df.getId() == null){
+            if (df.getId() == null) {
                 dfIt.remove();
             }
         }
@@ -1747,15 +1747,15 @@ public class AddReplaceFileHelper{
     }
     
     
-    private boolean step_080_run_update_dataset_command_for_replace(){
+    private boolean step_080_run_update_dataset_command_for_replace() {
 
-        if (!isFileReplaceOperation()){
+        if (!isFileReplaceOperation()) {
             // Shouldn't happen!
             this.addErrorSevere(getBundleErr("only_replace_operation") + " (step_080_run_update_dataset_command_for_replace)");
             return false;
         }
 
-        if (this.hasError()){
+        if (this.hasError()) {
             return false;
         }
 
@@ -1807,9 +1807,9 @@ public class AddReplaceFileHelper{
      * 
      * @param df 
      */
-    private void setNewlyAddedFiles(List<DataFile> datafiles){
+    private void setNewlyAddedFiles(List<DataFile> datafiles) {
         
-        if (hasError()){
+        if (hasError()) {
             return;
         }
             
@@ -1821,11 +1821,11 @@ public class AddReplaceFileHelper{
         List<FileMetadata> latestFileMetadatas = dataset.getOrCreateEditVersion().getFileMetadatas();
         
         
-        for (DataFile newlyAddedFile : finalFileList){
+        for (DataFile newlyAddedFile : finalFileList) {
             
-             for (FileMetadata fm : latestFileMetadatas){
-                 if (newlyAddedFile.getChecksumValue().equals(fm.getDataFile().getChecksumValue())){
-                    if (newlyAddedFile.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())){
+             for (FileMetadata fm : latestFileMetadatas) {
+                 if (newlyAddedFile.getChecksumValue().equals(fm.getDataFile().getChecksumValue())) {
+                    if (newlyAddedFile.getStorageIdentifier().equals(fm.getDataFile().getStorageIdentifier())) {
                         newlyAddedFiles.add(fm.getDataFile());
                         newlyAddedFileMetadatas.add(fm);
                     }
@@ -1855,31 +1855,31 @@ public class AddReplaceFileHelper{
      * For a successful replace operation, return a the first newly added file
      * @return 
      */
-    public DataFile getFirstNewlyAddedFile(){
+    public DataFile getFirstNewlyAddedFile() {
         
-        if ((newlyAddedFiles == null)||(newlyAddedFiles.size() == 0)){
+        if ((newlyAddedFiles == null) || (newlyAddedFiles.size() == 0)) {
             return null;
         }
         return newlyAddedFiles.get(0);
     }
         
-    public List<DataFile> getNewlyAddedFiles(){
+    public List<DataFile> getNewlyAddedFiles() {
         
         return newlyAddedFiles;
     }
     
-    public List<FileMetadata> getNewlyAddedFileMetadatas(){
+    public List<FileMetadata> getNewlyAddedFileMetadatas() {
         
         return newlyAddedFileMetadatas;
     }
     
     
-    public String getSuccessResult() throws NoFilesException{
-        if (hasError()){
+    public String getSuccessResult() throws NoFilesException {
+        if (hasError()) {
             throw new NoFilesException("Don't call this method if an error exists!! First check 'hasError()'");
         }
 
-        if (newlyAddedFiles == null){
+        if (newlyAddedFiles == null) {
             throw new NullPointerException("newlyAddedFiles is null!");
         }
         
@@ -1887,17 +1887,17 @@ public class AddReplaceFileHelper{
         
     }
     
-    public JsonObjectBuilder getSuccessResultAsJsonObjectBuilder() throws NoFilesException{
+    public JsonObjectBuilder getSuccessResultAsJsonObjectBuilder() throws NoFilesException {
         
-        if (hasError()){
+        if (hasError()) {
             throw new NoFilesException("Don't call this method if an error exists!! First check 'hasError()'");
         }
         
-        if (newlyAddedFiles == null){
+        if (newlyAddedFiles == null) {
             throw new NullPointerException("newlyAddedFiles is null!");
         }
         
-        if (newlyAddedFiles.isEmpty()){
+        if (newlyAddedFiles.isEmpty()) {
             throw new NoFilesException("newlyAddedFiles is empty!");
         }
         
@@ -1910,8 +1910,8 @@ public class AddReplaceFileHelper{
      * user notifications.
      * 
      */
-    private boolean step_090_notifyUser(){
-        if (this.hasError()){
+    private boolean step_090_notifyUser() {
+        if (this.hasError()) {
             return false;
         }
        
@@ -1923,8 +1923,8 @@ public class AddReplaceFileHelper{
     }
     
 
-    private boolean step_100_startIngestJobs(){
-        if (this.hasError()){
+    private boolean step_100_startIngestJobs() {
+        if (this.hasError()) {
             return false;
         }
                 
@@ -1944,14 +1944,14 @@ public class AddReplaceFileHelper{
         return true;
     }
     
-    private void msg(String m){
+    private void msg(String m) {
         logger.fine(m);
         //System.out.println(m);
     }
-    private void dashes(){
+    private void dashes() {
         msg("----------------");
     }
-    private void msgt(String m){
+    private void msgt(String m) {
         dashes(); msg(m); dashes();
     }
     
@@ -1963,12 +1963,12 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    public List<DataFile> getFileListBeforeSave(){
+    public List<DataFile> getFileListBeforeSave() {
         
         return this.finalFileList;
     }
     
-    public Boolean isFinalFileListEmpty (){
+    public Boolean isFinalFileListEmpty() {
         return this.finalFileList.isEmpty();
     }
     
@@ -1980,14 +1980,14 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    public List<FileMetadata> getNewFileMetadatasBeforeSave(){
+    public List<FileMetadata> getNewFileMetadatasBeforeSave() {
         
-        if (this.finalFileList.size() == 0){
+        if (this.finalFileList.size() == 0) {
             return null;
         }
         
         List<FileMetadata> fileMetadatas = new ArrayList<>();
-        for (DataFile df : finalFileList){
+        for (DataFile df : finalFileList) {
             fileMetadatas.add(df.getFileMetadata());
         }
         
@@ -1995,9 +1995,9 @@ public class AddReplaceFileHelper{
         
     }
     
-    public void setContentTypeWarning(String warningString){
+    public void setContentTypeWarning(String warningString) {
         
-        if ((warningString == null)||(warningString.isEmpty())){
+        if ((warningString == null) || (warningString.isEmpty())) {
             throw new NullPointerException("warningString cannot be null");
         }
         
@@ -2005,12 +2005,12 @@ public class AddReplaceFileHelper{
         contentTypeWarningString = warningString;
     }
     
-    public boolean hasContentTypeWarning(){
+    public boolean hasContentTypeWarning() {
         return this.contentTypeWarningFound;
     }
     
-    public String getContentTypeWarningString(){
-        if (!hasContentTypeWarning()){
+    public String getContentTypeWarningString() {
+        if (!hasContentTypeWarning()) {
             // not really a NullPointerException but want to blow up here without adding try/catch everywhere
             //
             throw new NullPointerException("Don't call this method without checking 'hasContentTypeWarning()'");
@@ -2067,7 +2067,7 @@ public class AddReplaceFileHelper{
                         if (optionalFileParams.hasStorageIdentifier()) {
                             newStorageIdentifier = optionalFileParams.getStorageIdentifier();
                             newStorageIdentifier = DataAccess.expandStorageIdentifierIfNeeded(newStorageIdentifier);
-                            if(!DataAccess.uploadToDatasetAllowed(dataset,  newStorageIdentifier)) {
+                            if (!DataAccess.uploadToDatasetAllowed(dataset, newStorageIdentifier)) {
                                 addErrorSevere("Dataset store configuration does not allow provided storageIdentifier.");
                             }
                             if (optionalFileParams.hasFileName()) {
@@ -2084,7 +2084,7 @@ public class AddReplaceFileHelper{
                             if (hasError()) {
                                 JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                         .add("storageIdentifier", newStorageIdentifier)
-                                        .add("errorMessage", getHttpErrorCode().toString() +":"+ getErrorMessagesAsString("\n"))
+                                        .add("errorMessage", getHttpErrorCode().toString() + ":" + getErrorMessagesAsString("\n"))
                                         .add("fileDetails", fileJson);
                                 jarr.add(fileoutput);
                             } else {
@@ -2157,7 +2157,7 @@ public class AddReplaceFileHelper{
 
             }
         }
-        catch ( jakarta.json.stream.JsonParsingException ex) {
+        catch (jakarta.json.stream.JsonParsingException ex) {
             ex.printStackTrace();
             return error(BAD_REQUEST, "Json Parsing Exception :" + ex.getMessage());
         }
@@ -2173,7 +2173,7 @@ public class AddReplaceFileHelper{
 
         return Response.ok().entity(Json.createObjectBuilder()
                 .add("status", ApiConstants.STATUS_OK)
-                .add("data", Json.createObjectBuilder().add("Files", jarr).add("Result", result)).build() ).build();
+                .add("data", Json.createObjectBuilder().add("Files", jarr).add("Result", result)).build()).build();
     }
     
     /**
@@ -2215,7 +2215,7 @@ public class AddReplaceFileHelper{
                     }
                     long fileToReplaceId = -1;
                     JsonNumber ftri = fileJson.getJsonNumber("fileToReplaceId");
-                    if(ftri !=null) {
+                    if (ftri != null) {
                         fileToReplaceId = ftri.longValueExact();
                     }
                     
@@ -2228,10 +2228,10 @@ public class AddReplaceFileHelper{
                         String newFilename = null;
                         String newFileContentType = null;
                         String newStorageIdentifier = null;
-                        if ((fileToReplaceId !=-1) && optionalFileParams.hasStorageIdentifier()) {
+                        if ((fileToReplaceId != -1) && optionalFileParams.hasStorageIdentifier()) {
                             newStorageIdentifier = optionalFileParams.getStorageIdentifier();
                             newStorageIdentifier = DataAccess.expandStorageIdentifierIfNeeded(newStorageIdentifier);
-                            if(!DataAccess.uploadToDatasetAllowed(dataset,  newStorageIdentifier)) {
+                            if (!DataAccess.uploadToDatasetAllowed(dataset, newStorageIdentifier)) {
                                 addErrorSevere("Dataset store configuration does not allow provided storageIdentifier.");
                             }
                             if (optionalFileParams.hasFileName()) {
@@ -2252,7 +2252,7 @@ public class AddReplaceFileHelper{
                             if (hasError()) {
                                 JsonObjectBuilder fileoutput = Json.createObjectBuilder()
                                         .add("storageIdentifier", newStorageIdentifier)
-                                        .add("errorMessage", getHttpErrorCode().toString() +":"+ getErrorMessagesAsString("\n"))
+                                        .add("errorMessage", getHttpErrorCode().toString() + ":" + getErrorMessagesAsString("\n"))
                                         .add("fileDetails", fileJson);
                                 jarr.add(fileoutput);
                             } else {
@@ -2326,7 +2326,7 @@ public class AddReplaceFileHelper{
 
             }
         }
-        catch ( jakarta.json.stream.JsonParsingException ex) {
+        catch (jakarta.json.stream.JsonParsingException ex) {
             ex.printStackTrace();
             return error(BAD_REQUEST, "Json Parsing Exception :" + ex.getMessage());
         }
@@ -2341,14 +2341,14 @@ public class AddReplaceFileHelper{
 
         return Response.ok().entity(Json.createObjectBuilder()
                 .add("status", ApiConstants.STATUS_OK)
-                .add("data", Json.createObjectBuilder().add("Files", jarr).add("Result", result)).build() ).build();
+                .add("data", Json.createObjectBuilder().add("Files", jarr).add("Result", result)).build()).build();
     }
 
-    protected static Response error(Response.Status sts, String msg ) {
+    protected static Response error(Response.Status sts, String msg) {
         return Response.status(sts)
-                .entity( NullSafeJsonBuilder.jsonObjectBuilder()
+                .entity(NullSafeJsonBuilder.jsonObjectBuilder()
                         .add("status", ApiConstants.STATUS_ERROR)
-                        .add( "message", msg ).build()
+                        .add("message", msg).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 

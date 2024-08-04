@@ -16,13 +16,13 @@ import java.util.Objects;
  * @author mderuijter
  */
 @NamedQueries({
-        @NamedQuery( name="Embargo.findAll",
+        @NamedQuery(name = "Embargo.findAll",
                 query = "SELECT e FROM Embargo e"),
-        @NamedQuery( name="Embargo.findById",
+        @NamedQuery(name = "Embargo.findById",
                 query = "SELECT e FROM Embargo e WHERE e.id=:id"),
-        @NamedQuery( name="Embargo.findByDateAvailable",
+        @NamedQuery(name = "Embargo.findByDateAvailable",
                 query = "SELECT e FROM Embargo e WHERE e.dateAvailable=:dateAvailable"),
-        @NamedQuery( name="Embargo.deleteById",
+        @NamedQuery(name = "Embargo.deleteById",
                 query = "DELETE FROM Embargo e WHERE e.id=:id")
 })
 @Entity
@@ -35,13 +35,13 @@ public class Embargo {
     @Column(nullable = false)
     private LocalDate dateAvailable;
 
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String reason;
 
-    @OneToMany(mappedBy="embargo", cascade={ CascadeType.REMOVE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "embargo", cascade = {CascadeType.REMOVE, CascadeType.PERSIST})
     private List<DataFile> dataFiles;
 
-    public Embargo(){
+    public Embargo() {
         dateAvailable = LocalDate.now().plusDays(1);
     }
 

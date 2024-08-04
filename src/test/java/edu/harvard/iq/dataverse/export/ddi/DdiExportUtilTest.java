@@ -117,7 +117,7 @@ public class DdiExportUtilTest {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
         // when
-        DdiExportUtil.datasetHtmlDDI( new FileInputStream(fileXML), byteArrayOutputStream);
+        DdiExportUtil.datasetHtmlDDI(new FileInputStream(fileXML), byteArrayOutputStream);
         String generatedDdiHTML = byteArrayOutputStream.toString(StandardCharsets.UTF_8);
         
         // then

@@ -27,7 +27,7 @@ public class UpdatePermissionRootCommandTest {
     public void setUp() {
         mockBean = new DataverseServiceBean() {
             @Override
-            public Dataverse save( Dataverse dv ) {
+            public Dataverse save(Dataverse dv) {
                 serviceBeanCalled = true;
                 return dv;
             }
@@ -50,42 +50,42 @@ public class UpdatePermissionRootCommandTest {
     public void testNoChange() throws CommandException {
         Dataverse dv = MocksFactory.makeDataverse();
         DataverseEngine ngn = new TestDataverseEngine(testCommandContext);
-        dv.setPermissionRoot( false );
+        dv.setPermissionRoot(false);
         
         UpdatePermissionRootCommand sut = new UpdatePermissionRootCommand(false, MocksFactory.makeRequest(), dv);
         Dataverse result = ngn.submit(sut);
         
-        assertFalse( result.isPermissionRoot() );
-        assertFalse( serviceBeanCalled );
+        assertFalse(result.isPermissionRoot());
+        assertFalse(serviceBeanCalled);
         
-        dv.setPermissionRoot( true );
+        dv.setPermissionRoot(true);
         
         sut = new UpdatePermissionRootCommand( true, MocksFactory.makeRequest(), dv );
         result = ngn.submit(sut);
         
-        assertTrue( result.isPermissionRoot() );
-        assertFalse( serviceBeanCalled );
+        assertTrue(result.isPermissionRoot());
+        assertFalse(serviceBeanCalled);
     }
     
     @Test
     public void testChange() throws CommandException {
         Dataverse dv = MocksFactory.makeDataverse();
         DataverseEngine ngn = new TestDataverseEngine(testCommandContext);
-        dv.setPermissionRoot( false );
+        dv.setPermissionRoot(false);
         
         UpdatePermissionRootCommand sut = new UpdatePermissionRootCommand(true, MocksFactory.makeRequest(), dv);
         Dataverse result = ngn.submit(sut);
         
-        assertTrue(result.isPermissionRoot() );
-        assertTrue(serviceBeanCalled );
+        assertTrue(result.isPermissionRoot());
+        assertTrue(serviceBeanCalled);
         
-        dv.setPermissionRoot( true );
+        dv.setPermissionRoot(true);
         
         sut = new UpdatePermissionRootCommand( false, MocksFactory.makeRequest(), dv );
         result = ngn.submit(sut);
         
-        assertFalse( result.isPermissionRoot() );
-        assertTrue(serviceBeanCalled );
+        assertFalse(result.isPermissionRoot());
+        assertTrue(serviceBeanCalled);
     }
     
     

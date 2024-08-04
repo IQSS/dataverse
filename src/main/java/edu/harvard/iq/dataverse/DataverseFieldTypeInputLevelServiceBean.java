@@ -42,7 +42,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
         return res;
     }
     
-    private void msg(String s){
+    private void msg(String s) {
         //logger.fine(s);
     }
     
@@ -56,16 +56,16 @@ public class DataverseFieldTypeInputLevelServiceBean {
      * @param datasetFieldIdList
      * @return List of DataverseFieldTypeInputLevel
      */
-    public List<DataverseFieldTypeInputLevel> findByDataverseIdAndDatasetFieldTypeIdList( Long dataverseId, List<Long> datasetFieldIdList){
+    public List<DataverseFieldTypeInputLevel> findByDataverseIdAndDatasetFieldTypeIdList(Long dataverseId, List<Long> datasetFieldIdList) {
         msg("---- findByDataverseIdAndDatasetFieldTypeIdList ----");
-        if (datasetFieldIdList==null || datasetFieldIdList.isEmpty()){
+        if (datasetFieldIdList == null || datasetFieldIdList.isEmpty()) {
             return null;
         }
-        if (dataverseId == null){                    
+        if (dataverseId == null) {                    
             return null;
         }
        
-        try{
+        try {
             return em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdAndDatasetFieldTypeIdList", DataverseFieldTypeInputLevel.class)
                     .setParameter("datasetFieldIdList", datasetFieldIdList)
                     .setParameter("dataverseId", dataverseId)
@@ -73,7 +73,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
             /*List res = query.getResultList();
             msg("Number of results: " + res.size());
             return res;*/
-        } catch ( NoResultException nre ) {  
+        } catch (NoResultException nre) {  
             return null;
         }    
     }
@@ -82,9 +82,9 @@ public class DataverseFieldTypeInputLevelServiceBean {
         Query query = em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdDatasetFieldTypeId", DataverseFieldTypeInputLevel.class);
         query.setParameter("dataverseId", dataverseId);
         query.setParameter("datasetFieldTypeId", datasetFieldTypeId);
-        try{
+        try {
             return (DataverseFieldTypeInputLevel) query.getSingleResult();
-        } catch ( NoResultException nre ) {
+        } catch (NoResultException nre) {
             return null;
         }         
     }
@@ -92,9 +92,9 @@ public class DataverseFieldTypeInputLevelServiceBean {
     public List<DataverseFieldTypeInputLevel> findRequiredByDataverseId(Long dataverseId) {
         Query query = em.createNamedQuery("DataverseFieldTypeInputLevel.findRequiredByDataverseId", DataverseFieldTypeInputLevel.class);
         query.setParameter("dataverseId", dataverseId);
-        try{
+        try {
             return query.getResultList();
-        } catch ( NoResultException nre ) {
+        } catch (NoResultException nre) {
             return null;
         }         
     }

@@ -53,7 +53,7 @@ public class BuiltinAuthenticationProviderTest {
      */
     @Test
     public void testIsPasswordUpdateAllowed() {
-        assertTrue( sut.isPasswordUpdateAllowed() );
+        assertTrue(sut.isPasswordUpdateAllowed());
     }
 
     /**
@@ -61,7 +61,7 @@ public class BuiltinAuthenticationProviderTest {
      */
     @Test
     public void testIsUserInfoUpdateAllowed() {
-        assertTrue( sut.isUserInfoUpdateAllowed() );
+        assertTrue(sut.isUserInfoUpdateAllowed());
     }
 
     /**
@@ -69,7 +69,7 @@ public class BuiltinAuthenticationProviderTest {
      */
     @Test
     public void testIsUserDeletionAllowed() {
-        assertTrue( sut.isUserDeletionAllowed() );
+        assertTrue(sut.isUserDeletionAllowed());
     }
 
     /**
@@ -78,13 +78,13 @@ public class BuiltinAuthenticationProviderTest {
     @Test
     public void testDeleteUser() {
         BuiltinUser u = makeBuiltInUser();
-        assertTrue( bean.users.isEmpty() );
+        assertTrue(bean.users.isEmpty());
         bean.save(u);
-        assertFalse( bean.users.isEmpty() );
+        assertFalse(bean.users.isEmpty());
         
-        sut.deleteUser( u.getUserName() );
+        sut.deleteUser(u.getUserName());
         
-        assertTrue( bean.users.isEmpty() );
+        assertTrue(bean.users.isEmpty());
     }
 
     /**
@@ -94,9 +94,9 @@ public class BuiltinAuthenticationProviderTest {
     public void testUpdatePassword() {
         BuiltinUser user = bean.save(makeBuiltInUser());
         final String newPassword = "newPassword";
-        assertFalse( sut.verifyPassword(user.getUserName(), newPassword) );
+        assertFalse(sut.verifyPassword(user.getUserName(), newPassword));
         sut.updatePassword(user.getUserName(), newPassword);
-        assertTrue( sut.verifyPassword(user.getUserName(), newPassword));
+        assertTrue(sut.verifyPassword(user.getUserName(), newPassword));
     }
 
     
@@ -113,9 +113,9 @@ public class BuiltinAuthenticationProviderTest {
     @Test
     public void testVerifyPassword() {
         bean.save(makeBuiltInUser());
-        assertEquals( Boolean.TRUE,  sut.verifyPassword("username", "password"));
-        assertEquals( Boolean.FALSE, sut.verifyPassword("username", "xxxxxxxx"));
-        assertEquals( null,          sut.verifyPassword("xxxxxxxx", "xxxxxxxx"));
+        assertEquals(Boolean.TRUE, sut.verifyPassword("username", "password"));
+        assertEquals(Boolean.FALSE, sut.verifyPassword("username", "xxxxxxxx"));
+        assertEquals(null, sut.verifyPassword("xxxxxxxx", "xxxxxxxx"));
     }
 
     /**

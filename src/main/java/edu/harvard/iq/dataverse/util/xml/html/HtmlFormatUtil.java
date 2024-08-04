@@ -42,28 +42,28 @@ public class HtmlFormatUtil  implements java.io.Serializable {
     public static final String HTML_ALIGN_TOP = "valign=\"top\"";
     public static final String HTML_ALIGN_RIGHT = "align=\"right\""; 
     
-    public static String formatTable (String tableBody) {
+    public static String formatTable(String tableBody) {
         return formatTag(tableBody, HTML_TABLE);
     }
     
-    public static String formatTableRow (String entry) {
+    public static String formatTableRow(String entry) {
         return formatTag(entry, HTML_TABLE_ROW);
     }
     
-    public static String formatTableCell (String entry) {
+    public static String formatTableCell(String entry) {
         return formatTag(entry, HTML_TABLE_CELL, null);
     }
     
-    public static String formatTableCell (String entry, String attr) {
+    public static String formatTableCell(String entry, String attr) {
         return formatTag(entry, HTML_TABLE_CELL, attr);
     }
     
     public static String formatTableCellValignTop(String entry) {
-        return formatTableCell (entry, HTML_ALIGN_TOP); 
+        return formatTableCell(entry, HTML_ALIGN_TOP); 
     }
     
     public static String formatTableCellAlignRight(String entry) {
-        return formatTableCell (entry, HTML_ALIGN_RIGHT);
+        return formatTableCell(entry, HTML_ALIGN_RIGHT);
     }
     
     public static String formatLink(String name, String url) {
@@ -86,7 +86,7 @@ public class HtmlFormatUtil  implements java.io.Serializable {
         sb.append(tag);
         
         if (attributes != null) {
-            sb.append(" "+attributes);
+            sb.append(" " + attributes);
         }
         
         sb.append('>');

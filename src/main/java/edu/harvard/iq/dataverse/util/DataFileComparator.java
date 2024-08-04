@@ -22,7 +22,7 @@ public class DataFileComparator implements Comparator<FileMetadata> {
     public Comparator<FileMetadata> compareBy(boolean byFolder, boolean byCategory, String field, boolean ascending) {
         this.byFolder = byFolder;
         this.byCategory = byCategory;
-        if(StringUtil.nonEmpty(field)) {
+        if (StringUtil.nonEmpty(field)) {
             this.field = field;
         }
         this.ascending = ascending;
@@ -44,7 +44,7 @@ public class DataFileComparator implements Comparator<FileMetadata> {
         return this.ascending;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public int compare(FileMetadata o1, FileMetadata o2) {
         if (byFolder) {
@@ -65,7 +65,7 @@ public class DataFileComparator implements Comparator<FileMetadata> {
                 return comp;
             }
         }
-        Map<String,Long> categoryMap = FileMetadata.getCategorySortOrder();
+        Map<String, Long> categoryMap = FileMetadata.getCategorySortOrder();
         
         if (byCategory) {
             // Then by category if set

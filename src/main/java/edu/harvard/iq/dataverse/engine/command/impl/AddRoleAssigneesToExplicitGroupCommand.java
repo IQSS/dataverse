@@ -22,7 +22,7 @@ import jakarta.ejb.EJBException;
  *
  * @author michael
  */
-@RequiredPermissions( Permission.ManageDataversePermissions )
+@RequiredPermissions(Permission.ManageDataversePermissions)
 public class AddRoleAssigneesToExplicitGroupCommand extends AbstractCommand<ExplicitGroup> {
     
     private final Set<String> roleAssigneeIdentifiers;
@@ -38,17 +38,17 @@ public class AddRoleAssigneesToExplicitGroupCommand extends AbstractCommand<Expl
     public ExplicitGroup execute(CommandContext ctxt) throws CommandException {
         
         List<String> nonexistentRAs = new LinkedList<>();
-        for ( String rai : roleAssigneeIdentifiers ) {
+        for (String rai : roleAssigneeIdentifiers) {
             RoleAssignee ra = null;
             try {
                 ra = ctxt.roleAssignees().getRoleAssignee(rai);
-            } catch ( EJBException iae ) {
-                if ( iae.getCausedByException() instanceof IllegalArgumentException ) {
+            } catch (EJBException iae) {
+                if (iae.getCausedByException() instanceof IllegalArgumentException) {
                     throw new IllegalCommandException("Bad role assignee name:" + rai, this);
                 }
             }
-            if ( ra == null ) {
-                nonexistentRAs.add( rai );
+            if (ra == null) {
+                nonexistentRAs.add(rai);
             } else {
                 if (ra instanceof AuthenticatedUser) {
                     AuthenticatedUser user = (AuthenticatedUser) ra;
@@ -69,14 +69,14 @@ public class AddRoleAssigneesToExplicitGroupCommand extends AbstractCommand<Expl
             }
         }
         
-        if ( nonexistentRAs.isEmpty() ) {
+        if (nonexistentRAs.isEmpty()) {
             return ctxt.explicitGroups().persist(explicitGroup);
         } else {
             StringBuilder sb = new StringBuilder();
-            for ( String s : nonexistentRAs ) {
+            for (String s : nonexistentRAs) {
                 sb.append(s).append(", ");
             }
-            sb.setLength( sb.length()-2);
+            sb.setLength(sb.length() - 2);
             throw new IllegalCommandException("The following role assignees were not found: " + sb.toString(), this );
         }
     }

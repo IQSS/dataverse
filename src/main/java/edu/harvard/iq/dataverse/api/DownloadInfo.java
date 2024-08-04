@@ -58,7 +58,7 @@ public class DownloadInfo {
         return dataFile; 
     }
      
-    public void setDataFile (DataFile sf) {
+    public void setDataFile(DataFile sf) {
         dataFile = sf; 
     }
     

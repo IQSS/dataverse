@@ -21,7 +21,7 @@ public class CompoundAuthMechanism implements AuthMechanism {
     @Inject
     public CompoundAuthMechanism(ApiKeyAuthMechanism apiKeyAuthMechanism, WorkflowKeyAuthMechanism workflowKeyAuthMechanism, SignedUrlAuthMechanism signedUrlAuthMechanism, SessionCookieAuthMechanism sessionCookieAuthMechanism, BearerTokenAuthMechanism bearerTokenAuthMechanism) {
         // Auth mechanisms should be ordered by priority here
-        add(apiKeyAuthMechanism, workflowKeyAuthMechanism, signedUrlAuthMechanism, sessionCookieAuthMechanism,bearerTokenAuthMechanism);
+        add(apiKeyAuthMechanism, workflowKeyAuthMechanism, signedUrlAuthMechanism, sessionCookieAuthMechanism, bearerTokenAuthMechanism);
     }
 
     public CompoundAuthMechanism(AuthMechanism... authMechanisms) {

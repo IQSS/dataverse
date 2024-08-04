@@ -36,14 +36,14 @@ import org.jsoup.Jsoup;
 public class StringUtil {
        
     private static final Logger logger = Logger.getLogger(StringUtil.class.getCanonicalName());
-    public static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
+    public static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(new TreeSet<>( Arrays.asList("1", "yes", "true", "allow")));
     
-    public static final boolean nonEmpty( String str ) {
-        return ! isEmpty(str);
+    public static final boolean nonEmpty(String str) {
+        return !isEmpty(str);
     }
     
     public static final boolean isEmpty(String str) {
-        return str==null || str.trim().equals("");        
+        return str == null || str.trim().equals("");        
     }
     
     public static  String nullToEmpty(String inString) {
@@ -54,7 +54,7 @@ public class StringUtil {
       final char[] chars = str.toCharArray();
       for (int x = 0; x < chars.length; x++) {      
         final char c = chars[x];
-        if(! isAlphaNumericChar(c)) {
+        if (!isAlphaNumericChar(c)) {
             return false;
         }
       }  
@@ -76,7 +76,7 @@ public class StringUtil {
   }
     
     public static Optional<String> toOption(String s) {
-        if ( isEmpty(s) ) {
+        if (isEmpty(s)) {
             return Optional.empty();
         } else {
             return Optional.of(s.trim());
@@ -90,15 +90,15 @@ public class StringUtil {
      * @return {@code true} iff {@code s} is not {@code null} and is "truthy" word.
      * @see #TRUE_VALUES
      */
-    public static boolean isTrue( String s ) {
-        return (s != null ) && TRUE_VALUES.contains(s.trim().toLowerCase());
+    public static boolean isTrue(String s) {
+        return (s != null) && TRUE_VALUES.contains(s.trim().toLowerCase());
     }
     
     public static final boolean isAlphaNumericChar(char c) {
         // TODO: consider using Character.isLetterOrDigit(c)
-        return ( (c >= 'a') && (c <= 'z') ||
+        return ((c >= 'a') && (c <= 'z') ||
                  (c >= 'A') && (c <= 'Z') ||
-                 (c >= '0') && (c <= '9') );
+                 (c >= '0') && (c <= '9'));
     }
 
     public static String html2text(String html) {
@@ -132,7 +132,7 @@ public class StringUtil {
      * @param password The password.
      * @return encrypted string, URL-safe.
      */
-    public static String encrypt(String value, String password ) {
+    public static String encrypt(String value, String password) {
 
         byte[] baseBytes = value.getBytes();
         try {
@@ -151,14 +151,14 @@ public class StringUtil {
                     .replaceAll("=", "-")
                     .replaceAll("/", "_");
             
-        } catch (  InvalidKeyException | NoSuchAlgorithmException | BadPaddingException
+        } catch (InvalidKeyException | NoSuchAlgorithmException | BadPaddingException
                   | IllegalBlockSizeException | NoSuchPaddingException | UnsupportedEncodingException | InvalidAlgorithmParameterException ex) {
             Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
     }
     
-    public static String decrypt(String value, String password ) {
+    public static String decrypt(String value, String password) {
         String base64 = value.replaceAll("\\.", "+")
                     .replaceAll("-", "=")
                     .replaceAll("_", "/");
@@ -168,11 +168,11 @@ public class StringUtil {
             Cipher aes = Cipher.getInstance("AES/GCM/NoPadding");
             //use first 12 bytes for iv
             AlgorithmParameterSpec gcmIv = new GCMParameterSpec(128, baseBytes, 0, GCM_IV_LENGTH);
-            aes.init( Cipher.DECRYPT_MODE, generateKeyFromString(password),gcmIv);
-            byte[] decrypted = aes.doFinal(baseBytes,GCM_IV_LENGTH, baseBytes.length - GCM_IV_LENGTH);
+            aes.init(Cipher.DECRYPT_MODE, generateKeyFromString(password), gcmIv);
+            byte[] decrypted = aes.doFinal(baseBytes, GCM_IV_LENGTH, baseBytes.length - GCM_IV_LENGTH);
             return new String(decrypted);
             
-        } catch ( InvalidKeyException | NoSuchAlgorithmException | BadPaddingException
+        } catch (InvalidKeyException | NoSuchAlgorithmException | BadPaddingException
                   | IllegalBlockSizeException | NoSuchPaddingException | UnsupportedEncodingException | InvalidAlgorithmParameterException ex) {
             Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
@@ -183,7 +183,7 @@ public class StringUtil {
         return sanitizeFileDirectory(value, false);
     }
     
-    public static String sanitizeFileDirectory(String value, boolean aggressively){        
+    public static String sanitizeFileDirectory(String value, boolean aggressively) {        
         // Replace all the combinations of slashes and backslashes with one single 
         // backslash:
         value = value.replaceAll("[\\\\/][\\\\/]*", "/");
@@ -194,10 +194,10 @@ public class StringUtil {
         }
         
         // Strip any leading or trailing slashes, whitespaces, '-' or '.':
-        while (value.startsWith("/") || value.startsWith("-") || value.startsWith(".") || value.startsWith(" ")){
+        while (value.startsWith("/") || value.startsWith("-") || value.startsWith(".") || value.startsWith(" ")) {
             value = value.substring(1);
         }
-        while (value.endsWith("/") || value.endsWith("-") || value.endsWith(".") || value.endsWith(" ")){
+        while (value.endsWith("/") || value.endsWith("-") || value.endsWith(".") || value.endsWith(" ")) {
             value = value.substring(0, value.length() - 1);
         }
         

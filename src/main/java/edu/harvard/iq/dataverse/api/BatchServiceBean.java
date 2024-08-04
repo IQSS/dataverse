@@ -36,7 +36,7 @@ public class BatchServiceBean {
     
 
     @Asynchronous
-    public void processFilePath(String fileDir, String parentIdtf, DataverseRequest dataverseRequest, Dataverse owner, ImportUtil.ImportType importType, Boolean createDV)  {
+    public void processFilePath(String fileDir, String parentIdtf, DataverseRequest dataverseRequest, Dataverse owner, ImportUtil.ImportType importType, Boolean createDV) {
         logger.info("BEGIN IMPORT");
         PrintWriter validationLog = null;
         PrintWriter cleanupLog = null;
@@ -46,8 +46,8 @@ public class BatchServiceBean {
         
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
         
-        validationLog = new PrintWriter(new FileWriter( System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "validationLog"+  formatter.format(timestamp)+".txt"));
-        cleanupLog = new PrintWriter(new FileWriter( System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "cleanupLog"+  formatter.format(timestamp)+".txt"));
+        validationLog = new PrintWriter(new FileWriter( System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "validationLog" + formatter.format(timestamp) + ".txt"));
+        cleanupLog = new PrintWriter(new FileWriter( System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "cleanupLog" + formatter.format(timestamp) + ".txt"));
         File dir = new File(fileDir);
         if (dir.isDirectory()) {
             for (File file : dir.listFiles()) {
@@ -56,13 +56,13 @@ public class BatchServiceBean {
                         try {
                             status.add(handleDirectory(dataverseRequest, file, importType, validationLog, cleanupLog, createDV));
                         } catch (ImportException e) {
-                            logger.log(Level.SEVERE, "Exception in handleDirectory() for "+ file.getName(),e);
+                            logger.log(Level.SEVERE, "Exception in handleDirectory() for " + file.getName(), e);
                         }
                     } else {
                         try {
                             status.add(importService.handleFile(dataverseRequest, owner, file, importType, validationLog, cleanupLog));
-                        } catch(ImportException e) {
-                             logger.log(Level.SEVERE, "Exception in handleFile() for "+ file.getName(),e);
+                        } catch (ImportException e) {
+                             logger.log(Level.SEVERE, "Exception in handleFile() for " + file.getName(), e);
                         }
 
                     }
@@ -73,7 +73,7 @@ public class BatchServiceBean {
 
         }
         }
-        catch(Exception e) {
+        catch (Exception e) {
                 logger.log(Level.SEVERE, "Exception in processFilePath()", e);
         } finally {
             validationLog.close();
@@ -83,10 +83,10 @@ public class BatchServiceBean {
 
     }
 
-    public JsonArrayBuilder handleDirectory(DataverseRequest dataverseRequest, File dir, ImportUtil.ImportType importType, PrintWriter validationLog, PrintWriter cleanupLog, Boolean createDV) throws ImportException{
+    public JsonArrayBuilder handleDirectory(DataverseRequest dataverseRequest, File dir, ImportUtil.ImportType importType, PrintWriter validationLog, PrintWriter cleanupLog, Boolean createDV) throws ImportException {
         JsonArrayBuilder status = Json.createArrayBuilder();
         Dataverse owner = dataverseService.findByAlias(dir.getName());
-        if (owner == null ) {
+        if (owner == null) {
             if (createDV) {
                 System.out.println("creating new dataverse: " + dir.getName());
                 owner = importService.createDataverse(dir.getName(), dataverseRequest);

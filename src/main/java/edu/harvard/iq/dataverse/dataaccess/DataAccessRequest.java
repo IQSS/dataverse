@@ -35,11 +35,11 @@ import edu.harvard.iq.dataverse.DataFile;
 
 public class DataAccessRequest {
     
-    public DataAccessRequest () {
+    public DataAccessRequest() {
         this(null);
     }
 
-    public DataAccessRequest (DataFile file) {
+    public DataAccessRequest(DataFile file) {
         this.file = file;
         this.requestParameters = new HashMap<String, String>();
     }
@@ -47,21 +47,21 @@ public class DataAccessRequest {
     private DataFile file;
     private Map<String, String> requestParameters;
 
-    public void setFile (DataFile file) {
+    public void setFile(DataFile file) {
         this.file = file;
     }
 
-    public DataFile getFile () {
+    public DataFile getFile() {
         return this.file; 
     }
 
-    public void setParameter (String name, String value) {
+    public void setParameter(String name, String value) {
         if (requestParameters != null) {
             requestParameters.put(name, value);
         }
     }
 
-    public String getParameter (String name) {
+    public String getParameter(String name) {
         if (requestParameters != null) {
             return requestParameters.get(name);
         }

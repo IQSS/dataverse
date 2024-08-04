@@ -45,21 +45,21 @@ public class WorkflowUtil {
             JsonObject response = JsonUtil.getJsonObject(externalData);
             String status = null;
             //Lower case is documented, upper case is deprecated
-            if(response.containsKey("status")) {
-                status= response.getString("status");
-            }else if(response.containsKey("Status")) {
-                status= response.getString("Status");
+            if (response.containsKey("status")) {
+                status = response.getString("status");
+            } else if (response.containsKey("Status")) {
+                status = response.getString("Status");
             }
             String reason = null;
             String message = null;
             if (response.containsKey("reason")) {
                 reason = response.getString("reason");
-            }else if (response.containsKey("Reason")) {
+            } else if (response.containsKey("Reason")) {
                 reason = response.getString("Reason");
             }
             if (response.containsKey("message")) {
                 message = response.getString("message");
-            }else if (response.containsKey("Message")) {
+            } else if (response.containsKey("Message")) {
                 message = response.getString("Message");
             }
             switch (status) {

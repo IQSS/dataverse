@@ -33,18 +33,18 @@ public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     }
     
     @Override
-    protected ParsedUserResponse parseUserResponse( String responseBody ) {
+    protected ParsedUserResponse parseUserResponse(String responseBody) {
         
-        try ( StringReader rdr = new StringReader(responseBody);
-              JsonReader jrdr = Json.createReader(rdr) )  {
+        try (StringReader rdr = new StringReader(responseBody);
+              JsonReader jrdr = Json.createReader(rdr)) {
             JsonObject response = jrdr.readObject();
             // Github has no concept of a family name
-            ShibUserNameFields shibUserNameFields = ShibUtil.findBestFirstAndLastName(null, null, response.getString("name",""));
+            ShibUserNameFields shibUserNameFields = ShibUtil.findBestFirstAndLastName(null, null, response.getString("name", ""));
             AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
                     shibUserNameFields.getFirstName(),
                     shibUserNameFields.getLastName(),
-                    response.getString("email",""),
-                    response.getString("company",""),
+                    response.getString("email", ""),
+                    response.getString("company", ""),
                     ""
             );
             Integer persistentUserId = response.getInt("id");
@@ -53,7 +53,7 @@ public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
                     displayInfo, 
                     persistentUserId.toString(), 
                     username,
-                    displayInfo.getEmailAddress().length()>0 ? Collections.singletonList(displayInfo.getEmailAddress())
+                    displayInfo.getEmailAddress().length() > 0 ? Collections.singletonList(displayInfo.getEmailAddress())
                                                              : Collections.emptyList() );
         }
         

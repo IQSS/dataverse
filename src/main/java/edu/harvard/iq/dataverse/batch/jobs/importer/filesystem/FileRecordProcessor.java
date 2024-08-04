@@ -77,7 +77,7 @@ public class FileRecordProcessor implements ItemProcessor {
         if (datafile == null) {
             return new File(path);
         } else {
-            Logger.getLogger("job-"+jobContext.getInstanceId()).log(Level.INFO, "Skipping " + relativePath + ", DataFile already exists.");
+            Logger.getLogger("job-" + jobContext.getInstanceId()).log(Level.INFO, "Skipping " + relativePath + ", DataFile already exists.");
             return null;
         }
         

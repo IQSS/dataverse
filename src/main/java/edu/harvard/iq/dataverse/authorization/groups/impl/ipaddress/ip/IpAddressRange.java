@@ -14,17 +14,17 @@ import jakarta.persistence.MappedSuperclass;
 @MappedSuperclass
 public abstract class IpAddressRange {
     
-    public static IpAddressRange make( IpAddress bottom, IpAddress top ) {
-        if ( bottom instanceof IPv4Address && top instanceof IPv4Address ) {
-            return new IPv4Range((IPv4Address)bottom, (IPv4Address)top);
-        } else if ( bottom instanceof IPv6Address && top instanceof IPv6Address ) {
-            return new IPv6Range((IPv6Address)bottom, (IPv6Address)top);
+    public static IpAddressRange make(IpAddress bottom, IpAddress top) {
+        if (bottom instanceof IPv4Address && top instanceof IPv4Address) {
+            return new IPv4Range((IPv4Address) bottom, (IPv4Address) top);
+        } else if (bottom instanceof IPv6Address && top instanceof IPv6Address) {
+            return new IPv6Range((IPv6Address) bottom, (IPv6Address) top);
         } else {
             throw new IllegalArgumentException("Both addresses have to be of the same type (either IPv4 or IPv6)");
         }
     }
     
-    public static IpAddressRange makeSingle( IpAddress ipa ) { 
+    public static IpAddressRange makeSingle(IpAddress ipa) { 
         return make(ipa, ipa);
     }
     
@@ -39,7 +39,7 @@ public abstract class IpAddressRange {
      * @param anAddress The address whose inclusion we test
      * @return {@code Boolean.TRUE},{@code Boolean.FALSE}, or {@code null}.
      */
-    public abstract Boolean contains( IpAddress anAddress );
+    public abstract Boolean contains(IpAddress anAddress);
     
     public abstract IpAddress getTop();
     public abstract IpAddress getBottom();

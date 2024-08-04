@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  * @author landreev
  *
  */
-public class JhoveFileType implements java.io.Serializable  {
+public class JhoveFileType implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(JhoveFileType.class.getCanonicalName());
 
      
@@ -54,12 +54,12 @@ public class JhoveFileType implements java.io.Serializable  {
             // When testing statically from JUnit, we expect domainRoot to be null.
             return null;
         }
-        return domainRoot+File.separator+"config"+File.separator+"jhove.conf";
+        return domainRoot + File.separator + "config" + File.separator + "jhove.conf";
     }
     
-    private static final int[] ORIGINAL_RELEASE_DATE = { 2013, 8, 30 };
+    private static final int[] ORIGINAL_RELEASE_DATE = {2013, 8, 30};
     private static final String ORIGINAL_COPR_RIGHTS = "Copyright"
-        +"2004-2007 by the President and Fellows of Harvard College. "
+        + "2004-2007 by the President and Fellows of Harvard College. "
         + "Released under the GNU Lesser General Public License.";
     
     /**
@@ -82,7 +82,7 @@ public class JhoveFileType implements java.io.Serializable  {
             String saxClass = JhoveBase.getSaxClassFromProperties();
 
             String configFile = getJhoveConfigFile();
-            logger.fine("config file: "+configFile);
+            logger.fine("config file: " + configFile);
             if (configFile == null) {
                 logger.info("Called getJhoveConfigFile but the result was null! Configuring JHOVE is highly recommended to determine file types.");
             }
@@ -109,18 +109,18 @@ public class JhoveFileType implements java.io.Serializable  {
             
             if (DEBUG) {
                 if (module != null) {
-                    logger.fine("Module "+module.getName());
+                    logger.fine("Module " + module.getName());
                 } else {
                     logger.fine("module is null!");
                 }
             }
             
-            if (DEBUG){
-                logger.fine("file name="+file.getAbsolutePath());
+            if (DEBUG) {
+                logger.fine("file name=" + file.getAbsolutePath());
             }
             
             // get a RepInfo instance
-            if (file.exists() &&  file.isFile() && (file.length() > 0L)){
+            if (file.exists() && file.isFile() && (file.length() > 0L)) {
                 //info = jb.processRepInfo(jhoveApp, module, file);
                 info = new RepInfo(file.getAbsolutePath());
                 info.setSize(file.length());
@@ -129,7 +129,7 @@ public class JhoveFileType implements java.io.Serializable  {
                         info = null; 
                     } else {
                         if (DEBUG) {
-                            logger.fine("mime type (module specified above)="+info.getMimeType()); 
+                            logger.fine("mime type (module specified above)=" + info.getMimeType()); 
                         }
                     }
                 } else {
@@ -146,7 +146,7 @@ public class JhoveFileType implements java.io.Serializable  {
 
                         if (mod.hasFeature("edu.harvard.hul.ois.jhove.canValidate")) {
                             if (DEBUG) {
-                                logger.fine("Trying to apply Jhove module "+mod.getName());
+                                logger.fine("Trying to apply Jhove module " + mod.getName());
                             }
                             try {
                                 if (!jb.processFile(jhoveApp, mod, false, file, infc)) {
@@ -177,9 +177,9 @@ public class JhoveFileType implements java.io.Serializable  {
             } else {
                 logger.warning("Jhove: the specified file does not exist or not a file or empty");
             }
-        } catch (IOException ex){
+        } catch (IOException ex) {
             ex.printStackTrace();
-        }   catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return info;
@@ -193,7 +193,7 @@ public class JhoveFileType implements java.io.Serializable  {
         String mimeType = null;
         boolean DEBUG = false;
         
-        if (file.exists() &&  file.isFile() && (file.length() > 0L)){
+        if (file.exists() && file.isFile() && (file.length() > 0L)) {
             RepInfo info = checkFileType(file);
             if (info != null) {
                 mimeType = info.getMimeType();

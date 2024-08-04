@@ -41,8 +41,8 @@ public class FeedbackApi extends AbstractApiBean {
         JsonNumber jsonNumber = jsonObject.getJsonNumber("targetId");
         DvObject feedbackTarget = null;
         if (jsonNumber != null) {
-            feedbackTarget =  dvObjSvc.findDvObject(jsonNumber.longValue());
-            if(feedbackTarget==null) {
+            feedbackTarget = dvObjSvc.findDvObject(jsonNumber.longValue());
+            if (feedbackTarget == null) {
                 return error(Status.BAD_REQUEST, "Feedback target object not found");
             }
         }

@@ -83,7 +83,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         }
 
         Long totalResponses = guestbookResponseService.findCountAll(dataverseId);
-        if(totalResponses.intValue() > 0){
+        if (totalResponses.intValue() > 0) {
             displayDownloadAll = true;
             FacesContext.getCurrentInstance().addMessage(null, 
                     new FacesMessage(FacesMessage.SEVERITY_INFO, 
@@ -109,8 +109,8 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             if (!(guestbookService.findCountUsages(cg.getId(), null) == 0)) {
                 cg.setDeletable(false);
             }
-            cg.setResponseCount(guestbookResponseService.findCountByGuestbookId(cg.getId() , dataverseId));
-            if (!(guestbookResponseService.findCountByGuestbookId(cg.getId() , null) == 0)) {
+            cg.setResponseCount(guestbookResponseService.findCountByGuestbookId(cg.getId(), dataverseId));
+            if (!(guestbookResponseService.findCountByGuestbookId(cg.getId(), null) == 0)) {
                 cg.setDeletable(false);
             }
             cg.setDataverse(dataverse);
@@ -180,7 +180,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         return sb.toString();
     }*/
     
-    public void streamResponsesByDataverse(){
+    public void streamResponsesByDataverse() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("text/comma-separated-values");
@@ -192,7 +192,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             out.flush();
             ctx.responseComplete();
         } catch (Exception e) {
-            logger.warning("Failed to stream collected guestbook responses for dataverse "+dataverseId);
+            logger.warning("Failed to stream collected guestbook responses for dataverse " + dataverseId);
         }
     }
 
@@ -217,7 +217,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         }
     }*/
 
-    private String getFileName(){
+    private String getFileName() {
        // The fix below replaces any spaces in the name of the dataverse with underscores;
        // without it, the filename was chopped off (by the browser??), and the user 
        // was getting the file name "Foo", instead of "Foo and Bar in Social Sciences.csv". -- L.A.

@@ -101,7 +101,7 @@ public class SWORDv2ContainerServlet extends SwordServlet {
         }
     }
     
-    private void setRequest( HttpServletRequest r ) {
+    private void setRequest(HttpServletRequest r) {
         containerManagerImpl.setHttpRequest(r);
         statementManagerImpl.setHttpRequest(r);
     }

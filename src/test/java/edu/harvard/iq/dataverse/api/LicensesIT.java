@@ -24,7 +24,7 @@ public class LicensesIT {
     }
 
     @Test
-    public void testLicenses(){
+    public void testLicenses() {
 
         //Setup two users - one a superuser
         Response createUser = UtilIT.createRandomUser();

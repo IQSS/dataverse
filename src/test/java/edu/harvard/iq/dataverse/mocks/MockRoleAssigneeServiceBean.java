@@ -13,14 +13,14 @@ public class MockRoleAssigneeServiceBean extends RoleAssigneeServiceBean {
     
     Map<String, RoleAssignee> assignees = new HashMap<>();
     
-    public <T extends RoleAssignee> T add (T ra ) {
+    public <T extends RoleAssignee> T add(T ra) {
         assignees.put(ra.getIdentifier(), ra);
         return ra;
     }
     
     @Override
     public RoleAssignee getRoleAssignee(String identifier) {
-        if ( predefinedRoleAssignees.isEmpty() ) {
+        if (predefinedRoleAssignees.isEmpty()) {
             setup();
         }
         

@@ -220,7 +220,7 @@ public class ProvIT {
 
     @AfterAll
     public static void tearDownClass() {
-        if(!provEnabled){
+        if (!provEnabled) {
             UtilIT.deleteSetting(SettingsServiceBean.Key.ProvCollectionEnabled);
         }
     }

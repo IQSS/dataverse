@@ -66,7 +66,7 @@ public class ChunkingOutputStream extends FilterOutputStream {
         
         // finally, buffer the leftover bytes:
         System.arraycopy(data, offset, buffer, position, length);
-        position+=length;
+        position += length;
         
     }
     
@@ -80,7 +80,7 @@ public class ChunkingOutputStream extends FilterOutputStream {
             dumpChunk(buffer, 0, position);
             position = 0;
         }
-        buffer[position++] = (byte)i;
+        buffer[position++] = (byte) i;
     }
 
     @Override

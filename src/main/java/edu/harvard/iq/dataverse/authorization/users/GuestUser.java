@@ -13,7 +13,7 @@ public class GuestUser implements User {
     
     public static GuestUser get() { return INSTANCE; }
     
-    private GuestUser(){}
+    private GuestUser() {}
     
     @Override
     public String getIdentifier() {
@@ -34,7 +34,7 @@ public class GuestUser implements User {
     }
 
     @Override
-    public boolean equals( Object o ) {
+    public boolean equals(Object o) {
         return (o instanceof GuestUser);
     }
     

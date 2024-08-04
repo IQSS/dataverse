@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  *
  * @author michael
  */
-@RequiredPermissions( Permission.AddDataset )
+@RequiredPermissions(Permission.AddDataset)
 public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetVersion> {
     
     private static final Logger logger = Logger.getLogger(CreateDatasetVersionCommand.class.getName());
@@ -48,10 +48,10 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
          * version via Dataset.getOrCreateEditVersion() and just want to persist it.
          */
         DatasetVersion latest = dataset.getLatestVersion();
-        if ( latest.isWorkingCopy() ) {
+        if (latest.isWorkingCopy()) {
             // A dataset can only have a single draft, which has to be the latest.
             // This is imposed here.
-            if (newVersion.getVersionState().equals(VersionState.DRAFT)){
+            if (newVersion.getVersionState().equals(VersionState.DRAFT)) {
                 throw new IllegalCommandException("Latest version is already a draft. Cannot add another draft", this);
             }
         }
@@ -62,10 +62,10 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         registerExternalVocabValuesIfAny(ctxt, newVersion);
 
         List<FileMetadata> newVersionMetadatum = new ArrayList<>(latest.getFileMetadatas().size());
-        for ( FileMetadata fmd : latest.getFileMetadatas() ) {
+        for (FileMetadata fmd : latest.getFileMetadatas()) {
             FileMetadata fmdCopy = fmd.createCopy();
             fmdCopy.setDatasetVersion(newVersion);
-            newVersionMetadatum.add( fmdCopy );
+            newVersionMetadatum.add(fmdCopy);
         }
         newVersion.setFileMetadatas(newVersionMetadatum);
         
@@ -107,7 +107,7 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         ArrayList<DatasetVersion> dsvs = new ArrayList<>(currentVersions.size());
         dsvs.addAll(currentVersions);
         dsvs.add(0, newVersion);
-        dataset.setVersions( dsvs );
+        dataset.setVersions(dsvs);
         dataset.setModificationTime(getTimestamp());
     }
     

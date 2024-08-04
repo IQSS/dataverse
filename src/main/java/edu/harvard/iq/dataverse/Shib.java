@@ -197,7 +197,7 @@ public class Shib implements java.io.Serializable {
         if (!EMailValidator.isEmailValid(emailAddressInAssertion)) {
             String msg = "The SAML assertion contained an invalid email address: \"" + emailAddressInAssertion + "\".";
             logger.info(msg);
-            msg=BundleUtil.getStringFromBundle("shib.invalidEmailAddress",   Arrays.asList(emailAddressInAssertion));
+            msg = BundleUtil.getStringFromBundle("shib.invalidEmailAddress", Arrays.asList(emailAddressInAssertion));
             String singleEmailAddress = ShibUtil.findSingleValue(emailAddressInAssertion);
             if (EMailValidator.isEmailValid(singleEmailAddress)) {
                 msg = "Multiple email addresses were asserted by the Identity Provider (" + emailAddressInAssertion + " ). These were sorted and the first was chosen: " + singleEmailAddress;
@@ -233,10 +233,10 @@ public class Shib implements java.io.Serializable {
                     affiliation = affiliation.substring(affiliation.lastIndexOf(ShibAffiliationSeparator) + 1); //patch for affiliation array returning last part
                 }
                 else if (ShibAffiliationOrder.equals("firstAffiliation")) {
-                    try{
-                        affiliation = affiliation.substring(0,affiliation.indexOf(ShibAffiliationSeparator)); //patch for affiliation array returning first part
+                    try {
+                        affiliation = affiliation.substring(0, affiliation.indexOf(ShibAffiliationSeparator)); //patch for affiliation array returning first part
                     }
-                    catch (Exception e){
+                    catch (Exception e) {
                         logger.info("Affiliation does not contain \"" + ShibAffiliationSeparator + "\"");
                     }
                 }
@@ -253,7 +253,7 @@ public class Shib implements java.io.Serializable {
         if (au != null) {
             //See if there's another account with this email
             AuthenticatedUser auEmail = authSvc.getAuthenticatedUserByEmail(emailAddress);
-            if (auEmail!= null && !auEmail.equals(au)){   
+            if (auEmail != null && !auEmail.equals(au)) {   
                 //If this email already belongs to another account throw a message for user to contact support
                 JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("shib.duplicate.email.error"));
                 return;
@@ -450,7 +450,7 @@ public class Shib implements java.io.Serializable {
                 showMessage = false;
             }
             if (showMessage) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, BundleUtil.getStringFromBundle("shib.nullerror",Arrays.asList(key))));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, BundleUtil.getStringFromBundle("shib.nullerror", Arrays.asList(key))));
             }
             throw new Exception(msg);
         }
@@ -458,8 +458,8 @@ public class Shib implements java.io.Serializable {
         if (attributeValue.isEmpty()) {
             throw new Exception(key + " was empty");
         }
-		if(systemConfig.isShibAttributeCharacterSetConversionEnabled()) {
-			attributeValue= new String( attributeValue.getBytes("ISO-8859-1"), "UTF-8");
+		if (systemConfig.isShibAttributeCharacterSetConversionEnabled()) {
+			attributeValue = new String( attributeValue.getBytes("ISO-8859-1"), "UTF-8");
 		}
         String trimmedValue = attributeValue.trim();
         logger.fine("The SAML assertion for \"" + key + "\" (required) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
@@ -495,7 +495,7 @@ public class Shib implements java.io.Serializable {
         String rootDvAlias = getRootDataverseAlias();
         if (includeFacetDashRedirect) {
             if (rootDvAlias != null) {
-                return plainHomepageString + "?alias="  + rootDvAlias + "&faces-redirect=true";
+                return plainHomepageString + "?alias=" + rootDvAlias + "&faces-redirect=true";
             } else {
                 return  plainHomepageString + "?faces-redirect=true";
             }

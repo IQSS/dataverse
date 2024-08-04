@@ -91,11 +91,11 @@ public class DataTableImportDDI {
     }
 
     private void processVar(XMLStreamReader xmlr, Map<String, DataTable> dataTablesMap, Map<String, Integer> varsPerFileMap) throws XMLStreamException {
-        DataVariable dv = new DataVariable(0,null);
-        dv.setName( xmlr.getAttributeValue(null, "name") );
+        DataVariable dv = new DataVariable(0, null);
+        dv.setName(xmlr.getAttributeValue(null, "name"));
 
         try {
-            dv.setNumberOfDecimalPoints( new Long( xmlr.getAttributeValue(null, "dcml") ) );
+            dv.setNumberOfDecimalPoints(new Long( xmlr.getAttributeValue(null, "dcml") ));
         } catch (NumberFormatException nfe) {}
 
         // interval type (DB value may be different than DDI value)
@@ -112,7 +112,7 @@ public class DataTableImportDDI {
             dv.setIntervalDiscrete();
         }
 
-        dv.setWeighted( VAR_WEIGHTED.equals( xmlr.getAttributeValue(null, "wgt") ) );
+        dv.setWeighted(VAR_WEIGHTED.equals(xmlr.getAttributeValue(null, "wgt")));
         // default is not-wgtd, so null sets weighted to false
 
 
@@ -122,24 +122,24 @@ public class DataTableImportDDI {
                     processLocation(xmlr, dv, dataTablesMap, varsPerFileMap);
                 }
                 else if (xmlr.getLocalName().equals("labl")) {
-                    String _labl = processLabl( xmlr, LEVEL_VARIABLE );
+                    String _labl = processLabl(xmlr, LEVEL_VARIABLE);
                     if (_labl != null && !_labl.isEmpty()) {
-                        dv.setLabel( _labl );
+                        dv.setLabel(_labl);
                     }
                 //{ else if (xmlr.getLocalName().equals("universe")) {
                     //   dv.setUniverse( parseText(xmlr) );
                 } else if (xmlr.getLocalName().equals("invalrng")) {
-                    processInvalrng( xmlr, dv );
+                    processInvalrng(xmlr, dv);
                 } else if (xmlr.getLocalName().equals("varFormat")) {
-                    processVarFormat( xmlr, dv );
+                    processVarFormat(xmlr, dv);
                 } else if (xmlr.getLocalName().equals("sumStat")) {
-                    processSumStat( xmlr, dv );
+                    processSumStat(xmlr, dv);
                 } else if (xmlr.getLocalName().equals("catgry")) {
-                    processCatgry( xmlr, dv );
+                    processCatgry(xmlr, dv);
                 } else if (xmlr.getLocalName().equals("notes")) {
-                    String _note = parseNoteByType( xmlr, NOTE_TYPE_UNF );
+                    String _note = parseNoteByType(xmlr, NOTE_TYPE_UNF);
                     if (_note != null && !_note.isEmpty()) {
-                        dv.setUnf( parseUNF( _note ) );
+                        dv.setUnf(parseUNF(_note));
                     }
                 }
 
@@ -155,13 +155,13 @@ public class DataTableImportDDI {
         // fileStartPos, FileEndPos, and RecSegNo
         // if these fields don't convert to Long, just leave blank
         try {
-            dv.setFileStartPosition( new Long( xmlr.getAttributeValue(null, "StartPos") ) );
+            dv.setFileStartPosition(new Long( xmlr.getAttributeValue(null, "StartPos") ));
         } catch (NumberFormatException ex) {}
         try {
-            dv.setFileEndPosition( new Long( xmlr.getAttributeValue(null, "EndPos") ) );
+            dv.setFileEndPosition(new Long( xmlr.getAttributeValue(null, "EndPos") ));
         } catch (NumberFormatException ex) {}
         try {
-            dv.setRecordSegmentNumber( new Long( xmlr.getAttributeValue(null, "RecSegNo") ) );
+            dv.setRecordSegmentNumber(new Long( xmlr.getAttributeValue(null, "RecSegNo") ));
         } catch (NumberFormatException ex) {}
 
 
@@ -204,7 +204,7 @@ public class DataTableImportDDI {
                     dv.getInvalidRanges().add(range);
                     range.setDataVariable(dv);
 
-                    range.setBeginValue( xmlr.getAttributeValue(null, "VALUE") );
+                    range.setBeginValue(xmlr.getAttributeValue(null, "VALUE"));
                     range.setBeginValueTypePoint();
                 } else if (xmlr.getLocalName().equals("range")) {
                     VariableRange range = new VariableRange();
@@ -216,19 +216,19 @@ public class DataTableImportDDI {
                     String max = xmlr.getAttributeValue(null, "max");
                     String maxExclusive = xmlr.getAttributeValue(null, "maxExclusive");
 
-                    if ( !StringUtil.isEmpty(min) ) {
-                        range.setBeginValue( min );
-                        range.setBeginValueTypeMin( );
-                    } else if ( !StringUtil.isEmpty(minExclsuive) ) {
-                        range.setBeginValue( minExclsuive );
+                    if (!StringUtil.isEmpty(min)) {
+                        range.setBeginValue(min);
+                        range.setBeginValueTypeMin();
+                    } else if (!StringUtil.isEmpty(minExclsuive)) {
+                        range.setBeginValue(minExclsuive);
                         range.setBeginValueTypeMinExcl();
                     }
 
-                    if ( !StringUtil.isEmpty(max) ) {
-                        range.setEndValue( max );
+                    if (!StringUtil.isEmpty(max)) {
+                        range.setEndValue(max);
                         range.setEndValueTypeMax();
-                    } else if ( !StringUtil.isEmpty(maxExclusive) ) {
-                        range.setEndValue( maxExclusive );
+                    } else if (!StringUtil.isEmpty(maxExclusive)) {
+                        range.setEndValue(maxExclusive);
                         range.setEndValueTypeMaxExcl();
                     }
                 }
@@ -248,7 +248,7 @@ public class DataTableImportDDI {
             dv.setTypeNumeric(); // default is numeric
         }
         
-        dv.setFormat( xmlr.getAttributeValue(null, "formatname") );
+        dv.setFormat(xmlr.getAttributeValue(null, "formatname"));
         
         String varFormatCategoryAtt = xmlr.getAttributeValue(null, "category");
         String varFormatText = parseText(xmlr); 
@@ -273,23 +273,23 @@ public class DataTableImportDDI {
          */
         
         if ("Boolean".equalsIgnoreCase(varFormatText)) {
-            dv.setFormatCategory( "Boolean" );
+            dv.setFormatCategory("Boolean");
         } else {
-            dv.setFormatCategory( varFormatCategoryAtt );
+            dv.setFormatCategory(varFormatCategoryAtt);
         }
     }
 
     private void processSumStat(XMLStreamReader xmlr, DataVariable dv) throws XMLStreamException {
         SummaryStatistic ss = new SummaryStatistic();
         ss.setTypeByLabel(xmlr.getAttributeValue(null, "type"));
-        ss.setValue( parseText(xmlr)) ;
+        ss.setValue(parseText(xmlr));
         ss.setDataVariable(dv);
         dv.getSummaryStatistics().add(ss);
     }
 
     private void processCatgry(XMLStreamReader xmlr, DataVariable dv) throws XMLStreamException {
         VariableCategory cat = new VariableCategory();
-        cat.setMissing( "Y".equals( xmlr.getAttributeValue(null, "missing") ) ); // default is N, so null sets missing to false
+        cat.setMissing("Y".equals(xmlr.getAttributeValue(null, "missing"))); // default is N, so null sets missing to false
         cat.setDataVariable(dv);
                 
         if (dv.getCategories() == null || dv.getCategories().isEmpty()) {
@@ -314,7 +314,7 @@ public class DataTableImportDDI {
         Integer orderValue = null; 
         if (order != null) {
             try {
-                orderValue = new Integer (order);
+                orderValue = new Integer(order);
             } catch (NumberFormatException ex) {
                 orderValue = null; 
             }
@@ -337,19 +337,19 @@ public class DataTableImportDDI {
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("labl")) {
-                    String _labl = processLabl( xmlr, LEVEL_CATEGORY );
+                    String _labl = processLabl(xmlr, LEVEL_CATEGORY);
                     if (_labl != null && !_labl.isEmpty()) {
-                        cat.setLabel( _labl );
+                        cat.setLabel(_labl);
                     }
                 } else if (xmlr.getLocalName().equals("catValu")) {
-                    cat.setValue( parseText(xmlr, false) );
+                    cat.setValue(parseText(xmlr, false));
                 }
                 else if (xmlr.getLocalName().equals("catStat")) {
                     String type = xmlr.getAttributeValue(null, "type");
-                    if (type == null || CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase( type ) ) {
+                    if (type == null || CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase(type)) {
                         String _freq = parseText(xmlr);
                         if (_freq != null && !_freq.isEmpty()) {
-                            cat.setFrequency( new Double( _freq ) );
+                            cat.setFrequency(new Double( _freq ));
                         }
                     }
                 }
@@ -360,7 +360,7 @@ public class DataTableImportDDI {
     }
 
     private String processLabl(XMLStreamReader xmlr, String level) throws XMLStreamException {
-        if (level.equalsIgnoreCase( xmlr.getAttributeValue(null, "level") ) ) {
+        if (level.equalsIgnoreCase(xmlr.getAttributeValue(null, "level"))) {
             return parseText(xmlr);
         } else {
             return null;
@@ -368,8 +368,8 @@ public class DataTableImportDDI {
     }
 
         
-    private String parseNoteByType (XMLStreamReader xmlr, String type) throws XMLStreamException {
-        if (type.equalsIgnoreCase( xmlr.getAttributeValue(null, "type") ) ) {
+    private String parseNoteByType(XMLStreamReader xmlr, String type) throws XMLStreamException {
+        if (type.equalsIgnoreCase(xmlr.getAttributeValue(null, "type"))) {
             return parseText(xmlr);
         } else {
             return null;
@@ -378,20 +378,20 @@ public class DataTableImportDDI {
 
     private String parseUNF(String unfString) {
         if (unfString.contains("UNF:")) {
-            return unfString.substring( unfString.indexOf("UNF:") );
+            return unfString.substring(unfString.indexOf("UNF:"));
         } else {
             return null;
         }
     }
 
      private String parseText(XMLStreamReader xmlr) throws XMLStreamException {
-        return parseText(xmlr,true);
+        return parseText(xmlr, true);
      }
 
      private String parseText(XMLStreamReader xmlr, boolean scrubText) throws XMLStreamException {
         String tempString = getElementText(xmlr);
         if (scrubText) {
-            tempString = tempString.trim().replace('\n',' ');
+            tempString = tempString.trim().replace('\n', ' ');
         }
         return tempString;
      }
@@ -405,26 +405,26 @@ public class DataTableImportDDI {
       * TODO: do we still need this method? ( -- L.A. 4.0 beta 9)
       */
     private String getElementText(XMLStreamReader xmlr) throws XMLStreamException {
-        if(xmlr.getEventType() != XMLStreamConstants.START_ELEMENT) {
+        if (xmlr.getEventType() != XMLStreamConstants.START_ELEMENT) {
             throw new XMLStreamException("parser must be on START_ELEMENT to read next text", xmlr.getLocation());
         }
         int eventType = xmlr.next();
         StringBuilder content = new StringBuilder();
-        while(eventType != XMLStreamConstants.END_ELEMENT ) {
-            if(eventType == XMLStreamConstants.CHARACTERS
+        while (eventType != XMLStreamConstants.END_ELEMENT) {
+            if (eventType == XMLStreamConstants.CHARACTERS
             || eventType == XMLStreamConstants.CDATA
             || eventType == XMLStreamConstants.SPACE) {
                 content.append(xmlr.getText());
-            } else if(eventType == XMLStreamConstants.PROCESSING_INSTRUCTION
+            } else if (eventType == XMLStreamConstants.PROCESSING_INSTRUCTION
                 || eventType == XMLStreamConstants.COMMENT
                 || eventType == XMLStreamConstants.ENTITY_REFERENCE) {
                 // skipping
-            } else if(eventType == XMLStreamConstants.END_DOCUMENT) {
+            } else if (eventType == XMLStreamConstants.END_DOCUMENT) {
                 throw new XMLStreamException("unexpected end of document when reading element text content");
-            } else if(eventType == XMLStreamConstants.START_ELEMENT) {
+            } else if (eventType == XMLStreamConstants.START_ELEMENT) {
                 throw new XMLStreamException("element text content may not contain START_ELEMENT", xmlr.getLocation());
             } else {
-                throw new XMLStreamException("Unexpected event type "+eventType, xmlr.getLocation());
+                throw new XMLStreamException("Unexpected event type " + eventType, xmlr.getLocation());
             }
             eventType = xmlr.next();
         }

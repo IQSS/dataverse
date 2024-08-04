@@ -34,7 +34,7 @@ public class XmlValidatorTest {
         String xmlFile = "src/test/java/edu/harvard/iq/dataverse/util/xml/sendToDataCite.xml";
         try {
             assertTrue(XmlValidator.validateXmlWellFormed(xmlFile));
-        } catch(Exception e) {
+        } catch (Exception e) {
             fail();
         }
     }
@@ -45,7 +45,7 @@ public class XmlValidatorTest {
         try {
             assertTrue(XmlValidator.validateXmlWellFormed(xmlFile));
             fail("validateXmlWellFormed() should throw exception on malformed XML");
-        } catch(Exception e) {
+        } catch (Exception e) {
             return;
         }
     }
@@ -71,7 +71,7 @@ public class XmlValidatorTest {
         try {
             XmlValidator.validateXmlWellFormed(xmlFile);
             fail("validateXmlWellFormed() should throw exception on malformed XML");
-        } catch(Exception e) {
+        } catch (Exception e) {
             assertEquals(FileNotFoundException.class, e.getClass());
         }
     }

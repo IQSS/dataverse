@@ -35,7 +35,7 @@ import jakarta.persistence.Table;
  */
 
 @Entity
-@Table(indexes = {@Index(columnList="datatable_id")})
+@Table(indexes = {@Index(columnList = "datatable_id")})
 public class DataVariable implements Serializable {
     
     /*
@@ -51,7 +51,7 @@ public class DataVariable implements Serializable {
      * dataTable: DataTable to which this variable belongs.
      */
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataTable dataTable;
 
     /*
@@ -63,7 +63,7 @@ public class DataVariable implements Serializable {
     /*
      * label: Variable Label
      */
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String label;
 
     /*
@@ -136,7 +136,7 @@ public class DataVariable implements Serializable {
      * variable. 
      * Note that VariableRange is itself an entity.
      */
-    @OneToMany (mappedBy="dataVariable", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "dataVariable", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<VariableRange> invalidRanges;
     
     /*
@@ -144,14 +144,14 @@ public class DataVariable implements Serializable {
      * as "invalid" for this variable.
      * Note that VariableRangeItem is itself an entity. 
      */
-     @OneToMany (mappedBy="dataVariable", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+     @OneToMany(mappedBy = "dataVariable", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<VariableRangeItem> invalidRangeItems;
       
     /*
      * Summary Statistics for this variable.
      * Note that SummaryStatistic is itself an entity.
      */
-    @OneToMany (mappedBy="dataVariable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @OneToMany(mappedBy = "dataVariable", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<SummaryStatistic> summaryStatistics;
     
     /*
@@ -164,7 +164,7 @@ public class DataVariable implements Serializable {
      * Variable Categories, for categorical variables.
      * VariableCategory is itself an entity. 
      */
-    @OneToMany (mappedBy="dataVariable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @OneToMany(mappedBy = "dataVariable", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("catOrder")
     private Collection<VariableCategory> categories;
 
@@ -202,7 +202,7 @@ public class DataVariable implements Serializable {
      */
     private Long numberOfDecimalPoints;
 
-    @OneToMany (mappedBy="dataVariable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @OneToMany(mappedBy = "dataVariable", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<VariableMetadata> variableMetadatas;
     
     public DataVariable() {
@@ -213,9 +213,9 @@ public class DataVariable implements Serializable {
      * @param table */
     public DataVariable(int order, DataTable table) {
         this.fileOrder = order;
-        dataTable =table;
+        dataTable = table;
         invalidRanges = new ArrayList<>();
-        summaryStatistics=new ArrayList<>();
+        summaryStatistics = new ArrayList<>();
         categories = new ArrayList<>();
         variableMetadatas = new ArrayList<>();
     }
@@ -432,16 +432,16 @@ public class DataVariable implements Serializable {
      * In the future, when users can edit variable metadata, they may be able to
      * specify that their variable is categorical. At that point, add `&& isFactor`.
      */
-    public boolean isCategorical () {
+    public boolean isCategorical() {
         return (categories != null && categories.size() > 0);
     }
     
     // Only R supports the concept of ordered categorical.
-    public boolean isOrderedCategorical () {
+    public boolean isOrderedCategorical() {
         return isCategorical() && orderedFactor; 
     }
     
-    public void setOrderedCategorical (boolean ordered) {
+    public void setOrderedCategorical(boolean ordered) {
         orderedFactor = ordered; 
     }
 
@@ -512,8 +512,8 @@ public class DataVariable implements Serializable {
         if (!(object instanceof DataVariable)) {
             return false;
         }
-        DataVariable other = (DataVariable)object;
-        if (this.id != other.id ) {
+        DataVariable other = (DataVariable) object;
+        if (this.id != other.id) {
             if (this.id == null || !this.id.equals(other.id)) {
                 return false;
             }

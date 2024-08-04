@@ -244,7 +244,7 @@ public class Admin extends AbstractApiBean {
         }
 
         Dataverse dv = doomed.getDataverse();
-        List <Dataverse> dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
+        List<Dataverse> dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
 
         try {
             commandEngine.submit(new DeleteTemplateCommand(createDataverseRequest(superuser), dv, doomed, dataverseWDefaultTemplate));
@@ -271,10 +271,10 @@ public class Admin extends AbstractApiBean {
             if (alias.isEmpty()) {
                 templates = templateService.findAll();
             } else {
-                try{
+                try {
                     Dataverse owner = findDataverseOrDie(alias);
                     templates = templateService.findByOwnerId(owner.getId());
-                } catch (WrappedResponse r){
+                } catch (WrappedResponse r) {
                     return r.getResponse();
                 }
             }
@@ -546,7 +546,7 @@ public class Admin extends AbstractApiBean {
 	@GET
 	@AuthRequired
 	@Path(listUsersPartialAPIPath)
-	@Produces({ "application/json" })
+	@Produces({"application/json"})
 	public Response filterAuthenticatedUsers(
 			@Context ContainerRequestContext crc,
 			@QueryParam("searchTerm") String searchTerm,
@@ -1428,7 +1428,7 @@ public class Admin extends AbstractApiBean {
             if (limit == null || howmany <= limit) {
                 message = message.concat(" Kicking off an async job that will repair the files in the background.");
             } else {
-                affectedFileIds.subList(limit, howmany-1).clear();
+                affectedFileIds.subList(limit, howmany - 1).clear();
                 message = message.concat(" Kicking off an async job that will repair the " + limit + " files in the background.");                        
             }
             info.add("message", message);
@@ -1500,7 +1500,7 @@ public class Admin extends AbstractApiBean {
             
             User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
-                logger.info("Bad Request Unauthor " );
+                logger.info("Bad Request Unauthor ");
                 return error(Status.UNAUTHORIZED, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
             }
 
@@ -1508,7 +1508,7 @@ public class Admin extends AbstractApiBean {
             Dataset ds = findDatasetOrDie(id);
             
             if (HandlePidProvider.HDL_PROTOCOL.equals(dvObjectService.getEffectivePidGenerator(ds).getProtocol())) {
-                logger.info("Bad Request protocol set to handle  " );
+                logger.info("Bad Request protocol set to handle  ");
                 return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure.must.be.set.for.doi"));
             }
             if (ds.getIdentifier() != null && !ds.getIdentifier().isEmpty() && ds.getProtocol().equals(HandlePidProvider.HDL_PROTOCOL)) {
@@ -1522,7 +1522,7 @@ public class Admin extends AbstractApiBean {
             return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure", Arrays.asList(id)));
         } catch (Exception e) {
             logger.info("Failed to migrate Dataset Handle id: " + id + " Unexpected Exception " + e.getMessage());
-            List<String> args = Arrays.asList(id,e.getMessage());
+            List<String> args = Arrays.asList(id, e.getMessage());
             return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failureWithException", args));
         }
         
@@ -1539,7 +1539,7 @@ public class Admin extends AbstractApiBean {
             User u = getRequestUser(crc);
             DataverseRequest r = createDataverseRequest(u);
             DataFile df = findDataFileOrDie(id);
-            if(!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
+            if (!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
                 return forbidden("PIDs are not enabled for this file's collection.");
             }
             if (df.getIdentifier() == null || df.getIdentifier().isEmpty()) {
@@ -1578,7 +1578,7 @@ public class Admin extends AbstractApiBean {
         for (DataFile df : fileService.findAll()) {
             try {
                 if ((df.getIdentifier() == null || df.getIdentifier().isEmpty())) {
-                    if(!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
+                    if (!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
                         skipped++;
                         if (skipped % 100 == 0) {
                             logger.info(skipped + " of  " + count + " files not in collections that allow file PIDs. " + new Date());
@@ -1603,7 +1603,7 @@ public class Admin extends AbstractApiBean {
                     }
                 } else {
                     alreadyRegistered++;
-                    if(alreadyRegistered % 100 == 0) {
+                    if (alreadyRegistered % 100 == 0) {
                       logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
                     }
                 }
@@ -1645,7 +1645,7 @@ public class Admin extends AbstractApiBean {
         }
         
         if (!systemConfig.isFilePIDsEnabledForCollection(collection)) {
-            return ok("Registration of file-level pid is disabled in collection "+alias+"; nothing to do");
+            return ok("Registration of file-level pid is disabled in collection " + alias + "; nothing to do");
         }
         
         List<DataFile> dataFiles = fileService.findByDirectCollectionOwner(collection.getId());
@@ -1658,7 +1658,7 @@ public class Admin extends AbstractApiBean {
         if (sleepInterval == null) {
             sleepInterval = 1; 
         } else if (sleepInterval.intValue() < 1) {
-            return error(Response.Status.BAD_REQUEST, "Invalid sleep interval: "+sleepInterval);
+            return error(Response.Status.BAD_REQUEST, "Invalid sleep interval: " + sleepInterval);
         }
         
         logger.info("Starting to register: analyzing " + count + " files. " + new Date());
@@ -1962,7 +1962,7 @@ public class Admin extends AbstractApiBean {
             Dataset ds = findDatasetOrDie(dsid);
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
-            if(dv==null) {
+            if (dv == null) {
                 return error(Status.BAD_REQUEST, "Requested version not found.");
             }
             if (dv.getArchivalCopyLocation() == null) {
@@ -1977,7 +1977,7 @@ public class Admin extends AbstractApiBean {
                 // className. If a class with that name isn't found (or can't be instatiated), it
                 // will return null
                 if (cmd != null) {
-                    if(ArchiverUtil.onlySingleVersionArchiving(cmd.getClass(), settingsService)) {
+                    if (ArchiverUtil.onlySingleVersionArchiving(cmd.getClass(), settingsService)) {
                         for (DatasetVersion version : ds.getVersions()) {
                             if ((dv != version) && version.getArchivalCopyLocation() != null) {
                                 return error(Status.CONFLICT, "Dataset already archived.");
@@ -2189,8 +2189,8 @@ public class Admin extends AbstractApiBean {
     	} catch (WrappedResponse wr) {
     		return wr.getResponse();
     	}
-    	for (Entry<String, String> store: DataAccess.getStorageDriverLabels().entrySet()) {
-    		if(store.getKey().equals(label)) {
+    	for (Entry<String, String> store : DataAccess.getStorageDriverLabels().entrySet()) {
+    		if (store.getKey().equals(label)) {
     			dataverse.setStorageDriverId(store.getValue());
     			return ok("Storage set to: " + store.getKey() + "/" + store.getValue());
     		}
@@ -2378,8 +2378,8 @@ public class Admin extends AbstractApiBean {
     public Response deleteBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
  
         BannerMessage message = em.find(BannerMessage.class, id);
-        if (message == null){
-            return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
+        if (message == null) {
+            return error(Response.Status.NOT_FOUND, "Message id = " + id + " not found.");
         }
         bannerMessageService.deleteBannerMessage(id);
         
@@ -2391,8 +2391,8 @@ public class Admin extends AbstractApiBean {
     @Path("/bannerMessage/{id}/deactivate")
     public Response deactivateBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
         BannerMessage message = em.find(BannerMessage.class, id);
-        if (message == null){
-            return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
+        if (message == null) {
+            return error(Response.Status.NOT_FOUND, "Message id = " + id + " not found.");
         }
         bannerMessageService.deactivateBannerMessage(id);
         
@@ -2435,7 +2435,7 @@ public class Admin extends AbstractApiBean {
         }
         
         String userId = urlInfo.getString("user");
-        String key=null;
+        String key = null;
         if (userId != null) {
             AuthenticatedUser user = authSvc.getAuthenticatedUser(userId);
             // If a user param was sent, we sign the URL for them, otherwise on behalf of
@@ -2506,7 +2506,7 @@ public class Admin extends AbstractApiBean {
         }
         java.nio.file.Path normalizedPath = Paths.get(fullyQualifiedPathToFile).normalize();
         if (!normalizedPath.toString().startsWith("/tmp")) {
-            return error(Status.BAD_REQUEST, "Path must begin with '/tmp' but after normalization was '" + normalizedPath +"'.");
+            return error(Status.BAD_REQUEST, "Path must begin with '/tmp' but after normalization was '" + normalizedPath + "'.");
         }
         try {
             return ok(new FileInputStream(fullyQualifiedPathToFile));

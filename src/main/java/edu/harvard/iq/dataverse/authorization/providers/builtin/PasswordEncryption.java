@@ -23,8 +23,8 @@ import java.util.Base64;
 public final class PasswordEncryption implements java.io.Serializable {
     
     public interface Algorithm {
-        String encrypt( String plainText );
-        boolean check( String plainText, String hashed );
+        String encrypt(String plainText);
+        boolean check(String plainText, String hashed);
     }
     
     /**
@@ -49,7 +49,7 @@ public final class PasswordEncryption implements java.io.Serializable {
 
         @Override
         public boolean check(String plainText, String hashed) {
-            return hashed.equals( encrypt(plainText) );
+            return hashed.equals(encrypt(plainText));
         }
     };
     
@@ -67,7 +67,7 @@ public final class PasswordEncryption implements java.io.Serializable {
         public boolean check(String plainText, String hashed) {
             try {
                 return BCrypt.checkpw(plainText, hashed);
-            } catch (java.lang.IllegalArgumentException iae ) {
+            } catch (java.lang.IllegalArgumentException iae) {
                 // the password was probably not hashed using bcrypt.
                 return false;
             }
@@ -89,14 +89,14 @@ public final class PasswordEncryption implements java.io.Serializable {
      * @return The current version of the password hashing algorithm.
      */
     public static Algorithm get() {
-        return getVersion( getLatestVersionNumber() );
+        return getVersion(getLatestVersionNumber());
     }
     
     public static int getLatestVersionNumber() {
-        return algorithms.length-1;
+        return algorithms.length - 1;
     }
     
-    public static Algorithm getVersion(int i){
+    public static Algorithm getVersion(int i) {
         return algorithms[i];
     }
     

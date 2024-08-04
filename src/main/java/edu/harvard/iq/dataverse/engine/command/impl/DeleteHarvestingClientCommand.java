@@ -15,7 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
  *
  * @author Leonid Andreev
  */
-@RequiredPermissions( Permission.EditDataverse )
+@RequiredPermissions(Permission.EditDataverse)
 public class DeleteHarvestingClientCommand extends AbstractVoidCommand {
     
     private final Dataverse motherDataverse;
@@ -31,7 +31,7 @@ public class DeleteHarvestingClientCommand extends AbstractVoidCommand {
     public void executeImpl(CommandContext ctxt) throws CommandException {
         
         if (harvestingClient == null) {
-            throw new IllegalCommandException("DeleteHarvestingClientCommand: attempted to execute with null harvesting client; dataverse: "+motherDataverse.getAlias(), this);
+            throw new IllegalCommandException("DeleteHarvestingClientCommand: attempted to execute with null harvesting client; dataverse: " + motherDataverse.getAlias(), this);
         }
         
         HarvestingClient merged = ctxt.em().merge(harvestingClient);

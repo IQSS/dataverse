@@ -29,7 +29,7 @@ public class PersistProvFreeFormCommand extends AbstractCommand<DataFile> {
 
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
-        if (dataFile.getOwner() == null){
+        if (dataFile.getOwner() == null) {
             // this is a new file through upload, set freeform
             dataFile.getFileMetadata().setProvFreeForm(userInput);
             return dataFile;
@@ -39,7 +39,7 @@ public class PersistProvFreeFormCommand extends AbstractCommand<DataFile> {
             DatasetVersion workingVersion = dataset.getOrCreateEditVersion();
 
             if (workingVersion.isDraft()) { 
-                if (dataset.isReleased()){
+                if (dataset.isReleased()) {
                     for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
                         if (dataFile.equals(fmw.getDataFile())) {
                             fmw.setProvFreeForm(userInput);

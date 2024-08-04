@@ -18,5 +18,5 @@ public interface DataverseEngine {
 	 * @return The result of the command execution.
 	 * @throws CommandException 
 	 */
-	public <R> R submit( Command<R> aCommand ) throws CommandException;
+	public <R> R submit(Command<R> aCommand) throws CommandException;
 }

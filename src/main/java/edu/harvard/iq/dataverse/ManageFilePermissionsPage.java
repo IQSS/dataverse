@@ -83,8 +83,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     DataverseSession session;
 
     Dataset dataset = new Dataset(); 
-    private final TreeMap<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new TreeMap<>();
-    private final TreeMap<DataFile,List<RoleAssignmentRow>> fileMap = new TreeMap<>();
+    private final TreeMap<RoleAssignee, List<RoleAssignmentRow>> roleAssigneeMap = new TreeMap<>();
+    private final TreeMap<DataFile, List<RoleAssignmentRow>> fileMap = new TreeMap<>();
 
     public TreeMap<AuthenticatedUser, List<FileAccessRequest>> getFileAccessRequestMap() {
         return fileAccessRequestMap;
@@ -99,7 +99,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         }
     }
 
-    private final TreeMap<AuthenticatedUser,List<FileAccessRequest>> fileAccessRequestMap = new TreeMap<>();
+    private final TreeMap<AuthenticatedUser, List<FileAccessRequest>> fileAccessRequestMap = new TreeMap<>();
     private boolean showDeleted = true;
 
     public boolean isShowDeleted() {
@@ -203,11 +203,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         }
     }
 
-    public String getAuthProviderFriendlyName(String authProviderId){
+    public String getAuthProviderFriendlyName(String authProviderId) {
         return AuthenticationProvider.getFriendlyName(authProviderId);
     }
 
-    Date getAccessRequestDate(List<FileAccessRequest> fileAccessRequests){
+    Date getAccessRequestDate(List<FileAccessRequest> fileAccessRequests) {
         if (fileAccessRequests == null) {
             return null;
         }
@@ -220,7 +220,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             .orElse(null);
     }
 
-    public String formatAccessRequestDate(List<FileAccessRequest> fileAccessRequests){
+    public String formatAccessRequestDate(List<FileAccessRequest> fileAccessRequests) {
         Date date = getAccessRequestDate(fileAccessRequests);
 
         if (date == null) {
@@ -231,7 +231,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     }
 
 
-    public String formatAccessRequestTimestamp(List<FileAccessRequest> fileAccessRequests){
+    public String formatAccessRequestTimestamp(List<FileAccessRequest> fileAccessRequests) {
         Date date = getAccessRequestDate(fileAccessRequests);
 
         if (date == null) {
@@ -335,9 +335,9 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         try {
             RoleAssignment ra = em.find(RoleAssignment.class, roleAssignmentId);
             commandEngine.submit(new RevokeRoleCommand(ra, dvRequestService.getDataverseRequest()));
-            JsfHelper.addSuccessMessage( BundleUtil.getStringFromBundle("permission.roleWasRemoved" , Arrays.asList(ra.getRole().getName(), roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle())));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.roleWasRemoved", Arrays.asList(ra.getRole().getName(), roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle())));
         } catch (PermissionException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"), BundleUtil.getStringFromBundle("permission.permissionsMissing" , Arrays.asList(ex.getRequiredPermissions().toString())));
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"), BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(ex.getRequiredPermissions().toString())));
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"));
             logger.log(Level.SEVERE, "Error removing role assignment: " + ex.getMessage(), ex);
@@ -463,7 +463,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         for (DataFile file : files) {
             if (assignRole(au, file, fileDownloaderRole)) {
                 FileAccessRequest far = file.getAccessRequestForAssignee(au);
-                if (far!=null) {
+                if (far != null) {
                     far.setStateGranted();
                     datafileService.save(file);
                 }
@@ -497,7 +497,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         boolean actionPerformed = false;
         for (DataFile file : files) {
             FileAccessRequest far = file.getAccessRequestForAssignee(au);
-            if(far!=null) {
+            if (far != null) {
                 far.setStateRejected();
                 fileAccessRequestService.save(far);
                 file.removeFileAccessRequest(far);
@@ -513,7 +513,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         }
     }
 
-    private boolean assignRole(RoleAssignee ra,  DataFile file, DataverseRole r) {
+    private boolean assignRole(RoleAssignee ra, DataFile file, DataverseRole r) {
         try {
             String privateUrlToken = null;
             commandEngine.submit(new AssignRoleCommand(ra, r, file, dvRequestService.getDataverseRequest(), privateUrlToken));

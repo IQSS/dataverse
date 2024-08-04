@@ -53,12 +53,12 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
         grantee = anAssignee;
         defPoint = assignmentPoint;
         this.privateUrlToken = privateUrlToken;
-        this.anonymizedAccess=false;
+        this.anonymizedAccess = false;
     }
 
     public AssignRoleCommand(PrivateUrlUser privateUrlUser, DataverseRole memberRole, Dataset dataset, DataverseRequest request, String privateUrlToken, boolean anonymizedAccess) {
         this(privateUrlUser, memberRole, dataset, request, privateUrlToken);
-        this.anonymizedAccess= anonymizedAccess;
+        this.anonymizedAccess = anonymizedAccess;
     }
 
     @Override
@@ -69,7 +69,7 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
                 throw new IllegalCommandException("User " + user.getUserIdentifier() + " is deactivated and cannot be given a role.", this);
             }
         }
-        if(isExistingRole(ctxt)){
+        if (isExistingRole(ctxt)) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.has.role.error"), this);
         }
         // TODO make sure the role is defined on the dataverse.

@@ -19,15 +19,15 @@ import jakarta.persistence.Table;
  * @author michael
  */
 @NamedQueries({
-    @NamedQuery( name="AuthenticationProviderRow.findAllEnabled",
-                 query="SELECT r FROM AuthenticationProviderRow r WHERE r.enabled=true" ),
-    @NamedQuery( name="AuthenticationProviderRow.findById",
-                 query="SELECT r FROM AuthenticationProviderRow r WHERE r.id=:id" ),
-    @NamedQuery( name="AuthenticationProviderRow.findAll",
-                 query="SELECT r FROM AuthenticationProviderRow r" )
+    @NamedQuery(name = "AuthenticationProviderRow.findAllEnabled",
+                 query = "SELECT r FROM AuthenticationProviderRow r WHERE r.enabled=true"),
+    @NamedQuery(name = "AuthenticationProviderRow.findById",
+                 query = "SELECT r FROM AuthenticationProviderRow r WHERE r.id=:id"),
+    @NamedQuery(name = "AuthenticationProviderRow.findAll",
+                 query = "SELECT r FROM AuthenticationProviderRow r")
 })
 @Entity
-@Table(indexes = {@Index(columnList="enabled")})
+@Table(indexes = {@Index(columnList = "enabled")})
 public class AuthenticationProviderRow implements java.io.Serializable {
     
     @Id
@@ -108,7 +108,7 @@ public class AuthenticationProviderRow implements java.io.Serializable {
         if (obj == null) {
             return false;
         }
-        if ( !(obj instanceof AuthenticationProviderRow)) {
+        if (!(obj instanceof AuthenticationProviderRow)) {
             return false;
         }
         final AuthenticationProviderRow other = (AuthenticationProviderRow) obj;

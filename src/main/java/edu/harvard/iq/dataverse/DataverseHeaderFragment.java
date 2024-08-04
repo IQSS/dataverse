@@ -88,7 +88,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
                 initBreadcrumbs(dvObject, null);
             } else {
                 initBreadcrumbs(dvObject.getOwner(), dvObject instanceof Dataverse ? BundleUtil.getStringFromBundle("newDataverse") : 
-                        dvObject instanceof Dataset ? BundleUtil.getStringFromBundle("newDataset") : null );
+                        dvObject instanceof Dataset ? BundleUtil.getStringFromBundle("newDataset") : null);
             }
     }
     
@@ -97,14 +97,14 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         initBreadcrumbsForFileMetadata(fmd, null, null);
     }
     
-    public void initBreadcrumbsForFileMetadata(DataFile datafile,  String subPage) {
+    public void initBreadcrumbsForFileMetadata(DataFile datafile, String subPage) {
        
-        initBreadcrumbsForFileMetadata(null, datafile,  subPage);
+        initBreadcrumbsForFileMetadata(null, datafile, subPage);
     }
     
 
-    public void initBreadcrumbsForFileMetadata(FileMetadata fmd, DataFile datafile,  String subPage) {
-        if (fmd == null ){
+    public void initBreadcrumbsForFileMetadata(FileMetadata fmd, DataFile datafile, String subPage) {
+        if (fmd == null) {
             Dataset dataset = datafile.getOwner();
             Long getDatasetVersionID = dataset.getLatestVersion().getId();
             fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, datafile.getId());
@@ -140,19 +140,19 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     }
     
-    public Long getUnreadNotificationCount(Long userId){
+    public Long getUnreadNotificationCount(Long userId) {
         
-        if (userId == null){
+        if (userId == null) {
             return new Long("0");
         }
         
-        if (this.unreadNotificationCount != null){
+        if (this.unreadNotificationCount != null) {
             return this.unreadNotificationCount;
         }
         
-        try{
+        try {
             this.unreadNotificationCount = userNotificationService.getUnreadNotificationCountByUser(userId);
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.warning("Error trying to retrieve unread notification count for user." + e.getMessage());
             this.unreadNotificationCount = 0L; 
         }
@@ -253,7 +253,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     private Boolean signupAllowed = null;
     
-    private String redirectToRoot(){
+    private String redirectToRoot() {
         return "dataverse.xhtml?alias=" + settingsWrapper.getRootDataverse().getAlias();
     }
     
@@ -289,9 +289,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
                 au = (AuthenticatedUser) user;
             }           
         
-            if  (au == null)    {
+            if (au == null) {
                 bannerMessages = bannerMessageService.findBannerMessages();
-            } else  {
+            } else {
                 bannerMessages = bannerMessageService.findBannerMessages(au.getId());
             } 
         
@@ -326,11 +326,11 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         return navigationWrapper.getRedirectPage();
     }
 
-    public void addBreadcrumb (String url, String linkString){
+    public void addBreadcrumb(String url, String linkString) {
         breadcrumbs.add(new Breadcrumb(url, linkString));
     }
     
-    public void addBreadcrumb (String linkString){
+    public void addBreadcrumb(String linkString) {
         breadcrumbs.add(new Breadcrumb(linkString));
     }
 
@@ -342,23 +342,23 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         private String url = null;
         private String optionalUrlExtension = null;
 
-        public Breadcrumb( DvObject dvObject, String breadcrumbText, String optionalUrlExtension ) {
+        public Breadcrumb(DvObject dvObject, String breadcrumbText, String optionalUrlExtension) {
             this.breadcrumbText = breadcrumbText;
             this.dvObject = dvObject;
             this.optionalUrlExtension = optionalUrlExtension;
         }
 
-        public Breadcrumb( DvObject dvObject, String breadcrumbText) {
+        public Breadcrumb(DvObject dvObject, String breadcrumbText) {
             this.breadcrumbText = breadcrumbText;
             this.dvObject = dvObject;
         }
 
-        public Breadcrumb( String url, String breadcrumbText) {
+        public Breadcrumb(String url, String breadcrumbText) {
             this.breadcrumbText = breadcrumbText;
             this.url = url;
         }
         
-        public Breadcrumb(String breadcrumbText){
+        public Breadcrumb(String breadcrumbText) {
             this.breadcrumbText = breadcrumbText;
         }
 

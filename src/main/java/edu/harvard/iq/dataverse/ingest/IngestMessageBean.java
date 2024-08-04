@@ -47,7 +47,7 @@ import jakarta.jms.ObjectMessage;
  */
 @MessageDriven(
     mappedName = "java:app/jms/queue/ingest",
-    activationConfig =  {
+    activationConfig = {
         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Queue")
     }

@@ -37,7 +37,7 @@ import java.util.Set;
 public class VariableNameCheckerForR {
     
     
-    public VariableNameCheckerForR(String[] rawVarNames){
+    public VariableNameCheckerForR(String[] rawVarNames) {
         this.rawVarNames = rawVarNames;
     }
     
@@ -45,17 +45,17 @@ public class VariableNameCheckerForR {
     
     private String[] safeVarNames;
     
-    private static String[] R_RESERVED_WORDS={
-        "NULL","NA","TRUE","FALSE","Inf","NaN",
-        "function","while","repeat",
-        "for","if","in","else","next","break"
+    private static String[] R_RESERVED_WORDS = {
+        "NULL", "NA", "TRUE", "FALSE", "Inf", "NaN",
+        "function", "while", "repeat",
+        "for", "if", "in", "else", "next", "break"
     };
     
-    private static String[] R_RESERVED_WORDS_REPLACEMENT ={
-        "null","na","true","false",
-        "inf","naN","Function","While",
-        "Repeat","For","If","In",
-        "Else","Next","Break"
+    private static String[] R_RESERVED_WORDS_REPLACEMENT = {
+        "null", "na", "true", "false",
+        "inf", "naN", "Function", "While",
+        "Repeat", "For", "If", "In",
+        "Else", "Next", "Break"
     };
     public static Map<String, String> R_RESERVED_WORDS_MAPPING_TABLE = 
         new HashMap<String, String>();
@@ -63,16 +63,16 @@ public class VariableNameCheckerForR {
     public static Set<String> R_RESERVED_WORD_SET = new HashSet<String>();
 
     static {
-        for (int i=0; i< R_RESERVED_WORDS.length;i++){
-            R_RESERVED_WORDS_MAPPING_TABLE.put(R_RESERVED_WORDS[i],R_RESERVED_WORDS_REPLACEMENT[i]);
+        for (int i = 0; i < R_RESERVED_WORDS.length; i++) {
+            R_RESERVED_WORDS_MAPPING_TABLE.put(R_RESERVED_WORDS[i], R_RESERVED_WORDS_REPLACEMENT[i]);
             R_RESERVED_WORD_SET.add(R_RESERVED_WORDS[i]);
         }
     }
     
     //private static String[] unsafeChar = {"#","$","@","_","?"};
     //private static String[] safeChar = {"hex23","hex24","hex40","hex5F","hex3F"};
-    private static String[] unsafeChar = {"#","$","@","?"};
-    private static String[] safeChar = {"hex23","hex24","hex40","hex3F"};
+    private static String[] unsafeChar = {"#", "$", "@", "?"};
+    private static String[] safeChar = {"hex23", "hex24", "hex40", "hex3F"};
     
     private Map<String, String> raw2safeTable = new HashMap<String, String>();
     
@@ -85,13 +85,13 @@ public class VariableNameCheckerForR {
     // ----------------------------------------------------- public method
     
     
-    public String[] getFilteredVarNames(){
+    public String[] getFilteredVarNames() {
         // safeVarNames: all variables
         safeVarNames = new String[rawVarNames.length];
-        int counter =0;
-        for (int i=0; i< rawVarNames.length;i++){
+        int counter = 0;
+        for (int i = 0; i < rawVarNames.length; i++) {
         
-            if (R_RESERVED_WORDS_MAPPING_TABLE.containsKey(rawVarNames[i])){
+            if (R_RESERVED_WORDS_MAPPING_TABLE.containsKey(rawVarNames[i])) {
                 safeVarNames[i] = R_RESERVED_WORDS_MAPPING_TABLE.get(rawVarNames[i]);
                 raw2safeTable.put(rawVarNames[i], safeVarNames[i]);
                 safe2rawTable.put(safeVarNames[i], rawVarNames[i]);
@@ -99,9 +99,9 @@ public class VariableNameCheckerForR {
                 renamedResults.add(safeVarNames[i]);
             } else {
                 safeVarNames[i] = StringUtils.replaceEachRepeatedly(rawVarNames[i], unsafeChar, safeChar);
-                if (!safeVarNames[i].equals(rawVarNames[i])){
+                if (!safeVarNames[i].equals(rawVarNames[i])) {
                     raw2safeTable.put(rawVarNames[i], safeVarNames[i]);
-                    safe2rawTable.put(safeVarNames[i],rawVarNames[i]);
+                    safe2rawTable.put(safeVarNames[i], rawVarNames[i]);
                     renamedVars.add(rawVarNames[i]);
                     renamedResults.add(safeVarNames[i]);
                 }
@@ -112,35 +112,35 @@ public class VariableNameCheckerForR {
     
     
     
-    public boolean hasRenamedVariables(){
+    public boolean hasRenamedVariables() {
         boolean result = false;
-        if (raw2safeTable.size() > 0){
+        if (raw2safeTable.size() > 0) {
             result = true;
         }
         return result;
     }
     
-    public List<String> getRenamedVariableList(){
+    public List<String> getRenamedVariableList() {
         return renamedVars;
     }
     
-    public List<String> getRenamedResultList(){
+    public List<String> getRenamedResultList() {
         return renamedResults;
     }
     
-    public String[] getRenamedVariableArray(){
-        return (String[])renamedVars.toArray(new String[renamedVars.size()]);
+    public String[] getRenamedVariableArray() {
+        return (String[]) renamedVars.toArray(new String[renamedVars.size()]);
     }
     
-    public String[] getRenamedResultArray(){
-        return (String[])renamedResults.toArray(new String[renamedResults.size()]);
+    public String[] getRenamedResultArray() {
+        return (String[]) renamedResults.toArray(new String[renamedResults.size()]);
     }
 
-    public Map<String, String> getRaw2safeTable(){
+    public Map<String, String> getRaw2safeTable() {
         return raw2safeTable;
     }
     
-    public Map<String, String> getSafe2rawTable(){
+    public Map<String, String> getSafe2rawTable() {
         return safe2rawTable;
     }
 

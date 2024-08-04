@@ -29,7 +29,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class SolrQueryFormatterTest {
 
     public static class SolrQueryFormatterNoParamTest {
-        private Long[] getRandomListOfLongs(int listCount, int topNumber){
+        private Long[] getRandomListOfLongs(int listCount, int topNumber) {
 
             Random r = new Random();
 
@@ -42,10 +42,10 @@ public class SolrQueryFormatterTest {
             return array;
         }
 
-        private Long[] getListOfLongs(int listCount){
+        private Long[] getListOfLongs(int listCount) {
             Long[] array = new Long[listCount];
             for (long a = 0; a < array.length; a++) {
-                array[(int)a] = a+1;
+                array[(int) a] = a + 1;
             }
             return array;
         }
@@ -95,7 +95,7 @@ public class SolrQueryFormatterTest {
 
         }
     
-        private void makeQueryTest2(SolrQueryFormatter sqf, int numIds, String paramName, int numParamOccurrences){
+        private void makeQueryTest2(SolrQueryFormatter sqf, int numIds, String paramName, int numParamOccurrences) {
 
             Long[] idList = this.getListOfLongs(numIds);
             Set<Long> idListSet = new HashSet<>(Arrays.asList(idList));
@@ -105,7 +105,7 @@ public class SolrQueryFormatterTest {
             assertEquals(StringUtils.countMatches(queryClause, paramName), numParamOccurrences);
         }
         
-        private void makeQueryTest(SolrQueryFormatter sqf, int numIds, String paramName, String expectedQuery){
+        private void makeQueryTest(SolrQueryFormatter sqf, int numIds, String paramName, String expectedQuery) {
 
             Long[] idList = this.getListOfLongs(numIds);
             Set<Long> idListSet = new HashSet<>(Arrays.asList(idList));
@@ -115,11 +115,11 @@ public class SolrQueryFormatterTest {
             assertEquals(queryClause, expectedQuery);
         }
 
-        private void msg(String s){
+        private void msg(String s) {
             System.out.println(s);
         }
 
-        private void msgt(String s){
+        private void msgt(String s) {
             msg("-------------------------------");
             msg(s);
             msg("-------------------------------");
@@ -200,55 +200,55 @@ public class SolrQueryFormatterTest {
     static Stream<Arguments> data() {
         return Stream.of(
             // sliceOfIds                   paramName    dvObjectType    expectedResult                                     expectedException
-            Arguments.of(null,              null,        null,           "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(null,              null,        "",             "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(null,              null,        "dvObjectType", "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(null,              "",          null,           "sliceOfIds cannot be null",                       NullPointerException.class),
-            Arguments.of(null,              "",          "",             "sliceOfIds cannot be null",                       NullPointerException.class),
-            Arguments.of(null,              "",          "dvObjectType", "sliceOfIds cannot be null",                       NullPointerException.class),
-            Arguments.of(null,              "paramName", null,           "sliceOfIds cannot be null",                       NullPointerException.class),
-            Arguments.of(null,              "paramName", "",             "sliceOfIds cannot be null",                       NullPointerException.class),
-            Arguments.of(null,              "paramName", "dvObjectType", "sliceOfIds cannot be null",                       NullPointerException.class),
+            Arguments.of(null, null, null, "paramName cannot be null", NullPointerException.class),
+            Arguments.of(null, null, "", "paramName cannot be null", NullPointerException.class),
+            Arguments.of(null, null, "dvObjectType", "paramName cannot be null", NullPointerException.class),
+            Arguments.of(null, "", null, "sliceOfIds cannot be null", NullPointerException.class),
+            Arguments.of(null, "", "", "sliceOfIds cannot be null", NullPointerException.class),
+            Arguments.of(null, "", "dvObjectType", "sliceOfIds cannot be null", NullPointerException.class),
+            Arguments.of(null, "paramName", null, "sliceOfIds cannot be null", NullPointerException.class),
+            Arguments.of(null, "paramName", "", "sliceOfIds cannot be null", NullPointerException.class),
+            Arguments.of(null, "paramName", "dvObjectType", "sliceOfIds cannot be null", NullPointerException.class),
             
-            Arguments.of(list(),            null,        null,           "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(list(),            null,        "",             "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(list(),            null,        "dvObjectType", "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(list(),            "",          null,           "sliceOfIds must have at least 1 value",           IllegalStateException.class),
-            Arguments.of(list(),            "",          "",             "sliceOfIds must have at least 1 value",           IllegalStateException.class),
-            Arguments.of(list(),            "",          "dvObjectType", "sliceOfIds must have at least 1 value",           IllegalStateException.class),
-            Arguments.of(list(),            "paramName", null,           "sliceOfIds must have at least 1 value",           IllegalStateException.class),
-            Arguments.of(list(),            "paramName", "",             "sliceOfIds must have at least 1 value",           IllegalStateException.class),
-            Arguments.of(list(),            "paramName", "dvObjectType", "sliceOfIds must have at least 1 value",           IllegalStateException.class),
+            Arguments.of(list(), null, null, "paramName cannot be null", NullPointerException.class),
+            Arguments.of(list(), null, "", "paramName cannot be null", NullPointerException.class),
+            Arguments.of(list(), null, "dvObjectType", "paramName cannot be null", NullPointerException.class),
+            Arguments.of(list(), "", null, "sliceOfIds must have at least 1 value", IllegalStateException.class),
+            Arguments.of(list(), "", "", "sliceOfIds must have at least 1 value", IllegalStateException.class),
+            Arguments.of(list(), "", "dvObjectType", "sliceOfIds must have at least 1 value", IllegalStateException.class),
+            Arguments.of(list(), "paramName", null, "sliceOfIds must have at least 1 value", IllegalStateException.class),
+            Arguments.of(list(), "paramName", "", "sliceOfIds must have at least 1 value", IllegalStateException.class),
+            Arguments.of(list(), "paramName", "dvObjectType", "sliceOfIds must have at least 1 value", IllegalStateException.class),
             
-            Arguments.of(list((Long) null), null,        null,           "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(list((Long) null), null,        "",             "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(list((Long) null), null,        "dvObjectType", "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(list((Long) null), "",          null,           "(:())",                                           null),
-            Arguments.of(list((Long) null), "",          "",             "(:() AND dvObjectType:())",                       null),
-            Arguments.of(list((Long) null), "",          "dvObjectType", "(:() AND dvObjectType:(dvObjectType))",           null),
-            Arguments.of(list((Long) null), "paramName", null,           "(paramName:())",                                  null),
-            Arguments.of(list((Long) null), "paramName", "",             "(paramName:() AND dvObjectType:())",              null),
-            Arguments.of(list((Long) null), "paramName", "dvObjectType", "(paramName:() AND dvObjectType:(dvObjectType))",  null),
+            Arguments.of(list((Long) null), null, null, "paramName cannot be null", NullPointerException.class),
+            Arguments.of(list((Long) null), null, "", "paramName cannot be null", NullPointerException.class),
+            Arguments.of(list((Long) null), null, "dvObjectType", "paramName cannot be null", NullPointerException.class),
+            Arguments.of(list((Long) null), "", null, "(:())", null),
+            Arguments.of(list((Long) null), "", "", "(:() AND dvObjectType:())", null),
+            Arguments.of(list((Long) null), "", "dvObjectType", "(:() AND dvObjectType:(dvObjectType))", null),
+            Arguments.of(list((Long) null), "paramName", null, "(paramName:())", null),
+            Arguments.of(list((Long) null), "paramName", "", "(paramName:() AND dvObjectType:())", null),
+            Arguments.of(list((Long) null), "paramName", "dvObjectType", "(paramName:() AND dvObjectType:(dvObjectType))", null),
             
-            Arguments.of(list(1L),          null,        null,           "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(list(1L),          null,        "",             "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(list(1L),          null,        "dvObjectType", "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(list(1L),          "",          null,           "(:(1))",                                          null),
-            Arguments.of(list(1L),          "",          "",             "(:(1) AND dvObjectType:())",                      null),
-            Arguments.of(list(1L),          "",          "dvObjectType", "(:(1) AND dvObjectType:(dvObjectType))",          null),
-            Arguments.of(list(1L),          "paramName", null,           "(paramName:(1))",                                 null),
-            Arguments.of(list(1L),          "paramName", "",             "(paramName:(1) AND dvObjectType:())",             null),
-            Arguments.of(list(1L),          "paramName", "dvObjectType", "(paramName:(1) AND dvObjectType:(dvObjectType))", null),
+            Arguments.of(list(1L), null, null, "paramName cannot be null", NullPointerException.class),
+            Arguments.of(list(1L), null, "", "paramName cannot be null", NullPointerException.class),
+            Arguments.of(list(1L), null, "dvObjectType", "paramName cannot be null", NullPointerException.class),
+            Arguments.of(list(1L), "", null, "(:(1))", null),
+            Arguments.of(list(1L), "", "", "(:(1) AND dvObjectType:())", null),
+            Arguments.of(list(1L), "", "dvObjectType", "(:(1) AND dvObjectType:(dvObjectType))", null),
+            Arguments.of(list(1L), "paramName", null, "(paramName:(1))", null),
+            Arguments.of(list(1L), "paramName", "", "(paramName:(1) AND dvObjectType:())", null),
+            Arguments.of(list(1L), "paramName", "dvObjectType", "(paramName:(1) AND dvObjectType:(dvObjectType))", null),
             
-            Arguments.of(list(1L, null),    null,        null,           "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(list(1L, null),    null,        "",             "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(list(1L, null),    null,        "dvObjectType", "paramName cannot be null",                        NullPointerException.class),
-            Arguments.of(list(1L, null),    "",          null,           "(:(1))",                                          null),
-            Arguments.of(list(1L, null),    "",          "",             "(:(1) AND dvObjectType:())",                      null),
-            Arguments.of(list(1L, null),    "",          "dvObjectType", "(:(1) AND dvObjectType:(dvObjectType))",          null),
-            Arguments.of(list(1L, null),    "paramName", null,           "(paramName:(1))",                                 null),
-            Arguments.of(list(1L, null),    "paramName", "",             "(paramName:(1) AND dvObjectType:())",             null),
-            Arguments.of(list(1L, null),    "paramName", "dvObjectType", "(paramName:(1) AND dvObjectType:(dvObjectType))", null)
+            Arguments.of(list(1L, null), null, null, "paramName cannot be null", NullPointerException.class),
+            Arguments.of(list(1L, null), null, "", "paramName cannot be null", NullPointerException.class),
+            Arguments.of(list(1L, null), null, "dvObjectType", "paramName cannot be null", NullPointerException.class),
+            Arguments.of(list(1L, null), "", null, "(:(1))", null),
+            Arguments.of(list(1L, null), "", "", "(:(1) AND dvObjectType:())", null),
+            Arguments.of(list(1L, null), "", "dvObjectType", "(:(1) AND dvObjectType:(dvObjectType))", null),
+            Arguments.of(list(1L, null), "paramName", null, "(paramName:(1))", null),
+            Arguments.of(list(1L, null), "paramName", "", "(paramName:(1) AND dvObjectType:())", null),
+            Arguments.of(list(1L, null), "paramName", "dvObjectType", "(paramName:(1) AND dvObjectType:(dvObjectType))", null)
         );
     }
     

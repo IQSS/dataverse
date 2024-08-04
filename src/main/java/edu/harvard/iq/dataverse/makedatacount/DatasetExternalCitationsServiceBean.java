@@ -88,18 +88,18 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
     
     public DatasetExternalCitations save(DatasetExternalCitations datasetExternalCitations) {  
         //Replace existing if necessary
-        Dataset dataset =  datasetExternalCitations.getDataset();
+        Dataset dataset = datasetExternalCitations.getDataset();
         String citedByUrl = datasetExternalCitations.getCitedByUrl();
 
         DatasetExternalCitations getExisting = getDatasetExternalCitationsByDatasetCitingPID(dataset, citedByUrl);
-        if (getExisting != null){
+        if (getExisting != null) {
             em.remove(getExisting);
         }
         DatasetExternalCitations savedDatasetExternalCitations = em.merge(datasetExternalCitations);
         return savedDatasetExternalCitations;
     }
     
-    private DatasetExternalCitations getDatasetExternalCitationsByDatasetCitingPID(Dataset dataset, String PID){
+    private DatasetExternalCitations getDatasetExternalCitationsByDatasetCitingPID(Dataset dataset, String PID) {
         DatasetExternalCitations dsExtCit = null;
         String queryStr = "SELECT d FROM DatasetExternalCitations d WHERE d.dataset.id = " + dataset.getId() + " and d.citedByUrl = '" + PID + "'";
         Query query = em.createQuery(queryStr);

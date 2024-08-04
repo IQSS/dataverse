@@ -33,7 +33,7 @@ import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
  * @author akio sone at UNC-Odum
  */
 
-public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvider{
+public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvider {
 
     private static Logger dbgLog = 
     Logger.getLogger(TabularDataFileReaderWriterSpi.class.getPackage().getName());
@@ -50,7 +50,7 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
      * @return the value of names.
      */
     public String[] getFormatNames() {
-        return (String[])names.clone();
+        return (String[]) names.clone();
     }
 
     /**
@@ -67,7 +67,7 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
      * @return the value of suffixes
      */
     public String[] getFileSuffixes() {
-        return suffixes == null ? null : (String[])suffixes.clone();
+        return suffixes == null ? null : (String[]) suffixes.clone();
     }
     
     
@@ -85,7 +85,7 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
      * @return the value of MIMETypes
      */
     public String[] getMIMETypes() {
-        return MIMETypes == null ? null : (String[])MIMETypes.clone();
+        return MIMETypes == null ? null : (String[]) MIMETypes.clone();
     }
     
     /**
@@ -138,17 +138,17 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
         if (names.length == 0) {
             throw new IllegalArgumentException("names.length is 0!");
         }
-        this.names = (String[])names.clone();
+        this.names = (String[]) names.clone();
         if (pluginClassName == null) {
             throw new IllegalArgumentException("pluginClassName is null!");
         }
 
         if (suffixes != null && suffixes.length > 0) {
-            this.suffixes = (String[])suffixes.clone();
+            this.suffixes = (String[]) suffixes.clone();
         }
 
         if (MIMETypes != null && MIMETypes.length > 0) {
-            this.MIMETypes = (String[])MIMETypes.clone();
+            this.MIMETypes = (String[]) MIMETypes.clone();
         }
 
         this.pluginClassName = pluginClassName;

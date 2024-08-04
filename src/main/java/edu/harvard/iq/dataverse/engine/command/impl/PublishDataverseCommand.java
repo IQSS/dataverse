@@ -77,7 +77,7 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
     
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
-        return ctxt.dataverses().index((Dataverse) r,true);
+        return ctxt.dataverses().index((Dataverse) r, true);
     }
 
 }

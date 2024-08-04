@@ -26,7 +26,7 @@ import jakarta.persistence.TemporalType;
  * @author Leonid Andreev
  */
 @Entity
-@Table(indexes = {@Index(columnList="datafile_id")})
+@Table(indexes = {@Index(columnList = "datafile_id")})
 public class IngestReport implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -49,7 +49,7 @@ public class IngestReport implements Serializable {
     public static int INGEST_STATUS_FAILURE = 3;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataFile dataFile;
 
     @Lob

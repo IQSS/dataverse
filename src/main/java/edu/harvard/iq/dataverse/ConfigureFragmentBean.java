@@ -31,7 +31,7 @@ import java.util.Date;
 
 @ViewScoped
 @Named
-public class ConfigureFragmentBean implements java.io.Serializable{
+public class ConfigureFragmentBean implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(ConfigureFragmentBean.class.getName());
     
@@ -53,7 +53,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     public String configureExternalAlert() {
         generateApiToken();
         PrimeFaces.current().executeScript("location.reload(true)");
-        String httpString = "window.open('" + toolHandler.getToolUrlWithQueryParams()+  "','_blank'" +")";
+        String httpString = "window.open('" + toolHandler.getToolUrlWithQueryParams() + "','_blank'" + ")";
         PrimeFaces.current().executeScript(httpString);
         return "";
     }    
@@ -73,11 +73,11 @@ public class ConfigureFragmentBean implements java.io.Serializable{
     }
     
     public ExternalToolHandler getConfigurePopupToolHandler() {
-        if(fileId == null) {
+        if (fileId == null) {
             //on first UI load, method is called before fileId is set. There may be a better way to handle this
             return null;
         }
-        if(toolHandler != null) {
+        if (toolHandler != null) {
             return toolHandler;
         }
         
@@ -109,7 +109,7 @@ public class ConfigureFragmentBean implements java.io.Serializable{
             apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
             if (apiToken == null) {
                 //No un-expired token
-                apiToken = authService.generateApiTokenForUser(( AuthenticatedUser) user);
+                apiToken = authService.generateApiTokenForUser((AuthenticatedUser) user);
                 toolHandler.setApiToken(apiToken);
                 toolHandler.getToolUrlWithQueryParams();
                 userNotificationService.sendNotification((AuthenticatedUser) user, new Timestamp(new Date().getTime()), UserNotification.Type.APIGENERATED, null);

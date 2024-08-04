@@ -99,7 +99,7 @@ public class GuestbookResponsesPage implements java.io.Serializable {
         return null;
     }
     
-    private String getFileName(){
+    private String getFileName() {
        // The fix below replaces any spaces in the name of the dataverse with underscores;
        // without it, the filename was chopped off (by the browser??), and the user 
        // was getting the file name "Foo", instead of "Foo and Bar in Social Sciences.csv". -- L.A.
@@ -107,7 +107,7 @@ public class GuestbookResponsesPage implements java.io.Serializable {
        return  FileUtil.sanitizeFileName(dataverse.getName() + "_" + guestbook.getId() + "_GuestbookResponses.csv");
     }
 
-    public void streamResponsesByDataverseAndGuestbook(){
+    public void streamResponsesByDataverseAndGuestbook() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("text/comma-separated-values");
@@ -119,7 +119,7 @@ public class GuestbookResponsesPage implements java.io.Serializable {
             out.flush();
             ctx.responseComplete();
         } catch (Exception e) {
-            logger.warning("Failed to stream collected guestbook responses for guestbook " + guestbookId + ", dataverse "+dataverseId);
+            logger.warning("Failed to stream collected guestbook responses for guestbook " + guestbookId + ", dataverse " + dataverseId);
         }
     }
     

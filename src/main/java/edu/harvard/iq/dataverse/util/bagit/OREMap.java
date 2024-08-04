@@ -83,7 +83,7 @@ public class OREMap {
     public JsonObjectBuilder getOREMapBuilder(boolean aggregationOnly) {
 
         //Set this flag if it wasn't provided
-        if(excludeEmail==null) {
+        if (excludeEmail == null) {
             excludeEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
         }
         
@@ -107,7 +107,7 @@ public class OREMap {
                 DatasetFieldType dfType = field.getDatasetFieldType();
                 JsonLDTerm fieldName = dfType.getJsonLDTerm();
                 JsonValue jv = getJsonLDForField(field, excludeEmail, cvocMap, localContext);
-                if(jv!=null) {
+                if (jv != null) {
                     aggBuilder.add(fieldName.getLabel(), jv);
                 }
             }
@@ -123,7 +123,7 @@ public class OREMap {
         addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("datePublished"), dataset.getPublicationDateFormattedYYYYMMDD());
         //Add version state info - DRAFT, RELEASED, DEACCESSIONED, ARCHIVED with extra info for DEACCESIONED
         VersionState vs = version.getVersionState();
-        if(vs.equals(VersionState.DEACCESSIONED)) {
+        if (vs.equals(VersionState.DEACCESSIONED)) {
             JsonObjectBuilder deaccBuilder = Json.createObjectBuilder();
             deaccBuilder.add(JsonLDTerm.schemaOrg("name").getLabel(), vs.name());
             deaccBuilder.add(JsonLDTerm.DVCore("reason").getLabel(), version.getVersionNote());
@@ -190,20 +190,20 @@ public class OREMap {
                 long fileSize = df.getFilesize();
                 String mimeType = df.getContentType();
                 String currentIngestedName = null;
-                boolean ingested=df.getOriginalFileName()!= null || df.getOriginalFileSize()!=null || df.getOriginalFileFormat()!=null;
-                if(ingested) {
-                    if(df.getOriginalFileName()!=null) {
-                        currentIngestedName= fileName;
+                boolean ingested = df.getOriginalFileName() != null || df.getOriginalFileSize() != null || df.getOriginalFileFormat() != null;
+                if (ingested) {
+                    if (df.getOriginalFileName() != null) {
+                        currentIngestedName = fileName;
                         fileName = df.getOriginalFileName();
                     } else {
                         logger.warning("Missing Original file name for id: " + df.getId());
                     }
-                    if(df.getOriginalFileSize()!=null) {
+                    if (df.getOriginalFileSize() != null) {
                         fileSize = df.getOriginalFileSize();
                     } else {
                         logger.warning("Missing Original file size for id: " + df.getId());
                     }
-                    if(df.getOriginalFileFormat()!=null) {
+                    if (df.getOriginalFileFormat() != null) {
                         mimeType = df.getOriginalFileFormat();
                     } else {
                         logger.warning("Missing Original file format for id: " + df.getId());
@@ -213,24 +213,24 @@ public class OREMap {
                 }
                 addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fileName); 
                 addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.isRestricted());
-                Embargo embargo=df.getEmbargo(); 
-                if(embargo!=null) {
+                Embargo embargo = df.getEmbargo(); 
+                if (embargo != null) {
                     String date = embargo.getFormattedDateAvailable();
-                    String reason= embargo.getReason();
+                    String reason = embargo.getReason();
                     JsonObjectBuilder embargoObject = Json.createObjectBuilder();
                     embargoObject.add(JsonLDTerm.DVCore("dateAvailable").getLabel(), date);
-                    if(reason!=null) {
+                    if (reason != null) {
                         embargoObject.add(JsonLDTerm.DVCore("reason").getLabel(), reason);
                     }
                     aggRes.add(JsonLDTerm.DVCore("embargoed").getLabel(), embargoObject);
                 }
                 Retention retention = df.getRetention();
-                if(retention!=null) {
+                if (retention != null) {
                     String date = retention.getFormattedDateUnavailable();
-                    String reason= retention.getReason();
+                    String reason = retention.getReason();
                     JsonObjectBuilder retentionObject = Json.createObjectBuilder();
                     retentionObject.add(JsonLDTerm.DVCore("dateUnavailable").getLabel(), date);
-                    if(reason!=null) {
+                    if (reason != null) {
                         retentionObject.add(JsonLDTerm.DVCore("reason").getLabel(), reason);
                     }
                     aggRes.add(JsonLDTerm.DVCore("retained").getLabel(), retentionObject);
@@ -253,13 +253,13 @@ public class OREMap {
                 // File DOI if it exists
                 String fileId = null;
                 String fileSameAs = null;
-                if (df.getGlobalId()!=null) {
+                if (df.getGlobalId() != null) {
                     fileId = df.getGlobalId().asString();
                     fileSameAs = SystemConfig.getDataverseSiteUrlStatic()
-                            + "/api/access/datafile/:persistentId?persistentId=" + fileId + (ingested ? "&format=original":"");
+                            + "/api/access/datafile/:persistentId?persistentId=" + fileId + (ingested ? "&format=original" : "");
                 } else {
                     fileId = SystemConfig.getDataverseSiteUrlStatic() + "/file.xhtml?fileId=" + df.getId();
-                    fileSameAs = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId() + (ingested ? "?format=original":"");
+                    fileSameAs = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId() + (ingested ? "?format=original" : "");
                 }
                 aggRes.add("@id", fileId);
                 aggRes.add(JsonLDTerm.schemaOrg("sameAs").getLabel(), fileSameAs);
@@ -336,7 +336,7 @@ public class OREMap {
         JsonObjectBuilder dvjob = Json.createObjectBuilder().add(JsonLDTerm.schemaOrg("name").getLabel(), dv.getCurrentName()).add("@id", dv.getLocalURL());
         addIfNotNull(dvjob, JsonLDTerm.schemaOrg("description"), dv.getDescription());
         Dataverse owner = dv.getOwner();
-        if(owner!=null) {
+        if (owner != null) {
             dvjob.add(JsonLDTerm.schemaOrg("isPartOf").getLabel(), getDataverseDescription(owner));
         }
         return dvjob;

@@ -257,7 +257,7 @@ public class ExternalToolServiceBean {
         }
         String toolParameters = toolParametersObj.toString();
         String allowedApiCalls = null;
-        if(allowedApiCallsArray !=null) {
+        if (allowedApiCallsArray != null) {
             allowedApiCalls = allowedApiCallsArray.toString();
         }
         String requirements = null;

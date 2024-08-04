@@ -50,7 +50,7 @@ public class BagValidationJob implements Runnable {
             throw new IllegalStateException(
                     "Static Zipfile and BagGenerator must be set before creating ValidationJobs");
         }
-        basePath=bagName;
+        basePath = bagName;
         hash = value;
         name = key;
 
@@ -79,7 +79,7 @@ public class BagValidationJob implements Runnable {
         
         ZipArchiveEntry archiveEntry1 = zf.getEntry(name);
         
-        if(archiveEntry1 != null) {
+        if (archiveEntry1 != null) {
         // Error check - add file sizes to compare against supplied stats
         log.fine("Getting stream for " + name);
         long start = System.currentTimeMillis();

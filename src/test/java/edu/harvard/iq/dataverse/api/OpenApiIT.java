@@ -13,7 +13,7 @@ public class OpenApiIT {
     }
 
     @Test
-    public void testOpenApi(){
+    public void testOpenApi() {
 
         Response openApi = UtilIT.getOpenAPI("application/json", "json");
         openApi.prettyPrint();

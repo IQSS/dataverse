@@ -94,7 +94,7 @@ public class JSONLDUtil {
         }
         
         //Store the metadatalanguage if sent - the caller needs to check whether it is allowed (as with any GlobalID)
-        ds.setMetadataLanguage(jsonld.getString(JsonLDTerm.schemaOrg("inLanguage").getUrl(),null));
+        ds.setMetadataLanguage(jsonld.getString(JsonLDTerm.schemaOrg("inLanguage").getUrl(), null));
 
         dsv = updateDatasetVersionMDFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating, licenseSvc);
         dsv.setDataset(ds);
@@ -165,7 +165,7 @@ public class JSONLDUtil {
                         // unless it's multiple
                         if (!append && !dsft.isAllowMultiples()) {
                             dsfl.remove(dsf);
-                            dsf=null;
+                            dsf = null;
                         }
                     }
                     if (dsf == null) {
@@ -180,9 +180,9 @@ public class JSONLDUtil {
 
                 } else {
                     //When migrating, the publication date and version number can be set
-                    if (key.equals(JsonLDTerm.schemaOrg("datePublished").getUrl())&& migrating && !append) {
+                    if (key.equals(JsonLDTerm.schemaOrg("datePublished").getUrl()) && migrating && !append) {
                         dsv.setVersionState(VersionState.RELEASED);
-                    } else if (key.equals(JsonLDTerm.schemaOrg("version").getUrl())&& migrating && !append) {
+                    } else if (key.equals(JsonLDTerm.schemaOrg("version").getUrl()) && migrating && !append) {
                         String friendlyVersion = jsonld.getString(JsonLDTerm.schemaOrg("version").getUrl());
                         int index = friendlyVersion.indexOf(".");
                         if (index > 0) {
@@ -294,7 +294,7 @@ public class JSONLDUtil {
                         JsonArray valArray = getValues(jsonld.get(key), dsft.isAllowMultiples(), dsft.getName());
                         logger.fine("Deleting: " + key + " : " + valArray.toString());
                         DatasetField dsf2 = getReplacementField(dsf, valArray);
-                        if(dsf2 == null) {
+                        if (dsf2 == null) {
                             //Exact match - remove the field
                             dsfl.remove(dsf);
                         } else {
@@ -305,33 +305,33 @@ public class JSONLDUtil {
                     }
                 } else {
                     // Internal/non-metadatablock terms
-                    boolean found=false;
+                    boolean found = false;
                     if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())) {
-                        if(licenseSvc.getByNameOrUri(jsonld.getString(key)) != null) {
+                        if (licenseSvc.getByNameOrUri(jsonld.getString(key)) != null) {
                             setSemTerm(terms, key, licenseSvc.getDefault());
                         } else {
                             throw new BadRequestException(
                                     "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
                         }
-                        found=true;
+                        found = true;
                     } else if (datasetTerms.contains(key)) {
-                        if(!deleteIfSemTermMatches(terms, key, jsonld.get(key))) {
+                        if (!deleteIfSemTermMatches(terms, key, jsonld.get(key))) {
                             throw new BadRequestException(
                                     "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
                         }
-                        found=true;
+                        found = true;
                     } else if (key.equals(JsonLDTerm.fileTermsOfAccess.getUrl())) {
                         JsonObject fAccessObject = jsonld.getJsonObject(JsonLDTerm.fileTermsOfAccess.getUrl());
                         for (String fileKey : fAccessObject.keySet()) {
                             if (datafileTerms.contains(fileKey)) {
-                                if(!deleteIfSemTermMatches(terms, key, jsonld.get(key))) {
+                                if (!deleteIfSemTermMatches(terms, key, jsonld.get(key))) {
                                     throw new BadRequestException(
                                             "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
                                 }
-                                found=true;
+                                found = true;
                             }
                         }
-                    } else if(!found) {
+                    } else if (!found) {
                         throw new BadRequestException(
                                 "Term: " + key + " not found.");
                                     }
@@ -454,16 +454,16 @@ public class JSONLDUtil {
 
         } else {
 
-            boolean extVocab=false;
-            if(cvocMap.containsKey(dsft.getId())) {
-                extVocab=true;
+            boolean extVocab = false;
+            if (cvocMap.containsKey(dsft.getId())) {
+                extVocab = true;
             }
             List<DatasetFieldValue> vals = dsf.getDatasetFieldValues();
 
             for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
                 String strValue = strVal.getString();
-                if(extVocab) {
-                    if(!datasetFieldSvc.isValidCVocValue(dsft, strValue)) {
+                if (extVocab) {
+                    if (!datasetFieldSvc.isValidCVocValue(dsft, strValue)) {
                         throw new BadRequestException("Invalid values submitted for " + dsft.getName() + " which is limited to specific vocabularies.");
                     }
                 }
@@ -781,107 +781,107 @@ public class JSONLDUtil {
     }
 
     private static boolean deleteIfSemTermMatches(TermsOfUseAndAccess terms, String semterm, JsonValue jsonValue) {
-        boolean foundTerm=false;
+        boolean foundTerm = false;
         String val = null;
-        if(jsonValue.getValueType().equals(ValueType.STRING)) {
-            val = ((JsonString)jsonValue).getString();
+        if (jsonValue.getValueType().equals(ValueType.STRING)) {
+            val = ((JsonString) jsonValue).getString();
         }
         switch (semterm) {
         
         case "https://dataverse.org/schema/core#termsOfUse":
-            if(terms.getTermsOfUse().equals(val)) {
+            if (terms.getTermsOfUse().equals(val)) {
                 terms.setTermsOfUse(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#confidentialityDeclaration":
-            if(terms.getConfidentialityDeclaration().equals(val)) {
+            if (terms.getConfidentialityDeclaration().equals(val)) {
                 terms.setConfidentialityDeclaration(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#specialPermissions":
-            if(terms.getSpecialPermissions().equals(val)) {
+            if (terms.getSpecialPermissions().equals(val)) {
                 terms.setSpecialPermissions(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#restrictions":
-            if(terms.getRestrictions().equals(val)) {
+            if (terms.getRestrictions().equals(val)) {
                 terms.setRestrictions(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#citationRequirements":
-            if(terms.getCitationRequirements().equals(val)) {
+            if (terms.getCitationRequirements().equals(val)) {
                 terms.setCitationRequirements(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#depositorRequirements":
-            if(terms.getDepositorRequirements().equals(val)) {
+            if (terms.getDepositorRequirements().equals(val)) {
                 terms.setDepositorRequirements(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#conditions":
-            if(terms.getConditions().equals(val)) {
+            if (terms.getConditions().equals(val)) {
                 terms.setConditions(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#disclaimer":
-            if(terms.getDisclaimer().equals(val)) {
+            if (terms.getDisclaimer().equals(val)) {
                 terms.setDisclaimer(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#termsOfAccess":
-            if(terms.getTermsOfAccess().equals(val)) {
+            if (terms.getTermsOfAccess().equals(val)) {
                 terms.setTermsOfAccess(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#fileRequestAccess":
-            if(terms.isFileAccessRequest() && (jsonValue.equals(JsonValue.TRUE))) {
+            if (terms.isFileAccessRequest() && (jsonValue.equals(JsonValue.TRUE))) {
                 terms.setFileAccessRequest(false);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#dataAccessPlace":
-            if(terms.getDataAccessPlace().equals(val)) {
+            if (terms.getDataAccessPlace().equals(val)) {
                 terms.setDataAccessPlace(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#originalArchive":
-            if(terms.getOriginalArchive().equals(val)) {
+            if (terms.getOriginalArchive().equals(val)) {
                 terms.setOriginalArchive(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#availabilityStatus":
-            if(terms.getAvailabilityStatus().equals(val)) {
+            if (terms.getAvailabilityStatus().equals(val)) {
                 terms.setAvailabilityStatus(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#contactForAccess":
-            if(terms.getContactForAccess().equals(val)) {
+            if (terms.getContactForAccess().equals(val)) {
                 terms.setContactForAccess(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#sizeOfCollection":
-            if(terms.getSizeOfCollection().equals(val)) {
+            if (terms.getSizeOfCollection().equals(val)) {
                 terms.setSizeOfCollection(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         case "https://dataverse.org/schema/core#studyCompletion":
-            if(terms.getStudyCompletion().equals(val)) {
+            if (terms.getStudyCompletion().equals(val)) {
                 terms.setStudyCompletion(null);
-                foundTerm=true;
+                foundTerm = true;
             }
             break;
         default:

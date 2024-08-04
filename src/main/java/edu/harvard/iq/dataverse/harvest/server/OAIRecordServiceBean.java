@@ -211,7 +211,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     
     public void markOaiRecordsAsRemoved(Collection<OAIRecord> records, Date updateTime, boolean confirmed, Logger setUpdateLogger) {
         for (OAIRecord oaiRecord : records) {
-            if ( !oaiRecord.isRemoved() ) {
+            if (!oaiRecord.isRemoved()) {
                 boolean confirmedRemoved = confirmed; 
                 if (!confirmedRemoved) {
                     Dataset lookedUp = datasetService.findByGlobalId(oaiRecord.getGlobalId());
@@ -228,12 +228,12 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                 }
                 
                 if (confirmedRemoved) {
-                    setUpdateLogger.fine("marking OAI record "+oaiRecord.getGlobalId()+" as removed");
+                    setUpdateLogger.fine("marking OAI record " + oaiRecord.getGlobalId() + " as removed");
                     oaiRecord.setRemoved(true);
                     oaiRecord.setLastUpdateTime(updateTime);
                 } 
             } else {
-                setUpdateLogger.fine("OAI record "+oaiRecord.getGlobalId()+" is already marked as removed.");
+                setUpdateLogger.fine("OAI record " + oaiRecord.getGlobalId() + " is already marked as removed.");
             }
         }
        
@@ -276,11 +276,11 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         String queryString = "SELECT object(h) from OAIRecord h where h.globalId = :globalId";
         queryString += setName != null ? " and h.setName = :setName" : ""; // and h.setName is null";
         
-        logger.fine("findOAIRecordBySetNameandGlobalId; query: "+queryString+"; globalId: "+globalId+"; setName: "+setName);
+        logger.fine("findOAIRecordBySetNameandGlobalId; query: " + queryString + "; globalId: " + globalId + "; setName: " + setName);
                 
         
-        TypedQuery query = em.createQuery(queryString, OAIRecord.class).setParameter("globalId",globalId);
-        if (setName != null) { query.setParameter("setName",setName); }        
+        TypedQuery query = em.createQuery(queryString, OAIRecord.class).setParameter("globalId", globalId);
+        if (setName != null) { query.setParameter("setName", setName); }        
         
         try {
            oaiRecord = (OAIRecord) query.setMaxResults(1).getSingleResult();
@@ -292,10 +292,10 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     }
     
     public List<OAIRecord> findOaiRecordsByGlobalId(String globalId) {
-        String query="SELECT object(h) from OAIRecord h where h.globalId = :globalId";
+        String query = "SELECT object(h) from OAIRecord h where h.globalId = :globalId";
         List<OAIRecord> oaiRecords = null;
         try {
-            oaiRecords = em.createQuery(query, OAIRecord.class).setParameter("globalId",globalId).getResultList();
+            oaiRecords = em.createQuery(query, OAIRecord.class).setParameter("globalId", globalId).getResultList();
         } catch (Exception ex) {
             // Do nothing, return null. 
         }
@@ -331,21 +331,21 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         queryString += until != null ? " and h.lastUpdateTime<=:until" : "";
         queryString += " order by h.globalId";
 
-        logger.fine("Query: "+queryString);
+        logger.fine("Query: " + queryString);
         
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
         if (setName != null) { 
-            query.setParameter("setName",setName); 
+            query.setParameter("setName", setName); 
         }
         // TODO: review and phase out the use of java.util.Date throughout this service.
         
         if (from != null) { 
-            query.setParameter("from",Date.from(from),TemporalType.TIMESTAMP); 
+            query.setParameter("from", Date.from(from), TemporalType.TIMESTAMP); 
         }
         
         if (until != null) { 
             Date untilDate = Date.from(until);
-            query.setParameter("until",untilDate,TemporalType.TIMESTAMP); 
+            query.setParameter("until", untilDate, TemporalType.TIMESTAMP); 
         }
                 
         try {
@@ -360,12 +360,12 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     public List<OAIRecord> findActiveOaiRecordsBySetName(String setName) {
         
         
-        String queryString ="SELECT object(h) from OAIRecord as h WHERE (h.removed != true)";
+        String queryString = "SELECT object(h) from OAIRecord as h WHERE (h.removed != true)";
         queryString += setName != null ? " and (h.setName = :setName)" : "and (h.setName is null)";
-        logger.fine("Query: "+queryString);
+        logger.fine("Query: " + queryString);
         
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
-        if (setName != null) { query.setParameter("setName",setName); }
+        if (setName != null) { query.setParameter("setName", setName); }
         
         try {
             return query.getResultList();      
@@ -379,12 +379,12 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     public List<OAIRecord> findDeletedOaiRecordsBySetName(String setName) {
         
         
-        String queryString ="SELECT object(h) from OAIRecord as h WHERE (h.removed = true)";
+        String queryString = "SELECT object(h) from OAIRecord as h WHERE (h.removed = true)";
         queryString += setName != null ? " and (h.setName = :setName)" : "and (h.setName is null)";
-        logger.fine("Query: "+queryString);
+        logger.fine("Query: " + queryString);
         
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
-        if (setName != null) { query.setParameter("setName",setName); }
+        if (setName != null) { query.setParameter("setName", setName); }
         
         try {
             return query.getResultList();      

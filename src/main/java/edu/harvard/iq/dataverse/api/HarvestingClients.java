@@ -66,12 +66,12 @@ public class HarvestingClients extends AbstractApiBean {
         try {
             harvestingClients = harvestingClientService.getAllHarvestingClients();
         } catch (Exception ex) {
-            return error( Response.Status.INTERNAL_SERVER_ERROR, "Caught an exception looking up configured harvesting clients; " + ex.getMessage() );
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Caught an exception looking up configured harvesting clients; " + ex.getMessage());
         }
         
         if (harvestingClients == null) {
             // returning an empty list:
-            return ok(jsonObjectBuilder().add("harvestingClients",""));
+            return ok(jsonObjectBuilder().add("harvestingClients", ""));
         }
         
         JsonArrayBuilder hcArr = Json.createArrayBuilder();
@@ -85,7 +85,7 @@ public class HarvestingClients extends AbstractApiBean {
             HarvestingClient retrievedHarvestingClient = null; 
             try {
                 DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-                retrievedHarvestingClient = execCommand( new GetHarvestingClientCommand(req, harvestingClient));
+                retrievedHarvestingClient = execCommand(new GetHarvestingClientCommand(req, harvestingClient));
             } catch (Exception ex) {
                 // Don't do anything. 
                 // We'll just skip this one - since this means the user isn't 
@@ -110,7 +110,7 @@ public class HarvestingClients extends AbstractApiBean {
             harvestingClient = harvestingClientService.findByNickname(nickName);
         } catch (Exception ex) {
             logger.warning("Exception caught looking up harvesting client " + nickName + ": " + ex.getMessage());
-            return error( Response.Status.BAD_REQUEST, "Internal error: failed to look up harvesting client " + nickName + ".");
+            return error(Response.Status.BAD_REQUEST, "Internal error: failed to look up harvesting client " + nickName + ".");
         }
         
         if (harvestingClient == null) {
@@ -132,20 +132,20 @@ public class HarvestingClients extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         } catch (Exception ex) {
-            logger.warning("Unknown exception caught while executing GetHarvestingClientCommand: "+ex.getMessage());
+            logger.warning("Unknown exception caught while executing GetHarvestingClientCommand: " + ex.getMessage());
             retrievedHarvestingClient = null;
         }
         
         if (retrievedHarvestingClient == null) {
-            return error( Response.Status.BAD_REQUEST, 
+            return error(Response.Status.BAD_REQUEST, 
                     "Internal error: failed to retrieve harvesting client " + nickName + ".");
         }
         
         try {
             return ok(JsonPrinter.json(retrievedHarvestingClient));  
         } catch (Exception ex) {
-            logger.warning("Unknown exception caught while trying to format harvesting client config as json: "+ex.getMessage());
-            return error( Response.Status.BAD_REQUEST, 
+            logger.warning("Unknown exception caught while trying to format harvesting client config as json: " + ex.getMessage());
+            return error(Response.Status.BAD_REQUEST, 
                     "Internal error: failed to produce output for harvesting client " + nickName + ".");
         }
     }
@@ -223,10 +223,10 @@ public class HarvestingClients extends AbstractApiBean {
                         
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
             harvestingClient = execCommand(new CreateHarvestingClientCommand(req, harvestingClient));
-            return created( "/harvest/clients/" + nickName, JsonPrinter.json(harvestingClient));
+            return created("/harvest/clients/" + nickName, JsonPrinter.json(harvestingClient));
                     
         } catch (JsonParseException ex) {
-            return error( Response.Status.BAD_REQUEST, "Error parsing harvesting client: " + ex.getMessage() );
+            return error(Response.Status.BAD_REQUEST, "Error parsing harvesting client: " + ex.getMessage());
             
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -257,7 +257,7 @@ public class HarvestingClients extends AbstractApiBean {
         }
         
         if (harvestingClient == null) {
-            return error( Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
+            return error(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
         }
         
         String ownerDataverseAlias = harvestingClient.getDataverse().getAlias();
@@ -272,7 +272,7 @@ public class HarvestingClients extends AbstractApiBean {
             if (newDataverseAlias != null 
                     && !newDataverseAlias.equals("")
                     && !newDataverseAlias.equals(ownerDataverseAlias)) {
-                return error(Response.Status.BAD_REQUEST, "Bad \"dataverseAlias\" supplied. Harvesting client "+nickName+" belongs to the dataverse "+ownerDataverseAlias);
+                return error(Response.Status.BAD_REQUEST, "Bad \"dataverseAlias\" supplied. Harvesting client " + nickName + " belongs to the dataverse " + ownerDataverseAlias);
             }
             
             // Go through the supported editable fields and update the client accordingly: 
@@ -302,11 +302,11 @@ public class HarvestingClients extends AbstractApiBean {
             }
             // TODO: Make schedule configurable via this API too. 
             
-            harvestingClient = execCommand( new UpdateHarvestingClientCommand(req, harvestingClient));
-            return ok( "/harvest/clients/" + nickName,  JsonPrinter.json(harvestingClient)); // harvestingConfigAsJson(harvestingClient));
+            harvestingClient = execCommand(new UpdateHarvestingClientCommand(req, harvestingClient));
+            return ok("/harvest/clients/" + nickName, JsonPrinter.json(harvestingClient)); // harvestingConfigAsJson(harvestingClient));
                     
         } catch (JsonParseException ex) {
-            return error( Response.Status.BAD_REQUEST, "Error parsing harvesting client: " + ex.getMessage() );
+            return error(Response.Status.BAD_REQUEST, "Error parsing harvesting client: " + ex.getMessage());
             
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -339,7 +339,7 @@ public class HarvestingClients extends AbstractApiBean {
             harvestingClient = harvestingClientService.findByNickname(nickName);
         } catch (Exception ex) {
             logger.warning("Exception caught looking up harvesting client " + nickName + ": " + ex.getMessage());
-            return error( Response.Status.BAD_REQUEST, "Internal error: failed to look up harvesting client " + nickName);
+            return error(Response.Status.BAD_REQUEST, "Internal error: failed to look up harvesting client " + nickName);
         }
         
         if (harvestingClient == null) {
@@ -349,11 +349,11 @@ public class HarvestingClients extends AbstractApiBean {
         // Check if the client is in a state where it can be safely deleted: 
         
         if (harvestingClient.isDeleteInProgress()) {
-            return error( Response.Status.BAD_REQUEST, "Harvesting client " + nickName + " is already being deleted (in progress)");
+            return error(Response.Status.BAD_REQUEST, "Harvesting client " + nickName + " is already being deleted (in progress)");
         }
         
         if (harvestingClient.isHarvestingNow()) {
-            return error( Response.Status.BAD_REQUEST, "It is not safe to delete client " + nickName + " while a harvesting job is in progress");
+            return error(Response.Status.BAD_REQUEST, "It is not safe to delete client " + nickName + " while a harvesting job is in progress");
         }
         
         // Finally, delete it (asynchronously): 
@@ -361,7 +361,7 @@ public class HarvestingClients extends AbstractApiBean {
         try {
             harvestingClientService.deleteClient(harvestingClient.getId());
         } catch (Exception ex) {
-            return error( Response.Status.BAD_REQUEST, "Internal error: failed to delete harvesting client " + nickName);
+            return error(Response.Status.BAD_REQUEST, "Internal error: failed to delete harvesting client " + nickName);
         }
         
         
@@ -394,14 +394,14 @@ public class HarvestingClients extends AbstractApiBean {
             HarvestingClient harvestingClient = harvestingClientService.findByNickname(clientNickname);
             
             if (harvestingClient == null) {
-                return error(Response.Status.NOT_FOUND, "No such client: "+clientNickname);
+                return error(Response.Status.NOT_FOUND, "No such client: " + clientNickname);
             }
             
             DataverseRequest dataverseRequest = createDataverseRequest(authenticatedUser);
             harvesterService.doAsyncHarvest(dataverseRequest, harvestingClient);
 
         } catch (Exception e) {
-            return this.error(Response.Status.BAD_REQUEST, "Exception thrown when running harvesting client\""+clientNickname+"\" via REST API; " + e.getMessage());
+            return this.error(Response.Status.BAD_REQUEST, "Exception thrown when running harvesting client\"" + clientNickname + "\" via REST API; " + e.getMessage());
         }
         return this.accepted();
     }

@@ -58,18 +58,18 @@ public class OAISet implements Serializable {
         this.id = id;
     }
     
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String name;
-    @Column(columnDefinition="TEXT", nullable = false, unique=true)
+    @Column(columnDefinition = "TEXT", nullable = false, unique = true)
     @Size(max = 30, message = "{setspec.maxLength}")
     @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "{dataverse.nameIllegalCharacters}")})
     //    @Pattern(regexp=".*\\D.*", message="{setspec.notNumber}")})
     private String spec;
     
-    @Column(columnDefinition="TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String definition;
    
-    @Column(columnDefinition="TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
     @Version

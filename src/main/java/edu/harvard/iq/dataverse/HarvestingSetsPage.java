@@ -293,7 +293,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         try {
             oaiSetService.save(oaiSet);
             configuredHarvestingSets = oaiSetService.findAll(); 
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("harvest.oaiupdate.success",   Arrays.asList(oaiSet.isDefaultSet() ? "default" : oaiSet.getSpec())));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("harvest.oaiupdate.success", Arrays.asList(oaiSet.isDefaultSet() ? "default" : oaiSet.getSpec())));
             success = true;
 
         } catch (Exception ex) {
@@ -317,7 +317,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
     public void deleteSet() {
         //TODO: Consider putting this in a command that could be used by api as well
         if (selectedSet != null) {
-            logger.info("proceeding to delete harvesting set "+ selectedSet.getSpec());
+            logger.info("proceeding to delete harvesting set " + selectedSet.getSpec());
             try {
                 oaiSetService.setDeleteInProgress(selectedSet.getId());
                 oaiSetService.remove(selectedSet.getId());
@@ -326,7 +326,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
                 configuredHarvestingSets = oaiSetService.findAll();
                 JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("harvestserver.tab.header.action.delete.infomessage"));
             } catch (Exception ex) {
-                String failMessage = BundleUtil.getStringFromBundle("harvest.delete.fail")+ex.getMessage();
+                String failMessage = BundleUtil.getStringFromBundle("harvest.delete.fail") + ex.getMessage();
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             }
         } else {
@@ -526,7 +526,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             datasetsFound = oaiSetService.validateDefinitionQuery(getNewSetQuery());
         } catch (OaiSetException ose) {
             FacesContext.getCurrentInstance().addMessage(getNewSetQueryInputField().getClientId(),
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvest.search.failed")+ose.getMessage()));
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvest.search.failed") + ose.getMessage()));
             setSetQueryValidated(false);
             return;
         }
@@ -584,7 +584,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         if (context.getExternalContext().getRequestParameterMap().get("DO_VALIDATION") != null) {
             
             if (!StringUtils.isEmpty(value)) {
-                if (value.length() > 30){
+                if (value.length() > 30) {
                     input.setValid(false);
                     context.addMessage(toValidate.getClientId(),
                             new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.sizelimit")));

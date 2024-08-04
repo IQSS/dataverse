@@ -79,14 +79,14 @@ public class InvalidData {
      * of DataVariables as appropriate. 
      * -- L.A. 4.0 beta
     */
-    public String toDDItag(){
+    public String toDDItag() {
         StringBuilder sb = new StringBuilder();
 
-        switch(type){
+        switch (type) {
             case 1: case 2: case 3:
                     sb.append("\t\t<invalrng>\n");
-                    for (int k=0; k < invalidValues.size();k++){
-                        sb.append("\t\t\t<item VALUE=\"" + invalidValues.get(k)+"\"/>\n");
+                    for (int k = 0; k < invalidValues.size(); k++) {
+                        sb.append("\t\t\t<item VALUE=\"" + invalidValues.get(k) + "\"/>\n");
                     }
                     sb.append("\t\t</invalrng>\n");
                 break;
@@ -94,8 +94,8 @@ public class InvalidData {
                     // range-type 1 missing values
                     sb.append("\t\t<invalrng>\n");
                     sb.append("\t\t\t<range");
-                    if (!invalidRange.get(0).equals("LOWEST")){
-                        sb.append(" min=\""+invalidRange.get(0)+"\"");
+                    if (!invalidRange.get(0).equals("LOWEST")) {
+                        sb.append(" min=\"" + invalidRange.get(0) + "\"");
                     }
                     if (!invalidRange.get(1).equals("HIGHEST")) {
                         sb.append(" max=\"" + invalidRange.get(1) + "\"");
@@ -108,13 +108,13 @@ public class InvalidData {
                     sb.append("\t\t<invalrng>\n");
                     sb.append("\t\t\t<range");
                     if (!invalidRange.get(0).equals("LOWEST")) {
-                        sb.append(" min=\""+invalidRange.get(0)+"\"");
+                        sb.append(" min=\"" + invalidRange.get(0) + "\"");
                     }
                     if (!invalidRange.get(1).equals("HIGHEST")) {
-                        sb.append(" max=\"" + invalidRange.get(1) +"\"");
+                        sb.append(" max=\"" + invalidRange.get(1) + "\"");
                     }
                     sb.append("/>\n");
-                    sb.append("\t\t\t<item VALUE=\"" +invalidValues.get(0)+"\"/>\n");
+                    sb.append("\t\t\t<item VALUE=\"" + invalidValues.get(0) + "\"/>\n");
                     sb.append("\t\t</invalrng>\n");
 
                 break;

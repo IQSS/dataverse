@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  * these tests NEED to be done serial.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.TYPE })
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Inherited
 @Repeatable(SystemProperty.SystemProperties.class)
 @ExtendWith(SystemPropertyExtension.class)
@@ -51,7 +51,7 @@ public @interface SystemProperty {
      * Containing annotation of repeatable {@code @SystemProperty}.
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({ ElementType.METHOD, ElementType.TYPE })
+    @Target({ElementType.METHOD, ElementType.TYPE})
     @Inherited
     @ExtendWith(SystemPropertyExtension.class)
     @interface SystemProperties {

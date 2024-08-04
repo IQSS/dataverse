@@ -51,22 +51,22 @@ public class BitSetTest {
 	 */
 	@Test
 	public void testSet() {
-		for ( short i : BitSet.allIndices() ) {
+		for (short i : BitSet.allIndices()) {
 			sut.set(i);
-			assertTrue( sut.isSet(i) );
+			assertTrue(sut.isSet(i));
 		}
 	}
     
     @Test
     public void testSetByParameter() {
         BitSet tSut = BitSet.emptySet();
-        List<Integer> indices = Arrays.asList(0,1,4,6,7,8,20,31);
-        indices.forEach( i -> assertFalse(tSut.isSet(i)) );
-        indices.forEach( i -> tSut.set(i,true) );
-        indices.forEach( i -> assertTrue(tSut.isSet(i)) );
-        indices.forEach( i -> tSut.set(i,false) );
-        indices.forEach( i -> assertFalse(tSut.isSet(i)) );
-        assertTrue( tSut.isEmpty() );
+        List<Integer> indices = Arrays.asList(0, 1, 4, 6, 7, 8, 20, 31);
+        indices.forEach(i -> assertFalse(tSut.isSet(i)));
+        indices.forEach(i -> tSut.set(i, true));
+        indices.forEach(i -> assertTrue(tSut.isSet(i)));
+        indices.forEach(i -> tSut.set(i, false));
+        indices.forEach(i -> assertFalse(tSut.isSet(i)));
+        assertTrue(tSut.isEmpty());
     }
     
 	/**
@@ -75,9 +75,9 @@ public class BitSetTest {
 	@Test
 	public void testUnset() {
 		sut = BitSet.fullSet();
-		for ( short i : BitSet.allIndices() ) {
+		for (short i : BitSet.allIndices()) {
 			sut.unset(i);
-			assertFalse( sut.isSet(i) );
+			assertFalse(sut.isSet(i));
 		}
 	}
 
@@ -87,7 +87,7 @@ public class BitSetTest {
 	@Test
 	public void testCopy() {
 		sut = new BitSet( new java.util.Random().nextLong() );
-		assertEquals( sut.getBits(), sut.copy().getBits() );
+		assertEquals(sut.getBits(), sut.copy().getBits());
 	}
 
 	/**
@@ -98,11 +98,11 @@ public class BitSetTest {
 		BitSet sut1 = randomSet();
 		BitSet sut2 = randomSet();
 		sut = sut1.copy().union(sut2);
-		for ( short i : BitSet.allIndices() ) {
-			if ( sut.isSet(i) ) {
-				assertTrue( sut1.isSet(i) || sut2.isSet(i) );
+		for (short i : BitSet.allIndices()) {
+			if (sut.isSet(i)) {
+				assertTrue(sut1.isSet(i) || sut2.isSet(i));
 			} else {
-				assertFalse( sut1.isSet(i) && sut2.isSet(i) );
+				assertFalse(sut1.isSet(i) && sut2.isSet(i));
 			}
 		}
 	}
@@ -115,8 +115,8 @@ public class BitSetTest {
 		BitSet sut1 = randomSet();
 		BitSet sut2 = randomSet();
 		sut = sut1.copy().intersect(sut2);
-		for ( short i : BitSet.allIndices() ) {
-			if ( sut.isSet(i) ) {
+		for (short i : BitSet.allIndices()) {
+			if (sut.isSet(i)) {
 				assertTrue(sut1.isSet(i) && sut2.isSet(i), "expected true at idx " + i);
 			} else {
 				assertFalse(sut1.isSet(i) && sut2.isSet(i), "expected false at idx " + i);
@@ -132,8 +132,8 @@ public class BitSetTest {
 		BitSet sut1 = randomSet();
 		BitSet sut2 = randomSet();
 		sut = sut1.copy().xor(sut2);
-		for ( short i : BitSet.allIndices() ) {
-			if ( sut.isSet(i) ) {
+		for (short i : BitSet.allIndices()) {
+			if (sut.isSet(i)) {
 				assertTrue(sut1.isSet(i) ^ sut2.isSet(i), "expected true at idx " + i);
 			} else {
 				assertFalse(sut1.isSet(i) ^ sut2.isSet(i), "expected false at idx " + i);
@@ -146,7 +146,7 @@ public class BitSetTest {
 		EnumSet<TestEnum> est = EnumSet.of(TestEnum.Hello, TestEnum.This, TestEnum.Test);
 		
 		sut = BitSet.from(est);
-		assertEquals( est, sut.asSetOf(TestEnum.class) );
+		assertEquals(est, sut.asSetOf(TestEnum.class));
 	}
 	
 	/**
@@ -157,7 +157,7 @@ public class BitSetTest {
 		sut.set(0);
 		sut.set(1);
 		sut.set(2);
-		assertEquals( 0b111, sut.getBits() );
+		assertEquals(0b111, sut.getBits());
 	}
 	
 	

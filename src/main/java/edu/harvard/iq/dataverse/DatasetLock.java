@@ -48,10 +48,10 @@ import jakarta.persistence.NamedQuery;
  * 
  */
 @Entity
-@Table(indexes = {@Index(columnList="user_id"), @Index(columnList="dataset_id")})
+@Table(indexes = {@Index(columnList = "user_id"), @Index(columnList = "dataset_id")})
 @NamedQueries({
     @NamedQuery(name = "DatasetLock.findAll",
-            query="SELECT lock FROM DatasetLock lock ORDER BY lock.id"),
+            query = "SELECT lock FROM DatasetLock lock ORDER BY lock.id"),
     @NamedQuery(name = "DatasetLock.getLocksByDatasetId",
             query = "SELECT lock FROM DatasetLock lock WHERE lock.dataset.id=:datasetId"),
     @NamedQuery(name = "DatasetLock.getLocksByType",
@@ -102,15 +102,15 @@ public class DatasetLock implements Serializable {
     private Date startTime;    
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private Dataset dataset;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private AuthenticatedUser user;
     
     @Enumerated(EnumType.STRING)
-    @Column(nullable=false)
+    @Column(nullable = false)
     private Reason reason;
     
     private String info;
@@ -122,7 +122,7 @@ public class DatasetLock implements Serializable {
      * @throws IllegalArgumentException if any of the parameters are null. That's
      *         because JPA would throw an exception later anyway.
      */
-    public DatasetLock( Reason aReason, AuthenticatedUser aUser ) {
+    public DatasetLock(Reason aReason, AuthenticatedUser aUser) {
         this(aReason, aUser, null);
     }
     
@@ -135,8 +135,8 @@ public class DatasetLock implements Serializable {
      *         because JPA would throw an exception later anyway.
      */
     public DatasetLock(Reason aReason, AuthenticatedUser aUser, String infoMessage) {
-        if ( aReason == null ) throw new IllegalArgumentException("Cannot lock a dataset for a null reason");
-        if ( aUser == null ) throw new IllegalArgumentException("Cannot lock a dataset for a null user");
+        if (aReason == null) throw new IllegalArgumentException("Cannot lock a dataset for a null reason");
+        if (aUser == null) throw new IllegalArgumentException("Cannot lock a dataset for a null user");
         reason = aReason;
         startTime = new Date();
         user = aUser;
@@ -150,7 +150,7 @@ public class DatasetLock implements Serializable {
      * 
      * @see #DatasetLock(edu.harvard.iq.dataverse.DatasetLock.Reason) 
      */
-    protected DatasetLock(){}
+    protected DatasetLock() {}
     
     public Long getId() {
         return id;
@@ -207,15 +207,15 @@ public class DatasetLock implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        if ( object == null ) return false;
-        if ( object == this ) return true;
+        if (object == null) return false;
+        if (object == this) return true;
         
         if (!(object instanceof DatasetLock)) {
             return false;
         }
         DatasetLock other = (DatasetLock) object;
         
-        return (id==null && other.id==null) || (id!=null && id.equals(other.getId()));
+        return (id == null && other.id == null) || (id != null && id.equals(other.getId()));
     }
 
     @Override

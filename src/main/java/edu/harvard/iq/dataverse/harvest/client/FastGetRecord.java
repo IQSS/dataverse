@@ -78,11 +78,11 @@ import javax.xml.stream.XMLInputFactory;
 public class FastGetRecord {
    
     private static final String XML_METADATA_TAG = "metadata";
-    private static final String XML_METADATA_TAG_OPEN = "<"+XML_METADATA_TAG+">";
-    private static final String XML_METADATA_TAG_CLOSE = "</"+XML_METADATA_TAG+">";
+    private static final String XML_METADATA_TAG_OPEN = "<" + XML_METADATA_TAG + ">";
+    private static final String XML_METADATA_TAG_CLOSE = "</" + XML_METADATA_TAG + ">";
     private static final String XML_OAI_PMH_CLOSING_TAGS = "</record></GetRecord></OAI-PMH>";
     private static final String XML_XMLNS_XSI_ATTRIBUTE_TAG = "xmlns:xsi=";
-    private static final String XML_XMLNS_XSI_ATTRIBUTE = " "+XML_XMLNS_XSI_ATTRIBUTE_TAG+"\"http://www.w3.org/2001/XMLSchema-instance\">";
+    private static final String XML_XMLNS_XSI_ATTRIBUTE = " " + XML_XMLNS_XSI_ATTRIBUTE_TAG + "\"http://www.w3.org/2001/XMLSchema-instance\">";
     private static final String XML_COMMENT_START = "<!--";
     private static final String XML_COMMENT_END = "-->";
     
@@ -100,7 +100,7 @@ public class FastGetRecord {
 
     public FastGetRecord(OaiHandler oaiHandler, String identifier, HttpClient httpClient) throws IOException, ParserConfigurationException, SAXException,
     TransformerException {
-        harvestRecord (oaiHandler.getBaseOaiUrl(), identifier, oaiHandler.getMetadataPrefix(), oaiHandler.getCustomHeaders(), httpClient);
+        harvestRecord(oaiHandler.getBaseOaiUrl(), identifier, oaiHandler.getMetadataPrefix(), oaiHandler.getCustomHeaders(), httpClient);
     }
     
     private String errorMessage = null;
@@ -110,21 +110,21 @@ public class FastGetRecord {
 
     // TODO: logging
 
-    public String getErrorMessage () {
+    public String getErrorMessage() {
         return errorMessage;
     }
 
-    public File getMetadataFile () {
+    public File getMetadataFile() {
         return savedMetadataFile;
     }
 
-    public boolean isDeleted () {
+    public boolean isDeleted() {
         return this.recordDeleted;
     }
 
 
-    public void harvestRecord(String baseURL, String identifier, String metadataPrefix, Map<String,String> customHeaders, HttpClient httpClient) throws IOException,
-        ParserConfigurationException, SAXException, TransformerException{
+    public void harvestRecord(String baseURL, String identifier, String metadataPrefix, Map<String, String> customHeaders, HttpClient httpClient) throws IOException,
+        ParserConfigurationException, SAXException, TransformerException {
 
         xmlInputFactory = javax.xml.stream.XMLInputFactory.newInstance();
         String requestURL = getRequestURL(baseURL, identifier, metadataPrefix);
@@ -202,9 +202,9 @@ public class FastGetRecord {
             int mopen = 0;
             int mclose = 0;
  
-            while ( ( line = rd.readLine () ) != null) {
+            while ((line = rd.readLine()) != null) {
                 if (!metadataFlag) {
-                    if (line.matches(".*"+XML_METADATA_TAG_OPEN+".*")) {
+                    if (line.matches(".*" + XML_METADATA_TAG_OPEN + ".*")) {
                         String lineCopy = line;
 
                         int i = line.indexOf(XML_METADATA_TAG_OPEN);
@@ -224,9 +224,9 @@ public class FastGetRecord {
                             line = null;
                         }
 
-                        oaiResponseHeader = oaiResponseHeader.concat(lineCopy.replaceAll(XML_METADATA_TAG_OPEN+".*", XML_METADATA_TAG_OPEN+XML_METADATA_TAG_CLOSE+XML_OAI_PMH_CLOSING_TAGS));
+                        oaiResponseHeader = oaiResponseHeader.concat(lineCopy.replaceAll(XML_METADATA_TAG_OPEN + ".*", XML_METADATA_TAG_OPEN + XML_METADATA_TAG_CLOSE + XML_OAI_PMH_CLOSING_TAGS));
                         tempFileStream = new FileOutputStream(savedMetadataFile);
-                        metadataOut = new PrintWriter (tempFileStream, true);
+                        metadataOut = new PrintWriter(tempFileStream, true);
 
                         //metadataOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); /* ? */
 
@@ -253,25 +253,25 @@ public class FastGetRecord {
                         // significant.
                         //  -- L.A. 
 
-                        if (line.matches("<"+XML_METADATA_TAG)) {
+                        if (line.matches("<" + XML_METADATA_TAG)) {
                            int i = 0;
-                           while ((i = line.indexOf("<"+XML_METADATA_TAG, i)) > -1) {
-                               if (!line.substring(i).matches("^<"+XML_METADATA_TAG+"[^>]*/")) {
+                           while ((i = line.indexOf("<" + XML_METADATA_TAG, i)) > -1) {
+                               if (!line.substring(i).matches("^<" + XML_METADATA_TAG + "[^>]*/")) {
                                    // don't count if it's a closed, empty tag:
                                    // <metadata />
                                    mopen++;
                                }
-                               i+=XML_METADATA_TAG_OPEN.length();
+                               i += XML_METADATA_TAG_OPEN.length();
                            }
                         }
-                        if (line.matches(".*"+XML_METADATA_TAG_CLOSE+".*")) {
+                        if (line.matches(".*" + XML_METADATA_TAG_CLOSE + ".*")) {
                             int i = 0;
                             while ((i = line.indexOf(XML_METADATA_TAG_CLOSE, i)) > -1) {
-                                i+=XML_METADATA_TAG_CLOSE.length();
+                                i += XML_METADATA_TAG_CLOSE.length();
                                 mclose++;
                             }
 
-                            if ( mclose > mopen ) {
+                            if (mclose > mopen) {
                                 line = line.substring(0, line.lastIndexOf(XML_METADATA_TAG_CLOSE));
                                 metadataWritten = true;
                             }
@@ -292,9 +292,9 @@ public class FastGetRecord {
                             // <!-- ... -->). So we need to skip these!
 
                             int j = 0; 
-                            while ( ((j = line.indexOf('<', offset)) > -1)
-                                && line.length() >= j+XML_COMMENT_START.length()
-                                && XML_COMMENT_START.equals(line.substring(j,j+XML_COMMENT_START.length()))) {
+                            while (((j = line.indexOf('<', offset)) > -1)
+                                && line.length() >= j + XML_COMMENT_START.length()
+                                && XML_COMMENT_START.equals(line.substring(j, j + XML_COMMENT_START.length()))) {
 
                                 offset = j; 
                                 
@@ -306,7 +306,7 @@ public class FastGetRecord {
 
                                 while (line != null
                                         &&
-                                        ((offset = line.indexOf(XML_COMMENT_END,offset)) < 0)) {
+                                        ((offset = line.indexOf(XML_COMMENT_END, offset)) < 0)) {
                                     line = line.replaceAll("[\n\r]", " ");
                                     offset = line.length();
                                     line = line.concat(rd.readLine());
@@ -319,7 +319,7 @@ public class FastGetRecord {
                             // XML element left in the buffered line?
                             int firstElementStart = -1;
 
-                            if ((firstElementStart = line.indexOf('<', offset)) > -1 ) {
+                            if ((firstElementStart = line.indexOf('<', offset)) > -1) {
                                 // OK, looks like there is. 
                                 // is it terminated? 
                                 // if not, let's read the stream until
@@ -330,7 +330,7 @@ public class FastGetRecord {
 
                                 while (line != null
                                         &&
-                                        ((firstElementEnd = line.indexOf('>',offset)) < 0)) {
+                                        ((firstElementEnd = line.indexOf('>', offset)) < 0)) {
 
                                     line = line.replaceAll("[\n\r]", "");
                                     offset = line.length();
@@ -351,7 +351,7 @@ public class FastGetRecord {
 
                                     int i = firstElementStart;
 
-                                    if (!line.substring(i).matches("^<[^>]*"+XML_XMLNS_XSI_ATTRIBUTE_TAG+".*")) {
+                                    if (!line.substring(i).matches("^<[^>]*" + XML_XMLNS_XSI_ATTRIBUTE_TAG + ".*")) {
                                         String head = line.substring(0, i);
                                         String tail = line.substring(i);
                                         //tail = tail.replaceFirst(">", " xmlns=\"http://www.openarchives.org/OAI/2.0/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">");
@@ -413,7 +413,7 @@ public class FastGetRecord {
             }
 
         } else {
-            this.errorMessage = "GetRecord request failed. HTTP error code "+responseCode;
+            this.errorMessage = "GetRecord request failed. HTTP error code " + responseCode;
         }
    }
 
@@ -427,7 +427,7 @@ public class FastGetRecord {
             String identifier,
             String metadataPrefix) {
 
-        StringBuffer requestURL =  new StringBuffer(baseURL);
+        StringBuffer requestURL = new StringBuffer(baseURL);
         requestURL.append("?verb=GetRecord");
         requestURL.append("&identifier=").append(identifier);
         requestURL.append("&metadataPrefix=").append(metadataPrefix);
@@ -435,7 +435,7 @@ public class FastGetRecord {
         return requestURL.toString();
     }
 
-    private void processOAIheader (XMLStreamReader xmlr) throws XMLStreamException, IOException {
+    private void processOAIheader(XMLStreamReader xmlr) throws XMLStreamException, IOException {
 
         // is this really a GetRecord response?
         xmlr.nextTag();
@@ -444,7 +444,7 @@ public class FastGetRecord {
 
     }
 
-    private void processOAIPMH (XMLStreamReader xmlr) throws XMLStreamException, IOException {
+    private void processOAIPMH(XMLStreamReader xmlr) throws XMLStreamException, IOException {
 
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
@@ -457,11 +457,11 @@ public class FastGetRecord {
                     String errorMessageText = getElementText(xmlr);
 
                     if (errorCode != null) {
-                        this.errorMessage = "GetRecord error code: "+errorCode+"; ";
+                        this.errorMessage = "GetRecord error code: " + errorCode + "; ";
                     }
 
                     if (errorCode != null) {
-                        this.errorMessage = this.errorMessage + "GetRecord error message: "+errorMessageText+"; ";
+                        this.errorMessage = this.errorMessage + "GetRecord error message: " + errorMessageText + "; ";
                     }
                     throw new XMLStreamException(this.errorMessage);
 
@@ -475,7 +475,7 @@ public class FastGetRecord {
         }
     }
 
-    private void processGetRecordSection (XMLStreamReader xmlr) throws XMLStreamException, IOException {
+    private void processGetRecordSection(XMLStreamReader xmlr) throws XMLStreamException, IOException {
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                  if (xmlr.getLocalName().equals("record")) {
@@ -488,11 +488,11 @@ public class FastGetRecord {
 
     }
 
-    private void processRecord (XMLStreamReader xmlr) throws XMLStreamException, IOException {
+    private void processRecord(XMLStreamReader xmlr) throws XMLStreamException, IOException {
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                  if (xmlr.getLocalName().equals("header")) {
-                     if ("deleted".equals( xmlr.getAttributeValue(null, "status"))) {
+                     if ("deleted".equals(xmlr.getAttributeValue(null, "status"))) {
                         this.recordDeleted = true;
                      }
                      processHeader(xmlr);
@@ -503,7 +503,7 @@ public class FastGetRecord {
         }
     }
 
-    private void processHeader (XMLStreamReader xmlr) throws XMLStreamException {
+    private void processHeader(XMLStreamReader xmlr) throws XMLStreamException {
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                  if (xmlr.getLocalName().equals("identifier")) {/*do nothing*/}
@@ -525,27 +525,27 @@ public class FastGetRecord {
      * the workaround for the moment is to comment or handling ENTITY_REFERENCE in this case
      */
     private String getElementText(XMLStreamReader xmlr) throws XMLStreamException {
-        if(xmlr.getEventType() != XMLStreamConstants.START_ELEMENT) {
+        if (xmlr.getEventType() != XMLStreamConstants.START_ELEMENT) {
             throw new XMLStreamException("parser must be on START_ELEMENT to read next text", xmlr.getLocation());
         }
         int eventType = xmlr.next();
         StringBuffer content = new StringBuffer();
-        while(eventType != XMLStreamConstants.END_ELEMENT ) {
-            if(eventType == XMLStreamConstants.CHARACTERS
+        while (eventType != XMLStreamConstants.END_ELEMENT) {
+            if (eventType == XMLStreamConstants.CHARACTERS
             || eventType == XMLStreamConstants.CDATA
             || eventType == XMLStreamConstants.SPACE
             /* || eventType == XMLStreamConstants.ENTITY_REFERENCE*/) {
                 content.append(xmlr.getText());
-            } else if(eventType == XMLStreamConstants.PROCESSING_INSTRUCTION
+            } else if (eventType == XMLStreamConstants.PROCESSING_INSTRUCTION
                 || eventType == XMLStreamConstants.COMMENT
                 || eventType == XMLStreamConstants.ENTITY_REFERENCE) {
                 // skipping
-            } else if(eventType == XMLStreamConstants.END_DOCUMENT) {
+            } else if (eventType == XMLStreamConstants.END_DOCUMENT) {
                 throw new XMLStreamException("unexpected end of document when reading element text content");
-            } else if(eventType == XMLStreamConstants.START_ELEMENT) {
+            } else if (eventType == XMLStreamConstants.START_ELEMENT) {
                 throw new XMLStreamException("element text content may not contain START_ELEMENT", xmlr.getLocation());
             } else {
-                throw new XMLStreamException("Unexpected event type "+eventType, xmlr.getLocation());
+                throw new XMLStreamException("Unexpected event type " + eventType, xmlr.getLocation());
             }
             eventType = xmlr.next();
         }

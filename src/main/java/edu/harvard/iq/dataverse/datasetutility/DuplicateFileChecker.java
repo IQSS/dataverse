@@ -35,9 +35,9 @@ public class DuplicateFileChecker {
      * 
      * @param datasetVersionService 
      */
-    public DuplicateFileChecker(DatasetVersionServiceBean datasetVersionService){
+    public DuplicateFileChecker(DatasetVersionServiceBean datasetVersionService) {
 
-        if (datasetVersionService == null){
+        if (datasetVersionService == null) {
             throw new NullPointerException("datasetVersionService cannot be null");
         }
         
@@ -53,13 +53,13 @@ public class DuplicateFileChecker {
      * @param checksum
      * @return 
      */
-    public boolean isFileInSavedDatasetVersion(DatasetVersion datasetVersion, FileMetadata fileMetadata){
+    public boolean isFileInSavedDatasetVersion(DatasetVersion datasetVersion, FileMetadata fileMetadata) {
         
-         if (datasetVersion == null){
+         if (datasetVersion == null) {
              throw new NullPointerException("datasetVersion cannot be null");
          }
         
-         if (fileMetadata == null){
+         if (fileMetadata == null) {
              throw new NullPointerException("fileMetadata cannot be null");
          }
          return this.isFileInSavedDatasetVersion(datasetVersion, fileMetadata.getDataFile().getChecksumValue());
@@ -71,13 +71,13 @@ public class DuplicateFileChecker {
      * @param checksum
      * @return 
      */
-    public boolean isFileInSavedDatasetVersion(DatasetVersion datasetVersion, String checkSum){
+    public boolean isFileInSavedDatasetVersion(DatasetVersion datasetVersion, String checkSum) {
 
-        if (datasetVersion == null){
+        if (datasetVersion == null) {
              throw new NullPointerException("datasetVersion cannot be null");
         }
         
-        if (checkSum == null){
+        if (checkSum == null) {
             throw new NullPointerException("checkSum cannot be null");
         }
         
@@ -93,9 +93,9 @@ public class DuplicateFileChecker {
      * Loads checksums from unsaved datasetversion--checks more 
      * 
      */
-    public Map<String, Integer> getDatasetHashesFromDatabase(DatasetVersion datasetVersion){
+    public Map<String, Integer> getDatasetHashesFromDatabase(DatasetVersion datasetVersion) {
      
-        if (datasetVersion == null){
+        if (datasetVersion == null) {
              throw new NullPointerException("datasetVersion cannot be null");
          }
         
@@ -103,11 +103,11 @@ public class DuplicateFileChecker {
 
         List<FileMetadata> fileMetadatas = new ArrayList<>(datasetVersion.getFileMetadatas());
         
-        for (FileMetadata fm : fileMetadatas){            
+        for (FileMetadata fm : fileMetadatas) {            
             String checkSum = fm.getDataFile().getChecksumValue();
-            if (checksumHashCounts.get(checkSum) != null){
+            if (checksumHashCounts.get(checkSum) != null) {
                 checksumHashCounts.put(checkSum, checksumHashCounts.get(checkSum).intValue() + 1);
-            }else{
+            } else {
                 checksumHashCounts.put(checkSum, 1);
             }   
         }
@@ -128,7 +128,7 @@ public class DuplicateFileChecker {
      * @return 
      */
     public static boolean isDuplicateOriginalWay(DatasetVersion workingVersion, FileMetadata fileMetadata) {
-        if (workingVersion == null){
+        if (workingVersion == null) {
             throw new NullPointerException("datasetVersion cannot be null");
         }
 

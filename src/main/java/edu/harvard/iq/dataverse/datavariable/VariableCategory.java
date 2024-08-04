@@ -29,7 +29,7 @@ import jakarta.persistence.Table;
  * 
  */
 @Entity
-@Table(indexes = {@Index(columnList="datavariable_id")})
+@Table(indexes = {@Index(columnList = "datavariable_id")})
 public class VariableCategory  implements Comparable, Serializable {
     /*
      * Simple constructor: 
@@ -52,7 +52,7 @@ public class VariableCategory  implements Comparable, Serializable {
      * DataVariable for which this range is defined.
      */
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataVariable dataVariable;
     
     /*
@@ -174,7 +174,7 @@ public class VariableCategory  implements Comparable, Serializable {
         // TODO: 
         // We should probably compare the values instead, similarly 
         // to comareTo() below. -- L.A., Jan. 2014
-        VariableCategory other = (VariableCategory)object;
+        VariableCategory other = (VariableCategory) object;
         if (this.id != other.id) {
             if (this.id == null || !this.id.equals(other.id)) {
                 return false;
@@ -190,8 +190,8 @@ public class VariableCategory  implements Comparable, Serializable {
     
     @Override
     public int compareTo(Object obj) {
-        VariableCategory ss = (VariableCategory)obj;     
-        return alphaNumericComparator.compare(this.getValue(),ss.getValue());
+        VariableCategory ss = (VariableCategory) obj;     
+        return alphaNumericComparator.compare(this.getValue(), ss.getValue());
         
     }
     

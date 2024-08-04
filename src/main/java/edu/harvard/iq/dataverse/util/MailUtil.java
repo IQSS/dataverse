@@ -69,7 +69,7 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.checksumfail.subject", rootDvNameAsList);
             case FILESYSTEMIMPORT:
                 try {
-                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    DatasetVersion version = (DatasetVersion) objectOfNotification;
                     List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
                     return BundleUtil.getStringFromBundle("notification.email.import.filesystem.subject", dsNameAsList);
                 } catch (Exception e) {
@@ -77,7 +77,7 @@ public class MailUtil {
                 }
             case GLOBUSUPLOADCOMPLETED:
                 try {
-                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    DatasetVersion version = (DatasetVersion) objectOfNotification;
                     List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
                     return BundleUtil.getStringFromBundle("notification.email.globus.uploadCompleted.subject", dsNameAsList);
                 } catch (Exception e) {
@@ -85,7 +85,7 @@ public class MailUtil {
                 }
             case GLOBUSDOWNLOADCOMPLETED:
                 try {
-                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    DatasetVersion version = (DatasetVersion) objectOfNotification;
                     List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
                     return BundleUtil.getStringFromBundle("notification.email.globus.downloadCompleted.subject", dsNameAsList);
                 } catch (Exception e) {
@@ -93,7 +93,7 @@ public class MailUtil {
                 }
             case GLOBUSUPLOADCOMPLETEDWITHERRORS:
                 try {
-                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    DatasetVersion version = (DatasetVersion) objectOfNotification;
                     List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
                     return BundleUtil.getStringFromBundle("notification.email.globus.uploadCompletedWithErrors.subject", dsNameAsList);
                 } catch (Exception e) {
@@ -101,7 +101,7 @@ public class MailUtil {
                 }
             case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
                 try {
-                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    DatasetVersion version = (DatasetVersion) objectOfNotification;
                     List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
                     return BundleUtil.getStringFromBundle("notification.email.globus.downloadCompletedWithErrors.subject", dsNameAsList);
                 } catch (Exception e) {
@@ -113,7 +113,7 @@ public class MailUtil {
             case CONFIRMEMAIL:
                 return BundleUtil.getStringFromBundle("notification.email.verifyEmail.subject", rootDvNameAsList);
             case APIGENERATED:
-                return BundleUtil.getStringFromBundle("notification.email.apiTokenGenerated.subject",  rootDvNameAsList);
+                return BundleUtil.getStringFromBundle("notification.email.apiTokenGenerated.subject", rootDvNameAsList);
             case INGESTCOMPLETED:
                 return BundleUtil.getStringFromBundle("notification.email.ingestCompleted.subject", Arrays.asList(rootDvNameAsList.get(0), datasetDisplayName));
             case INGESTCOMPLETEDWITHERRORS:

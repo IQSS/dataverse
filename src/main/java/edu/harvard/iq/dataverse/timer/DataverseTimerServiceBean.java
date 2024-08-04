@@ -94,7 +94,7 @@ public class DataverseTimerServiceBean implements Serializable {
     
     public void createTimer(Date initialExpiration, long intervalDuration, Serializable info) {
         try {
-            logger.log(Level.INFO,"Creating timer on " + InetAddress.getLocalHost().getCanonicalHostName());
+            logger.log(Level.INFO, "Creating timer on " + InetAddress.getLocalHost().getCanonicalHostName());
         } catch (UnknownHostException ex) {
             Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -120,7 +120,7 @@ public class DataverseTimerServiceBean implements Serializable {
         }
         
         try {
-            logger.log(Level.INFO,"Handling timeout on " + InetAddress.getLocalHost().getCanonicalHostName());
+            logger.log(Level.INFO, "Handling timeout on " + InetAddress.getLocalHost().getCanonicalHostName());
         } catch (UnknownHostException ex) {
             Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -147,8 +147,8 @@ public class DataverseTimerServiceBean implements Serializable {
                     logger.info("Scheduled harvest: failed to locate the admin user! Exiting.");
                     throw new IOException("Scheduled harvest: failed to locate the admin user");
                 } 
-                logger.info("found admin user "+adminUser.getName());
-                DataverseRequest dataverseRequest = new DataverseRequest(adminUser, (HttpServletRequest)null);
+                logger.info("found admin user " + adminUser.getName());
+                DataverseRequest dataverseRequest = new DataverseRequest(adminUser, (HttpServletRequest) null);
                 harvesterService.doHarvest(dataverseRequest, info.getHarvestingClientId());
 
             } catch (Throwable e) {
@@ -184,7 +184,7 @@ public class DataverseTimerServiceBean implements Serializable {
 
         int i = 0;
 
-        for (Iterator it = timerService.getTimers().iterator(); it.hasNext();) {
+        for (Iterator it = timerService.getTimers().iterator(); it.hasNext(); ) {
 
             Timer timer = (Timer) it.next();
 
@@ -203,16 +203,16 @@ public class DataverseTimerServiceBean implements Serializable {
         // since this code is only called on startup of the application, 
         // and it may be useful to know what existing timers were encountered).
         
-        logger.log(Level.INFO,"Removing existing harvest timers..");
+        logger.log(Level.INFO, "Removing existing harvest timers..");
         
         int i = 1; 
-        for (Iterator it = timerService.getTimers().iterator(); it.hasNext();) {
+        for (Iterator it = timerService.getTimers().iterator(); it.hasNext(); ) {
              
             Timer timer = (Timer) it.next();
-            logger.log(Level.INFO, "HarvesterService: checking timer "+i);
+            logger.log(Level.INFO, "HarvesterService: checking timer " + i);
             
             if (timer.getInfo() instanceof HarvestTimerInfo) {
-                logger.log(Level.INFO, "HarvesterService: timer "+i+" is a harvesting one; removing.");
+                logger.log(Level.INFO, "HarvesterService: timer " + i + " is a harvesting one; removing.");
                 timer.cancel();
             }
             
@@ -276,11 +276,11 @@ public class DataverseTimerServiceBean implements Serializable {
     public void removeHarvestTimer(HarvestingClient harvestingClient) {
          // Clear dataverse timer, if one exists
         try {
-            logger.log(Level.INFO,"Removing harvest timer on " + InetAddress.getLocalHost().getCanonicalHostName());
+            logger.log(Level.INFO, "Removing harvest timer on " + InetAddress.getLocalHost().getCanonicalHostName());
         } catch (UnknownHostException ex) {
             Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        for (Iterator it = timerService.getTimers().iterator(); it.hasNext();) {
+        for (Iterator it = timerService.getTimers().iterator(); it.hasNext(); ) {
             Timer timer = (Timer) it.next();
             if (timer.getInfo() instanceof HarvestTimerInfo) {
                 HarvestTimerInfo info = (HarvestTimerInfo) timer.getInfo();

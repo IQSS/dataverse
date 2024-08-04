@@ -35,15 +35,15 @@ public class WorkflowContext {
     
     private String invocationId = UUID.randomUUID().toString();
 
-    public WorkflowContext( DataverseRequest aRequest, Dataset aDataset, TriggerType aTriggerType, boolean datasetExternallyReleased ) {
-        this( aRequest, aDataset,
+    public WorkflowContext(DataverseRequest aRequest, Dataset aDataset, TriggerType aTriggerType, boolean datasetExternallyReleased) {
+        this(aRequest, aDataset,
                 aDataset.getLatestVersion().getVersionNumber(), 
                 aDataset.getLatestVersion().getMinorVersionNumber(),
                 aTriggerType, null, null, datasetExternallyReleased);
     }
     public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber, 
             long nextMinorVersionNumber, TriggerType type, Map<String, Object> settings, ApiToken apiToken, boolean datasetExternallyReleased) {
-        this(request, dataset, nextVersionNumber,nextMinorVersionNumber, type, settings, apiToken, datasetExternallyReleased, null, null);
+        this(request, dataset, nextVersionNumber, nextMinorVersionNumber, type, settings, apiToken, datasetExternallyReleased, null, null);
     }
 
     public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber, 
@@ -57,10 +57,10 @@ public class WorkflowContext {
         this.apiToken = apiToken;
         this.datasetExternallyReleased = datasetExternallyReleased;
         //If null, we'll keep the randomly generated one
-        if(invocationId!=null) {
+        if (invocationId != null) {
             setInvocationId(invocationId);
         }
-        if(lockId != null) {
+        if (lockId != null) {
           this.setLockId(lockId);
         }
     }
@@ -82,7 +82,7 @@ public class WorkflowContext {
     }
     
     public boolean isMinorRelease() {
-        return getNextMinorVersionNumber()!=0;
+        return getNextMinorVersionNumber() != 0;
     }
 
     public void setInvocationId(String invocationId) {

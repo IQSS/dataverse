@@ -36,7 +36,7 @@ public interface GroupProvider<T extends Group> {
      * @return The set of groups the role assignee is a member of.
      * @see #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest, edu.harvard.iq.dataverse.DvObject)
      */
-    public Set<T> groupsFor( RoleAssignee ra, DvObject dvo );
+    public Set<T> groupsFor(RoleAssignee ra, DvObject dvo);
     
     /**
      * Looks up the groups this provider has for a dataverse request, in the context of a {@link DvObject}.
@@ -44,13 +44,13 @@ public interface GroupProvider<T extends Group> {
      * @param dvo the DvObject which is the context for the groups. May be {@code null}.
      * @return The set of groups the user is member of.
      */
-    public Set<T> groupsFor( DataverseRequest req, DvObject dvo );
+    public Set<T> groupsFor(DataverseRequest req, DvObject dvo);
     
-    public Set<T> groupsFor( RoleAssignee ra);
+    public Set<T> groupsFor(RoleAssignee ra);
     
     public Set<T> groupsFor(DataverseRequest req);
     
-    public T get( String groupAlias );
+    public T get(String groupAlias);
 
     public Set<T> findGlobalGroups();
 }

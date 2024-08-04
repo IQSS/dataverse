@@ -40,47 +40,47 @@ public class VariableMetadataUtil {
             thesame = false;
         } else if (checkDiffEmpty(vmNew.getNotes(), vmOld.getNotes())) {
             thesame = false;
-        }else if (checkDiff(vmOld.getNotes(), vmNew.getNotes())) {
+        } else if (checkDiff(vmOld.getNotes(), vmNew.getNotes())) {
             thesame = false;
-        } else if ( checkDiffEmpty(vmOld.getUniverse(), vmNew.getUniverse())) {
+        } else if (checkDiffEmpty(vmOld.getUniverse(), vmNew.getUniverse())) {
             thesame = false;
         } else if (checkDiffEmpty(vmNew.getUniverse(), vmOld.getUniverse())) {
             thesame = false;
-        } else if (checkDiff(vmOld.getUniverse(),vmNew.getUniverse())) {
+        } else if (checkDiff(vmOld.getUniverse(), vmNew.getUniverse())) {
             thesame = false;
-        } else if (checkDiffEmpty(vmOld.getInterviewinstruction(),vmNew.getInterviewinstruction())) {
+        } else if (checkDiffEmpty(vmOld.getInterviewinstruction(), vmNew.getInterviewinstruction())) {
             thesame = false;
-        } else if ( checkDiffEmpty(vmNew.getInterviewinstruction(),vmOld.getInterviewinstruction())) {
+        } else if (checkDiffEmpty(vmNew.getInterviewinstruction(), vmOld.getInterviewinstruction())) {
             thesame = false;
-        } else if (checkDiff(vmOld.getInterviewinstruction(),vmNew.getInterviewinstruction())) {
+        } else if (checkDiff(vmOld.getInterviewinstruction(), vmNew.getInterviewinstruction())) {
             thesame = false;
-        } else  if (checkDiffEmpty(vmOld.getLiteralquestion(),vmNew.getLiteralquestion())) {
+        } else if (checkDiffEmpty(vmOld.getLiteralquestion(), vmNew.getLiteralquestion())) {
             thesame = false;
-        } else if (checkDiffEmpty(vmNew.getLiteralquestion(),vmOld.getLiteralquestion())) {
+        } else if (checkDiffEmpty(vmNew.getLiteralquestion(), vmOld.getLiteralquestion())) {
             thesame = false;
-        } else if (checkDiff(vmOld.getLiteralquestion(),vmNew.getLiteralquestion())) {
+        } else if (checkDiff(vmOld.getLiteralquestion(), vmNew.getLiteralquestion())) {
             thesame = false;
-        } else if (checkDiff(vmOld.getPostquestion(),vmNew.getPostquestion())) {
+        } else if (checkDiff(vmOld.getPostquestion(), vmNew.getPostquestion())) {
             thesame = false;
-        } else if (checkDiffEmpty(vmNew.getPostquestion(),vmOld.getPostquestion())) {
+        } else if (checkDiffEmpty(vmNew.getPostquestion(), vmOld.getPostquestion())) {
             thesame = false;
-        } else if (checkDiff(vmOld.getPostquestion(),vmNew.getPostquestion())) {
+        } else if (checkDiff(vmOld.getPostquestion(), vmNew.getPostquestion())) {
             thesame = false;
-        } else  if (checkDiffEmpty(vmOld.getLabel(),vmNew.getLabel())) {
+        } else if (checkDiffEmpty(vmOld.getLabel(), vmNew.getLabel())) {
             thesame = false;
-        } else if  (checkDiffEmpty(vmNew.getLabel(),vmOld.getLabel())) {
+        } else if (checkDiffEmpty(vmNew.getLabel(), vmOld.getLabel())) {
             thesame = false;
-        } else if (checkDiff(vmOld.getLabel(),vmNew.getLabel())) {
+        } else if (checkDiff(vmOld.getLabel(), vmNew.getLabel())) {
             thesame = false;
-        } else if (vmOld.isIsweightvar() != vmNew.isIsweightvar() ) {
+        } else if (vmOld.isIsweightvar() != vmNew.isIsweightvar()) {
             thesame = false;
         } else if (vmOld.isWeighted() != vmNew.isWeighted()) {
             thesame = false;
         } else if (vmOld.isWeighted() == vmNew.isWeighted()) {
-            if (vmOld.isWeighted() ){
+            if (vmOld.isWeighted()) {
                 Long oldWeightId = vmOld.getWeightvariable().getId();
                 Long newWeightId = vmNew.getWeightvariable().getId();
-                if ( !oldWeightId.equals(newWeightId) ) {
+                if (!oldWeightId.equals(newWeightId)) {
                     thesame = false;
                 }
             }

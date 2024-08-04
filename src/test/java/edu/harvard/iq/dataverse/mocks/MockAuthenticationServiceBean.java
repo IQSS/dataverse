@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 public class MockAuthenticationServiceBean extends AuthenticationServiceBean {
     
     @Override
-    public AuthenticatedUser getAuthenticatedUser( String identifier ) {
+    public AuthenticatedUser getAuthenticatedUser(String identifier) {
         return new MockAuthenticatedUser();
     }
     

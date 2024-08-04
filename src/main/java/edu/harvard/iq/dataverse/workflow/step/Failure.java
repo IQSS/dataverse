@@ -10,7 +10,7 @@ public class Failure implements WorkflowStepResult {
     private final String reason;
     private final String message;
     
-    public Failure( String reason ) {
+    public Failure(String reason) {
         this(reason, null);
     }
     

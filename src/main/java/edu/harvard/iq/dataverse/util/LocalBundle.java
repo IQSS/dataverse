@@ -9,7 +9,7 @@ public class LocalBundle extends ResourceBundle {
 
 
 
-    public LocalBundle(){
+    public LocalBundle() {
         ResourceBundle localBundle = BundleUtil.getResourceBundle(defaultBundleFile);
 
         if (localBundle != null) {

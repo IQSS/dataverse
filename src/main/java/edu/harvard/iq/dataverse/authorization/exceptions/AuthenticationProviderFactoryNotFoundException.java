@@ -19,7 +19,7 @@ public class AuthenticationProviderFactoryNotFoundException extends Authorizatio
         factoryAlias = anAlias;
     }
     public AuthenticationProviderFactoryNotFoundException(String anAlias) {
-        this( "Can't find AuthenticationProviderFactory with an alias '" + anAlias + "'", anAlias );
+        this("Can't find AuthenticationProviderFactory with an alias '" + anAlias + "'", anAlias);
     }
 
     public String getFactoryAlias() {

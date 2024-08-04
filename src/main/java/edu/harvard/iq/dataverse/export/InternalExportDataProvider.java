@@ -36,7 +36,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
     
     InternalExportDataProvider(DatasetVersion dv, InputStream is) {
         this.dv = dv;
-        this.is=is;
+        this.is = is;
     }
 
     @Override
@@ -87,6 +87,6 @@ public class InternalExportDataProvider implements ExportDataProvider {
     }
 
     public void setPrerequisiteInputStream(InputStream prereqStream) {
-        this.is=prereqStream;
+        this.is = prereqStream;
     }
 }

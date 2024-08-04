@@ -67,7 +67,7 @@ public class TestIngest {
     
     @Path("test/file")
     @GET
-    @Produces({ "text/plain" })
+    @Produces({"text/plain"})
     public String datafile(@QueryParam("fileName") String fileName, @QueryParam("fileType") String fileType, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
         String output = "";
 
@@ -86,14 +86,14 @@ public class TestIngest {
         }
         
         if (fileInputStream == null) {
-            output = output.concat("Could not open file "+fileName+".");
+            output = output.concat("Could not open file " + fileName + ".");
             return output;
         }
         
         TabularDataFileReader ingestPlugin = ingestService.getTabDataReaderByMimeType(fileType);
 
         if (ingestPlugin == null) {
-            output = output.concat("Could not locate an ingest plugin for type "+fileType+".");
+            output = output.concat("Could not locate an ingest plugin for type " + fileType + ".");
             return output;
         }
         
@@ -134,14 +134,14 @@ public class TestIngest {
                     fileMetadata.setDataFile(dataFile);
                     dataFile.getFileMetadatas().add(fileMetadata);
                     
-                    output = output.concat ("NVARS: "+dataTable.getVarQuantity()+"\n");
-                    output = output.concat ("NOBS: "+dataTable.getCaseQuantity()+"\n");
+                    output = output.concat("NVARS: " + dataTable.getVarQuantity() + "\n");
+                    output = output.concat("NOBS: " + dataTable.getCaseQuantity() + "\n");
                     
                     try {
                         ingestService.produceSummaryStatistics(dataFile, tabFile);
-                        output = output.concat ("UNF: "+dataTable.getUnf()+"\n");
+                        output = output.concat("UNF: " + dataTable.getUnf() + "\n");
                     } catch (IOException ioex) {
-                        output = output.concat ("UNF: failed to calculate\n"+"\n");
+                        output = output.concat("UNF: failed to calculate\n" + "\n");
                     }
                     
                     for (int i = 0; i < dataTable.getVarQuantity(); i++) {
@@ -165,24 +165,24 @@ public class TestIngest {
                             }
                         }
                         
-                        output = output.concat ("VAR"+i+" ");
-                        output = output.concat (dataTable.getDataVariables().get(i).getName()+" ");
-                        output = output.concat (vartype+" ");
-                        output = output.concat (dataTable.getDataVariables().get(i).getUnf());
-                        output = output.concat ("\n"); 
+                        output = output.concat("VAR" + i + " ");
+                        output = output.concat(dataTable.getDataVariables().get(i).getName() + " ");
+                        output = output.concat(vartype + " ");
+                        output = output.concat(dataTable.getDataVariables().get(i).getUnf());
+                        output = output.concat("\n"); 
                         
                     }
                 
                 } else {
-                    output = output.concat("Ingest failed to produce tab file or data table for file "+fileName+".");
+                    output = output.concat("Ingest failed to produce tab file or data table for file " + fileName + ".");
                     return output;
                 }
             } else {
-                output = output.concat("Ingest resulted in a null tabDataIngest object for file "+fileName+".");
+                output = output.concat("Ingest resulted in a null tabDataIngest object for file " + fileName + ".");
                 return output;
             }
         } catch (IOException ex) {
-            output = output.concat("Caught an exception trying to save ingested data for file "+fileName+".");
+            output = output.concat("Caught an exception trying to save ingested data for file " + fileName + ".");
             return output;
         }
         

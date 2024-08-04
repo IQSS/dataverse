@@ -28,7 +28,7 @@ import jakarta.persistence.Table;
  */
 
 @Entity
-@Table(indexes = {@Index(columnList="datavariable_id")})
+@Table(indexes = {@Index(columnList = "datavariable_id")})
 public class VariableRangeItem implements Serializable {
     /*
      * Simple constructor: 
@@ -55,7 +55,7 @@ public class VariableRangeItem implements Serializable {
      * DataVariable for which this range item is defined.
      */
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataVariable dataVariable;
 
     
@@ -105,7 +105,7 @@ public class VariableRangeItem implements Serializable {
         if (!(object instanceof VariableRangeItem)) {
             return false;
         }
-        VariableRangeItem other = (VariableRangeItem)object;
+        VariableRangeItem other = (VariableRangeItem) object;
         // TODO: 
         // Should we instead check if the values of the objects equals()
         // each other? -- L.A., Jan. 2014

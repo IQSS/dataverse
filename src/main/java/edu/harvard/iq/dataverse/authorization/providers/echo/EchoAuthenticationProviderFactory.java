@@ -31,16 +31,16 @@ public class EchoAuthenticationProviderFactory implements AuthenticationProvider
     @Override
     public AuthenticationProvider buildProvider(AuthenticationProviderRow aRow) throws AuthorizationSetupException {
         String rawData = aRow.getFactoryData();
-        String[] data = {"",""};
-        if ( rawData != null ) {
-            data = aRow.getFactoryData().split(",",-1);
+        String[] data = {"", ""};
+        if (rawData != null) {
+            data = aRow.getFactoryData().split(",", -1);
         }
         try {
         return new EchoAuthenticationProvider(aRow.getId(),
                     data[0], data[1],
                     new AuthenticationProviderDisplayInfo(aRow.getId(), aRow.getTitle(), aRow.getSubtitle()));
-        } catch (ArrayIndexOutOfBoundsException e ) {
-            throw new AuthorizationSetupException("Can't create Echo prov. Raw data: '" + rawData +"'", e);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new AuthorizationSetupException("Can't create Echo prov. Raw data: '" + rawData + "'", e);
         }
     }
     

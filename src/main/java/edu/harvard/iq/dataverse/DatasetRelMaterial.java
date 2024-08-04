@@ -20,7 +20,7 @@ import jakarta.persistence.Version;
  * @author skraffmiller
  */
 
-public class DatasetRelMaterial  {
+public class DatasetRelMaterial {
 
 
 
@@ -66,7 +66,7 @@ public class DatasetRelMaterial  {
     
     
    public boolean isEmpty() {
-        return ((text==null || text.trim().equals("")));
+        return ((text == null || text.trim().equals("")));
     }
 
     @Override
@@ -81,7 +81,7 @@ public class DatasetRelMaterial  {
         if (!(object instanceof DatasetRelMaterial)) {
             return false;
         }
-        DatasetRelMaterial other = (DatasetRelMaterial)object;
+        DatasetRelMaterial other = (DatasetRelMaterial) object;
         //if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) return false;
         return true;
     }

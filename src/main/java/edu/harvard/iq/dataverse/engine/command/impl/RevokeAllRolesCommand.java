@@ -30,7 +30,7 @@ public class RevokeAllRolesCommand extends AbstractVoidCommand {
     private final RoleAssignee assignee;
 
     public RevokeAllRolesCommand(RoleAssignee assignee, DataverseRequest aRequest) {
-        super(aRequest, (Dataverse)null);
+        super(aRequest, (Dataverse) null);
         this.assignee = assignee;
     }
 

@@ -52,7 +52,7 @@ import org.hibernate.validator.constraints.NotBlank;
 })
 
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")})
+@Table(indexes = {@Index(columnList = "dataverse_id")})
 public class Template implements Serializable {
 
     @Id
@@ -75,7 +75,7 @@ public class Template implements Serializable {
 
     @NotBlank(message = "{dataset.templatename}")
     @Size(max = 255, message = "{dataset.nameLength}")
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String name;
 
     public String getName() {
@@ -97,7 +97,7 @@ public class Template implements Serializable {
     }
 
     @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable = false )
+    @Column(nullable = false)
     private Date createTime;
 
     public Date getCreateTime() {
@@ -112,7 +112,7 @@ public class Template implements Serializable {
         return DateUtil.formatDate(createTime);
     }
     
-    @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval=true)
+    @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     @JoinColumn(name = "termsOfUseAndAccess_id")
     private TermsOfUseAndAccess termsOfUseAndAccess;
 
@@ -132,7 +132,7 @@ public class Template implements Serializable {
         return datasetFields;
     }
     
-    @Column(columnDefinition="TEXT", nullable = true )
+    @Column(columnDefinition = "TEXT", nullable = true)
     private String instructions;
 
     @Transient
@@ -183,7 +183,7 @@ public class Template implements Serializable {
     }
 
     @ManyToOne
-    @JoinColumn(nullable=true)
+    @JoinColumn(nullable = true)
     private Dataverse dataverse;
 
     public Dataverse getDataverse() {
@@ -273,8 +273,8 @@ public class Template implements Serializable {
 
         Map<String, String> instructionsMap = getInstructionsMap();
         
-        List <MetadataBlock> viewMDB = new ArrayList<>();
-        List <MetadataBlock> editMDB=this.getDataverse().getMetadataBlocks(false);
+        List<MetadataBlock> viewMDB = new ArrayList<>();
+        List<MetadataBlock> editMDB = this.getDataverse().getMetadataBlocks(false);
             
         //The metadatablocks in this template include any from the Dataverse it is associated with 
         //plus any others where the template has a displayable field (i.e. from before a block was dropped in the dataverse/collection)
@@ -356,7 +356,7 @@ public class Template implements Serializable {
             newTemplate.setDatasetFields(newTemplate.copyDatasetFields(source.getDatasetFields()));
         }
         TermsOfUseAndAccess terms = null;
-        if(source.getTermsOfUseAndAccess() != null){
+        if (source.getTermsOfUseAndAccess() != null) {
             terms = source.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
         } else {
             terms = new TermsOfUseAndAccess();
@@ -409,11 +409,11 @@ public class Template implements Serializable {
     
     //Cache values in map for reading
     public Map<String, String> getInstructionsMap() {
-        if(instructionsMap==null)
-            if(instructions != null) {
-            instructionsMap = JsonUtil.getJsonObject(instructions).entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(),entry -> ((JsonString)entry.getValue()).getString()));
+        if (instructionsMap == null)
+            if (instructions != null) {
+            instructionsMap = JsonUtil.getJsonObject(instructions).entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> ((JsonString) entry.getValue()).getString()));
             } else {
-                instructionsMap = new HashMap<String,String>();
+                instructionsMap = new HashMap<String, String>();
         }
         return instructionsMap;
     }

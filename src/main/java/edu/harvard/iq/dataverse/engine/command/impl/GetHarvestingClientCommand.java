@@ -23,7 +23,7 @@ import java.util.Set;
 // Everybody can view a published Dataverse; otherwise, an explicit 
 // ViewUnpublishedDataverse is needed. 
 // This is defined in the getRequiredPermissions() method, below. 
-public class GetHarvestingClientCommand extends AbstractCommand<HarvestingClient>{
+public class GetHarvestingClientCommand extends AbstractCommand<HarvestingClient> {
     private final Dataverse ownerDataverse;
     private final HarvestingClient harvestingClient;
 

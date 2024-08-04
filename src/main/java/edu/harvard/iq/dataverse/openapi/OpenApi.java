@@ -37,8 +37,8 @@ public class OpenApi extends HttpServlet {
          * have to check for the format parameter, if it is different from json 
          * return BAD_REQUEST (400)
          */
-        if (MediaType.APPLICATION_JSON.equals(accept)){
-            if (format != null && !JSON_FORMAT.equals(format)){
+        if (MediaType.APPLICATION_JSON.equals(accept)) {
+            if (format != null && !JSON_FORMAT.equals(format)) {
                 List<String> args = Arrays.asList(accept, format);
                 String bundleResponse = BundleUtil.getStringFromBundle("openapi.exception.unaligned", args);
                 resp.sendError(Response.Status.BAD_REQUEST.getStatusCode(),
@@ -59,7 +59,7 @@ public class OpenApi extends HttpServlet {
 
         if (JSON_FORMAT.equals(format)) {
             resp.setContentType(MediaType.APPLICATION_JSON_TYPE.toString());
-        } else  if (YAML_FORMAT.equals(format)){
+        } else if (YAML_FORMAT.equals(format)) {
             resp.setContentType(MediaType.TEXT_PLAIN_TYPE.toString());
         } else {
             
@@ -85,7 +85,7 @@ public class OpenApi extends HttpServlet {
             String baseFileName = "/META-INF/openapi." + format;
             ClassLoader classLoader = this.getClass().getClassLoader();
             URL aliasesResource = classLoader.getResource(baseFileName);
-            InputStream openapiDefinitionStream  = aliasesResource.openStream();
+            InputStream openapiDefinitionStream = aliasesResource.openStream();
             String content = IOUtils.toString(openapiDefinitionStream, StandardCharsets.UTF_8);
             resp.getWriter().write(content);
         } catch (Exception e) {

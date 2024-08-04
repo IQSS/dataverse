@@ -37,7 +37,7 @@ import java.util.logging.Logger;
  */
 @RequiredPermissionsMap({
     @RequiredPermissions(dataverseName = "moved", value = {Permission.PublishDataset})
-    ,	@RequiredPermissions(dataverseName = "destination", value = {Permission.AddDataset, Permission.PublishDataset})
+    , @RequiredPermissions(dataverseName = "destination", value = {Permission.AddDataset, Permission.PublishDataset})
 })
 public class MoveDatasetCommand extends AbstractVoidCommand {
 
@@ -55,7 +55,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         );
         this.moved = moved;
         this.destination = destination;
-        this.force= force;
+        this.force = force;
     }
 
     @Override
@@ -77,7 +77,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         
         // if dataset is published make sure that its target is published
         
-        if (moved.isReleased() && !destination.isReleased()){
+        if (moved.isReleased() && !destination.isReleased()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.targetDataverseUnpublishedDatasetPublished", Arrays.asList(destination.getDisplayName())), this);
         }
                 
@@ -92,7 +92,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
                 }
             }
             if (gbs == null || !gbs.contains(gb)) {
-                if (force == null  || !force){
+                if (force == null || !force) {
                     removeGuestbook = true;
                 } else {
                     moved.setGuestbook(null);
@@ -114,8 +114,8 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
             linkingDatasets.addAll(moved.getDatasetLinkingDataverses());
         }
         for (DatasetLinkingDataverse dsld : linkingDatasets) {
-            for (Dataverse owner : ownersToCheck){
-                if ((dsld.getLinkingDataverse()).equals(owner)){
+            for (Dataverse owner : ownersToCheck) {
+                if ((dsld.getLinkingDataverse()).equals(owner)) {
                     if (force == null || !force) {
                         removeLinkDs = true;
                         break;

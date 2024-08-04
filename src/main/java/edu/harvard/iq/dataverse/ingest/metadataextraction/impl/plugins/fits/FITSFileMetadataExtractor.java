@@ -195,12 +195,12 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
     
     // Recognized date formats, for extracting temporal values: 
     
-    private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[] {
+    private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[]{
         new SimpleDateFormat("yyyy-MM-dd"),
         new SimpleDateFormat("dd-MM-yy")   
     };
     
-    private static SimpleDateFormat[] TIME_FORMATS = new SimpleDateFormat[] {
+    private static SimpleDateFormat[] TIME_FORMATS = new SimpleDateFormat[]{
         new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"),
         new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
     };
@@ -219,7 +219,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         super(null); 
     }
     
-    public FileMetadataIngest ingest (BufferedInputStream stream) throws IOException{
+    public FileMetadataIngest ingest(BufferedInputStream stream) throws IOException {
         dbgLog.fine("Attempting to read FITS file;");
         
         Map<String, Set<String>> fitsMetaMap = new HashMap<>();
@@ -236,13 +236,13 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         
         Fits fitsFile = null; 
         try {
-            fitsFile = new Fits (stream);
+            fitsFile = new Fits(stream);
         } catch (FitsException fEx) {
-            throw new IOException ("Failed to open FITS stream; "+fEx.getMessage());
+            throw new IOException("Failed to open FITS stream; " + fEx.getMessage());
         }
         
         if (fitsFile == null) {
-            throw new IOException ("Failed to open FITS stream; null Fits object");
+            throw new IOException("Failed to open FITS stream; null Fits object");
         }
         
         
@@ -275,7 +275,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     dbgLog.fine("this is an image HDU");
                     
                     nAxis = hduHeader.getIntValue("NAXIS");
-                    dbgLog.fine("NAXIS (directly from header): "+nAxis);
+                    dbgLog.fine("NAXIS (directly from header): " + nAxis);
                     
                     if (nAxis > 0) {
                         metadataKeys.add("NAXIS");
@@ -339,14 +339,14 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                 double crval1Float = hduHeader.getDoubleValue("CRVAL1");
                 double crval2Float = hduHeader.getDoubleValue("CRVAL2");
                 
-                dbgLog.fine("CRVAL1: "+crval1Float);
-                dbgLog.fine("CRVAL2: "+crval2Float);
+                dbgLog.fine("CRVAL1: " + crval1Float);
+                dbgLog.fine("CRVAL2: " + crval2Float);
                 
                 if (crval1Float != 0.0 || crval2Float != 0.0) {
                     if (fitsMetaMap.get(ATTRIBUTE_COVERAGE_SPATIAL) == null) {
                         fitsMetaMap.put(ATTRIBUTE_COVERAGE_SPATIAL, new HashSet<String>());
                     }
-                    fitsMetaMap.get(ATTRIBUTE_COVERAGE_SPATIAL).add("("+crval1Float+" "+crval2Float+")");
+                    fitsMetaMap.get(ATTRIBUTE_COVERAGE_SPATIAL).add("(" + crval1Float + " " + crval2Float + ")");
                     metadataKeys.add("CRVAL1");
                     metadataKeys.add("CRVAL2");
                 }
@@ -424,7 +424,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     
                         try {
                             startDate = format.parse(obsDateString);
-                            dbgLog.fine("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: "+startDate+", formatted resulting date: "+TIME_FORMATS[0].format(startDate));
+                            dbgLog.fine("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: " + startDate + ", formatted resulting date: " + TIME_FORMATS[0].format(startDate));
                             startDateFormatted = format.format(startDate);
                             //startDateFormatted = obsDateString;
                             break;
@@ -459,7 +459,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     
                             try {
                                 startDate = format.parse(obsDateString);
-                                dbgLog.info("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: "+startDate+", formatted resulting date: "+DATE_FORMATS[0].format(startDate));
+                                dbgLog.info("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: " + startDate + ", formatted resulting date: " + DATE_FORMATS[0].format(startDate));
                                 //startDateFormatted = format.format(startDate);
                                 startDateFormatted = DATE_FORMATS[0].format(startDate);
                                 break;
@@ -481,7 +481,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     
                                     try {
                                         startDateTime = format.parse(newObsDateString);
-                                        dbgLog.fine("Valid date obtained by combining obs date and time: " + newObsDateString + ", format: " + format.toPattern() + ", resulting date: "+startDateTime+", formatted resulting date: "+TIME_FORMATS[0].format(startDateTime));
+                                        dbgLog.fine("Valid date obtained by combining obs date and time: " + newObsDateString + ", format: " + format.toPattern() + ", resulting date: " + startDateTime + ", formatted resulting date: " + TIME_FORMATS[0].format(startDateTime));
                                         //startDateFormatted = TIME_FORMATS[0].format(startDateTime);
                                         //startDateFormatted = newObsDateString;
                                         startDateFormatted = format.format(startDateTime);
@@ -572,8 +572,8 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                 if (hdu.getAxes() != null) {
                     for (int j = 0; j < hdu.getAxes().length; j++) {
                         int nAxisN = hdu.getAxes()[j];
-                        metadataKeys.add("NAXIS"+j);
-                        dbgLog.fine("NAXIS"+j+" value: "+nAxisN);
+                        metadataKeys.add("NAXIS" + j);
+                        dbgLog.fine("NAXIS" + j + " value: " + nAxisN);
                     }
                 } else {
                         dbgLog.fine("NULL Axes array.");
@@ -590,8 +590,8 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     String headerValue = headerCard.getValue();
                     String headerComment = headerCard.getComment();
 
-                    dbgLog.fine("Processing header key: "+headerKey);
-                    dbgLog.fine("Value: "+headerValue);
+                    dbgLog.fine("Processing header key: " + headerKey);
+                    dbgLog.fine("Value: " + headerValue);
                     boolean recognized = false; 
                     
                     if (headerKey != null) {
@@ -653,7 +653,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     }
                     j++;
                 }
-                dbgLog.fine ("processed "+j+" cards total;");
+                dbgLog.fine("processed " + j + " cards total;");
                 
                 // not sure this is legit: hdu.skipData(fitsFile.getStream());
                 // the following is legit, but seemingly unnecessary: 
@@ -662,7 +662,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                 // TODO: confirm memory use implications of reading the Data 
                 // section vs. skipping it explicitly vs. not doing anything. :) 
                 // -- L.A. June 1 2014.
-                dbgLog.fine("total size of the HDU is "+hdu.getSize());
+                dbgLog.fine("total size of the HDU is " + hdu.getSize());
                                
             }
 
@@ -670,25 +670,25 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             throw new IOException("Failed to read HDU number " + i);
         }
             
-        dbgLog.fine ("processed "+i+" HDUs total;");
+        dbgLog.fine("processed " + i + " HDUs total;");
         
         int n = fitsFile.getNumberOfHDUs(); 
         
         if (n != i) {
             dbgLog.fine("WARNING: mismatch between the number of cards processed and reported!");
         }
-        dbgLog.fine("Total (current) number of HDUs: "+n);
+        dbgLog.fine("Total (current) number of HDUs: " + n);
         
         // Make final decisions on the "type(s)" of the file we have just
         // processed: 
         
-        String imageFileType = determineImageFileType (nImageHDUs, hduTypes);
+        String imageFileType = determineImageFileType(nImageHDUs, hduTypes);
         if (imageFileType != null) {
             fitsMetaMap.get(ATTRIBUTE_TYPE).add(imageFileType);
         }
         
         if (fitsMetaMap.get(ATTRIBUTE_TYPE).isEmpty()) {
-            String tableFileType = determineTableFileType (nTableHDUs, hduTypes);
+            String tableFileType = determineTableFileType(nTableHDUs, hduTypes);
             if (tableFileType != null) {
                 fitsMetaMap.get(ATTRIBUTE_TYPE).add(tableFileType);
             }
@@ -723,7 +723,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         // Numeric fields should also be validated!
         // -- L.A. 4.0 beta
         
-        String metadataSummary = createMetadataSummary (n, nTableHDUs, nImageHDUs, nUndefHDUs, metadataKeys); //, columnKeys, hduNames, fitsMetaMap.get("Column-Label"));
+        String metadataSummary = createMetadataSummary(n, nTableHDUs, nImageHDUs, nUndefHDUs, metadataKeys); //, columnKeys, hduNames, fitsMetaMap.get("Column-Label"));
         
         ingest.setMetadataMap(fitsMetaMap);
         ingest.setMetadataSummary(metadataSummary);
@@ -732,14 +732,14 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         return ingest; 
     }
     
-    private void readConfig () {
+    private void readConfig() {
         // Initialize the field configuration. 
         // We'll attempt to read the configuration file in the domain config 
         // directory. If not available, we'll use some hard-coded default values. 
         
         Properties p = System.getProperties();
         String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
-        dbgLog.fine("PROPERTY: com.sun.aas.instanceRoot="+domainRoot);
+        dbgLog.fine("PROPERTY: com.sun.aas.instanceRoot=" + domainRoot);
         if (domainRoot == null || domainRoot.equals("")) {
             domainRoot = "/usr/local/glassfish4/glassfish/domains/domain1";
         }
@@ -747,12 +747,12 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
 
         if (domainRoot != null && !(domainRoot.equals(""))) {
             String configFileName = domainRoot + "/config/fits.conf_DONOTREAD"; 
-            File configFile = new File (configFileName);
+            File configFile = new File(configFileName);
             BufferedReader configFileReader = null; 
             
             boolean success = true;
             
-            dbgLog.fine("FITS plugin: checking for the config file: "+configFileName);
+            dbgLog.fine("FITS plugin: checking for the config file: " + configFileName);
             
             if (configFile.exists()) {
                 recognizedFitsMetadataKeys = new HashMap<String, Integer>();
@@ -764,7 +764,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                 String line;
 
                 try {
-                    dbgLog.fine("FITS plugin: attempting to read the config file: "+configFileName);
+                    dbgLog.fine("FITS plugin: attempting to read the config file: " + configFileName);
                     configFileReader = new BufferedReader(new InputStreamReader(new FileInputStream(configFile)));
 
                     while ((line = configFileReader.readLine()) != null) {
@@ -788,7 +788,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                                             && !(configTokens[2].equals(""))) {
                                         indexableFitsMetaKeys.put(configTokens[1], configTokens[2]);
                                     } else {
-                                        dbgLog.fine("FITS plugin: (warning) no index name specified for "+configTokens[1]);
+                                        dbgLog.fine("FITS plugin: (warning) no index name specified for " + configTokens[1]);
                                         indexableFitsMetaKeys.put(configTokens[1], configTokens[1]);
                                     }
                                     // Extra field options:
@@ -815,7 +815,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                                             && !(configTokens[2].equals(""))) {
                                         indexableFitsMetaKeys.put(configTokens[1], configTokens[2]);
                                     } else {
-                                        dbgLog.fine("FITS plugin: (warning) no index name specified for "+configTokens[1]);
+                                        dbgLog.fine("FITS plugin: (warning) no index name specified for " + configTokens[1]);
                                         indexableFitsMetaKeys.put(configTokens[1], configTokens[1]);
                                     }
                                     // Extra field options:
@@ -852,7 +852,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     // partial configuration we may have read. So we 
                     // need to clear the configuration maps now:
                     
-                    nConfiguredKeys=0;
+                    nConfiguredKeys = 0;
                 } finally {
                     try {
                         configFileReader.close();
@@ -864,7 +864,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                         + "the default configurtion.");
             }
         } else {
-            dbgLog.warning("FITS plugin: could not find domain room property. "+
+            dbgLog.warning("FITS plugin: could not find domain room property. " +
                     "(default configuration will be used)"); 
         }
         
@@ -879,7 +879,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         }
     }
     
-    private String determineImageFileType (int nImageHDUs, List<String> hduTypes) {
+    private String determineImageFileType(int nImageHDUs, List<String> hduTypes) {
         if (nImageHDUs > 0) {
             // At least one HDU is an image; so the whole file gets to be typed
             // as image - unless it qualifies as one of the Image sub-types:
@@ -899,28 +899,28 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         return null; 
     }
     
-    private String determineTableFileType (int nTableHDUs, List<String> hduTypes) {
+    private String determineTableFileType(int nTableHDUs, List<String> hduTypes) {
         if (nTableHDUs > 0) {
             return FILE_TYPE_TABLE;
         }
         
         return null; 
     }
-    private boolean isRecognizedKey (String key) {
+    private boolean isRecognizedKey(String key) {
         if (recognizedFitsMetadataKeys.containsKey(key)) {
             return true;
         }
         return false; 
     }
     
-    private boolean isRecognizedFloatKey (String key) {
+    private boolean isRecognizedFloatKey(String key) {
         if (recognizedFitsMetadataKeys.containsKey(key) && recognizedFitsMetadataKeys.get(key).intValue() == FIELD_TYPE_FLOAT) {
             return true;
         }
         return false; 
     }
     
-    private boolean isRecognizedColumnKey (String key) {
+    private boolean isRecognizedColumnKey(String key) {
         if (key.matches(".*[0-9]$")) {
             String trimmedKey = getTrimmedColumnKey(key);
             if (recognizedFitsColumnKeys.containsKey(trimmedKey)) {
@@ -930,7 +930,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         return false; 
     }
     
-    private String getIndexableMetaKey (String key) {
+    private String getIndexableMetaKey(String key) {
         String indexableKey = null; 
         
         if (isRecognizedKey(key)) {
@@ -942,18 +942,18 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         return indexableKey; 
     }
     
-    private String getTrimmedColumnKey (String key) {
+    private String getTrimmedColumnKey(String key) {
         if (key != null) {
             return key.replaceFirst("[0-9][0-9]*$", "");
         }
         return null;
     }    
     
-    private String createMetadataSummary (int nHDU, int nTableHDUs, int nImageHDUs, int nUndefHDUs, Set<String> metadataKeys) { //, Set<String> columnKeys, List<String> hduNames, Set<String> columnNames) {
+    private String createMetadataSummary(int nHDU, int nTableHDUs, int nImageHDUs, int nUndefHDUs, Set<String> metadataKeys) { //, Set<String> columnKeys, List<String> hduNames, Set<String> columnNames) {
         String summary = ""; 
         
         if (nHDU > 1) {
-            summary = "FITS file, "+nHDU+" HDUs total:\n";
+            summary = "FITS file, " + nHDU + " HDUs total:\n";
 
             summary = summary.concat("The primary HDU; ");
             if (nTableHDUs > 0) {
@@ -975,12 +975,12 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         
         
         if (metadataKeys != null && metadataKeys.size() > 0) {
-            summary = summary.concat ("The following recognized metadata keys " + 
+            summary = summary.concat("The following recognized metadata keys " + 
                     "have been found in the FITS file:\n");
             for (String key : metadataKeys) {
-                summary = summary.concat(key+"; ");
+                summary = summary.concat(key + "; ");
             }
-            summary=summary.concat("\n");
+            summary = summary.concat("\n");
         }
         
         /*
@@ -999,7 +999,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         return summary; 
     }
     
-    private int typeCount (List<String> typeList, String typeToken) {
+    private int typeCount(List<String> typeList, String typeToken) {
         if (typeToken == null || typeToken.equals("")) {
             return 0;
         }
@@ -1007,7 +1007,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         int count = 0;
 
         if (typeList != null) {
-            for (int i = 0; i<typeList.size(); i++) {
+            for (int i = 0; i < typeList.size(); i++) {
                 if (typeToken.equals(typeList.get(i))) {
                     count++; 
                 }
@@ -1070,7 +1070,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         }
         
         if (fitsIngest.getMetadataSummary() != null) {
-            System.out.println("\nFITS Metadata summary: \n"+fitsIngest.getMetadataSummary()); 
+            System.out.println("\nFITS Metadata summary: \n" + fitsIngest.getMetadataSummary()); 
         }
     }
 }

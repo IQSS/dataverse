@@ -121,9 +121,9 @@ public class DataAccess {
     public static StorageIO<DvObject> getDirectStorageIO(String fullStorageLocation) throws IOException {
     	String[] response = getDriverIdAndStorageLocation(fullStorageLocation);
     	String storageDriverId = response[0];
-    	String storageLocation=response[1];
+    	String storageLocation = response[1];
         String storageType = getDriverType(storageDriverId);
-        switch(storageType) {
+        switch (storageType) {
         case FILE:
             return new FileAccessIO<>(storageLocation, storageDriverId);
         case S3:
@@ -142,11 +142,11 @@ public class DataAccess {
     
     public static String[] getDriverIdAndStorageLocation(String storageLocation) {
     	//default if no prefix
-    	String storageIdentifier=storageLocation;
+    	String storageIdentifier = storageLocation;
         int separatorIndex = storageLocation.indexOf(SEPARATOR);
     	String storageDriverId = ""; //default
-        if(separatorIndex>0) {
-        	storageDriverId = storageLocation.substring(0,separatorIndex);
+        if (separatorIndex > 0) {
+        	storageDriverId = storageLocation.substring(0, separatorIndex);
         	storageIdentifier = storageLocation.substring(separatorIndex + 3);
         }
 		return new String[]{storageDriverId, storageIdentifier};
@@ -172,7 +172,7 @@ public class DataAccess {
      * @return
      */
     public static String getLocationFromStorageId(String id, Dataset dataset) {
-        String path= dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/";
+        String path = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/";
         if (id.contains(SEPARATOR)) {
             // It's a full location with a driverId, so strip and reapply the driver id
             // NOte that this will strip the bucketname out (which s3 uses) but the
@@ -184,7 +184,7 @@ public class DataAccess {
     }
     
     public static String getDriverType(String driverId) {
-    	if(driverId.isEmpty() || driverId.equals("tmp")) {
+    	if (driverId.isEmpty() || driverId.equals("tmp")) {
     		return "tmp";
     	}
     	return StorageIO.getConfigParamForDriver(driverId, StorageIO.TYPE, "Undefined");
@@ -192,11 +192,11 @@ public class DataAccess {
     
     //This 
     public static String getDriverPrefix(String driverId) throws IOException {
-        if(driverId.isEmpty() || driverId.equals("tmp")) {
+        if (driverId.isEmpty() || driverId.equals("tmp")) {
             return "tmp" + SEPARATOR;
         }
         String storageType = StorageIO.getConfigParamForDriver(driverId, StorageIO.TYPE, "Undefined");
-        switch(storageType) {
+        switch (storageType) {
         case FILE:
             return FileAccessIO.getDriverPrefix(driverId);
         case S3:
@@ -215,14 +215,14 @@ public class DataAccess {
     // for saving new, not yet saved datafiles.
     public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag) throws IOException {
         if (dvObject == null
-        		|| dvObject.getDataverseContext()==null
+        		|| dvObject.getDataverseContext() == null
                 || storageTag == null
                 || storageTag.isEmpty()) {
             throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
                 
         if (dvObject instanceof Dataset) {
-            return createNewStorageIO(dvObject, storageTag, ((Dataset)dvObject).getEffectiveStorageDriverId());
+            return createNewStorageIO(dvObject, storageTag, ((Dataset) dvObject).getEffectiveStorageDriverId());
         } 
         // it's a DataFile:
         return createNewStorageIO(dvObject, storageTag, dvObject.getOwner().getEffectiveStorageDriverId());
@@ -240,7 +240,7 @@ public class DataAccess {
          * This if will catch any cases where that's attempted.
          */
         // Tests send objects with no storageIdentifier set
-        if((dvObject.getStorageIdentifier()!=null) && dvObject.getStorageIdentifier().contains(SEPARATOR)) {
+        if ((dvObject.getStorageIdentifier() != null) && dvObject.getStorageIdentifier().contains(SEPARATOR)) {
         	throw new IOException("Attempt to create new StorageIO for already stored object: " + dvObject.getStorageIdentifier());
         }
 
@@ -252,7 +252,7 @@ public class DataAccess {
         	storageDriverId = DEFAULT_STORAGE_DRIVER_IDENTIFIER;
         }
         String storageType = getDriverType(storageDriverId);
-        switch(storageType) {
+        switch (storageType) {
         case FILE:
         	storageIO = new FileAccessIO<>(dvObject, null, storageDriverId);
         	break;
@@ -284,17 +284,17 @@ public class DataAccess {
     static HashMap<String, String> drivers = null;
     
     public static String getStorageDriverId(String driverLabel) {
-    	if (drivers==null) {
+    	if (drivers == null) {
     		populateDrivers();
     	}
-    	if(!StringUtils.isBlank(driverLabel) && drivers.containsKey(driverLabel)) {
+    	if (!StringUtils.isBlank(driverLabel) && drivers.containsKey(driverLabel)) {
     		return drivers.get(driverLabel);
     	} 
     	return DEFAULT_STORAGE_DRIVER_IDENTIFIER;
     }
 
     public static HashMap<String, String> getStorageDriverLabels() {
-    	if (drivers==null) {
+    	if (drivers == null) {
     		populateDrivers();
     	}
     	return drivers;
@@ -303,10 +303,10 @@ public class DataAccess {
     private static void populateDrivers() {
     	drivers = new HashMap<String, String>();
     	Properties p = System.getProperties();
-    	for(String property: p.stringPropertyNames()) {
-    		if(property.startsWith("dataverse.files.") && property.endsWith(".label")) {
+    	for (String property : p.stringPropertyNames()) {
+    		if (property.startsWith("dataverse.files.") && property.endsWith(".label")) {
     			String driverId = property.substring(16); // "dataverse.files.".length
-    			driverId=driverId.substring(0,driverId.indexOf('.'));
+    			driverId = driverId.substring(0, driverId.indexOf('.'));
     			logger.info("Found Storage Driver: " + driverId + " for " + p.get(property).toString());
     			drivers.put(p.get(property).toString(), driverId);
     		}
@@ -315,14 +315,14 @@ public class DataAccess {
 
     public static String getStorageDriverLabelFor(String storageDriverId) {
     	String label = null;
-    	if(!StringUtils.isEmpty(storageDriverId)) {
-    		if (drivers==null) {
+    	if (!StringUtils.isEmpty(storageDriverId)) {
+    		if (drivers == null) {
     			populateDrivers();
     		}
 
-    		if(drivers.containsValue(storageDriverId)) {
-    			for(String key: drivers.keySet()) {
-    				if(drivers.get(key).equals(storageDriverId)) {
+    		if (drivers.containsValue(storageDriverId)) {
+    			for (String key : drivers.keySet()) {
+    				if (drivers.get(key).equals(storageDriverId)) {
     					label = key;
     					break;
     				}
@@ -359,14 +359,14 @@ public class DataAccess {
     }
     
     public static boolean uploadToDatasetAllowed(Dataset d, String storageIdentifier) {
-        boolean allowed=true;
+        boolean allowed = true;
         String driverId = DataAccess.getStorageDriverFromIdentifier(storageIdentifier);
         String effectiveDriverId = d.getEffectiveStorageDriverId();
-        if(!effectiveDriverId.equals(driverId)) {
+        if (!effectiveDriverId.equals(driverId)) {
             //Not allowed unless this is a remote store and you're uploading to the basestore
-            if(getDriverType(driverId).equals(REMOTE)) {
+            if (getDriverType(driverId).equals(REMOTE)) {
                 String baseDriverId = RemoteOverlayAccessIO.getBaseStoreIdFor(driverId);
-                if(!effectiveDriverId.equals(baseDriverId)) {
+                if (!effectiveDriverId.equals(baseDriverId)) {
                     //Not allowed - wrong base driver
                     allowed = false;
                 } else {
@@ -375,7 +375,7 @@ public class DataAccess {
                 }
             } else {
                 //Not allowed - wrong main driver
-                allowed=false;
+                allowed = false;
             }
         } else {
             //Only allowed if main store allows it

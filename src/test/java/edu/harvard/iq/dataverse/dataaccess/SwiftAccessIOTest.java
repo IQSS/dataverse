@@ -38,7 +38,7 @@ public class SwiftAccessIOTest {
         datafile = MocksFactory.makeDataFile();
         dataset = MocksFactory.makeDataset();
         datafile.setOwner(dataset);
-        String dummyDriverId="dummy";
+        String dummyDriverId = "dummy";
         datasetAccess = new SwiftAccessIO<>(dataset, null, dummyDriverId);
         datafileAccess = new SwiftAccessIO<>(datafile, null, dummyDriverId);
         swiftAccess = new SwiftAccessIO();

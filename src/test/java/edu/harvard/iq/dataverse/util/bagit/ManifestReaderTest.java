@@ -30,7 +30,7 @@ public class ManifestReaderTest {
 
         MatcherAssert.assertThat(manifestChecksums.isEmpty(), Matchers.is(true));
 
-        for (BagChecksumType type: BagChecksumType.values()) {
+        for (BagChecksumType type : BagChecksumType.values()) {
             Mockito.verify(fileDataProvider).getInputStreamProvider(Path.of(type.getFileName()));
         }
     }
@@ -72,7 +72,7 @@ public class ManifestReaderTest {
 
         MatcherAssert.assertThat(manifest.isEmpty(), Matchers.is(true));
 
-        for (BagChecksumType type: BagChecksumType.values()) {
+        for (BagChecksumType type : BagChecksumType.values()) {
             Mockito.verify(fileDataProvider).getInputStreamProvider(Path.of(type.getFileName()));
         }
     }

@@ -47,12 +47,12 @@ public class ForeignMetadataImportServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
-    ForeignMetadataFormatMapping findFormatMappingByName (String name) {
+    ForeignMetadataFormatMapping findFormatMappingByName(String name) {
         try {
             return em.createNamedQuery("ForeignMetadataFormatMapping.findByName", ForeignMetadataFormatMapping.class)
                     .setParameter("name", name)
                     .getSingleResult();
-        } catch ( NoResultException nre ) {
+        } catch (NoResultException nre) {
             return null;
         }
     }
@@ -61,20 +61,20 @@ public class ForeignMetadataImportServiceBean {
         StringReader reader = null;
         XMLStreamReader xmlr = null;        
         
-        ForeignMetadataFormatMapping mappingSupported = findFormatMappingByName (foreignFormat);
+        ForeignMetadataFormatMapping mappingSupported = findFormatMappingByName(foreignFormat);
         if (mappingSupported == null) {
-            throw new EJBException("Unknown/unsupported foreign metadata format "+foreignFormat);
+            throw new EJBException("Unknown/unsupported foreign metadata format " + foreignFormat);
         }
         
         try {
             reader = new StringReader(xmlToParse);
             XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
-            xmlr =  xmlFactory.createXMLStreamReader(reader);
+            xmlr = xmlFactory.createXMLStreamReader(reader);
             processXML(xmlr, mappingSupported, datasetVersion);
         
         } catch (XMLStreamException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
-            throw new EJBException("ERROR occurred while parsing XML fragment  ("+xmlToParse.substring(0, 64)+"...); ", ex);
+            throw new EJBException("ERROR occurred while parsing XML fragment  (" + xmlToParse.substring(0, 64) + "...); ", ex);
         } finally {
             try {
                 if (xmlr != null) { xmlr.close(); }
@@ -88,22 +88,22 @@ public class ForeignMetadataImportServiceBean {
 
         // look up the foreign metadata mapping for this format:
         
-        ForeignMetadataFormatMapping mappingSupported = findFormatMappingByName (foreignFormat);
+        ForeignMetadataFormatMapping mappingSupported = findFormatMappingByName(foreignFormat);
         if (mappingSupported == null) {
-            throw new EJBException("Unknown/unsupported foreign metadata format "+foreignFormat);
+            throw new EJBException("Unknown/unsupported foreign metadata format " + foreignFormat);
         }
         
         try {
             in = new FileInputStream(xmlFile);
             XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
-            xmlr =  xmlFactory.createXMLStreamReader(in);
+            xmlr = xmlFactory.createXMLStreamReader(in);
             processXML(xmlr, mappingSupported, datasetVersion);
         } catch (FileNotFoundException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred in mapDDI: File Not Found!");
         } catch (XMLStreamException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
-            throw new EJBException("ERROR occurred while parsing XML (file "+xmlFile.getAbsolutePath()+"); ", ex);
+            throw new EJBException("ERROR occurred while parsing XML (file " + xmlFile.getAbsolutePath() + "); ", ex);
         } finally {
             try {
                 if (xmlr != null) { xmlr.close(); }
@@ -116,7 +116,7 @@ public class ForeignMetadataImportServiceBean {
 
     }
 
-    private void processXML( XMLStreamReader xmlr, ForeignMetadataFormatMapping foreignFormatMapping, DatasetVersion datasetVersion) throws XMLStreamException {
+    private void processXML(XMLStreamReader xmlr, ForeignMetadataFormatMapping foreignFormatMapping, DatasetVersion datasetVersion) throws XMLStreamException {
         // init - similarly to what I'm doing in the metadata extraction code? 
 
         //while ( xmlr.next() == XMLStreamConstants.COMMENT ); // skip pre root comments
@@ -136,19 +136,19 @@ public class ForeignMetadataImportServiceBean {
     }
     
     private void processXMLElement(XMLStreamReader xmlr, String currentPath, String openingTag, ForeignMetadataFormatMapping foreignFormatMapping, DatasetVersion datasetVersion) throws XMLStreamException {
-        logger.fine("entering processXMLElement; ("+currentPath+")");
+        logger.fine("entering processXMLElement; (" + currentPath + ")");
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 String currentElement = xmlr.getLocalName();
                 
-                ForeignMetadataFieldMapping mappingDefined = datasetfieldService.findFieldMapping(foreignFormatMapping.getName(), currentPath+currentElement);
+                ForeignMetadataFieldMapping mappingDefined = datasetfieldService.findFieldMapping(foreignFormatMapping.getName(), currentPath + currentElement);
                 
                 if (mappingDefined != null) {
                     DatasetFieldCompoundValue cachedCompoundValue = null; 
                     
                     // Process attributes, if any are defined in the mapping:
                     
-                    for (ForeignMetadataFieldMapping childMapping: mappingDefined.getChildFieldMappings()) {
+                    for (ForeignMetadataFieldMapping childMapping : mappingDefined.getChildFieldMappings()) {
                         if (childMapping.isAttribute()) {
                             String attributeName = childMapping.getForeignFieldXPath();
                             
@@ -156,17 +156,17 @@ public class ForeignMetadataImportServiceBean {
                             if (attributeValue != null) {
                                 String mappedFieldName = childMapping.getDatasetfieldName();
                                 
-                                logger.fine("looking up dataset field "+mappedFieldName);
+                                logger.fine("looking up dataset field " + mappedFieldName);
 
                                 DatasetFieldType mappedFieldType = datasetfieldService.findByNameOpt(mappedFieldName);
                                 if (mappedFieldType != null) {
                                     try {
                                         cachedCompoundValue = createDatasetFieldValue(mappedFieldType, cachedCompoundValue, attributeValue, datasetVersion);
                                     } catch (Exception ex) {
-                                        logger.warning("Caught unknown exception when processing attribute "+currentPath+currentElement+"{"+attributeName+"} (skipping);");
+                                        logger.warning("Caught unknown exception when processing attribute " + currentPath + currentElement + "{" + attributeName + "} (skipping);");
                                     }
                                 } else {
-                                    throw new EJBException ("Bad foreign metadata field mapping: no such DatasetField "+mappedFieldName+"!");
+                                    throw new EJBException("Bad foreign metadata field mapping: no such DatasetField " + mappedFieldName + "!");
                                 }
                             }
                         }
@@ -180,12 +180,12 @@ public class ForeignMetadataImportServiceBean {
                             String elementTextPayload = parseText(xmlr);
                             createDatasetFieldValue(dataverseFieldType, cachedCompoundValue, elementTextPayload, datasetVersion);
                         } else {
-                            throw new EJBException ("Bad foreign metadata field mapping: no such DatasetField "+dataverseFieldName+"!");
+                            throw new EJBException("Bad foreign metadata field mapping: no such DatasetField " + dataverseFieldName + "!");
                         }
                     }
                 } else {
                     // recursively, process the xml stream further down: 
-                    processXMLElement(xmlr, currentPath+currentElement+":", currentElement, foreignFormatMapping, datasetVersion);
+                    processXMLElement(xmlr, currentPath + currentElement + ":", currentElement, foreignFormatMapping, datasetVersion);
                 }
                 
             } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -323,7 +323,7 @@ public class ForeignMetadataImportServiceBean {
     }
     
     private String parseText(XMLStreamReader xmlr) throws XMLStreamException {
-        return parseText(xmlr,true);
+        return parseText(xmlr, true);
      }
 
      private String parseText(XMLStreamReader xmlr, boolean scrubText) throws XMLStreamException {
@@ -335,7 +335,7 @@ public class ForeignMetadataImportServiceBean {
         // DDIServiceBean in 3.6 for details. 
         // -- L.A. June 23 2014
         if (scrubText) {
-            tempString = tempString.trim().replace('\n',' ');
+            tempString = tempString.trim().replace('\n', ' ');
         }
         return tempString;
      }

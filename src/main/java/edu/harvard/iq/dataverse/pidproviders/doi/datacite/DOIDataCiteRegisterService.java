@@ -39,7 +39,7 @@ public class DOIDataCiteRegisterService {
     
         
     //A singleton since it, and the httpClient in it can be reused.
-    private DataCiteRESTfullClient client=null;
+    private DataCiteRESTfullClient client = null;
 
     public DOIDataCiteRegisterService(String url, String username, String password) {
             client = new DataCiteRESTfullClient(url, username, password);
@@ -88,14 +88,14 @@ public class DOIDataCiteRegisterService {
                 .build();
 
         if (myDiff.hasDifferences()) {
-            for(Difference d : myDiff.getDifferences()) {
+            for (Difference d : myDiff.getDifferences()) {
             
               logger.fine(d.toString());
             }
             retString = "metadata:\\r" + client.postMetadata(xmlMetadata) + "\\r";
         }
         if (!target.equals(client.getUrl(numericIdentifier))) {
-            logger.info("Updating target URL to " +  target);
+            logger.info("Updating target URL to " + target);
             client.postUrl(numericIdentifier, target);
             retString = retString + "url:\\r" + target;
 
@@ -148,7 +148,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
         String title = dvObject.getCurrentName();
-        if(dvObject.isInstanceofDataFile()) {
+        if (dvObject.isInstanceofDataFile()) {
             //Note file title is not currently escaped the way the dataset title is, so adding it here.
             title = StringEscapeUtils.escapeXml10(title);
         }
@@ -178,9 +178,9 @@ public class DOIDataCiteRegisterService {
 
         metadataTemplate.setDescription(AbstractPidProvider.UNAVAILABLE);
 
-        String title =metadata.get("datacite.title");
+        String title = metadata.get("datacite.title");
         
-        System.out.print("Map metadata title: "+ metadata.get("datacite.title"));
+        System.out.print("Map metadata title: " + metadata.get("datacite.title"));
         
         metadataTemplate.setAuthors(null);
         

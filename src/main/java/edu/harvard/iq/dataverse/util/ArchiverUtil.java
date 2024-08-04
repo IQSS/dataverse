@@ -30,7 +30,7 @@ public class ArchiverUtil {
                 if (AbstractSubmitToArchiveCommand.class.isAssignableFrom(clazz)) {
                     Constructor<?> ctor;
                     ctor = clazz.getConstructor(DataverseRequest.class, DatasetVersion.class);
-                    return (AbstractSubmitToArchiveCommand) ctor.newInstance(new Object[] { dvr, version });
+                    return (AbstractSubmitToArchiveCommand) ctor.newInstance(new Object[]{dvr, version});
                 }
             } catch (Exception e) {
                 logger.warning("Unable to instantiate an Archiver of class: " + className);
@@ -44,7 +44,7 @@ public class ArchiverUtil {
         Method m;
         try {
             m = clazz.getMethod("isSingleVersion", SettingsServiceBean.class);
-            Object[] params = { settingsService };
+            Object[] params = {settingsService};
             return (Boolean) m.invoke(null, params);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();

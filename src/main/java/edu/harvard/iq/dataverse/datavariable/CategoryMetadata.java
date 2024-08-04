@@ -10,18 +10,18 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 
 @Entity
-@Table(indexes = {@Index(columnList="category_id"), @Index(columnList="variablemetadata_id")})
+@Table(indexes = {@Index(columnList = "category_id"), @Index(columnList = "variablemetadata_id")})
 public class CategoryMetadata {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     VariableCategory category;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private VariableMetadata variableMetadata;
 
     Double wfreq;
@@ -79,7 +79,7 @@ public class CategoryMetadata {
         }
 
         CategoryMetadata other = (CategoryMetadata) object;
-        if (this.id != other.id ) {
+        if (this.id != other.id) {
             if (this.id == null || !this.id.equals(other.id)) {
                 return false;
             }

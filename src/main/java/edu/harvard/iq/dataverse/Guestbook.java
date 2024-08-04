@@ -39,14 +39,14 @@ public class Guestbook implements Serializable {
      * Holds value of the Dataverse
      */
     @ManyToOne
-    @JoinColumn(nullable=true)
+    @JoinColumn(nullable = true)
     private Dataverse dataverse;
     
-    @OneToMany(mappedBy="guestbook",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
+    @OneToMany(mappedBy = "guestbook", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     @OrderBy("displayOrder")
     private List<CustomQuestion> customQuestions;
     
-    @NotBlank(message="{guestbook.name}")
+    @NotBlank(message = "{guestbook.name}")
     private String name;
     
     private boolean enabled;
@@ -55,7 +55,7 @@ public class Guestbook implements Serializable {
     private boolean institutionRequired;   
     private boolean positionRequired; 
     @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable = false )
+    @Column(nullable = false)
     private Date createTime;
     
     /* WE PROBABLY NEED HELP INFO TEXT...
@@ -157,7 +157,7 @@ public class Guestbook implements Serializable {
         newGuestbook.setInstitutionRequired(source.isInstitutionRequired());
         newGuestbook.setCustomQuestions(new ArrayList<>());
         if (!source.getCustomQuestions().isEmpty()) {
-            for (CustomQuestion sq: source.getCustomQuestions()){
+            for (CustomQuestion sq : source.getCustomQuestions()) {
                 CustomQuestion target = new CustomQuestion();
                 target.setQuestionType(sq.getQuestionType());
                 target.setGuestbook(newGuestbook);
@@ -165,9 +165,9 @@ public class Guestbook implements Serializable {
                 target.setRequired(sq.isRequired());
                 target.setDisplayOrder(sq.getDisplayOrder());
                 target.setQuestionString(sq.getQuestionString());
-                if(!sq.getCustomQuestionValues().isEmpty()){
+                if (!sq.getCustomQuestionValues().isEmpty()) {
                     target.setCustomQuestionValues(new ArrayList<>());
-                    for (CustomQuestionValue scqv: sq.getCustomQuestionValues()){
+                    for (CustomQuestionValue scqv : sq.getCustomQuestionValues()) {
                         CustomQuestionValue newVal = new CustomQuestionValue();
                         newVal.setValueString(scqv.getValueString());
                         newVal.setCustomQuestion(target);
@@ -208,49 +208,49 @@ public class Guestbook implements Serializable {
         return retList;
     }
     
-    public List<String> getOptionalAccountInformation(){
-                List <String> retList = new ArrayList<>();
-        if(!nameRequired){
+    public List<String> getOptionalAccountInformation() {
+                List<String> retList = new ArrayList<>();
+        if (!nameRequired) {
            retList.add(BundleUtil.getStringFromBundle("name"));
         }
-        if(!emailRequired){
+        if (!emailRequired) {
             retList.add(BundleUtil.getStringFromBundle("email"));
         }
-        if(!institutionRequired){
+        if (!institutionRequired) {
             retList.add(BundleUtil.getStringFromBundle("institution"));
         }
-        if(!positionRequired){
+        if (!positionRequired) {
             retList.add(BundleUtil.getStringFromBundle("position"));
         }
         return retList;
         
     }
     
-    public List<String> getRequiredQuestionsList(){
-        List <String> retList = new ArrayList<>();
-                for (CustomQuestion cq : this.getCustomQuestions()){
-                    if(cq.isRequired()){
+    public List<String> getRequiredQuestionsList() {
+        List<String> retList = new ArrayList<>();
+                for (CustomQuestion cq : this.getCustomQuestions()) {
+                    if (cq.isRequired()) {
                         retList.add(cq.getQuestionString());
                     }
                 }
         return retList;
     }
     
-    public List<String> getOptionalQuestionsList(){
-        List <String> retList = new ArrayList<>();
-                for (CustomQuestion cq : this.getCustomQuestions()){
-                    if(!cq.isRequired()){
+    public List<String> getOptionalQuestionsList() {
+        List<String> retList = new ArrayList<>();
+                for (CustomQuestion cq : this.getCustomQuestions()) {
+                    if (!cq.isRequired()) {
                         retList.add(cq.getQuestionString());
                     }
                 }
         return retList;
     }
         
-    public void removeCustomQuestion(int index){
+    public void removeCustomQuestion(int index) {
         customQuestions.remove(index);
     }
     
-    public void addCustomQuestion(int index, CustomQuestion cq){
+    public void addCustomQuestion(int index, CustomQuestion cq) {
         customQuestions.add(index, cq);
     }
     

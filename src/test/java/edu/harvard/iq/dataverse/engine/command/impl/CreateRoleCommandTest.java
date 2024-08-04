@@ -71,7 +71,7 @@ public class CreateRoleCommandTest {
         AuthenticatedUser normalUser = new AuthenticatedUser();
         normalUser.setSuperuser(false);
         
-        CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(normalUser,IpAddress.valueOf("89.17.33.33")), dv);
+        CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(normalUser, IpAddress.valueOf("89.17.33.33")), dv);
         assertThrows(IllegalCommandException.class, () -> engine.submit(sut));
     }
    
@@ -88,7 +88,7 @@ public class CreateRoleCommandTest {
         AuthenticatedUser normalUser = new AuthenticatedUser();
         normalUser.setSuperuser(true);
         
-        CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(normalUser,IpAddress.valueOf("89.17.33.33")), dv);
+        CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(normalUser, IpAddress.valueOf("89.17.33.33")), dv);
         engine.submit(sut);
         assertTrue(saveCalled, "CreateRoleCommand did not call save on the created role.");
     
@@ -104,7 +104,7 @@ public class CreateRoleCommandTest {
         Dataverse dv = MocksFactory.makeDataverse();
         dvr.setOwner(dv);
         
-        CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(GuestUser.get(),IpAddress.valueOf("89.17.33.33")), dv);
+        CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(GuestUser.get(), IpAddress.valueOf("89.17.33.33")), dv);
         assertThrows(IllegalCommandException.class, () -> engine.submit(sut));
     }
     

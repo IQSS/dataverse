@@ -80,8 +80,8 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         //Also set the fileaccessrequest boolean on the dataset to match the new terms
         getDataset().setFileAccessRequest(updateVersion.getTermsOfUseAndAccess().isFileAccessRequest());
         List<WorkflowComment> newComments = newVersion.getWorkflowComments();
-        if (newComments!=null && newComments.size() >0) {
-            for(WorkflowComment wfc: newComments) {
+        if (newComments != null && newComments.size() > 0) {
+            for (WorkflowComment wfc : newComments) {
                 wfc.setDatasetVersion(updateVersion);
             }
             updateVersion.getWorkflowComments().addAll(newComments);
@@ -106,7 +106,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasetversion.update.failure"), this);
         }
         Long thumbId = null;
-        if(tempDataset.getThumbnailFile()!=null) {
+        if (tempDataset.getThumbnailFile() != null) {
             thumbId = tempDataset.getThumbnailFile().getId();
         };
         for (FileMetadata publishedFmd : pubFmds) {
@@ -147,7 +147,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 cat.getFileMetadatas().remove(draftFmd);
             }
             //And any thumbnail reference
-            if(publishedFmd.getDataFile().getId()==thumbId) {
+            if (publishedFmd.getDataFile().getId() == thumbId) {
                 tempDataset.setThumbnailFile(publishedFmd.getDataFile());
             }
         }

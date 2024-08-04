@@ -32,10 +32,10 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
     protected String version;
 
     public FileMetadataExtractorSpi(String vendorName, String version) {
-        if (vendorName == null){
+        if (vendorName == null) {
             throw new IllegalArgumentException("vendorName is null!");
         }
-        if (version == null){
+        if (version == null) {
             throw new IllegalArgumentException("version string is null");
         }
         this.vendorName = vendorName;
@@ -47,20 +47,20 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
     protected String[] names = null;
 
     public String[] getFormatNames() {
-        return (String[])names.clone();
+        return (String[]) names.clone();
     }
 
     protected String[] suffixes = null;
     
     public String[] getFileSuffixes() {
-        return suffixes == null ? null : (String[])suffixes.clone();
+        return suffixes == null ? null : (String[]) suffixes.clone();
     }
     
     
     protected String[] MIMETypes = null;
     
     public String[] getMIMETypes() {
-        return MIMETypes == null ? null : (String[])MIMETypes.clone();
+        return MIMETypes == null ? null : (String[]) MIMETypes.clone();
     }
     
     protected String pluginClassName = null;
@@ -88,17 +88,17 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
         if (names.length == 0) {
             throw new IllegalArgumentException("names.length is 0!");
         }
-        this.names = (String[])names.clone();
+        this.names = (String[]) names.clone();
         if (pluginClassName == null) {
             throw new IllegalArgumentException("pluginClassName is null!");
         }
 
         if (suffixes != null && suffixes.length > 0) {
-            this.suffixes = (String[])suffixes.clone();
+            this.suffixes = (String[]) suffixes.clone();
         }
 
         if (MIMETypes != null && MIMETypes.length > 0) {
-            this.MIMETypes = (String[])MIMETypes.clone();
+            this.MIMETypes = (String[]) MIMETypes.clone();
         }
 
         this.pluginClassName = pluginClassName;
@@ -152,7 +152,7 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
     public abstract FileMetadataExtractor createIngesterInstance(Object extension)
         throws IOException;
     
-    public FileMetadataExtractor createIngesterInstance() throws IOException{
+    public FileMetadataExtractor createIngesterInstance() throws IOException {
         return createIngesterInstance(null);
     }
     

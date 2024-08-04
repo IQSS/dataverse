@@ -43,7 +43,7 @@ import org.apache.commons.codec.binary.Hex;
  * @author Leonid Andreev
  * @author asone
  */
-public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
+public class DTAFileReaderSpi extends TabularDataFileReaderSpi {
 
     private static Map<Byte, String> stataReleaseNumber = new HashMap<Byte, String>();
 
@@ -86,24 +86,24 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
         if (!(source instanceof BufferedInputStream)) {
             return false;
         }
-        if (source ==null){
+        if (source == null) {
             throw new IllegalArgumentException("stream == null!");
         }
-        BufferedInputStream stream = (BufferedInputStream)source;
+        BufferedInputStream stream = (BufferedInputStream) source;
         dbgLog.fine("applying the dta test\n");
 
         byte[] b = new byte[DTA_HEADER_SIZE];
 
-        if (stream.markSupported()){
+        if (stream.markSupported()) {
             stream.mark(0);
         }
         int nbytes = stream.read(b, 0, DTA_HEADER_SIZE);
 
-        if (nbytes == 0){
+        if (nbytes == 0) {
             throw new IOException();
         }
 
-        if (stream.markSupported()){
+        if (stream.markSupported()) {
             stream.reset();
         }
 
@@ -117,8 +117,8 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
             dbgLog.fine("2nd byte is neither 0 nor 1: this file is not stata-dta type");
             return false;
         } else if (!DTAFileReaderSpi.stataReleaseNumber.containsKey(b[0])) {
-            dbgLog.fine("1st byte (" + b[0]+
-                    ") is not within the ingestable range [rel. 3-10]:"+
+            dbgLog.fine("1st byte (" + b[0] +
+                    ") is not within the ingestable range [rel. 3-10]:" +
                     "this file is NOT stata-dta type");
             return false;
         } else {
@@ -132,7 +132,7 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
     @Override
     public boolean canDecodeInput(BufferedInputStream stream) throws IOException {
     	//who closes this stream?
-        if (stream ==null){
+        if (stream == null) {
             throw new IllegalArgumentException("stream == null!");
         }
 
@@ -140,16 +140,16 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
 
         byte[] b = new byte[DTA_HEADER_SIZE];
         
-        if (stream.markSupported()){
+        if (stream.markSupported()) {
             stream.mark(0);
         }
         int nbytes = stream.read(b, 0, DTA_HEADER_SIZE);
 
-        if (nbytes == 0){
+        if (nbytes == 0) {
             throw new IOException();
         }
 
-        if (stream.markSupported()){
+        if (stream.markSupported()) {
             stream.reset();
         }
         
@@ -163,8 +163,8 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
             dbgLog.fine("2nd byte is neither 0 nor 1: this file is not stata-dta type");
             return false;
         } else if (!DTAFileReaderSpi.stataReleaseNumber.containsKey(b[0])) {
-            dbgLog.fine("1st byte (" + b[0]+
-                    ") is not within the ingestable range [rel. 3-10]:"+
+            dbgLog.fine("1st byte (" + b[0] +
+                    ") is not within the ingestable range [rel. 3-10]:" +
                     "this file is NOT stata-dta type");
             return false;
         } else {
@@ -179,10 +179,10 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
 
     @Override
     public boolean canDecodeInput(File file) throws IOException {
-        if (file ==null){
+        if (file == null) {
             throw new IllegalArgumentException("file == null!");
         }
-        if (!file.canRead()){
+        if (!file.canRead()) {
             throw new IIOException("cannot read the input file");
         }
 

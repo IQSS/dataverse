@@ -150,7 +150,7 @@ public class PasswordResetServiceBeanTest {
     }
 
     private BuiltinUser prepareBuiltinUser() {
-        BuiltinUser builtinUser= new BuiltinUser();
+        BuiltinUser builtinUser = new BuiltinUser();
         builtinUser.setId(1L);
         builtinUser.setUserName("user1");
         when(mockedBuiltinUserServiceBean.findByUserName(ArgumentMatchers.anyString())).thenReturn(builtinUser);

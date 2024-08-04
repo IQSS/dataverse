@@ -33,7 +33,7 @@ public abstract class DvObjectContainer extends DvObject {
 	
 	@Override
 	public Dataverse getOwner() {
-		return super.getOwner()!=null ? (Dataverse)super.getOwner() : null;
+		return super.getOwner() != null ? (Dataverse) super.getOwner() : null;
 	}
     
     protected abstract boolean isPermissionRoot();
@@ -43,9 +43,9 @@ public abstract class DvObjectContainer extends DvObject {
         return isPermissionRoot() || (getOwner() == null);
     }
 
-    private String storageDriver=null;
+    private String storageDriver = null;
     
-    private String metadataLanguage=null;
+    private String metadataLanguage = null;
     
     private Boolean guestbookAtRequest = null;
     
@@ -54,7 +54,7 @@ public abstract class DvObjectContainer extends DvObject {
     @Transient
     private PidProvider pidGenerator = null;
    
-    @OneToOne(mappedBy = "dvObjectContainer",cascade={ CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval=true)
+    @OneToOne(mappedBy = "dvObjectContainer", cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval = true)
     private StorageUse storageUse;
     
     public String getEffectiveStorageDriverId() {
@@ -112,12 +112,12 @@ public abstract class DvObjectContainer extends DvObject {
     }
     
     public static boolean isMetadataLanguageSet(String mdLang) {
-        return mdLang!=null && !mdLang.equals(UNDEFINED_CODE);
+        return mdLang != null && !mdLang.equals(UNDEFINED_CODE);
     }
     
     public boolean getEffectiveGuestbookEntryAtRequest() {
         boolean gbAtRequest = false;
-        if (guestbookAtRequest==null) {
+        if (guestbookAtRequest == null) {
             if (this.getOwner() != null) {
                 gbAtRequest = this.getOwner().getEffectiveGuestbookEntryAtRequest();
             } else {
@@ -133,7 +133,7 @@ public abstract class DvObjectContainer extends DvObject {
     }
     
     public String getGuestbookEntryAtRequest() {
-        if(guestbookAtRequest==null) {
+        if (guestbookAtRequest == null) {
             return UNDEFINED_CODE;
         }
         return Boolean.valueOf(guestbookAtRequest).toString();
@@ -252,7 +252,7 @@ public abstract class DvObjectContainer extends DvObject {
                             providerSpecs.getString("authority"), providerSpecs.getString("shoulder"));
                 }
             }
-            if(pidGenerator!=null && pidGenerator.canManagePID()) {
+            if (pidGenerator != null && pidGenerator.canManagePID()) {
                 setPidGenerator(pidGenerator);
             } else {
                 setPidGenerator(null);

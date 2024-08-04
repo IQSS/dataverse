@@ -96,11 +96,11 @@ public class JsonParserTest {
         datasetFieldTypeSvc.setMetadataBlock("citation");
 
         keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", FieldType.TEXT, true));
-        descriptionType = datasetFieldTypeSvc.add( new DatasetFieldType("description", FieldType.TEXTBOX, false) );
+        descriptionType = datasetFieldTypeSvc.add(new DatasetFieldType("description", FieldType.TEXTBOX, false));
         
         subjectType = datasetFieldTypeSvc.add(new DatasetFieldType("subject", FieldType.TEXT, true));
         subjectType.setAllowControlledVocabulary(true);
-        subjectType.setControlledVocabularyValues( Arrays.asList( 
+        subjectType.setControlledVocabularyValues(Arrays.asList( 
                 new ControlledVocabularyValue(1l, "mgmt", subjectType),
                 new ControlledVocabularyValue(2l, "law", subjectType),
                 new ControlledVocabularyValue(3l, "cs", subjectType)
@@ -108,7 +108,7 @@ public class JsonParserTest {
         
         pubIdType = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIdType", FieldType.TEXT, false));
         pubIdType.setAllowControlledVocabulary(true);
-        pubIdType.setControlledVocabularyValues( Arrays.asList( 
+        pubIdType.setControlledVocabularyValues(Arrays.asList( 
                 new ControlledVocabularyValue(1l, "ark", pubIdType),
                 new ControlledVocabularyValue(2l, "doi", pubIdType),
                 new ControlledVocabularyValue(3l, "url", pubIdType)
@@ -116,10 +116,10 @@ public class JsonParserTest {
         
         compoundSingleType = datasetFieldTypeSvc.add(new DatasetFieldType("coordinate", FieldType.TEXT, true));
         Set<DatasetFieldType> childTypes = new HashSet<>();
-        childTypes.add( datasetFieldTypeSvc.add(new DatasetFieldType("lat", FieldType.TEXT, false)) );
-        childTypes.add( datasetFieldTypeSvc.add(new DatasetFieldType("lon", FieldType.TEXT, false)) );
+        childTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("lat", FieldType.TEXT, false)));
+        childTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("lon", FieldType.TEXT, false)));
         
-        for ( DatasetFieldType t : childTypes ) {
+        for (DatasetFieldType t : childTypes) {
             t.setParentDatasetFieldType(compoundSingleType);
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
@@ -130,13 +130,13 @@ public class JsonParserTest {
     @Test 
     public void testCompoundRepeatsRoundtrip() throws JsonParseException {
         DatasetField expected = new DatasetField();
-        expected.setDatasetFieldType( datasetFieldTypeSvc.findByName("coordinate") );
+        expected.setDatasetFieldType(datasetFieldTypeSvc.findByName("coordinate"));
         List<DatasetFieldCompoundValue> vals = new LinkedList<>();
-        for ( int i=0; i<5; i++ ) {
+        for (int i = 0; i < 5; i++) {
             DatasetFieldCompoundValue val = new DatasetFieldCompoundValue();
             val.setParentDatasetField(expected);
-            val.setChildDatasetFields( Arrays.asList(latLonField("lat", Integer.toString(i*10)), latLonField("lon", Integer.toString(3+i*10))));
-            vals.add( val );
+            val.setChildDatasetFields(Arrays.asList(latLonField("lat", Integer.toString(i * 10)), latLonField("lon", Integer.toString(3 + i * 10))));
+            vals.add(val);
         }
         expected.setDatasetFieldCompoundValues(vals);
         
@@ -149,10 +149,10 @@ public class JsonParserTest {
         assertFieldsEqual(expected, actual);
     }
     
-    DatasetField latLonField( String latLon, String value ) {
+    DatasetField latLonField(String latLon, String value) {
         DatasetField retVal = new DatasetField();
-        retVal.setDatasetFieldType( datasetFieldTypeSvc.findByName(latLon));
-        retVal.setDatasetFieldValues( Collections.singletonList( new DatasetFieldValue(retVal, value)));
+        retVal.setDatasetFieldType(datasetFieldTypeSvc.findByName(latLon));
+        retVal.setDatasetFieldValues(Collections.singletonList(new DatasetFieldValue(retVal, value)));
         return retVal;
     }
     
@@ -160,8 +160,8 @@ public class JsonParserTest {
     public void testControlledVocalNoRepeatsRoundTrip() throws JsonParseException {
         DatasetField expected = new DatasetField();
         DatasetFieldType fieldType = datasetFieldTypeSvc.findByName("publicationIdType");
-        expected.setDatasetFieldType( fieldType );
-        expected.setControlledVocabularyValues( Collections.singletonList( fieldType.getControlledVocabularyValue("ark")));
+        expected.setDatasetFieldType(fieldType);
+        expected.setControlledVocabularyValues(Collections.singletonList(fieldType.getControlledVocabularyValue("ark")));
         JsonObject json = JsonPrinter.json(expected);
         
         DatasetField actual = sut.parseField(json);
@@ -173,8 +173,8 @@ public class JsonParserTest {
     public void testControlledVocalRepeatsRoundTrip() throws JsonParseException {
         DatasetField expected = new DatasetField();
         DatasetFieldType fieldType = datasetFieldTypeSvc.findByName("subject");
-        expected.setDatasetFieldType( fieldType );
-        expected.setControlledVocabularyValues( Arrays.asList( fieldType.getControlledVocabularyValue("mgmt"),
+        expected.setDatasetFieldType(fieldType);
+        expected.setControlledVocabularyValues(Arrays.asList(fieldType.getControlledVocabularyValue("mgmt"),
                  fieldType.getControlledVocabularyValue("law"),
                  fieldType.getControlledVocabularyValue("cs")));
         
@@ -218,8 +218,8 @@ public class JsonParserTest {
     @Test
     public void testPrimitiveNoRepeatesFieldRoundTrip() throws JsonParseException {
         DatasetField expected = new DatasetField();
-        expected.setDatasetFieldType( datasetFieldTypeSvc.findByName("description") );
-        expected.setDatasetFieldValues( Collections.singletonList(new DatasetFieldValue(expected, "This is a description value")) );
+        expected.setDatasetFieldType(datasetFieldTypeSvc.findByName("description"));
+        expected.setDatasetFieldValues(Collections.singletonList(new DatasetFieldValue(expected, "This is a description value")));
         JsonObject json = JsonPrinter.json(expected);
         
         DatasetField actual = sut.parseField(json);
@@ -230,10 +230,10 @@ public class JsonParserTest {
     @Test
     public void testPrimitiveRepeatesFieldRoundTrip() throws JsonParseException {
         DatasetField expected = new DatasetField();
-        expected.setDatasetFieldType( datasetFieldTypeSvc.findByName("keyword") );
-        expected.setDatasetFieldValues( Arrays.asList(new DatasetFieldValue(expected, "kw1"),
+        expected.setDatasetFieldType(datasetFieldTypeSvc.findByName("keyword"));
+        expected.setDatasetFieldValues(Arrays.asList(new DatasetFieldValue(expected, "kw1"),
                 new DatasetFieldValue(expected, "kw2"),
-                new DatasetFieldValue(expected, "kw3")) );
+                new DatasetFieldValue(expected, "kw3")));
         JsonObject json = JsonPrinter.json(expected);
         
         DatasetField actual = sut.parseField(json);
@@ -460,20 +460,20 @@ public class JsonParserTest {
         original.setDisplayName("Test-ip-group");
         original.setId(42l);
         original.setPersistedGroupAlias("test-ip-group");
-        original.setGroupProvider( new IpGroupProvider(null) );
+        original.setGroupProvider(new IpGroupProvider(null));
         
-        original.add( IpAddressRange.make(IpAddress.valueOf("1.2.1.1"), IpAddress.valueOf("1.2.1.10")) );
-        original.add( IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")) );
-        original.add( IpAddressRange.make(IpAddress.valueOf("1:2:3::4:5"), IpAddress.valueOf("1:2:3::4:5")) );
-        original.add( IpAddressRange.make(IpAddress.valueOf("1:2:3::3:ff"), IpAddress.valueOf("1:2:3::3:5")) );
+        original.add(IpAddressRange.make(IpAddress.valueOf("1.2.1.1"), IpAddress.valueOf("1.2.1.10")));
+        original.add(IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")));
+        original.add(IpAddressRange.make(IpAddress.valueOf("1:2:3::4:5"), IpAddress.valueOf("1:2:3::4:5")));
+        original.add(IpAddressRange.make(IpAddress.valueOf("1:2:3::3:ff"), IpAddress.valueOf("1:2:3::3:5")));
         
         JsonObject serialized = JsonPrinter.json(original).build();
         
-        System.out.println( serialized.toString() );
+        System.out.println(serialized.toString());
         
         IpGroup parsed = new JsonParser().parseIpGroup(serialized);
         
-        assertEquals( original, parsed );
+        assertEquals(original, parsed);
         
     }
     
@@ -485,25 +485,25 @@ public class JsonParserTest {
         original.setDisplayName("Test-ip-group");
         original.setId(42l);
         original.setPersistedGroupAlias("test-ip-group");
-        original.setGroupProvider( new IpGroupProvider(null) );
+        original.setGroupProvider(new IpGroupProvider(null));
         
-        original.add( IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")) );
+        original.add(IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")));
         
         JsonObject serialized = JsonPrinter.json(original).build();
         
-        System.out.println( serialized.toString() );
+        System.out.println(serialized.toString());
         
         IpGroup parsed = new JsonParser().parseIpGroup(serialized);
         
-        assertEquals( original, parsed );
-        assertTrue( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.1")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.2")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.2.1")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.0")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.250")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.2.1.1")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")) ));
+        assertEquals(original, parsed);
+        assertTrue(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.1"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.2"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.2.1"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.0"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.1.1.250"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.2.1.1"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61"))));
         
     }
     
@@ -515,25 +515,25 @@ public class JsonParserTest {
         original.setDisplayName("Test-ip-group");
         original.setId(42l);
         original.setPersistedGroupAlias("test-ip-group");
-        original.setGroupProvider( new IpGroupProvider(null) );
+        original.setGroupProvider(new IpGroupProvider(null));
         
-        original.add( IpAddressRange.make(IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61"),
-                                          IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")) );
+        original.add(IpAddressRange.make(IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61"),
+                                          IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")));
         
         JsonObject serialized = JsonPrinter.json(original).build();
         
-        System.out.println( serialized.toString() );
+        System.out.println(serialized.toString());
         
         IpGroup parsed = new JsonParser().parseIpGroup(serialized);
         
-        assertEquals( original, parsed );
-        assertTrue( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce60")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce62")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe47:ce61")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0af:fe48:ce61")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe79::22c9:d0ff:fe48:ce61")) ));
-        assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1")) ));
+        assertEquals(original, parsed);
+        assertTrue(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce60"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce62"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0ff:fe47:ce61"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe80::22c9:d0af:fe48:ce61"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe79::22c9:d0ff:fe48:ce61"))));
+        assertFalse(parsed.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1"))));
         
     }
     
@@ -624,53 +624,53 @@ public class JsonParserTest {
         assertEquals(null, codeCoverage.get(0).getCategories());
     }
 
-    JsonObject json( String s ) {
-        return Json.createReader( new StringReader(s) ).readObject();
+    JsonObject json(String s) {
+        return Json.createReader(new StringReader(s)).readObject();
     }
     
-    public boolean assertFieldsEqual( DatasetField ex, DatasetField act ) {
-        if ( ex == act ) return true;
-        if ( (ex == null) ^ (act==null) ) return false;
+    public boolean assertFieldsEqual(DatasetField ex, DatasetField act) {
+        if (ex == act) return true;
+        if ((ex == null) ^ (act == null)) return false;
         
         // type
-        if ( ! ex.getDatasetFieldType().equals(act.getDatasetFieldType()) ) return false;
+        if (!ex.getDatasetFieldType().equals(act.getDatasetFieldType())) return false;
         
-        if ( ex.getDatasetFieldType().isPrimitive() ) {
+        if (ex.getDatasetFieldType().isPrimitive()) {
             List<DatasetFieldValue> exVals = ex.getDatasetFieldValues();
             List<DatasetFieldValue> actVals = act.getDatasetFieldValues();
-            if ( exVals.size() != actVals.size() ) return false;
+            if (exVals.size() != actVals.size()) return false;
             Iterator<DatasetFieldValue> exItr = exVals.iterator();
-            for ( DatasetFieldValue actVal : actVals ) {
+            for (DatasetFieldValue actVal : actVals) {
                 DatasetFieldValue exVal = exItr.next();
-                if ( ! exVal.getValue().equals(actVal.getValue()) ) {
+                if (!exVal.getValue().equals(actVal.getValue())) {
                     return false;
                 }
             }
             return true;
             
-        } else if ( ex.getDatasetFieldType().isControlledVocabulary() ) {
+        } else if (ex.getDatasetFieldType().isControlledVocabulary()) {
             List<ControlledVocabularyValue> exVals = ex.getControlledVocabularyValues();
             List<ControlledVocabularyValue> actVals = act.getControlledVocabularyValues();
-            if ( exVals.size() != actVals.size() ) return false;
+            if (exVals.size() != actVals.size()) return false;
             Iterator<ControlledVocabularyValue> exItr = exVals.iterator();
-            for ( ControlledVocabularyValue actVal : actVals ) {
+            for (ControlledVocabularyValue actVal : actVals) {
                 ControlledVocabularyValue exVal = exItr.next();
-                if ( ! exVal.getId().equals(actVal.getId()) ) {
+                if (!exVal.getId().equals(actVal.getId())) {
                     return false;
                 }
             }
             return true;
             
-        } else if ( ex.getDatasetFieldType().isCompound() ) {
+        } else if (ex.getDatasetFieldType().isCompound()) {
             List<DatasetFieldCompoundValue> exVals = ex.getDatasetFieldCompoundValues();
             List<DatasetFieldCompoundValue> actVals = act.getDatasetFieldCompoundValues();
-            if ( exVals.size() != actVals.size() ) return false;
+            if (exVals.size() != actVals.size()) return false;
             Iterator<DatasetFieldCompoundValue> exItr = exVals.iterator();
-            for ( DatasetFieldCompoundValue actVal : actVals ) {
+            for (DatasetFieldCompoundValue actVal : actVals) {
                 DatasetFieldCompoundValue exVal = exItr.next();
                 Iterator<DatasetField> exChildItr = exVal.getChildDatasetFields().iterator();
                 Iterator<DatasetField> actChildItr = actVal.getChildDatasetFields().iterator();
-                while( exChildItr.hasNext() ) {
+                while (exChildItr.hasNext()) {
                     assertFieldsEqual(exChildItr.next(), actChildItr.next());
                 }
             }
@@ -683,7 +683,7 @@ public class JsonParserTest {
     
     private static class MockSettingsSvc extends SettingsServiceBean {
         @Override
-        public String getValueForKey( Key key /*, String defaultValue */) {
+        public String getValueForKey(Key key /*, String defaultValue */) {
             switch (key) {
                 case Authority:
                     return "10.5072";

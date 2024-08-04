@@ -119,7 +119,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
 
                                     dataciteOut.write(dataciteXml.getBytes(Charset.forName("utf-8")));
                                     dataciteOut.close();
-                                    success=true;
+                                    success = true;
                                 } catch (Exception e) {
                                     logger.severe("Error creating datacite.xml: " + e.getMessage());
                                     // TODO Auto-generated catch block

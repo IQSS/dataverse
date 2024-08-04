@@ -28,7 +28,7 @@ public class DateUtil {
             dateFormatter = DateFormat.getDateInstance(DateFormat.DEFAULT, currentLocale);
             formattedDate = dateFormatter.format(dateToformat);
             return formattedDate;
-        } catch(Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }

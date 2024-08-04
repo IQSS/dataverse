@@ -60,7 +60,7 @@ public class MailDomainGroupServiceBean {
             .filter(MailDomainGroup::isRegEx)
             .collect(Collectors.toMap(
                 mg -> mg,
-                mg -> Pattern.compile(mg.getEmailDomains().replace(";","|"))
+                mg -> Pattern.compile(mg.getEmailDomains().replace(";", "|"))
             ));
     }
     
@@ -85,7 +85,7 @@ public class MailDomainGroupServiceBean {
         // otherwise start to bisect the mail and lookup groups.
         // NOTE: the email from the user has been validated via {@link EMailValidator} when persisted.
         Optional<String> oDomain = getDomainFromMail(user.getEmail());
-        if ( oDomain.isPresent() ) {
+        if (oDomain.isPresent()) {
             // transform to lowercase, in case someone uses uppercase letters. (we store the comparison values in lowercase)
             String domain = oDomain.get().toLowerCase();
             
@@ -120,12 +120,12 @@ public class MailDomainGroupServiceBean {
      */
     @Lock(LockType.READ)
     Optional<MailDomainGroup> findByAlias(String groupAlias) {
-        try  {
+        try {
             return Optional.of(
                 em.createNamedQuery("MailDomainGroup.findByPersistedGroupAlias", MailDomainGroup.class)
                     .setParameter("persistedGroupAlias", groupAlias)
                     .getSingleResult());
-        } catch ( NoResultException nre ) {
+        } catch (NoResultException nre) {
             return Optional.empty();
         }
     }
@@ -140,7 +140,7 @@ public class MailDomainGroupServiceBean {
      * @throws NotFoundException if groupName does not match both a group in database and the alias of the provided group
      */
     @Lock(LockType.WRITE)
-    public MailDomainGroup saveOrUpdate(Optional<String> groupAlias, MailDomainGroup grp ) {
+    public MailDomainGroup saveOrUpdate(Optional<String> groupAlias, MailDomainGroup grp) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "mailDomainCreate");
         alr.setInfo(grp.getIdentifier());
         
@@ -154,7 +154,7 @@ public class MailDomainGroupServiceBean {
                 old.get().update(grp);
                 
                 alr.setActionSubType("mailDomainUpdate");
-                actionLogSvc.log( alr );
+                actionLogSvc.log(alr);
                 
                 return grp;
             }
@@ -167,7 +167,7 @@ public class MailDomainGroupServiceBean {
         }
         // or add new ...
         em.persist(grp);
-        actionLogSvc.log( alr );
+        actionLogSvc.log(alr);
         
         return grp;
     }
@@ -183,8 +183,8 @@ public class MailDomainGroupServiceBean {
         alr.setInfo(groupAlias);
     
         Optional<MailDomainGroup> tbd = findByAlias(groupAlias);
-        em.remove(tbd.orElseThrow(() -> new NotFoundException("Cannot find a group with alias "+groupAlias)));
-        actionLogSvc.log( alr );
+        em.remove(tbd.orElseThrow(() -> new NotFoundException("Cannot find a group with alias " + groupAlias)));
+        actionLogSvc.log(alr);
     }
     
     /**
@@ -197,7 +197,7 @@ public class MailDomainGroupServiceBean {
         if (parts.length < 2) {
             return Optional.empty();
         }
-        return Optional.of(parts[parts.length-1]);
+        return Optional.of(parts[parts.length - 1]);
     }
     
 }

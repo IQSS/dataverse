@@ -63,7 +63,7 @@ public class IndexIT {
    
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .queryParam("sync","true")
+                .queryParam("sync", "true")
                 .get("/api/admin/index/status");
         response.prettyPrint();
         ArrayList emptyList = new ArrayList<>();

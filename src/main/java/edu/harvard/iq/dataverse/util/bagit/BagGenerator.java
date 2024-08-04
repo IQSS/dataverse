@@ -182,7 +182,7 @@ public class BagGenerator {
     }
     
     public void setDefaultCheckSumType(ChecksumType type) {
-    	hashtype=type;
+    	hashtype = type;
     }
     
     public static void println(String s) {
@@ -210,7 +210,7 @@ public class BagGenerator {
         aggregation = (JsonObject) new JsonParser().parse(oremapObject.getJsonObject(JsonLDTerm.ore("describes").getLabel()).toString());
 
         String pidUrlString = aggregation.get("@id").getAsString();
-        String pidString=PidUtil.parseAsGlobalID(pidUrlString).asString();
+        String pidString = PidUtil.parseAsGlobalID(pidUrlString).asString();
         bagID = pidString + "v."
                 + aggregation.get(JsonLDTerm.schemaOrg("version").getLabel()).getAsString();
         
@@ -380,7 +380,7 @@ public class BagGenerator {
                 return false;
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE,"Bag Exception: ", e);
+            logger.log(Level.SEVERE, "Bag Exception: ", e);
             e.printStackTrace();
             logger.warning("Failure: Processing failure during Bagit file creation");
             return false;
@@ -437,9 +437,9 @@ public class BagGenerator {
             logger.info("HashMap Map contains: " + checksumMap.size() + " entries");
             checkFiles(checksumMap, bagFile);
         } catch (IOException io) {
-            logger.log(Level.SEVERE,"Could not validate Hashes", io);
+            logger.log(Level.SEVERE, "Could not validate Hashes", io);
         } catch (Exception e) {
-            logger.log(Level.SEVERE,"Could not validate Hashes", e);
+            logger.log(Level.SEVERE, "Could not validate Hashes", e);
         } finally {
             IOUtils.closeQuietly(zf);
         }
@@ -540,8 +540,8 @@ public class BagGenerator {
                 }
                 String childPath = currentPath + childTitle;
                 JsonElement directoryLabel = child.get(JsonLDTerm.DVCore("directoryLabel").getLabel());
-                if(directoryLabel!=null) {
-                    childPath=currentPath + directoryLabel.getAsString() + "/" + childTitle;
+                if (directoryLabel != null) {
+                    childPath = currentPath + directoryLabel.getAsString() + "/" + childTitle;
                 }
                 
 
@@ -788,11 +788,11 @@ public class BagGenerator {
                         info.append(CRLF);
 
                     } else {
-                        if(contactNameTerm != null) {
+                        if (contactNameTerm != null) {
                           info.append(((JsonObject) person).get(contactNameTerm.getLabel()).getAsString());
                           info.append(CRLF);
                         }
-                        if ((contactEmailTerm!=null) &&((JsonObject) person).has(contactEmailTerm.getLabel())) {
+                        if ((contactEmailTerm != null) && ((JsonObject) person).has(contactEmailTerm.getLabel())) {
                             info.append("Contact-Email: ");
                             info.append(((JsonObject) person).get(contactEmailTerm.getLabel()).getAsString());
                             info.append(CRLF);
@@ -808,11 +808,11 @@ public class BagGenerator {
 
                 } else {
                     JsonObject person = contacts.getAsJsonObject();
-                    if(contactNameTerm != null) {
+                    if (contactNameTerm != null) {
                       info.append(person.get(contactNameTerm.getLabel()).getAsString());
                       info.append(CRLF);
                     }
-                    if ((contactEmailTerm!=null) && (person.has(contactEmailTerm.getLabel()))) {
+                    if ((contactEmailTerm != null) && (person.has(contactEmailTerm.getLabel()))) {
                         info.append("Contact-Email: ");
                         info.append(person.get(contactEmailTerm.getLabel()).getAsString());
                         info.append(CRLF);
@@ -901,8 +901,8 @@ public class BagGenerator {
      */
     String getSingleValue(JsonElement jsonElement, String key) {
         String val = "";
-        if(jsonElement.isJsonObject()) {
-            JsonObject jsonObject=jsonElement.getAsJsonObject();
+        if (jsonElement.isJsonObject()) {
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
             val = jsonObject.get(key).getAsString();
         } else if (jsonElement.isJsonArray()) {
             

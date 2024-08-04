@@ -20,17 +20,17 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
-@Table(indexes = {@Index(columnList="token")
-		, @Index(columnList="builtinuser_id")})
+@Table(indexes = {@Index(columnList = "token")
+		, @Index(columnList = "builtinuser_id")})
 @NamedQueries({
-    @NamedQuery(name="PasswordResetData.findAll",
-            query="SELECT prd FROM PasswordResetData prd"),
-    @NamedQuery(name="PasswordResetData.findByUser",
-            query="SELECT prd FROM PasswordResetData prd WHERE prd.builtinUser = :user"),
-    @NamedQuery(name="PasswordResetData.findByToken",
-            query="SELECT prd FROM PasswordResetData prd WHERE prd.token = :token"),
-    @NamedQuery(name="PasswordResetData.deleteByUser",
-            query="DELETE FROM PasswordResetData prd WHERE prd.builtinUser = :user"),
+    @NamedQuery(name = "PasswordResetData.findAll",
+            query = "SELECT prd FROM PasswordResetData prd"),
+    @NamedQuery(name = "PasswordResetData.findByUser",
+            query = "SELECT prd FROM PasswordResetData prd WHERE prd.builtinUser = :user"),
+    @NamedQuery(name = "PasswordResetData.findByToken",
+            query = "SELECT prd FROM PasswordResetData prd WHERE prd.token = :token"),
+    @NamedQuery(name = "PasswordResetData.deleteByUser",
+            query = "DELETE FROM PasswordResetData prd WHERE prd.builtinUser = :user"),
 })
 @Entity
 public class PasswordResetData implements Serializable {

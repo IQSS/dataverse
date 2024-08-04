@@ -214,7 +214,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
         String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress);
 
         Feedback feedback = FeedbackUtil.gatherFeedback(feedbackTarget, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName, ccSupport());
-        if (feedback==null) {
+        if (feedback == null) {
             logger.warning("No feedback has been sent!");
             return null;
         }
@@ -232,7 +232,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
         //Setting is enabled and this isn't already a direct message to support (no feedbackTarget)
         Optional<Boolean> ccSupport = JvmSettings.CC_SUPPORT_ON_CONTACT_EMAIL.lookupOptional(Boolean.class);
         
-        return feedbackTarget!=null && ccSupport.isPresent() &&ccSupport.get();
+        return feedbackTarget != null && ccSupport.isPresent() && ccSupport.get();
     }
 
 }

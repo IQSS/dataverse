@@ -93,11 +93,11 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());   
     
-    public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse){ 
+    public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse) { 
         writeGuestbookAndStartBatchDownload(guestbookResponse, false);
     }
     
-    public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord){
+    public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord) {
 
         if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
             return;
@@ -168,19 +168,19 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             redirectToCustomZipDownloadService(customZipDownloadUrl, zipServiceKey);
         } else {
             // Use the "normal" /api/access/datafiles/ API:
-            redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(),original);
+            redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(), original);
         }
     }
     
     public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
-        if(!fileMetadata.getDatasetVersion().isDraft()){
+        if (!fileMetadata.getDatasetVersion().isDraft()) {
             guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
             writeGuestbookResponseRecord(guestbookResponse);
         }
         
         // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
         redirectToDownloadAPI(format, fileMetadata.getDataFile().getId(), true, fileMetadata.getId());
-        logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
+        logger.fine("issued file download redirect for filemetadata " + fileMetadata.getId() + ", datafile " + fileMetadata.getDataFile().getId());
     }
     
     public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse) {
@@ -191,39 +191,39 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         writeGuestbookResponseRecord(guestbookResponse);
         
         redirectToDownloadAPI(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId());
-        logger.fine("issued file download redirect for datafile "+guestbookResponse.getDataFile().getId());
+        logger.fine("issued file download redirect for datafile " + guestbookResponse.getDataFile().getId());
     }
     
-    public void writeGuestbookResponseAndRequestAccess(GuestbookResponse guestbookResponse){
-        if (guestbookResponse == null || ( guestbookResponse.getDataFile() == null && guestbookResponse.getSelectedFileIds() == null) ) {
+    public void writeGuestbookResponseAndRequestAccess(GuestbookResponse guestbookResponse) {
+        if (guestbookResponse == null || (guestbookResponse.getDataFile() == null && guestbookResponse.getSelectedFileIds() == null)) {
             return;
         }
 
         guestbookResponse.setEventType(GuestbookResponse.ACCESS_REQUEST);
 
-        List <DataFile> selectedDataFiles = new ArrayList<>(); //always make sure it's at least an empty List
+        List<DataFile> selectedDataFiles = new ArrayList<>(); //always make sure it's at least an empty List
 
-        if(guestbookResponse.getDataFile() != null ){ //one file 'selected' by 'Request Access' button click
+        if (guestbookResponse.getDataFile() != null) { //one file 'selected' by 'Request Access' button click
             selectedDataFiles.add(datafileService.find(guestbookResponse.getDataFile().getId())); //don't want the findCheapAndEasy
         }
 
-        if(guestbookResponse.getSelectedFileIds() != null && !guestbookResponse.getSelectedFileIds().isEmpty()) { //multiple selected through multi-select REquest Access button   
+        if (guestbookResponse.getSelectedFileIds() != null && !guestbookResponse.getSelectedFileIds().isEmpty()) { //multiple selected through multi-select REquest Access button   
             selectedDataFiles = datafileService.findAll(guestbookResponse.getSelectedFileIds());
         }
 
         int countRequestAccessSuccess = 0;
 
-        for(DataFile dataFile : selectedDataFiles){
+        for (DataFile dataFile : selectedDataFiles) {
             guestbookResponse.setDataFile(dataFile);
             writeGuestbookResponseRecordForRequestAccess(guestbookResponse);
-            if(requestAccess(dataFile,guestbookResponse)){
+            if (requestAccess(dataFile, guestbookResponse)) {
                 countRequestAccessSuccess++;
             } else {
                 JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("file.accessRequested.alreadyRequested", Arrays.asList(dataFile.getDisplayName())));
             }
         }
 
-        if(countRequestAccessSuccess > 0){
+        if (countRequestAccessSuccess > 0) {
             DataFile firstDataFile = selectedDataFiles.get(0);
             sendRequestFileAccessNotification(firstDataFile.getOwner(), firstDataFile.getId(), (AuthenticatedUser) session.getUser());
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
@@ -231,7 +231,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
-        if(!fileMetadata.getDatasetVersion().isDraft()){           
+        if (!fileMetadata.getDatasetVersion().isDraft()) {           
             guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
             writeGuestbookResponseRecord(guestbookResponse);
         }
@@ -286,18 +286,18 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     // But note that this may change - there may be some future situations where it will 
     // become necessary again, to pass the job of creating the access record 
     // to the API.
-    private void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal){
+    private void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal) {
 
         String fileDownloadUrl = "/api/access/datafiles";
-        if (guestbookRecordsAlreadyWritten && !downloadOriginal){
+        if (guestbookRecordsAlreadyWritten && !downloadOriginal) {
             fileDownloadUrl += "?gbrecs=true";
-        } else if (guestbookRecordsAlreadyWritten && downloadOriginal){
+        } else if (guestbookRecordsAlreadyWritten && downloadOriginal) {
             fileDownloadUrl += "?gbrecs=true&format=original";
-        } else if (!guestbookRecordsAlreadyWritten && downloadOriginal){
+        } else if (!guestbookRecordsAlreadyWritten && downloadOriginal) {
             fileDownloadUrl += "?format=original";
         }
         
-        PrimeFaces.current().executeScript("downloadFiles('"+fileDownloadUrl + "','"+ multiFileString+"');");
+        PrimeFaces.current().executeScript("downloadFiles('" + fileDownloadUrl + "','" + multiFileString + "');");
 
     }
     
@@ -332,7 +332,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         redirectToDownloadAPI(downloadType, fileId, true, null);
     }
     
-    private void redirectToBatchDownloadAPI(String multiFileString, Boolean downloadOriginal){
+    private void redirectToBatchDownloadAPI(String multiFileString, Boolean downloadOriginal) {
         redirectToBatchDownloadAPI(multiFileString, true, downloadOriginal);
     }
 
@@ -385,7 +385,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     public void downloadDatasetCitationXML(DatasetVersion version) {
         // DatasetVersion-level citation: 
-        DataCitation citation=null;
+        DataCitation citation = null;
         citation = new DataCitation(version);
         String fileNameString;
         fileNameString = "attachment;filename=" + getFileNameFromPid(citation.getPersistentId()) + ".xml";
@@ -397,12 +397,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void downloadDirectDatafileCitationXML(FileMetadata fileMetadata) {
-        downloadCitationXML(fileMetadata,  true);
+        downloadCitationXML(fileMetadata, true);
     }
 
     public void downloadCitationXML(FileMetadata fileMetadata, boolean direct) {
-        DataCitation citation=null;
-        citation= new DataCitation(fileMetadata, direct);
+        DataCitation citation = null;
+        citation = new DataCitation(fileMetadata, direct);
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation: 
@@ -431,7 +431,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     public void downloadDatasetCitationRIS(DatasetVersion version) {
         // DatasetVersion-level citation: 
-        DataCitation citation=null;
+        DataCitation citation = null;
         citation = new DataCitation(version);
 
         String fileNameString;
@@ -448,8 +448,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public void downloadCitationRIS(FileMetadata fileMetadata, boolean direct) {
-        DataCitation citation=null;
-        citation= new DataCitation(fileMetadata, direct);
+        DataCitation citation = null;
+        citation = new DataCitation(fileMetadata, direct);
         
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
@@ -486,7 +486,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     public void downloadDatasetCitationBibtex(DatasetVersion version) {
         // DatasetVersion-level citation: 
-        DataCitation citation=null;
+        DataCitation citation = null;
         citation = new DataCitation(version);
 
         String fileNameString;
@@ -503,8 +503,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void downloadCitationBibtex(FileMetadata fileMetadata, boolean direct) {
-        DataCitation citation=null;
-        citation= new DataCitation(fileMetadata, direct);
+        DataCitation citation = null;
+        citation = new DataCitation(fileMetadata, direct);
         
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
@@ -537,7 +537,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public boolean requestAccess(Long fileId) {   
-        if (dvRequestService.getDataverseRequest().getAuthenticatedUser() == null){
+        if (dvRequestService.getDataverseRequest().getAuthenticatedUser() == null) {
             return false;
         }
         DataFile file = datafileService.find(fileId);
@@ -553,13 +553,13 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         return false;
     }
     
-    public boolean requestAccess(DataFile dataFile, GuestbookResponse gbr){
+    public boolean requestAccess(DataFile dataFile, GuestbookResponse gbr) {
         boolean accessRequested = false;
-        if (dvRequestService.getDataverseRequest().getAuthenticatedUser() == null){
+        if (dvRequestService.getDataverseRequest().getAuthenticatedUser() == null) {
             return accessRequested;
         }
 
-        if(!dataFile.containsActiveFileAccessRequestFromUser(session.getUser())) {
+        if (!dataFile.containsActiveFileAccessRequestFromUser(session.getUser())) {
             try {
                 commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), dataFile, gbr));
                 accessRequested = true;
@@ -616,10 +616,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 
         if (location != null && fileName != null) {
             em.createNativeQuery("INSERT INTO CUSTOMZIPSERVICEREQUEST (KEY, STORAGELOCATION, FILENAME, ISSUETIME) VALUES (?1,?2,?3,?4);")
-                    .setParameter(1,key)
-                    .setParameter(2,location)
-                    .setParameter(3,fileName)
-                    .setParameter(4,timestamp)
+                    .setParameter(1, key)
+                    .setParameter(2, location)
+                    .setParameter(3, fileName)
+                    .setParameter(4, timestamp)
                     .executeUpdate();
         }
         
@@ -634,8 +634,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     public String getDirectStorageLocatrion(String storageLocation) {
         String storageDriverId;
         int separatorIndex = storageLocation.indexOf(DataAccess.SEPARATOR);
-        if ( separatorIndex > 0 ) {
-            storageDriverId = storageLocation.substring(0,separatorIndex);
+        if (separatorIndex > 0) {
+            storageDriverId = storageLocation.substring(0, separatorIndex);
         
             String storageType = DataAccess.getDriverType(storageDriverId);
             if (DataAccess.FILE.equals(storageType) || DataAccess.S3.equals(storageType)) {

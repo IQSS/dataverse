@@ -49,23 +49,23 @@ public class IngestServiceShapefileHelper {
 
   
     
-    public List<DataFile> getDataFileList(){
-        if (this.dataFileList==null){
+    public List<DataFile> getDataFileList() {
+        if (this.dataFileList == null) {
             return null;
         }
-        if (this.dataFileList.size()==0){
+        if (this.dataFileList.size() == 0) {
             return null;
         }
         return this.dataFileList;
     }
     
-    private boolean isValidFile(File fileObject){
+    private boolean isValidFile(File fileObject) {
         
-         if (fileObject==null){
+         if (fileObject == null) {
             logger.warning("fileObject was null");
             return false;
         }
-        if (!fileObject.isFile()){
+        if (!fileObject.isFile()) {
             logger.warning("fileObject was not a file.  Failed \"isFile()\": " + fileObject.getAbsolutePath());
             return false;
         }
@@ -73,13 +73,13 @@ public class IngestServiceShapefileHelper {
     }
     
     
-   private boolean isValidFolder(File fileObject){
+   private boolean isValidFolder(File fileObject) {
         
-         if (fileObject==null){
+         if (fileObject == null) {
             logger.warning("fileObject was null");
             return false;
         }
-        if (!fileObject.isDirectory()){
+        if (!fileObject.isDirectory()) {
             logger.warning("fileObject was not a directory.  Failed \"isFile()\": " + fileObject.getAbsolutePath());
             return false;
         }
@@ -88,9 +88,9 @@ public class IngestServiceShapefileHelper {
     /*
         Constructor that accepts a file object
     */
-   public IngestServiceShapefileHelper(File zippedShapefile, File rezipFolder){
+   public IngestServiceShapefileHelper(File zippedShapefile, File rezipFolder) {
         
-        if ((!isValidFile(zippedShapefile))||(!isValidFolder(rezipFolder))){
+        if ((!isValidFile(zippedShapefile)) || (!isValidFolder(rezipFolder))) {
             return;
         }
         this.zippedShapefile = zippedShapefile;
@@ -101,8 +101,8 @@ public class IngestServiceShapefileHelper {
 
     }
     
-   private FileInputStream getFileInputStream(File fileObject){
-       if (fileObject==null){
+   private FileInputStream getFileInputStream(File fileObject) {
+       if (fileObject == null) {
            return null;
        }
        try {
@@ -113,8 +113,8 @@ public class IngestServiceShapefileHelper {
         }
    }
    
-   private void closeFileInputStream(FileInputStream fis){
-       if (fis==null){
+   private void closeFileInputStream(FileInputStream fis) {
+       if (fis == null) {
            return;
        }
         try {
@@ -126,19 +126,19 @@ public class IngestServiceShapefileHelper {
    
     public boolean processFile() {
        
-       if ((!isValidFile(this.zippedShapefile))||(!isValidFolder(this.rezipFolder))){
+       if ((!isValidFile(this.zippedShapefile)) || (!isValidFolder(this.rezipFolder))) {
             return false;
         }
         
        // (1) Use the ShapefileHandler to the .zip for a shapefile
        //
         FileInputStream shpfileInputStream = this.getFileInputStream(zippedShapefile);
-        if (shpfileInputStream==null){
+        if (shpfileInputStream == null) {
             return false;
         }
         
         this.shpHandler = new ShapefileHandler(shpfileInputStream);
-        if (!shpHandler.containsShapefile()){
+        if (!shpHandler.containsShapefile()) {
             logger.severe("Shapefile was incorrectly detected upon Ingest (FileUtil) and passed here");
             return false;
         }
@@ -148,7 +148,7 @@ public class IngestServiceShapefileHelper {
         //  (2) Rezip the shapefile pieces
         logger.info("rezipFolder: " + rezipFolder.getAbsolutePath());
         shpfileInputStream = this.getFileInputStream(zippedShapefile);
-        if (shpfileInputStream==null){
+        if (shpfileInputStream == null) {
             return false;
         }
 
@@ -170,8 +170,8 @@ public class IngestServiceShapefileHelper {
     }
     
     
-    public List<File> getFinalRezippedFiles(){
-        if (this.shpHandler==null){
+    public List<File> getFinalRezippedFiles() {
+        if (this.shpHandler == null) {
             return null;
         }
         return this.shpHandler.getFinalRezippedFiles();

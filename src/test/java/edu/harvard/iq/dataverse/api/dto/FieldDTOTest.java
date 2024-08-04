@@ -147,7 +147,7 @@ public class FieldDTOTest {
         FieldDTO test1 = new FieldDTO();
        
         test1.value = gson.toJsonTree("ellen", String.class);
-        JsonElement elem =  gson.toJsonTree(test1, FieldDTO.class);
+        JsonElement elem = gson.toJsonTree(test1, FieldDTO.class);
         
         FieldDTO field1 = gson.fromJson(elem.getAsJsonObject(), FieldDTO.class);
        

@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 
 public class ConfirmEmailUtil {
     
-    private ConfirmEmailUtil(){
+    private ConfirmEmailUtil() {
         // prevent instance creation, this class has only static methods anyway.
     } 
     

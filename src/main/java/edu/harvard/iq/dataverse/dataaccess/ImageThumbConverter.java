@@ -112,7 +112,7 @@ public class ImageThumbConverter {
 
         // check if thumbnail generation failed:
         if (file.isPreviewImageFail()) {
-            logger.fine("Thumbnail failed to be generated for "+ file.getId());
+            logger.fine("Thumbnail failed to be generated for " + file.getId());
             return false;
         }
 
@@ -186,7 +186,7 @@ public class ImageThumbConverter {
                 if (storageIO.getDataFile() != null && cachedThumbnailSize == 0) {
                     // We found an older 0 length thumbnail. Newer image uploads will not have this issue.
                     // Once cleaned up, this thumbnail will no longer have this issue
-                    logger.warning("Cleaning up zero sized thumbnail ID: "+ storageIO.getDataFile().getId());
+                    logger.warning("Cleaning up zero sized thumbnail ID: " + storageIO.getDataFile().getId());
                     storageIO.getDataFile().setPreviewImageFail(true);
                     storageIO.getDataFile().setPreviewImageAvailable(false);
                     DataFileServiceBean datafileService = CDI.current().select(DataFileServiceBean.class).get();
@@ -312,7 +312,7 @@ public class ImageThumbConverter {
 
         try {
             storageIO.open();
-            try(InputStream inputStream = storageIO.getInputStream()) {
+            try (InputStream inputStream = storageIO.getInputStream()) {
               return generateImageThumbnailFromInputStream(storageIO, size, inputStream);
             }
         } catch (IOException ioex) {
@@ -393,7 +393,7 @@ public class ImageThumbConverter {
             thumbnailGenerated = false;
         }
         finally {
-            if(tempFileRequired) {
+            if (tempFileRequired) {
                 try {
                     tempFile.delete();
                 }
@@ -487,7 +487,7 @@ public class ImageThumbConverter {
             logger.fine("Null channel for aux object " + THUMBNAIL_SUFFIX + size);
 
             // try to generate, if not available and hasn't failed before
-            if(generateThumbnail(file, storageIO, size)) {
+            if (generateThumbnail(file, storageIO, size)) {
                 try {
                     cachedThumbnailChannel = storageIO.openAuxChannel(THUMBNAIL_SUFFIX + size);
                 } catch (Exception ioEx) {

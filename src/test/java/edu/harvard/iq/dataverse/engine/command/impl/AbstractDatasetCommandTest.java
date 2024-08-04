@@ -40,7 +40,7 @@ public class AbstractDatasetCommandTest {
     public void testGetDataset() {
         Dataset ds = MocksFactory.makeDataset();
         AbstractDatasetCommand instance = new AbstractDatasetCommandImpl(makeRequest(), ds);
-        assertEquals( ds, instance.getDataset() );
+        assertEquals(ds, instance.getDataset());
     }
 
     /**
@@ -51,7 +51,7 @@ public class AbstractDatasetCommandTest {
         Dataset ds = MocksFactory.makeDataset();
         AbstractDatasetCommand instance = new AbstractDatasetCommandImpl(makeRequest(), ds);
         long now = System.currentTimeMillis();
-        assertTrue( Math.abs(now-instance.getTimestamp().getTime()) < 20 ); // 20 milliseconds is equal enough.
+        assertTrue(Math.abs(now - instance.getTimestamp().getTime()) < 20); // 20 milliseconds is equal enough.
     }
 
     public class AbstractDatasetCommandImpl extends AbstractDatasetCommand {

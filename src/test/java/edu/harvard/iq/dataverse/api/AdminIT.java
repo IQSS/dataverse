@@ -119,7 +119,7 @@ public class AdminIT {
         String randUserNamePrefix = "r" + UtilIT.getRandomString(4) + "_";
 
         List<String> randomUsernames = new ArrayList<String>();
-        for (int i = 0; i < 11; i++){
+        for (int i = 0; i < 11; i++) {
             
             createUserResponse = UtilIT.createRandomUser(randUserNamePrefix);
             createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -154,7 +154,7 @@ public class AdminIT {
                 .body("data.pagination.numResults", equalTo(numResults));
         
         String userIdentifier;
-        for (int i=0; i < numResults; i++){
+        for (int i = 0; i < numResults; i++) {
             userIdentifier = JsonPath.from(filterReponse01.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
             assertTrue(randomUsernames.contains(userIdentifier));
         }
@@ -178,7 +178,7 @@ public class AdminIT {
                 .body("data.pagination.numResults", equalTo(numResults));
         
         String userIdentifier2;
-        for (int i=0; i < numUsersReturned; i++){
+        for (int i = 0; i < numUsersReturned; i++) {
             userIdentifier2 = JsonPath.from(filterReponse02.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
             assertTrue(randomUsernames.contains(userIdentifier2));
         }
@@ -256,7 +256,7 @@ public class AdminIT {
         // Delete  random users
         // --------------------------------------------
         Response deleteUserResponse;
-        for (String aUsername : randomUsernames){
+        for (String aUsername : randomUsernames) {
             
             deleteUserResponse = UtilIT.deleteUser(aUsername);
             assertEquals(200, deleteUserResponse.getStatusCode());
@@ -751,7 +751,7 @@ public class AdminIT {
             updatedContent = Files.readAllBytes(Paths.get("scripts/api/data/metadatablocks/citation.tsv"));
         } catch (IOException e) {
             logger.warning(e.getMessage());
-            assertEquals(0,1);
+            assertEquals(0, 1);
         }
 
         Response response = UtilIT.loadMetadataBlock(apiToken, updatedContent);
@@ -802,7 +802,7 @@ public class AdminIT {
             updatedContent = Files.readAllBytes(Paths.get("src/test/resources/tsv/test.tsv"));
         } catch (IOException e) {
             logger.warning(e.getMessage());
-            assertEquals(0,1);
+            assertEquals(0, 1);
         }
         Response response = UtilIT.loadMetadataBlock(apiToken, updatedContent);
         assertEquals(500, response.getStatusCode());
@@ -819,7 +819,7 @@ public class AdminIT {
         );
     }
     @Test
-    public void testClearThumbnailFailureFlag(){
+    public void testClearThumbnailFailureFlag() {
         Response nonExistentFile = UtilIT.clearThumbnailFailureFlag(Long.MAX_VALUE);
         nonExistentFile.prettyPrint();
         nonExistentFile.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
@@ -830,7 +830,7 @@ public class AdminIT {
     }
     
     @Test
-    public void testBannerMessages(){
+    public void testBannerMessages() {
 
         //We check for existing banner messages and get the number of existing messages
         Response getBannerMessageResponse = UtilIT.getBannerMessages();
@@ -842,7 +842,7 @@ public class AdminIT {
 
         //We add a banner message with an error in the json file
         String pathToJsonFile = "scripts/api/data/bannerMessageError.json";       
-        Response addBannerMessageErrorResponse  = UtilIT.addBannerMessage(pathToJsonFile);
+        Response addBannerMessageErrorResponse = UtilIT.addBannerMessage(pathToJsonFile);
         addBannerMessageErrorResponse.prettyPrint();
         addBannerMessageErrorResponse.then().assertThat()
                         .statusCode(BAD_REQUEST.getStatusCode())
@@ -908,7 +908,7 @@ public class AdminIT {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans={true,false})
+    @ValueSource(booleans = {true, false})
     public void testSetSuperUserStatus(Boolean status) {
         Response createUser = UtilIT.createRandomUser();
         createUser.then().assertThat().statusCode(OK.getStatusCode());

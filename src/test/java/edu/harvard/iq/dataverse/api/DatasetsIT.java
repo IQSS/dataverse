@@ -130,7 +130,7 @@ public class DatasetsIT {
     }
     
     @Test
-    public void testCollectionSchema(){
+    public void testCollectionSchema() {
         
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -141,7 +141,7 @@ public class DatasetsIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         
-        Response getCollectionSchemaResponse =  UtilIT.getCollectionSchema(dataverseAlias, apiToken);
+        Response getCollectionSchemaResponse = UtilIT.getCollectionSchema(dataverseAlias, apiToken);
         getCollectionSchemaResponse.prettyPrint();
         getCollectionSchemaResponse.then().assertThat()
                 .statusCode(200);
@@ -342,7 +342,7 @@ public class DatasetsIT {
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
         //post publish update
-        String pathToJsonFilePostPub= "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
+        String pathToJsonFilePostPub = "doc/sphinx-guides/source/_static/api/dataset-add-metadata-after-pub.json";
        Response addDataToPublishedVersion = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFilePostPub, apiToken);
         addDataToPublishedVersion.prettyPrint();
         addDataToPublishedVersion.then().assertThat().statusCode(OK.getStatusCode());
@@ -439,7 +439,7 @@ public class DatasetsIT {
         
         Response createNoAccessUser = UtilIT.createRandomUser();
         createNoAccessUser.prettyPrint();
-        String apiTokenNoAccess= UtilIT.getApiTokenFromResponse(createNoAccessUser);
+        String apiTokenNoAccess = UtilIT.getApiTokenFromResponse(createNoAccessUser);
 
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
@@ -1669,7 +1669,7 @@ public class DatasetsIT {
     }
     
     @Test
-    public void testAddRoles(){
+    public void testAddRoles() {
         
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -1718,7 +1718,7 @@ public class DatasetsIT {
         assertEquals(200, giveRandoPermission.getStatusCode());
 
         //Asserting same role creation is covered
-        validateAssignExistingRole(datasetPersistentId,randomUsername,apiToken, "fileDownloader");
+        validateAssignExistingRole(datasetPersistentId, randomUsername, apiToken, "fileDownloader");
 
         // Create another random user to become curator:
 
@@ -2443,7 +2443,7 @@ public class DatasetsIT {
         createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
         createLinkingDatasetResponse.prettyPrint();
         createLinkingDatasetResponse.then().assertThat()
-                .body("data.message", equalTo("Dataset " + datasetId +" linked successfully to " + dataverseAlias))
+                .body("data.message", equalTo("Dataset " + datasetId + " linked successfully to " + dataverseAlias))
                 .statusCode(200);
         
         // And now test deleting it:
@@ -2697,7 +2697,7 @@ public class DatasetsIT {
         //without it we've seen DB deadlocks
         try {
             Thread.sleep(3000l);
-        } catch (InterruptedException iex){}
+        } catch (InterruptedException iex) {}
       
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());
@@ -3456,7 +3456,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         logger.fine("Orig file id: " + origFileId);
         assertNotNull(origFileId);
-        assertNotEquals("",origFileId);
+        assertNotEquals("", origFileId);
 
         // Give file time to ingest
         
@@ -3471,7 +3471,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         InputStream variableData = origXml.body().asInputStream();
 
         Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
-        Map<Long,VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
+        Map<Long, VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
         try {
             XMLInputFactory factory = XMLInputFactory.newInstance();
             XMLStreamReader xmlr = factory.createXMLStreamReader(variableData);
@@ -3481,7 +3481,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         } catch (XMLStreamException e) {
             logger.warning(e.getMessage());
-            assertEquals(0,1);
+            assertEquals(0, 1);
         }
 
 
@@ -3491,7 +3491,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
             updatedContent = new String(Files.readAllBytes(Paths.get("src/test/resources/xml/dct.xml")));
         } catch (IOException e) {
             logger.warning(e.getMessage());
-            assertEquals(0,1);
+            assertEquals(0, 1);
         }
         Long replV1168 = 0L;
         Long replV1169 = 0L;
@@ -3500,20 +3500,20 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         for (VariableMetadata var : mapVarToVarMet.values()) {
             if (var.getLabel().equals("gender")) {
                 replV1170 = var.getDataVariable().getId();
-                numberVariables = numberVariables +1;
+                numberVariables = numberVariables + 1;
             } else if (var.getLabel().equals("weight")) {
                 replV1168 = var.getDataVariable().getId();
-                numberVariables = numberVariables +1;
+                numberVariables = numberVariables + 1;
             } else if (var.getLabel().equals("age_rollup")) {
                 replV1169 = var.getDataVariable().getId();
-                numberVariables = numberVariables +1;
+                numberVariables = numberVariables + 1;
             }
         }
         assertEquals(3, numberVariables);
 
-        updatedContent = updatedContent.replaceAll("v1168", "v" + replV1168 );
-        updatedContent = updatedContent.replaceAll("v1169", "v" + replV1169 );
-        updatedContent = updatedContent.replaceAll("v1170", "v" + replV1170 );
+        updatedContent = updatedContent.replaceAll("v1168", "v" + replV1168);
+        updatedContent = updatedContent.replaceAll("v1169", "v" + replV1169);
+        updatedContent = updatedContent.replaceAll("v1170", "v" + replV1170);
 
         //edit draft vesrsion
         Response editDDIResponse = UtilIT.editDDI(updatedContent, origFileId, apiToken);
@@ -3938,7 +3938,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         getDatasetVersionCitationNotDeaccessioned.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
         // includeDeaccessioned true
-        Response getDatasetVersionCitationDeaccessioned =  UtilIT.getDatasetVersionCitation(datasetId, DS_VERSION_LATEST_PUBLISHED, true, apiToken);
+        Response getDatasetVersionCitationDeaccessioned = UtilIT.getDatasetVersionCitation(datasetId, DS_VERSION_LATEST_PUBLISHED, true, apiToken);
         getDatasetVersionCitationDeaccessioned.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.message", containsString("DEACCESSIONED VERSION"));
@@ -4736,7 +4736,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         for (int i = 0; i < signedUrls.size(); i++) {
             JsonObject signedUrl = signedUrls.getJsonObject(i);
             if (signedUrl.getString("name").equals("requestGlobusReferencePaths")) {
-                found=true;
+                found = true;
                 break;
             }
         }

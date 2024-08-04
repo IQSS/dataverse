@@ -192,7 +192,7 @@ public class DataCitation {
         // first add comma separated parts
         String separator = ", ";
         List<String> citationList = new ArrayList<>();
-        if(anonymized) {
+        if (anonymized) {
             citationList.add(BundleUtil.getStringFromBundle("file.anonymized.authorsWithheld"));
         } else {
             citationList.add(formatString(getAuthorsString(), html));
@@ -254,7 +254,7 @@ public class DataCitation {
     public void writeAsBibtexCitation(OutputStream os) throws IOException {
         // Use UTF-8
         Writer out = new BufferedWriter(new OutputStreamWriter(os, "utf-8"));
-        if(getFileTitle() !=null && isDirect()) {
+        if (getFileTitle() != null && isDirect()) {
             out.write("@incollection{");
         } else {
             out.write("@data{");
@@ -266,7 +266,7 @@ public class DataCitation {
         out.write("publisher = {");
         out.write(publisher);
         out.write("},\r\n");
-        if(getFileTitle() !=null && isDirect()) {
+        if (getFileTitle() != null && isDirect()) {
             out.write("title = {");
             out.write(fileTitle);
             out.write("},\r\n");
@@ -281,7 +281,7 @@ public class DataCitation {
             out.write(title.replaceFirst(doubleQ, doubleTick).replaceFirst(doubleQ, doubleAp));
             out.write("}},\r\n");
         }
-        if(UNF != null){
+        if (UNF != null) {
             out.write("UNF = {");
             out.write(UNF);
             out.write("},\r\n");
@@ -322,7 +322,7 @@ public class DataCitation {
         out.write("Content: text/plain; charset=\"utf-8\"" + "\r\n");
         // Using type "DATA" - see https://github.com/IQSS/dataverse/issues/4816
         
-        if ((getFileTitle()!=null)&&isDirect()) {
+        if ((getFileTitle() != null) && isDirect()) {
             out.write("TY  - DATA" + "\r\n");
             out.write("T1  - " + getFileTitle() + "\r\n");
             out.write("T2  - " + getTitle() + "\r\n");
@@ -394,7 +394,7 @@ public class DataCitation {
 
         // a DataFile citation also includes filename und UNF, if applicable:
         if (getFileTitle() != null) {
-            if(!isDirect()) {
+            if (!isDirect()) {
                 out.write("C1  - " + getFileTitle() + "\r\n");
             }
             if (getUNF() != null) {
@@ -513,9 +513,9 @@ public class DataCitation {
         on testToEndNoteString_withoutTitleAndAuthor
         with a null pointer on build -SEK 3/31/23
         */
-        if (seriesTitles != null && !seriesTitles.isEmpty() ) {
+        if (seriesTitles != null && !seriesTitles.isEmpty()) {
             xmlw.writeStartElement("tertiary-titles");
-            for (String seriesTitle : seriesTitles){
+            for (String seriesTitle : seriesTitles) {
                 xmlw.writeStartElement("tertiary-title");
                 xmlw.writeCharacters(seriesTitle);
                 xmlw.writeEndElement(); // tertiary-title
@@ -641,7 +641,7 @@ public class DataCitation {
         String producerString = getPublisher();
 
         if (producerString.isEmpty()) {
-            producerString =  AbstractPidProvider.UNAVAILABLE;
+            producerString = AbstractPidProvider.UNAVAILABLE;
         }
 
         metadata.put("datacite.creator", authorString);
@@ -709,17 +709,17 @@ public class DataCitation {
         Matcher m = p.matcher(html);
         String url = null;
         String label = null;
-        while(m.find()) {
+        while (m.find()) {
             url = m.group(1); // this variable should contain the link URL
             label = m.group(2); // this variable should contain the label
             //display either the label or label(url)
-            if(!url.equals(label)) {
-                label = label + "(" + url +")";
+            if (!url.equals(label)) {
+                label = label + "(" + url + ")";
             }
             html = html.replaceFirst("<a\\W+href=\\\"(.*?)\\\".*?>(.*?)<\\/a>", label);
         }
         //Note, this does not affect single '\n' chars originally in the text
-        html=html.replaceAll("(\\r\\n?)+", "\r\n");
+        html = html.replaceAll("(\\r\\n?)+", "\r\n");
         
         return html;
     }
@@ -780,7 +780,7 @@ public class DataCitation {
             } else if (dsv.getVersionNumber() != null) {
                 version = "V" + dsv.getVersionNumber();
                 if (dsv.isDeaccessioned()) {
-                    version += ", "+ BundleUtil.getStringFromBundle("deaccessionedversion");
+                    version += ", " + BundleUtil.getStringFromBundle("deaccessionedversion");
                 }
             }
         }
@@ -793,7 +793,7 @@ public class DataCitation {
                 || HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
                 || HarvestingClient.HARVEST_STYLE_DATAVERSE
                         .equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
-                if(!isDirect()) {
+                if (!isDirect()) {
                 if (!StringUtils.isEmpty(dsv.getDataset().getIdentifier())) {
                     return dsv.getDataset().getGlobalId();
                 }

@@ -13,13 +13,13 @@ import java.util.Set;
  *
  * @author michael
  */
-@RequiredPermissions( Permission.ManageDataversePermissions )
-public class RemoveRoleAssigneesFromExplicitGroupCommand extends AbstractCommand<ExplicitGroup>{
+@RequiredPermissions(Permission.ManageDataversePermissions)
+public class RemoveRoleAssigneesFromExplicitGroupCommand extends AbstractCommand<ExplicitGroup> {
     
     private final Set<String> roleAssigneeIdentifiers;
     private final ExplicitGroup explicitGroup;
     
-    public RemoveRoleAssigneesFromExplicitGroupCommand(DataverseRequest aRequest, ExplicitGroup anExplicitGroup, Set<String> someRoleAssigneeIdentifiers ) {
+    public RemoveRoleAssigneesFromExplicitGroupCommand(DataverseRequest aRequest, ExplicitGroup anExplicitGroup, Set<String> someRoleAssigneeIdentifiers) {
         super(aRequest, anExplicitGroup.getOwner());
         roleAssigneeIdentifiers = someRoleAssigneeIdentifiers;
         explicitGroup = anExplicitGroup;
@@ -27,7 +27,7 @@ public class RemoveRoleAssigneesFromExplicitGroupCommand extends AbstractCommand
 
     @Override
     public ExplicitGroup execute(CommandContext ctxt) throws CommandException {
-        for ( String rai : roleAssigneeIdentifiers ) {
+        for (String rai : roleAssigneeIdentifiers) {
             explicitGroup.removeByRoleAssgineeIdentifier(rai);
         }
         return ctxt.explicitGroups().persist(explicitGroup);

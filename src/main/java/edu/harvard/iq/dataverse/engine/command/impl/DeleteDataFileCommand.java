@@ -103,14 +103,14 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                         }
 
                         private FileVisitResult handleException(final IOException e) {
-                          logger.warning("Failed to delete file due to"+e.getMessage());
+                          logger.warning("Failed to delete file due to" + e.getMessage());
                           return FileVisitResult.TERMINATE;
                         }
 
                         @Override 
                         public FileVisitResult postVisitDirectory(final Path dir, final IOException e)
                           throws IOException {
-                          if(e!=null)return handleException(e);
+                          if (e != null) return handleException(e);
                           Files.delete(dir);
                           return FileVisitResult.CONTINUE;
                         }
@@ -118,10 +118,10 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 );
                     
                 } catch (IOException ioex) {
-                    throw new CommandExecutionException("Failed to delete package file "+doomed.getStorageIdentifier(), ioex, this);
+                    throw new CommandExecutionException("Failed to delete package file " + doomed.getStorageIdentifier(), ioex, this);
                 }
                 
-                logger.info("Successfully deleted the package file "+doomed.getStorageIdentifier());
+                logger.info("Successfully deleted the package file " + doomed.getStorageIdentifier());
                 
             } else {
                 logger.fine("Skipping deleting the physical file on the storage volume (will be done outside the command)");

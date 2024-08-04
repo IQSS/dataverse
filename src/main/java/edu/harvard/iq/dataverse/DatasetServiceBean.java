@@ -208,7 +208,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         logger.info("created named query");
         */
         if (ret != null) {
-            logger.info("results list: "+ret.size()+" results.");
+            logger.info("results list: " + ret.size() + " results.");
         }
         return ret;
     }
@@ -294,7 +294,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             Long dsId;
             if (result[0] != null) {
                 try {
-                    dsId = Long.parseLong(result[0].toString()) ;
+                    dsId = Long.parseLong(result[0].toString());
                 } catch (Exception ex) {
                     dsId = null;
                 }
@@ -312,13 +312,13 @@ public class DatasetServiceBean implements java.io.Serializable {
      * @param ds the dataset whose new state we want to persist.
      * @return The managed entity representing {@code ds}.
      */
-    public Dataset merge( Dataset ds ) {
+    public Dataset merge(Dataset ds) {
         return em.merge(ds);
     }
 
     public Dataset findByGlobalId(String globalId) {
         Dataset retVal = (Dataset) dvObjectService.findByGlobalId(globalId, DvObject.DType.Dataset);
-        if (retVal != null){
+        if (retVal != null) {
             return retVal;
         } else {
             //try to find with alternative PID
@@ -371,11 +371,11 @@ public class DatasetServiceBean implements java.io.Serializable {
                 return zeroFiles;
             }
             if (idResults != null) {
-                for (Object raw: idResults){
+                for (Object raw : idResults) {
                     String identifier = (String) raw;
-                    identifier =  identifier.substring(identifier.lastIndexOf("/") + 1);
-                    testVal = Long.valueOf(identifier) ;
-                    if (testVal > retVal){
+                    identifier = identifier.substring(identifier.lastIndexOf("/") + 1);
+                    testVal = Long.valueOf(identifier);
+                    if (testVal > retVal) {
                         retVal = testVal;
                     }
                 }
@@ -384,7 +384,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         return retVal;
     }
 
-    public DatasetVersion storeVersion( DatasetVersion dsv ) {
+    public DatasetVersion storeVersion(DatasetVersion dsv) {
         em.persist(dsv);
         return dsv;
     }
@@ -410,10 +410,10 @@ public class DatasetServiceBean implements java.io.Serializable {
         lockCounter.setParameter("datasetId", datasetId);
         lockCounter.setMaxResults(1);
         List<DatasetLock> lock = lockCounter.getResultList();
-        return lock.size()>0;
+        return lock.size() > 0;
     }
 
-    public List<DatasetLock> getDatasetLocksByUser( AuthenticatedUser user) {
+    public List<DatasetLock> getDatasetLocksByUser(AuthenticatedUser user) {
 
         return listLocks(null, user);
     }
@@ -422,7 +422,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     public DatasetLock addDatasetLock(Dataset dataset, DatasetLock lock) {
         lock.setDataset(dataset);
         dataset.addLock(lock);
-        lock.setStartTime( new Date() );
+        lock.setStartTime(new Date());
         em.persist(lock);
         //em.merge(dataset);
         return lock;
@@ -470,10 +470,10 @@ public class DatasetServiceBean implements java.io.Serializable {
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) {
-        if ( dataset != null ) {
+        if (dataset != null) {
             new HashSet<>(dataset.getLocks()).stream()
-                    .filter( l -> l.getReason() == aReason )
-                    .forEach( lock -> {
+                    .filter(l -> l.getReason() == aReason)
+                    .forEach(lock -> {
                         lock = em.merge(lock);
                         dataset.removeLock(lock);
 
@@ -530,11 +530,11 @@ public class DatasetServiceBean implements java.io.Serializable {
     include draft = false with no published version
     */
 
-    public String getTitleFromLatestVersion(Long datasetId){
+    public String getTitleFromLatestVersion(Long datasetId) {
         return getTitleFromLatestVersion(datasetId, true);
     }
 
-    public String getTitleFromLatestVersion(Long datasetId, boolean includeDraft){
+    public String getTitleFromLatestVersion(Long datasetId, boolean includeDraft) {
 
         String whereDraft = "";
         //This clause will exclude draft versions from the select
@@ -591,7 +591,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * @param datasetIds
      * @return
      */
-    public Map<Long, String> getArchiveDescriptionsForHarvestedDatasets(Set<Long> datasetIds){
+    public Map<Long, String> getArchiveDescriptionsForHarvestedDatasets(Set<Long> datasetIds) {
         if (datasetIds == null || datasetIds.size() < 1) {
             return null;
         }
@@ -617,7 +617,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             Long dsId;
             if (result[0] != null) {
                 try {
-                    dsId = (Long)result[0];
+                    dsId = (Long) result[0];
                 } catch (Exception ex) {
                     dsId = null;
                 }
@@ -625,7 +625,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                     continue;
                 }
 
-                ret.put(dsId, (String)result[1]);
+                ret.put(dsId, (String) result[1]);
             }
         }
 
@@ -988,11 +988,11 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         List<DataFile> filesToTally = new ArrayList();
 
-        if (version == null || (mode != null &&  mode.equals("storage"))){
+        if (version == null || (mode != null && mode.equals("storage"))) {
             filesToTally = dataset.getFiles();
         } else {
-            List <FileMetadata>  fmds = version.getFileMetadatas();
-            for (FileMetadata fmd : fmds){
+            List<FileMetadata>  fmds = version.getFileMetadatas();
+            for (FileMetadata fmd : fmds) {
                     filesToTally.add(fmd.getDataFile());
             }
         }

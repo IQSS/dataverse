@@ -40,21 +40,21 @@ public interface GlobusAccessibleStore {
     public static JsonArray getReferenceEndpointsWithPaths(String driverId) {
         String[] endpoints = StorageIO.getConfigParamForDriver(driverId, AbstractRemoteOverlayAccessIO.REFERENCE_ENDPOINTS_WITH_BASEPATHS).split("\\s*,\\s*");
         JsonArrayBuilder builder = Json.createArrayBuilder();
-        for(int i=0;i<endpoints.length;i++) {
+        for (int i = 0; i < endpoints.length; i++) {
             builder.add(endpoints[i]);
         }
         return builder.build();
     }
     
     public static boolean acceptsGlobusTransfers(String storeId) {
-        if(StorageIO.getConfigParamForDriver(storeId, TRANSFER_ENDPOINT_WITH_BASEPATH) != null) {
+        if (StorageIO.getConfigParamForDriver(storeId, TRANSFER_ENDPOINT_WITH_BASEPATH) != null) {
             return true;
         }
         return false;
     }
 
     public static boolean allowsGlobusReferences(String storeId) {
-        if(StorageIO.getConfigParamForDriver(storeId, AbstractRemoteOverlayAccessIO.REFERENCE_ENDPOINTS_WITH_BASEPATHS) != null) {
+        if (StorageIO.getConfigParamForDriver(storeId, AbstractRemoteOverlayAccessIO.REFERENCE_ENDPOINTS_WITH_BASEPATHS) != null) {
             return true;
         }
         return false;

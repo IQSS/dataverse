@@ -27,10 +27,10 @@ public class TermsOfUseAndAccessValidator implements ConstraintValidator<Validat
 
     }
     
-    public static boolean isTOUAValid(TermsOfUseAndAccess value, ConstraintValidatorContext context){
+    public static boolean isTOUAValid(TermsOfUseAndAccess value, ConstraintValidatorContext context) {
         
         //if part of a template it is valid
-        if (value.getTemplate() != null){
+        if (value.getTemplate() != null) {
             return true;
         }
         

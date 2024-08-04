@@ -32,7 +32,7 @@ class UrlTokenUtilTest {
         DatasetVersion dv = new DatasetVersion();
         Dataset ds = new Dataset();
         ds.setId(50L);
-        ds.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.5072","FK2ABCDEF",null, AbstractDOIProvider.DOI_RESOLVER_URL, null));
+        ds.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.5072", "FK2ABCDEF", null, AbstractDOIProvider.DOI_RESOLVER_URL, null));
         dv.setDataset(ds);
         fmd.setDatasetVersion(dv);
         List<FileMetadata> fmdl = new ArrayList<>();
@@ -47,7 +47,7 @@ class UrlTokenUtilTest {
         assertEquals("en", urlTokenUtil.replaceTokensWithValues("{localeCode}"));
         assertEquals("42 test en", urlTokenUtil.replaceTokensWithValues("{fileId} test {localeCode}"));
         assertEquals("42 test en", urlTokenUtil.replaceTokensWithValues("{fileId} test {localeCode}"));
-        assertEquals( siteUrl + "/api/files/42/metadata?key=" + apiToken.getTokenString(),
+        assertEquals(siteUrl + "/api/files/42/metadata?key=" + apiToken.getTokenString(),
             urlTokenUtil.replaceTokensWithValues("{siteUrl}/api/files/{fileId}/metadata?key={apiToken}"));
     
         // when & then 2/2

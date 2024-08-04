@@ -215,7 +215,7 @@ public class OAuth2LoginBackingBean implements Serializable {
             long timeOrigin = Long.parseLong(stateFields[1]);
             long timeDifference = this.clock.millis() - timeOrigin;
             if (timeDifference > 0 && timeDifference < STATE_TIMEOUT) {
-                if ( stateFields.length > 3) {
+                if (stateFields.length > 3) {
                     this.redirectPage = Optional.ofNullable(stateFields[3]);
                 }
                 return Optional.of(idp);
@@ -243,7 +243,7 @@ public class OAuth2LoginBackingBean implements Serializable {
         
         String base = idp.getId() + "~" + this.clock.millis()
                                   + "~" + rand.nextInt(1000)
-                                  + redirectPage.map( page -> "~"+page).orElse("");
+                                  + redirectPage.map(page -> "~" + page).orElse("");
 
         String encrypted = StringUtil.encrypt(base, idp.clientSecret);
         final String state = idp.getId() + "~" + encrypted;

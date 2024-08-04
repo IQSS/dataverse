@@ -48,45 +48,45 @@ import jakarta.persistence.TemporalType;
 })
 
 
-public class FileAccessRequest implements Serializable{
+public class FileAccessRequest implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataFile dataFile;
     
     @ManyToOne
-    @JoinColumn(name="authenticated_user_id",nullable=false)
+    @JoinColumn(name = "authenticated_user_id", nullable = false)
     private AuthenticatedUser user;
     
     @OneToOne
-    @JoinColumn(nullable=true)
+    @JoinColumn(nullable = true)
     private GuestbookResponse guestbookResponse;
     
     public enum RequestState {CREATED, GRANTED, REJECTED};
     //private RequestState state;
     @Enumerated(EnumType.STRING)
-    @Column(name="request_state", nullable=false )
+    @Column(name = "request_state", nullable = false)
     private RequestState requestState;
     
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(name = "creation_time")
     private Date creationTime;
     
-    public FileAccessRequest(){
+    public FileAccessRequest() {
     }
     
-    public FileAccessRequest(DataFile df, AuthenticatedUser au){
+    public FileAccessRequest(DataFile df, AuthenticatedUser au) {
         setDataFile(df);
         setRequester(au);
         setState(RequestState.CREATED);
         setCreationTime(new Date());
     }
     
-    public FileAccessRequest(DataFile df, AuthenticatedUser au, GuestbookResponse gbr){
+    public FileAccessRequest(DataFile df, AuthenticatedUser au, GuestbookResponse gbr) {
         this(df, au);
         setGuestbookResponse(gbr);
     }
@@ -99,27 +99,27 @@ public class FileAccessRequest implements Serializable{
         this.id = id;
     }
     
-    public DataFile getDataFile(){
+    public DataFile getDataFile() {
         return dataFile;
     }
     
-    public final void setDataFile(DataFile df){
+    public final void setDataFile(DataFile df) {
         this.dataFile = df;
     }
     
-    public AuthenticatedUser getRequester(){
+    public AuthenticatedUser getRequester() {
         return user;
     }
     
-    public final void setRequester(AuthenticatedUser au){
+    public final void setRequester(AuthenticatedUser au) {
         this.user = au;
     }
     
-    public GuestbookResponse getGuestbookResponse(){
+    public GuestbookResponse getGuestbookResponse() {
         return guestbookResponse;
     }
     
-    public final void setGuestbookResponse(GuestbookResponse gbr){
+    public final void setGuestbookResponse(GuestbookResponse gbr) {
         this.guestbookResponse = gbr;
     }
     
@@ -132,13 +132,13 @@ public class FileAccessRequest implements Serializable{
     }
     
     public String getStateLabel() {
-        if(isStateCreated()){
+        if (isStateCreated()) {
             return "created";
         }
-        if(isStateGranted()) {
+        if (isStateGranted()) {
             return "granted";
         }
-        if(isStateRejected()) {
+        if (isStateRejected()) {
             return "rejected";
         }
         return null; 

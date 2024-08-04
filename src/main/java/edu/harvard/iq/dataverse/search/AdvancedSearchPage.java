@@ -62,7 +62,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private String fileFieldVariableLabel;
     private String fileFieldFileTags;
 
-    Map<Long, JsonObject> cachedCvocMap=null;
+    Map<Long, JsonObject> cachedCvocMap = null;
     
     public void init() {
 
@@ -343,7 +343,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     public Map<Long, JsonObject> getCVocConf() {
         //Cache this in the view
-        if(cachedCvocMap==null) {
+        if (cachedCvocMap == null) {
         cachedCvocMap = datasetFieldService.getCVocConf(true);
         }
         return cachedCvocMap;
@@ -354,6 +354,6 @@ public class AdvancedSearchPage implements java.io.Serializable {
     }
 
     public String getFieldLanguage(String languages) {
-        return datasetFieldService.getFieldLanguage(languages,session.getLocaleCode());
+        return datasetFieldService.getFieldLanguage(languages, session.getLocaleCode());
     }
 }

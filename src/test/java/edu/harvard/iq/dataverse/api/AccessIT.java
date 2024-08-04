@@ -214,7 +214,7 @@ public class AccessIT {
         int convertSizeAnon = anonDownloadConverted.getBody().asByteArray().length;
         int tabularSizeNoVarHeader = anonDownloadTabularNoHeader.getBody().asByteArray().length;
         int tabularSizeWithFormatName = anonDownloadTabularWithFormatName.getBody().asByteArray().length;
-        System.out.println("origSize: "+origSizeAnon + " | convertSize: " + convertSizeAnon + " | convertNoHeaderSize: " + tabularSizeNoVarHeader);
+        System.out.println("origSize: " + origSizeAnon + " | convertSize: " + convertSizeAnon + " | convertNoHeaderSize: " + tabularSizeNoVarHeader);
 
         assertEquals(tabFile1SizeOriginal, origSizeAnon);
         assertEquals(tabFile1SizeConvertedWithVarHeader, convertSizeAnon);        
@@ -240,7 +240,7 @@ public class AccessIT {
         assertEquals(OK.getStatusCode(), authDownloadConverted.getStatusCode()); //just to ensure next test
         int origSizeAuth = authDownloadOriginal.getBody().asByteArray().length;
         int convertSizeAuth = authDownloadConverted.getBody().asByteArray().length;
-        System.out.println("origSize: "+origSizeAuth + " | convertSize: " + convertSizeAuth);
+        System.out.println("origSize: " + origSizeAuth + " | convertSize: " + convertSizeAuth);
         assertThat(origSizeAuth, is(not(convertSizeAuth)));  
                 
         //Logged in restricted
@@ -250,7 +250,7 @@ public class AccessIT {
         assertEquals(OK.getStatusCode(), authDownloadConvertedRestricted.getStatusCode()); //just to ensure next test
         int origSizeAuthRestricted = authDownloadOriginalRestricted.getBody().asByteArray().length;
         int convertSizeAuthRestricted = authDownloadConvertedRestricted.getBody().asByteArray().length;
-        System.out.println("origSize: "+origSizeAuthRestricted + " | convertSize: " + convertSizeAuthRestricted);
+        System.out.println("origSize: " + origSizeAuthRestricted + " | convertSize: " + convertSizeAuthRestricted);
         assertThat(origSizeAuthRestricted, is(not(convertSizeAuthRestricted)));  
         
         //Logged in unpublished
@@ -260,25 +260,25 @@ public class AccessIT {
         assertEquals(OK.getStatusCode(), authDownloadConvertedUnpublished.getStatusCode()); //just to ensure next test
         int origSizeAuthUnpublished = authDownloadOriginalUnpublished.getBody().asByteArray().length;
         int convertSizeAuthUnpublished = authDownloadConvertedUnpublished.getBody().asByteArray().length;
-        System.out.println("origSize: "+origSizeAuthUnpublished+ " | convertSize: " + convertSizeAuthUnpublished);
+        System.out.println("origSize: " + origSizeAuthUnpublished + " | convertSize: " + convertSizeAuthUnpublished);
         assertThat(origSizeAuthUnpublished, is(not(convertSizeAuthUnpublished)));  
     }
     
     @Test
     public void testDownloadMultipleFiles_NonLoggedInOpen() throws IOException {
-        Response anonDownloadOriginal = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId,tabFile1Id,tabFile2Id});
+        Response anonDownloadOriginal = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId, tabFile1Id, tabFile2Id});
         assertEquals(OK.getStatusCode(), anonDownloadOriginal.getStatusCode());
         int origSizeAnon = anonDownloadOriginal.getBody().asByteArray().length;
-        HashMap<String,ByteArrayOutputStream> files1 = readZipResponse(anonDownloadOriginal.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> files1 = readZipResponse(anonDownloadOriginal.getBody().asInputStream());
         assertEquals(4, files1.size()); //size +1 for manifest
         assertThat(files1, IsMapContaining.hasKey(basicFileName));
         assertThat(files1, IsMapContaining.hasKey(tabFile1Name));
         assertThat(files1, IsMapContaining.hasKey(tabFile2Name));
         
-        Response anonDownloadConverted = UtilIT.downloadFiles(new Integer[]{basicFileId,tabFile1Id,tabFile2Id});
+        Response anonDownloadConverted = UtilIT.downloadFiles(new Integer[]{basicFileId, tabFile1Id, tabFile2Id});
         assertEquals(OK.getStatusCode(), anonDownloadConverted.getStatusCode());
         int convertSizeAnon = anonDownloadConverted.getBody().asByteArray().length;
-        HashMap<String,ByteArrayOutputStream> files2 = readZipResponse(anonDownloadConverted.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> files2 = readZipResponse(anonDownloadConverted.getBody().asInputStream());
         assertEquals(4, files2.size()); //size +1 for manifest
         assertThat(files2, IsMapContaining.hasKey(basicFileName));
         assertThat(files2, IsMapContaining.hasKey(tabFile1NameConvert));
@@ -290,17 +290,17 @@ public class AccessIT {
     
     @Test
     public void testDownloadMultipleFiles_NonLoggedInRestricted() throws IOException {    
-        Response anonDownloadOriginalRestricted = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId,tabFile1Id,tabFile3IdRestricted});
+        Response anonDownloadOriginalRestricted = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId, tabFile1Id, tabFile3IdRestricted});
         assertEquals(200, anonDownloadOriginalRestricted.getStatusCode());
-        HashMap<String,ByteArrayOutputStream> files1 = readZipResponse(anonDownloadOriginalRestricted.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> files1 = readZipResponse(anonDownloadOriginalRestricted.getBody().asInputStream());
         assertEquals(3, files1.size()); //size +1 for manifest, -1 for not included restricted file
         assertThat(files1, IsMapContaining.hasKey(basicFileName));
         assertThat(files1, IsMapContaining.hasKey(tabFile1Name));
         assertThat(files1, not(IsMapContaining.hasKey(tabFile3NameRestricted)));
         
-        Response anonDownloadConvertedRestricted = UtilIT.downloadFiles(new Integer[]{basicFileId,tabFile1Id,tabFile3IdRestricted});
+        Response anonDownloadConvertedRestricted = UtilIT.downloadFiles(new Integer[]{basicFileId, tabFile1Id, tabFile3IdRestricted});
         assertEquals(200, anonDownloadConvertedRestricted.getStatusCode());
-        HashMap<String,ByteArrayOutputStream> files2 = readZipResponse(anonDownloadConvertedRestricted.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> files2 = readZipResponse(anonDownloadConvertedRestricted.getBody().asInputStream());
         assertEquals(3, files2.size()); //size +1 for manifest, -1 for not included restricted file
         assertThat(files2, IsMapContaining.hasKey(basicFileName));
         assertThat(files2, IsMapContaining.hasKey(tabFile1NameConvert));
@@ -310,62 +310,62 @@ public class AccessIT {
     
     @Test
     public void testDownloadMultipleFiles_LoggedInOpen() throws IOException {
-        Response authDownloadOriginal = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId,tabFile1Id,tabFile2Id}, apiToken);
+        Response authDownloadOriginal = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId, tabFile1Id, tabFile2Id}, apiToken);
         assertEquals(OK.getStatusCode(), authDownloadOriginal.getStatusCode());
         int origSizeAuth = authDownloadOriginal.getBody().asByteArray().length;
-        HashMap<String,ByteArrayOutputStream> files1 = readZipResponse(authDownloadOriginal.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> files1 = readZipResponse(authDownloadOriginal.getBody().asInputStream());
         assertEquals(4, files1.size()); //size +1 for manifest
         assertThat(files1, IsMapContaining.hasKey(basicFileName));
         assertThat(files1, IsMapContaining.hasKey(tabFile1Name));
         assertThat(files1, not(IsMapContaining.hasKey(tabFile3NameRestricted)));
         
-        Response authDownloadConverted = UtilIT.downloadFiles(new Integer[]{basicFileId,tabFile1Id,tabFile2Id}, apiToken);
+        Response authDownloadConverted = UtilIT.downloadFiles(new Integer[]{basicFileId, tabFile1Id, tabFile2Id}, apiToken);
         assertEquals(OK.getStatusCode(), authDownloadConverted.getStatusCode());
         int convertSizeAuth = authDownloadConverted.getBody().asByteArray().length;        
-        HashMap<String,ByteArrayOutputStream> files2 = readZipResponse(authDownloadConverted.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> files2 = readZipResponse(authDownloadConverted.getBody().asInputStream());
         assertEquals(4, files2.size()); //size +1 for manifest
         assertThat(files2, IsMapContaining.hasKey(basicFileName));
         assertThat(files2, IsMapContaining.hasKey(tabFile1NameConvert));
         assertThat(files2, IsMapContaining.hasKey(tabFile2NameConvert));
 
-        System.out.println("origSize: "+origSizeAuth + " | convertSize: " + convertSizeAuth);
+        System.out.println("origSize: " + origSizeAuth + " | convertSize: " + convertSizeAuth);
         assertThat(origSizeAuth, is(not(convertSizeAuth)));  
     }
     
     @Test
     public void testDownloadMultipleFiles_LoggedInRestricted() throws IOException {    
-        Response authDownloadOriginalRestricted = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId,tabFile1Id,tabFile3IdRestricted}, apiToken);
+        Response authDownloadOriginalRestricted = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId, tabFile1Id, tabFile3IdRestricted}, apiToken);
         assertEquals(OK.getStatusCode(), authDownloadOriginalRestricted.getStatusCode());
         int origSizeAuthRestricted = authDownloadOriginalRestricted.getBody().asByteArray().length;
-        HashMap<String,ByteArrayOutputStream> files1 = readZipResponse(authDownloadOriginalRestricted.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> files1 = readZipResponse(authDownloadOriginalRestricted.getBody().asInputStream());
         assertEquals(4, files1.size()); //size +1 for manifest, we have access to restricted
         assertThat(files1, IsMapContaining.hasKey(basicFileName));
         assertThat(files1, IsMapContaining.hasKey(tabFile1Name));
         assertThat(files1, IsMapContaining.hasKey(tabFile3NameRestricted));
         
-        Response authDownloadConvertedRestricted = UtilIT.downloadFiles(new Integer[]{basicFileId,tabFile1Id,tabFile3IdRestricted}, apiToken);
+        Response authDownloadConvertedRestricted = UtilIT.downloadFiles(new Integer[]{basicFileId, tabFile1Id, tabFile3IdRestricted}, apiToken);
         assertEquals(OK.getStatusCode(), authDownloadConvertedRestricted.getStatusCode());
         int convertSizeAuthRestricted = authDownloadConvertedRestricted.getBody().asByteArray().length;
-        HashMap<String,ByteArrayOutputStream> files2 = readZipResponse(authDownloadConvertedRestricted.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> files2 = readZipResponse(authDownloadConvertedRestricted.getBody().asInputStream());
         assertEquals(4, files2.size()); //size +1 for manifest, we have access to restricted
         assertThat(files2, IsMapContaining.hasKey(basicFileName));
         assertThat(files2, IsMapContaining.hasKey(tabFile1NameConvert));
         assertThat(files2, not(IsMapContaining.hasKey(tabFile3NameRestricted)));
         
-        System.out.println("origSize: "+origSizeAuthRestricted + " | convertSize: " + convertSizeAuthRestricted);
+        System.out.println("origSize: " + origSizeAuthRestricted + " | convertSize: " + convertSizeAuthRestricted);
         assertThat(origSizeAuthRestricted, is(not(convertSizeAuthRestricted)));  
     }
         
     @Test
     public void testDownloadMultipleFiles_LoggedInUnpublished() throws IOException {  
-        Response authDownloadOriginalUnpublished = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId,tabFile1Id,tabFile4IdUnpublished}, apiToken);
+        Response authDownloadOriginalUnpublished = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId, tabFile1Id, tabFile4IdUnpublished}, apiToken);
         assertEquals(OK.getStatusCode(), authDownloadOriginalUnpublished.getStatusCode());
-        HashMap<String,ByteArrayOutputStream> files1 = readZipResponse(authDownloadOriginalUnpublished.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> files1 = readZipResponse(authDownloadOriginalUnpublished.getBody().asInputStream());
         assertEquals(4, files1.size()); //size +1 for manifest, we have access to unpublished
         
-        Response authDownloadConvertedUnpublished = UtilIT.downloadFiles(new Integer[]{basicFileId,tabFile1Id,tabFile4IdUnpublished}, apiToken);
+        Response authDownloadConvertedUnpublished = UtilIT.downloadFiles(new Integer[]{basicFileId, tabFile1Id, tabFile4IdUnpublished}, apiToken);
         assertEquals(OK.getStatusCode(), authDownloadConvertedUnpublished.getStatusCode());
-        HashMap<String,ByteArrayOutputStream> files2 = readZipResponse(authDownloadConvertedUnpublished.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> files2 = readZipResponse(authDownloadConvertedUnpublished.getBody().asInputStream());
         assertEquals(4, files2.size()); //size +1 for manifest, we have access to unpublished
     }
     
@@ -376,29 +376,29 @@ public class AccessIT {
     @Test
     public void testDownloadMultipleFiles_LoggedAndNot_Unpublished() throws IOException {   
         int margin = 100; //When comparing sizes, there may be some difference not due to the file exclusion. A very rough estimate
-        Response authDownloadOriginalUnpublished = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId,tabFile1Id,tabFile4IdUnpublished}, apiToken);
+        Response authDownloadOriginalUnpublished = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId, tabFile1Id, tabFile4IdUnpublished}, apiToken);
         assertEquals(OK.getStatusCode(), authDownloadOriginalUnpublished.getStatusCode());
         int origAuthSize = authDownloadOriginalUnpublished.getBody().asByteArray().length;
-        HashMap<String,ByteArrayOutputStream> files1 = readZipResponse(authDownloadOriginalUnpublished.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> files1 = readZipResponse(authDownloadOriginalUnpublished.getBody().asInputStream());
         assertEquals(4, files1.size()); //size +1 for manifest, we have access to unpublished
         
-        Response authDownloadConvertedUnpublished = UtilIT.downloadFiles(new Integer[]{basicFileId,tabFile1Id,tabFile4IdUnpublished}, apiToken);
+        Response authDownloadConvertedUnpublished = UtilIT.downloadFiles(new Integer[]{basicFileId, tabFile1Id, tabFile4IdUnpublished}, apiToken);
         assertEquals(OK.getStatusCode(), authDownloadConvertedUnpublished.getStatusCode());
         int convertAuthSize = authDownloadConvertedUnpublished.getBody().asByteArray().length;
-        HashMap<String,ByteArrayOutputStream> files2 = readZipResponse(authDownloadConvertedUnpublished.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> files2 = readZipResponse(authDownloadConvertedUnpublished.getBody().asInputStream());
         assertEquals(4, files2.size()); //size +1 for manifest, we have access to unpublished
 
-        Response anonDownloadOriginalUnpublished = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId,tabFile1Id,tabFile4IdUnpublished});
+        Response anonDownloadOriginalUnpublished = UtilIT.downloadFilesOriginal(new Integer[]{basicFileId, tabFile1Id, tabFile4IdUnpublished});
         assertEquals(404, anonDownloadOriginalUnpublished.getStatusCode());
         int origAnonSize = anonDownloadOriginalUnpublished.getBody().asByteArray().length;
-        HashMap<String,ByteArrayOutputStream> files3 = readZipResponse(anonDownloadOriginalUnpublished.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> files3 = readZipResponse(anonDownloadOriginalUnpublished.getBody().asInputStream());
         assertEquals(0, files3.size()); //A size of 0 indicates the zip creation was interrupted.
         assertTrue(origAnonSize < origAuthSize + margin);
         
-        Response anonDownloadConvertedUnpublished = UtilIT.downloadFiles(new Integer[]{basicFileId,tabFile1Id,tabFile4IdUnpublished});
+        Response anonDownloadConvertedUnpublished = UtilIT.downloadFiles(new Integer[]{basicFileId, tabFile1Id, tabFile4IdUnpublished});
         assertEquals(404, anonDownloadConvertedUnpublished.getStatusCode());
         int convertAnonSize = anonDownloadConvertedUnpublished.getBody().asByteArray().length;
-        HashMap<String,ByteArrayOutputStream> files4 = readZipResponse(anonDownloadConvertedUnpublished.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> files4 = readZipResponse(anonDownloadConvertedUnpublished.getBody().asInputStream());
         assertEquals(0, files4.size()); //A size of 0 indicates the zip creation was interrupted.
         assertTrue(convertAnonSize < convertAuthSize + margin);
     }
@@ -409,7 +409,7 @@ public class AccessIT {
     //when the creation of the zip is interrupted (non-existent file, etc).
     //Supporting this seems extremely messy and we have already disussed changing
     //how this is done in #4576 --MAD 4.9.2
-    private HashMap<String,ByteArrayOutputStream> readZipResponse(InputStream iStream) throws IOException {
+    private HashMap<String, ByteArrayOutputStream> readZipResponse(InputStream iStream) throws IOException {
         byte[] buffer = new byte[2048];
         
         HashMap<String, ByteArrayOutputStream> fileStreams = new HashMap<>();
@@ -418,7 +418,7 @@ public class AccessIT {
         {
 
             ZipEntry entry;
-            while((entry = zStream.getNextEntry())!=null)
+            while ((entry = zStream.getNextEntry()) != null)
             {
                 if (entry.isDirectory()) {
                     // Dataverse zip bundles can contain folder entries!
@@ -448,7 +448,7 @@ public class AccessIT {
                 finally
                 {
                     // we must always close the output file
-                    if(output!=null) {
+                    if (output != null) {
                         fileStreams.put(name, output);
                         //fileStreams.add(output);
                         output.close();
@@ -576,10 +576,10 @@ public class AccessIT {
         assertEquals(uploadedFileName1, testFileFromZipUploadWithFolders1);
         
         String uploadedFileName2 = responseBodyAsJson.getString("data.files[1].dataFile.filename");
-        assertEquals(uploadedFileName2, testFileFromZipUploadWithFolders2.substring(testFileFromZipUploadWithFolders2.lastIndexOf('/')+1));
+        assertEquals(uploadedFileName2, testFileFromZipUploadWithFolders2.substring(testFileFromZipUploadWithFolders2.lastIndexOf('/') + 1));
         
         String uploadedFileName3 = responseBodyAsJson.getString("data.files[2].dataFile.filename");
-        assertEquals(uploadedFileName3, testFileFromZipUploadWithFolders3.substring(testFileFromZipUploadWithFolders3.lastIndexOf('/')+1));
+        assertEquals(uploadedFileName3, testFileFromZipUploadWithFolders3.substring(testFileFromZipUploadWithFolders3.lastIndexOf('/') + 1));
         
         int uploadedFileSize1 = responseBodyAsJson.getInt("data.files[0].dataFile.filesize");
         assertEquals(testFileFromZipUploadWithFoldersSize1, uploadedFileSize1);
@@ -596,7 +596,7 @@ public class AccessIT {
         
         Response downloadAsZipResponse = UtilIT.downloadFiles(new Integer[]{fileId1, fileId2, fileId3}, apiToken);
         assertEquals(OK.getStatusCode(), downloadAsZipResponse.getStatusCode());
-        HashMap<String,ByteArrayOutputStream> unzippedFiles = readZipResponse(downloadAsZipResponse.getBody().asInputStream());
+        HashMap<String, ByteArrayOutputStream> unzippedFiles = readZipResponse(downloadAsZipResponse.getBody().asInputStream());
         
         // Check that we did in fact get 3 zipped files (pluse the manifest file):
         assertEquals(4, unzippedFiles.size()); 

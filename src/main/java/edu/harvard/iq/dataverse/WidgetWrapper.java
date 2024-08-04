@@ -86,7 +86,7 @@ public class WidgetWrapper implements java.io.Serializable {
     }
 
     public String wrapURL(String URL) {
-        return URL + (isWidgetView() ? getParamSeparator(URL) + WIDGET_PARAMETER + "=" + widgetScope + WIDGET_SEPARATOR + widgetHome: "");
+        return URL + (isWidgetView() ? getParamSeparator(URL) + WIDGET_PARAMETER + "=" + widgetScope + WIDGET_SEPARATOR + widgetHome : "");
     }
 
     private String getParamSeparator(String URL) {

@@ -18,14 +18,14 @@ public class SessionUtil {
      */
     public static void changeSessionId(HttpServletRequest h) {
         HttpSession session = h.getSession(false);
-        HashMap<String, Object> sessionAttributes = new HashMap<String,Object>();
-        for(Enumeration<String> e = session.getAttributeNames();e.hasMoreElements();) {
+        HashMap<String, Object> sessionAttributes = new HashMap<String, Object>();
+        for (Enumeration<String> e = session.getAttributeNames(); e.hasMoreElements(); ) {
         	String name = e.nextElement();
         	sessionAttributes.put(name, session.getAttribute(name));
         }
         h.getSession().invalidate();
         session = h.getSession(true);
-        for(Entry<String, Object> entry: sessionAttributes.entrySet()) {
+        for (Entry<String, Object> entry : sessionAttributes.entrySet()) {
         	session.setAttribute(entry.getKey(), entry.getValue());
         }
     }

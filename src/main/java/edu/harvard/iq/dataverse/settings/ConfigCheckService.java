@@ -68,13 +68,13 @@ public class ConfigCheckService {
         boolean success = true;
         for (Path path : paths.keySet()) {
             // Check if the configured path is absolute - avoid potential problems with relative paths this way
-            if (! path.isAbsolute()) {
+            if (!path.isAbsolute()) {
                 logger.log(Level.SEVERE, () -> "Configured directory " + path + " for " + paths.get(path) + " is not absolute");
                 success = false;
                 continue;
             }
             
-            if (! Files.exists(path)) {
+            if (!Files.exists(path)) {
                 try {
                     Files.createDirectories(path);
                 } catch (IOException e) {
@@ -118,7 +118,7 @@ public class ConfigCheckService {
             // Check if the "from" in the session is the same as the system mail address (see issue 4210)
             } else {
                 String sessionFrom = mailSessionProducer.getSession().getProperty("mail.from");
-                if (! mailAddress.get().toString().equals(sessionFrom)) {
+                if (!mailAddress.get().toString().equals(sessionFrom)) {
                     logger.warning(() -> String.format(
                         "Found app server mail session provided 'from' (%s) does not match system mail setting (%s)",
                         sessionFrom, mailAddress.get()));
@@ -136,13 +136,13 @@ public class ConfigCheckService {
      */
     private boolean checkPidProviders() {
         // Check if at least one PidProvider capable of editing/minting PIDs is configured.
-        boolean valid=true;
-        if(!(PidUtil.getManagedProviderIds().size() > 0)) {
+        boolean valid = true;
+        if (!(PidUtil.getManagedProviderIds().size() > 0)) {
             valid = false;
             logger.warning("No PID providers configured");
         }
-        if (pidProviderFactoryBean.getDefaultPidGenerator()==null){
-            valid=false;
+        if (pidProviderFactoryBean.getDefaultPidGenerator() == null) {
+            valid = false;
             logger.warning("No default PID provider configured");
         }
         return valid;

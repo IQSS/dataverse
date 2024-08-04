@@ -86,52 +86,52 @@ public class TermsOfUseAndAccess implements Serializable {
     }
     
     @ManyToOne
-    @JoinColumn(name="license_id")
+    @JoinColumn(name = "license_id")
     private License license;
 
-    @Column(columnDefinition="TEXT")      
+    @Column(columnDefinition = "TEXT")      
     private String termsOfUse;
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition = "TEXT") 
     private String termsOfAccess;
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition = "TEXT") 
     private String confidentialityDeclaration;
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition = "TEXT") 
     private String specialPermissions;
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition = "TEXT") 
     private String restrictions;
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition = "TEXT") 
     private String citationRequirements;
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition = "TEXT") 
     private String depositorRequirements;
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition = "TEXT") 
     private String conditions;
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition = "TEXT") 
     private String disclaimer;
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition = "TEXT") 
     private String dataAccessPlace;
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition = "TEXT") 
     private String originalArchive;
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition = "TEXT") 
     private String availabilityStatus;
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition = "TEXT") 
     private String contactForAccess;
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition = "TEXT") 
     private String sizeOfCollection;
     
-    @Column(columnDefinition="TEXT") 
+    @Column(columnDefinition = "TEXT") 
     private String studyCompletion;
     
     private boolean fileAccessRequest;
@@ -150,7 +150,7 @@ public class TermsOfUseAndAccess implements Serializable {
 
     public void setLicense(License license) {
         this.license = license;
-        if(license!=null) {
+        if (license != null) {
             clearCustomTermsVariables();
         }
     }
@@ -276,7 +276,7 @@ public class TermsOfUseAndAccess implements Serializable {
     }
     
         
-    public TermsOfUseAndAccess copyTermsOfUseAndAccess(){
+    public TermsOfUseAndAccess copyTermsOfUseAndAccess() {
 
         TermsOfUseAndAccess retVal = new TermsOfUseAndAccess();
         retVal.setAvailabilityStatus(this.getAvailabilityStatus());
@@ -302,7 +302,7 @@ public class TermsOfUseAndAccess implements Serializable {
         return retVal;
     }
 
-    private void clearCustomTermsVariables(){
+    private void clearCustomTermsVariables() {
         termsOfUse = null;
         confidentialityDeclaration = null;
         specialPermissions = null;

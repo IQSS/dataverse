@@ -130,7 +130,7 @@ class FileDownloadHelperTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "false", "true" })
+    @CsvSource({"false", "true"})
     void testCanDownloadFile_forDeaccessionedFile(boolean hasPermission) {
         DataFile dataFile = new DataFile();
         dataFile.setId(2L);

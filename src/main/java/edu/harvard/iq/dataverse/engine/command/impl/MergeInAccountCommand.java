@@ -68,18 +68,18 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         List<RoleAssignment> baseRAList = ctxt.roleAssignees().getAssignmentsFor(ongoingAU.getIdentifier());
         List<RoleAssignment> consumedRAList = ctxt.roleAssignees().getAssignmentsFor(consumedAU.getIdentifier());
         
-        for(RoleAssignment cra : consumedRAList) {
-            if(cra.getAssigneeIdentifier().charAt(0) == '@') {
+        for (RoleAssignment cra : consumedRAList) {
+            if (cra.getAssigneeIdentifier().charAt(0) == '@') {
                 
                 boolean willDelete = false;
-                for(RoleAssignment bra : baseRAList) {
+                for (RoleAssignment bra : baseRAList) {
                     //Matching on the id not the whole DVObject as I'm suspicious of dvobject equality
-                    if( bra.getDefinitionPoint().getId().equals(cra.getDefinitionPoint().getId())
+                    if (bra.getDefinitionPoint().getId().equals(cra.getDefinitionPoint().getId())
                         && bra.getRole().equals(cra.getRole())) { 
                         willDelete = true; //more or less a skip, as we run a delete query afterwards
                     }
                 }
-                if(!willDelete) {
+                if (!willDelete) {
                     cra.setAssigneeIdentifier(ongoingAU.getIdentifier());
                     ctxt.em().merge(cra);
                     IndexResponse indexResponse = ctxt.solrIndex().indexPermissionsForOneDvObject(cra.getDefinitionPoint());
@@ -116,10 +116,10 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
 
         //DVObjects creator and release
         for (DvObject dvo : ctxt.dvObjects().findByAuthenticatedUserId(consumedAU)) {
-            if (dvo.getCreator().equals(consumedAU)){
+            if (dvo.getCreator().equals(consumedAU)) {
                 dvo.setCreator(ongoingAU);
             }
-            if (dvo.getReleaseUser() != null &&  dvo.getReleaseUser().equals(consumedAU)){
+            if (dvo.getReleaseUser() != null && dvo.getReleaseUser().equals(consumedAU)) {
                 dvo.setReleaseUser(ongoingAU);
             }
             ctxt.em().merge(dvo);
@@ -164,19 +164,19 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         
         // todo: the deletion should be handed down to the service!
         ConfirmEmailData confirmEmailData = ctxt.confirmEmail().findSingleConfirmEmailDataByUser(consumedAU); 
-        if (confirmEmailData != null){
+        if (confirmEmailData != null) {
             ctxt.em().remove(confirmEmailData);
         }
 
         
         //Access Request is not an entity. have to update with native query
         
-        ctxt.em().createNativeQuery("UPDATE fileaccessrequests SET authenticated_user_id="+ongoingAU.getId()+" WHERE authenticated_user_id="+consumedAU.getId()).executeUpdate();
+        ctxt.em().createNativeQuery("UPDATE fileaccessrequests SET authenticated_user_id=" + ongoingAU.getId() + " WHERE authenticated_user_id=" + consumedAU.getId()).executeUpdate();
         
-        ctxt.em().createNativeQuery("Delete from OAuth2TokenData where user_id ="+consumedAU.getId()).executeUpdate();
+        ctxt.em().createNativeQuery("Delete from OAuth2TokenData where user_id =" + consumedAU.getId()).executeUpdate();
         
-        ctxt.em().createNativeQuery("DELETE FROM explicitgroup_authenticateduser consumed USING explicitgroup_authenticateduser ongoing WHERE consumed.containedauthenticatedusers_id="+ongoingAU.getId()+" AND ongoing.containedauthenticatedusers_id="+consumedAU.getId()).executeUpdate();
-        ctxt.em().createNativeQuery("UPDATE explicitgroup_authenticateduser SET containedauthenticatedusers_id="+ongoingAU.getId()+" WHERE containedauthenticatedusers_id="+consumedAU.getId()).executeUpdate();
+        ctxt.em().createNativeQuery("DELETE FROM explicitgroup_authenticateduser consumed USING explicitgroup_authenticateduser ongoing WHERE consumed.containedauthenticatedusers_id=" + ongoingAU.getId() + " AND ongoing.containedauthenticatedusers_id=" + consumedAU.getId()).executeUpdate();
+        ctxt.em().createNativeQuery("UPDATE explicitgroup_authenticateduser SET containedauthenticatedusers_id=" + ongoingAU.getId() + " WHERE containedauthenticatedusers_id=" + consumedAU.getId()).executeUpdate();
         
         ctxt.actionLog().changeUserIdentifierInHistory(consumedAU.getIdentifier(), ongoingAU.getIdentifier());
         
@@ -186,7 +186,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         //  AuthenticatedUserLookup
         //  apiToken
         ApiToken toRemove = ctxt.authentication().findApiTokenByUser(consumedAU);
-        if(null != toRemove) { //not all users have apiTokens
+        if (null != toRemove) { //not all users have apiTokens
             ctxt.em().remove(toRemove);
         }
         AuthenticatedUserLookup consumedAUL = consumedAU.getAuthenticatedUserLookup();
@@ -204,7 +204,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
     public String describe() {
         return "User " + consumedAU.getUserIdentifier() + " (type: " + consumedAU.getAuthenticatedUserLookup().getAuthenticationProviderId() + " | persistentUserId: "
                 + consumedAU.getAuthenticatedUserLookup().getPersistentUserId() +
-                "; Name: "+ consumedAU.getFirstName() + " " + consumedAU.getLastName() +"; Institution: "  + consumedAU.getAffiliation() + "; Email: " + consumedAU.getEmail() + ") merged into " +ongoingAU.getUserIdentifier();
+                "; Name: " + consumedAU.getFirstName() + " " + consumedAU.getLastName() + "; Institution: " + consumedAU.getAffiliation() + "; Email: " + consumedAU.getEmail() + ") merged into " + ongoingAU.getUserIdentifier();
     }
     
 }

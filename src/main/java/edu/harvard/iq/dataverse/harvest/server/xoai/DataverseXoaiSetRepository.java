@@ -20,7 +20,7 @@ public class DataverseXoaiSetRepository implements SetRepository {
     
     private OAISetServiceBean setService;
 
-    public DataverseXoaiSetRepository (OAISetServiceBean setService) {
+    public DataverseXoaiSetRepository(OAISetServiceBean setService) {
         this.setService = setService;
     }
     

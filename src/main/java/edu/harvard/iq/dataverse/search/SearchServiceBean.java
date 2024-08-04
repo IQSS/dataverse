@@ -328,8 +328,8 @@ public class SearchServiceBean {
         }
 
         //I'm not sure if just adding null here is good for hte permissions system... i think it needs something
-        if(dataverses != null) {
-            for(Dataverse dataverse : dataverses) {
+        if (dataverses != null) {
+            for (Dataverse dataverse : dataverses) {
                 // -----------------------------------
                 // PERMISSION FILTER QUERY
                 // -----------------------------------
@@ -394,7 +394,7 @@ public class SearchServiceBean {
         } catch (RemoteSolrException ex) {
             String messageFromSolr = ex.getLocalizedMessage();
             
-            logger.fine("message from the solr exception: "+messageFromSolr+"; code: "+ex.code());
+            logger.fine("message from the solr exception: " + messageFromSolr + "; code: " + ex.code());
             
             SolrQueryResponse exceptionSolrQueryResponse = new SolrQueryResponse(solrQuery);
 
@@ -444,9 +444,9 @@ public class SearchServiceBean {
         
         int statusCode = queryResponse.getStatus();
         
-        logger.fine("status code of the query response: "+statusCode);
-        logger.fine("_size from query response: "+queryResponse._size());
-        logger.fine("qtime: "+queryResponse.getQTime());
+        logger.fine("status code of the query response: " + statusCode);
+        logger.fine("_size from query response: " + queryResponse._size());
+        logger.fine("qtime: " + queryResponse.getQTime());
 
         SolrDocumentList docs = queryResponse.getResults();
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
@@ -690,7 +690,7 @@ public class SearchServiceBean {
                     solrSearchResult.setTabularDataTags(tabularDataTags);
                 }
                 String filePID = (String) solrDocument.getFieldValue(SearchFields.FILE_PERSISTENT_ID);
-                if(null != filePID && !"".equals(filePID) && !"".equals("null")) {
+                if (null != filePID && !"".equals(filePID) && !"".equals("null")) {
                     solrSearchResult.setFilePersistentId(filePID);
                 }
             }
@@ -735,7 +735,7 @@ public class SearchServiceBean {
             for (DatasetFieldType datasetField : datasetFields) {
                 String solrFieldNameForDataset = datasetField.getSolrField().getNameFacetable();
                 if (solrFieldNameForDataset != null && facetField.getName().equals(solrFieldNameForDataset)) {
-                    metadataBlockName = datasetField.getMetadataBlock().getName() ;
+                    metadataBlockName = datasetField.getMetadataBlock().getName();
                     datasetFieldName = datasetField.getName();
                     facetCategory.setDatasetFieldTypeId(datasetField.getId());
                     break;
@@ -750,8 +750,8 @@ public class SearchServiceBean {
 //                logger.info("field: " + facetField.getName() + " " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
                 String localefriendlyName = null;
                 if (facetFieldCount.getCount() > 0) {
-                    if(metadataBlockName.length() > 0 ) {
-                        localefriendlyName = getLocaleTitle(datasetFieldName,facetFieldCount.getName(), metadataBlockName);
+                    if (metadataBlockName.length() > 0) {
+                        localefriendlyName = getLocaleTitle(datasetFieldName, facetFieldCount.getName(), metadataBlockName);
                     } else if (facetField.getName().equals(SearchFields.METADATA_TYPES)) {
                         Optional<DataverseMetadataBlockFacet> metadataBlockFacet = metadataBlockFacets.stream().filter(blockFacet -> blockFacet.getMetadataBlock().getName().equals(facetFieldCount.getName())).findFirst();
                         if (metadataBlockFacet.isEmpty()) {
@@ -762,7 +762,7 @@ public class SearchServiceBean {
                         localefriendlyName = metadataBlockFacet.get().getMetadataBlock().getLocaleDisplayFacet();
                     } else if (facetField.getName().equals(SearchFields.DATASET_LICENSE)) {
                         try {
-                            localefriendlyName = BundleUtil.getStringFromPropertyFile("license." + facetFieldCount.getName().toLowerCase().replace(" ","_") + ".name", "License");
+                            localefriendlyName = BundleUtil.getStringFromPropertyFile("license." + facetFieldCount.getName().toLowerCase().replace(" ", "_") + ".name", "License");
                         } catch (Exception e) {
                             localefriendlyName = facetFieldCount.getName();
                         }
@@ -837,8 +837,8 @@ public class SearchServiceBean {
                     Logger.getLogger(SearchServiceBean.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 if (staticSearchField != null && facetField.getName().equals(staticSearchField)) {
-                    String friendlyName = BundleUtil.getStringFromPropertyFile("staticSearchFields."+staticSearchField, "staticSearchFields");
-                    if(friendlyName != null && friendlyName.length() > 0) {
+                    String friendlyName = BundleUtil.getStringFromPropertyFile("staticSearchFields." + staticSearchField, "staticSearchFields");
+                    if (friendlyName != null && friendlyName.length() > 0) {
                         facetCategory.setFriendlyName(friendlyName);
                     } else {
                         String[] parts = name.split("_");
@@ -942,24 +942,24 @@ public class SearchServiceBean {
         return solrQueryResponse;
     }
 
-    public String getLocaleTitle(String title,  String controlledvoc , String propertyfile) {
+    public String getLocaleTitle(String title, String controlledvoc, String propertyfile) {
 
         String output = "";
         try {
-            if(controlledvoc != "" ) {
-                output =  BundleUtil.getStringFromPropertyFile("controlledvocabulary." + title +"."+ controlledvoc.toLowerCase().replace(" ","_")  , propertyfile);
+            if (controlledvoc != "") {
+                output = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + title + "." + controlledvoc.toLowerCase().replace(" ", "_"), propertyfile);
             } else {
                 output = BundleUtil.getStringFromPropertyFile("datasetfieldtype." + title + ".title", propertyfile);
             }
         } catch (MissingResourceException e1) {
-            if(controlledvoc != "" ) {
+            if (controlledvoc != "") {
                 return controlledvoc;
             } else {
                 return title;
             }
         }
 
-        if(output != null && output.length() >0) {
+        if (output != null && output.length() > 0) {
             return output;
         }
         else

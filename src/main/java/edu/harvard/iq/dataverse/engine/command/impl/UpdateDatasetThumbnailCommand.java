@@ -83,7 +83,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                             return datasetThumbnail;
                         } else {
                             throw new CommandException(BundleUtil.getStringFromBundle("datasets.api.thumbnail.basedOnWrongFileId",
-                                    List.of(String.valueOf(dataFile.getId()),String.valueOf(dataFileIdSupplied))), this);
+                                    List.of(String.valueOf(dataFile.getId()), String.valueOf(dataFileIdSupplied))), this);
                         }
                     }
                 } else {

@@ -146,7 +146,7 @@ public class ExternalToolServiceBeanTest {
         assertEquals("explorer", externalTool.getToolName());
         DataFile dataFile = new DataFile();
         dataFile.setId(42l);
-        dataFile.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.5072","FK2/RMQT6J/G9F1A1", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
+        dataFile.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.5072", "FK2/RMQT6J/G9F1A1", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
         FileMetadata fmd = new FileMetadata();
         fmd.setId(2L);
         DatasetVersion dv = new DatasetVersion();

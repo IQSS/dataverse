@@ -27,16 +27,16 @@ public class BriefJsonPrinterTest {
     @Test
     public void testJson_DatasetVersion() {
         Dataset ds = MocksFactory.makeDataset();
-        DatasetVersion dsv = MocksFactory.makeDatasetVersion( ds.getCategories() );
+        DatasetVersion dsv = MocksFactory.makeDatasetVersion(ds.getCategories());
         
         dsv.setId(1L);
         dsv.setVersion(2l);
         dsv.setVersionState(DatasetVersion.VersionState.DEACCESSIONED);
         
         DatasetField titleFld = new DatasetField();
-        titleFld.setDatasetFieldType( new DatasetFieldType(DatasetFieldConstant.title, DatasetFieldType.FieldType.TEXT, false) );
+        titleFld.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.title, DatasetFieldType.FieldType.TEXT, false));
         titleFld.setSingleValue("Dataset Title");
-        dsv.setDatasetFields( Collections.singletonList(titleFld) );
+        dsv.setDatasetFields(Collections.singletonList(titleFld));
         
         BriefJsonPrinter sut = new BriefJsonPrinter();
         JsonObject res = sut.json(dsv).build();

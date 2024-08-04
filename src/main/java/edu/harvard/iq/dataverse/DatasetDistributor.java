@@ -18,7 +18,7 @@ public class DatasetDistributor {
     public static Comparator<DatasetDistributor> DisplayOrder = new Comparator<DatasetDistributor>() {
         @Override
         public int compare(DatasetDistributor o1, DatasetDistributor o2) {
-            return o1.getDisplayOrder()-o2.getDisplayOrder();
+            return o1.getDisplayOrder() - o2.getDisplayOrder();
         }
     };
     
@@ -86,11 +86,11 @@ public class DatasetDistributor {
     }
     
       public boolean isEmpty() {
-        return ((abbreviation==null || abbreviation.getValue().trim().equals(""))
-            && (affiliation==null || affiliation.getValue().trim().equals(""))
-            && (logo==null || logo.getValue().trim().equals(""))
-            && (name==null || name.getValue().trim().equals(""))
-            && (url==null || url.getValue().trim().equals("")));
+        return ((abbreviation == null || abbreviation.getValue().trim().equals(""))
+            && (affiliation == null || affiliation.getValue().trim().equals(""))
+            && (logo == null || logo.getValue().trim().equals(""))
+            && (name == null || name.getValue().trim().equals(""))
+            && (url == null || url.getValue().trim().equals("")));
     }
       
     

@@ -48,17 +48,17 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
     @Override
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
         
-        if ( ! getUser().isSuperuser() ) {
+        if (!getUser().isSuperuser()) {
             throw new PermissionException("ImportDatasetCommand can only be issued by a super-user.", this, Collections.emptySet(), getDataset());
         }
         
         Dataset ds = getDataset();
         
-        if ( isEmpty(ds.getIdentifier()) ) {
+        if (isEmpty(ds.getIdentifier())) {
             throw new IllegalCommandException("Imported datasets must have a persistent global identifier.", this);
         }
         
-        if ( ! ctxt.dvObjects().isGlobalIdLocallyUnique(ds.getGlobalId()) ) {
+        if (!ctxt.dvObjects().isGlobalIdLocallyUnique(ds.getGlobalId())) {
             throw new IllegalCommandException("Persistent identifier " + ds.getGlobalId().asString() + " already exists in this Dataverse installation.", this);
         }
         
@@ -100,7 +100,7 @@ public class ImportDatasetCommand extends AbstractCreateDatasetCommand {
     
     @Override
     protected void handlePid(Dataset theDataset, CommandContext ctxt) {
-        theDataset.setGlobalIdCreateTime( getTimestamp() );
+        theDataset.setGlobalIdCreateTime(getTimestamp());
     }
 
     @Override

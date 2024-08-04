@@ -17,21 +17,21 @@ import java.util.zip.ZipOutputStream;
  * 
  * 
  */
-public class ZipMaker{
+public class ZipMaker {
 
     private static boolean DEBUG = false;
     
-    public static void main(String[] args){
+    public static void main(String[] args) {
         
     }
 
-    public ZipMaker(List<String> filenames, String inputDirname, String outputZipFilename){
+    public ZipMaker(List<String> filenames, String inputDirname, String outputZipFilename) {
 
         try {
 			FileOutputStream fos = new FileOutputStream(outputZipFilename);
 			ZipOutputStream zip_output_stream = new ZipOutputStream(fos);
 
-            for(String fname: filenames){
+            for (String fname : filenames) {
             
                 String fullpath = new String(inputDirname + '/' + fname);
                 addToZipFile(fname, fullpath, zip_output_stream);
@@ -52,7 +52,7 @@ public class ZipMaker{
 
 public static void addToZipFile(String fileName, String fullFilepath, ZipOutputStream zip_output_stream) throws FileNotFoundException, IOException {
 
-        if (DEBUG){
+        if (DEBUG) {
 		    System.out.println("Writing '" + fileName + "' to zip file");
         }
         

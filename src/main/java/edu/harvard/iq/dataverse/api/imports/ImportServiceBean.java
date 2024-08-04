@@ -78,7 +78,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 @Stateless
 public class ImportServiceBean {
-    @PersistenceContext(unitName="VDCNet-ejbPU")
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
     private static final Logger logger = Logger.getLogger(ImportServiceBean.class.getCanonicalName());
@@ -159,20 +159,20 @@ public class ImportServiceBean {
         String ddiXMLToParse;
         try {
             ddiXMLToParse = new String(Files.readAllBytes(file.toPath()));
-            JsonObjectBuilder status = doImport(dataverseRequest, owner, ddiXMLToParse,file.getParentFile().getName() + "/" + file.getName(), importType, cleanupLog);
+            JsonObjectBuilder status = doImport(dataverseRequest, owner, ddiXMLToParse, file.getParentFile().getName() + "/" + file.getName(), importType, cleanupLog);
             status.add("file", file.getName());
             logger.log(Level.INFO, "completed doImport {0}/{1}", new Object[]{file.getParentFile().getName(), file.getName()});
             return status;
         } catch (ImportException ex) {
             String msg = "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage();
             logger.info(msg);
-            if (validationLog!=null) {
+            if (validationLog != null) {
                 validationLog.println(msg);
             }
             return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
         } catch (IOException e) {
-            Throwable causedBy =e.getCause();
-            while (causedBy != null && causedBy.getCause()!=null) {
+            Throwable causedBy = e.getCause();
+            while (causedBy != null && causedBy.getCause() != null) {
                 causedBy = causedBy.getCause();
             }
             String stackLine = "";
@@ -180,14 +180,14 @@ public class ImportServiceBean {
                 stackLine = causedBy.getStackTrace()[0].toString();
             }
                  String msg = "Unexpected Error in handleFile(), file:" + file.getParentFile().getName() + "/" + file.getName();
-                 if (e.getMessage()!=null) {
-                     msg+= "message: " +e.getMessage(); 
+                 if (e.getMessage() != null) {
+                     msg += "message: " + e.getMessage(); 
                  }
-                 msg += ", caused by: " +causedBy;
-                 if (causedBy != null && causedBy.getMessage()!=null) {
-                     msg+=", caused by message: "+ causedBy.getMessage();
+                 msg += ", caused by: " + causedBy;
+                 if (causedBy != null && causedBy.getMessage() != null) {
+                     msg += ", caused by message: " + causedBy.getMessage();
                  }
-                 msg += " at line: "+ stackLine;
+                 msg += " at line: " + stackLine;
                  
        
             
@@ -228,36 +228,36 @@ public class ImportServiceBean {
                 // import type should be configurable - it should be possible to 
                 // select whether you want to harvest with or without files, 
                 // ImportType.HARVEST vs. ImportType.HARVEST_WITH_FILES
-                logger.fine("importing DDI "+metadataFile.getAbsolutePath());
+                logger.fine("importing DDI " + metadataFile.getAbsolutePath());
                 dsDTO = importDDIService.doImport(ImportType.HARVEST, xmlToParse);
             } catch (IOException | XMLStreamException | ImportException e) {
-                throw new ImportException("Failed to process DDI XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
+                throw new ImportException("Failed to process DDI XML record: " + e.getClass() + " (" + e.getMessage() + ")");
             }
         } else if ("dc".equalsIgnoreCase(metadataFormat) || "oai_dc".equals(metadataFormat)) {
-            logger.fine("importing DC "+metadataFile.getAbsolutePath());
+            logger.fine("importing DC " + metadataFile.getAbsolutePath());
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
                 dsDTO = importGenericService.processOAIDCxml(xmlToParse);
             } catch (IOException | XMLStreamException e) {
-                throw new ImportException("Failed to process Dublin Core XML record: "+ e.getClass() + " (" + e.getMessage() + ")");
+                throw new ImportException("Failed to process Dublin Core XML record: " + e.getClass() + " (" + e.getMessage() + ")");
             }
         } else if ("dataverse_json".equals(metadataFormat)) {
             // This is Dataverse metadata already formatted in JSON. 
             // Simply read it into a string, and pass to the final import further down:
-            logger.fine("Attempting to import custom dataverse metadata from file "+metadataFile.getAbsolutePath());
+            logger.fine("Attempting to import custom dataverse metadata from file " + metadataFile.getAbsolutePath());
             json = new String(Files.readAllBytes(metadataFile.toPath())); 
         } else {
             throw new ImportException("Unsupported import metadata format: " + metadataFormat);
         }
 
         if (json == null) {
-            if (dsDTO != null ) {
+            if (dsDTO != null) {
                 // convert DTO to Json, 
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 json = gson.toJson(dsDTO);
-                logger.fine("JSON produced for the metadata harvested: "+json);
+                logger.fine("JSON produced for the metadata harvested: " + json);
             } else {
-                throw new ImportException("Failed to transform XML metadata format "+metadataFormat+" into a DatasetDTO");
+                throw new ImportException("Failed to transform XML metadata format " + metadataFormat + " into a DatasetDTO");
             }
         }
 
@@ -286,7 +286,7 @@ public class ImportServiceBean {
             if (!violations.isEmpty()) {
                 // For migration and harvest, add NA for missing required values
                 for (ConstraintViolation<DatasetField> v : violations) {
-                    DatasetField f =  v.getRootBean();
+                    DatasetField f = v.getRootBean();
                     f.setSingleValue(DatasetField.NA_VALUE);
                 }
             }
@@ -326,7 +326,7 @@ public class ImportServiceBean {
             // A Global ID is required, in order for us to be able to harvest and import
             // this dataset:
             if (StringUtils.isEmpty(ds.getGlobalId().asString())) {
-                throw new ImportException("The harvested metadata record with the OAI server identifier "+harvestIdentifier+" does not contain a global unique identifier that we could recognize, skipping.");
+                throw new ImportException("The harvested metadata record with the OAI server identifier " + harvestIdentifier + " does not contain a global unique identifier that we could recognize, skipping.");
             }
 
             ds.setHarvestedFrom(harvestingClient);
@@ -338,13 +338,13 @@ public class ImportServiceBean {
                 // If this dataset already exists IN ANOTHER DATAVERSE
                 // we are just going to skip it!
                 if (existingDs.getOwner() != null && !owner.getId().equals(existingDs.getOwner().getId())) {
-                    throw new ImportException("The dataset with the global id "+ds.getGlobalId().asString()+" already exists, in the dataverse "+existingDs.getOwner().getAlias()+", skipping.");
+                    throw new ImportException("The dataset with the global id " + ds.getGlobalId().asString() + " already exists, in the dataverse " + existingDs.getOwner().getAlias() + ", skipping.");
                 }
                 // And if we already have a dataset with this same id, in this same
                 // dataverse, but it is  LOCAL dataset (can happen!), we're going to 
                 // skip it also: 
                 if (!existingDs.isHarvested()) {
-                    throw new ImportException("A LOCAL dataset with the global id "+ds.getGlobalId().asString()+" already exists in this dataverse; skipping.");
+                    throw new ImportException("A LOCAL dataset with the global id " + ds.getGlobalId().asString() + " already exists in this dataverse; skipping.");
                 }
                 // For harvested datasets, there should always only be one version.
                 // We will replace the current version with the imported version.
@@ -436,7 +436,7 @@ public class ImportServiceBean {
             // Check data against required contraints
             List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
             if (!violations.isEmpty()) {
-                if ( importType.equals(ImportType.HARVEST) ) {
+                if (importType.equals(ImportType.HARVEST)) {
                     // For migration and harvest, add NA for missing required values
                     for (ConstraintViolation<DatasetField> v : violations) {
                         DatasetField f = v.getRootBean();
@@ -464,7 +464,7 @@ public class ImportServiceBean {
                     DatasetFieldValue f = v.getRootBean();
                     boolean fixed = false;
                     boolean converted = false;
-                    if ( importType.equals(ImportType.HARVEST) && 
+                    if (importType.equals(ImportType.HARVEST) && 
                          settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData, false)) {
                         fixed = processMigrationValidationError(f, cleanupLog, fileName);
                         converted = true;
@@ -518,7 +518,7 @@ public class ImportServiceBean {
                         }
                     }
                     DatasetVersion dsv = engineSvc.submit(new CreateDatasetVersionCommand(dataverseRequest, existingDs, ds.getVersions().get(0)));
-                    status = " created datasetVersion, for dataset "+ dsv.getDataset().getGlobalId().asString();
+                    status = " created datasetVersion, for dataset " + dsv.getDataset().getGlobalId().asString();
                     createdId = dsv.getId();
                 }
 
@@ -544,36 +544,36 @@ public class ImportServiceBean {
             String convertedVal = convertInvalidEmail(f.getValue());
             if (!(convertedVal == null)) {
                 String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
-                     + "Invalid value:  '" + f.getValue() + "'"   + " Converted Value:'" + convertedVal + "'"; 
+                     + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + convertedVal + "'"; 
                 cleanupLog.println(msg);
                 f.setValue(convertedVal);
                 return true;
             }
             //if conversion fails set to NA
-            String msg = "Data modified - File: " + fileName + "; Field: Dataset Contact Email; " +  "Invalid value: '" + f.getValue() + "'"  + " Converted Value: 'NA'"; 
+            String msg = "Data modified - File: " + fileName + "; Field: Dataset Contact Email; " + "Invalid value: '" + f.getValue() + "'" + " Converted Value: 'NA'"; 
             cleanupLog.println(msg);
             f.setValue(DatasetField.NA_VALUE);
             return true;
         }
         if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.producerURL)) {
             if (f.getValue().equals("PRODUCER URL")) {
-                String msg = "Data modified - File: " + fileName + "; Field: Producer URL; "  +  "Invalid value: '" + f.getValue() + "'"  + " Converted Value: 'NA'"; 
+                String msg = "Data modified - File: " + fileName + "; Field: Producer URL; " + "Invalid value: '" + f.getValue() + "'" + " Converted Value: 'NA'"; 
                 cleanupLog.println(msg);
                 f.setValue(DatasetField.NA_VALUE);
                 return true;
             }
         }
         if (f.getDatasetField().getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.DATE)) {
-            if(f.getValue().toUpperCase().equals("YYYY-MM-DD")){
-                String msg = "Data modified - File: " + fileName + "; Field:" +  f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
-                     +  "Invalid value: '" + f.getValue() + "'"  + " Converted Value: 'NA'"; 
+            if (f.getValue().toUpperCase().equals("YYYY-MM-DD")) {
+                String msg = "Data modified - File: " + fileName + "; Field:" + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                     + "Invalid value: '" + f.getValue() + "'" + " Converted Value: 'NA'"; 
                 cleanupLog.println(msg);
                 f.setValue(DatasetField.NA_VALUE);
                 return true;
             }
             String convertedVal = convertInvalidDateString(f.getValue());
-            if(!(convertedVal == null)) {
-                String msg = "Data modified - File: " + fileName + "; Field: " +  f.getDatasetField().getDatasetFieldType().getDisplayName() + ""
+            if (!(convertedVal == null)) {
+                String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + ""
                         + " Converted Value:" + convertedVal + "; Invalid value:  '" + f.getValue() + "'";
                 cleanupLog.println(msg);
                 f.setValue(convertedVal); 
@@ -583,10 +583,10 @@ public class ImportServiceBean {
         return false;
     }
     
-    private String convertInvalidEmail(String inString){  
+    private String convertInvalidEmail(String inString) {  
         //First we'll see if the invalid email is a comma delimited list of email addresses
         //if so we'll return the first one - maybe try to get them all at some point?
-        if (inString.contains(",")){
+        if (inString.contains(",")) {
             String[] addresses = inString.split("\\,"); 
             return addresses[0];
         }        
@@ -594,22 +594,22 @@ public class ImportServiceBean {
         //This works on the specific error we've seen where the user has put in a link for the email address
         //as in '<a href="IFPRI-Data@cgiar.org" > IFPRI-Data@cgiar.org</a>'
         //this returns the string between the first > and the second <
-        if (inString.indexOf("<a", 0) > -1){
+        if (inString.indexOf("<a", 0) > -1) {
            try {
                String eMailAddress = inString.substring(inString.indexOf(">", 0) + 1, inString.indexOf("</a>", inString.indexOf(">", 0)));
                return eMailAddress.trim();               
-           } catch (Exception e){
+           } catch (Exception e) {
                return null;
            }          
         }
         return null;
     }
     
-    private String convertInvalidDateString(String inString){
+    private String convertInvalidDateString(String inString) {
         
         //converts XXXX0000 to XXXX for date purposes
-        if (inString.trim().length() == 8){
-            if (inString.trim().endsWith("0000")){
+        if (inString.trim().length() == 8) {
+            if (inString.trim().endsWith("0000")) {
                 return inString.replace("0000", "").trim();
             }
         }
@@ -629,7 +629,7 @@ public class ImportServiceBean {
                     case 4:
                         return "[" + testval.trim() + "?]";
                     case 8:
-                        if(testval.trim().contains("0000")){
+                        if (testval.trim().contains("0000")) {
                             return "[" + testval.trim().replace("0000", "") + "?]";
                         }
                 }
@@ -639,51 +639,51 @@ public class ImportServiceBean {
         //Convert string months to numeric    
         
         
-        if (inString.toUpperCase().contains("JANUARY")){
+        if (inString.toUpperCase().contains("JANUARY")) {
             return inString.toUpperCase().replace("JANUARY", "").replace(",", "").trim() + "-01";            
         }
         
-        if (inString.toUpperCase().contains("FEBRUARY")){
+        if (inString.toUpperCase().contains("FEBRUARY")) {
             return inString.toUpperCase().replace("FEBRUARY", "").replace(",", "").trim() + "-02";            
         }
         
-        if (inString.toUpperCase().contains("MARCH")){
+        if (inString.toUpperCase().contains("MARCH")) {
             return inString.toUpperCase().replace("MARCH", "").replace(",", "").trim() + "-03";            
         }
         
-        if (inString.toUpperCase().contains("APRIL")){
+        if (inString.toUpperCase().contains("APRIL")) {
             return inString.toUpperCase().replace("APRIL", "").replace(",", "").trim() + "-04";            
         }
         
-        if (inString.toUpperCase().contains("MAY")){
+        if (inString.toUpperCase().contains("MAY")) {
             return inString.toUpperCase().replace("MAY", "").replace(",", "").trim() + "-05";            
         }
         
-        if (inString.toUpperCase().contains("JUNE")){
+        if (inString.toUpperCase().contains("JUNE")) {
             return inString.toUpperCase().replace("JUNE", "").replace(",", "").trim() + "-06";            
         }
         
-        if (inString.toUpperCase().contains("JULY")){
+        if (inString.toUpperCase().contains("JULY")) {
             return inString.toUpperCase().replace("JULY", "").replace(",", "").trim() + "-07";            
         }
         
-        if (inString.toUpperCase().contains("AUGUST")){
+        if (inString.toUpperCase().contains("AUGUST")) {
             return inString.toUpperCase().replace("AUGUST", "").replace(",", "").trim() + "-08";            
         }
         
-        if (inString.toUpperCase().contains("SEPTEMBER")){
+        if (inString.toUpperCase().contains("SEPTEMBER")) {
             return inString.toUpperCase().replace("SEPTEMBER", "").replace(",", "").trim() + "-09";            
         }
         
-        if (inString.toUpperCase().contains("OCTOBER")){
+        if (inString.toUpperCase().contains("OCTOBER")) {
             return inString.toUpperCase().replace("OCTOBER", "").replace(",", "").trim() + "-10";            
         }
         
-        if (inString.toUpperCase().contains("NOVEMBER")){
+        if (inString.toUpperCase().contains("NOVEMBER")) {
             return inString.toUpperCase().replace("NOVEMBER", "").replace(",", "").trim() + "-11";            
         }
         
-        if (inString.toUpperCase().contains("DECEMBER")){
+        if (inString.toUpperCase().contains("DECEMBER")) {
             return inString.toUpperCase().replace("DECEMBER", "").replace(",", "").trim() + "-12";            
         }
 

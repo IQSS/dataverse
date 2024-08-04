@@ -77,7 +77,7 @@ public class DatasetVersionUI implements Serializable {
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.description)) {
                 setDescription(dsf);
                 String descriptionString = "";
-                if(dsf.getDatasetFieldCompoundValues() != null && dsf.getDatasetFieldCompoundValues().get(0) != null){
+                if (dsf.getDatasetFieldCompoundValues() != null && dsf.getDatasetFieldCompoundValues().get(0) != null) {
                     DatasetFieldCompoundValue descriptionValue = dsf.getDatasetFieldCompoundValues().get(0);               
                     for (DatasetField subField : descriptionValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText) && !subField.isEmptyForDisplay()) {                          
@@ -85,17 +85,17 @@ public class DatasetVersionUI implements Serializable {
                         }
                     }
                 }                 
-                setDescriptionDisplay(MarkupChecker.sanitizeBasicHTML(descriptionString) );
+                setDescriptionDisplay(MarkupChecker.sanitizeBasicHTML(descriptionString));
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword)) {
                 setKeyword(dsf);
                 String keywordString = "";
                 for (DatasetFieldCompoundValue keywordValue : dsf.getDatasetFieldCompoundValues()) {
                     for (DatasetField subField : keywordValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.keywordValue) && !subField.isEmptyForDisplay()) {
-                            if (keywordString.isEmpty()){
+                            if (keywordString.isEmpty()) {
                                 keywordString = subField.getValue();
                             } else {
-                                keywordString += ", " +  subField.getValue();
+                                keywordString += ", " + subField.getValue();
                             }                               
                         }
                     }
@@ -105,7 +105,7 @@ public class DatasetVersionUI implements Serializable {
                 setSubject(dsf);
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.notesText) && !dsf.isEmptyForDisplay()) {
                 this.setNotes(dsf);                
-            }  else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.publication)) {
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.publication)) {
                 //Special handling for Related Publications
                 // Treated as below the tabs for editing, but must get first value for display above tabs    
                 if (this.datasetRelPublications.isEmpty()) {
@@ -245,7 +245,7 @@ public class DatasetVersionUI implements Serializable {
 
     public String getRelPublicationId() {
         if (!this.datasetRelPublications.isEmpty()) {
-            if (!(this.getDatasetRelPublications().get(0).getIdNumber() == null)  && !this.getDatasetRelPublications().get(0).getIdNumber().isEmpty()){
+            if (!(this.getDatasetRelPublications().get(0).getIdNumber() == null) && !this.getDatasetRelPublications().get(0).getIdNumber().isEmpty()) {
                             return this.getDatasetRelPublications().get(0).getIdType() + ": " + this.getDatasetRelPublications().get(0).getIdNumber();
             } else {
                 return "";
@@ -384,7 +384,7 @@ public class DatasetVersionUI implements Serializable {
         return sortDatasetFields(retList);
     }  
     
-    private List<DatasetField> sortDatasetFields (List<DatasetField> dsfList) {
+    private List<DatasetField> sortDatasetFields(List<DatasetField> dsfList) {
         Collections.sort(dsfList, new Comparator<DatasetField>() {
             public int compare(DatasetField d1, DatasetField d2) {
                 int a = d1.getDatasetFieldType().getDisplayOrder();
@@ -404,13 +404,13 @@ public class DatasetVersionUI implements Serializable {
         
         Long dvIdForInputLevel = datasetVersion.getDataset().getOwner().getId();
         
-        if (!dataverseService.find(dvIdForInputLevel).isMetadataBlockRoot()){
+        if (!dataverseService.find(dvIdForInputLevel).isMetadataBlockRoot()) {
             dvIdForInputLevel = dataverseService.find(dvIdForInputLevel).getMetadataRootId();
         }
         
         List<DatasetField> filledInFields = this.datasetVersion.getDatasetFields(); 
         
-        List <MetadataBlock> actualMDB = new ArrayList<>();
+        List<MetadataBlock> actualMDB = new ArrayList<>();
             
         actualMDB.addAll(this.datasetVersion.getDataset().getOwner().getMetadataBlocks());
         

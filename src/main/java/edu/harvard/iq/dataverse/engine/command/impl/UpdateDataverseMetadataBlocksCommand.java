@@ -16,7 +16,7 @@ import java.util.List;
  * Commands for setting the metadata blocks a dataverse uses.
  * @author michael
  */
-@RequiredPermissions( Permission.EditDataverse )
+@RequiredPermissions(Permission.EditDataverse)
 public abstract class UpdateDataverseMetadataBlocksCommand extends AbstractVoidCommand {
     
     final Dataverse updatedDv;
@@ -55,7 +55,7 @@ public abstract class UpdateDataverseMetadataBlocksCommand extends AbstractVoidC
 
         @Override
         protected void executeImpl(CommandContext ctxt) throws CommandException {
-            ctxt.engine().submit( new UpdateDataverseMetadataBlocksCommand.SetRoot(getRequest(), updatedDv, true) );
+            ctxt.engine().submit(new UpdateDataverseMetadataBlocksCommand.SetRoot(getRequest(), updatedDv, true));
             
             // We filter the list through a set, so that all blocks are distinct.
             updatedDv.setMetadataBlocks(new LinkedList<>(new HashSet<>(blocks)));

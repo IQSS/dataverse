@@ -22,12 +22,12 @@ public class ActionLogServiceBean {
      * @param rec 
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void log( ActionLogRecord rec ) {
-        if ( rec.getEndTime() == null ) {
-            rec.setEndTime( new Date() );
+    public void log(ActionLogRecord rec) {
+        if (rec.getEndTime() == null) {
+            rec.setEndTime(new Date());
         }
-        if ( rec.getActionResult() == null 
-                && rec.getActionType() != ActionLogRecord.ActionType.Command ) {
+        if (rec.getActionResult() == null 
+                && rec.getActionType() != ActionLogRecord.ActionType.Command) {
             rec.setActionResult(ActionLogRecord.Result.OK);
         }
         em.persist(rec);
@@ -38,9 +38,9 @@ public class ActionLogServiceBean {
     public void changeUserIdentifierInHistory(String oldIdentifier, String newIdentifier) {
         em.createNativeQuery(
                 "UPDATE actionlogrecord "
-                        + "SET useridentifier='"+newIdentifier+"', "
-                        + "info='orig from "+oldIdentifier+" | ' || info "
-                        + "WHERE useridentifier='"+oldIdentifier+"'"
+                        + "SET useridentifier='" + newIdentifier + "', "
+                        + "info='orig from " + oldIdentifier + " | ' || info "
+                        + "WHERE useridentifier='" + oldIdentifier + "'"
         ).executeUpdate();
     }
    

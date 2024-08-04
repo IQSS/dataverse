@@ -425,7 +425,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("This SwiftAccessIO() hasn't been properly initialized yet.");
         }
         
-        String namePrefix = this.swiftFileObject.getName()+".";
+        String namePrefix = this.swiftFileObject.getName() + ".";
         
         Collection<StoredObject> items; 
         String lastItemName = null; 
@@ -461,7 +461,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         Collection<StoredObject> victims; 
         String lastVictim = null; 
           
-        while ((victims = this.swiftContainer.list(this.swiftFileObject.getName()+".", lastVictim, LIST_PAGE_LIMIT))!= null && victims.size() > 0) {
+        while ((victims = this.swiftContainer.list(this.swiftFileObject.getName() + ".", lastVictim, LIST_PAGE_LIMIT)) != null && victims.size() > 0) {
             for (StoredObject victim : victims) {
                 lastVictim = victim.getName();
                 logger.info("trying to delete " + lastVictim);
@@ -544,7 +544,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 }
 
                 if (auxItemTag != null) {
-                    swiftFileName = swiftFileName.concat("."+auxItemTag);
+                    swiftFileName = swiftFileName.concat("." + auxItemTag);
                 }
             } else if (this.isReadAccess) {
                 // An attempt to call Swift driver,  in a Read mode on a non-swift stored datafile
@@ -594,7 +594,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                     throw new IOException("Dataset related auxillary files require an auxItemTag");
                 }       
 
-                if (StringUtil.isEmpty(swiftEndPoint) || StringUtil.isEmpty(swiftContainerName) || StringUtil.isEmpty(swiftFileName) ) {
+                if (StringUtil.isEmpty(swiftEndPoint) || StringUtil.isEmpty(swiftContainerName) || StringUtil.isEmpty(swiftFileName)) {
                     // all of these things need to be specified, for this to be a valid Swift location
                     // identifier.1
                     throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
@@ -659,9 +659,9 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                         //creates a public data container
                         this.swiftContainer.makePublic();
                     }
-                    catch (Exception e){
+                    catch (Exception e) {
                         //e.printStackTrace();
-                        logger.warning("Caught exception "+e.getClass()+" while creating a swift container (it's likely not fatal!)");
+                        logger.warning("Caught exception " + e.getClass() + " while creating a swift container (it's likely not fatal!)");
                     }
                 }
             } else {

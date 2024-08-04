@@ -127,7 +127,7 @@ public class UserListMaker {
         }
 
         int offset = (selectedPage - 1) * itemsPerPage;
-        if (offset > userCount){
+        if (offset > userCount) {
             offset = DEFAULT_OFFSET;
             selectedPage = 1;
         }
@@ -143,7 +143,7 @@ public class UserListMaker {
         return this.errorMessage;
     }
 
-    private void addErrorMessage(String errMsg){
+    private void addErrorMessage(String errMsg) {
         this.errorFound = true;
         this.errorMessage = errMsg;
     }
@@ -152,7 +152,7 @@ public class UserListMaker {
         System.out.println(s);
     }
 
-    private void msgt(String s){
+    private void msgt(String s) {
         msg("-------------------------------");
         msg(s);
         msg("-------------------------------");

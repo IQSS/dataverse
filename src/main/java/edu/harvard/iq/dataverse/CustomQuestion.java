@@ -27,21 +27,21 @@ public class CustomQuestion implements Serializable {
     }
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private Guestbook guestbook;
     
-    @OneToMany(mappedBy="customQuestion",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
+    @OneToMany(mappedBy = "customQuestion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     private List<CustomQuestionResponse> customQuestionResponses;
 
-    @OneToMany(mappedBy="customQuestion",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
+    @OneToMany(mappedBy = "customQuestion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     @OrderBy("displayOrder")    
     private List<CustomQuestionValue> customQuestionValues;
     
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String questionType;
     
     @NotBlank(message = "{custom.questiontext}")
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String questionString;
     private boolean required;
     
@@ -93,12 +93,12 @@ public class CustomQuestion implements Serializable {
         return customQuestionValues;
     }
     
-    public String getCustomQuestionValueString(){
+    public String getCustomQuestionValueString() {
         String retString = "";
         
-        if (customQuestionValues != null && !this.customQuestionValues.isEmpty()){
-            for (CustomQuestionValue customQuestionValue : this.customQuestionValues){
-                if (!retString.isEmpty()){
+        if (customQuestionValues != null && !this.customQuestionValues.isEmpty()) {
+            for (CustomQuestionValue customQuestionValue : this.customQuestionValues) {
+                if (!retString.isEmpty()) {
                     retString += ", ";
                 } else {
                     retString += "Answers:  ";
@@ -130,11 +130,11 @@ public class CustomQuestion implements Serializable {
         this.customQuestionResponses = customQuestionResponses;
     }
     
-    public void removeCustomQuestionValue(int index){
+    public void removeCustomQuestionValue(int index) {
         customQuestionValues.remove(index);
     }
     
-    public void addCustomQuestionValue(int index, CustomQuestionValue cq){
+    public void addCustomQuestionValue(int index, CustomQuestionValue cq) {
         customQuestionValues.add(index, cq);
     }
     

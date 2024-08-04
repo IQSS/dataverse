@@ -74,14 +74,14 @@ public class DataCiteRESTfullClient implements Closeable {
     public String getUrl(String doi) {
         HttpGet httpGet = new HttpGet(this.url + "/doi/" + doi);
         try {
-            HttpResponse response = httpClient.execute(httpGet,context);
+            HttpResponse response = httpClient.execute(httpGet, context);
             String data = EntityUtils.toString(response.getEntity(), encoding);
             if (response.getStatusLine().getStatusCode() != 200) {
                 throw new RuntimeException("Response code: " + response.getStatusLine().getStatusCode() + ", " + data);
             }
             return data;
         } catch (IOException ioe) {
-            logger.log(Level.SEVERE,"IOException when get url",ioe);
+            logger.log(Level.SEVERE, "IOException when get url", ioe);
             throw new RuntimeException("IOException when get url", ioe);
         }
     }
@@ -118,7 +118,7 @@ public class DataCiteRESTfullClient implements Closeable {
         HttpGet httpGet = new HttpGet(this.url + "/metadata/" + doi);
         httpGet.setHeader("Accept", "application/xml");
         try {
-            HttpResponse response = httpClient.execute(httpGet,context);
+            HttpResponse response = httpClient.execute(httpGet, context);
             String data = EntityUtils.toString(response.getEntity(), encoding);
             if (response.getStatusLine().getStatusCode() != 200) {
                 String errMsg = "Response from getMetadata: " + response.getStatusLine().getStatusCode() + ", " + data;
@@ -179,7 +179,7 @@ public class DataCiteRESTfullClient implements Closeable {
     public String inactiveDataset(String doi) {
         HttpDelete httpDelete = new HttpDelete(this.url + "/metadata/" + doi);
         try {
-            HttpResponse response = httpClient.execute(httpDelete,context);
+            HttpResponse response = httpClient.execute(httpDelete, context);
             String data = EntityUtils.toString(response.getEntity(), encoding);
             if (response.getStatusLine().getStatusCode() != 200) {
                 String errMsg = "Response code: " + response.getStatusLine().getStatusCode() + ", " + data;

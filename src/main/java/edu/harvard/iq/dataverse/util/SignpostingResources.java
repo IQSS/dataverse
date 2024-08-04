@@ -215,14 +215,14 @@ public class SignpostingResources {
 
         final String identifierAsUrl = da.getIdentifierAsUrl();
         // First, try to get URL using the type and value
-        if(identifierAsUrl != null) {
+        if (identifierAsUrl != null) {
             return identifierAsUrl;
         }
 
         final String idValue = da.getIdValue();
         UrlValidator urlValidator = new UrlValidator(new String[]{"http", "https"});
         // Otherwise, try to use idValue as url if it's valid
-        if(urlValidator.isValid(idValue)) {
+        if (urlValidator.isValid(idValue)) {
             return idValue;
         }
 
@@ -231,7 +231,7 @@ public class SignpostingResources {
     }
 
     private JsonArrayBuilder getJsonAuthors(List<String> datasetAuthorURLs) {
-        if(datasetAuthorURLs.isEmpty()) {
+        if (datasetAuthorURLs.isEmpty()) {
             return null;
         }
         JsonArrayBuilder authors = Json.createArrayBuilder();

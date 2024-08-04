@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * these tests NEED to be done serial.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.TYPE })
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Inherited
 @Repeatable(JvmSetting.JvmSettings.class)
 @ExtendWith(JvmSettingExtension.class)
@@ -59,7 +59,7 @@ public @interface JvmSetting {
      * Containing annotation of repeatable {@code @SetSystemProperty}.
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({ ElementType.METHOD, ElementType.TYPE })
+    @Target({ElementType.METHOD, ElementType.TYPE})
     @Inherited
     @ExtendWith(JvmSettingExtension.class)
     @interface JvmSettings {

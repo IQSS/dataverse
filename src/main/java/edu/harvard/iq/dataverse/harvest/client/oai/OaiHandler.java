@@ -81,7 +81,7 @@ public class OaiHandler implements Serializable {
     private String setName; 
     private Date   fromDate;
     private Boolean setListTruncated = false;
-    private Map<String,String> customHeaders = null;
+    private Map<String, String> customHeaders = null;
     
     private ServiceProvider serviceProvider; 
     
@@ -127,11 +127,11 @@ public class OaiHandler implements Serializable {
         return setListTruncated;
     }
     
-    public Map<String,String> getCustomHeaders() {
+    public Map<String, String> getCustomHeaders() {
         return this.customHeaders;
     }
     
-    public void setCustomHeaders(Map<String,String> customHeaders) {
+    public void setCustomHeaders(Map<String, String> customHeaders) {
        this.customHeaders = customHeaders;
     }
     
@@ -148,7 +148,7 @@ public class OaiHandler implements Serializable {
             JdkHttpOaiClient.Builder xoaiClientBuilder = JdkHttpOaiClient.newBuilder().withBaseUrl(getBaseOaiUrl());
             if (getCustomHeaders() != null) {
                 for (String headerName : getCustomHeaders().keySet()) {
-                    logger.fine("adding custom header; name: "+headerName+", value: "+getCustomHeaders().get(headerName));
+                    logger.fine("adding custom header; name: " + headerName + ", value: " + getCustomHeaders().get(headerName));
                 }   
                 xoaiClientBuilder = xoaiClientBuilder.withCustomHeaders(getCustomHeaders());
             }
@@ -179,7 +179,7 @@ public class OaiHandler implements Serializable {
 
         int count = 0;
         
-        while ( setIter.hasNext()) {
+        while (setIter.hasNext()) {
             count++;
             Set set = setIter.next();
             String setSpec = set.getSpec();
@@ -233,7 +233,7 @@ public class OaiHandler implements Serializable {
         
         List<String> formats = new ArrayList<>();
 
-        while ( mfIter.hasNext()) {
+        while (mfIter.hasNext()) {
             MetadataFormat format = mfIter.next();
             String formatName = format.getMetadataPrefix();
             if (!StringUtils.isEmpty(formatName)) {
@@ -269,13 +269,13 @@ public class OaiHandler implements Serializable {
         try {
             return new FastGetRecord(this, identifier, httpClient);
         } catch (ParserConfigurationException pce) {
-            throw new OaiHandlerException("ParserConfigurationException executing GetRecord: "+pce.getMessage());
+            throw new OaiHandlerException("ParserConfigurationException executing GetRecord: " + pce.getMessage());
         } catch (SAXException se) {
-            throw new OaiHandlerException("SAXException executing GetRecord: "+se.getMessage());
+            throw new OaiHandlerException("SAXException executing GetRecord: " + se.getMessage());
         } catch (TransformerException te) {
-            throw new OaiHandlerException("TransformerException executing GetRecord: "+te.getMessage());
+            throw new OaiHandlerException("TransformerException executing GetRecord: " + te.getMessage());
         } catch (IOException ioe) {
-            throw new OaiHandlerException("IOException executing GetRecord: "+ioe.getMessage());
+            throw new OaiHandlerException("IOException executing GetRecord: " + ioe.getMessage());
         }
     }
     
@@ -305,7 +305,7 @@ public class OaiHandler implements Serializable {
             dataverseApiUrl = baseOaiUrl.replaceFirst("/oai", "");
         }
         
-        StringBuilder requestURL =  new StringBuilder(dataverseApiUrl);
+        StringBuilder requestURL = new StringBuilder(dataverseApiUrl);
         requestURL.append(DATAVERSE_PROPRIETARY_METADATA_API).append(identifier);
 
         return requestURL.toString();
@@ -317,16 +317,16 @@ public class OaiHandler implements Serializable {
         // and to learn about its extended capabilities)
     }
     
-    public Map<String,String> makeCustomHeaders(String headersString) {
+    public Map<String, String> makeCustomHeaders(String headersString) {
         if (headersString != null) {
             String[] parts = headersString.split("\\\\n");
-            HashMap<String,String> ret = new HashMap<>();
-            logger.info("found "+parts.length+" parts");
+            HashMap<String, String> ret = new HashMap<>();
+            logger.info("found " + parts.length + " parts");
             int count = 0;
             for (int i = 0; i < parts.length; i++) {
                 if (parts[i].indexOf(':') > 0) {
                     String headerName = parts[i].substring(0, parts[i].indexOf(':'));
-                    String headerValue = parts[i].substring(parts[i].indexOf(':')+1).strip();
+                    String headerValue = parts[i].substring(parts[i].indexOf(':') + 1).strip();
                     
                     ret.put(headerName, headerValue);
                     count++;
@@ -334,7 +334,7 @@ public class OaiHandler implements Serializable {
                 // simply skipping it if malformed; or we could throw an exception - ?
             }
             if (ret.size() > 0) {
-                logger.info("returning the array with "+ret.size()+" name/value pairs");
+                logger.info("returning the array with " + ret.size() + " name/value pairs");
                 return ret;
             }
         }

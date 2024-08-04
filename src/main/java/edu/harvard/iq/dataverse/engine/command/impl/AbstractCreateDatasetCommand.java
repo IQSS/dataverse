@@ -34,13 +34,13 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
 
     public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isHarvested) {
         super(aRequest, theDataset);
-        harvested=isHarvested;
+        harvested = isHarvested;
         this.validate = true;
     }
 
     public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest, boolean isHarvested, boolean validate) {
         super(aRequest, theDataset);
-        harvested=isHarvested;
+        harvested = isHarvested;
         this.validate = validate;
     }
    
@@ -48,7 +48,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // base class - do nothing.
     }
     
-    protected DatasetVersion getVersionToPersist( Dataset theDataset ) {
+    protected DatasetVersion getVersionToPersist(Dataset theDataset) {
         return theDataset.getLatestVersion();
     }
     
@@ -59,16 +59,16 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
      * @param ctxt 
      * @throws edu.harvard.iq.dataverse.engine.command.exception.CommandException 
      */
-    protected void postPersist( Dataset theDataset, CommandContext ctxt ) throws CommandException {
+    protected void postPersist(Dataset theDataset, CommandContext ctxt) throws CommandException {
         // base class - default to nothing.
     }
     
 
-    protected void postDBFlush( Dataset theDataset, CommandContext ctxt ) throws CommandException {
+    protected void postDBFlush(Dataset theDataset, CommandContext ctxt) throws CommandException {
         // base class - default to nothing.
     }
     
-    protected abstract void handlePid( Dataset theDataset, CommandContext ctxt ) throws CommandException ;
+    protected abstract void handlePid(Dataset theDataset, CommandContext ctxt) throws CommandException;
     
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
@@ -78,7 +78,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         Dataset theDataset = getDataset();
         PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(theDataset);
         
-        if ( isEmpty(theDataset.getIdentifier()) ) {
+        if (isEmpty(theDataset.getIdentifier())) {
             pidProvider.generatePid(theDataset);
         }
         
@@ -87,7 +87,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // without persisting the new version, or altering its files. 
         new CreateDatasetVersionCommand(getRequest(), theDataset, dsv, validate).prepareDatasetAndVersion();
         
-        if(!harvested) {
+        if (!harvested) {
             checkSystemMetadataKeyIfNeeded(dsv, null);
         }
 
@@ -98,22 +98,22 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         theDataset.setCreateDate(getTimestamp());
 
         theDataset.setModificationTime(getTimestamp());
-        for (DataFile dataFile: theDataset.getFiles() ){
+        for (DataFile dataFile : theDataset.getFiles()) {
             dataFile.setCreator((AuthenticatedUser) getRequest().getUser());
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         
-        if (theDataset.getProtocol()==null) {
+        if (theDataset.getProtocol() == null) {
             theDataset.setProtocol(pidProvider.getProtocol());
         }
-        if (theDataset.getAuthority()==null) {
+        if (theDataset.getAuthority() == null) {
             theDataset.setAuthority(pidProvider.getAuthority());
         }
         if (theDataset.getStorageIdentifier() == null) {
         	String driverId = theDataset.getEffectiveStorageDriverId();
-        	theDataset.setStorageIdentifier(driverId  + DataAccess.SEPARATOR + theDataset.getAuthorityForFileStorage() + "/" + theDataset.getIdentifierForFileStorage());
+        	theDataset.setStorageIdentifier(driverId + DataAccess.SEPARATOR + theDataset.getAuthorityForFileStorage() + "/" + theDataset.getIdentifierForFileStorage());
         }
-        if (theDataset.getIdentifier()==null) {
+        if (theDataset.getIdentifier() == null) {
             pidProvider.generatePid(theDataset);
         }
         

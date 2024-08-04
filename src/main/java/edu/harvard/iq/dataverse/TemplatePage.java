@@ -159,15 +159,15 @@ public class TemplatePage implements java.io.Serializable {
         return null;        
     }
     
-    private void updateDatasetFieldInputLevels(){
+    private void updateDatasetFieldInputLevels() {
         Long dvIdForInputLevel = ownerId;        
-        if (!dataverseService.find(ownerId).isMetadataBlockRoot()){
+        if (!dataverseService.find(ownerId).isMetadataBlockRoot()) {
             dvIdForInputLevel = dataverseService.find(ownerId).getMetadataRootId();
         }        
         
-        for (DatasetField dsf: template.getFlatDatasetFields()){ 
+        for (DatasetField dsf : template.getFlatDatasetFields()) { 
            DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dvIdForInputLevel, dsf.getDatasetFieldType().getId());
-           if (dsfIl != null){
+           if (dsfIl != null) {
                dsf.setInclude(dsfIl.isInclude());
            } else {
                dsf.setInclude(true);
@@ -187,7 +187,7 @@ public class TemplatePage implements java.io.Serializable {
         Template created;
         try {
 
-            DatasetFieldUtil.tidyUpFields( template.getDatasetFields(), false );
+            DatasetFieldUtil.tidyUpFields(template.getDatasetFields(), false);
 
             template.updateInstructions();
             
@@ -224,7 +224,7 @@ public class TemplatePage implements java.io.Serializable {
             return null;
         }
         editMode = null;       
-        String msg = (create)? BundleUtil.getStringFromBundle("template.create"): BundleUtil.getStringFromBundle("template.save");
+        String msg = (create) ? BundleUtil.getStringFromBundle("template.create") : BundleUtil.getStringFromBundle("template.save");
         JsfHelper.addFlashMessage(msg);
         String retString = "";   
         if (!redirectPage.isEmpty() && createdId.intValue() > 0) {
@@ -240,7 +240,7 @@ public class TemplatePage implements java.io.Serializable {
     }
     
     public String deleteTemplate(Long templateId) {
-        List <Dataverse> dataverseWDefaultTemplate = null;
+        List<Dataverse> dataverseWDefaultTemplate = null;
         Template doomed = templateService.find(templateId);
         dataverse.getTemplates().remove(doomed);  
         dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
@@ -257,7 +257,7 @@ public class TemplatePage implements java.io.Serializable {
     //Get the cutstom instructions defined for a give fieldType
     public String getInstructionsLabelFor(String fieldType) {
         String fieldInstructions = template.getInstructionsMap().get(fieldType);
-        return (fieldInstructions!=null && !fieldInstructions.isBlank()) ? fieldInstructions : BundleUtil.getStringFromBundle("template.instructions.empty.label");
+        return (fieldInstructions != null && !fieldInstructions.isBlank()) ? fieldInstructions : BundleUtil.getStringFromBundle("template.instructions.empty.label");
     }
 
 }

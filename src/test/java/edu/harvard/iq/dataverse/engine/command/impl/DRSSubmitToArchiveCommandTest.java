@@ -102,7 +102,7 @@ public class DRSSubmitToArchiveCommandTest {
              * 
              */
             String canonicalBody = new JsonCanonicalizer(fakeBody).getEncodedString();
-            System.out.println("Canonical form:"+ canonicalBody);
+            System.out.println("Canonical form:" + canonicalBody);
             
             Algorithm algorithmRSA = Algorithm.RSA256(null, privKey);
             String token1 = DRSSubmitToArchiveCommand.createJWTString(algorithmRSA, "InstallationBrandName", fakeBody, 5);

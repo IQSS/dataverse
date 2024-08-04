@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author adaybujeda
  */
-@RequiredPermissions( Permission.EditDataverse )
+@RequiredPermissions(Permission.EditDataverse)
 public class UpdateMetadataBlockFacetsCommand extends AbstractCommand<Dataverse> {
 
     private final Dataverse editedDv;

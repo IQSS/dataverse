@@ -76,7 +76,7 @@ public class EditDDIIT {
 
         logger.fine("Orig file id: " + origFileId);
         assertNotNull(origFileId);
-        assertNotEquals("",origFileId);
+        assertNotEquals("", origFileId);
 
         // Give file time to ingest
         
@@ -91,7 +91,7 @@ public class EditDDIIT {
         InputStream variableData = origXml.body().asInputStream();
 
         Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
-        Map<Long,VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
+        Map<Long, VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
         try {
             XMLInputFactory factory = XMLInputFactory.newInstance();
             XMLStreamReader xmlr = factory.createXMLStreamReader(variableData);
@@ -101,7 +101,7 @@ public class EditDDIIT {
 
         } catch (XMLStreamException e) {
             logger.warning(e.getMessage());
-            assertEquals(0,1);
+            assertEquals(0, 1);
         }
 
 
@@ -111,7 +111,7 @@ public class EditDDIIT {
             updatedContent = new String(Files.readAllBytes(Paths.get("src/test/resources/xml/dct.xml")));
         } catch (IOException e) {
             logger.warning(e.getMessage());
-            assertEquals(0,1);
+            assertEquals(0, 1);
         }
         Long replV1168 = 0L;
         Long replV1169 = 0L;
@@ -120,20 +120,20 @@ public class EditDDIIT {
         for (VariableMetadata var : mapVarToVarMet.values()) {
             if (var.getLabel().equals("gender")) {
                 replV1170 = var.getDataVariable().getId();
-                numberVariables = numberVariables +1;
+                numberVariables = numberVariables + 1;
             } else if (var.getLabel().equals("weight")) {
                 replV1168 = var.getDataVariable().getId();
-                numberVariables = numberVariables +1;
+                numberVariables = numberVariables + 1;
             } else if (var.getLabel().equals("age_rollup")) {
                 replV1169 = var.getDataVariable().getId();
-                numberVariables = numberVariables +1;
+                numberVariables = numberVariables + 1;
             }
         }
         assertEquals(3, numberVariables);
 
-        updatedContent = updatedContent.replaceAll("v1168", "v" + replV1168 );
-        updatedContent = updatedContent.replaceAll("v1169", "v" + replV1169 );
-        updatedContent = updatedContent.replaceAll("v1170", "v" + replV1170 );
+        updatedContent = updatedContent.replaceAll("v1168", "v" + replV1168);
+        updatedContent = updatedContent.replaceAll("v1169", "v" + replV1169);
+        updatedContent = updatedContent.replaceAll("v1170", "v" + replV1170);
 
         //edit draft vesrsion
         Response editDDIResponse = UtilIT.editDDI(updatedContent, origFileId, apiToken);

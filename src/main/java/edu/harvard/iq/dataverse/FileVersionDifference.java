@@ -56,38 +56,38 @@ public final class FileVersionDifference {
         */        
         
         boolean retVal = true;
-        if (newFileMetadata.getDataFile() == null && originalFileMetadata == null){
+        if (newFileMetadata.getDataFile() == null && originalFileMetadata == null) {
             //File in neither version
             //Don't add any groups
             return true;
         }
         
-        if (newFileMetadata.getDataFile() == null && originalFileMetadata != null){
+        if (newFileMetadata.getDataFile() == null && originalFileMetadata != null) {
             //File Deleted
-            updateDifferenceSummary("", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"),  0, 0, 1, 0);
+            updateDifferenceSummary("", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"), 0, 0, 1, 0);
             return false;
         }
         
-        if (this.originalFileMetadata == null && this.newFileMetadata.getDataFile() != null ){
+        if (this.originalFileMetadata == null && this.newFileMetadata.getDataFile() != null) {
             //File Added
             if (!details) return false;
             retVal = false;
-            updateDifferenceSummary( "", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"), 1, 0, 0, 0);
+            updateDifferenceSummary("", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"), 1, 0, 0, 0);
         }
         
         //Check to see if File replaced
         if (originalFileMetadata != null &&
-                 newFileMetadata.getDataFile() != null && originalFileMetadata.getDataFile() != null &&!this.originalFileMetadata.getDataFile().equals(this.newFileMetadata.getDataFile())){
+                 newFileMetadata.getDataFile() != null && originalFileMetadata.getDataFile() != null && !this.originalFileMetadata.getDataFile().equals(this.newFileMetadata.getDataFile())) {
             if (!details) return false;
-            updateDifferenceSummary( "", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"), 0, 0, 0, 1);
+            updateDifferenceSummary("", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"), 0, 0, 0, 1);
             retVal = false;
         }
         
-        if ( originalFileMetadata != null) {
+        if (originalFileMetadata != null) {
             if (!newFileMetadata.getLabel().equals(originalFileMetadata.getLabel())) {
                 if (details) {
                     differenceDetailItems.add(new FileDifferenceDetailItem(BundleUtil.getStringFromBundle("file.versionDifferences.fileNameDetailTitle"), originalFileMetadata.getLabel(), newFileMetadata.getLabel()));
-                } else{
+                } else {
                     return false;
                 }
                 updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
@@ -97,7 +97,7 @@ public final class FileVersionDifference {
         }
 
         //Description differences
-        if ( originalFileMetadata != null) {
+        if (originalFileMetadata != null) {
             if (newFileMetadata.getDescription() != null
                     && originalFileMetadata.getDescription() != null
                     && !newFileMetadata.getDescription().equals(originalFileMetadata.getDescription())) {
@@ -136,7 +136,7 @@ public final class FileVersionDifference {
             }
         } 
         //Provenance Description differences
-        if ( originalFileMetadata != null) {
+        if (originalFileMetadata != null) {
             if ((newFileMetadata.getProvFreeForm() != null && !newFileMetadata.getProvFreeForm().isEmpty())
                     && (originalFileMetadata.getProvFreeForm() != null && !originalFileMetadata.getProvFreeForm().isEmpty())
                     && !newFileMetadata.getProvFreeForm().equals(originalFileMetadata.getProvFreeForm())) {
@@ -194,8 +194,8 @@ public final class FileVersionDifference {
                 
                 added = newFileMetadata.getCategoriesByName().stream().map((tag) -> {
                     boolean found = false;
-                    for (String tagOld : originalFileMetadata.getCategoriesByName() ){
-                        if (tag.equals(tagOld)){
+                    for (String tagOld : originalFileMetadata.getCategoriesByName()) {
+                        if (tag.equals(tagOld)) {
                             found = true;
                             break;
                         }
@@ -205,20 +205,20 @@ public final class FileVersionDifference {
                 
                 for (String tag : originalFileMetadata.getCategoriesByName()) {
                     boolean found = false;
-                    for (String tagNew : newFileMetadata.getCategoriesByName() ){
-                        if (tag.equals(tagNew)){
+                    for (String tagNew : newFileMetadata.getCategoriesByName()) {
+                        if (tag.equals(tagNew)) {
                             found = true;
                             break;
                         }
                     }
-                    if (!found){
+                    if (!found) {
                         deleted++;
                     }
                 }
-                if (added > 0){
+                if (added > 0) {
                     updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileTagsGroupTitle"), "", added, 0, 0, 0, true);
                 }
-                if (deleted > 0){
+                if (deleted > 0) {
                     updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileTagsGroupTitle"), "", 0, 0, deleted, 0, true);
                 }
                 retVal = false;
@@ -256,11 +256,11 @@ public final class FileVersionDifference {
         }
     }
     
-    public FileMetadata getNewFileMetadata(){
+    public FileMetadata getNewFileMetadata() {
         return this.newFileMetadata;
     }
     
-    public void setNewFileMetadata(FileMetadata in){
+    public void setNewFileMetadata(FileMetadata in) {
          this.newFileMetadata = in;
     }
 
@@ -322,11 +322,11 @@ public final class FileVersionDifference {
         public String toString() {
             
             String retval = getName();
-            if (!retval.isEmpty()){
+            if (!retval.isEmpty()) {
                 retval += ": ";
             }
             
-            for (FileDifferenceSummaryItem item : this.fileDifferenceSummaryItems){
+            for (FileDifferenceSummaryItem item : this.fileDifferenceSummaryItems) {
                 retval += " " + item.toString();
             }
             
@@ -357,7 +357,7 @@ public final class FileVersionDifference {
         }
     }
     
-    public final class FileDifferenceDetailItem{
+    public final class FileDifferenceDetailItem {
         private String displayName;
         private String originalValue;
         private String newValue;
@@ -398,7 +398,7 @@ public final class FileVersionDifference {
     
     
     
-    public class FileDifferenceSummaryItem{
+    public class FileDifferenceSummaryItem {
 
 
         private String name;

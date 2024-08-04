@@ -194,20 +194,20 @@ public class Datasets extends AbstractApiBean {
     public interface DsVersionHandler<T> {
         T handleLatest();
         T handleDraft();
-        T handleSpecific( long major, long minor );
+        T handleSpecific(long major, long minor);
         T handleLatestPublished();
     }
     
     @GET
     @AuthRequired
     @Path("{id}")
-    public Response getDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response,  @QueryParam("returnOwners") boolean returnOwners) {
-        return response( req -> {
+    public Response getDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, @QueryParam("returnOwners") boolean returnOwners) {
+        return response(req -> {
             final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(id, true)));
             final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
             final JsonObjectBuilder jsonbuilder = json(retrieved, returnOwners);
             //Report MDC if this is a released version (could be draft if user has access, or user may not have access at all and is not getting metadata beyond the minimum)
-            if((latest != null) && latest.isReleased()) {
+            if ((latest != null) && latest.isReleased()) {
                 MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, retrieved);
                 mdcLogService.logEntry(entry);
             }
@@ -221,7 +221,7 @@ public class Datasets extends AbstractApiBean {
     // WORKS on published datasets, which are open to the world. -- L.A. 4.5
     @GET
     @Path("/export")
-    @Produces({"application/xml", "application/json", "application/html", "application/ld+json", "*/*" })
+    @Produces({"application/xml", "application/json", "application/html", "application/ld+json", "*/*"})
     public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         try {
@@ -264,7 +264,7 @@ public class Datasets extends AbstractApiBean {
         // commands!)
 
         User u = getRequestUser(crc);
-        return response( req -> {
+        return response(req -> {
             Dataset doomed = findDatasetOrDie(id);
             DatasetVersion doomedVersion = doomed.getLatestVersion();
             boolean destroy = false;
@@ -284,7 +284,7 @@ public class Datasets extends AbstractApiBean {
             // deleted once the destroy command execution has been finalized:
             Map<Long, String> deleteStorageLocations = fileService.getPhysicalFilesToDelete(doomedVersion, destroy);
             
-            execCommand( new DeleteDatasetCommand(req, findDatasetOrDie(id)));
+            execCommand(new DeleteDatasetCommand(req, findDatasetOrDie(id)));
             
             // If we have gotten this far, the destroy command has succeeded, 
             // so we can finalize it by permanently deleting the physical files:
@@ -335,12 +335,12 @@ public class Datasets extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}/versions/{versionId}")
-    public Response deleteDraftVersion(@Context ContainerRequestContext crc, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
+    public Response deleteDraftVersion(@Context ContainerRequestContext crc, @PathParam("id") String id, @PathParam("versionId") String versionId) {
         if (!DS_VERSION_DRAFT.equals(versionId)) {
             return badRequest("Only the " + DS_VERSION_DRAFT + " version can be deleted");
         }
 
-        return response( req -> {
+        return response(req -> {
             Dataset dataset = findDatasetOrDie(id);
             DatasetVersion doomed = dataset.getLatestVersion();
             
@@ -353,7 +353,7 @@ public class Datasets extends AbstractApiBean {
             
             Map<Long, String> deleteStorageLocations = fileService.getPhysicalFilesToDelete(doomed);
             
-            execCommand( new DeleteDatasetVersionCommand(req, dataset));
+            execCommand(new DeleteDatasetVersionCommand(req, dataset));
             
             // If we have gotten this far, the delete command has succeeded - 
             // by either deleting the Draft version of a published dataset, 
@@ -385,8 +385,8 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/citationdate")
     public Response setCitationDate(@Context ContainerRequestContext crc, @PathParam("id") String id, String dsfTypeName) {
-        return response( req -> {
-            if ( dsfTypeName.trim().isEmpty() ){
+        return response(req -> {
+            if (dsfTypeName.trim().isEmpty()) {
                 return badRequest("Please provide a dataset field type in the requst body.");
             }
             DatasetFieldType dsfType = null;
@@ -406,7 +406,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/citationdate")
     public Response useDefaultCitationDate(@Context ContainerRequestContext crc, @PathParam("id") String id) {
-        return response( req -> {
+        return response(req -> {
             execCommand(new SetDatasetCitationDateCommand(req, findDatasetOrDie(id), null));
             return ok("Citation Date for dataset " + id + " set to default");
         }, getRequestUser(crc));
@@ -417,13 +417,13 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/versions")
     public Response listVersions(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("excludeFiles") Boolean excludeFiles, @QueryParam("limit") Integer limit, @QueryParam("offset") Integer offset) {
 
-        return response( req -> {
+        return response(req -> {
             Dataset dataset = findDatasetOrDie(id);
             Boolean deepLookup = excludeFiles == null ? true : !excludeFiles;
 
-            return ok( execCommand( new ListVersionsCommand(req, dataset, offset, limit, deepLookup) )
+            return ok(execCommand(new ListVersionsCommand(req, dataset, offset, limit, deepLookup))
                                 .stream()
-                                .map( d -> json(d, deepLookup) )
+                                .map(d -> json(d, deepLookup))
                                 .collect(toJsonArray()));
         }, getRequestUser(crc));
     }
@@ -439,7 +439,7 @@ public class Datasets extends AbstractApiBean {
                                @QueryParam("returnOwners") boolean returnOwners,
                                @Context UriInfo uriInfo,
                                @Context HttpHeaders headers) {
-        return response( req -> {
+        return response(req -> {
             
             //If excludeFiles is null the default is to provide the files and because of this we need to check permissions. 
             boolean checkPerms = excludeFiles == null ? true : !excludeFiles;
@@ -591,9 +591,9 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/versions/{versionId}/metadata")
     public Response getVersionMetadata(@Context ContainerRequestContext crc, @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return response( req -> ok(
+        return response(req -> ok(
                     jsonByBlocks(
-                        getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers )
+                        getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers)
                                 .getDatasetFields())), getRequestUser(crc));
     }
     
@@ -607,12 +607,12 @@ public class Datasets extends AbstractApiBean {
                                             @Context UriInfo uriInfo,
                                             @Context HttpHeaders headers) {
         
-        return response( req -> {
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId), uriInfo, headers );
+        return response(req -> {
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionNumber, findDatasetOrDie(datasetId), uriInfo, headers);
             
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
-            for ( Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet() ) {
-                if ( p.getKey().getName().equals(blockName) ) {
+            for (Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet()) {
+                if (p.getKey().getName().equals(blockName)) {
                     return ok(json(p.getKey(), p.getValue()));
                 }
             }
@@ -656,8 +656,8 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/modifyRegistration")
-    public Response updateDatasetTargetURL(@Context ContainerRequestContext crc, @PathParam("id") String id ) {
-        return response( req -> {
+    public Response updateDatasetTargetURL(@Context ContainerRequestContext crc, @PathParam("id") String id) {
+        return response(req -> {
             execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(id), req));
             return ok("Dataset " + id + " target url updated");
         }, getRequestUser(crc));
@@ -667,8 +667,8 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("/modifyRegistrationAll")
     public Response updateDatasetTargetURLAll(@Context ContainerRequestContext crc) {
-        return response( req -> {
-            datasetService.findAll().forEach( ds -> {
+        return response(req -> {
+            datasetService.findAll().forEach(ds -> {
                 try {
                     execCommand(new UpdateDatasetTargetURLCommand(findDatasetOrDie(ds.getId().toString()), req));
                 } catch (WrappedResponse ex) {
@@ -705,8 +705,8 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("/modifyRegistrationPIDMetadataAll")
     public Response updateDatasetPIDMetadataAll(@Context ContainerRequestContext crc) {
-        return response( req -> {
-            datasetService.findAll().forEach( ds -> {
+        return response(req -> {
+            datasetService.findAll().forEach(ds -> {
                 try {
                     logger.fine("ReRegistering: " + ds.getId() + " : " + ds.getIdentifier());
                     if (!ds.isReleased() || (!ds.isIdentifierRegistered() || (ds.getIdentifier() == null))) {
@@ -730,7 +730,7 @@ public class Datasets extends AbstractApiBean {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateDraftVersion(@Context ContainerRequestContext crc, String jsonBody, @PathParam("id") String id, @PathParam("versionId") String versionId) {
         if (!DS_VERSION_DRAFT.equals(versionId)) {
-            return error( Response.Status.BAD_REQUEST, "Only the " + DS_VERSION_DRAFT + " version can be updated");
+            return error(Response.Status.BAD_REQUEST, "Only the " + DS_VERSION_DRAFT + " version can be updated");
         }
         
         try {
@@ -749,8 +749,8 @@ public class Datasets extends AbstractApiBean {
             incomingVersion.setCreateTime(null);
             incomingVersion.setLastUpdateTime(null);
             
-            if (!incomingVersion.getFileMetadatas().isEmpty()){
-                return error( Response.Status.BAD_REQUEST, "You may not add files via this api.");
+            if (!incomingVersion.getFileMetadatas().isEmpty()) {
+                return error(Response.Status.BAD_REQUEST, "You may not add files via this api.");
             }
             
             boolean updateDraft = ds.getLatestVersion().isDraft();
@@ -774,11 +774,11 @@ public class Datasets extends AbstractApiBean {
                 }
                 managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, incomingVersion));
             }
-            return ok( json(managedVersion, true) );
+            return ok(json(managedVersion, true));
                     
         } catch (JsonParseException ex) {
             logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
-            return error( Response.Status.BAD_REQUEST, "Error parsing dataset version: " + ex.getMessage() );
+            return error(Response.Status.BAD_REQUEST, "Error parsing dataset version: " + ex.getMessage());
             
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -1000,10 +1000,10 @@ public class Datasets extends AbstractApiBean {
                         break;
                     }
                 }
-                if (!found){
+                if (!found) {
                     String displayValue = !updateField.getDisplayValue().isEmpty() ? updateField.getDisplayValue() : updateField.getCompoundDisplayValue();
-                    logger.log(Level.SEVERE, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found." );
-                    return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found." );
+                    logger.log(Level.SEVERE, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found.");
+                    return error(Response.Status.BAD_REQUEST, "Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found.");
                 }
             }
 
@@ -1023,7 +1023,7 @@ public class Datasets extends AbstractApiBean {
     
     }
     
-    private String getCompoundDisplayValue (DatasetFieldCompoundValue dscv){
+    private String getCompoundDisplayValue(DatasetFieldCompoundValue dscv) {
         String returnString = "";
         for (DatasetField dsf : dscv.getChildDatasetFields()) {
             for (String value : dsf.getValues()) {
@@ -1048,7 +1048,7 @@ public class Datasets extends AbstractApiBean {
     }
     
     
-    private Response processDatasetUpdate(String jsonBody, String id, DataverseRequest req, Boolean replaceData){
+    private Response processDatasetUpdate(String jsonBody, String id, DataverseRequest req, Boolean replaceData) {
         try {
            
             Dataset ds = findDatasetOrDie(id);
@@ -1108,7 +1108,7 @@ public class Datasets extends AbstractApiBean {
                                     dsf.setSingleValue("");
                                     dsf.setSingleControlledVocabularyValue(null);
                                 }
-                              cvvDisplay="";
+                              cvvDisplay = "";
                             }
                             if (updateField.getDatasetFieldType().isControlledVocabulary()) {
                                 if (dsf.getDatasetFieldType().isAllowMultiples()) {
@@ -1196,7 +1196,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/actions/:publish")
     @Deprecated
-    public Response publishDataseUsingGetDeprecated(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("type") String type ) {
+    public Response publishDataseUsingGetDeprecated(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("type") String type) {
         logger.info("publishDataseUsingGetDeprecated called on id " + id + ". Encourage use of POST rather than GET, which is deprecated.");
         return publishDataset(crc, id, type, false);
     }
@@ -1209,10 +1209,10 @@ public class Datasets extends AbstractApiBean {
             if (type == null) {
                 return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major','minor', or 'updatecurrent').");
             }
-            boolean updateCurrent=false;
+            boolean updateCurrent = false;
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             type = type.toLowerCase();
-            boolean isMinor=false;
+            boolean isMinor = false;
             switch (type) {
                 case "minor":
                     isMinor = true;
@@ -1256,8 +1256,8 @@ public class Datasets extends AbstractApiBean {
                  * error is returned.
                  *
                  */
-                if ((ds.getModificationTime()!=null && (ds.getIndexTime() == null || (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0))) ||
-                        (ds.getPermissionModificationTime()!=null && (ds.getPermissionIndexTime() == null || (ds.getPermissionIndexTime().compareTo(ds.getPermissionModificationTime()) <= 0)))) {
+                if ((ds.getModificationTime() != null && (ds.getIndexTime() == null || (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0))) ||
+                        (ds.getPermissionModificationTime() != null && (ds.getPermissionIndexTime() == null || (ds.getPermissionIndexTime().compareTo(ds.getPermissionModificationTime()) <= 0)))) {
                     return error(Response.Status.CONFLICT, "Dataset is awaiting indexing");
                 }
             }
@@ -1332,7 +1332,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/actions/:releasemigrated")
     @Consumes("application/ld+json, application/json-ld")
-    public Response publishMigratedDataset(@Context ContainerRequestContext crc, String jsonldBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam ("updatepidatprovider") boolean contactPIDProvider) {
+    public Response publishMigratedDataset(@Context ContainerRequestContext crc, String jsonldBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam("updatepidatprovider") boolean contactPIDProvider) {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
@@ -1345,7 +1345,7 @@ public class Datasets extends AbstractApiBean {
                 String pubDate = metadata.getString(JsonLDTerm.schemaOrg("datePublished").getUrl());
                 logger.fine("Submitted date: " + pubDate);
                 LocalDateTime dateTime = null;
-                if(!StringUtils.isEmpty(pubDate)) {
+                if (!StringUtils.isEmpty(pubDate)) {
                     dateTime = JSONLDUtil.getDateTimeFrom(pubDate);
                     final Timestamp time = Timestamp.valueOf(dateTime);
                     //Set version release date
@@ -1368,9 +1368,9 @@ public class Datasets extends AbstractApiBean {
                         ds.getLatestVersion().setMinorVersionNumber(Long.valueOf(0));
                     }
                 }
-                if(ds.getLatestVersion().getVersionNumber()==1 && ds.getLatestVersion().getMinorVersionNumber()==0) {
+                if (ds.getLatestVersion().getVersionNumber() == 1 && ds.getLatestVersion().getMinorVersionNumber() == 0) {
                     //Also set publication date if this is the first
-                    if(dateTime != null) {
+                    if (dateTime != null) {
                       ds.setPublicationDate(Timestamp.valueOf(dateTime));
                     }
                     // Release User is only set in FinalizeDatasetPublicationCommand if the pub date
@@ -1447,7 +1447,7 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/files/actions/:set-embargo")
-    public Response createFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
+    public Response createFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody) {
 
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
@@ -1466,7 +1466,7 @@ public class Datasets extends AbstractApiBean {
         
         boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(dataset.getLatestVersion().getTermsOfUseAndAccess(), null);
         
-        if (!hasValidTerms){
+        if (!hasValidTerms) {
             return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
         }
 
@@ -1482,20 +1482,20 @@ public class Datasets extends AbstractApiBean {
          * check later.
          */
 
-        if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
+        if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT)) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
             return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or user does not have EditDataset permissions");
         }
 
         // check if embargoes are allowed(:MaxEmbargoDurationInMonths), gets the :MaxEmbargoDurationInMonths setting variable, if 0 or not set(null) return 400
         long maxEmbargoDurationInMonths = 0;
         try {
-            maxEmbargoDurationInMonths  = Long.parseLong(settingsService.get(SettingsServiceBean.Key.MaxEmbargoDurationInMonths.toString()));
-        } catch (NumberFormatException nfe){
+            maxEmbargoDurationInMonths = Long.parseLong(settingsService.get(SettingsServiceBean.Key.MaxEmbargoDurationInMonths.toString()));
+        } catch (NumberFormatException nfe) {
             if (nfe.getMessage().contains("null")) {
                 return error(Status.BAD_REQUEST, "No Embargoes allowed");
             }
         }
-        if (maxEmbargoDurationInMonths == 0){
+        if (maxEmbargoDurationInMonths == 0) {
             return error(Status.BAD_REQUEST, "No Embargoes allowed");
         }
 
@@ -1510,16 +1510,16 @@ public class Datasets extends AbstractApiBean {
         // check :MaxEmbargoDurationInMonths if -1
         LocalDate maxEmbargoDateTime = maxEmbargoDurationInMonths != -1 ? LocalDate.now().plusMonths(maxEmbargoDurationInMonths) : null;
         // dateAvailable is not in the past
-        if (dateAvailable.isAfter(currentDateTime)){
+        if (dateAvailable.isAfter(currentDateTime)) {
             embargo.setDateAvailable(dateAvailable);
         } else {
             return error(Status.BAD_REQUEST, "Date available can not be in the past");
         }
 
         // dateAvailable is within limits
-        if (maxEmbargoDateTime != null){
-            if (dateAvailable.isAfter(maxEmbargoDateTime)){
-                return error(Status.BAD_REQUEST, "Date available can not exceed MaxEmbargoDurationInMonths: "+maxEmbargoDurationInMonths);
+        if (maxEmbargoDateTime != null) {
+            if (dateAvailable.isAfter(maxEmbargoDateTime)) {
+                return error(Status.BAD_REQUEST, "Date available can not exceed MaxEmbargoDurationInMonths: " + maxEmbargoDurationInMonths);
             }
         }
 
@@ -1529,7 +1529,7 @@ public class Datasets extends AbstractApiBean {
         List<DataFile> filesToEmbargo = new LinkedList<>();
 
         // extract fileIds from json, find datafiles and add to list
-        if (json.containsKey("fileIds")){
+        if (json.containsKey("fileIds")) {
             JsonArray fileIds = json.getJsonArray("fileIds");
             for (JsonValue jsv : fileIds) {
                 try {
@@ -1560,7 +1560,7 @@ public class Datasets extends AbstractApiBean {
                                 .add("files", restrictedFiles).build())
                         .type(MediaType.APPLICATION_JSON_TYPE).build();
             }
-            embargo=embargoService.merge(embargo);
+            embargo = embargoService.merge(embargo);
             // Good request, so add the embargo. Track any existing embargoes so we can
             // delete them if there are no files left that reference them.
             for (DataFile datafile : filesToEmbargo) {
@@ -1603,7 +1603,7 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/files/actions/:unset-embargo")
-    public Response removeFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
+    public Response removeFileEmbargo(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody) {
 
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
@@ -1623,7 +1623,7 @@ public class Datasets extends AbstractApiBean {
         // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
         // check if files are unreleased(DRAFT?)
         //ToDo - here and below - check the release status of files and not the dataset state (draft dataset version still can have released files)
-        if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
+        if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT)) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
             return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or user does not have EditDataset permissions");
         }
 
@@ -1632,13 +1632,13 @@ public class Datasets extends AbstractApiBean {
         //Todo - handle getting Long for duration in one place (settings getLong method? or is that only in wrapper (view scoped)?
         int maxEmbargoDurationInMonths = 0;
         try {
-            maxEmbargoDurationInMonths  = Integer.parseInt(settingsService.get(SettingsServiceBean.Key.MaxEmbargoDurationInMonths.toString()));
-        } catch (NumberFormatException nfe){
+            maxEmbargoDurationInMonths = Integer.parseInt(settingsService.get(SettingsServiceBean.Key.MaxEmbargoDurationInMonths.toString()));
+        } catch (NumberFormatException nfe) {
             if (nfe.getMessage().contains("null")) {
                 return error(Status.BAD_REQUEST, "No Embargoes allowed");
             }
         }
-        if (maxEmbargoDurationInMonths == 0){
+        if (maxEmbargoDurationInMonths == 0) {
             return error(Status.BAD_REQUEST, "No Embargoes allowed");
         }
 
@@ -1648,7 +1648,7 @@ public class Datasets extends AbstractApiBean {
         List<DataFile> embargoFilesToUnset = new LinkedList<>();
 
         // extract fileIds from json, find datafiles and add to list
-        if (json.containsKey("fileIds")){
+        if (json.containsKey("fileIds")) {
             JsonArray fileIds = json.getJsonArray("fileIds");
             for (JsonValue jsv : fileIds) {
                 try {
@@ -1667,7 +1667,7 @@ public class Datasets extends AbstractApiBean {
             boolean badFiles = false;
             for (DataFile datafile : embargoFilesToUnset) {
                 // superuser can overrule an existing embargo, even on released files
-                if (datafile.getEmbargo()==null || ((datafile.isReleased() && datafile.getEmbargo() != null) && !authenticatedUser.isSuperuser())) {
+                if (datafile.getEmbargo() == null || ((datafile.isReleased() && datafile.getEmbargo() != null) && !authenticatedUser.isSuperuser())) {
                     restrictedFiles.add(datafile.getId());
                     badFiles = true;
                 }
@@ -1698,8 +1698,8 @@ public class Datasets extends AbstractApiBean {
                     embargoService.deleteById(emb.getId(), authenticatedUser.getIdentifier());
                 }
             }
-            String releasedFiles = embargoFilesToUnset.stream().filter(d -> d.isReleased()).map(d->d.getId().toString()).collect(Collectors.joining(","));
-            if(!releasedFiles.isBlank()) {
+            String releasedFiles = embargoFilesToUnset.stream().filter(d -> d.isReleased()).map(d -> d.getId().toString()).collect(Collectors.joining(","));
+            if (!releasedFiles.isBlank()) {
                 ActionLogRecord removeRecord = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "embargoRemovedFrom").setInfo("Embargo removed from released file(s), id(s) " + releasedFiles + ".");
                 removeRecord.setUserIdentifier(authenticatedUser.getIdentifier());
                 actionLogSvc.log(removeRecord);
@@ -1713,7 +1713,7 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/files/actions/:set-retention")
-    public Response createFileRetention(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
+    public Response createFileRetention(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody) {
 
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
@@ -1732,26 +1732,26 @@ public class Datasets extends AbstractApiBean {
 
         boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(dataset.getLatestVersion().getTermsOfUseAndAccess(), null);
 
-        if (!hasValidTerms){
+        if (!hasValidTerms) {
             return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
         }
 
         // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
         // check if files are unreleased(DRAFT?)
-        if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
+        if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT)) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
             return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or user does not have EditDataset permissions");
         }
 
         // check if retentions are allowed(:MinRetentionDurationInMonths), gets the :MinRetentionDurationInMonths setting variable, if 0 or not set(null) return 400
         long minRetentionDurationInMonths = 0;
         try {
-            minRetentionDurationInMonths  = Long.parseLong(settingsService.get(SettingsServiceBean.Key.MinRetentionDurationInMonths.toString()));
-        } catch (NumberFormatException nfe){
+            minRetentionDurationInMonths = Long.parseLong(settingsService.get(SettingsServiceBean.Key.MinRetentionDurationInMonths.toString()));
+        } catch (NumberFormatException nfe) {
             if (nfe.getMessage().contains("null")) {
                 return error(Status.BAD_REQUEST, "No Retention periods allowed");
             }
         }
-        if (minRetentionDurationInMonths == 0){
+        if (minRetentionDurationInMonths == 0) {
             return error(Status.BAD_REQUEST, "No Retention periods allowed");
         }
 
@@ -1784,16 +1784,16 @@ public class Datasets extends AbstractApiBean {
         // check :MinRetentionDurationInMonths if -1
         LocalDate minRetentionDateTime = minRetentionDurationInMonths != -1 ? LocalDate.now().plusMonths(minRetentionDurationInMonths) : null;
         // dateUnavailable is not in the past
-        if (dateUnavailable.isAfter(currentDateTime)){
+        if (dateUnavailable.isAfter(currentDateTime)) {
             retention.setDateUnavailable(dateUnavailable);
         } else {
             return error(Status.BAD_REQUEST, "Date unavailable can not be in the past");
         }
 
         // dateAvailable is within limits
-        if (minRetentionDateTime != null){
-            if (dateUnavailable.isBefore(minRetentionDateTime)){
-                return error(Status.BAD_REQUEST, "Date unavailable can not be earlier than MinRetentionDurationInMonths: "+minRetentionDurationInMonths + " from now");
+        if (minRetentionDateTime != null) {
+            if (dateUnavailable.isBefore(minRetentionDateTime)) {
+                return error(Status.BAD_REQUEST, "Date unavailable can not be earlier than MinRetentionDurationInMonths: " + minRetentionDurationInMonths + " from now");
             }
         }
         
@@ -1811,7 +1811,7 @@ public class Datasets extends AbstractApiBean {
         List<DataFile> filesToRetention = new LinkedList<>();
 
         // extract fileIds from json, find datafiles and add to list
-        if (json.containsKey("fileIds")){
+        if (json.containsKey("fileIds")) {
             try {
                 JsonArray fileIds = json.getJsonArray("fileIds");
                 for (JsonValue jsv : fileIds) {
@@ -1850,7 +1850,7 @@ public class Datasets extends AbstractApiBean {
                                 .add("files", restrictedFiles).build())
                         .type(MediaType.APPLICATION_JSON_TYPE).build();
             }
-            retention=retentionService.merge(retention);
+            retention = retentionService.merge(retention);
             // Good request, so add the retention. Track any existing retentions so we can
             // delete them if there are no files left that reference them.
             for (DataFile datafile : filesToRetention) {
@@ -1893,7 +1893,7 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/files/actions/:unset-retention")
-    public Response removeFileRetention(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody){
+    public Response removeFileRetention(@Context ContainerRequestContext crc, @PathParam("id") String id, String jsonBody) {
 
         // user is authenticated
         AuthenticatedUser authenticatedUser = null;
@@ -1913,20 +1913,20 @@ public class Datasets extends AbstractApiBean {
         // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
         // check if files are unreleased(DRAFT?)
         //ToDo - here and below - check the release status of files and not the dataset state (draft dataset version still can have released files)
-        if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
+        if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT)) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
             return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or user does not have EditDataset permissions");
         }
 
         // check if retentions are allowed(:MinRetentionDurationInMonths), gets the :MinRetentionDurationInMonths setting variable, if 0 or not set(null) return 400
         int minRetentionDurationInMonths = 0;
         try {
-            minRetentionDurationInMonths  = Integer.parseInt(settingsService.get(SettingsServiceBean.Key.MinRetentionDurationInMonths.toString()));
-        } catch (NumberFormatException nfe){
+            minRetentionDurationInMonths = Integer.parseInt(settingsService.get(SettingsServiceBean.Key.MinRetentionDurationInMonths.toString()));
+        } catch (NumberFormatException nfe) {
             if (nfe.getMessage().contains("null")) {
                 return error(Status.BAD_REQUEST, "No Retention periods allowed");
             }
         }
-        if (minRetentionDurationInMonths == 0){
+        if (minRetentionDurationInMonths == 0) {
             return error(Status.BAD_REQUEST, "No Retention periods allowed");
         }
 
@@ -1941,7 +1941,7 @@ public class Datasets extends AbstractApiBean {
         List<DataFile> retentionFilesToUnset = new LinkedList<>();
 
         // extract fileIds from json, find datafiles and add to list
-        if (json.containsKey("fileIds")){
+        if (json.containsKey("fileIds")) {
             try {
                 JsonArray fileIds = json.getJsonArray("fileIds");
                 for (JsonValue jsv : fileIds) {
@@ -1968,7 +1968,7 @@ public class Datasets extends AbstractApiBean {
             boolean badFiles = false;
             for (DataFile datafile : retentionFilesToUnset) {
                 // superuser can overrule an existing retention, even on released files
-                if (datafile.getRetention()==null || ((datafile.isReleased() && datafile.getRetention() != null) && !authenticatedUser.isSuperuser())) {
+                if (datafile.getRetention() == null || ((datafile.isReleased() && datafile.getRetention() != null) && !authenticatedUser.isSuperuser())) {
                     restrictedFiles.add(datafile.getId());
                     badFiles = true;
                 }
@@ -1999,8 +1999,8 @@ public class Datasets extends AbstractApiBean {
                     retentionService.delete(ret, authenticatedUser.getIdentifier());
                 }
             }
-            String releasedFiles = retentionFilesToUnset.stream().filter(d -> d.isReleased()).map(d->d.getId().toString()).collect(Collectors.joining(","));
-            if(!releasedFiles.isBlank()) {
+            String releasedFiles = retentionFilesToUnset.stream().filter(d -> d.isReleased()).map(d -> d.getId().toString()).collect(Collectors.joining(","));
+            if (!releasedFiles.isBlank()) {
                 ActionLogRecord removeRecord = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "retentionRemovedFrom").setInfo("Retention removed from released file(s), id(s) " + releasedFiles + ".");
                 removeRecord.setUserIdentifier(authenticatedUser.getIdentifier());
                 actionLogSvc.log(removeRecord);
@@ -2019,7 +2019,7 @@ public class Datasets extends AbstractApiBean {
             User u = getRequestUser(crc);
             Dataset linked = findDatasetOrDie(linkedDatasetId);
             Dataverse linking = findDataverseOrDie(linkingDataverseAlias);
-            if (linked == null){
+            if (linked == null) {
                 return error(Response.Status.BAD_REQUEST, "Linked Dataset not found.");
             }
             if (linking == null) {
@@ -2059,7 +2059,7 @@ public class Datasets extends AbstractApiBean {
     @GET
     @AuthRequired
     @Path("{id}/links")
-    public Response getLinks(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied ) {
+    public Response getLinks(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
         try {
             User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
@@ -2161,7 +2161,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/privateUrl")
     public Response getPrivateUrlData(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
-        return response( req -> {
+        return response(req -> {
             PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, findDatasetOrDie(idSupplied)));
             return (privateUrl != null) ? ok(json(privateUrl))
                     : error(Response.Status.NOT_FOUND, "Private URL not found.");
@@ -2171,8 +2171,8 @@ public class Datasets extends AbstractApiBean {
     @POST
     @AuthRequired
     @Path("{id}/privateUrl")
-    public Response createPrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied,@DefaultValue("false") @QueryParam ("anonymizedAccess") boolean anonymizedAccess) {
-        if(anonymizedAccess && settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames)==null) {
+    public Response createPrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied, @DefaultValue("false") @QueryParam("anonymizedAccess") boolean anonymizedAccess) {
+        if (anonymizedAccess && settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames) == null) {
             throw new NotAcceptableException("Anonymized Access not enabled");
         }
         return response(req ->
@@ -2184,7 +2184,7 @@ public class Datasets extends AbstractApiBean {
     @AuthRequired
     @Path("{id}/privateUrl")
     public Response deletePrivateUrl(@Context ContainerRequestContext crc, @PathParam("id") String idSupplied) {
-        return response( req -> {
+        return response(req -> {
             Dataset dataset = findDatasetOrDie(idSupplied);
             PrivateUrl privateUrl = execCommand(new GetPrivateUrlCommand(req, dataset));
             if (privateUrl != null) {
@@ -2235,7 +2235,7 @@ public class Datasets extends AbstractApiBean {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             InputStream is = DatasetUtil.getThumbnailAsInputStream(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-            if(is == null) {
+            if (is == null) {
                 return notFound("Thumbnail not available");
             }
             return Response.ok(is).build();
@@ -2245,7 +2245,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
-    @Produces({ "image/png" })
+    @Produces({"image/png"})
     @Path("{id}/logo")
     public Response getDatasetLogo(@PathParam("id") String idSupplied) {
         try {
@@ -2324,7 +2324,7 @@ public class Datasets extends AbstractApiBean {
             DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.DcmUpload, user.getId(), "script downloaded");
             if (lock == null) {
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
-                return error(Response.Status.FORBIDDEN, "Failed to lock the dataset (dataset id="+dataset.getId()+")");
+                return error(Response.Status.FORBIDDEN, "Failed to lock the dataset (dataset id=" + dataset.getId() + ")");
             }
             return ok(scriptRequestResponse.getScript(), MediaType.valueOf(MediaType.TEXT_PLAIN), null);
         } catch (WrappedResponse wr) {
@@ -2389,7 +2389,7 @@ public class Datasets extends AbstractApiBean {
                         String message = wr.getMessage();
                         return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
                     }
-                } else if(storageDriverType.equals(DataAccess.S3)) {
+                } else if (storageDriverType.equals(DataAccess.S3)) {
                     
                     logger.log(Level.INFO, "S3 storage driver used for DCM (dataset id={0})", dataset.getId());
                     try {
@@ -2512,7 +2512,7 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion dsv = ds.getLatestVersion();
             User user = getRequestUser(crc);
             if (dsv.isDraft() && permissionSvc.requestOn(createDataverseRequest(user), ds).has(Permission.PublishDataset)) {
-                return response(req -> ok(dsv.getExternalStatusLabel()==null ? "":dsv.getExternalStatusLabel()), user);
+                return response(req -> ok(dsv.getExternalStatusLabel() == null ? "" : dsv.getExternalStatusLabel()), user);
             } else {
                 return error(Response.Status.FORBIDDEN, "You are not permitted to view the curation status of this dataset.");
             }
@@ -2583,7 +2583,7 @@ public class Datasets extends AbstractApiBean {
             }
             Long maxSize = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
             if (maxSize != null) {
-                if(fileSize > maxSize) {
+                if (fileSize > maxSize) {
                     return error(Response.Status.BAD_REQUEST,
                             "The file you are trying to upload is too large to be uploaded to this dataset. " +
                                     "The maximum allowed file size is " + maxSize + " bytes.");
@@ -2591,7 +2591,7 @@ public class Datasets extends AbstractApiBean {
             }
             UploadSessionQuotaLimit limit = fileService.getUploadSessionQuotaLimit(dataset);
             if (limit != null) {
-                if(fileSize > limit.getRemainingQuotaInBytes()) {
+                if (fileSize > limit.getRemainingQuotaInBytes()) {
                     return error(Response.Status.BAD_REQUEST,
                             "The file you are trying to upload is too large to be uploaded to this dataset. " +
                                     "The remaing file size quota is " + limit.getRemainingQuotaInBytes() + " bytes.");
@@ -2773,7 +2773,7 @@ public class Datasets extends AbstractApiBean {
                     @FormDataParam("file") InputStream fileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart
-                    ){
+                    ) {
 
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
@@ -2835,7 +2835,7 @@ public class Datasets extends AbstractApiBean {
                 newStorageIdentifier = optionalFileParams.getStorageIdentifier();
                 newStorageIdentifier = DataAccess.expandStorageIdentifierIfNeeded(newStorageIdentifier);
                 
-                if(!DataAccess.uploadToDatasetAllowed(dataset,  newStorageIdentifier)) {
+                if (!DataAccess.uploadToDatasetAllowed(dataset, newStorageIdentifier)) {
                     return error(BAD_REQUEST,
                             "Dataset store configuration does not allow provided storageIdentifier.");
                 }
@@ -2897,9 +2897,9 @@ public class Datasets extends AbstractApiBean {
                 optionalFileParams);
 
 
-        if (addFileHelper.hasError()){
+        if (addFileHelper.hasError()) {
             //conflict response status added for 8859
-            if (Response.Status.CONFLICT.equals(addFileHelper.getHttpErrorCode())){
+            if (Response.Status.CONFLICT.equals(addFileHelper.getHttpErrorCode())) {
                 return conflict(addFileHelper.getErrorMessagesAsString("\n"));
             }
             return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
@@ -2982,11 +2982,11 @@ public class Datasets extends AbstractApiBean {
 
     private static Set<String> getDatasetFilenames(Dataset dataset) {
         Set<String> files = new HashSet<>();
-        for (DataFile dataFile: dataset.getFiles()) {
+        for (DataFile dataFile : dataset.getFiles()) {
             String storageIdentifier = dataFile.getStorageIdentifier();
             String location = storageIdentifier.substring(storageIdentifier.indexOf("://") + 3);
             String[] locationParts = location.split(":");//separate bucket, swift container, etc. from fileName
-            files.add(locationParts[locationParts.length-1]);
+            files.add(locationParts[locationParts.length - 1]);
         }
         return files;
     }
@@ -3087,7 +3087,7 @@ public class Datasets extends AbstractApiBean {
             throw new WrappedResponse(
                     notFound("Dataset version " + versionNumber + " of dataset " + ds.getId() + " not found"));
         }
-        if (dsv.isReleased()&& uriInfo!=null) {
+        if (dsv.isReleased() && uriInfo != null) {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, ds);
             mdcLogService.logEntry(entry);
         }
@@ -3237,7 +3237,7 @@ public class Datasets extends AbstractApiBean {
                 lockTypeValue = DatasetLock.Reason.valueOf(lockType);
             } catch (IllegalArgumentException iax) {
                 StringJoiner reasonJoiner = new StringJoiner(", ");
-                for (Reason r: Reason.values()) {
+                for (Reason r : Reason.values()) {
                     reasonJoiner.add(r.name());
                 };
                 String errorMessage = "Invalid lock type value: " + lockType + 
@@ -3249,7 +3249,7 @@ public class Datasets extends AbstractApiBean {
         if (userIdentifier != null && !userIdentifier.isEmpty()) {
             user = authSvc.getAuthenticatedUser(userIdentifier);
             if (user == null) {
-                return error(Response.Status.BAD_REQUEST, "Unknown user identifier: "+userIdentifier);
+                return error(Response.Status.BAD_REQUEST, "Unknown user identifier: " + userIdentifier);
             }
         }
         
@@ -3862,7 +3862,7 @@ public class Datasets extends AbstractApiBean {
                 Json.createObjectBuilder().add(URLTokenUtil.NAME, requestCallName).add(URLTokenUtil.HTTP_METHOD, "POST")
                         .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/requestGlobusUploadPaths")
                         .add(URLTokenUtil.TIMEOUT, timeoutSeconds));
-        if(managed) {
+        if (managed) {
         allowedApiCalls.add(Json.createObjectBuilder().add(URLTokenUtil.NAME, "addGlobusFiles")
                 .add(URLTokenUtil.HTTP_METHOD, "POST")
                 .add(URLTokenUtil.URL_TEMPLATE, "/api/v1/datasets/{datasetId}/addGlobusFiles")
@@ -4067,7 +4067,7 @@ public class Datasets extends AbstractApiBean {
 
         ApiToken token = authSvc.findApiTokenByUser(authUser);
 
-        if(uriInfo != null) {
+        if (uriInfo != null) {
             logger.info(" ====  (api uriInfo.getRequestUri()) jsonData   ====== " + uriInfo.getRequestUri().toString());
         }
 
@@ -4232,7 +4232,7 @@ public class Datasets extends AbstractApiBean {
                 fileIds = files.keySet();
             }
         } else {
-            if ((body!=null) && body.containsKey("fileIds")) {
+            if ((body != null) && body.containsKey("fileIds")) {
                 Collection<JsonValue> fileVals = body.getJsonArray("fileIds").getValuesAs(JsonValue.class);
                 fileIds = new HashSet<String>(fileVals.size());
                 for (JsonValue fileVal : fileVals) {
@@ -4637,7 +4637,7 @@ public class Datasets extends AbstractApiBean {
             }
             
             //Verify we have valid json after removing any HTML tags (the status gets displayed in the UI, so we want plain text).
-            JsonObject update= JsonUtil.getJsonObject(MarkupChecker.stripAllTags(newStatus));
+            JsonObject update = JsonUtil.getJsonObject(MarkupChecker.stripAllTags(newStatus));
             
             if (update.containsKey(DatasetVersion.ARCHIVAL_STATUS) && update.containsKey(DatasetVersion.ARCHIVAL_STATUS_MESSAGE)) {
                 String status = update.getString(DatasetVersion.ARCHIVAL_STATUS);
@@ -4669,7 +4669,7 @@ public class Datasets extends AbstractApiBean {
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
-        } catch (JsonException| IllegalStateException ex) {
+        } catch (JsonException | IllegalStateException ex) {
             return error(Status.BAD_REQUEST, "Unable to parse provided JSON");
         }
         return error(Status.BAD_REQUEST, "Unacceptable status format");
@@ -4712,7 +4712,7 @@ public class Datasets extends AbstractApiBean {
         if (className != null) {
             Class<? extends AbstractSubmitToArchiveCommand> clazz;
             try {
-                clazz =  Class.forName(className).asSubclass(AbstractSubmitToArchiveCommand.class);
+                clazz = Class.forName(className).asSubclass(AbstractSubmitToArchiveCommand.class);
                 return ArchiverUtil.onlySingleVersionArchiving(clazz, settingsService);
             } catch (ClassNotFoundException e) {
                 logger.warning(":ArchiverClassName does not refer to a known Archiver");
@@ -4745,7 +4745,7 @@ public class Datasets extends AbstractApiBean {
             }
             
             ExternalTool externalTool = externalToolService.findById(externalToolId);
-            if(externalTool==null) {
+            if (externalTool == null) {
                 return error(BAD_REQUEST, "External tool not found.");
             }
             if (!ExternalTool.Scope.DATASET.equals(externalTool.getScope())) {
@@ -4783,7 +4783,7 @@ public class Datasets extends AbstractApiBean {
         }
         boolean isAnonymizedAccess = privateUrlUser.hasAnonymizedAccess();
         String anonymizedFieldTypeNames = settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames);
-        if(isAnonymizedAccess && anonymizedFieldTypeNames == null) {
+        if (isAnonymizedAccess && anonymizedFieldTypeNames == null) {
             throw new NotAcceptableException("Anonymized Access not enabled");
         }
         DatasetVersion dsv = privateUrlService.getDraftDatasetVersionFromToken(privateUrlToken);
@@ -4873,7 +4873,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
         String gbAtRequest = dataset.getGuestbookEntryAtRequest();
-        if(gbAtRequest == null || gbAtRequest.equals(DvObjectContainer.UNDEFINED_CODE)) {
+        if (gbAtRequest == null || gbAtRequest.equals(DvObjectContainer.UNDEFINED_CODE)) {
             return ok("Not set on dataset, using the default: " + dataset.getEffectiveGuestbookEntryAtRequest());
         }
         return ok(dataset.getEffectiveGuestbookEntryAtRequest());
@@ -4999,7 +4999,7 @@ public class Datasets extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "No such dataset");
         }
         PidProvider pidProvider = dataset.getEffectivePidGenerator();
-        if(pidProvider == null) {
+        if (pidProvider == null) {
             //This is basically a config error, e.g. if a valid pid provider was removed after this dataset used it
             return error(Response.Status.NOT_FOUND, BundleUtil.getStringFromBundle("datasets.api.pidgenerator.notfound"));
         }

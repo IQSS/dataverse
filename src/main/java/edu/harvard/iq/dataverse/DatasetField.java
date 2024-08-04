@@ -37,8 +37,8 @@ import org.apache.commons.lang3.StringUtils;
 
 @Entity
 @ValidateDatasetFieldType
-@Table(indexes = {@Index(columnList="datasetfieldtype_id"),@Index(columnList="datasetversion_id"),
-    @Index(columnList="parentdatasetfieldcompoundvalue_id"),@Index(columnList="template_id")})
+@Table(indexes = {@Index(columnList = "datasetfieldtype_id"), @Index(columnList = "datasetversion_id"),
+    @Index(columnList = "parentdatasetfieldcompoundvalue_id"), @Index(columnList = "template_id")})
 public class DatasetField implements Serializable {
     private static final long serialVersionUID = 1L;
     
@@ -50,8 +50,8 @@ public class DatasetField implements Serializable {
     public static final Comparator<DatasetField> DisplayOrder = new Comparator<DatasetField>() {
         @Override
         public int compare(DatasetField o1, DatasetField o2) {
-            return Integer.compare( o1.getDatasetFieldType().getDisplayOrder(),
-                                    o2.getDatasetFieldType().getDisplayOrder() );
+            return Integer.compare(o1.getDatasetFieldType().getDisplayOrder(),
+                                    o2.getDatasetFieldType().getDisplayOrder());
     }};
 
     public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, DatasetVersion dsv) {
@@ -196,7 +196,7 @@ public class DatasetField implements Serializable {
     }
 
     @ManyToMany(cascade = {CascadeType.MERGE})
-    @JoinTable(indexes = {@Index(columnList="datasetfield_id"),@Index(columnList="controlledvocabularyvalues_id")})
+    @JoinTable(indexes = {@Index(columnList = "datasetfield_id"), @Index(columnList = "controlledvocabularyvalues_id")})
     private List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList<>();
 
     public List<ControlledVocabularyValue> getControlledVocabularyValues() {
@@ -243,7 +243,7 @@ public class DatasetField implements Serializable {
         if (!datasetFieldValues.isEmpty()) {
             return datasetFieldValues.get(0).getValue();
         } else if (controlledVocabularyValues != null && !controlledVocabularyValues.isEmpty()) {
-            if (controlledVocabularyValues.get(0) != null){
+            if (controlledVocabularyValues.get(0) != null) {
                 return controlledVocabularyValues.get(0).getLocaleStrValue();                
             }
         }
@@ -255,14 +255,14 @@ public class DatasetField implements Serializable {
     }
     
     public String getDisplayValue(String lang) {
-        if(lang!=null && lang.isBlank()) {
+        if (lang != null && lang.isBlank()) {
             //null will cause the current UI lang to be picked up
-            lang=null;
+            lang = null;
         }
         String returnString = "";
         for (String value : getValues(lang)) {
-            if(value == null) {
-                value="";
+            if (value == null) {
+                value = "";
             }
             returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
         }
@@ -272,8 +272,8 @@ public class DatasetField implements Serializable {
     public String getRawValue() {
         String returnString = "";
         for (String value : getRawValuesList()) {
-            if(value == null) {
-                value="";
+            if (value == null) {
+                value = "";
             }
             returnString += (returnString.isEmpty() ? "" : "; ") + value.trim();
         }
@@ -316,9 +316,9 @@ public class DatasetField implements Serializable {
     }
 
     public List<String> getValues(String langCode) {
-        if(langCode!=null && langCode.isBlank()) {
+        if (langCode != null && langCode.isBlank()) {
             //null picks up current UI lang
-            langCode=null;
+            langCode = null;
         }
         List<String> returnList = new ArrayList<>();
         if (!datasetFieldValues.isEmpty()) {
@@ -518,11 +518,11 @@ public class DatasetField implements Serializable {
     @Transient 
     private boolean include;
     
-    public void setInclude(boolean include){
+    public void setInclude(boolean include) {
         this.include = include;
     }
     
-    public boolean isInclude(){
+    public boolean isInclude() {
         return this.include;
     }
     
@@ -682,16 +682,16 @@ public class DatasetField implements Serializable {
      * 
      * @return
      */
-    public boolean needsTextCleaning(){
+    public boolean needsTextCleaning() {
   
         
-        if (this.getDatasetFieldType() == null || this.getDatasetFieldType().getFieldType() == null){
+        if (this.getDatasetFieldType() == null || this.getDatasetFieldType().getFieldType() == null) {
             return false;
         }
         
-        if (this.datasetFieldType.getFieldType().equals(DatasetFieldType.FieldType.TEXT)){
+        if (this.datasetFieldType.getFieldType().equals(DatasetFieldType.FieldType.TEXT)) {
             return true;
-        } else if (this.datasetFieldType.getFieldType().equals(DatasetFieldType.FieldType.TEXTBOX)){
+        } else if (this.datasetFieldType.getFieldType().equals(DatasetFieldType.FieldType.TEXTBOX)) {
             return true;
         }
     

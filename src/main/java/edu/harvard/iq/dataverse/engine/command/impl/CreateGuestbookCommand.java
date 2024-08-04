@@ -18,7 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  *
  * @author skraffmiller
  */
-@RequiredPermissions( Permission.EditDataverse )
+@RequiredPermissions(Permission.EditDataverse)
 public class CreateGuestbookCommand extends AbstractCommand<Guestbook> {
     	private final Guestbook created;
 	private final Dataverse dv;

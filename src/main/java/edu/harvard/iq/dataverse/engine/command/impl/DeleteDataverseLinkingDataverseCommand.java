@@ -26,14 +26,14 @@ import org.apache.solr.client.solrj.SolrServerException;
  * @author sarahferry
  */
 
-@RequiredPermissions( Permission.EditDataverse )
+@RequiredPermissions(Permission.EditDataverse)
 public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Dataverse> {
 
     private final DataverseLinkingDataverse doomed;
     private final Dataverse editedDv;
     private final boolean index;
     
-    public DeleteDataverseLinkingDataverseCommand(DataverseRequest aRequest, Dataverse editedDv , DataverseLinkingDataverse doomed, boolean index) {
+    public DeleteDataverseLinkingDataverseCommand(DataverseRequest aRequest, Dataverse editedDv, DataverseLinkingDataverse doomed, boolean index) {
         super(aRequest, editedDv);
         this.editedDv = editedDv;
         this.doomed = doomed;

@@ -36,7 +36,7 @@ import org.apache.commons.io.IOUtils;
 public class StoredOriginalFile {
     private static Logger logger = Logger.getLogger(StoredOriginalFile.class.getPackage().getName());
     
-    public StoredOriginalFile () {
+    public StoredOriginalFile() {
         
     }
     
@@ -67,11 +67,11 @@ public class StoredOriginalFile {
                     dataFile.getDataTable().getOriginalFileSize() : 
                     storageIO.getAuxObjectSize(SAVED_ORIGINAL_FILENAME_EXTENSION);
             inputStreamIO = new InputStreamIO(Channels.newInputStream((ReadableByteChannel) storedOriginalChannel), storedOriginalSize);
-            logger.fine("Opened stored original file as Aux "+SAVED_ORIGINAL_FILENAME_EXTENSION);
+            logger.fine("Opened stored original file as Aux " + SAVED_ORIGINAL_FILENAME_EXTENSION);
         } catch (IOException ioEx) {
         	IOUtils.closeQuietly(storedOriginalChannel);
         	// The original file not saved, or could not be opened.
-            logger.fine("Failed to open stored original file as Aux "+SAVED_ORIGINAL_FILENAME_EXTENSION+"!");
+            logger.fine("Failed to open stored original file as Aux " + SAVED_ORIGINAL_FILENAME_EXTENSION + "!");
             return null;
         }
 

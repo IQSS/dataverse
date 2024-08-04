@@ -78,7 +78,7 @@ import org.apache.commons.lang3.StringUtils;
     
     
 @Entity
-@Table(indexes = {@Index(columnList="dataset_id")},
+@Table(indexes = {@Index(columnList = "dataset_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id,versionnumber,minorversionnumber"}))
 @ValidateVersionNote(versionNote = "versionNote", versionState = "versionState")
 public class DatasetVersion implements Serializable {
@@ -93,12 +93,12 @@ public class DatasetVersion implements Serializable {
     public static final Comparator<DatasetVersion> compareByVersion = new Comparator<DatasetVersion>() {
         @Override
         public int compare(DatasetVersion o1, DatasetVersion o2) {
-            if ( o1.isDraft() ) {
+            if (o1.isDraft()) {
                 return o2.isDraft() ? 0 : 1;
             } else {
-               return (int)Math.signum( (o1.getVersionNumber().equals(o2.getVersionNumber())) ?
+               return (int) Math.signum((o1.getVersionNumber().equals(o2.getVersionNumber())) ?
                         o1.getMinorVersionNumber() - o2.getMinorVersionNumber()
-                       : o1.getVersionNumber() - o2.getVersionNumber() );
+                       : o1.getVersionNumber() - o2.getVersionNumber());
             }
         }
     };
@@ -133,7 +133,7 @@ public class DatasetVersion implements Serializable {
     private Long versionNumber;
     private Long minorVersionNumber;
     
-    @Size(min=0, max=VERSION_NOTE_MAX_LENGTH)
+    @Size(min = 0, max = VERSION_NOTE_MAX_LENGTH)
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
     
@@ -152,7 +152,7 @@ public class DatasetVersion implements Serializable {
     @OrderBy("label") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category
     private List<FileMetadata> fileMetadatas = new ArrayList();
     
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true)
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     @JoinColumn(name = "termsOfUseAndAccess_id")
     private TermsOfUseAndAccess termsOfUseAndAccess;
     
@@ -160,11 +160,11 @@ public class DatasetVersion implements Serializable {
     private List<DatasetField> datasetFields = new ArrayList();
     
     @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable=false )
+    @Column(nullable = false)
     private Date createTime;
     
     @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable=false )
+    @Column(nullable = false)
     private Date lastUpdateTime;
     
     @Temporal(value = TemporalType.TIMESTAMP)
@@ -173,7 +173,7 @@ public class DatasetVersion implements Serializable {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date archiveTime;
     
-    @Size(min=0, max=ARCHIVE_NOTE_MAX_LENGTH)
+    @Size(min = 0, max = ARCHIVE_NOTE_MAX_LENGTH)
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
     //@ValidateURL() - this validation rule was making a bunch of older legacy datasets invalid;
     // removed pending further investigation (v4.13)
@@ -184,7 +184,7 @@ public class DatasetVersion implements Serializable {
     // pending, success) and message (serialized as a string). The archival copy
     // location is now expected as the contents of the message for the status
     // 'success'. See the /api/datasets/{id}/{version}/archivalStatus API calls for more details
-    @Column(nullable=true, columnDefinition = "TEXT")
+    @Column(nullable = true, columnDefinition = "TEXT")
     private String archivalCopyLocation;
     
     
@@ -199,14 +199,14 @@ public class DatasetVersion implements Serializable {
     @Transient 
     private String jsonLd;
 
-    @OneToMany(mappedBy="datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetVersionUser> datasetVersionUsers;
     
     // Is this the right mapping and cascading for when the workflowcomments table is being used for objects other than DatasetVersion?
-    @OneToMany(mappedBy = "datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<WorkflowComment> workflowComments;
 
-    @Column(nullable=true)
+    @Column(nullable = true)
     private String externalStatusLabel;
     
     @Transient
@@ -261,16 +261,16 @@ public class DatasetVersion implements Serializable {
          * solution may be in avoiding the IndirectList or moving to a new version of
          * the jar it is in.
          */
-        if(!(fileMetadatas instanceof ArrayList)) {
+        if (!(fileMetadatas instanceof ArrayList)) {
             List<FileMetadata> newFMDs = new ArrayList<FileMetadata>();
-            for(FileMetadata fmd: fileMetadatas) {
+            for (FileMetadata fmd : fileMetadatas) {
                 newFMDs.add(fmd);
             }
             setFileMetadatas(newFMDs);
         }
         
         DataFileComparator dfc = new DataFileComparator();
-        Collections.sort(fileMetadatas, dfc.compareBy(true, null!=FileMetadata.getCategorySortOrder(), "name", true));
+        Collections.sort(fileMetadatas, dfc.compareBy(true, null != FileMetadata.getCategorySortOrder(), "name", true));
         return fileMetadatas;
     }
     
@@ -278,7 +278,7 @@ public class DatasetVersion implements Serializable {
         ArrayList<FileMetadata> fileMetadatasCopy = new ArrayList<>();
         fileMetadatasCopy.addAll(fileMetadatas);
         DataFileComparator dfc = new DataFileComparator();
-        Collections.sort(fileMetadatasCopy, dfc.compareBy(true, null!=FileMetadata.getCategorySortOrder(), "name", true));
+        Collections.sort(fileMetadatasCopy, dfc.compareBy(true, null != FileMetadata.getCategorySortOrder(), "name", true));
         return fileMetadatasCopy;
     }
     
@@ -331,7 +331,7 @@ public class DatasetVersion implements Serializable {
      * @param datasetFields
      */
     public void setDatasetFields(List<DatasetField> datasetFields) {
-        for ( DatasetField dsf : datasetFields ) {
+        for (DatasetField dsf : datasetFields) {
             dsf.setDatasetVersion(this);
         }
         this.datasetFields = datasetFields;
@@ -377,25 +377,25 @@ public class DatasetVersion implements Serializable {
     public String getArchivalCopyLocationStatus() {
         populateArchivalStatus(false);
         
-        if(archivalStatus!=null) {
+        if (archivalStatus != null) {
             return archivalStatus.getString(ARCHIVAL_STATUS);
         } 
         return null;
     }
     public String getArchivalCopyLocationMessage() {
         populateArchivalStatus(false);
-        if(archivalStatus!=null) {
+        if (archivalStatus != null) {
             return archivalStatus.getString(ARCHIVAL_STATUS_MESSAGE);
         } 
         return null;
     }
     
     private void populateArchivalStatus(boolean force) {
-        if(archivalStatus ==null || force) {
-            if(archivalCopyLocation!=null) {
+        if (archivalStatus == null || force) {
+            if (archivalCopyLocation != null) {
                 try {
             archivalStatus = JsonUtil.getJsonObject(archivalCopyLocation);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     logger.warning("DatasetVersion id: " + id + "has a non-JsonObject value, parsing error: " + e.getMessage());
                     logger.fine(archivalCopyLocation);
                 }
@@ -440,7 +440,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getVersionDate() {
-        if (this.lastUpdateTime == null){
+        if (this.lastUpdateTime == null) {
             return null; 
         }
         return DateUtil.formatDate(lastUpdateTime);
@@ -492,7 +492,7 @@ public class DatasetVersion implements Serializable {
 
     public DatasetVersionDifference getDefaultVersionDifference() {
         //Cache to avoid recalculating the difference many many times in the dataset-versions.xhtml page
-        if(dvd!=null) {
+        if (dvd != null) {
             return dvd;
         }
         // if version is deaccessioned ignore it for differences purposes
@@ -561,7 +561,7 @@ public class DatasetVersion implements Serializable {
         this.minorVersionNumber = minorVersionNumber;
     }
     
-    public String getFriendlyVersionNumber(){
+    public String getFriendlyVersionNumber() {
         if (this.isDraft()) {
             return "DRAFT";
         } else {
@@ -614,18 +614,18 @@ public class DatasetVersion implements Serializable {
             }
         }
         if (this.getDataset().getReleasedVersion() != null) {
-            if (this.getFileMetadatas().size() != this.getDataset().getReleasedVersion().getFileMetadatas().size()){
+            if (this.getFileMetadatas().size() != this.getDataset().getReleasedVersion().getFileMetadatas().size()) {
                 return false;
             } else {
-                List <DataFile> current = new ArrayList<>();
-                List <DataFile> previous = new ArrayList<>();
-                for (FileMetadata fmdc : this.getFileMetadatas()){
+                List<DataFile> current = new ArrayList<>();
+                List<DataFile> previous = new ArrayList<>();
+                for (FileMetadata fmdc : this.getFileMetadatas()) {
                     current.add(fmdc.getDataFile());
                 }
-                for (FileMetadata fmdc : this.getDataset().getReleasedVersion().getFileMetadatas()){
+                for (FileMetadata fmdc : this.getDataset().getReleasedVersion().getFileMetadatas()) {
                     previous.add(fmdc.getDataFile());
                 }
-                for (DataFile fmd: current){
+                for (DataFile fmd : current) {
                     previous.remove(fmd);
                 }
                 return previous.isEmpty();                
@@ -634,26 +634,26 @@ public class DatasetVersion implements Serializable {
         return true;
     }
     
-    public boolean isHasPackageFile(){
-        if (this.fileMetadatas.isEmpty()){
+    public boolean isHasPackageFile() {
+        if (this.fileMetadatas.isEmpty()) {
             return false;
         }
-        if(this.fileMetadatas.size() > 1){
+        if (this.fileMetadatas.size() > 1) {
             return false;
         }
         return this.fileMetadatas.get(0).getDataFile().getContentType().equals(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
     }
 
-    public boolean isHasNonPackageFile(){
-        if (this.fileMetadatas.isEmpty()){
+    public boolean isHasNonPackageFile() {
+        if (this.fileMetadatas.isEmpty()) {
             return false;
         }
         // The presence of any non-package file means that HTTP Upload was used (no mixing allowed) so we just check the first file.
         return !this.fileMetadatas.get(0).getDataFile().getContentType().equals(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
     }
     
-    public boolean isHasRestrictedFile(){
-        if (this.fileMetadatas == null || this.fileMetadatas.isEmpty()){
+    public boolean isHasRestrictedFile() {
+        if (this.fileMetadatas == null || this.fileMetadatas.isEmpty()) {
             return false;
         }
         return this.fileMetadatas.stream().anyMatch(fm -> (fm.isRestricted()));
@@ -670,12 +670,12 @@ public class DatasetVersion implements Serializable {
         }
     }
     
-    public DatasetVersion cloneDatasetVersion(){
+    public DatasetVersion cloneDatasetVersion() {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(this.getPriorVersionState());
         dsv.setFileMetadatas(new ArrayList<>());
         
-           if (this.getUNF() != null){
+           if (this.getUNF() != null) {
                 dsv.setUNF(this.getUNF());
             }
             
@@ -709,7 +709,7 @@ public class DatasetVersion implements Serializable {
                 dsv.getFileMetadatas().add(newFm);
             }
             
-            if (this.getTermsOfUseAndAccess()!= null){
+            if (this.getTermsOfUseAndAccess() != null) {
                 TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
                 terms.setDatasetVersion(dsv);
                 dsv.setTermsOfUseAndAccess(terms);
@@ -912,7 +912,7 @@ public class DatasetVersion implements Serializable {
      * database, run the value through special formatting.
      */
     public List<String[]> getDatasetContacts(boolean getDisplayValues) {
-        List <String[]> retList = new ArrayList<>();
+        List<String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addContributor = true;
             String contributorName = "";
@@ -933,7 +933,7 @@ public class DatasetVersion implements Serializable {
 
                     }
                     if (addContributor) {
-                        String[] datasetContributor = new String[] {contributorName, contributorAffiliation};
+                        String[] datasetContributor = new String[]{contributorName, contributorAffiliation};
                         retList.add(datasetContributor);
                     }
                 }
@@ -942,8 +942,8 @@ public class DatasetVersion implements Serializable {
         return retList;        
     }
 
-    public List<String[]> getDatasetProducers(){
-        List <String[]> retList = new ArrayList<>();
+    public List<String[]> getDatasetProducers() {
+        List<String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addContributor = true;
             String contributorName = "";
@@ -963,7 +963,7 @@ public class DatasetVersion implements Serializable {
 
                     }
                     if (addContributor) {
-                        String[] datasetContributor = new String[] {contributorName, contributorAffiliation};
+                        String[] datasetContributor = new String[]{contributorName, contributorAffiliation};
                         retList.add(datasetContributor);
                     }
                 }
@@ -974,7 +974,7 @@ public class DatasetVersion implements Serializable {
 
     public List<DatasetAuthor> getDatasetAuthors() {
         //TODO get "List of Authors" from datasetfieldvalue table
-        List <DatasetAuthor> retList = new ArrayList<>();
+        List<DatasetAuthor> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addAuthor = true;
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
@@ -990,10 +990,10 @@ public class DatasetVersion implements Serializable {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
                             datasetAuthor.setAffiliation(subField);
                         }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)){
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)) {
                              datasetAuthor.setIdType(subField.getRawValue());
                         }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)){
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)) {
                             datasetAuthor.setIdValue(subField.getDisplayValue());
                         }
                     }
@@ -1047,7 +1047,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public List<String> getTimePeriodsCovered() {
-        List <String> retList = new ArrayList<>();
+        List<String> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.timePeriodCovered)) {
                 for (DatasetFieldCompoundValue timePeriodValue : dsf.getDatasetFieldCompoundValues()) {
@@ -1437,7 +1437,7 @@ public class DatasetVersion implements Serializable {
         return keywords;
     }
     
-    public List<String> getDatasetProducerNames(){
+    public List<String> getDatasetProducerNames() {
         List<String> producerNames = new ArrayList<String>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.producer)) {
@@ -1467,9 +1467,9 @@ public class DatasetVersion implements Serializable {
     
     public Date getCitationDate() {
         DatasetField citationDate = getDatasetField(this.getDataset().getCitationDateDatasetFieldType());        
-        if (citationDate != null && citationDate.getDatasetFieldType().getFieldType().equals(FieldType.DATE)){          
+        if (citationDate != null && citationDate.getDatasetFieldType().getFieldType().equals(FieldType.DATE)) {          
             try {  
-                return new SimpleDateFormat("yyyy").parse( citationDate.getValue() );
+                return new SimpleDateFormat("yyyy").parse(citationDate.getValue());
             } catch (ParseException ex) {
                 Logger.getLogger(DatasetVersion.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -1645,7 +1645,7 @@ public class DatasetVersion implements Serializable {
         return serverName + "/dataset.xhtml?id=" + dset.getId() + "&versionId=" + this.getId();
     } 
 
-    public String getReturnToFilePageURL (String serverName, Dataset dset, DataFile dataFile){
+    public String getReturnToFilePageURL(String serverName, Dataset dset, DataFile dataFile) {
         if (serverName == null || dataFile == null) {
             return null;
         }
@@ -1699,11 +1699,11 @@ public class DatasetVersion implements Serializable {
          */
         if (this.isReleased()) {
             return versionNumber + "." + minorVersionNumber;
-        } else if (this.isDraft()){
+        } else if (this.isDraft()) {
             return VersionState.DRAFT.toString();
-        } else if (this.isDeaccessioned()){
+        } else if (this.isDeaccessioned()) {
             return versionNumber + "." + minorVersionNumber;
-        } else{
+        } else {
             return versionNumber + "." + minorVersionNumber;            
         }
         //     return VersionState.DEACCESSIONED.name();
@@ -1877,9 +1877,9 @@ public class DatasetVersion implements Serializable {
             if (authorAffiliation != null) {
                 affiliation = datasetAuthor.getAffiliation().getValue();
             }
-            JsonObject entity = PersonOrOrgUtil.getPersonOrOrganization(name, false, (identifierAsUrl!=null));
-            String givenName= entity.containsKey("givenName") ? entity.getString("givenName"):null;
-            String familyName= entity.containsKey("familyName") ? entity.getString("familyName"):null;
+            JsonObject entity = PersonOrOrgUtil.getPersonOrOrganization(name, false, (identifierAsUrl != null));
+            String givenName = entity.containsKey("givenName") ? entity.getString("givenName") : null;
+            String familyName = entity.containsKey("familyName") ? entity.getString("familyName") : null;
             
             if (entity.getBoolean("isPerson")) {
                 // Person
@@ -1894,7 +1894,7 @@ public class DatasetVersion implements Serializable {
                     author.add("affiliation", Json.createObjectBuilder().add("@type", "Organization").add("name", affiliation));
                 }
                 //Currently all possible identifier URLs are for people not Organizations
-                if(identifierAsUrl != null) {
+                if (identifierAsUrl != null) {
                     author.add("sameAs", identifierAsUrl);
                     //Legacy - not sure if these are still useful
                     author.add("@id", identifierAsUrl);
@@ -2040,7 +2040,7 @@ public class DatasetVersion implements Serializable {
          */
         TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess();
         if (terms != null) {
-            job.add("license",DatasetUtil.getLicenseURI(this));
+            job.add("license", DatasetUtil.getLicenseURI(this));
         }
         
         String installationBrandName = BrandingUtil.getInstallationBrandName();

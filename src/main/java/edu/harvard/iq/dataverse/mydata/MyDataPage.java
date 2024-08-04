@@ -66,56 +66,56 @@ public class MyDataPage implements java.io.Serializable {
     private long totalUserDataverseCount = 0;
     private long totalUserDatasetCount = 0;
     
-    private void msg(String s){
+    private void msg(String s) {
         System.out.println(s);
     }
     
-    private void msgt(String s){
+    private void msgt(String s) {
         msg("-------------------------------");
         msg(s);
         msg("-------------------------------");
     }
 
-    public void setTotalUserDatasetCount(long cnt){
+    public void setTotalUserDatasetCount(long cnt) {
         this.totalUserDatasetCount = cnt;
     }    
-    public void setTotalUserDataverseCount(long cnt){
+    public void setTotalUserDataverseCount(long cnt) {
         this.totalUserDataverseCount = cnt;
     }    
-    public void setTotalUserFileCount(long cnt){
+    public void setTotalUserFileCount(long cnt) {
         this.totalUserFileCount = cnt;
     }    
 
-    public long getTotalUserDatasetCount(){
+    public long getTotalUserDatasetCount() {
         return this.totalUserDatasetCount;
     }    
-    public long getTotalUserDataverseCount(){
+    public long getTotalUserDataverseCount() {
         return this.totalUserDataverseCount;
     }
-    public long getTotalUserFileCount(){
+    public long getTotalUserFileCount() {
         return this.totalUserFileCount;
     }
     
-    public boolean hasFilterParams(){
+    public boolean hasFilterParams() {
         return this.filterParams != null;
     }
     
-    public List<String[]> getRoleInfoForCheckboxes(){
-        if (this.rolePermissionHelper == null){
+    public List<String[]> getRoleInfoForCheckboxes() {
+        if (this.rolePermissionHelper == null) {
             init();
         }
         List<String[]> retVal = this.rolePermissionHelper.getRoleInfoForCheckboxes();
-        if (retVal != null){
+        if (retVal != null) {
             return retVal;
         } else {
             return new ArrayList<>();
         }
     }
     
-    public List<String[]> getValidityInfoForCheckboxes(){
+    public List<String[]> getValidityInfoForCheckboxes() {
         return Arrays.asList(
-            new String[] {"true", "valid", BundleUtil.getStringFromBundle("valid")},
-            new String[] {"false", "incomplete", BundleUtil.getStringFromBundle("incomplete")}
+            new String[]{"true", "valid", BundleUtil.getStringFromBundle("valid")},
+            new String[]{"false", "incomplete", BundleUtil.getStringFromBundle("incomplete")}
         );
     }
 
@@ -123,32 +123,32 @@ public class MyDataPage implements java.io.Serializable {
         return JvmSettings.UI_SHOW_VALIDITY_FILTER.lookupOptional(Boolean.class).orElse(false);
     }
            
-    public String getRetrieveDataFullAPIPath(){
+    public String getRetrieveDataFullAPIPath() {
         return DataRetrieverAPI.retrieveDataFullAPIPath;
     }
     
-    public boolean isSuperuser(){
+    public boolean isSuperuser() {
         
-        if (this.isSuperuserLoggedIn == null){
+        if (this.isSuperuserLoggedIn == null) {
             this.setIsSuperUserLoggedIn();
         }
         return this.isSuperuserLoggedIn;
         
     }
     
-    private void setIsSuperUserLoggedIn(){
+    private void setIsSuperUserLoggedIn() {
         
         // Is this an authenticated user?
         //
-        if ((session.getUser() == null)||(!session.getUser().isAuthenticated())){ 
+        if ((session.getUser() == null) || (!session.getUser().isAuthenticated())) { 
              this.isSuperuserLoggedIn = false;             
              return;
         }
          
         // Is this a user?
         //
-        authUser =  (AuthenticatedUser)session.getUser();
-        if (authUser==null){
+        authUser = (AuthenticatedUser) session.getUser();
+        if (authUser == null) {
             this.isSuperuserLoggedIn = false;
             return;
         }
@@ -176,7 +176,7 @@ public class MyDataPage implements java.io.Serializable {
         HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
 
         DataverseRequest dataverseRequest = new DataverseRequest(authUser, httpServletRequest);
-        this.filterParams = new MyDataFilterParams(dataverseRequest,  MyDataFilterParams.defaultDvObjectTypes, null, null, null, null);
+        this.filterParams = new MyDataFilterParams(dataverseRequest, MyDataFilterParams.defaultDvObjectTypes, null, null, null, null);
         
         
         // Temp DataverseRolePermissionHelper -- not in its normal role but for creating initial checkboxes
@@ -187,16 +187,16 @@ public class MyDataPage implements java.io.Serializable {
         return null;
     }
     
-    public String getAuthUserIdentifier(){
-        if (this.authUser==null){
+    public String getAuthUserIdentifier() {
+        if (this.authUser == null) {
             return null;
         }
         return MyDataUtil.formatUserIdentifierForMyDataForm(this.authUser.getIdentifier());
     }
     
-    private List<DataverseRole> getRolesUsedToCreateCheckboxes(DataverseRequest dataverseRequest){
+    private List<DataverseRole> getRolesUsedToCreateCheckboxes(DataverseRequest dataverseRequest) {
 
-        if (dataverseRequest==null){
+        if (dataverseRequest == null) {
             throw new NullPointerException("dataverseRequest cannot be null");
         }
         // Initialize the role checboxes
@@ -205,9 +205,9 @@ public class MyDataPage implements java.io.Serializable {
         
         // (1) For a superuser, show all the roles--in case they want to
         //    see another user's "My Data"
-        if (authUser.isSuperuser()){
+        if (authUser.isSuperuser()) {
             roleList = dataverseRoleService.findAll();
-        }else{
+        } else {
             // (2) For a regular users
             roleList = roleAssigneeService.getAssigneeDataverseRoleFor(dataverseRequest);
         
@@ -220,13 +220,13 @@ public class MyDataPage implements java.io.Serializable {
         return roleList;
     }
         
-    public DataverseRolePermissionHelper getRolePermissionHelper(){
+    public DataverseRolePermissionHelper getRolePermissionHelper() {
         return this.rolePermissionHelper;
     }
 
     
     
-    public List<String[]> getPublishedStatesForMyDataPage(){
+    public List<String[]> getPublishedStatesForMyDataPage() {
         return MyDataFilterParams.getPublishedStatesForMyDataPage();
     }
     

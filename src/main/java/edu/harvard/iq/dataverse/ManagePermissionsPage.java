@@ -259,39 +259,39 @@ public class ManagePermissionsPage implements java.io.Serializable {
         return !(defaultContributorRoleAlias.equals(DataverseRole.EDITOR) || defaultContributorRoleAlias.equals(DataverseRole.CURATOR));
     }
     
-    public String getCustomDefaultContributorRoleName(){
-        if (dvObject instanceof Dataverse && isCustomDefaultContributorRole() ){           
-            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.name") : roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId()).getName();
+    public String getCustomDefaultContributorRoleName() {
+        if (dvObject instanceof Dataverse && isCustomDefaultContributorRole()) {           
+            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.name") : roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias, dvObject.getId()).getName();
         } else {
             return "";
         }
     }
     
-    public String getCustomDefaultContributorRoleAlias(){
-        if (dvObject instanceof Dataverse && isCustomDefaultContributorRole()){
-            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? DataverseRole.NONE : roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId()).getAlias();
+    public String getCustomDefaultContributorRoleAlias() {
+        if (dvObject instanceof Dataverse && isCustomDefaultContributorRole()) {
+            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? DataverseRole.NONE : roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias, dvObject.getId()).getAlias();
         } else {
             return "";
         }
     }
     
-    public void  setCustomDefaultContributorRoleAlias(String dummy){
+    public void  setCustomDefaultContributorRoleAlias(String dummy) {
         //dummy method for interface
     }
     
-    public void  setCustomDefaultContributorRoleName(String dummy){
+    public void  setCustomDefaultContributorRoleName(String dummy) {
         //dummy method for interface
     }
     
-    public String getCustomDefaultContributorRoleDescription(){
-        if (dvObject instanceof Dataverse  && isCustomDefaultContributorRole()){
-            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.decription" ) :roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias,dvObject.getId() ).getDescription();
+    public String getCustomDefaultContributorRoleDescription() {
+        if (dvObject instanceof Dataverse && isCustomDefaultContributorRole()) {
+            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.decription") : roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias, dvObject.getId()).getDescription();
         } else {
             return "";
         }
     }
     
-    public void  setCustomDefaultContributorRoleDescription(String dummy){
+    public void  setCustomDefaultContributorRoleDescription(String dummy) {
         //dummy method for interface
     }
 
@@ -354,8 +354,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
                     commandEngine.submit(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, dvRequestService.getDataverseRequest(), dv));
                     JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.defaultPermissionDataverseUpdated"));
                 } catch (PermissionException ex) {
-                    JH.addMessage(FacesMessage.SEVERITY_ERROR,  BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"),
-                            BundleUtil.getStringFromBundle("permission.permissionsMissing" , Arrays.asList(ex.getRequiredPermissions().toString())));
+                    JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"),
+                            BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(ex.getRequiredPermissions().toString())));
 
                 } catch (CommandException ex) {
                     JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"));
@@ -397,7 +397,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         showNoMessages();
     }
 
-    public List<RoleAssignee> completeRoleAssignee( String query ) {
+    public List<RoleAssignee> completeRoleAssignee(String query) {
         return roleAssigneeService.filterRoleAssignees(query, dvObject, roleAssignSelectedRoleAssignees);
     }
 
@@ -445,7 +445,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         return null;
     }
 
-    public String getAssignedRoleObjectTypes(){
+    public String getAssignedRoleObjectTypes() {
         String retString = "";
         if (selectedRoleId != null) {
             /* SEK 09/15/2016 SEK commenting out for now
@@ -456,19 +456,19 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 retString = dvLabel;
             }
             */
-            if (dataverseRolePermissionHelper.hasDatasetPermissions(selectedRoleId) && dvObject instanceof Dataverse){
+            if (dataverseRolePermissionHelper.hasDatasetPermissions(selectedRoleId) && dvObject instanceof Dataverse) {
                 String dsLabel = BundleUtil.getStringFromBundle("datasets");
-                if(!retString.isEmpty()) {
-                    retString +=", " +  dsLabel;
+                if (!retString.isEmpty()) {
+                    retString += ", " + dsLabel;
                 } else {
                     retString = dsLabel;
                 }
 
             }
-            if (dataverseRolePermissionHelper.hasFilePermissions(selectedRoleId)){
+            if (dataverseRolePermissionHelper.hasFilePermissions(selectedRoleId)) {
                 String filesLabel = BundleUtil.getStringFromBundle("files");
-                if(!retString.isEmpty()) {
-                    retString +=", " + filesLabel;
+                if (!retString.isEmpty()) {
+                    retString += ", " + filesLabel;
                 } else {
                     retString = filesLabel;
                 }
@@ -478,8 +478,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
         return null;
     }
 
-    public String getDefinitionLevelString(){
-        if (dvObject != null){
+    public String getDefinitionLevelString() {
+        if (dvObject != null) {
             if (dvObject instanceof Dataverse) return BundleUtil.getStringFromBundle("dataverse");
             if (dvObject instanceof Dataset) return BundleUtil.getStringFromBundle("dataset");
         }
@@ -489,7 +489,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
     public void assignRole(ActionEvent evt) {
         logger.info("Got to assignRole");
         List<RoleAssignee> selectedRoleAssigneesList = getRoleAssignSelectedRoleAssignees();
-        if ( selectedRoleAssigneesList == null ) {
+        if (selectedRoleAssigneesList == null) {
             logger.info("** SELECTED role asignees is null");
             selectedRoleAssigneesList = new LinkedList<>();
         }
@@ -531,7 +531,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             );
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.roleAssignedToFor", args));
             // don't notify if role = file downloader and object is not released
-            if (!(r.getAlias().equals(DataverseRole.FILE_DOWNLOADER) && !dvObject.isReleased()) ){
+            if (!(r.getAlias().equals(DataverseRole.FILE_DOWNLOADER) && !dvObject.isReleased())) {
                 notifyRoleChange(ra, UserNotification.Type.ASSIGNROLE);
             }
 
@@ -601,7 +601,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             } catch (PermissionException ex) {
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotSaved"), BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(ex.getRequiredPermissions().toString())));
             } catch (CommandException ex) {
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotSaved").concat(" " + ex.getMessage()) );
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotSaved").concat(" " + ex.getMessage()));
                 logger.log(Level.SEVERE, "Error saving role: " + ex.getMessage(), ex);
             }
         }

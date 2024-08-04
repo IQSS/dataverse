@@ -13,7 +13,7 @@ import jakarta.persistence.Version;
  *
  * @author skraffmiller
  */
-public class DatasetTopicClass  {
+public class DatasetTopicClass {
 
     private DatasetVersion datasetVersion;
     public DatasetVersion getDatasetVersion() {

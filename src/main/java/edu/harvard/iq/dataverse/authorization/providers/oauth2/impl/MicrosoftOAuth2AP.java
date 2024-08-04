@@ -17,11 +17,11 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
  *
  * @author
  */
-public class MicrosoftOAuth2AP extends AbstractOAuth2AuthenticationProvider{
+public class MicrosoftOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 
     private static final Logger logger = Logger.getLogger(MicrosoftOAuth2AP.class.getCanonicalName());
 
-    public MicrosoftOAuth2AP(String aClientId, String aClientSecret){
+    public MicrosoftOAuth2AP(String aClientId, String aClientSecret) {
         this.id = "microsoft";
         this.title = "Microsoft";
         this.clientId = aClientId;
@@ -31,14 +31,14 @@ public class MicrosoftOAuth2AP extends AbstractOAuth2AuthenticationProvider{
     }
 
     @Override
-    public DefaultApi20 getApiInstance(){
+    public DefaultApi20 getApiInstance() {
         return MicrosoftAzureActiveDirectory20Api.instance();
     }
 
     @Override
     protected ParsedUserResponse parseUserResponse(final String responseBody) {
-        try ( StringReader rdr = new StringReader(responseBody);
-              JsonReader jrdr = Json.createReader(rdr) )  {
+        try (StringReader rdr = new StringReader(responseBody);
+              JsonReader jrdr = Json.createReader(rdr)) {
             JsonObject response = jrdr.readObject();
             AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
                     response.getString("givenName", ""),
@@ -48,7 +48,7 @@ public class MicrosoftOAuth2AP extends AbstractOAuth2AuthenticationProvider{
             String persistentUserId = response.getString("id");
             String username = response.getString("userPrincipalName");
             return new ParsedUserResponse(displayInfo, persistentUserId, username,
-                    (displayInfo.getEmailAddress().length() > 0 ? Collections.singletonList(displayInfo.getEmailAddress()) : Collections.emptyList() )
+                    (displayInfo.getEmailAddress().length() > 0 ? Collections.singletonList(displayInfo.getEmailAddress()) : Collections.emptyList())
             );
         }
     }

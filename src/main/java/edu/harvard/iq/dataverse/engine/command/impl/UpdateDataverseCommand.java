@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  * Update an existing dataverse.
  * @author michael
  */
-@RequiredPermissions( Permission.EditDataverse )
+@RequiredPermissions(Permission.EditDataverse)
 public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
         private static final Logger logger = Logger.getLogger(UpdateDataverseCommand.class.getName());
 	
@@ -35,22 +35,22 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
     private boolean datasetsReindexRequired = false;
 
 	public UpdateDataverseCommand(Dataverse editedDv, List<DatasetFieldType> facetList, List<Dataverse> featuredDataverseList, 
-                    DataverseRequest aRequest,  List<DataverseFieldTypeInputLevel> inputLevelList ) {
+                    DataverseRequest aRequest, List<DataverseFieldTypeInputLevel> inputLevelList) {
             super(aRequest, editedDv);
             this.editedDv = editedDv;
             // add update template uses this command but does not
             // update facet list or featured dataverses
-            if (facetList != null){
+            if (facetList != null) {
                this.facetList = new ArrayList<>(facetList); 
             } else {
                this.facetList = null;
             }
-            if (featuredDataverseList != null){
+            if (featuredDataverseList != null) {
                 this.featuredDataverseList = new ArrayList<>(featuredDataverseList);
             } else {
                 this.featuredDataverseList = null;
             }
-            if (inputLevelList != null){
+            if (inputLevelList != null) {
                this.inputLevelList = new ArrayList<>(inputLevelList); 
             } else {
                this.inputLevelList = null;
@@ -84,24 +84,24 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
             
             Dataverse result = ctxt.dataverses().save(editedDv);
             
-            if ( facetList != null ) {
+            if (facetList != null) {
                 ctxt.facets().deleteFacetsFor(result);
-                int i=0;
-                for ( DatasetFieldType df : facetList ) {
+                int i = 0;
+                for (DatasetFieldType df : facetList) {
                     ctxt.facets().create(i++, df.getId(), result.getId());
                 }
             }
-            if ( featuredDataverseList != null ) {
+            if (featuredDataverseList != null) {
                 ctxt.featuredDataverses().deleteFeaturedDataversesFor(result);
-                int i=0;
-                for ( Object obj : featuredDataverseList ) {
+                int i = 0;
+                for (Object obj : featuredDataverseList) {
                     Dataverse dv = (Dataverse) obj;
                     ctxt.featuredDataverses().create(i++, dv.getId(), result.getId());
                 }
             }
-            if ( inputLevelList != null ) {
+            if (inputLevelList != null) {
                 ctxt.fieldTypeInputLevels().deleteFacetsFor(result);
-                for ( DataverseFieldTypeInputLevel obj : inputLevelList ) {               
+                for (DataverseFieldTypeInputLevel obj : inputLevelList) {               
                     ctxt.fieldTypeInputLevels().create(obj);
                 }
             }

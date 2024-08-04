@@ -69,7 +69,7 @@ public class FilesIT {
      * 
      * @return 
      */
-    private String createUserGetToken(){
+    private String createUserGetToken() {
         Response createUser = UtilIT.createRandomUser();
         msg(createUser.toString());
         msg(createUser.prettyPrint());
@@ -85,7 +85,7 @@ public class FilesIT {
     }
     
     
-    private String createDataverseGetAlias(String apiToken){
+    private String createDataverseGetAlias(String apiToken) {
         
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         //createDataverseResponse.prettyPrint();
@@ -96,7 +96,7 @@ public class FilesIT {
     }
     
     
-    private Integer createDatasetGetId(String dataverseAlias, String apiToken){
+    private Integer createDatasetGetId(String dataverseAlias, String apiToken) {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
@@ -173,7 +173,7 @@ public class FilesIT {
     public void test_002_AddFileBadDatasetId() {
         msgt("test_002_AddFileNullFileId");
          // Create user
-        String apiToken =createUserGetToken();
+        String apiToken = createUserGetToken();
 
         // Create Dataset
         String datasetId = "cat"; //createDatasetGetId(dataverseAlias, apiToken);
@@ -358,7 +358,7 @@ public class FilesIT {
 
         String pathToFileWrongCtype = "src/main/webapp/resources/images/ajax-loading.gif";
          msgt("origFilePid: " + origFilePid);
-        Response replaceRespWrongCtype  = UtilIT.replaceFile(origFileId.toString(), pathToFileWrongCtype, apiToken);
+        Response replaceRespWrongCtype = UtilIT.replaceFile(origFileId.toString(), pathToFileWrongCtype, apiToken);
         
         msgt(replaceRespWrongCtype.prettyPrint());
         
@@ -665,7 +665,7 @@ public class FilesIT {
         String updateDescription = "New description.";
         String updateCategory = "New category";
         //"junk" passed below is to test that it is discarded
-        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        String updateJsonString = "{\"description\":\"" + updateDescription + "\",\"categories\":[\"" + updateCategory + "\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
         Response updateMetadataFailResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
         updateMetadataFailResponse.prettyPrint();
         updateMetadataFailResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
@@ -675,7 +675,7 @@ public class FilesIT {
         //Adding an additional fileMetadata update tests after this to ensure updating replaced files works
         msg("Update file metadata for new file");
         //"junk" passed below is to test that it is discarded
-        System.out.print("params: " +  String.valueOf(newDfId) + " " + updateJsonString + " " + apiToken);
+        System.out.print("params: " + String.valueOf(newDfId) + " " + updateJsonString + " " + apiToken);
         Response updateMetadataResponse = UtilIT.updateFileMetadata(String.valueOf(newDfId), updateJsonString, apiToken);
         updateMetadataResponse.prettyPrint();
         updateMetadataResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -704,7 +704,7 @@ public class FilesIT {
         String delDescription = "Deleted description.";
         String deletedCategory = "Deleted category";
         //"junk" passed below is to test that it is discarded
-        String deletedJsonString = "{\"description\":\""+delDescription+"\",\"categories\":[\""+deletedCategory+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        String deletedJsonString = "{\"description\":\"" + delDescription + "\",\"categories\":[\"" + deletedCategory + "\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
         Response updateMetadataFailResponseDeleted = UtilIT.updateFileMetadata(newDfId.toString(), deletedJsonString, apiToken);
         updateMetadataFailResponseDeleted.prettyPrint();
         assertEquals(BAD_REQUEST.getStatusCode(), updateMetadataFailResponseDeleted.getStatusCode()); 
@@ -781,7 +781,7 @@ public class FilesIT {
         // Replace file with non-existent Id
         // -------------------------
         pathToFile2 = "src/main/webapp/resources/images/cc0.png";
-        Long fakeFileId = origFileId+10;
+        Long fakeFileId = origFileId + 10;
         Response replaceResp2 = UtilIT.replaceFile(fakeFileId.toString(), pathToFile2, apiToken);
 
         msgt("non-existent id: " + replaceResp.prettyPrint());
@@ -1247,7 +1247,7 @@ public class FilesIT {
         String category = "A category";
         String provFreeForm = "provenance is great";
         String label = "acoollabel.tab";
-        String jsonString = "{\"description\":\""+description+"\",\"label\":\""+label+"\",\"provFreeForm\":\""+provFreeForm+"\",\"categories\":[{\"name\":\""+category+"\"}],\"forceReplace\":false}";
+        String jsonString = "{\"description\":\"" + description + "\",\"label\":\"" + label + "\",\"provFreeForm\":\"" + provFreeForm + "\",\"categories\":[{\"name\":\"" + category + "\"}],\"forceReplace\":false}";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, jsonString, apiToken);
         Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
         
@@ -1281,7 +1281,7 @@ public class FilesIT {
         String updateDataFileTag = "Survey";
         String updateLabel = "newName.tab";
         //"junk" passed below is to test that it is discarded
-        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"label\":\""+updateLabel+"\",\"categories\":[\""+updateCategory+"\"],\"dataFileTags\":[\""+updateDataFileTag+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        String updateJsonString = "{\"description\":\"" + updateDescription + "\",\"label\":\"" + updateLabel + "\",\"categories\":[\"" + updateCategory + "\"],\"dataFileTags\":[\"" + updateDataFileTag + "\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
         Response updateMetadataResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
         assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());  
         //String updateMetadataResponseString = updateMetadataResponse.body().asString();
@@ -1319,10 +1319,10 @@ public class FilesIT {
 
         // Create user
         String apiToken = createUserGetToken();
-        System.out.println("api token: "+apiToken);
+        System.out.println("api token: " + apiToken);
         // Create Dataverse
         String dataverseAlias = createDataverseGetAlias(apiToken);
-        System.out.println("dataverseAlias: "+dataverseAlias);
+        System.out.println("dataverseAlias: " + dataverseAlias);
 
         // Create Dataset
         Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
@@ -1850,7 +1850,7 @@ public class FilesIT {
         // Create Dataset
         String datasetId = createDatasetGetId(dataverseAlias, apiToken).toString();
         
-        msgt("dataset id: "+datasetId);
+        msgt("dataset id: " + datasetId);
        
         String testFileName = "dataverseproject.png";
         String pathToFile = "src/main/webapp/resources/images/" + testFileName;
@@ -1885,7 +1885,7 @@ public class FilesIT {
         // Expected values in the output: 
         String expectedTitleTopFolder = "Index of folder /";
         String expectedLinkTopFolder = folderName + "/";
-        String expectedLinkAhrefTopFolder = "/api/datasets/"+datasetId+"/dirindex/?version=" + DS_VERSION_DRAFT + "&folder=subfolder";
+        String expectedLinkAhrefTopFolder = "/api/datasets/" + datasetId + "/dirindex/?version=" + DS_VERSION_DRAFT + "&folder=subfolder";
         
         String expectedTitleSubFolder = "Index of folder /" + folderName;
         String expectedLinkAhrefSubFolder = "/api/access/datafile/" + folderName + "/" + dataFileId;
@@ -1926,13 +1926,13 @@ public class FilesIT {
 
     }
     
-    private void msg(String m){
+    private void msg(String m) {
         System.out.println(m);
     }
-    private void dashes(){
+    private void dashes() {
         msg("----------------");
     }
-    private void msgt(String m){
+    private void msgt(String m) {
         dashes(); msg(m); dashes();
     }
 
@@ -2663,7 +2663,7 @@ public class FilesIT {
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
         
-        System.out.println("dataset id: "+datasetId);
+        System.out.println("dataset id: " + datasetId);
         
         Response checkQuotaResponse = UtilIT.checkCollectionQuota(dataverseAlias, apiToken);
         checkQuotaResponse.then().assertThat().statusCode(OK.getStatusCode());
@@ -2821,7 +2821,7 @@ public class FilesIT {
         byte[] rawDigestBytes = messageDigest.digest();
         String tabularFileMD5calculated = FileUtil.checksumDigestToString(rawDigestBytes);
         
-        msgt("md5 of the downloaded file (saved without the variable name header): "+tabularFileMD5calculated);
+        msgt("md5 of the downloaded file (saved without the variable name header): " + tabularFileMD5calculated);
         
         assertEquals(tabularFileMD5, tabularFileMD5calculated);
 
@@ -2869,7 +2869,7 @@ public class FilesIT {
         rawDigestBytes = messageDigest.digest();
         tabularFileMD5calculated = FileUtil.checksumDigestToString(rawDigestBytes);
         
-        msgt("md5 of the downloaded file (saved with the variable name header): "+tabularFileMD5calculated);
+        msgt("md5 of the downloaded file (saved with the variable name header): " + tabularFileMD5calculated);
         
         assertEquals(tabularFileMD5, tabularFileMD5calculated);
 

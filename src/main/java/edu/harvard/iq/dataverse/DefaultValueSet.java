@@ -21,7 +21,7 @@ import jakarta.persistence.OneToMany;
  * @author skraffmiller
  */
 @Entity
-public class DefaultValueSet implements Serializable{
+public class DefaultValueSet implements Serializable {
         
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +33,7 @@ public class DefaultValueSet implements Serializable{
         this.id = id;
     }
     
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String name;
     public String getName() {
         return name;
@@ -42,7 +42,7 @@ public class DefaultValueSet implements Serializable{
         this.name = name;
     }
     
-   @OneToMany(mappedBy="defaultValueSet", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+   @OneToMany(mappedBy = "defaultValueSet", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetFieldDefaultValue> datasetFieldDefaultValues; 
 
     public List<DatasetFieldDefaultValue> getDatasetFieldDefaultValues() {

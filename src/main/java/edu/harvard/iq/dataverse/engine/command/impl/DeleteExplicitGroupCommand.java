@@ -12,7 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  *
  * @author michael
  */
-@RequiredPermissions( Permission.ManageDataversePermissions )
+@RequiredPermissions(Permission.ManageDataversePermissions)
 public class DeleteExplicitGroupCommand extends AbstractVoidCommand {
     
     private final ExplicitGroup explicitGroup;
@@ -32,7 +32,7 @@ public class DeleteExplicitGroupCommand extends AbstractVoidCommand {
               + "WHERE containedexplicitgroups_id=" + merged.getId()
         ).executeUpdate();
 
-        ctxt.explicitGroups().removeGroup( merged );
+        ctxt.explicitGroups().removeGroup(merged);
         
     }
     

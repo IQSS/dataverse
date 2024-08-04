@@ -57,7 +57,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     private File tempDir;
     private File uploadedFile;
     private File uploadedFileFooter;
-    private Dataverse editDv= new Dataverse();
+    private Dataverse editDv = new Dataverse();
     private HtmlInputText linkUrlInput;
     private HtmlInputText taglineInput;
  
@@ -123,9 +123,9 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         } catch (IOException e) {
             throw new RuntimeException("Error deleting temp directory", e); // improve error handling
         }
-        uploadedFile=null;
-        uploadedFileFooter=null;
-        tempDir=null;
+        uploadedFile = null;
+        uploadedFileFooter = null;
+        tempDir = null;
     }
     
     public void checkboxListener() {
@@ -145,10 +145,10 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         }        
         
         
-        if (editDv.getOwner()==null) {
+        if (editDv.getOwner() == null) {
             editDv.setThemeRoot(true);
         }
-        if (editDv.getDataverseTheme()==null && editDv.isThemeRoot()) {
+        if (editDv.getDataverseTheme() == null && editDv.isThemeRoot()) {
             editDv.setDataverseTheme(initDataverseTheme());
             
         }
@@ -202,7 +202,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
    
     
     public String getTempDirName() {
-        if (tempDir!=null) {
+        if (tempDir != null) {
             return tempDir.getName();
         } else {
             return null;
@@ -210,11 +210,11 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
     
     public boolean uploadExists() {
-        return uploadedFile!=null;
+        return uploadedFile != null;
     }
 
     public boolean uploadExistsFooter() {
-        return uploadedFileFooter!=null;
+        return uploadedFileFooter != null;
     }
 
     /**
@@ -228,7 +228,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     public void handleImageFooterFileUpload(FileUploadEvent event) {
 
         logger.finer("entering fileUpload");
-        if (this.tempDir==null) {
+        if (this.tempDir == null) {
             createTempDir();
             logger.finer("created tempDir");
         }
@@ -255,7 +255,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     public void handleImageFileUpload(FileUploadEvent event) {
 
             logger.finer("entering fileUpload");
-            if (this.tempDir==null) {
+            if (this.tempDir == null) {
                 createTempDir();
                 logger.finer("created tempDir");
             }
@@ -266,7 +266,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
                 uploadedFile.createNewFile();
             }
             logger.finer("created file");
-            Files.copy(uFile.getInputStream(), uploadedFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(uFile.getInputStream(), uploadedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             logger.finer("copied inputstream to file");
             editDv.getDataverseTheme().setLogo(uFile.getFileName());
 
@@ -276,7 +276,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             throw new RuntimeException("Error uploading logo file", e); // improve error handling
         }
         // If needed, set the default values for the logo
-        if (editDv.getDataverseTheme().getLogoFormat()==null) {
+        if (editDv.getDataverseTheme().getLogoFormat() == null) {
             editDv.getDataverseTheme().setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
         }
         logger.finer("end handelImageFileUpload");
@@ -293,14 +293,14 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
 
     public boolean getInheritCustomization() {
-        boolean inherit= editDv==null ? true : !editDv.getThemeRoot();
+        boolean inherit = editDv == null ? true : !editDv.getThemeRoot();
          return inherit;
     }
     
     public void setInheritCustomization(boolean inherit) {
         editDv.setThemeRoot(!inherit);
         if (!inherit) {
-            if (editDv.getDataverseTheme(true)==null) {
+            if (editDv.getDataverseTheme(true) == null) {
                 editDv.setDataverseTheme(initDataverseTheme());
             }
         }
@@ -312,7 +312,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
     
     public String cancel() {
-         return "dataverse.xhtml?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
+         return "dataverse.xhtml?faces-redirect=true&alias=" + editDv.getAlias();  // go to dataverse page 
     }
     
     
@@ -320,7 +320,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         // If this Dv isn't the root, delete the uploaded file and remove theme
         // before saving.
         if (!editDv.isThemeRoot()) {
-            uploadedFile=null;
+            uploadedFile = null;
             editDv.setDataverseTheme(null);
         }
 
@@ -330,7 +330,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         if (!exectThemeCommand(cmd))
             return null;
 
-        if (uploadedFileFooter!=null){
+        if (uploadedFileFooter != null) {
             cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFileFooter, dvRequestService.getDataverseRequest(), "FOOTER");
             if (!exectThemeCommand(cmd))
                 return null;
@@ -347,11 +347,11 @@ public class ThemeWidgetFragment implements java.io.Serializable {
               this.cleanupTempDirectory(); 
         }
         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.theme.success"));    
-        return "dataverse.xhtml?faces-redirect=true&alias="+editDv.getAlias();  // go to dataverse page 
+        return "dataverse.xhtml?faces-redirect=true&alias=" + editDv.getAlias();  // go to dataverse page 
     }
 
 
-    public  boolean exectThemeCommand(Command<Dataverse> cmd){
+    public  boolean exectThemeCommand(Command<Dataverse> cmd) {
         try {
             commandEngine.submit(cmd);
         } catch (Exception ex) {

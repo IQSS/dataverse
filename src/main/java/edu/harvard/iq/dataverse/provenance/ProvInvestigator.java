@@ -28,9 +28,9 @@ public class ProvInvestigator {
         
     }
     
-    public HashMap<String,ProvEntityFileData> startRecurseNames(String jsonString) {
+    public HashMap<String, ProvEntityFileData> startRecurseNames(String jsonString) {
         JsonParser parser = new JsonParser();
-        HashMap<String,ProvEntityFileData> provJsonParsedEntities = new HashMap<>();
+        HashMap<String, ProvEntityFileData> provJsonParsedEntities = new HashMap<>();
         com.google.gson.JsonObject jsonObject = parser.parse(jsonString).getAsJsonObject();
         recurseNames(jsonObject, null, provJsonParsedEntities, false);
         return provJsonParsedEntities;
@@ -49,44 +49,44 @@ public class ProvInvestigator {
      * Current parsing code does not parse json arrays. My understanding of the schema is that these do not take place
      * Schema: https://www.w3.org/Submission/2013/SUBM-prov-json-20130424/schema
      */
-    protected JsonElement recurseNames(JsonElement element, String outerKey, HashMap<String,ProvEntityFileData> provJsonParsedEntities, boolean atEntity) {
+    protected JsonElement recurseNames(JsonElement element, String outerKey, HashMap<String, ProvEntityFileData> provJsonParsedEntities, boolean atEntity) {
         //we need to know when we are inside of entity 
         //we also need to know when we are inside of each entity so we correctly connect the values
-        if(element.isJsonObject()) {
+        if (element.isJsonObject()) {
             com.google.gson.JsonObject jsonObject = element.getAsJsonObject();
-            Set<Map.Entry<String,JsonElement>> entrySet = jsonObject.entrySet();
+            Set<Map.Entry<String, JsonElement>> entrySet = jsonObject.entrySet();
             entrySet.forEach((s) -> {
-                if(atEntity) {
+                if (atEntity) {
                     String key = s.getKey();
                     
-                    if("name".equals(key) || key.endsWith(":name")) {
+                    if ("name".equals(key) || key.endsWith(":name")) {
                         ProvEntityFileData e = provJsonParsedEntities.get(outerKey);
                         e.fileName = s.getValue().getAsString();
-                    } else if("type".equals(key) || key.endsWith(":type")) {
-                        if(s.getValue().isJsonObject()) {
-                            for ( Map.Entry tEntry : s.getValue().getAsJsonObject().entrySet()) {
+                    } else if ("type".equals(key) || key.endsWith(":type")) {
+                        if (s.getValue().isJsonObject()) {
+                            for (Map.Entry tEntry : s.getValue().getAsJsonObject().entrySet()) {
                                 String tKey = (String) tEntry.getKey();
-                                if("type".equals(tKey) || tKey.endsWith(":type")) {
+                                if ("type".equals(tKey) || tKey.endsWith(":type")) {
                                     ProvEntityFileData e = provJsonParsedEntities.get(outerKey);
 
                                     String value = tEntry.getValue().toString();
                                     e.fileType = value;
                                 }
                             }                            
-                        } else if(s.getValue().isJsonPrimitive()){
+                        } else if (s.getValue().isJsonPrimitive()) {
                             ProvEntityFileData e = provJsonParsedEntities.get(outerKey);
                             String value = s.getValue().getAsString();
                             e.fileType = value;
                         }
                     }
                 } 
-                if(null != outerKey && (outerKey.equals("entity") || outerKey.endsWith(":entity"))) {
+                if (null != outerKey && (outerKey.equals("entity") || outerKey.endsWith(":entity"))) {
                     //we are storing the entity name both as the key and in the object, the former for access and the later for ease of use when converted to a list
                     //Also, when we initialize the entity the freeform is set to null, after this recursion
                     provJsonParsedEntities.put(s.getKey(), new ProvEntityFileData(s.getKey(), null, null));
-                    recurseNames(s.getValue(),s.getKey(), provJsonParsedEntities, true);
+                    recurseNames(s.getValue(), s.getKey(), provJsonParsedEntities, true);
                 } else {
-                    recurseNames(s.getValue(),s.getKey(), provJsonParsedEntities, false);
+                    recurseNames(s.getValue(), s.getKey(), provJsonParsedEntities, false);
                 }
                 
             });
@@ -148,7 +148,7 @@ public class ProvInvestigator {
         "    \"dependencies\": {\n" +
         "        \"exclusiveMaximum\": [ \"maximum\" ],\n" +
         "        \"exclusiveMinimum\": [ \"minimum\" ]\n" +
-        "    },"+
+        "    }," +
         "    \"default\": {},\n" +
         "    \"properties\": {\n" +
         "        \"id\": {\n" +
@@ -364,7 +364,7 @@ public class ProvInvestigator {
         "            \"items\": { \"type\": \"string\" },\n" +
         "            \"minItems\": 1,\n" +
         "            \"uniqueItems\": true\n" +
-        "        },\n"+
+        "        },\n" +
         "        \"typedLiteral\": {\n" +
         "            \"title\": \"PROV-JSON Typed Literal\",\n" +
         "            \"type\": \"object\",\n" +

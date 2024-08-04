@@ -44,7 +44,7 @@ class MailServiceBeanTest {
         }
         
         @ParameterizedTest
-        @CsvSource(value  = {
+        @CsvSource(value = {
             // with name in admin mail address
             "Foo Bar <foo@bar.org>, NULL, NULL, Foo Bar",
             // without name, but installation branding name set

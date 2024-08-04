@@ -45,7 +45,7 @@ public class BannerMessage implements Serializable {
     }
     
     
-    public String getDisplayValue(){        
+    public String getDisplayValue() {        
         String retVal = null;
         for (BannerMessageText msgTxt : this.getBannerMessageTexts()) {
             if (msgTxt.getLang().equals(BundleUtil.getCurrentLocale().getLanguage())) {

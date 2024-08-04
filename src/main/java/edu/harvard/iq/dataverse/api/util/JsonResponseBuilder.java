@@ -120,7 +120,7 @@ public class JsonResponseBuilder {
      */
     public JsonResponseBuilder requestContentType(HttpServletRequest request) {
         String type = request.getContentType();
-        this.entityBuilder.add("requestContentType", ((type==null) ? JsonValue.NULL : Json.createValue(type)));
+        this.entityBuilder.add("requestContentType", ((type == null) ? JsonValue.NULL : Json.createValue(type)));
         return this;
     }
     
@@ -212,20 +212,20 @@ public class JsonResponseBuilder {
         return log(logger, level, ex, false);
     }
     public JsonResponseBuilder log(Logger logger, Level level, Optional<Throwable> ex, boolean includeStackTrace) {
-        if ( ! logger.isLoggable(level) || alreadyLogged )
+        if (!logger.isLoggable(level) || alreadyLogged)
             return this;
         
         StringBuilder metadata = new StringBuilder("");
         this.entityBuilder.build()
-            .forEach((k,v) -> metadata.append("_"+k+"="+v.toString()+";"));
+            .forEach((k, v) -> metadata.append("_" + k + "=" + v.toString() + ";"));
         // remove trailing ;
-        metadata.deleteCharAt(metadata.length()-1);
+        metadata.deleteCharAt(metadata.length() - 1);
         
         if (ex.isPresent()) {
             ex.get().printStackTrace();
             metadata.append("|");
             logger.log(level, metadata.toString(), ex);
-            if(includeStackTrace) {
+            if (includeStackTrace) {
                 logger.log(level, ExceptionUtils.getStackTrace(ex.get()));
             }
         } else {
@@ -264,7 +264,7 @@ public class JsonResponseBuilder {
         }
         if (queryString != null) {
             // filter for unblock-key parameter and mask the key
-            String maskedQueryString = queryString.replaceAll(ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM+"=.+?\\b", ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM+"=****");
+            String maskedQueryString = queryString.replaceAll(ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM + "=.+?\\b", ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM + "=****");
             url.append("?").append(maskedQueryString);
         }
         

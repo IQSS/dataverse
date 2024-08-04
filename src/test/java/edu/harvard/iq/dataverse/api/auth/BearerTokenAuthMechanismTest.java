@@ -62,7 +62,7 @@ class BearerTokenAuthMechanismTest {
     void testFindUserFromRequest_no_OidcProvider() {
         Mockito.when(sut.authSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)).thenReturn(Collections.emptySet());
         
-        ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer " +TEST_API_KEY);
+        ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer " + TEST_API_KEY);
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then

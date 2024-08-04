@@ -35,7 +35,7 @@ public class BagItFileHandlerFactory implements Serializable {
     @PostConstruct
     public void initialize() {
         boolean bagitHandlerEnabled = settingsService.isTrue(BAGIT_HANDLER_ENABLED_SETTING, false);
-        if(!bagitHandlerEnabled) {
+        if (!bagitHandlerEnabled) {
             logger.info("action=initialize completed message=bagit-file-handler-disabled");
             bagItFileHandler = null;
             return;
@@ -55,7 +55,7 @@ public class BagItFileHandlerFactory implements Serializable {
 
     private Integer getIntegerSetting(String settingsKey, Integer defaultValue) {
         String settingsValue = settingsService.get(settingsKey);
-        if(settingsValue != null) {
+        if (settingsValue != null) {
             try {
                 return Integer.valueOf(settingsValue);
             } catch (Exception e) {

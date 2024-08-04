@@ -11,11 +11,11 @@ import java.util.Set;
  */
 public class CollectionLiterals {
     
-    public static <T> Set<T> setOf( T... args ) {
+    public static <T> Set<T> setOf(T... args) {
         return new HashSet<>(Arrays.asList(args));
     }
     
-    public static <T> List<T> listOf( T... args ) {
+    public static <T> List<T> listOf(T... args) {
         return Arrays.asList(args);
     }
 }

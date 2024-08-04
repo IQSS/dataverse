@@ -95,9 +95,9 @@ public class IndexBatchServiceBean {
             solrIds.addAll(indexService.findPermissionsInSolrOnly());
         } catch (SearchException e) {
             logger.info("SearchException in clearOrphans: " + e.getMessage());
-            response.add("response from clearOrphans","SearchException: " + e.getMessage() );
+            response.add("response from clearOrphans", "SearchException: " + e.getMessage());
         } 
-        logger.info("found " + solrIds.size()+ " orphan documents");
+        logger.info("found " + solrIds.size() + " orphan documents");
         IndexResponse resultOfSolrDeletionAttempt = solrIndexService.deleteMultipleSolrIds(solrIds);
         logger.info(resultOfSolrDeletionAttempt.getMessage());
         response.add("resultOfSolrDeletionAttempt", resultOfSolrDeletionAttempt.getMessage());
@@ -211,7 +211,7 @@ public class IndexBatchServiceBean {
         long indexAllTimeEnd = System.currentTimeMillis();
         String timeElapsed = "index all took " + (indexAllTimeEnd - indexAllTimeBegin) + " milliseconds";
         logger.info(timeElapsed);
-        if (datasetFailureCount + dataverseFailureCount > 0){
+        if (datasetFailureCount + dataverseFailureCount > 0) {
             String failureMessage = "There were index failures. " + dataverseFailureCount + " dataverse(s) and " + datasetFailureCount + " dataset(s) failed to index. Please check the log for more information.";
             logger.info(failureMessage);            
         }
@@ -265,7 +265,7 @@ public class IndexBatchServiceBean {
             indexService.indexDatasetInNewTransaction(childId);
         }
         long end = System.currentTimeMillis();
-        if (datasetFailureCount + dataverseFailureCount > 0){
+        if (datasetFailureCount + dataverseFailureCount > 0) {
             logger.info("There were index failures. " + dataverseFailureCount + " dataverse(s) and " + datasetFailureCount + " dataset(s) failed to index. Please check the log for more information.");            
         }
         logger.info(dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed. Total time to index " + (end - start) + ".");

@@ -22,7 +22,7 @@ public class DatasetAuthorTest {
     }, nullValues = "NULL")
     void getIdentifierAsUrl(String idType, String idValue, String expectedIdentifierAsUrl) {
         DatasetAuthor datasetAuthor = new DatasetAuthor();
-        if (idType !=null && idValue != null) {
+        if (idType != null && idValue != null) {
             datasetAuthor.setIdType(idType);
             datasetAuthor.setIdValue(idValue);
         }

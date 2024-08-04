@@ -15,7 +15,7 @@ import java.util.Set;
  * @author Naomi
  */
 // no annotations here, since permissions are dynamically decided
-public class GetDataverseCommand extends AbstractCommand<Dataverse>{
+public class GetDataverseCommand extends AbstractCommand<Dataverse> {
     private final Dataverse dv;
 
     public GetDataverseCommand(DataverseRequest aRequest, Dataverse anAffectedDataverse) {

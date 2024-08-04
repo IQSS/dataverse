@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  *
  * @author michael
  */
-@RequiredPermissions( Permission.ManageDataversePermissions )
+@RequiredPermissions(Permission.ManageDataversePermissions)
 public class GetExplicitGroupCommand extends AbstractCommand<ExplicitGroup> {
 
     private final String groupAliasInOwner;

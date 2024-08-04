@@ -29,7 +29,7 @@ public class GlobalId implements java.io.Serializable {
         this.protocol = protocol;
         this.authority = authority;
         this.identifier = identifier;
-        if(separator!=null) {
+        if (separator != null) {
           this.separator = separator;
         }
         this.urlPrefix = urlPrefix;
@@ -52,7 +52,7 @@ public class GlobalId implements java.io.Serializable {
      * @return {@code true} iff all the fields are non-empty; {@code false} otherwise.
      */
     public boolean isComplete() {
-        return !(isEmpty(protocol)||isEmpty(authority)||isEmpty(identifier));
+        return !(isEmpty(protocol) || isEmpty(authority) || isEmpty(identifier));
     }
     
     public String getProtocol() {
@@ -89,7 +89,7 @@ public class GlobalId implements java.io.Serializable {
     
     public String asURL() {
         URL url = null;
-        if (identifier == null){
+        if (identifier == null) {
             return null;
         }
         try {

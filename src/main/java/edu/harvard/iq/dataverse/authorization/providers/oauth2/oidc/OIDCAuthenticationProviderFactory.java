@@ -35,7 +35,7 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
      * @throws AuthorizationSetupException If {@code aRow} contains malformed data.
      */
     @Override
-    public AuthenticationProvider buildProvider( AuthenticationProviderRow aRow ) throws AuthorizationSetupException {
+    public AuthenticationProvider buildProvider(AuthenticationProviderRow aRow) throws AuthorizationSetupException {
         Map<String, String> factoryData = OAuth2AuthenticationProviderFactory.parseFactoryData(aRow.getFactoryData());
         
         OIDCAuthProvider oidc = new OIDCAuthProvider(

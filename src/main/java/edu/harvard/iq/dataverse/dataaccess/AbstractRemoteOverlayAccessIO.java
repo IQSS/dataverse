@@ -277,7 +277,7 @@ public abstract class AbstractRemoteOverlayAccessIO<T extends DvObject> extends 
                     }
                     // The base store needs the baseStoreIdentifier and not the relative URL (if it exists)
                     int endOfId = storageLocation.indexOf("//");
-                    fullStorageLocation = (endOfId>-1) ? storageLocation.substring(0, endOfId) : storageLocation;
+                    fullStorageLocation = (endOfId > -1) ? storageLocation.substring(0, endOfId) : storageLocation;
 
                     switch (baseDriverType) {
                     case DataAccess.S3:

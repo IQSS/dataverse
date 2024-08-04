@@ -115,7 +115,7 @@ public class WorkflowComment implements Serializable {
         return authenticatedUser;
     }
     
-    public void setAuthenticatedUser(AuthenticatedUser authenticatedUser){
+    public void setAuthenticatedUser(AuthenticatedUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
     }
 
@@ -124,7 +124,7 @@ public class WorkflowComment implements Serializable {
     }
 
     public void setDatasetVersion(DatasetVersion dv) {
-        datasetVersion=dv;
+        datasetVersion = dv;
     }
 
     public boolean isToBeShown() {

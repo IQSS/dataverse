@@ -51,7 +51,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
     final boolean datasetExternallyReleased;
     
     public PublishDatasetCommand(Dataset datasetIn, DataverseRequest aRequest, boolean minor) {
-        this( datasetIn, aRequest, minor, false );
+        this(datasetIn, aRequest, minor, false);
     }
     
     public PublishDatasetCommand(Dataset datasetIn, DataverseRequest aRequest, boolean minor, boolean isPidPrePublished) {
@@ -84,7 +84,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             theDataset.getLatestVersion().setVersionNumber(new Long(1)); // minor release is blocked by #verifyCommandArguments
             theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
             
-        } else if ( minorRelease ) {
+        } else if (minorRelease) {
             theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber()));
             theDataset.getLatestVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber() + 1));
             
@@ -110,14 +110,14 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         
         //ToDo - should this be in onSuccess()? May relate to todo above 
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
-        if ( prePubWf.isPresent() ) {
+        if (prePubWf.isPresent()) {
             // We start a workflow
             theDataset = ctxt.em().merge(theDataset);
             ctxt.em().flush();
             ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased), true);
             return new PublishDatasetResult(theDataset, Status.Workflow);
             
-        } else{
+        } else {
             // We will skip trying to register the global identifiers for datafiles 
             // if "dependent" file-level identifiers are requested, AND the naming 
             // protocol of the dataset global id is different from the 
@@ -183,7 +183,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + getDataset().getOwner().getAlias() + ") has not been published.", this);
         }
         
-        if ( ! getUser().isAuthenticated() ) {
+        if (!getUser().isAuthenticated()) {
             throw new IllegalCommandException("Only authenticated users can release a Dataset. Please authenticate and try again.", this);
         }
         
@@ -193,22 +193,22 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             throw new IllegalCommandException("Dataset must have a valid license or Custom Terms Of Use configured before it can be published.", this);
         }
         
-        if ( (getDataset().isLockedFor(DatasetLock.Reason.Workflow)&&!ctxt.permissions().isMatchingWorkflowLock(getDataset(),request.getUser().getIdentifier(),request.getWFInvocationId())) 
+        if ((getDataset().isLockedFor(DatasetLock.Reason.Workflow) && !ctxt.permissions().isMatchingWorkflowLock(getDataset(), request.getUser().getIdentifier(), request.getWFInvocationId())) 
                 || getDataset().isLockedFor(DatasetLock.Reason.Ingest) 
                 || getDataset().isLockedFor(DatasetLock.Reason.finalizePublication)
                 || getDataset().isLockedFor(DatasetLock.Reason.EditInProgress)) {
             throw new IllegalCommandException("This dataset is locked. Reason: " 
-                    + getDataset().getLocks().stream().map(l -> l.getReason().name()).collect( joining(",") )
+                    + getDataset().getLocks().stream().map(l -> l.getReason().name()).collect(joining(","))
                     + ". Please try publishing later.", this);
         }
         
-        if ( getDataset().isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
+        if (getDataset().isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
             throw new IllegalCommandException("This dataset cannot be published because some files have been found missing or corrupted. " 
                     + ". Please contact support to address this.", this);
         }
         
-        if ( datasetExternallyReleased ) {
-            if ( ! getDataset().getLatestVersion().isReleased() ) {
+        if (datasetExternallyReleased) {
+            if (!getDataset().getLatestVersion().isReleased()) {
                 throw new IllegalCommandException("Latest version of dataset " + getDataset().getIdentifier() + " is not marked as releasd.", this);
             }
                 
@@ -232,16 +232,16 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         Dataset dataset = null;
-        try{
+        try {
             dataset = (Dataset) r;
-        } catch (ClassCastException e){
-            dataset  = ((PublishDatasetResult) r).getDataset();
+        } catch (ClassCastException e) {
+            dataset = ((PublishDatasetResult) r).getDataset();
         }
 
         if (dataset != null) {
             Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
             //A pre-publication workflow will call FinalizeDatasetPublicationCommand itself when it completes
-            if (! prePubWf.isPresent() ) {
+            if (!prePubWf.isPresent()) {
                 logger.fine("From onSuccess, calling FinalizeDatasetPublicationCommand for dataset " + dataset.getGlobalId().asString());
                 ctxt.datasets().callFinalizePublishCommandAsynchronously(dataset.getId(), ctxt, request, datasetExternallyReleased);
             } 

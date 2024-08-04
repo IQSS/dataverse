@@ -25,25 +25,25 @@ public class FieldDTO {
     
     public static FieldDTO createPrimitiveFieldDTO(String typeName, String value) {
         FieldDTO primitive = new FieldDTO();
-        primitive.typeName=typeName;
+        primitive.typeName = typeName;
         primitive.setSinglePrimitive(value);
         return primitive;
     }
     public static FieldDTO createMultiplePrimitiveFieldDTO(String typeName, List<String> values) {
         FieldDTO primitive = new FieldDTO();
-        primitive.typeName=typeName;
+        primitive.typeName = typeName;
         primitive.setMultiplePrimitive(values);
         return primitive;
     }
  public static FieldDTO createMultipleVocabFieldDTO(String typeName, List<String> values) {
         FieldDTO primitive = new FieldDTO();
-        primitive.typeName=typeName;
+        primitive.typeName = typeName;
         primitive.setMultipleVocab(values);
         return primitive;
     }   
     public static FieldDTO createVocabFieldDTO(String typeName, String value) {
         FieldDTO field = new FieldDTO();
-        field.typeName=typeName;
+        field.typeName = typeName;
         field.setSingleVocab(value);
         return field;
         
@@ -51,7 +51,7 @@ public class FieldDTO {
    
     public static FieldDTO createCompoundFieldDTO(String typeName, FieldDTO... value) {
         FieldDTO field = new FieldDTO();
-        field.typeName=typeName;
+        field.typeName = typeName;
         field.setSingleCompound(value);
         return field;
         
@@ -70,9 +70,9 @@ public class FieldDTO {
         field.setMultipleCompound(value);
         return field;
     } 
-    public static FieldDTO createMultipleCompoundFieldDTO(String typeName,List<HashSet<FieldDTO>> compoundList) {
+    public static FieldDTO createMultipleCompoundFieldDTO(String typeName, List<HashSet<FieldDTO>> compoundList) {
         FieldDTO field = new FieldDTO();
-        field.typeName=typeName;
+        field.typeName = typeName;
         field.setMultipleCompound(compoundList);
         return field;
     }
@@ -114,11 +114,11 @@ public class FieldDTO {
 
     public String getSinglePrimitive() {
         
-        return value==null? "": value.getAsString();
+        return value == null ? "" : value.getAsString();
     }
     
     String getSingleVocab() {
-        return value==null? "": value.getAsString();
+        return value == null ? "" : value.getAsString();
     }
     
     public Set<FieldDTO> getSingleCompound() {
@@ -199,8 +199,8 @@ public class FieldDTO {
        
         JsonObject obj = new JsonObject();
         for (FieldDTO fieldDTO : compoundField) {
-            if (fieldDTO!=null) {
-                obj.add(fieldDTO.typeName,gson.toJsonTree(fieldDTO, FieldDTO.class));
+            if (fieldDTO != null) {
+                obj.add(fieldDTO.typeName, gson.toJsonTree(fieldDTO, FieldDTO.class));
             }
         }
   
@@ -236,7 +236,7 @@ public class FieldDTO {
         List<Map<String, FieldDTO>> mapList = new ArrayList<Map<String, FieldDTO>>();
             Map<String, FieldDTO> fieldMap = new HashMap<>();
             for (FieldDTO fieldDTO : fieldList) {
-                if (fieldDTO!=null){
+                if (fieldDTO != null) {
                     fieldMap.put(fieldDTO.typeName, fieldDTO);
                 }
             }
@@ -274,7 +274,7 @@ public class FieldDTO {
         if (multiple) {
             if (typeClass.equals("compound")) {
                 return getMultipleCompound();
-            } else if (typeClass.equals("controlledVocabulary")){
+            } else if (typeClass.equals("controlledVocabulary")) {
                 return getMultipleVocab();
             } else return getMultiplePrimitive();
             
@@ -282,7 +282,7 @@ public class FieldDTO {
         } else {
             if (typeClass.equals("compound")) {
                 return getSingleCompound();
-            } else if (typeClass.equals("controlledVocabulary")){
+            } else if (typeClass.equals("controlledVocabulary")) {
                 return getSingleVocab();
             } else {
                 return getSinglePrimitive();

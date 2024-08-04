@@ -105,15 +105,15 @@ public class DataFileZipper {
 
         if (accessObject != null) {
             Boolean gotOriginal = false;
-            if(getOriginal) {
+            if (getOriginal) {
                 StoredOriginalFile sof = new StoredOriginalFile();
                 StorageIO<DataFile> tempAccessObject = sof.retreive(accessObject);
-                if(null != tempAccessObject) { //If there is an original, use it
+                if (null != tempAccessObject) { //If there is an original, use it
                     gotOriginal = true;
                     accessObject = tempAccessObject; 
                 } 
             }
-            if(!gotOriginal) { //if we didn't get this from sof.retreive we have to open it
+            if (!gotOriginal) { //if we didn't get this from sof.retreive we have to open it
                 accessObject.open();
             }
 

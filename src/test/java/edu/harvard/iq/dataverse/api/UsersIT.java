@@ -77,7 +77,7 @@ public class UsersIT {
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
         //Try changing to already existing username
-        Response changeAuthIdResponseBadAlreadyExists= UtilIT.changeAuthenticatedUserIdentifier(newUsername, usernameOfUserAlreadyExists, superuserApiToken);
+        Response changeAuthIdResponseBadAlreadyExists = UtilIT.changeAuthenticatedUserIdentifier(newUsername, usernameOfUserAlreadyExists, superuserApiToken);
         changeAuthIdResponseBadAlreadyExists.prettyPrint();
         changeAuthIdResponseBadAlreadyExists.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
@@ -104,7 +104,7 @@ public class UsersIT {
     }
     
     @Test
-    public void testMergeAccounts(){
+    public void testMergeAccounts() {
         Response createSuperuser = UtilIT.createRandomUser();
         String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
         String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
@@ -175,7 +175,7 @@ public class UsersIT {
         Response allowAccessRequestsResponse = UtilIT.allowAccessRequests(datasetIdNew.toString(), true, superuserApiToken);
         assertEquals(200, allowAccessRequestsResponse.getStatusCode());
         
-        Response publishDataverseResponseSuper =  UtilIT.publishDataverseViaNativeApi(dataverseAliasSuper, superuserApiToken);
+        Response publishDataverseResponseSuper = UtilIT.publishDataverseViaNativeApi(dataverseAliasSuper, superuserApiToken);
         assertEquals(200, publishDataverseResponseSuper.getStatusCode());
         publishDataverseResponseSuper.prettyPrint();
         
@@ -237,19 +237,19 @@ public class UsersIT {
                 .statusCode(UNAUTHORIZED.getStatusCode());
         
         //After merging user see that old one is gone and new one exists
-        Response getConsumedUserResponse =  UtilIT.getAuthenticatedUser(usernameConsumed, normalApiToken);
+        Response getConsumedUserResponse = UtilIT.getAuthenticatedUser(usernameConsumed, normalApiToken);
         assertEquals(400, getConsumedUserResponse.getStatusCode());
         
-        Response getPersistedUserResponse =  UtilIT.getAuthenticatedUser(targetname, normalApiToken);
+        Response getPersistedUserResponse = UtilIT.getAuthenticatedUser(targetname, normalApiToken);
         assertEquals(200, getPersistedUserResponse.getStatusCode());
         
         //Make sure that you can publish the dataverse/dataset as the newly assigned user
         
-        Response publishDataverseResponse =  UtilIT.publishDataverseViaNativeApi(dataverseAlias, targetToken);
+        Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, targetToken);
         assertEquals(200, publishDataverseResponse.getStatusCode());
         publishDataverseResponse.prettyPrint();
         
-        Response publishDatasetResponse =  UtilIT.publishDatasetViaNativeApi(datasetId, "major", targetToken);
+        Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", targetToken);
         assertEquals(200, publishDatasetResponse.getStatusCode());
         publishDatasetResponse.prettyPrint();
         

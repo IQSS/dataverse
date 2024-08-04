@@ -127,7 +127,7 @@ public class BagValidatorTest {
     @Test
     public void validateChecksums_should_return_error_when_data_provider_do_not_have_file_in_checksum() throws Exception {
         FileDataProvider fileDataProvider = Mockito.spy(createDataProviderWithRandomFiles("bagit.txt"));
-        ManifestChecksum checksums =  new ManifestChecksum(Path.of("test"), BagChecksumType.MD5, Map.of(Path.of("not-found.txt"), "checksum"));
+        ManifestChecksum checksums = new ManifestChecksum(Path.of("test"), BagChecksumType.MD5, Map.of(Path.of("not-found.txt"), "checksum"));
         Path expectedBagRoot = Path.of("");
 
         Mockito.when(manifestReader.getManifestChecksums(fileDataProvider, expectedBagRoot)).thenReturn(Optional.of(checksums));
@@ -137,7 +137,7 @@ public class BagValidatorTest {
         MatcherAssert.assertThat(result.success(), Matchers.is(false));
         MatcherAssert.assertThat(result.getErrorMessage().isEmpty(), Matchers.is(true));
         MatcherAssert.assertThat(result.getFileResults().size(), Matchers.is(checksums.getFileChecksums().size()));
-        for(Path filePath: checksums.getFileChecksums().keySet()) {
+        for (Path filePath : checksums.getFileChecksums().keySet()) {
             MatcherAssert.assertThat(result.getFileResults().get(filePath).isError(), Matchers.is(true));
         }
         Mockito.verify(target, Mockito.times(checksums.getFileChecksums().size())).getMessage(Mockito.eq("bagit.validation.file.not.found"), Mockito.any(Object[].class));
@@ -160,7 +160,7 @@ public class BagValidatorTest {
         MatcherAssert.assertThat(result.success(), Matchers.is(true));
         MatcherAssert.assertThat(result.getErrorMessage().isEmpty(), Matchers.is(true));
         MatcherAssert.assertThat(result.getFileResults().size(), Matchers.is(checksums.getFileChecksums().size()));
-        for(Path filePath: checksums.getFileChecksums().keySet()) {
+        for (Path filePath : checksums.getFileChecksums().keySet()) {
             MatcherAssert.assertThat(result.getFileResults().get(filePath).isSuccess(), Matchers.is(true));
             MatcherAssert.assertThat(result.getFileResults().get(filePath).getMessage(), Matchers.nullValue());
         }
@@ -181,7 +181,7 @@ public class BagValidatorTest {
         MatcherAssert.assertThat(result.success(), Matchers.is(false));
         MatcherAssert.assertThat(result.getErrorMessage().isEmpty(), Matchers.is(true));
         MatcherAssert.assertThat(result.getFileResults().size(), Matchers.is(checksums.getFileChecksums().size()));
-        for(Path filePath: checksums.getFileChecksums().keySet()) {
+        for (Path filePath : checksums.getFileChecksums().keySet()) {
             MatcherAssert.assertThat(result.getFileResults().get(filePath).isError(), Matchers.is(true));
             MatcherAssert.assertThat(result.getFileResults().get(filePath).getMessage(), Matchers.containsString("Invalid checksum"));
         }
@@ -204,8 +204,8 @@ public class BagValidatorTest {
         MatcherAssert.assertThat(result.getErrorMessage().isEmpty(), Matchers.is(true));
         MatcherAssert.assertThat(result.getFileResults().size(), Matchers.is(checksums.getFileChecksums().size()));
         MatcherAssert.assertThat(result.errors(), Matchers.greaterThan(1l));
-        MatcherAssert.assertThat( result.getFileResults().values().stream().filter(item -> item.isPending()).count(), Matchers.greaterThan(1l));
-        MatcherAssert.assertThat( result.getFileResults().values().stream().filter(item -> item.isSuccess()).count(), Matchers.is(0l));
+        MatcherAssert.assertThat(result.getFileResults().values().stream().filter(item -> item.isPending()).count(), Matchers.greaterThan(1l));
+        MatcherAssert.assertThat(result.getFileResults().values().stream().filter(item -> item.isSuccess()).count(), Matchers.is(0l));
 
         Mockito.verify(manifestReader).getManifestChecksums(fileDataProvider, expectedBagRoot);
     }
@@ -246,7 +246,7 @@ public class BagValidatorTest {
         BagChecksumType bagChecksumType = types.get(new Random().nextInt(types.size()));
         Map<Path, String> checksums = new HashMap<>();
         for (Path path : filePaths) {
-            String checksum = validChecksum ?  bagChecksumType.getInputStreamDigester().digest(IOUtils.toInputStream(path.toString(), "UTF-8")) : "invalid";
+            String checksum = validChecksum ? bagChecksumType.getInputStreamDigester().digest(IOUtils.toInputStream(path.toString(), "UTF-8")) : "invalid";
             checksums.put(path, checksum);
         }
         return new ManifestChecksum(Path.of(bagChecksumType.getFileName()), bagChecksumType, checksums);

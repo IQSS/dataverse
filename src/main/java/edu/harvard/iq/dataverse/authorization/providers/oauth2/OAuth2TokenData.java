@@ -28,10 +28,10 @@ import jakarta.persistence.NamedQuery;
  * @author michael
  */
 @NamedQueries({
-    @NamedQuery( name="OAuth2TokenData.findByUserIdAndProviderId",
-                 query = "SELECT d FROM OAuth2TokenData d WHERE d.user.id=:userId AND d.oauthProviderId=:providerId" ),
-    @NamedQuery( name="OAuth2TokenData.deleteByUserIdAndProviderId",
-                 query = "DELETE FROM OAuth2TokenData d WHERE d.user.id=:userId AND d.oauthProviderId=:providerId" )
+    @NamedQuery(name = "OAuth2TokenData.findByUserIdAndProviderId",
+                 query = "SELECT d FROM OAuth2TokenData d WHERE d.user.id=:userId AND d.oauthProviderId=:providerId"),
+    @NamedQuery(name = "OAuth2TokenData.deleteByUserIdAndProviderId",
+                 query = "DELETE FROM OAuth2TokenData d WHERE d.user.id=:userId AND d.oauthProviderId=:providerId")
         
 })
 @Entity
@@ -71,15 +71,15 @@ public class OAuth2TokenData implements Serializable {
      * @param accessTokenResponse The token parsed by the ScribeJava library.
      * @return A new, pre-populated {@link OAuth2TokenData}.
      */
-    public static OAuth2TokenData from( OAuth2AccessToken accessTokenResponse ) {
+    public static OAuth2TokenData from(OAuth2AccessToken accessTokenResponse) {
         OAuth2TokenData retVal = new OAuth2TokenData();
         retVal.setAccessToken(accessTokenResponse.getAccessToken());
-        retVal.setRefreshToken( accessTokenResponse.getRefreshToken() );
-        retVal.setTokenType( accessTokenResponse.getTokenType() );
-        if ( accessTokenResponse.getExpiresIn() != null ) {
-            retVal.setExpiryDate( new Timestamp( System.currentTimeMillis() + accessTokenResponse.getExpiresIn()));
+        retVal.setRefreshToken(accessTokenResponse.getRefreshToken());
+        retVal.setTokenType(accessTokenResponse.getTokenType());
+        if (accessTokenResponse.getExpiresIn() != null) {
+            retVal.setExpiryDate(new Timestamp( System.currentTimeMillis() + accessTokenResponse.getExpiresIn()));
         }
-        retVal.setRawResponse( accessTokenResponse.getRawResponse() );
+        retVal.setRawResponse(accessTokenResponse.getRawResponse());
         
         return retVal;
     }

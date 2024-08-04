@@ -61,7 +61,7 @@ public interface AuthenticationProvider {
      * @throws UnsupportedOperationException if the provider does not support updating passwords.
      * @see #isPasswordUpdateAllowed() 
      */
-    default void updatePassword( String userIdInProvider, String newPassword ) {
+    default void updatePassword(String userIdInProvider, String newPassword) {
         throw new UnsupportedOperationException(this.toString() + " does not implement password updates");
     };
     
@@ -75,7 +75,7 @@ public interface AuthenticationProvider {
      * @throws UnsupportedOperationException if the provider does not support updating passwords.
      * @see #isPasswordUpdateAllowed()
      */
-    default Boolean verifyPassword( String userIdInProvider, String password ) {
+    default Boolean verifyPassword(String userIdInProvider, String password) {
         throw new UnsupportedOperationException(this.toString() + " does not implement password updates");
     };
     
@@ -86,11 +86,11 @@ public interface AuthenticationProvider {
      * @throws UnsupportedOperationException
      * @see #isUserInfoUpdateAllowed() 
      */
-    default void updateUserInfo( String userIdInProvider, AuthenticatedUserDisplayInfo updatedUserData ) {
+    default void updateUserInfo(String userIdInProvider, AuthenticatedUserDisplayInfo updatedUserData) {
         throw new UnsupportedOperationException(this.toString() + " does not implement account detail updates");
     };
     
-    default void deleteUser( String userIdInProvider ) {
+    default void deleteUser(String userIdInProvider) {
         throw new UnsupportedOperationException(this.toString() + " does not implement account deletions");
     }
  
@@ -104,13 +104,13 @@ public interface AuthenticationProvider {
      * @param authProviderId
      * @return 
      */
-    public static String getFriendlyName(String authProviderId){
-        if (authProviderId == null){
+    public static String getFriendlyName(String authProviderId) {
+        if (authProviderId == null) {
             return BundleUtil.getStringFromBundle("authenticationProvider.name.null");
         }
         
         String friendlyName = BundleUtil.getStringFromBundle("authenticationProvider.name." + authProviderId);
-        if (friendlyName == null){
+        if (friendlyName == null) {
             return authProviderId;
         }
         return friendlyName;
@@ -120,7 +120,7 @@ public interface AuthenticationProvider {
      * Given the AuthenticationProvider id, 
      * return the friendly name using the static method
      */
-    default String getFriendlyName(){
+    default String getFriendlyName() {
         // call static method
         return BundleUtil.getStringFromBundle("authentication.human_readable." + this.getId());
     }

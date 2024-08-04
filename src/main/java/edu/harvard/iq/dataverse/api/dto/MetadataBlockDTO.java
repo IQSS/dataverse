@@ -23,7 +23,7 @@ public  class MetadataBlockDTO {
 
         public FieldDTO getField(String typeName) {
             
-            for( FieldDTO field : fields) {
+            for (FieldDTO field : fields) {
                 if (field.getTypeName().equals(typeName)) {
                     return field;
                 }

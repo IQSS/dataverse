@@ -49,7 +49,7 @@ public class S3AccessIOTest {
         System.setProperty("dataverse.files.s3test.label", "S3test");
         System.setProperty("dataverse.files.s3test.bucket-name", "thebucket");
 
-        dataFile.setStorageIdentifier("s3test://thebucket:"+dataFileId);
+        dataFile.setStorageIdentifier("s3test://thebucket:" + dataFileId);
         dataSetAccess = new S3AccessIO<>(dataSet, null, s3client, "s3test");
         dataFileAccess = new S3AccessIO<>(dataFile, null, s3client, "s3test");
     }
@@ -85,7 +85,7 @@ public class S3AccessIOTest {
         String key = dataFileAccess.getMainFileKey();
         
         // then
-        assertEquals(authOwner+"/"+idOwner+"/"+dataFileId, key);
+        assertEquals(authOwner + "/" + idOwner + "/" + dataFileId, key);
     }
     
     @Test

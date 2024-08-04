@@ -61,10 +61,10 @@ public class PasswordValidatorUtil {
         message += "<ul>";
         String optionalGoodStrengthNote = "";
         if (goodStrength > 0) { 
-            optionalGoodStrengthNote = " (" + BundleUtil.getStringFromBundle("passwdVal.passwdReq.goodStrength" , Arrays.asList(Integer.toString(goodStrength))) +")";
+            optionalGoodStrengthNote = " (" + BundleUtil.getStringFromBundle("passwdVal.passwdReq.goodStrength", Arrays.asList(Integer.toString(goodStrength))) + ")";
         }
-        message += "<li " + getColor(errors, ErrorType.TOO_SHORT) + ">" + getOkOrFail(errors, ErrorType.TOO_SHORT) +  BundleUtil.getStringFromBundle("passwdVal.passwdReq.lengthReq" , Arrays.asList(Integer.toString(minLength))) + " " + optionalGoodStrengthNote+ "</li>";
-        message += "<li " + getColor(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) + ">" + getOkOrFail(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) +  getRequiredCharacters(characterRules, numberOfCharacteristics) + "</li>"; 
+        message += "<li " + getColor(errors, ErrorType.TOO_SHORT) + ">" + getOkOrFail(errors, ErrorType.TOO_SHORT) + BundleUtil.getStringFromBundle("passwdVal.passwdReq.lengthReq", Arrays.asList(Integer.toString(minLength))) + " " + optionalGoodStrengthNote + "</li>";
+        message += "<li " + getColor(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) + ">" + getOkOrFail(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) + getRequiredCharacters(characterRules, numberOfCharacteristics) + "</li>"; 
         message += "</ul>";
         boolean repeatingDigitRuleEnabled = Integer.MAX_VALUE != numberOfConsecutiveDigitsAllowed;
         boolean showMayNotBlock = repeatingDigitRuleEnabled || dictionaryEnabled;
@@ -73,10 +73,10 @@ public class PasswordValidatorUtil {
             message += "<ul>";
         }
         if (repeatingDigitRuleEnabled) {
-            message += "<li " + getColor(errors, ErrorType.ILLEGAL_MATCH) + ">" + getOkOrFail(errors, ErrorType.ILLEGAL_MATCH) + BundleUtil.getStringFromBundle("passwdVal.passwdReq.consecutiveDigits" , Arrays.asList(Integer.toString(numberOfConsecutiveDigitsAllowed))) + "</li>";
+            message += "<li " + getColor(errors, ErrorType.ILLEGAL_MATCH) + ">" + getOkOrFail(errors, ErrorType.ILLEGAL_MATCH) + BundleUtil.getStringFromBundle("passwdVal.passwdReq.consecutiveDigits", Arrays.asList(Integer.toString(numberOfConsecutiveDigitsAllowed))) + "</li>";
         }
         if (dictionaryEnabled) {
-            message += "<li " + getColor(errors, ErrorType.ILLEGAL_WORD) + ">" + getOkOrFail(errors, ErrorType.ILLEGAL_WORD) + BundleUtil.getStringFromBundle("passwdVal.passwdReq.dictionaryWords")+"</li>";
+            message += "<li " + getColor(errors, ErrorType.ILLEGAL_WORD) + ">" + getOkOrFail(errors, ErrorType.ILLEGAL_WORD) + BundleUtil.getStringFromBundle("passwdVal.passwdReq.dictionaryWords") + "</li>";
         }
         if (showMayNotBlock) {
             message += "</ul>";
@@ -128,18 +128,18 @@ public class PasswordValidatorUtil {
         int alphabetical = 0; //if upper or lower > 0, alphabetical is irrelevant
         int special = 0;
         
-        for(CharacterRule c : characterRules) {
+        for (CharacterRule c : characterRules) {
 
             String validChars = c.getValidCharacters();
-            if(validChars.equals(EnglishCharacterData.LowerCase.getCharacters())) {
+            if (validChars.equals(EnglishCharacterData.LowerCase.getCharacters())) {
                 lowercase = c.getNumberOfCharacters();
-            } else if(validChars.equals(EnglishCharacterData.UpperCase.getCharacters())) {
+            } else if (validChars.equals(EnglishCharacterData.UpperCase.getCharacters())) {
                 uppercase = c.getNumberOfCharacters();
-            } else if(validChars.equals(EnglishCharacterData.Digit.getCharacters())) {
+            } else if (validChars.equals(EnglishCharacterData.Digit.getCharacters())) {
                 digit = c.getNumberOfCharacters();
-            } else if(validChars.equals(EnglishCharacterData.Alphabetical.getCharacters())) {
+            } else if (validChars.equals(EnglishCharacterData.Alphabetical.getCharacters())) {
                 alphabetical = c.getNumberOfCharacters();
-            } else if(validChars.equals(EnglishCharacterData.Special.getCharacters())) {
+            } else if (validChars.equals(EnglishCharacterData.Special.getCharacters())) {
                 special = c.getNumberOfCharacters();
             } else {
                 //other rules should cause an error before here, but just in case
@@ -150,24 +150,24 @@ public class PasswordValidatorUtil {
         //these below method strings are not in the bundle as this whole method is based in English
         String returnString = "";
         
-        if(lowercase <= 1 && uppercase <= 1 && digit <= 1 && alphabetical <= 1 && special <= 1) {
+        if (lowercase <= 1 && uppercase <= 1 && digit <= 1 && alphabetical <= 1 && special <= 1) {
             returnString = ((uppercase == 1) ? BundleUtil.getStringFromBundle("passwdVal.passwdReq.uppercase") : "")
-                    + ((lowercase == 1) ? ", "+BundleUtil.getStringFromBundle("passwdVal.passwdReq.lowercase") : "")
-                    + ((alphabetical == 1 ) ? ", "+BundleUtil.getStringFromBundle("passwdVal.passwdReq.letter") : "")
-                    + ((digit == 1) ? ", "+BundleUtil.getStringFromBundle("passwdVal.passwdReq.numeral") : "")
-                    + ((special == 1) ? ", "+BundleUtil.getStringFromBundle("passwdVal.passwdReq.special") : "");
+                    + ((lowercase == 1) ? ", " + BundleUtil.getStringFromBundle("passwdVal.passwdReq.lowercase") : "")
+                    + ((alphabetical == 1) ? ", " + BundleUtil.getStringFromBundle("passwdVal.passwdReq.letter") : "")
+                    + ((digit == 1) ? ", " + BundleUtil.getStringFromBundle("passwdVal.passwdReq.numeral") : "")
+                    + ((special == 1) ? ", " + BundleUtil.getStringFromBundle("passwdVal.passwdReq.special") : "");
             
 
             
-            String eachOrSomeCharacteristics = ((characterRules.size()) > numberOfCharacteristics ) ? Integer.toString(numberOfCharacteristics) : BundleUtil.getStringFromBundle("passwdVal.passwdReq.each");
-            return BundleUtil.getStringFromBundle("passwdVal.passwdReq.characteristicsReq" , Arrays.asList(eachOrSomeCharacteristics)) 
+            String eachOrSomeCharacteristics = ((characterRules.size()) > numberOfCharacteristics) ? Integer.toString(numberOfCharacteristics) : BundleUtil.getStringFromBundle("passwdVal.passwdReq.each");
+            return BundleUtil.getStringFromBundle("passwdVal.passwdReq.characteristicsReq", Arrays.asList(eachOrSomeCharacteristics)) 
                     + " " + StringUtils.strip(returnString, " ,");
         } else {
             //if requiring multiple of any character type, we use a different string format
             //this could be made to look nicer, but we don't expect this to be utilized
             returnString = "Fufill " + numberOfCharacteristics + ": At least " + ((uppercase > 0) ? uppercase + " uppercase characters, " : "")
                     + ((lowercase > 0) ? lowercase + " lowercase characters, " : "")
-                    + ((alphabetical > 0 ) ? " letter characters, " : "") 
+                    + ((alphabetical > 0) ? " letter characters, " : "") 
                     + ((digit > 0) ? digit + " numeral characters, " : "")
                     + ((special > 0) ? special + " special characters, " : ""); //then strip
             return StringUtils.strip(returnString, " ,");

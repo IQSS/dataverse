@@ -32,7 +32,7 @@ import jakarta.servlet.http.HttpSession;
  */
 @Named
 @SessionScoped
-public class DataverseSession implements Serializable{
+public class DataverseSession implements Serializable {
     
     /* Note that on logout, variables must be cleared manually in DataverseHeaderFragment*/
     private User user;
@@ -103,7 +103,7 @@ public class DataverseSession implements Serializable{
      * may have been updated outside the session.
      */
     public User getUser(boolean lookupAuthenticatedUserAgain) {
-        if ( user == null ) {
+        if (user == null) {
             user = GuestUser.get();
         }
         if (lookupAuthenticatedUserAgain && user instanceof AuthenticatedUser) {
@@ -141,10 +141,10 @@ public class DataverseSession implements Serializable{
 		// a session, versus an API call with no session - (i.e. /admin/submitToArchive()
 		// which sets the user in the session to pass it through to the underlying command)
         // TODO: reformat to remove tabs etc.
-		if(context != null) {
+		if (context != null) {
           logSvc.log( 
-                      new ActionLogRecord(ActionLogRecord.ActionType.SessionManagement,(aUser==null) ? "logout" : "login")
-                          .setUserIdentifier((aUser!=null) ? aUser.getIdentifier() : (user!=null ? user.getIdentifier() : "") ));
+                      new ActionLogRecord(ActionLogRecord.ActionType.SessionManagement, (aUser == null) ? "logout" : "login")
+                          .setUserIdentifier((aUser != null) ? aUser.getIdentifier() : (user != null ? user.getIdentifier() : "")));
 
           //#3254 - change session id when user changes
           SessionUtil.changeSessionId((HttpServletRequest) context.getExternalContext().getRequest());
@@ -181,7 +181,7 @@ public class DataverseSession implements Serializable{
         }
     }
 
-    public StaticPermissionQuery on( Dataverse d ) {
+    public StaticPermissionQuery on(Dataverse d) {
             return permissionsService.userOn(user, d);
     }
     
@@ -209,10 +209,10 @@ public class DataverseSession implements Serializable{
     
     public void initLocale() {
         
-        if(FacesContext.getCurrentInstance() == null) {
+        if (FacesContext.getCurrentInstance() == null) {
             localeCode = "en";
         }
-        else if (FacesContext.getCurrentInstance().getViewRoot() == null ) {
+        else if (FacesContext.getCurrentInstance().getViewRoot() == null) {
             localeCode = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale().getLanguage();
         }
         else if (FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage().equals("en_US")) {
@@ -222,7 +222,7 @@ public class DataverseSession implements Serializable{
             localeCode = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
         }
         
-        logger.fine("init: locale set to "+localeCode);
+        logger.fine("init: locale set to " + localeCode);
     }
 
     public void updateLocaleInViewRootAndRedirect(String code) {
@@ -246,10 +246,10 @@ public class DataverseSession implements Serializable{
         } 
     }
     
-    public void dismissMessage(BannerMessage message){
+    public void dismissMessage(BannerMessage message) {
                
-        if (message.isDismissibleByUser()){
-            if (user.isAuthenticated()){
+        if (message.isDismissibleByUser()) {
+            if (user.isAuthenticated()) {
                 bannerMessageService.dismissMessageByUser(message, (AuthenticatedUser) user);
             }
 

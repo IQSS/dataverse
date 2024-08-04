@@ -74,7 +74,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author landreev
  */
 
-public class DTAFileReader extends TabularDataFileReader{
+public class DTAFileReader extends TabularDataFileReader {
 
     private static final Logger logger = Logger.getLogger(DTAFileReader.class.getCanonicalName());
 
@@ -118,7 +118,7 @@ public class DTAFileReader extends TabularDataFileReader{
     private static final int[] LENGTH_LABEL = {32, 81};
     private static final int[] LENGTH_NAME = {9, 33};
     private static final int[] LENGTH_FORMAT_FIELD = {7, 12, 49};
-    private static final int[] LENGTH_EXPANSION_FIELD ={0, 2, 4};
+    private static final int[] LENGTH_EXPANSION_FIELD = {0, 2, 4};
     private static final int[] DBL_MV_PWR = {333, 1023};
  
     static {
@@ -138,118 +138,118 @@ public class DTAFileReader extends TabularDataFileReader{
         // experimental version that was never released), it is a completely
         // new development, incompatible with the old format. 
         
-        release105type.put("STRING",  127);
-        release105type.put("BYTE",     98);
-        release105type.put("INT",     105);
-        release105type.put("LONG",    108);
-        release105type.put("FLOAT",   102);
+        release105type.put("STRING", 127);
+        release105type.put("BYTE", 98);
+        release105type.put("INT", 105);
+        release105type.put("LONG", 108);
+        release105type.put("FLOAT", 102);
         release105type.put("DOUBLE0", 100);
         
-        release111type.put("STRING",   0);
-        release111type.put("BYTE",   -5);
-        release111type.put("INT",    -4);
-        release111type.put("LONG",   -3);
-        release111type.put("FLOAT",  -2);
+        release111type.put("STRING", 0);
+        release111type.put("BYTE", -5);
+        release111type.put("INT", -4);
+        release111type.put("LONG", -3);
+        release111type.put("FLOAT", -2);
         release111type.put("DOUBLE", -1);
 
         
         
-        release104constant.put("HEADER",     LENGTH_HEADER[0]);
-        release104constant.put("LABEL",     LENGTH_LABEL[0]);
-        release104constant.put("NAME",      LENGTH_NAME[0]);
-        release104constant.put("FORMAT",    LENGTH_FORMAT_FIELD[0]);
+        release104constant.put("HEADER", LENGTH_HEADER[0]);
+        release104constant.put("LABEL", LENGTH_LABEL[0]);
+        release104constant.put("NAME", LENGTH_NAME[0]);
+        release104constant.put("FORMAT", LENGTH_FORMAT_FIELD[0]);
         release104constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[0]);
-        release104constant.put("DBL_MV_PWR",DBL_MV_PWR[0]);
+        release104constant.put("DBL_MV_PWR", DBL_MV_PWR[0]);
         CONSTATNT_TABLE.put(104, release104constant);
 
-        release105constant.put("HEADER",     LENGTH_HEADER[0]);
-        release105constant.put("LABEL",     LENGTH_LABEL[0]);
-        release105constant.put("NAME",      LENGTH_NAME[0]);
-        release105constant.put("FORMAT",    LENGTH_FORMAT_FIELD[1]);
+        release105constant.put("HEADER", LENGTH_HEADER[0]);
+        release105constant.put("LABEL", LENGTH_LABEL[0]);
+        release105constant.put("NAME", LENGTH_NAME[0]);
+        release105constant.put("FORMAT", LENGTH_FORMAT_FIELD[1]);
         release105constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[1]);
-        release105constant.put("DBL_MV_PWR",DBL_MV_PWR[0]);
+        release105constant.put("DBL_MV_PWR", DBL_MV_PWR[0]);
         CONSTATNT_TABLE.put(105, release105constant);
         
-        release108constant.put("HEADER",     LENGTH_HEADER[1]);
-        release108constant.put("LABEL",     LENGTH_LABEL[1]);
-        release108constant.put("NAME",      LENGTH_NAME[0]);
-        release108constant.put("FORMAT",    LENGTH_FORMAT_FIELD[1]);
+        release108constant.put("HEADER", LENGTH_HEADER[1]);
+        release108constant.put("LABEL", LENGTH_LABEL[1]);
+        release108constant.put("NAME", LENGTH_NAME[0]);
+        release108constant.put("FORMAT", LENGTH_FORMAT_FIELD[1]);
         release108constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[1]);
-        release108constant.put("DBL_MV_PWR",DBL_MV_PWR[1]);
+        release108constant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
         CONSTATNT_TABLE.put(108, release108constant);
         
-        release110constant.put("HEADER",     LENGTH_HEADER[1]);
-        release110constant.put("LABEL",     LENGTH_LABEL[1]);
-        release110constant.put("NAME",      LENGTH_NAME[1]);
-        release110constant.put("FORMAT",    LENGTH_FORMAT_FIELD[1]);
+        release110constant.put("HEADER", LENGTH_HEADER[1]);
+        release110constant.put("LABEL", LENGTH_LABEL[1]);
+        release110constant.put("NAME", LENGTH_NAME[1]);
+        release110constant.put("FORMAT", LENGTH_FORMAT_FIELD[1]);
         release110constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[2]);
-        release110constant.put("DBL_MV_PWR",DBL_MV_PWR[1]);
+        release110constant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
         CONSTATNT_TABLE.put(110, release110constant);
         
-        release111constant.put("HEADER",     LENGTH_HEADER[1]);
-        release111constant.put("LABEL",     LENGTH_LABEL[1]);
-        release111constant.put("NAME",      LENGTH_NAME[1]);
-        release111constant.put("FORMAT",    LENGTH_FORMAT_FIELD[1]);
+        release111constant.put("HEADER", LENGTH_HEADER[1]);
+        release111constant.put("LABEL", LENGTH_LABEL[1]);
+        release111constant.put("NAME", LENGTH_NAME[1]);
+        release111constant.put("FORMAT", LENGTH_FORMAT_FIELD[1]);
         release111constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[2]);
-        release111constant.put("DBL_MV_PWR",DBL_MV_PWR[1]);
+        release111constant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
         CONSTATNT_TABLE.put(111, release111constant);
         
-        release113constant.put("HEADER",     LENGTH_HEADER[1]);
-        release113constant.put("LABEL",     LENGTH_LABEL[1]);
-        release113constant.put("NAME",      LENGTH_NAME[1]);
-        release113constant.put("FORMAT",    LENGTH_FORMAT_FIELD[1]);
+        release113constant.put("HEADER", LENGTH_HEADER[1]);
+        release113constant.put("LABEL", LENGTH_LABEL[1]);
+        release113constant.put("NAME", LENGTH_NAME[1]);
+        release113constant.put("FORMAT", LENGTH_FORMAT_FIELD[1]);
         release113constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[2]);
-        release113constant.put("DBL_MV_PWR",DBL_MV_PWR[1]);
+        release113constant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
         CONSTATNT_TABLE.put(113, release113constant);
         
-        release114constant.put("HEADER",     LENGTH_HEADER[1]);
-        release114constant.put("LABEL",     LENGTH_LABEL[1]);
-        release114constant.put("NAME",      LENGTH_NAME[1]);
-        release114constant.put("FORMAT",    LENGTH_FORMAT_FIELD[2]);
+        release114constant.put("HEADER", LENGTH_HEADER[1]);
+        release114constant.put("LABEL", LENGTH_LABEL[1]);
+        release114constant.put("NAME", LENGTH_NAME[1]);
+        release114constant.put("FORMAT", LENGTH_FORMAT_FIELD[2]);
         release114constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[2]);
-        release114constant.put("DBL_MV_PWR",DBL_MV_PWR[1]);
+        release114constant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
         CONSTATNT_TABLE.put(114, release114constant);
         
-        release115constant.put("HEADER",     LENGTH_HEADER[1]);
-        release115constant.put("LABEL",     LENGTH_LABEL[1]);
-        release115constant.put("NAME",      LENGTH_NAME[1]);
-        release115constant.put("FORMAT",    LENGTH_FORMAT_FIELD[2]);
+        release115constant.put("HEADER", LENGTH_HEADER[1]);
+        release115constant.put("LABEL", LENGTH_LABEL[1]);
+        release115constant.put("NAME", LENGTH_NAME[1]);
+        release115constant.put("FORMAT", LENGTH_FORMAT_FIELD[2]);
         release115constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[2]);
-        release115constant.put("DBL_MV_PWR",DBL_MV_PWR[1]);
+        release115constant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
         CONSTATNT_TABLE.put(115, release115constant);
         
-        byteLengthTable105.put((byte) 98,1);
-        byteLengthTable105.put((byte)105,2);
-        byteLengthTable105.put((byte)108,4);
-        byteLengthTable105.put((byte)102,4);
-        byteLengthTable105.put((byte)100,8);
+        byteLengthTable105.put((byte) 98, 1);
+        byteLengthTable105.put((byte) 105, 2);
+        byteLengthTable105.put((byte) 108, 4);
+        byteLengthTable105.put((byte) 102, 4);
+        byteLengthTable105.put((byte) 100, 8);
         
-        byteLengthTable111.put((byte)-5,1);
-        byteLengthTable111.put((byte)-4,2);
-        byteLengthTable111.put((byte)-3,4);
-        byteLengthTable111.put((byte)-2,4);
-        byteLengthTable111.put((byte)-1,8);
+        byteLengthTable111.put((byte) -5, 1);
+        byteLengthTable111.put((byte) -4, 2);
+        byteLengthTable111.put((byte) -3, 4);
+        byteLengthTable111.put((byte) -2, 4);
+        byteLengthTable111.put((byte) -1, 8);
 
        
-        variableTypeTable105.put((byte) 98,"Byte");
-        variableTypeTable105.put((byte)105,"Integer");
-        variableTypeTable105.put((byte)108,"Long");
-        variableTypeTable105.put((byte)102,"Float");
-        variableTypeTable105.put((byte)100,"Double");
+        variableTypeTable105.put((byte) 98, "Byte");
+        variableTypeTable105.put((byte) 105, "Integer");
+        variableTypeTable105.put((byte) 108, "Long");
+        variableTypeTable105.put((byte) 102, "Float");
+        variableTypeTable105.put((byte) 100, "Double");
         
-        variableTypeTable111.put((byte)-5,"Byte");
-        variableTypeTable111.put((byte)-4,"Integer");
-        variableTypeTable111.put((byte)-3,"Long");
-        variableTypeTable111.put((byte)-2,"Float");
-        variableTypeTable111.put((byte)-1,"Double");
+        variableTypeTable111.put((byte) -5, "Byte");
+        variableTypeTable111.put((byte) -4, "Integer");
+        variableTypeTable111.put((byte) -3, "Long");
+        variableTypeTable111.put((byte) -2, "Float");
+        variableTypeTable111.put((byte) -1, "Double");
 
 
-        variableTypeMap.put("Byte",   -5);
-        variableTypeMap.put("Integer",-4);
-        variableTypeMap.put("Long",   -3);
-        variableTypeMap.put("Float",  -2);
+        variableTypeMap.put("Byte", -5);
+        variableTypeMap.put("Integer", -4);
+        variableTypeMap.put("Long", -3);
+        variableTypeMap.put("Float", -2);
         variableTypeMap.put("Double", -1);
-        variableTypeMap.put("String",  0);
+        variableTypeMap.put("String", 0);
         
 
     }
@@ -262,10 +262,10 @@ public class DTAFileReader extends TabularDataFileReader{
     /** format-related constants */
 
     private static final int DTA_MAGIC_NUMBER_LENGTH = 4;
-    private static final int NVAR_FIELD_LENGTH       = 2;
-    private static final int NOBS_FIELD_LENGTH       = 4;
-    private static final int TIME_STAMP_LENGTH      = 18;
-    private static final int VAR_SORT_FIELD_LENGTH   = 2;
+    private static final int NVAR_FIELD_LENGTH = 2;
+    private static final int NOBS_FIELD_LENGTH = 4;
+    private static final int TIME_STAMP_LENGTH = 18;
+    private static final int VAR_SORT_FIELD_LENGTH = 2;
     private static final int VALUE_LABEL_HEADER_PADDING_LENGTH = 3;
 
 
@@ -314,16 +314,16 @@ public class DTAFileReader extends TabularDataFileReader{
     // stata's calendar
     private static Calendar GCO_STATA = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
 
-    private static String[] DATE_TIME_FORMAT= {
-        "%tc", "%td", "%tw", "%tq","%tm", "%th", "%ty", 
-        "%d",  "%w",  "%q", "%m",  "h", "%tb"
+    private static String[] DATE_TIME_FORMAT = {
+        "%tc", "%td", "%tw", "%tq", "%tm", "%th", "%ty", 
+        "%d", "%w", "%q", "%m", "h", "%tb"
     };
     // New "business calendar format" has been added in Stata 12. -- L.A. 
-    private static String[] DATE_TIME_CATEGORY={
+    private static String[] DATE_TIME_CATEGORY = {
         "time", "date", "date", "date", "date", "date", "date",
         "date", "date", "date", "date", "date", "date"
     };
-    private static Map<String, String> DATE_TIME_FORMAT_TABLE=  new LinkedHashMap<>();
+    private static Map<String, String> DATE_TIME_FORMAT_TABLE = new LinkedHashMap<>();
 
     private static long MILLISECONDS_PER_DAY = 24L * 60 * 60 * 1000;
 
@@ -347,10 +347,10 @@ public class DTAFileReader extends TabularDataFileReader{
         GCO_STATA.set(14, 0); // SS millisecond
 
 
-        STATA_BIAS_TO_EPOCH  = GCO_STATA.getTimeInMillis(); // =  -315619200000
+        STATA_BIAS_TO_EPOCH = GCO_STATA.getTimeInMillis(); // =  -315619200000
         
-        for (int i=0; i<DATE_TIME_FORMAT.length; i++){
-            DATE_TIME_FORMAT_TABLE.put(DATE_TIME_FORMAT[i],DATE_TIME_CATEGORY[i]);
+        for (int i = 0; i < DATE_TIME_FORMAT.length; i++) {
+            DATE_TIME_FORMAT_TABLE.put(DATE_TIME_FORMAT[i], DATE_TIME_CATEGORY[i]);
         }
 
     }
@@ -376,9 +376,9 @@ public class DTAFileReader extends TabularDataFileReader{
     private Map<Integer, Integer> StringLengthTable = new LinkedHashMap<>();
     
 
-    private Map<String, Integer> typeOffsetTable ;
+    private Map<String, Integer> typeOffsetTable;
 
-    private Map<String, Integer> constantTable ;
+    private Map<String, Integer> constantTable;
 
     private Map<Byte, Integer> byteLengthTable;
 
@@ -420,9 +420,9 @@ public class DTAFileReader extends TabularDataFileReader{
      * files.
      */
     
-    private String[] variableTypes=null;
+    private String[] variableTypes = null;
     
-    private String[] dateVariableFormats=null; 
+    private String[] dateVariableFormats = null; 
   
     private int value_label_table_length;
     
@@ -436,7 +436,7 @@ public class DTAFileReader extends TabularDataFileReader{
      * 
      * @param originator a <code>StatDataFileReaderSpi</code> object.
      */
-    public DTAFileReader(TabularDataFileReaderSpi originator){
+    public DTAFileReader(TabularDataFileReaderSpi originator) {
         super(originator);
     }
 
@@ -447,7 +447,7 @@ public class DTAFileReader extends TabularDataFileReader{
      */
     private void init() throws IOException {
         //
-        if (dbgLog.isLoggable(Level.INFO)) dbgLog.info("release number="+releaseNumber);
+        if (dbgLog.isLoggable(Level.INFO)) dbgLog.info("release number=" + releaseNumber);
         
         if (releaseNumber < 111) {
             typeOffsetTable = release105type;
@@ -457,18 +457,18 @@ public class DTAFileReader extends TabularDataFileReader{
             typeOffsetTable = release111type;
             variableTypeTable = variableTypeTable111;
             byteLengthTable = byteLengthTable111;
-            BYTE_MISSING_VALUE   -= MISSING_VALUE_BIAS;
-            INT_MISSIG_VALUE     -= MISSING_VALUE_BIAS;
-            LONG_MISSING_VALUE   -= MISSING_VALUE_BIAS;
+            BYTE_MISSING_VALUE -= MISSING_VALUE_BIAS;
+            INT_MISSIG_VALUE -= MISSING_VALUE_BIAS;
+            LONG_MISSING_VALUE -= MISSING_VALUE_BIAS;
         }
         
-        if (releaseNumber <= 105){
+        if (releaseNumber <= 105) {
             value_label_table_length = 2;
         } else {
             value_label_table_length = 4;
         }
         
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("type-offset table to be used:\n"+typeOffsetTable);
+        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("type-offset table to be used:\n" + typeOffsetTable);
 
         constantTable = CONSTATNT_TABLE.get(releaseNumber);
 
@@ -476,9 +476,9 @@ public class DTAFileReader extends TabularDataFileReader{
         
         dataLabelLength = headerLength - (NVAR_FIELD_LENGTH +
             NOBS_FIELD_LENGTH + TIME_STAMP_LENGTH);
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("data_label_length="+dataLabelLength);
+        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("data_label_length=" + dataLabelLength);
 
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("constant table to be used:\n"+constantTable);
+        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("constant table to be used:\n" + constantTable);
        
 
         doubleNumberFormatter.setGroupingUsed(false);
@@ -509,14 +509,14 @@ public class DTAFileReader extends TabularDataFileReader{
         dbgLog.info("***** DTAFileReader: read() start *****");
         
         if (dataFile != null) {
-            throw new IOException ("this plugin does not support external raw data files");
+            throw new IOException("this plugin does not support external raw data files");
         }
 
         try {
             decodeHeader(stream);
             decodeDescriptors(stream);
             decodeVariableLabels(stream);
-            if (releaseNumber!=104) {
+            if (releaseNumber != 104) {
                 decodeExpansionFields(stream);
             }
             decodeData(stream, storeWithVariableHeader);
@@ -825,10 +825,10 @@ public class DTAFileReader extends TabularDataFileReader{
                         dataVariable.setIntervalContinuous();
                         
                     } else {
-                        throw new IOException("Unrecognized type label: "+typeLabel+" for Stata type value byte "+typeList[i]+".");
+                        throw new IOException("Unrecognized type label: " + typeLabel + " for Stata type value byte " + typeList[i] + ".");
                     }
                 } else {
-                    throw new IOException("No entry in the known types table for Stata type value byte "+typeList[i]+".");
+                    throw new IOException("No entry in the known types table for Stata type value byte " + typeList[i] + ".");
                 }
             } else {
                 // pre-111 string type
@@ -909,7 +909,7 @@ public class DTAFileReader extends TabularDataFileReader{
         }
         int offset_start = 0;
         int offset_end = 0;
-        for (DataVariable dataVariable: dataTable.getDataVariables()) {
+        for (DataVariable dataVariable : dataTable.getDataVariables()) {
             offset_end += length_var_name;
             String vari = new String(Arrays.copyOfRange(variableNameBytes, offset_start,
                     offset_end), "ISO-8859-1");
@@ -1117,7 +1117,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
         dbgLog.fine("***** decodeExpansionFields(): start *****");
         
-        if (stream ==null){
+        if (stream == null) {
             throw new IllegalArgumentException("stream == null!");
         }
         
@@ -1126,8 +1126,8 @@ public class DTAFileReader extends TabularDataFileReader{
         // length is specified by the previous short/int field]
         
         int int_type_expansion_field = constantTable.get("EXPANSION");
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("int_type_expansion_field="+int_type_expansion_field);
-        while(true){
+        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("int_type_expansion_field=" + int_type_expansion_field);
+        while (true) {
             byte[] firstByte = new byte[1];
             byte[] lengthBytes = new byte[int_type_expansion_field];
           
@@ -1138,22 +1138,22 @@ public class DTAFileReader extends TabularDataFileReader{
 
             ByteBuffer bb_field_length = ByteBuffer.wrap(lengthBytes);
 
-            if (isLittleEndian){
+            if (isLittleEndian) {
                 bb_field_length.order(ByteOrder.LITTLE_ENDIAN);
                 dbgLog.fine("byte reversed");
             }
 
             int field_length;
 
-            if (int_type_expansion_field == 2){
+            if (int_type_expansion_field == 2) {
                 field_length = bb_field_length.getShort();
             } else {
                 field_length = bb_field_length.getInt();
             }
             
-            if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("field_length="+field_length);
-            if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("firstByte[0]="+firstByte[0]);
-            if ((field_length + firstByte[0]) == 0){
+            if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("field_length=" + field_length);
+            if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("firstByte[0]=" + firstByte[0]);
+            if ((field_length + firstByte[0]) == 0) {
                 // reached the end of this field
                 break;
             } else {
@@ -2016,8 +2016,8 @@ public class DTAFileReader extends TabularDataFileReader{
 
     private DecodedDateTime decodeDateTimeData(String storageType, String FormatType, String rawDatum) throws IOException {
 
-        if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("(storageType, FormatType, rawDatum)=("+
-        storageType +", " +FormatType +", " +rawDatum+")");
+        if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("(storageType, FormatType, rawDatum)=(" +
+        storageType + ", " + FormatType + ", " + rawDatum + ")");
         /*
          *         Historical note:
                    pseudofunctions,  td(), tw(), tm(), tq(), and th()
@@ -2026,45 +2026,45 @@ public class DTAFileReader extends TabularDataFileReader{
 
         */
         long milliSeconds;
-        String decodedDateTime=null;
+        String decodedDateTime = null;
         String format = null;
 
-        if (FormatType.matches("^%tc.*")){
+        if (FormatType.matches("^%tc.*")) {
             // tc is a relatively new format
             // datum is millisecond-wise
 
             milliSeconds = Math.round(new Double(rawDatum)) + STATA_BIAS_TO_EPOCH;
             decodedDateTime = sdf_ymdhmsS.format(new Date(milliSeconds));
             format = sdf_ymdhmsS.toPattern();
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tc: result="+decodedDateTime+", format = "+format);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tc: result=" + decodedDateTime + ", format = " + format);
             
-        } else if (FormatType.matches("^%t?d.*")){
+        } else if (FormatType.matches("^%t?d.*")) {
             milliSeconds = Long.parseLong(rawDatum) * MILLISECONDS_PER_DAY + STATA_BIAS_TO_EPOCH;
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("milliSeconds="+milliSeconds);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("milliSeconds=" + milliSeconds);
             
             decodedDateTime = sdf_ymd.format(new Date(milliSeconds));
             format = sdf_ymd.toPattern();
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("td:"+decodedDateTime+", format = "+format);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("td:" + decodedDateTime + ", format = " + format);
 
-        } else if (FormatType.matches("^%t?w.*")){
+        } else if (FormatType.matches("^%t?w.*")) {
 
             long weekYears = Math.round(new Double(rawDatum));
-            long left = Math.abs(weekYears)%52L;
+            long left = Math.abs(weekYears) % 52L;
             long years;
-            if (weekYears < 0L){
+            if (weekYears < 0L) {
                 left = 52L - left;
-                if (left == 52L){
+                if (left == 52L) {
                     left = 0L;
                 }
                 //out.println("left="+left);
-                years = (Math.abs(weekYears) -1)/52L +1L;
+                years = (Math.abs(weekYears) - 1) / 52L + 1L;
                 years *= -1L;
             } else {
-                years = weekYears/52L;
+                years = weekYears / 52L;
             }
 
-            String yearString  = Long.toString(1960L + years);
-            String dayInYearString = new DecimalFormat("000").format((left*7) + 1);
+            String yearString = Long.toString(1960L + years);
+            String dayInYearString = new DecimalFormat("000").format((left * 7) + 1);
             String yearDayInYearString = yearString + "-" + dayInYearString;
 
             Date tempDate = null;
@@ -2077,89 +2077,89 @@ public class DTAFileReader extends TabularDataFileReader{
             decodedDateTime = sdf_ymd.format(tempDate.getTime());
             format = sdf_ymd.toPattern();
 
-        } else if (FormatType.matches("^%t?m.*")){
+        } else if (FormatType.matches("^%t?m.*")) {
             // month 
             long monthYears = Math.round(new Double(rawDatum));
-            long left = Math.abs(monthYears)%12L;
+            long left = Math.abs(monthYears) % 12L;
             long years;
-            if (monthYears < 0L){
+            if (monthYears < 0L) {
                 left = 12L - left;
                 //out.println("left="+left);
-                years = (Math.abs(monthYears) -1)/12L +1L;
+                years = (Math.abs(monthYears) - 1) / 12L + 1L;
                 years *= -1L;
             } else {
-                years = monthYears/12L;
+                years = monthYears / 12L;
             }
 
             String month = null;
-            if (left == 12L){
+            if (left == 12L) {
                 left = 0L;
             }
-            Long monthdata = (left+1);
-            month = "-"+twoDigitFormatter.format(monthdata)+"-01";
-            long year  = 1960L + years;
+            Long monthdata = (left + 1);
+            month = "-" + twoDigitFormatter.format(monthdata) + "-01";
+            long year = 1960L + years;
             String monthYear = Long.toString(year) + month;
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("rawDatum="+rawDatum+": monthYear="+monthYear);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("rawDatum=" + rawDatum + ": monthYear=" + monthYear);
             
             decodedDateTime = monthYear;
             format = "yyyy-MM-dd";
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tm:"+decodedDateTime+", format:"+format);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tm:" + decodedDateTime + ", format:" + format);
 
-        } else if (FormatType.matches("^%t?q.*")){
+        } else if (FormatType.matches("^%t?q.*")) {
             // quater
             long quaterYears = Math.round(new Double(rawDatum));
-            long left = Math.abs(quaterYears)%4L;
+            long left = Math.abs(quaterYears) % 4L;
             long years;
-            if (quaterYears < 0L){
+            if (quaterYears < 0L) {
                 left = 4L - left;
                 //out.println("left="+left);
-                years = (Math.abs(quaterYears) -1)/4L +1L;
+                years = (Math.abs(quaterYears) - 1) / 4L + 1L;
                 years *= -1L;
             } else {
-                years = quaterYears/4L;
+                years = quaterYears / 4L;
             }
 
             String quater = null;
 
-            if ((left == 0L) || (left == 4L)){
+            if ((left == 0L) || (left == 4L)) {
                 //quater ="q1"; //
                 quater = "-01-01";
-            } else if (left ==1L) {
+            } else if (left == 1L) {
                 //quater = "q2"; //
                 quater = "-04-01";
-            } else if (left ==2L) {
+            } else if (left == 2L) {
                 //quater = "q3"; //
                 quater = "-07-01";
-            } else if (left ==3L) {
+            } else if (left == 3L) {
                 //quater = "q4"; //
                 quater = "-11-01";
             }
 
-            long year  = 1960L + years;
+            long year = 1960L + years;
             String quaterYear = Long.toString(year) + quater;
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("rawDatum="+rawDatum+": quaterYear="+quaterYear);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("rawDatum=" + rawDatum + ": quaterYear=" + quaterYear);
 
             decodedDateTime = quaterYear;
             format = "yyyy-MM-dd";
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tq:"+decodedDateTime+", format:"+format);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tq:" + decodedDateTime + ", format:" + format);
 
-        } else if (FormatType.matches("^%t?h.*")){
+        } else if (FormatType.matches("^%t?h.*")) {
             // half year
             // odd number:2nd half
             // even number: 1st half
             
             long halvesYears = Long.parseLong(rawDatum);
-            long left = Math.abs(halvesYears)%2L;
+            long left = Math.abs(halvesYears) % 2L;
             long years;
-            if (halvesYears < 0L){
-                years = (Math.abs(halvesYears) -1)/2L +1L;
+            if (halvesYears < 0L) {
+                years = (Math.abs(halvesYears) - 1) / 2L + 1L;
                 years *= -1L;
             } else {
-                years = halvesYears/2L;
+                years = halvesYears / 2L;
             }
 
             String half = null;
-            if (left != 0L){
+            if (left != 0L) {
                 // odd number => 2nd half: "h2"
                 //half ="h2"; //
                 half = "-07-01";
@@ -2168,22 +2168,22 @@ public class DTAFileReader extends TabularDataFileReader{
                 //half = "h1"; //
                 half = "-01-01";
             }
-            long year  = 1960L + years;
+            long year = 1960L + years;
             String halfYear = Long.toString(year) + half;
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("rawDatum="+rawDatum+": halfYear="+halfYear);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("rawDatum=" + rawDatum + ": halfYear=" + halfYear);
             
             decodedDateTime = halfYear;
             format = "yyyy-MM-dd";
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("th:"+decodedDateTime+", format:"+format);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("th:" + decodedDateTime + ", format:" + format);
             
-        } else if (FormatType.matches("^%t?y.*")){
+        } else if (FormatType.matches("^%t?y.*")) {
             // year type's origin is 0 AD
             decodedDateTime = rawDatum;
             format = "yyyy";
-            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("th:"+decodedDateTime);
+            if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("th:" + decodedDateTime);
         } else {
             decodedDateTime = rawDatum;
-            format=null;
+            format = null;
         }
         DecodedDateTime retValue = new DecodedDateTime();
         retValue.decodedDateTime = decodedDateTime;

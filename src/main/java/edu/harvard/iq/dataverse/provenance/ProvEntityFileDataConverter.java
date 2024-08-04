@@ -13,7 +13,7 @@ import jakarta.inject.Inject;
  * To sort our entity objects in the provenance bundle dropdown
  */
 @FacesConverter("provEntityFileDataConverter")
-public class ProvEntityFileDataConverter implements Converter{
+public class ProvEntityFileDataConverter implements Converter {
 
     //@Inject
     ProvPopupFragmentBean provBean = CDI.current().select(ProvPopupFragmentBean.class).get();

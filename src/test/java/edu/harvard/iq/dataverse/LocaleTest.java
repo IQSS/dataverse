@@ -19,9 +19,9 @@ public class LocaleTest {
         Locale l = Locale.getDefault();
         TimeZone tz = TimeZone.getDefault();
     
-        System.out.println("user.language="+l.getLanguage());
-        System.out.println("user.region="+l.getCountry());
-        System.out.println("user.timezone="+tz.getDefault().getID());
+        System.out.println("user.language=" + l.getLanguage());
+        System.out.println("user.region=" + l.getCountry());
+        System.out.println("user.timezone=" + tz.getDefault().getID());
         
         assertThat(l.getLanguage(), equalTo("en"));
         assertThat(l.getCountry(), equalTo("US"));

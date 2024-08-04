@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.List;
 
-@RequiredPermissions( Permission.ManageDataversePermissions )
+@RequiredPermissions(Permission.ManageDataversePermissions)
 public class ListExplicitGroupsCommand extends AbstractCommand<List<ExplicitGroup>> {
 
     public ListExplicitGroupsCommand(DataverseRequest aRequest, DvObject anAffectedDvObject) {

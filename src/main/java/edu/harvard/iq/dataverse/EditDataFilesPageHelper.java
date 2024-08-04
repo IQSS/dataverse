@@ -25,7 +25,7 @@ public class EditDataFilesPageHelper {
     private SettingsWrapper settingsWrapper;
 
     public String consolidateHtmlErrorMessages(List<String> errorMessages) {
-        if(errorMessages == null || errorMessages.isEmpty()) {
+        if (errorMessages == null || errorMessages.isEmpty()) {
             return null;
         }
 
@@ -34,12 +34,12 @@ public class EditDataFilesPageHelper {
 
     public String getHtmlErrorMessage(CreateDataFileResult createDataFileResult) {
         List<String> errors = createDataFileResult.getErrors();
-        if(errors == null || errors.isEmpty()) {
+        if (errors == null || errors.isEmpty()) {
             return null;
         }
 
         Integer maxErrorsToShow = settingsWrapper.getInteger(EditDataFilesPageHelper.MAX_ERRORS_TO_DISPLAY_SETTING, EditDataFilesPageHelper.MAX_ERRORS_TO_DISPLAY);
-        if(maxErrorsToShow < 1) {
+        if (maxErrorsToShow < 1) {
             return null;
         }
 

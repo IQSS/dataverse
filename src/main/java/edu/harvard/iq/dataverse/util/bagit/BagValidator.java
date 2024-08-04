@@ -68,7 +68,7 @@ public class BagValidator {
 
     public boolean hasBagItPackage(FileDataProvider fileDataProvider) {
         Optional<Path> bagItFile = getBagItFile(fileDataProvider.getFilePaths());
-        if(bagItFile.isEmpty()) {
+        if (bagItFile.isEmpty()) {
             return false;
         }
 
@@ -109,12 +109,12 @@ public class BagValidator {
         ExecutorService executor = getExecutorService();
         BagValidation bagValidationResults = new BagValidation(Optional.empty());
         logger.fine(String.format("action=validateChecksums start name=%s type=%s files=%s", fileDataProvider.getName(), manifestChecksums.getType(), manifestChecksums.getFileChecksums().size()));
-        for(Map.Entry<Path, String> checksumEntry:  manifestChecksums.getFileChecksums().entrySet()) {
+        for (Map.Entry<Path, String> checksumEntry :  manifestChecksums.getFileChecksums().entrySet()) {
             Path filePath = checksumEntry.getKey();
             String fileChecksum = checksumEntry.getValue();
             FileValidationResult fileValidationResult = bagValidationResults.addFileResult(filePath);
             Optional<InputStreamProvider> inputStreamProvider = fileDataProvider.getInputStreamProvider(filePath);
-            if(inputStreamProvider.isPresent()) {
+            if (inputStreamProvider.isPresent()) {
                 FileChecksumValidationJob validationJob = new FileChecksumValidationJob(inputStreamProvider.get(), filePath, fileChecksum, manifestChecksums.getType(), fileValidationResult);
                 executor.execute(validationJob);
             } else {
@@ -127,7 +127,7 @@ public class BagValidator {
         try {
             while (!executor.awaitTermination(jobWaitIntervalInSeconds, TimeUnit.SECONDS)) {
                 logger.fine(String.format("action=validateChecksums result=waiting-completion name=%s type=%s files=%s", fileDataProvider.getName(), manifestChecksums.getType(), manifestChecksums.getFileChecksums().size()));
-                if(bagValidationResults.errors() > maxErrors) {
+                if (bagValidationResults.errors() > maxErrors) {
                     logger.info(String.format("action=validateChecksums result=max-errors-reached name=%s type=%s files=%s bagValidationResults=%s", fileDataProvider.getName(), manifestChecksums.getType(), manifestChecksums.getFileChecksums().size(), bagValidationResults.report()));
                     executor.shutdownNow();
                 }
@@ -148,7 +148,7 @@ public class BagValidator {
     }
 
     // Visible for testing
-    String getMessage(String propertyKey, Object... parameters){
+    String getMessage(String propertyKey, Object... parameters) {
         List<String> parameterList = Arrays.stream(parameters).map(param -> param.toString()).collect(Collectors.toList());
         return BundleUtil.getStringFromBundle(propertyKey, parameterList);
     }

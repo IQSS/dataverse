@@ -28,11 +28,11 @@ import jakarta.persistence.Transient;
  *
  * @author skraffmiller
  */
-@Table(indexes = {@Index(columnList="name")
-		, @Index(columnList="owner_id")})
+@Table(indexes = {@Index(columnList = "name")
+		, @Index(columnList = "owner_id")})
 @NamedQueries({
-    @NamedQuery( name="MetadataBlock.listAll", query = "SELECT mdb FROM MetadataBlock mdb"),
-    @NamedQuery( name="MetadataBlock.findByName", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.name=:name")
+    @NamedQuery(name = "MetadataBlock.listAll", query = "SELECT mdb FROM MetadataBlock mdb"),
+    @NamedQuery(name = "MetadataBlock.findByName", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.name=:name")
 })
 @Entity
 public class MetadataBlock implements Serializable, Comparable {
@@ -43,12 +43,12 @@ public class MetadataBlock implements Serializable, Comparable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String name;
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String displayName;
 
-    @Column( name = "namespaceuri", columnDefinition = "TEXT")
+    @Column(name = "namespaceuri", columnDefinition = "TEXT")
     private String namespaceUri;
     
     public Long getId() {
@@ -122,7 +122,7 @@ public class MetadataBlock implements Serializable, Comparable {
     }
     
     @OneToOne
-    @JoinColumn(name="owner_id", unique=false, nullable=true, insertable=true, updatable=true)
+    @JoinColumn(name = "owner_id", unique = false, nullable = true, insertable = true, updatable = true)
     private Dataverse owner;
 
     public Dataverse getOwner() {
@@ -166,7 +166,7 @@ public class MetadataBlock implements Serializable, Comparable {
         return hasRequired;
     }
 
-    public String getIdString(){
+    public String getIdString() {
         return id.toString();
     }
 

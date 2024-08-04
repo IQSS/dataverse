@@ -22,10 +22,10 @@ import jakarta.persistence.Table;
  * @author Leonid Andreev
  */
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="harvesttype")
-		, @Index(columnList="harveststyle")
-		, @Index(columnList="harvestingurl")})
+@Table(indexes = {@Index(columnList = "dataverse_id")
+		, @Index(columnList = "harvesttype")
+		, @Index(columnList = "harveststyle")
+		, @Index(columnList = "harvestingurl")})
 public class HarvestingDataverseConfig implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -40,21 +40,21 @@ public class HarvestingDataverseConfig implements Serializable {
         this.id = id;
     }
     
-    public static final String HARVEST_TYPE_OAI="oai";
-    public static final String HARVEST_TYPE_NESSTAR="nesstar";
+    public static final String HARVEST_TYPE_OAI = "oai";
+    public static final String HARVEST_TYPE_NESSTAR = "nesstar";
     
-    public static final String HARVEST_STYLE_DATAVERSE="dataverse";
+    public static final String HARVEST_STYLE_DATAVERSE = "dataverse";
     // pre-4.0 remote Dataverse:
-    public static final String HARVEST_STYLE_VDC="vdc";
-    public static final String HARVEST_STYLE_ICPSR="icpsr";
-    public static final String HARVEST_STYLE_NESSTAR="nesstar";
-    public static final String HARVEST_STYLE_ROPER="roper";
-    public static final String HARVEST_STYLE_HGL="hgl";
-    public static final String HARVEST_STYLE_DEFAULT="default";
+    public static final String HARVEST_STYLE_VDC = "vdc";
+    public static final String HARVEST_STYLE_ICPSR = "icpsr";
+    public static final String HARVEST_STYLE_NESSTAR = "nesstar";
+    public static final String HARVEST_STYLE_ROPER = "roper";
+    public static final String HARVEST_STYLE_HGL = "hgl";
+    public static final String HARVEST_STYLE_DEFAULT = "default";
 
-    public static final String REMOTE_ARCHIVE_URL_LEVEL_DATAVERSE="dataverse";
-    public static final String REMOTE_ARCHIVE_URL_LEVEL_DATASET="dataset";
-    public static final String REMOTE_ARCHIVE_URL_LEVEL_FILE="file";
+    public static final String REMOTE_ARCHIVE_URL_LEVEL_DATAVERSE = "dataverse";
+    public static final String REMOTE_ARCHIVE_URL_LEVEL_DATASET = "dataset";
+    public static final String REMOTE_ARCHIVE_URL_LEVEL_FILE = "file";
     
     public HarvestingDataverseConfig() {
         this.harvestType = HARVEST_TYPE_OAI; // default harvestType
@@ -62,8 +62,8 @@ public class HarvestingDataverseConfig implements Serializable {
     }
 
     
-    @OneToOne (cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST })
-    @JoinColumn(name="dataverse_id")
+    @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name = "dataverse_id")
     private  Dataverse dataverse;
 
     public Dataverse getDataverse() {
@@ -114,7 +114,7 @@ public class HarvestingDataverseConfig implements Serializable {
         this.archiveUrl = archiveUrl; 
     }
 
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String archiveDescription; 
     
     public String getArchiveDescription() {

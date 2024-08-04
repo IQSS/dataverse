@@ -26,13 +26,13 @@ import org.apache.solr.client.solrj.SolrServerException;
  * @author sarahferry
  */
 
-@RequiredPermissions( Permission.EditDataset )
-public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Dataset>{
+@RequiredPermissions(Permission.EditDataset)
+public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Dataset> {
     private final DatasetLinkingDataverse doomed;
     private final Dataset editedDs;
     private final boolean index;
     
-    public DeleteDatasetLinkingDataverseCommand(DataverseRequest aRequest, Dataset editedDs , DatasetLinkingDataverse doomed, boolean index) {
+    public DeleteDatasetLinkingDataverseCommand(DataverseRequest aRequest, Dataset editedDs, DatasetLinkingDataverse doomed, boolean index) {
         super(aRequest, editedDs);
         this.editedDs = editedDs;
         this.doomed = doomed;
@@ -54,7 +54,7 @@ public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Datase
         } catch (IOException | SolrServerException e) {    
             String failureLogText = "Post delete linking dataverse indexing failed for Dataverse. ";
             failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  doomed.getLinkingDataverse());
+            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, doomed.getLinkingDataverse());
         }
 
         return merged;

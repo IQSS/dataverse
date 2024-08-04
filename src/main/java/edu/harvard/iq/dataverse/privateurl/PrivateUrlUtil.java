@@ -130,8 +130,8 @@ public class PrivateUrlUtil {
     static String getDraftUrl(DatasetVersion draft) {
         if (draft != null) {
             Dataset dataset = draft.getDataset();
-            if (dataset != null && dataset.getGlobalId()!=null) {
-                if ( dataset.getGlobalId().isComplete() ) {
+            if (dataset != null && dataset.getGlobalId() != null) {
+                if (dataset.getGlobalId().isComplete()) {
                     String relativeUrl = "/dataset.xhtml?persistentId=" + dataset.getGlobalId().toString() + "&version=DRAFT";
                     return relativeUrl;
                 }

@@ -99,29 +99,29 @@ public class DataRetrieverAPI extends AbstractApiBean {
      * Constructor
      * 
      */
-    public DataRetrieverAPI(){
+    public DataRetrieverAPI() {
            
     }
     
-    public String getRetrieveDataFullAPIPath(){
+    public String getRetrieveDataFullAPIPath() {
         return DataRetrieverAPI.retrieveDataFullAPIPath;
     }
     
-    public Pager getRandomPagerPager(Integer selectedPage){
-        if (selectedPage == null){
+    public Pager getRandomPagerPager(Integer selectedPage) {
+        if (selectedPage == null) {
             selectedPage = 1;
         }
         
         int itemsPerPage = 10;
         int numResults = 108;//randInt(1,200);
-        int numPages =  numResults / itemsPerPage;
-        if ((numResults % itemsPerPage) > 0){
+        int numPages = numResults / itemsPerPage;
+        if ((numResults % itemsPerPage) > 0) {
             numPages++;
         }
         int chosenPage = 1;
-        if ((selectedPage > numPages)||(selectedPage < 1)){
+        if ((selectedPage > numPages) || (selectedPage < 1)) {
             chosenPage = 1;
-        }else{
+        } else {
             chosenPage = selectedPage;
         }
         //int chosenPage = max(randInt(0, numPages), 1);
@@ -141,32 +141,32 @@ public class DataRetrieverAPI extends AbstractApiBean {
     //private String getUserIdentifier()
     
     
-    public boolean isSuperuser(){
+    public boolean isSuperuser() {
         return (session.getUser() != null) && session.getUser().isSuperuser();
     }
     
-    private AuthenticatedUser getUserFromIdentifier(String userIdentifier){
+    private AuthenticatedUser getUserFromIdentifier(String userIdentifier) {
         
-        if ((userIdentifier==null)||(userIdentifier.isEmpty())){
+        if ((userIdentifier == null) || (userIdentifier.isEmpty())) {
             return null;
         }
         return authenticationService.getAuthenticatedUser(userIdentifier);
     }
     
-    public Map<String, Long> getTotalCountsFromSolrAsJavaMap(DataverseRequest dataverseRequest, MyDataFinder myDataFinder ){
+    public Map<String, Long> getTotalCountsFromSolrAsJavaMap(DataverseRequest dataverseRequest, MyDataFinder myDataFinder) {
         //msgt("getTotalCountsFromSolrAsJavaMap: " + searchUser.getIdentifier());
         SolrQueryResponse solrQueryResponseForCounts = getTotalCountsFromSolr(dataverseRequest, myDataFinder);
-        if (solrQueryResponseForCounts == null){
+        if (solrQueryResponseForCounts == null) {
             logger.severe("DataRetrieverAPI.getTotalCountsFromSolrAsJSON: solrQueryResponseForCounts should not be null");
             return null;
         }
         return solrQueryResponseForCounts.getDvObjectCounts();
     }
     
-    public JsonObjectBuilder getTotalCountsFromSolrAsJSON(DataverseRequest dataverseRequest, MyDataFinder myDataFinder ){
+    public JsonObjectBuilder getTotalCountsFromSolrAsJSON(DataverseRequest dataverseRequest, MyDataFinder myDataFinder) {
     
         SolrQueryResponse solrQueryResponseForCounts = getTotalCountsFromSolr(dataverseRequest, myDataFinder);
-        if (solrQueryResponseForCounts == null){
+        if (solrQueryResponseForCounts == null) {
             logger.severe("DataRetrieverAPI.getTotalCountsFromSolrAsJSON: solrQueryResponseForCounts should not be null");
             return null;
         }
@@ -174,13 +174,13 @@ public class DataRetrieverAPI extends AbstractApiBean {
     }
     
     
-    private SolrQueryResponse getTotalCountsFromSolr(DataverseRequest dataverseRequest, MyDataFinder myDataFinder){
+    private SolrQueryResponse getTotalCountsFromSolr(DataverseRequest dataverseRequest, MyDataFinder myDataFinder) {
         //msgt("getTotalCountsFromSolr: " + searchUser.getIdentifier());
 
-        if (myDataFinder == null){
+        if (myDataFinder == null) {
             throw new NullPointerException("myDataFinder cannot be null");
         }
-        if (dataverseRequest == null){
+        if (dataverseRequest == null) {
             throw new NullPointerException("dataverseRequest cannot be null");
         }
         
@@ -188,7 +188,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // Create new filter params that only check by the User 
         // -------------------------------------------------------
         MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, myDataFinder.getRolePermissionHelper());
-        if (filterParams.hasError()){
+        if (filterParams.hasError()) {
             logger.severe("getTotalCountsFromSolr. filterParams error: " + filterParams.getErrorMessage());           
             return null;
         }
@@ -198,7 +198,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // -------------------------------------------------------
         myDataFinder.initFields();
         myDataFinder.runFindDataSteps(filterParams);
-        if (myDataFinder.hasError()){
+        if (myDataFinder.hasError()) {
             logger.severe("getTotalCountsFromSolr. myDataFinder error: " + myDataFinder.getErrorMessage());           
             return null;            
         }
@@ -207,7 +207,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // Generate filterQueries for total counts
         // -------------------------------------------------------
         List<String> filterQueries = myDataFinder.getSolrFilterQueriesForTotalCounts();
-        if (filterQueries==null){
+        if (filterQueries == null) {
             logger.severe("getTotalCountsFromSolr. filterQueries was null!");
             return null;
         }
@@ -243,12 +243,12 @@ public class DataRetrieverAPI extends AbstractApiBean {
         return solrQueryResponseForCounts;
     }
     
-    private String getJSONErrorString(String jsonMsg, String optionalLoggerMsg){
+    private String getJSONErrorString(String jsonMsg, String optionalLoggerMsg) {
         
-        if (jsonMsg == null){
+        if (jsonMsg == null) {
             throw new NullPointerException("jsonMsg cannot be null");
         }
-        if (optionalLoggerMsg != null){
+        if (optionalLoggerMsg != null) {
             logger.severe(optionalLoggerMsg);
         }
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
@@ -312,17 +312,17 @@ public class DataRetrieverAPI extends AbstractApiBean {
         
        
         List<DvObject.DType> dtypes;
-        if (dvobject_types != null){
+        if (dvobject_types != null) {
             dtypes = dvobject_types;
-        }else{
+        } else {
             dtypes = MyDataFilterParams.defaultDvObjectTypes;
         }
         List<String> pub_states = null;
-        if (published_states != null){
+        if (published_states != null) {
             pub_states = published_states;
         }
         List<Boolean> validities = null;
-        if (filterValidities != null && filterValidities){
+        if (filterValidities != null && filterValidities) {
             validities = datasetValidities;
         }
         
@@ -333,7 +333,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
         
         MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, dtypes, pub_states, roleIds, searchTerm, validities);
-        if (filterParams.hasError()){
+        if (filterParams.hasError()) {
             return this.getJSONErrorString(filterParams.getErrorMessage(), filterParams.getErrorMessage());
         }
        
@@ -345,7 +345,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                         dvObjectServiceBean, 
                                         groupService);
         this.myDataFinder.runFindDataSteps(filterParams);
-        if (myDataFinder.hasError()){
+        if (myDataFinder.hasError()) {
             return this.getJSONErrorString(myDataFinder.getErrorMessage(), myDataFinder.getErrorMessage());
         }
 
@@ -353,7 +353,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // (3) Make Solr Query
         // ---------------------------------
         int paginationStart = 1;
-        if (selectedPage != null){
+        if (selectedPage != null) {
             paginationStart = selectedPage;
         }
         int solrCardStart = (paginationStart - 1) * SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE;
@@ -361,14 +361,14 @@ public class DataRetrieverAPI extends AbstractApiBean {
         // Default the searchUser to the authUser.
         // The exception: for logged-in superusers, the searchUser may differ from the authUser
         //
-        if (searchUser == null){
+        if (searchUser == null) {
             searchUser = authUser;
         }
 
         //msg("search with user: " + searchUser.getIdentifier());
 
         List<String> filterQueries = this.myDataFinder.getSolrFilterQueries();
-        if (filterQueries==null){
+        if (filterQueries == null) {
             logger.fine("No ids found for this search");
             return this.getJSONErrorString(noMsgResultsFound, null);
         }
@@ -392,7 +392,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                 //msgt("getResultsStart: " + this.solrQueryResponse.getResultsStart());
                 //msgt("getNumResultsFound: " + this.solrQueryResponse.getNumResultsFound());
                 //msgt("getSolrSearchResults: " + this.solrQueryResponse.getSolrSearchResults().toString());
-                if (this.solrQueryResponse.getNumResultsFound()==0){
+                if (this.solrQueryResponse.getNumResultsFound() == 0) {
                     return this.getJSONErrorString(noMsgResultsFound, null);
                 }                
                          
@@ -436,7 +436,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                                 .add(SearchConstants.SEARCH_API_ITEMS, this.formatSolrDocs(solrQueryResponse, roleTagRetriever))
                                 .add(SearchConstants.SEARCH_API_TOTAL_COUNT, solrQueryResponse.getNumResultsFound())
                                 .add(SearchConstants.SEARCH_API_START, solrQueryResponse.getResultsStart())
-                                .add("search_term",  filterParams.getSearchTerm())
+                                .add("search_term", filterParams.getSearchTerm())
                                 .add("dvobject_counts", this.getDvObjectTypeCounts(solrQueryResponse))
                                 .add("pubstatus_counts", this.getPublicationStatusCounts(solrQueryResponse))
                                 .add("selected_filters", this.myDataFinder.getSelectedFilterParamsAsJSON())
@@ -449,7 +449,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
         //jsonData.add("total_dvobject_counts", getTotalCountsFromSolrAsJSON(searchUser, this.myDataFinder));
 
         
-        if (OTHER_USER){
+        if (OTHER_USER) {
             jsonData.add("other_user", searchUser.getIdentifier());
         }
                                 
@@ -482,11 +482,11 @@ public class DataRetrieverAPI extends AbstractApiBean {
      * @param roleTagRetriever
      * @return 
      */
-    private JsonArrayBuilder formatSolrDocs(SolrQueryResponse solrResponse, RoleTagRetriever roleTagRetriever ){
-        if (solrResponse == null){
+    private JsonArrayBuilder formatSolrDocs(SolrQueryResponse solrResponse, RoleTagRetriever roleTagRetriever) {
+        if (solrResponse == null) {
             throw new NullPointerException("DataRetrieverAPI.formatSolrDocs:  solrResponse should not be null");     
         }
-        if(roleTagRetriever==null){
+        if (roleTagRetriever == null) {
             throw new NullPointerException("DataRetrieverAPI.formatSolrDocs:  roleTagRetriever should not be null");     
         }
 
@@ -495,23 +495,23 @@ public class DataRetrieverAPI extends AbstractApiBean {
         JsonObjectBuilder myDataCardInfo;
         JsonArrayBuilder rolesForCard;
         
-        for (SolrSearchResult doc : solrQueryResponse.getSolrSearchResults()){
+        for (SolrSearchResult doc : solrQueryResponse.getSolrSearchResults()) {
             // -------------------------------------------
             // (a) Get core card data from solr
             // -------------------------------------------
             
             myDataCardInfo = doc.getJsonForMyData(isValid(doc));
             
-            if (doc.getEntity() != null && !doc.getEntity().isInstanceofDataFile()){
+            if (doc.getEntity() != null && !doc.getEntity().isInstanceofDataFile()) {
                 String parentAlias = dataverseService.getParentAliasString(doc);
-                myDataCardInfo.add("parent_alias",parentAlias);
+                myDataCardInfo.add("parent_alias", parentAlias);
             }
             
             // -------------------------------------------
             // (b) Add role info
             // -------------------------------------------
             rolesForCard = roleTagRetriever.getRolesForCardAsJSON(doc.getEntityId());
-            if (rolesForCard!=null){
+            if (rolesForCard != null) {
                 myDataCardInfo.add("user_roles", rolesForCard);
             }
             

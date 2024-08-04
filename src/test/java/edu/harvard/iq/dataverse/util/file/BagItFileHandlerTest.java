@@ -115,7 +115,7 @@ public class BagItFileHandlerTest {
         CreateDataFileResult result = target.handleBagItPackage(SYSTEM_CONFIG, DATASET_VERSION, FILE.getName(), FILE);
         MatcherAssert.assertThat(result.success(), Matchers.is(true));
         createDataFileResultAsserts(result);
-        for(DataFile expectedDataFile: dataProviderWithDataFiles.dataFiles) {
+        for (DataFile expectedDataFile : dataProviderWithDataFiles.dataFiles) {
             MatcherAssert.assertThat(result.getDataFiles(), Matchers.hasItems(expectedDataFile));
         }
 
@@ -274,7 +274,7 @@ public class BagItFileHandlerTest {
         MatcherAssert.assertThat(result.getType(), Matchers.is(BagItFileHandler.FILE_TYPE));
     }
 
-    private void handleBagItPackageAsserts(FileDataProvider dataProviderMock) throws IOException{
+    private void handleBagItPackageAsserts(FileDataProvider dataProviderMock) throws IOException {
         Mockito.verify(dataProviderMock).getFilePaths();
         Mockito.verify(dataProviderMock).close();
 
@@ -294,7 +294,7 @@ public class BagItFileHandlerTest {
     private void createDataFileAsserts(List<Path> filePaths, int saveInputStreamCalls) throws Exception {
         Mockito.verify(FILE_UTIL, Mockito.times(saveInputStreamCalls)).saveInputStreamInTempFile(Mockito.any(), Mockito.any());
 
-        for(Path filePath: filePaths) {
+        for (Path filePath : filePaths) {
             Mockito.verify(FILE_UTIL).createSingleDataFile(Mockito.any(), Mockito.any(), Mockito.any(),
                     Mockito.eq(filePath.getFileName().toString()), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
         }
@@ -304,14 +304,14 @@ public class BagItFileHandlerTest {
         List<Path> filePaths = new ArrayList<>();
         List<DataFile> dataFiles = new ArrayList<>();
 
-        for(String filePath:  filePathItems) {
+        for (String filePath :  filePathItems) {
             String fileName = Path.of(filePath).getFileName().toString();
             DataFile dataFile = new DataFile();
             dataFile.setId(MocksFactory.nextId());
             dataFile.getFileMetadatas().add(new FileMetadata());
             dataFile.getLatestFileMetadata().setLabel(fileName);
 
-            if(filePath.startsWith("return_null")) {
+            if (filePath.startsWith("return_null")) {
                 dataFile = null;
             }
 

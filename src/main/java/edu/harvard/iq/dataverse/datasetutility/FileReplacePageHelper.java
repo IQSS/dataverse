@@ -39,15 +39,15 @@ public class FileReplacePageHelper {
      * @param dataset
      * @param fileToReplace 
      */
-    public FileReplacePageHelper(AddReplaceFileHelper replaceFileHelper, Dataset dataset, DataFile fileToReplace){
+    public FileReplacePageHelper(AddReplaceFileHelper replaceFileHelper, Dataset dataset, DataFile fileToReplace) {
         
-        if (replaceFileHelper == null){
+        if (replaceFileHelper == null) {
             throw new NullPointerException("replaceFileHelper cannot be null");
         }
-        if (dataset == null){
+        if (dataset == null) {
             throw new NullPointerException("dataset cannot be null");
         }
-        if (fileToReplace == null){
+        if (fileToReplace == null) {
             throw new NullPointerException("fileToReplace cannot be null");
         }
         
@@ -56,12 +56,12 @@ public class FileReplacePageHelper {
         this.fileToReplace = fileToReplace;
     }
     
-    public DataFile getFileToReplace(){
+    public DataFile getFileToReplace() {
         return fileToReplace;
     }
     
-    public boolean hasContentTypeWarning(){
-        if (!wasPhase1Successful()){
+    public boolean hasContentTypeWarning() {
+        if (!wasPhase1Successful()) {
             // not really a NullPointerException but want to blow up here without adding try/catch everywhere
             //
             throw new NullPointerException("Do not call if Phase 1 unsuccessful!");
@@ -70,8 +70,8 @@ public class FileReplacePageHelper {
         return replaceFileHelper.hasContentTypeWarning();
     }
     
-    public String getContentTypeWarning(){
-        if (!hasContentTypeWarning()){
+    public String getContentTypeWarning() {
+        if (!hasContentTypeWarning()) {
             // not really a NullPointerException but want to blow up here without adding try/catch everywhere
             //
             throw new NullPointerException("Do not call if content type warning doesn't exist!");
@@ -81,7 +81,7 @@ public class FileReplacePageHelper {
     }
     
     
-    public boolean resetReplaceFileHelper(){
+    public boolean resetReplaceFileHelper() {
         
         phase1Success = false;
         this.replaceFileHelper.resetFileHelper();
@@ -100,19 +100,19 @@ public class FileReplacePageHelper {
         
         // Preliminary sanity check
         //
-        if ((inputStream == null)&&(fullStorageId==null)){
+        if ((inputStream == null) && (fullStorageId == null)) {
             throw new NullPointerException("inputStream and storageId cannot both be null");
         }
-        if (fileName == null){
+        if (fileName == null) {
             throw new NullPointerException("fileName cannot be null");
         }
-        if (fileContentType == null){
+        if (fileContentType == null) {
             throw new NullPointerException("fileContentType cannot be null");
         }
         
         OptionalFileParams ofp = null;
         ofp = new OptionalFileParams();
-        if(checkSumValue != null) {
+        if (checkSumValue != null) {
             ofp.setCheckSum(checkSumValue, checkSumType);
         }
         // Run 1st phase of replace
@@ -127,11 +127,11 @@ public class FileReplacePageHelper {
         
         // Did it work?
         //
-        if (replaceFileHelper.hasError()){
+        if (replaceFileHelper.hasError()) {
             msgt("upload error");
             msg(replaceFileHelper.getErrorMessagesAsString("\n"));
             return false;
-        }else{
+        } else {
             phase1Success = true;
             
             msg("Look at that!  Phase 1 worked");
@@ -140,26 +140,26 @@ public class FileReplacePageHelper {
    
     } // handleFileUpload
 
-    public boolean runSaveReplacementFile_Phase2() throws FileReplaceException{
+    public boolean runSaveReplacementFile_Phase2() throws FileReplaceException {
                 
-        if (!wasPhase1Successful()){
+        if (!wasPhase1Successful()) {
             throw new FileReplaceException("Do not call if Phase 1 unsuccessful!");
         }
-        if (replaceFileHelper == null){
+        if (replaceFileHelper == null) {
             throw new NullPointerException("replaceFileHelper cannot be null!");
         }
         
-        if (replaceFileHelper.runReplaceFromUI_Phase2()){
+        if (replaceFileHelper.runReplaceFromUI_Phase2()) {
             msg("Look at that!  Phase 2 worked");
             return true;
-        }else{
+        } else {
             msg(replaceFileHelper.getErrorMessagesAsString("\n"));
             return false;
         }
     }
     
-    public String getErrorMessages(){
-        if (!replaceFileHelper.hasError()){
+    public String getErrorMessages() {
+        if (!replaceFileHelper.hasError()) {
             throw new NullPointerException("Only call this if an error exists!");
         }
         return replaceFileHelper.getErrorMessagesAsString("\n");
@@ -170,15 +170,15 @@ public class FileReplacePageHelper {
      * For a successful replace operation, return a the first newly added file
      * @return 
      */
-    public DataFile getFirstNewlyAddedFile() throws FileReplaceException{
+    public DataFile getFirstNewlyAddedFile() throws FileReplaceException {
     
-        if (!wasPhase1Successful()){
+        if (!wasPhase1Successful()) {
             throw new FileReplaceException("Do not call if Phase 1 unsuccessful!");
         }
-        if (replaceFileHelper == null){
+        if (replaceFileHelper == null) {
             throw new NullPointerException("replaceFileHelper cannot be null!");
         }
-        if (replaceFileHelper.hasError()){
+        if (replaceFileHelper.hasError()) {
             throw new FileReplaceException("Do not call if errors exist! " + replaceFileHelper.getErrorMessagesAsString("\n"));            
         }
         
@@ -186,16 +186,16 @@ public class FileReplacePageHelper {
     }
         
    
-    public List<FileMetadata> getNewFileMetadatasBeforeSave(){
+    public List<FileMetadata> getNewFileMetadatasBeforeSave() {
         
-        if (wasPhase1Successful()){
+        if (wasPhase1Successful()) {
             return replaceFileHelper.getNewFileMetadatasBeforeSave();
         }
         return null;
         
     }
     
-    public AddReplaceFileHelper getAddReplaceFileHelper(){
+    public AddReplaceFileHelper getAddReplaceFileHelper() {
         return replaceFileHelper;
     }
     
@@ -205,22 +205,22 @@ public class FileReplacePageHelper {
      * 
      * @return 
      */
-    public boolean showFileUploadComponent(){
+    public boolean showFileUploadComponent() {
         
         return !(wasPhase1Successful());
     }
     
-    public boolean wasPhase1Successful(){
+    public boolean wasPhase1Successful() {
         
         return phase1Success;
     }
     
-    private void msg(String s){
+    private void msg(String s) {
         System.out.println(s);
     }
     
    
-    private void msgt(String s){
+    private void msgt(String s) {
         msg("-------------------------------");
         msg(s);
         msg("-------------------------------");

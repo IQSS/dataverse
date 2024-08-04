@@ -144,7 +144,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             GlobalId pid = dataset.getGlobalId();
             PidProvider pidProvider = PidUtil.getPidProvider(pid.getProviderId());
             // Only supported for DOIs and for DataCite DOI providers
-            if(!DataCiteDOIProvider.TYPE.equals(pidProvider.getProviderType())) {
+            if (!DataCiteDOIProvider.TYPE.equals(pidProvider.getProviderType())) {
                 return error(Status.BAD_REQUEST, "Only DataCite DOI providers are supported");
             }
             String persistentId = pid.toString();
@@ -213,7 +213,7 @@ public class MakeDataCountApi extends AbstractApiBean {
         try {
             mdcps = makeDataCountProcessStateService.getMakeDataCountProcessState(yearMonth);
         } catch (IllegalArgumentException e) {
-            return error(Status.BAD_REQUEST,e.getMessage());
+            return error(Status.BAD_REQUEST, e.getMessage());
         }
         if (mdcps != null) {
             JsonObjectBuilder output = Json.createObjectBuilder();

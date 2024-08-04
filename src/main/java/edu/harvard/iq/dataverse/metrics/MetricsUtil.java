@@ -108,8 +108,8 @@ public class MetricsUtil {
             // If there's a result for this date, add it's count to the total
             // and find the date of the next entry
             if (date.equals(curDate)) {
-                if(isBigDecimal) {
-                    total +=((BigDecimal) results.get(i)[1]).longValue();
+                if (isBigDecimal) {
+                    total += ((BigDecimal) results.get(i)[1]).longValue();
                 } else {
                     total += (long) results.get(i)[1];
                 }
@@ -138,7 +138,7 @@ public class MetricsUtil {
     public static JsonArray timeSeriesByTypeToJson(List<Object[]> results) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         Map<String, Long> totals = new HashMap<>();
-        Map<String, Long> sizes =  new HashMap<>();
+        Map<String, Long> sizes = new HashMap<>();
         String curDate = (String) results.get(0)[0];
         // Get a list of all the monthly dates from the start until now
         List<String> dates = getDatesFrom(curDate);
@@ -150,15 +150,15 @@ public class MetricsUtil {
             // and find the date of the next entry(ies)
             while (date.equals(curDate) && i < results.size()) {
                 String type = (String) results.get(i)[1];
-                totals.put(type,  (totals.containsKey(type) ? totals.get(type) : 0) + (long) results.get(i)[2]);
-                sizes.put(type,  (sizes.containsKey(type) ? sizes.get(type) : 0) + ((BigDecimal) results.get(i)[3]).longValue());
+                totals.put(type, (totals.containsKey(type) ? totals.get(type) : 0) + (long) results.get(i)[2]);
+                sizes.put(type, (sizes.containsKey(type) ? sizes.get(type) : 0) + ((BigDecimal) results.get(i)[3]).longValue());
                 i += 1;
                 if (i < results.size()) {
                     curDate = (String) results.get(i)[0];
                 }
             }
             // Then add the aggregate count and size for all types
-            for(String type: totals.keySet()) {
+            for (String type : totals.keySet()) {
                 JsonObjectBuilder job = Json.createObjectBuilder();
                 job.add(MetricsUtil.DATE, date);
                 job.add(CONTENTTYPE, type);
@@ -183,14 +183,14 @@ public class MetricsUtil {
             // and find the date of the next entry(ies)
             while (date.equals(curDate) && i < results.size()) {
                 String pid = (String) results.get(i)[1];
-                totals.put(pid,  (totals.containsKey(pid) ? totals.get(pid) : 0) + (long) results.get(i)[2]);
+                totals.put(pid, (totals.containsKey(pid) ? totals.get(pid) : 0) + (long) results.get(i)[2]);
                 i += 1;
                 if (i < results.size()) {
                     curDate = (String) results.get(i)[0];
                 }
             }
             // Then add the aggregate count and size for all types
-            for(String type: totals.keySet()) {
+            for (String type : totals.keySet()) {
                 JsonObjectBuilder job = Json.createObjectBuilder();
                 job.add(MetricsUtil.DATE, date);
                 job.add(PID, type);
@@ -216,19 +216,19 @@ public class MetricsUtil {
             while (date.equals(curDate) && i < results.size()) {
                 Integer id = (Integer) results.get(i)[1];
                 String pid = (String) results.get(i)[2];
-                totals.put(id,  (totals.containsKey(id) ? totals.get(id) : 0) + (long) results.get(i)[3]);
-                pids.put(id,  pid);
+                totals.put(id, (totals.containsKey(id) ? totals.get(id) : 0) + (long) results.get(i)[3]);
+                pids.put(id, pid);
                 i += 1;
                 if (i < results.size()) {
                     curDate = (String) results.get(i)[0];
                 }
             }
             // Then add the aggregate count and size for all types
-            for(Integer id: totals.keySet()) {
+            for (Integer id : totals.keySet()) {
                 JsonObjectBuilder job = Json.createObjectBuilder();
                 job.add(MetricsUtil.DATE, date);
                 job.add(ID, id);
-                if(pids.get(id)!=null) {
+                if (pids.get(id) != null) {
                     job.add(PID, pids.get(id));
                 }
                 job.add(COUNT, totals.get(id));
@@ -313,7 +313,7 @@ public class MetricsUtil {
 
     public static List<String> getDatesFrom(String startMonth) {
         List<String> dates = new ArrayList<>();
-        LocalDate next = LocalDate.parse(startMonth+ "-01").plusMonths(1);
+        LocalDate next = LocalDate.parse(startMonth + "-01").plusMonths(1);
         dates.add(startMonth);
         DateTimeFormatter monthFormat = DateTimeFormatter.ofPattern(YEAR_AND_MONTH_PATTERN);
         while (next.isBefore(LocalDate.now())) {

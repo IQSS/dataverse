@@ -23,12 +23,12 @@ import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 // the permission annotation is open, since this is a superuser-only command - 
 // and that's enforced in the command body:
 @RequiredPermissions({})
-public class GrantSuperuserStatusCommand extends AbstractVoidCommand  {
+public class GrantSuperuserStatusCommand extends AbstractVoidCommand {
 
     private final AuthenticatedUser targetUser;
     
-    public GrantSuperuserStatusCommand (AuthenticatedUser targetUser, DataverseRequest aRequest) {
-        super(aRequest, (Dataset)null);
+    public GrantSuperuserStatusCommand(AuthenticatedUser targetUser, DataverseRequest aRequest) {
+        super(aRequest, (Dataset) null);
         this.targetUser = targetUser;
     }
 
@@ -49,7 +49,7 @@ public class GrantSuperuserStatusCommand extends AbstractVoidCommand  {
             ctxt.em().merge(targetUser);
             ctxt.em().flush();
         } catch (Exception e) {
-            throw new CommandException("Failed to grant the superuser status to user "+targetUser.getIdentifier(), this);
+            throw new CommandException("Failed to grant the superuser status to user " + targetUser.getIdentifier(), this);
         }
     }
 }

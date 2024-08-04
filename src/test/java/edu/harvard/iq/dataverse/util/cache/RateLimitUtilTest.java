@@ -117,7 +117,7 @@ public class RateLimitUtilTest {
     @Test
     public void testGenerateCacheKey() {
         User user = GuestUser.get();
-        assertEquals(RateLimitUtil.generateCacheKey(user,"action1"), ":guest:action1");
+        assertEquals(RateLimitUtil.generateCacheKey(user, "action1"), ":guest:action1");
     }
     @Test
     public void testGetCapacity() {

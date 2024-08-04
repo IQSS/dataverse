@@ -55,16 +55,16 @@ public class Users extends AbstractApiBean {
         User u;
         try {
             u = getRequestUser(crc);
-            if(!u.isSuperuser()) {
+            if (!u.isSuperuser()) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can merge users"));
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
         
-        if(null == baseIdentifier || baseIdentifier.isEmpty()) {
+        if (null == baseIdentifier || baseIdentifier.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "Base identifier provided to change is empty.");
-        } else if(null == consumedIdentifier || consumedIdentifier.isEmpty()) {
+        } else if (null == consumedIdentifier || consumedIdentifier.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "Identifier to merge in is empty.");
         }
 
@@ -79,8 +79,8 @@ public class Users extends AbstractApiBean {
         }
 
         try {
-            execCommand(new MergeInAccountCommand(createDataverseRequest(u), consumedAuthenticatedUser,  baseAuthenticatedUser));
-        } catch (Exception e){
+            execCommand(new MergeInAccountCommand(createDataverseRequest(u), consumedAuthenticatedUser, baseAuthenticatedUser));
+        } catch (Exception e) {
             return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
         }
 
@@ -94,16 +94,16 @@ public class Users extends AbstractApiBean {
         User u;
         try {
             u = getRequestUser(crc);
-            if(!u.isSuperuser()) {
+            if (!u.isSuperuser()) {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "Only superusers can change userIdentifiers"));
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
         
-        if(null == oldIdentifier || oldIdentifier.isEmpty()) {
+        if (null == oldIdentifier || oldIdentifier.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "Old identifier provided to change is empty.");
-        } else if(null == newIdentifier || newIdentifier.isEmpty()) {
+        } else if (null == newIdentifier || newIdentifier.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "New identifier provided to change is empty.");
         }
 
@@ -113,8 +113,8 @@ public class Users extends AbstractApiBean {
         }
 
         try {
-            execCommand(new ChangeUserIdentifierCommand(createDataverseRequest(u), authenticatedUser,  newIdentifier));
-        } catch (Exception e){
+            execCommand(new ChangeUserIdentifierCommand(createDataverseRequest(u), authenticatedUser, newIdentifier));
+        } catch (Exception e) {
             return error(Response.Status.BAD_REQUEST, "Error calling ChangeUserIdentifierCommand: " + e.getLocalizedMessage());
         }
 
@@ -128,9 +128,9 @@ public class Users extends AbstractApiBean {
         User u = getRequestUser(crc);
         AuthenticatedUser au;
        
-        try{
+        try {
              au = (AuthenticatedUser) u; 
-        } catch (ClassCastException e){ 
+        } catch (ClassCastException e) { 
             //if we have a non-authenticated user we stop here.
             return notFound("Token for " + u.getIdentifier() + " not eligible for deletion.");
         }       
@@ -161,9 +161,9 @@ public class Users extends AbstractApiBean {
         User u = getRequestUser(crc);
 
         AuthenticatedUser au;        
-        try{
+        try {
              au = (AuthenticatedUser) u; 
-        } catch (ClassCastException e){ 
+        } catch (ClassCastException e) { 
             //if we have a non-authenticated user we stop here.
             return notFound("Token for " + u.getIdentifier() + " is not eligible for recreation.");
         } 
@@ -228,7 +228,7 @@ public class Users extends AbstractApiBean {
         }
     }
 
-    private List<String> elements = Arrays.asList("roleAssignments","dataverseCreator", "dataversePublisher","datasetCreator", "datasetPublisher","dataFileCreator","dataFilePublisher","datasetVersionUsers","explicitGroups","guestbookEntries", "savedSearches");
+    private List<String> elements = Arrays.asList("roleAssignments", "dataverseCreator", "dataversePublisher", "datasetCreator", "datasetPublisher", "dataFileCreator", "dataFilePublisher", "datasetVersionUsers", "explicitGroups", "guestbookEntries", "savedSearches");
     
     @GET
     @AuthRequired
@@ -237,7 +237,7 @@ public class Users extends AbstractApiBean {
     public Response getTracesElement(@Context ContainerRequestContext crc, @Context Request req, @PathParam("identifier") String identifier, @PathParam("element") String element) {
         try {
             AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
-            if(!elements.contains(element)) {
+            if (!elements.contains(element)) {
                 throw new BadRequestException("Not a valid element");
             }
             JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, element));
@@ -251,10 +251,10 @@ public class Users extends AbstractApiBean {
                 return ok(jsonObj);
             
             }
-            JsonArray items=null;
+            JsonArray items = null;
             try {
                 items = jsonObj.build().getJsonObject("traces").getJsonObject(element).getJsonArray("items");
-            } catch(Exception e) {
+            } catch (Exception e) {
                 return ok(jsonObj);
             }
             return ok(FileUtil.jsonArrayOfObjectsToCSV(items, items.getJsonObject(0).keySet().toArray(new String[0])), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), element + ".csv");

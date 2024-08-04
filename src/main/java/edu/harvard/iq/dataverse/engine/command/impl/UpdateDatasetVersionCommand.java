@@ -97,7 +97,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        if ( ! (getUser() instanceof AuthenticatedUser) ) {
+        if (!(getUser() instanceof AuthenticatedUser)) {
             throw new IllegalCommandException("Only authenticated users can update datasets", this);
         }
         
@@ -113,9 +113,9 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
          * to get the lastest version in the db
          * 
          */
-        if(persistedVersion==null) {
+        if (persistedVersion == null) {
             Long id = getDataset().getLatestVersion().getId();
-            persistedVersion = ctxt.datasetVersion().find(id!=null ? id: getDataset().getLatestVersionForCopy().getId());
+            persistedVersion = ctxt.datasetVersion().find(id != null ? id : getDataset().getLatestVersionForCopy().getId());
         }
         
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
@@ -149,8 +149,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             	try {
             		ctxt.em().merge(editVersion);
             	} catch (ConstraintViolationException e) {
-            		logger.log(Level.SEVERE,"Exception: ");
-            		e.getConstraintViolations().forEach(err->logger.log(Level.SEVERE,err.toString()));
+            		logger.log(Level.SEVERE, "Exception: ");
+            		e.getConstraintViolations().forEach(err -> logger.log(Level.SEVERE, err.toString()));
             		throw e;
             	}
             }
@@ -256,7 +256,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     FileMetadataUtil.removeFileMetadataFromList(cat.getFileMetadatas(), fmd);
                 }
             }
-            for(FileMetadata fmd: theDataset.getOrCreateEditVersion().getFileMetadatas()) {
+            for (FileMetadata fmd : theDataset.getOrCreateEditVersion().getFileMetadatas()) {
                 logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId() + "is in final draft version");    
             }
             
@@ -278,7 +278,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         } finally {
             // We're done making changes - remove the lock...
             //Failures above may occur before savedDataset is set, in which case we need to remove the lock on theDataset instead
-            if(savedDataset!=null) {
+            if (savedDataset != null) {
             ctxt.datasets().removeDatasetLocks(savedDataset, DatasetLock.Reason.EditInProgress);
             } else {
                 ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.EditInProgress);

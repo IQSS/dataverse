@@ -31,7 +31,7 @@ import java.util.Locale;
  * @author Matt Owen
  * @author Leonid Andreev
  */
-public class RDATAFileReaderSpi extends TabularDataFileReaderSpi{
+public class RDATAFileReaderSpi extends TabularDataFileReaderSpi {
 
   private static Logger LOG = Logger.getLogger(RDATAFileReaderSpi.class.getPackage().getName());
 
@@ -44,7 +44,7 @@ public class RDATAFileReaderSpi extends TabularDataFileReaderSpi{
    */
   public RDATAFileReaderSpi() {
     super("HU-IQSS-DVN-project", "0.1", formatNames, extensions, mimeType, RDATAFileReaderSpi.class.getName());
-    LOG.fine(RDATAFileReaderSpi.class.getName()+" is called");
+    LOG.fine(RDATAFileReaderSpi.class.getName() + " is called");
   }
   
   public String getDescription(Locale locale) {
@@ -57,7 +57,7 @@ public class RDATAFileReaderSpi extends TabularDataFileReaderSpi{
     if (!(source instanceof BufferedInputStream))
       return false;
 
-    return canDecodeInput((BufferedInputStream)source);
+    return canDecodeInput((BufferedInputStream) source);
   }
   
   @Override

@@ -107,13 +107,13 @@ public class Files extends AbstractApiBean {
     
     
     
-    private void msg(String m){
+    private void msg(String m) {
         System.out.println(m);
     }
-    private void dashes(){
+    private void dashes() {
         msg("----------------");
     }
-    private void msgt(String m){
+    private void msgt(String m) {
         dashes(); msg(m); dashes();
     }
     
@@ -163,7 +163,7 @@ public class Files extends AbstractApiBean {
             return error(BAD_REQUEST, "Problem saving datafile " + dataFile.getDisplayName() + ": " + ex.getLocalizedMessage());
         }
 
-        String text =  restrict ? "restricted." : "unrestricted.";
+        String text = restrict ? "restricted." : "unrestricted.";
         return ok("File " + dataFile.getDisplayName() + " " + text);
     }
         
@@ -198,7 +198,7 @@ public class Files extends AbstractApiBean {
                     @FormDataParam("file") InputStream testFileInputStream,
                     @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
                     @FormDataParam("file") final FormDataBodyPart formDataBodyPart
-                    ){
+                    ) {
 
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
@@ -293,11 +293,11 @@ public class Files extends AbstractApiBean {
             return error(BAD_REQUEST, error);
         }
         msg("we're back.....");
-        if (addFileHelper.hasError()){
+        if (addFileHelper.hasError()) {
             msg("yes, has error");          
             return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
         
-        }else{
+        } else {
             msg("no error");
             String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.replace");
 
@@ -332,7 +332,7 @@ public class Files extends AbstractApiBean {
     @DELETE
     @AuthRequired
     @Path("{id}")
-    public Response deleteFileInDataset(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId){
+    public Response deleteFileInDataset(@Context ContainerRequestContext crc, @PathParam("id") String fileIdOrPersistentId) {
         // (1) Get the user from the API key and create request
         User authUser = getRequestUser(crc);
         DataverseRequest dvRequest = createDataverseRequest(authUser);
@@ -346,7 +346,7 @@ public class Files extends AbstractApiBean {
             DatasetVersion v = dataset.getOrCreateEditVersion();
             deletePhysicalFile = !dataFile.isReleased();
 
-            UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest,  Arrays.asList(fileToDelete), v);
+            UpdateDatasetVersionCommand update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, Arrays.asList(fileToDelete), v);
             update_cmd.setValidateLenient(true);
 
             try {
@@ -403,7 +403,7 @@ public class Files extends AbstractApiBean {
             .setParameter("identifier", df.getId())
                     .getResultList();
             //There will be either 0 or 1 returned dataFile Id. If there is 1 this file is replaced and we need to error.
-            if(null != result && result.size() > 0) {
+            if (null != result && result.size() > 0) {
                 //we get the data file to do a permissions check, if this fails it'll go to the WrappedResponse below for an ugly unpermitted error
                 execCommand(new GetDataFileCommand(req, findDataFileOrDie(result.get(0).toString())));
 
@@ -444,15 +444,15 @@ public class Files extends AbstractApiBean {
                 //the updated fileMetadata is not populated to the DataFile object where its easily accessible.
                 //Due to this we have to find the FileMetadata inside the DatasetVersion by comparing files info.
                 List<FileMetadata> fmdList = editVersion.getFileMetadatas();
-                for(FileMetadata testFmd : fmdList) {
+                for (FileMetadata testFmd : fmdList) {
                     DataFile daf = testFmd.getDataFile();
-                    if(daf.equals(df)){
+                    if (daf.equals(df)) {
                        upFmd = testFmd;
                        break;
                     }
                 }
                 
-                if (upFmd == null){
+                if (upFmd == null) {
                     return error(BAD_REQUEST, "An error has occurred attempting to update the requested DataFile. It is not part of the current version of the Dataset.");
                 }
 
@@ -506,7 +506,7 @@ public class Files extends AbstractApiBean {
                                 @QueryParam("returnOwners") boolean returnOwners,
                                 @Context UriInfo uriInfo,
                                 @Context HttpHeaders headers) {
-        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, DS_VERSION_LATEST, includeDeaccessioned, returnDatasetVersion, returnOwners, uriInfo, headers), getRequestUser(crc));
+        return response(req -> getFileDataResponse(req, fileIdOrPersistentId, DS_VERSION_LATEST, includeDeaccessioned, returnDatasetVersion, returnOwners, uriInfo, headers), getRequestUser(crc));
     }
 
     @GET
@@ -520,7 +520,7 @@ public class Files extends AbstractApiBean {
                                 @QueryParam("returnOwners") boolean returnOwners,
                                 @Context UriInfo uriInfo,
                                 @Context HttpHeaders headers) {
-        return response( req -> getFileDataResponse(req, fileIdOrPersistentId, datasetVersionId, includeDeaccessioned, returnDatasetVersion, returnOwners, uriInfo, headers), getRequestUser(crc));
+        return response(req -> getFileDataResponse(req, fileIdOrPersistentId, datasetVersionId, includeDeaccessioned, returnDatasetVersion, returnOwners, uriInfo, headers), getRequestUser(crc));
     }
 
     private Response getFileDataResponse(final DataverseRequest req,
@@ -590,13 +590,13 @@ public class Files extends AbstractApiBean {
             }
             FileMetadata fm;
             
-            if(null != getDraft && getDraft) { 
+            if (null != getDraft && getDraft) { 
                 try {
                     fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
                 } catch (WrappedResponse w) {
-                    return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset." );
+                    return error(BAD_REQUEST, "An error occurred getting a draft version, you may not have permission to access unpublished data on this dataset.");
                 }
-                if(null == fm) {
+                if (null == fm) {
                     return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.no.draft"));
                 }
             } else {
@@ -718,7 +718,7 @@ public class Files extends AbstractApiBean {
         }
         
         if (!FileUtil.canIngestAsTabular(dataFile)) {
-            return error(BAD_REQUEST, "Tabular ingest is not supported for this file type (id: "+id+", type: "+dataFile.getContentType()+")");
+            return error(BAD_REQUEST, "Tabular ingest is not supported for this file type (id: " + id + ", type: " + dataFile.getContentType() + ")");
         }
         
         dataFile.SetIngestScheduled();
@@ -825,7 +825,7 @@ public class Files extends AbstractApiBean {
     public Response getExternalToolFMParams(@Context ContainerRequestContext crc, @PathParam("tid") long externalToolId,
             @PathParam("id") String fileId, @PathParam("fmid") long fmid, @QueryParam(value = "locale") String locale) {
         ExternalTool externalTool = externalToolService.findById(externalToolId);
-        if(externalTool == null) {
+        if (externalTool == null) {
             return error(BAD_REQUEST, "External tool not found.");
         }
         if (!ExternalTool.Scope.FILE.equals(externalTool.getScope())) {
@@ -926,7 +926,7 @@ public class Files extends AbstractApiBean {
                     JsonString jsonString = (JsonString) jsonValue;
                     try {
                         dataFile.addUniqueTagByLabel(jsonString.getString());
-                    } catch (IllegalArgumentException iax){
+                    } catch (IllegalArgumentException iax) {
                         return badRequest(iax.getMessage());
                     }
                 }

@@ -28,7 +28,7 @@ import jakarta.persistence.Table;
 
 
 @Entity
-@Table(indexes = {@Index(columnList="dataset_id")})
+@Table(indexes = {@Index(columnList = "dataset_id")})
 public class DataFileCategory implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -60,7 +60,7 @@ public class DataFileCategory implements Serializable {
     }
     
     @Expose
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String name;
     
     public String getName() {
@@ -74,7 +74,7 @@ public class DataFileCategory implements Serializable {
     /* 
      * DataFiles which belong to this category: 
      */
-    @ManyToMany (mappedBy="fileCategories")
+    @ManyToMany(mappedBy = "fileCategories")
     private Collection<FileMetadata> fileMetadatas = null; 
     
     public Collection<FileMetadata> getFileMetadatas() {
@@ -85,7 +85,7 @@ public class DataFileCategory implements Serializable {
         this.fileMetadatas = fileMetadatas; 
     }
     
-    public void addFileMetadata (FileMetadata fileMetadata) {
+    public void addFileMetadata(FileMetadata fileMetadata) {
         if (fileMetadatas == null) {
             fileMetadatas = new ArrayList<>();
         }

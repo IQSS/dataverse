@@ -153,7 +153,7 @@ public class SettingsWrapper implements java.io.Serializable {
             initSettingsMap();
         }
         
-        if (!settingsMap.containsKey(settingKey)){
+        if (!settingsMap.containsKey(settingKey)) {
             return defaultValue;
         }
         return settingsMap.get(settingKey);
@@ -165,8 +165,8 @@ public class SettingsWrapper implements java.io.Serializable {
      * @param key
      * @return 
      */
-    public String getValueForKey(Key key){
-        if (key == null){
+    public String getValueForKey(Key key) {
+        if (key == null) {
             return null;
         }
         return get(key.toString());
@@ -180,8 +180,8 @@ public class SettingsWrapper implements java.io.Serializable {
      * @param defaultValue
      * @return 
      */
-    public String getValueForKey(Key key, String defaultValue){
-        if (key == null){
+    public String getValueForKey(Key key, String defaultValue) {
+        if (key == null) {
             return null;
         }
         return get(key.toString(), defaultValue);
@@ -198,12 +198,12 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         
         String val = get(settingKey);;
-        return ( val==null ) ? safeDefaultIfKeyNotFound : StringUtil.isTrue(val);
+        return (val == null) ? safeDefaultIfKeyNotFound : StringUtil.isTrue(val);
     }
 
     public Integer getInteger(String settingKey, Integer defaultValue) {
         String settingValue = get(settingKey);
-        if(settingValue != null) {
+        if (settingValue != null) {
             try {
                 return Integer.valueOf(settingValue);
             } catch (Exception e) {
@@ -291,7 +291,7 @@ public class SettingsWrapper implements java.io.Serializable {
         return siteUrl;
     }
     
-    public Long getZipDownloadLimit(){
+    public Long getZipDownloadLimit() {
         if (zipDownloadLimit == null) {
             String zipLimitOption = getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);
             zipDownloadLimit = SystemConfig.getLongLimitFromStringOrDefault(zipLimitOption, SystemConfig.defaultZipDownloadLimit);
@@ -299,7 +299,7 @@ public class SettingsWrapper implements java.io.Serializable {
         return zipDownloadLimit;
     }
 
-    public boolean isPublicInstall(){
+    public boolean isPublicInstall() {
         if (publicInstall == null) {
             publicInstall = systemConfig.isPublicInstall();
         }
@@ -348,8 +348,8 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public boolean isDownloadable(FileMetadata fmd) {
-        boolean downloadable=true;
-        if(isGlobusFileDownload()) {
+        boolean downloadable = true;
+        if (isGlobusFileDownload()) {
             String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
             
             downloadable = downloadable && StorageIO.isDataverseAccessible(driverId); 
@@ -358,8 +358,8 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public boolean isGlobusTransferable(FileMetadata fmd) {
-        boolean globusTransferable=true;
-        if(isGlobusFileDownload()) {
+        boolean globusTransferable = true;
+        if (isGlobusFileDownload()) {
             String driverId = DataAccess.getStorageDriverFromIdentifier(fmd.getDataFile().getStorageIdentifier());
             globusTransferable = GlobusAccessibleStore.isGlobusAccessible(driverId);
         }
@@ -386,13 +386,13 @@ public class SettingsWrapper implements java.io.Serializable {
     public boolean isRsyncOnly() {
         if (rsyncOnly == null) {
             String downloadMethods = getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-            if(downloadMethods == null){
+            if (downloadMethods == null) {
                 rsyncOnly = false;
-            } else if (!downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString())){
+            } else if (!downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString())) {
                 rsyncOnly = false;
             } else {
                 String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
-                if (uploadMethods==null){
+                if (uploadMethods == null) {
                     rsyncOnly = false;
                 } else {
                     rsyncOnly = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
@@ -402,7 +402,7 @@ public class SettingsWrapper implements java.io.Serializable {
         return rsyncOnly;
     }
 
-    public boolean isHTTPUpload(){
+    public boolean isHTTPUpload() {
         if (httpUpload == null) {
             httpUpload = getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());
         }
@@ -424,7 +424,7 @@ public class SettingsWrapper implements java.io.Serializable {
     public Integer getUploadMethodsCount() {
         if (uploadMethodsCount == null) {
             String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-            if (uploadMethods==null){
+            if (uploadMethods == null) {
                 uploadMethodsCount = 0;
             } else {
                 uploadMethodsCount = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
@@ -474,14 +474,14 @@ public class SettingsWrapper implements java.io.Serializable {
     
 
     public boolean isMakeDataCountDisplayEnabled() {
-        boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath)!=null); //Backward compatible
+        boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath) != null); //Backward compatible
         return isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, safeDefaultIfKeyNotFound);
     }
     
     public LocalDate getMDCStartDate() {
         String date = getValueForKey(SettingsServiceBean.Key.MDCStartDate);
-        LocalDate ld=null;
-        if(date!=null) {
+        LocalDate ld = null;
+        if (date != null) {
           ld = LocalDate.parse(date);
         }
         return ld;
@@ -537,7 +537,7 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public boolean isValidEmbargoDate(Embargo e) {
         
-        if (e.getDateAvailable()==null || (isEmbargoAllowed() && e.getDateAvailable().isAfter(LocalDate.now())
+        if (e.getDateAvailable() == null || (isEmbargoAllowed() && e.getDateAvailable().isAfter(LocalDate.now())
                 && e.getDateAvailable().isBefore(getMaxEmbargoDate().plusDays(1)))) {
             return true;
         }
@@ -547,7 +547,7 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public boolean isEmbargoAllowed() {
         //Need a valid :MaxEmbargoDurationInMonths setting to allow embargoes
-        return getMaxEmbargoDate()!=null;
+        return getMaxEmbargoDate() != null;
     }
     
     public void validateEmbargoDate(FacesContext context, UIComponent component, Object value)
@@ -620,7 +620,7 @@ public class SettingsWrapper implements java.io.Serializable {
 
     public boolean isValidRetentionDate(Retention r) {
 
-        if (r.getDateUnavailable()==null ||
+        if (r.getDateUnavailable() == null ||
             isRetentionAllowed() && r.getDateUnavailable().isAfter(getMinRetentionDate())) {
             return true;
         }
@@ -630,7 +630,7 @@ public class SettingsWrapper implements java.io.Serializable {
 
     public boolean isRetentionAllowed() {
         //Need a valid :MinRetentionDurationInMonths setting to allow retentions
-        return getMinRetentionDate()!=null;
+        return getMinRetentionDate() != null;
     }
 
     public void validateRetentionDate(FacesContext context, UIComponent component, Object value)
@@ -671,7 +671,7 @@ public class SettingsWrapper implements java.io.Serializable {
         }
     }
 
-    Map<String,String> languageMap = null;
+    Map<String, String> languageMap = null;
     
     public Map<String, String> getBaseMetadataLanguageMap(boolean refresh) {
         if (languageMap == null || refresh) {
@@ -681,7 +681,7 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public Map<String, String> getMetadataLanguages(DvObjectContainer target) {
-        Map<String,String> currentMap = new HashMap<String,String>();
+        Map<String, String> currentMap = new HashMap<String, String>();
         currentMap.putAll(getBaseMetadataLanguageMap(false));
         currentMap.put(DvObjectContainer.UNDEFINED_CODE, getDefaultMetadataLanguageLabel(target));
         return currentMap;
@@ -690,7 +690,7 @@ public class SettingsWrapper implements java.io.Serializable {
     private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {
         String mlLabel = BundleUtil.getStringFromBundle("dataverse.metadatalanguage.setatdatasetcreation");
 
-        if(target.getOwner() != null) { // Root collection is excluded from inherit metadata language research
+        if (target.getOwner() != null) { // Root collection is excluded from inherit metadata language research
             String mlCode = target.getOwner().getEffectiveMetadataLanguage();
 
             // If it's undefined, no parent has a metadata language defined, and the global default should be used.
@@ -706,8 +706,8 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public String getDefaultMetadataLanguage() {
         Map<String, String> mdMap = getBaseMetadataLanguageMap(false);
-        if(mdMap.size()>=1) {
-            if(mdMap.size()==1) {
+        if (mdMap.size() >= 1) {
+            if (mdMap.size() == 1) {
                 //One entry - it's the default
             return (String) mdMap.keySet().toArray()[0];
             } else {
@@ -813,9 +813,9 @@ public class SettingsWrapper implements java.io.Serializable {
         return metricsUrl;
     }
     
-    private Boolean getUploadMethodAvailable(String method){
+    private Boolean getUploadMethodAvailable(String method) {
         String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-        if (uploadMethods==null){
+        if (uploadMethods == null) {
             return false;
         } else {
            return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
@@ -826,11 +826,11 @@ public class SettingsWrapper implements java.io.Serializable {
 
     public List<String> getAllowedExternalStatuses(Dataset d) {
         String setName = d.getEffectiveCurationLabelSetName();
-        if(setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
+        if (setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
             return new ArrayList<String>();
         }
         String[] labelArray = systemConfig.getCurationLabels().get(setName);
-        if(labelArray==null) {
+        if (labelArray == null) {
             return new ArrayList<String>();
         }
         return Arrays.asList(labelArray);

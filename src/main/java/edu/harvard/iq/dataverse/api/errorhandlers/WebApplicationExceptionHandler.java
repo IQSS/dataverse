@@ -44,7 +44,7 @@ public class WebApplicationExceptionHandler implements ExceptionMapper<WebApplic
             // BadRequest
             case 400:
                 // It's strange to have these "startsWith" conditionals here. They both come from Access.java.
-                if ( (ex.getMessage()+"").toLowerCase().startsWith("tabular data required")) {
+                if ((ex.getMessage() + "").toLowerCase().startsWith("tabular data required")) {
                     jrb.message(BundleUtil.getStringFromBundle("access.api.exception.metadata.not.available.for.nontabular.file"));
                 } else if ((ex.getMessage() + "").toLowerCase().startsWith("no permission to download file")) {
                     jrb.message(BundleUtil.getStringFromBundle("access.api.exception.metadata.restricted.no.permission"));
@@ -60,7 +60,7 @@ public class WebApplicationExceptionHandler implements ExceptionMapper<WebApplic
                 break;
             // NotFound
             case 404:
-                if ( (ex.getMessage()+"").toLowerCase().startsWith("datafile")) {
+                if ((ex.getMessage() + "").toLowerCase().startsWith("datafile")) {
                     jrb.message(ex.getMessage());
                 } else {
                     jrb.message("API endpoint does not exist on this server. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.");
@@ -87,7 +87,7 @@ public class WebApplicationExceptionHandler implements ExceptionMapper<WebApplic
                 break;
             // ServiceUnavailable
             case 503:
-                if ( (ex.getMessage()+"").toLowerCase().startsWith("datafile")) {
+                if ((ex.getMessage() + "").toLowerCase().startsWith("datafile")) {
                     jrb.message(ex.getMessage());
                 } else {
                     jrb.message("Requested service or method not available on the requested object");

@@ -28,7 +28,7 @@ public class AlternativePersistentIdentifier implements Serializable {
      * a dvObject may have many Alternate Persistent Identifiers 
      */
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DvObject dvObject;
     
     private String protocol;

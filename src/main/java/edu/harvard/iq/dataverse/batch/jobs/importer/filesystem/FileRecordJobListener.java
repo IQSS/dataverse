@@ -242,9 +242,9 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
 
     }
     
-    private void closeJobLoggerHandlers(){
+    private void closeJobLoggerHandlers() {
         // close the job logger handlers
-        for (Handler h:getJobLogger().getHandlers()) {
+        for (Handler h :getJobLogger().getHandlers()) {
             h.close();
         }
     }
@@ -308,7 +308,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             if (jobExecution != null) {
 
                 Date date = new Date();
-                Timestamp timestamp =  new Timestamp(date.getTime());
+                Timestamp timestamp = new Timestamp(date.getTime());
 
                 JobExecutionEntity jobExecutionEntity = JobExecutionEntity.create(jobExecution);
                 jobExecutionEntity.setExitStatus("COMPLETED");
@@ -327,7 +327,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                     notificationServiceBean.sendNotification((AuthenticatedUser) value, new Timestamp(new Date().getTime()), notifyType, datasetVersionId);
                 });
                 // [3] send SuperUser notification
-                List <AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
+                List<AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
                 if (superUsers != null && !superUsers.isEmpty()) {
                     superUsers.forEach((au) -> {
                         notificationServiceBean.sendNotification(au, timestamp, notifyType, datasetVersionId);                   
@@ -476,7 +476,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
     }
     
     private Logger getJobLogger() {
-        return Logger.getLogger("job-"+jobContext.getInstanceId());
+        return Logger.getLogger("job-" + jobContext.getInstanceId());
     }
     
 }

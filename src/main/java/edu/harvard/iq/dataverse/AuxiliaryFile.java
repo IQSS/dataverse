@@ -49,7 +49,7 @@ public class AuxiliaryFile implements Serializable {
      * a data file may have many auxiliaryFiles
      */
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataFile dataFile;
   
     private String formatTag;

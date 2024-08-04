@@ -54,7 +54,7 @@ public class StorageQuota implements Serializable {
      * Only collection-wide quotas are supported for now. 
      */
     @OneToOne
-    @JoinColumn(name="definitionPoint_id", nullable=true)
+    @JoinColumn(name = "definitionPoint_id", nullable = true)
     private DvObject definitionPoint;
     
     @Column(nullable = true)

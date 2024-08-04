@@ -80,8 +80,8 @@ public class NavigationWrapper implements java.io.Serializable {
     
     
     
-     public String notAuthorized(){
-        if (!session.getUser().isAuthenticated()){
+     public String notAuthorized() {
+        if (!session.getUser().isAuthenticated()) {
             return "/loginpage.xhtml" + getRedirectPage();
         } else {
             return sendError(HttpServletResponse.SC_FORBIDDEN);
@@ -99,10 +99,10 @@ public class NavigationWrapper implements java.io.Serializable {
     private String sendError(int errorCode) {
         FacesContext context = FacesContext.getCurrentInstance();
         try {
-            context.getExternalContext().responseSendError(errorCode,null);
+            context.getExternalContext().responseSendError(errorCode, null);
         } catch (IOException ex) {
             //Logger.getLogger(PermissionsWrapper.class.getName()).log(Level.SEVERE, null, ex);
-            Logger.getLogger(NavigationWrapper.class.getName()).fine("Caught exception in sendError(): "+ex.getMessage());
+            Logger.getLogger(NavigationWrapper.class.getName()).fine("Caught exception in sendError(): " + ex.getMessage());
         }
         context.responseComplete();
         return "";

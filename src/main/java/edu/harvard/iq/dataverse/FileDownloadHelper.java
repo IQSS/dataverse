@@ -77,7 +77,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          // Note that this method is only ever called from the file-download-popup -
          // meaning we know for the fact that we DO want to save this
          // guestbookResponse permanently in the database.
-        if(isGlobusTransfer) {
+        if (isGlobusTransfer) {
             globusService.writeGuestbookAndStartTransfer(guestbookResponse, true);
         } else {
             if (guestbookResponse.getSelectedFileIds() != null) {
@@ -126,11 +126,11 @@ public class FileDownloadHelper implements java.io.Serializable {
          if (externalTool == null) {
              externalTool = guestbookResponse.getExternalTool();
          } 
-         if(fmd== null) {
+         if (fmd == null) {
              DatasetVersion dv = guestbookResponse.getDatasetVersion();
-             for(FileMetadata fm: dv.getFileMetadatas()) {
-                 if(fm.getDataFile()==guestbookResponse.getDataFile()) {
-                     fmd=fm;
+             for (FileMetadata fm : dv.getFileMetadatas()) {
+                 if (fm.getDataFile() == guestbookResponse.getDataFile()) {
+                     fmd = fm;
                      break;
                  }
              }
@@ -152,7 +152,7 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     public void writeGuestbookResponseAndRequestAccess(GuestbookResponse guestbookResponse) {
 
-        if(!filesForRequestAccess.isEmpty()) {
+        if (!filesForRequestAccess.isEmpty()) {
             /* Only for single file requests (i.e. from kebab menu) */
             guestbookResponse.setDataFile(filesForRequestAccess.get(0));
         }
@@ -179,12 +179,12 @@ public class FileDownloadHelper implements java.io.Serializable {
         this.filesForRequestAccess = filesForRequestAccess;
     }
     
-    public void addFileForRequestAccess(DataFile dataFile){
+    public void addFileForRequestAccess(DataFile dataFile) {
         this.filesForRequestAccess.clear();
         this.filesForRequestAccess.add(dataFile);
     }
     
-    public void clearRequestAccessFiles(){
+    public void clearRequestAccessFiles() {
         this.filesForRequestAccess.clear();
     }
     
@@ -210,12 +210,12 @@ public class FileDownloadHelper implements java.io.Serializable {
      * @param  fileMetadata
      * @return boolean
      */
-   public boolean canDownloadFile(FileMetadata fileMetadata){
-        if (fileMetadata == null){
+   public boolean canDownloadFile(FileMetadata fileMetadata) {
+        if (fileMetadata == null) {
             return false;
         }
        
-        if ((fileMetadata.getId() == null) || (fileMetadata.getDataFile().getId() == null)){
+        if ((fileMetadata.getId() == null) || (fileMetadata.getDataFile().getId() == null)) {
             return false;
         }
         
@@ -233,7 +233,7 @@ public class FileDownloadHelper implements java.io.Serializable {
         boolean isRestrictedFile = fileMetadata.isRestricted() || fileMetadata.getDataFile().isRestricted();
         
         // Has this file been checked? Look at the DatasetPage hash
-        if (this.fileDownloadPermissionMap.containsKey(fid)){
+        if (this.fileDownloadPermissionMap.containsKey(fid)) {
             // Yes, return previous answer
             //logger.info("using cached result for candownloadfile on filemetadata "+fid);
             return this.fileDownloadPermissionMap.get(fid);
@@ -272,20 +272,20 @@ public class FileDownloadHelper implements java.io.Serializable {
         return fileMetadata.isRestricted() || FileUtil.isActivelyEmbargoed(fileMetadata);
     }
 
-    public boolean doesSessionUserHavePermission(Permission permissionToCheck, FileMetadata fileMetadata){
-        if (permissionToCheck == null){
+    public boolean doesSessionUserHavePermission(Permission permissionToCheck, FileMetadata fileMetadata) {
+        if (permissionToCheck == null) {
             return false;
         }
         
         DvObject objectToCheck = null;
         
-        if (permissionToCheck.equals(Permission.EditDataset)){
+        if (permissionToCheck.equals(Permission.EditDataset)) {
             objectToCheck = fileMetadata.getDatasetVersion().getDataset();
-        } else if (permissionToCheck.equals(Permission.DownloadFile)){
+        } else if (permissionToCheck.equals(Permission.DownloadFile)) {
             objectToCheck = fileMetadata.getDataFile();
         }
         
-        if (objectToCheck == null){
+        if (objectToCheck == null) {
             return false;
         }
         
@@ -296,15 +296,15 @@ public class FileDownloadHelper implements java.io.Serializable {
     }
     
     
-    public void requestAccess(DataFile file){   
+    public void requestAccess(DataFile file) {   
         //Called from download button fragment via either dataset page or file page
         // when there's only one file for the access request and there's no pop-up
         processRequestAccess(file, true);        
     }
     
-    public void handleCommandLinkClick(FileMetadata fmd){
+    public void handleCommandLinkClick(FileMetadata fmd) {
         
-        if (FileUtil.isRequestAccessPopupRequired(fmd.getDatasetVersion())){
+        if (FileUtil.isRequestAccessPopupRequired(fmd.getDatasetVersion())) {
             addFileForRequestAccess(fmd.getDataFile());
             PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');");
         } else {
@@ -364,7 +364,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          return false;
      } 
 
-    public GuestbookResponseServiceBean getGuestbookResponseService(){
+    public GuestbookResponseServiceBean getGuestbookResponseService() {
         return this.guestbookResponseService;
     }
     

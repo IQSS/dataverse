@@ -41,7 +41,7 @@ public class JsfHelperTest {
 			Arguments.of(TestEnum.Lorem, "Lorem", TestEnum.Dolor),
 			Arguments.of(TestEnum.Lorem, "Lorem   ", TestEnum.Dolor),
 			Arguments.of(TestEnum.Dolor, null, TestEnum.Dolor),
-			Arguments.of(TestEnum.Dolor, "THIS IS A BAD VALUE", TestEnum.Dolor )
+			Arguments.of(TestEnum.Dolor, "THIS IS A BAD VALUE", TestEnum.Dolor)
 		);
 	}
 
@@ -54,7 +54,7 @@ public class JsfHelperTest {
 		System.out.println("enumValue");
 		JsfHelper instance = new JsfHelper();
 
-		assertEquals( inputEnum, instance.enumValue(inputString, TestEnum.class, defaultEnumValue) );
+		assertEquals(inputEnum, instance.enumValue(inputString, TestEnum.class, defaultEnumValue));
 	}
 	
 }

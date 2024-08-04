@@ -14,7 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  * Adds a lock to a dataset.
  * @author michael
  */
-@RequiredPermissions( Permission.EditDataset )
+@RequiredPermissions(Permission.EditDataset)
 public class AddLockCommand extends AbstractCommand<DatasetLock> {
 
     private final Dataset dataset;

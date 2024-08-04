@@ -48,11 +48,11 @@ public abstract class TabularDataFileReader {
     
     protected TabularDataFileReaderSpi originatingProvider;
 
-    protected TabularDataFileReader(TabularDataFileReaderSpi originatingProvider){
+    protected TabularDataFileReader(TabularDataFileReaderSpi originatingProvider) {
         this.originatingProvider = originatingProvider;
     }
     
-    public TabularDataFileReader(){
+    public TabularDataFileReader() {
     }
 
     public TabularDataFileReaderSpi getOriginatingProvider() {
@@ -141,10 +141,10 @@ public abstract class TabularDataFileReader {
      * @param rawString a<code>String</code> object
      * @return a new, null-character-free <code>String</code> object
      */
-    protected String getNullStrippedString(String rawString){
+    protected String getNullStrippedString(String rawString) {
         String nullRemovedString = null;
         int null_position = rawString.indexOf(0);
-        if (null_position >= 0){
+        if (null_position >= 0) {
             // string is terminated by the null
             nullRemovedString = rawString.substring(0, null_position);
         } else {

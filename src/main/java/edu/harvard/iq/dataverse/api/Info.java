@@ -59,7 +59,7 @@ public class Info extends AbstractApiBean {
                  description = "Version and build information")
     public Response getInfo() {
         String versionStr = systemConfig.getVersion(true);
-        String[] comps = versionStr.split("build",2);
+        String[] comps = versionStr.split("build", 2);
         String version = comps[0].trim();
         JsonValue build = comps.length > 1 ? Json.createArrayBuilder().add(comps[1].trim()).build().get(0) : JsonValue.NULL;
         return ok(Json.createObjectBuilder()

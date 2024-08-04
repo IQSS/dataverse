@@ -40,7 +40,7 @@ public class FeaturedDataverseServiceBean {
          
          try {
              //searchResults = em.createNativeQuery("SELECT id, alias, name FROM dataverse WHERE id IN (select featureddataverse_id from DataverseFeaturedDataverse where dataverse_id = "+dataverseId+" order by displayOrder)").getResultList();
-             searchResults = em.createNativeQuery("SELECT d.id, d.alias, d.name FROM dataverse d, DataverseFeaturedDataverse f WHERE f.featureddataverse_id = d.id AND f.dataverse_id = "+dataverseId+" order by f.displayOrder").getResultList();
+             searchResults = em.createNativeQuery("SELECT d.id, d.alias, d.name FROM dataverse d, DataverseFeaturedDataverse f WHERE f.featureddataverse_id = d.id AND f.dataverse_id = " + dataverseId + " order by f.displayOrder").getResultList();
          } catch (Exception ex) {
              return null;
          }
@@ -48,7 +48,7 @@ public class FeaturedDataverseServiceBean {
          List<Dataverse> ret = new ArrayList<>();
          
          for (Object[] result : searchResults) {
-            Long id = (Long)result[0];
+            Long id = (Long) result[0];
             
             if (id == null) {
                 continue;
@@ -58,16 +58,16 @@ public class FeaturedDataverseServiceBean {
             dataverse.setId(id);
                         
             if (result[1] != null) {
-                dataverse.setAlias((String)result[1]);
+                dataverse.setAlias((String) result[1]);
             }
             
             if (result[2] != null) {
-                dataverse.setName((String)result[2]);
+                dataverse.setName((String) result[2]);
             }
             
             dataverse.setDataverseTheme(dataverseService.findDataverseThemeByIdQuick(id));
-            if (dataverse.getDataverseTheme()!=null){
-                logger.fine("THEME: "+dataverse.getDataverseTheme().getLogo()+", "+dataverse.getDataverseTheme().getLogoFormat());
+            if (dataverse.getDataverseTheme() != null) {
+                logger.fine("THEME: " + dataverse.getDataverseTheme().getLogo() + ", " + dataverse.getDataverseTheme().getLogoFormat());
             }
             ret.add(dataverse);
          }
@@ -83,7 +83,7 @@ public class FeaturedDataverseServiceBean {
         em.remove(em.merge(dataverseFeaturedDataverse));
     }
     
-	public void deleteFeaturedDataversesFor( Dataverse d ) {
+	public void deleteFeaturedDataversesFor(Dataverse d) {
 		em.createNamedQuery("DataverseFeaturedDataverse.removeByOwnerId")
 			.setParameter("ownerId", d.getId())
 				.executeUpdate();

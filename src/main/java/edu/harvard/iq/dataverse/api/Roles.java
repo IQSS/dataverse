@@ -34,11 +34,11 @@ public class Roles extends AbstractApiBean {
     @AuthRequired
 	@Path("{id}")
 	public Response viewRole(@Context ContainerRequestContext crc, @PathParam("id") String id) {
-        return response( ()-> {
+        return response(() -> {
             final User user = getRequestUser(crc);
             final DataverseRole role = findRoleOrDie(id);
-            return ( permissionSvc.userOn(user, role.getOwner()).has(Permission.ManageDataversePermissions) ) 
-                    ? ok( json(role) ) : permissionError("Permission required to view roles.");
+            return (permissionSvc.userOn(user, role.getOwner()).has(Permission.ManageDataversePermissions)) 
+                    ? ok(json(role)) : permissionError("Permission required to view roles.");
         });
 	}
 	
@@ -62,9 +62,9 @@ public class Roles extends AbstractApiBean {
 	public Response createNewRole(@Context ContainerRequestContext crc,
                                   RoleDTO roleDto,
                                   @QueryParam("dvo") String dvoIdtf) {
-        return response( req -> ok(json(execCommand(
+        return response(req -> ok(json(execCommand(
                                   new CreateRoleCommand(roleDto.asRole(),
-                                                        req,findDataverseOrDie(dvoIdtf))))), getRequestUser(crc));
+                                                        req, findDataverseOrDie(dvoIdtf))))), getRequestUser(crc));
 	}
     
 }

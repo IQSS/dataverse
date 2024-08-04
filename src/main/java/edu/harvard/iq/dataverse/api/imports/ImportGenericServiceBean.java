@@ -79,12 +79,12 @@ public class ImportGenericServiceBean {
     
     public static String DCTERMS = "http://purl.org/dc/terms/";
     
-    public ForeignMetadataFormatMapping findFormatMappingByName (String name) {
+    public ForeignMetadataFormatMapping findFormatMappingByName(String name) {
         try {
             return em.createNamedQuery("ForeignMetadataFormatMapping.findByName", ForeignMetadataFormatMapping.class)
                     .setParameter("name", name)
                     .getSingleResult();
-        } catch ( NoResultException nre ) {
+        } catch (NoResultException nre) {
             return null;
         }
     }
@@ -94,15 +94,15 @@ public class ImportGenericServiceBean {
         StringReader reader = null;
         XMLStreamReader xmlr = null;        
 
-        ForeignMetadataFormatMapping mappingSupported = findFormatMappingByName (foreignFormat);
+        ForeignMetadataFormatMapping mappingSupported = findFormatMappingByName(foreignFormat);
         if (mappingSupported == null) {
-            throw new EJBException("Unknown/unsupported foreign metadata format "+foreignFormat);
+            throw new EJBException("Unknown/unsupported foreign metadata format " + foreignFormat);
         }
         
         try {
             reader = new StringReader(xmlToParse);
             XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
-            xmlr =  xmlFactory.createXMLStreamReader(reader);
+            xmlr = xmlFactory.createXMLStreamReader(reader);
             DatasetDTO datasetDTO = processXML(xmlr, mappingSupported);
         
             Gson gson = new Gson();
@@ -113,7 +113,7 @@ public class ImportGenericServiceBean {
             DatasetVersion dv = new JsonParser(datasetFieldSvc, blockService, settingsService, licenseService).parseDatasetVersion(obj, datasetVersion);
         } catch (XMLStreamException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
-            throw new EJBException("ERROR occurred while parsing XML fragment  ("+xmlToParse.substring(0, 64)+"...); ", ex);
+            throw new EJBException("ERROR occurred while parsing XML fragment  (" + xmlToParse.substring(0, 64) + "...); ", ex);
         } catch (JsonParseException ex) {
             Logger.getLogger(ImportGenericServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -123,11 +123,11 @@ public class ImportGenericServiceBean {
         }
     }
 
-    public DatasetDTO processXML( XMLStreamReader xmlr, ForeignMetadataFormatMapping foreignFormatMapping) throws XMLStreamException {
+    public DatasetDTO processXML(XMLStreamReader xmlr, ForeignMetadataFormatMapping foreignFormatMapping) throws XMLStreamException {
         // init - similarly to what I'm doing in the metadata extraction code? 
         DatasetDTO datasetDTO = this.initializeDataset();
 
-        while ( xmlr.next() == XMLStreamConstants.COMMENT ); // skip pre root comments
+        while (xmlr.next() == XMLStreamConstants.COMMENT) ; // skip pre root comments
 //        xmlr.nextTag();
         String openingTag = foreignFormatMapping.getStartElement();
         if (openingTag != null) {
@@ -185,10 +185,10 @@ public class ImportGenericServiceBean {
         // the identifier to be a global id, so we need to rearrange that: 
         
         String identifier = getOtherIdFromDTO(datasetDTO.getDatasetVersion());
-        logger.fine("Imported identifier: "+identifier);
+        logger.fine("Imported identifier: " + identifier);
         
         String globalIdentifier = reassignIdentifierAsGlobalId(identifier, datasetDTO);
-        logger.fine("Detected global identifier: "+globalIdentifier);
+        logger.fine("Detected global identifier: " + globalIdentifier);
         
         if (globalIdentifier == null) {
             throw new EJBException("Failed to find a global identifier in the OAI_DC XML record.");
@@ -199,13 +199,13 @@ public class ImportGenericServiceBean {
     }
     
     private void processXMLElement(XMLStreamReader xmlr, String currentPath, String openingTag, ForeignMetadataFormatMapping foreignFormatMapping, DatasetDTO datasetDTO) throws XMLStreamException {
-        logger.fine("entering processXMLElement; ("+currentPath+")");
+        logger.fine("entering processXMLElement; (" + currentPath + ")");
         
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 String currentElement = xmlr.getLocalName();
                 
-                ForeignMetadataFieldMapping mappingDefined = datasetfieldService.findFieldMapping(foreignFormatMapping.getName(), currentPath+currentElement);
+                ForeignMetadataFieldMapping mappingDefined = datasetfieldService.findFieldMapping(foreignFormatMapping.getName(), currentPath + currentElement);
                 
                 if (mappingDefined != null) {
                     DatasetFieldType mappingDefinedFieldType = datasetfieldService.findByNameOpt(mappingDefined.getDatasetfieldName());
@@ -248,13 +248,13 @@ public class ImportGenericServiceBean {
                             compoundField.add(set);
                             MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(mappingDefinedFieldType.getMetadataBlock().getName());
                             citationBlock.addField(FieldDTO.createMultipleCompoundFieldDTO(mappingDefined.getDatasetfieldName(), compoundField));
-                        } else{
+                        } else {
                             FieldDTO value = null;
-                            if (mappingDefinedFieldType.isAllowMultiples()){
+                            if (mappingDefinedFieldType.isAllowMultiples()) {
                                 List<String> values = new ArrayList<>();
                                 values.add(parseText(xmlr));
                                 value = FieldDTO.createMultiplePrimitiveFieldDTO(dataverseFieldName, values);
-                            }else {
+                            } else {
                                 value = FieldDTO.createPrimitiveFieldDTO(dataverseFieldName, parseText(xmlr));
                             }
                                 
@@ -286,7 +286,7 @@ public class ImportGenericServiceBean {
                     }
                 } else {
                     // recursively, process the xml stream further down: 
-                    processXMLElement(xmlr, currentPath+currentElement+":", currentElement, foreignFormatMapping, datasetDTO);
+                    processXMLElement(xmlr, currentPath + currentElement + ":", currentElement, foreignFormatMapping, datasetDTO);
                 }
                 
             } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -296,8 +296,8 @@ public class ImportGenericServiceBean {
     }
 
     private FieldDTO makeDTO(DatasetFieldType dataverseFieldType, FieldDTO value, String dataverseFieldName) {
-        if (dataverseFieldType.isAllowMultiples()){
-            if(dataverseFieldType.isCompound()) {
+        if (dataverseFieldType.isAllowMultiples()) {
+            if (dataverseFieldType.isCompound()) {
                 value = FieldDTO.createMultipleCompoundFieldDTO(dataverseFieldName, value);
             } else if (dataverseFieldType.isControlledVocabulary()) {
                 value = FieldDTO.createMultipleVocabFieldDTO(dataverseFieldName, Arrays.asList(value.getSinglePrimitive()));
@@ -311,8 +311,8 @@ public class ImportGenericServiceBean {
                     
                 }
             }
-        } else{
-            if (dataverseFieldType.isCompound()){
+        } else {
+            if (dataverseFieldType.isCompound()) {
                 value = FieldDTO.createCompoundFieldDTO(dataverseFieldName, value);
             }
         }
@@ -381,7 +381,7 @@ public class ImportGenericServiceBean {
 
         int index1 = identifierString.indexOf(':');
         int index2 = identifierString.indexOf('/');
-        if (index1==-1) {
+        if (index1 == -1) {
             logger.warning("Error parsing identifier: " + identifierString + ". ':' not found in string");
             return null; 
         }  
@@ -389,7 +389,7 @@ public class ImportGenericServiceBean {
         String protocol = identifierString.substring(0, index1);
         
         if (AbstractDOIProvider.DOI_PROTOCOL.equals(protocol) || HandlePidProvider.HDL_PROTOCOL.equals(protocol) || PermaLinkPidProvider.PERMA_PROTOCOL.equals(protocol)) {
-            logger.fine("Processing hdl:- or doi:- or perma:-style identifier : "+identifierString);        
+            logger.fine("Processing hdl:- or doi:- or perma:-style identifier : " + identifierString);        
         
         } else if ("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol)) {
             
@@ -397,12 +397,12 @@ public class ImportGenericServiceBean {
             //ToDo - refactor index1 always has -1 here so that we can use index1+1 later
             //ToDo - single map of protocol/url, are all three cases the same then?
             if (identifierString.startsWith(HandlePidProvider.HDL_RESOLVER_URL) || identifierString.startsWith(HandlePidProvider.HTTP_HDL_RESOLVER_URL)) {
-                logger.fine("Processing Handle identifier formatted as a resolver URL: "+identifierString);
+                logger.fine("Processing Handle identifier formatted as a resolver URL: " + identifierString);
                 protocol = HandlePidProvider.HDL_PROTOCOL;
                 index1 = (identifierString.startsWith(HandlePidProvider.HDL_RESOLVER_URL)) ? HandlePidProvider.HDL_RESOLVER_URL.length() - 1 : HandlePidProvider.HTTP_HDL_RESOLVER_URL.length() - 1;
                 index2 = identifierString.indexOf("/", index1 + 1);
             } else if (identifierString.startsWith(AbstractDOIProvider.DOI_RESOLVER_URL) || identifierString.startsWith(AbstractDOIProvider.HTTP_DOI_RESOLVER_URL) || identifierString.startsWith(AbstractDOIProvider.DXDOI_RESOLVER_URL) || identifierString.startsWith(AbstractDOIProvider.HTTP_DXDOI_RESOLVER_URL)) {
-                logger.fine("Processing DOI identifier formatted as a resolver URL: "+identifierString);
+                logger.fine("Processing DOI identifier formatted as a resolver URL: " + identifierString);
                 protocol = AbstractDOIProvider.DOI_PROTOCOL;
                 identifierString = identifierString.replace(AbstractDOIProvider.DXDOI_RESOLVER_URL, AbstractDOIProvider.DOI_RESOLVER_URL);
                 identifierString = identifierString.replace(AbstractDOIProvider.HTTP_DXDOI_RESOLVER_URL, AbstractDOIProvider.HTTP_DOI_RESOLVER_URL);
@@ -410,14 +410,14 @@ public class ImportGenericServiceBean {
                 index2 = identifierString.indexOf("/", index1 + 1);
             } else if (identifierString.startsWith(PermaLinkPidProvider.PERMA_RESOLVER_URL + Dataset.TARGET_URL)) {
                 protocol = PermaLinkPidProvider.PERMA_PROTOCOL;
-                index1 = PermaLinkPidProvider.PERMA_RESOLVER_URL.length() + + Dataset.TARGET_URL.length() - 1; 
+                index1 = PermaLinkPidProvider.PERMA_RESOLVER_URL.length() + +Dataset.TARGET_URL.length() - 1; 
                 index2 = identifierString.indexOf("/", index1 + 1);
             } else {
-                logger.warning("HTTP Url in supplied as the identifier is neither a Handle nor DOI resolver: "+identifierString);
+                logger.warning("HTTP Url in supplied as the identifier is neither a Handle nor DOI resolver: " + identifierString);
                 return null;
             }
         } else {
-            logger.warning("Unknown identifier format: "+identifierString);
+            logger.warning("Unknown identifier format: " + identifierString);
             return null; 
         }
         
@@ -478,13 +478,13 @@ public class ImportGenericServiceBean {
     public static final String NOTE_SUBJECT_CITATION = "Citation";
 
     public static final String NOTE_TYPE_VERSION_NOTE = "DVN:VERSION_NOTE";
-    public static final String NOTE_SUBJECT_VERSION_NOTE= "Version Note";
+    public static final String NOTE_SUBJECT_VERSION_NOTE = "Version Note";
 
     public static final String NOTE_TYPE_ARCHIVE_NOTE = "DVN:ARCHIVE_NOTE";
-    public static final String NOTE_SUBJECT_ARCHIVE_NOTE= "Archive Note";
+    public static final String NOTE_SUBJECT_ARCHIVE_NOTE = "Archive Note";
 
     public static final String NOTE_TYPE_ARCHIVE_DATE = "DVN:ARCHIVE_DATE";
-    public static final String NOTE_SUBJECT_ARCHIVE_DATE= "Archive Date";
+    public static final String NOTE_SUBJECT_ARCHIVE_DATE = "Archive Date";
     
     public static final String NOTE_TYPE_EXTENDED_METADATA = "DVN:EXTENDED_METADATA";
 
@@ -494,13 +494,13 @@ public class ImportGenericServiceBean {
     public static final String NOTE_TYPE_REPLICATION_FOR = "DVN:REPLICATION_FOR";
     private XMLInputFactory xmlInputFactory = null;
     private ImportType importType;
-    public enum ImportType{ NEW, MIGRATION, HARVEST};
+    public enum ImportType { NEW, MIGRATION, HARVEST};
 
     public ImportGenericServiceBean() {
     }
      
     public ImportGenericServiceBean(ImportType importType) {
-        this.importType=importType;
+        this.importType = importType;
         xmlInputFactory = javax.xml.stream.XMLInputFactory.newInstance();
         xmlInputFactory.setProperty("javax.xml.stream.isCoalescing", java.lang.Boolean.TRUE);
 
@@ -544,8 +544,8 @@ public class ImportGenericServiceBean {
 
         try {
             in = new FileInputStream(ddiFile);
-            xmlr =  xmlInputFactory.createXMLStreamReader(in);
-            processDCTerms( xmlr,  datasetDTO , filesMap );
+            xmlr = xmlInputFactory.createXMLStreamReader(in);
+            processDCTerms(xmlr, datasetDTO, filesMap);
         } catch (FileNotFoundException ex) {
             Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred in mapDDI: File Not Found!");
@@ -607,17 +607,17 @@ public class ImportGenericServiceBean {
         
     }
      private String parseText(XMLStreamReader xmlr) throws XMLStreamException {
-        return parseText(xmlr,true);
+        return parseText(xmlr, true);
      }
 
      private String parseText(XMLStreamReader xmlr, boolean scrubText) throws XMLStreamException {
         String tempString = getElementText(xmlr);
         if (scrubText) {
-            tempString = tempString.trim().replace('\n',' ');
+            tempString = tempString.trim().replace('\n', ' ');
         }
         return tempString;
      }
-     private String parseDate (XMLStreamReader xmlr, String endTag) throws XMLStreamException {
+     private String parseDate(XMLStreamReader xmlr, String endTag) throws XMLStreamException {
         String date = xmlr.getAttributeValue(null, "date");
         if (date == null) {
             date = parseText(xmlr);
@@ -630,27 +630,27 @@ public class ImportGenericServiceBean {
      * the workaround for the moment is to comment or handling ENTITY_REFERENCE in this case
      */
     private String getElementText(XMLStreamReader xmlr) throws XMLStreamException {
-        if(xmlr.getEventType() != XMLStreamConstants.START_ELEMENT) {
+        if (xmlr.getEventType() != XMLStreamConstants.START_ELEMENT) {
             throw new XMLStreamException("parser must be on START_ELEMENT to read next text", xmlr.getLocation());
         }
         int eventType = xmlr.next();
         StringBuilder content = new StringBuilder();
-        while(eventType != XMLStreamConstants.END_ELEMENT ) {
-            if(eventType == XMLStreamConstants.CHARACTERS
+        while (eventType != XMLStreamConstants.END_ELEMENT) {
+            if (eventType == XMLStreamConstants.CHARACTERS
             || eventType == XMLStreamConstants.CDATA
             || eventType == XMLStreamConstants.SPACE
             /* || eventType == XMLStreamConstants.ENTITY_REFERENCE*/) {
                 content.append(xmlr.getText());
-            } else if(eventType == XMLStreamConstants.PROCESSING_INSTRUCTION
+            } else if (eventType == XMLStreamConstants.PROCESSING_INSTRUCTION
                 || eventType == XMLStreamConstants.COMMENT
                 || eventType == XMLStreamConstants.ENTITY_REFERENCE) {
                 // skipping
-            } else if(eventType == XMLStreamConstants.END_DOCUMENT) {
+            } else if (eventType == XMLStreamConstants.END_DOCUMENT) {
                 throw new XMLStreamException("unexpected end of document when reading element text content");
-            } else if(eventType == XMLStreamConstants.START_ELEMENT) {
+            } else if (eventType == XMLStreamConstants.START_ELEMENT) {
                 throw new XMLStreamException("element text content may not contain START_ELEMENT", xmlr.getLocation());
             } else {
-                throw new XMLStreamException("Unexpected event type "+eventType, xmlr.getLocation());
+                throw new XMLStreamException("Unexpected event type " + eventType, xmlr.getLocation());
             }
             eventType = xmlr.next();
         }
@@ -659,8 +659,8 @@ public class ImportGenericServiceBean {
     
    
     
-   private Map<String,String> parseCompoundText (XMLStreamReader xmlr, String endTag) throws XMLStreamException {
-        Map<String,String> returnMap = new HashMap<>();
+   private Map<String, String> parseCompoundText(XMLStreamReader xmlr, String endTag) throws XMLStreamException {
+        Map<String, String> returnMap = new HashMap<>();
         String text = "";
 
         while (true) {
@@ -669,11 +669,11 @@ public class ImportGenericServiceBean {
                 if (!text.isEmpty()) {
                     text += "\n";
                 }
-                text += xmlr.getText().trim().replace('\n',' ');
+                text += xmlr.getText().trim().replace('\n', ' ');
             } else if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("ExtLink")) {
-                    String mapKey  = ("image".equalsIgnoreCase( xmlr.getAttributeValue(null, "role") ) || "logo".equalsIgnoreCase(xmlr.getAttributeValue(null, "title")))? "logo" : "url";
-                    returnMap.put( mapKey, xmlr.getAttributeValue(null, "URI") );
+                    String mapKey = ("image".equalsIgnoreCase(xmlr.getAttributeValue(null, "role")) || "logo".equalsIgnoreCase(xmlr.getAttributeValue(null, "title"))) ? "logo" : "url";
+                    returnMap.put(mapKey, xmlr.getAttributeValue(null, "URI"));
                     parseText(xmlr, "ExtLink"); // this line effectively just skips though until the end of the tag
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -681,12 +681,12 @@ public class ImportGenericServiceBean {
             }
         }
 
-        returnMap.put( "name", text );
+        returnMap.put("name", text);
         return returnMap;
     }
    
     private String parseText(XMLStreamReader xmlr, String endTag) throws XMLStreamException {
-         return (String) parseTextNew(xmlr,endTag);
+         return (String) parseTextNew(xmlr, endTag);
      }
      
      
@@ -700,7 +700,7 @@ public class ImportGenericServiceBean {
             }
             int event = xmlr.next();
             if (event == XMLStreamConstants.CHARACTERS) {
-                returnString += xmlr.getText().trim().replace('\n',' ');
+                returnString += xmlr.getText().trim().replace('\n', ' ');
            } else if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("p")) {
                     returnString += "<p>" + parseText(xmlr, "p") + "</p>";
@@ -711,11 +711,11 @@ public class ImportGenericServiceBean {
                 } else if (xmlr.getLocalName().equals("ExtLink")) {
                     String uri = xmlr.getAttributeValue(null, "URI");
                     String text = parseText(xmlr, "ExtLink").trim();
-                    returnString += "<a href=\"" + uri + "\">" + ( StringUtil.isEmpty(text) ? uri : text) + "</a>";
+                    returnString += "<a href=\"" + uri + "\">" + (StringUtil.isEmpty(text) ? uri : text) + "</a>";
                 } else if (xmlr.getLocalName().equals("list")) {
                     returnString += parseText_list(xmlr);
                 } else if (xmlr.getLocalName().equals("citation")) {
-                    if (SOURCE_DVN_3_0.equals(xmlr.getAttributeValue(null, "source")) ) {
+                    if (SOURCE_DVN_3_0.equals(xmlr.getAttributeValue(null, "source"))) {
                         returnMap = parseDVNCitation(xmlr);
                     } else {
                         returnString += parseText_citation(xmlr);
@@ -744,16 +744,16 @@ public class ImportGenericServiceBean {
             return null;
         }
     }
-  private String parseText_list (XMLStreamReader xmlr) throws XMLStreamException {
+  private String parseText_list(XMLStreamReader xmlr) throws XMLStreamException {
         String listString = null;
         String listCloseTag = null;
 
         // check type
         String listType = xmlr.getAttributeValue(null, "type");
-        if ("bulleted".equals(listType) ){
+        if ("bulleted".equals(listType)) {
             listString = "<ul>\n";
             listCloseTag = "</ul>";
-        } else if ("ordered".equals(listType) ) {
+        } else if ("ordered".equals(listType)) {
             listString = "<ol>\n";
             listCloseTag = "</ol>";
         } else {
@@ -765,7 +765,7 @@ public class ImportGenericServiceBean {
             int event = xmlr.next();
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("itm")) {
-                    listString += "<li>" + parseText(xmlr,"itm") + "</li>\n";
+                    listString += "<li>" + parseText(xmlr, "itm") + "</li>\n";
                 } else {
                     throw new EJBException("ERROR occurred in mapDDI (parseText): ListType does not currently supported contained LabelType.");
                 }
@@ -777,7 +777,7 @@ public class ImportGenericServiceBean {
         return (listString + listCloseTag);
     }
 
-    private String parseText_citation (XMLStreamReader xmlr) throws XMLStreamException {
+    private String parseText_citation(XMLStreamReader xmlr) throws XMLStreamException {
         String citation = "<!--  parsed from DDI citation title and holdings -->";
         boolean addHoldings = false;
         String holdings = "";
@@ -800,13 +800,13 @@ public class ImportGenericServiceBean {
                     String uri = xmlr.getAttributeValue(null, "URI");
                     String holdingsText = parseText(xmlr);
 
-                    if ( !StringUtil.isEmpty(uri) || !StringUtil.isEmpty(holdingsText)) {
+                    if (!StringUtil.isEmpty(uri) || !StringUtil.isEmpty(holdingsText)) {
                         holdings += addHoldings ? ", " : "";
                         addHoldings = true;
 
-                        if ( StringUtil.isEmpty(uri) ) {
+                        if (StringUtil.isEmpty(uri)) {
                             holdings += holdingsText;
-                        } else if ( StringUtil.isEmpty(holdingsText) ) {
+                        } else if (StringUtil.isEmpty(holdingsText)) {
                             holdings += "<a href=\"" + uri + "\">" + uri + "</a>";
                         } else {
                             // both uri and text have values
@@ -828,7 +828,7 @@ public class ImportGenericServiceBean {
   
     private String parseUNF(String unfString) {
         if (unfString.contains("UNF:")) {
-            return unfString.substring( unfString.indexOf("UNF:") );
+            return unfString.substring(unfString.indexOf("UNF:"));
         } else {
             return null;
         }
@@ -841,17 +841,17 @@ public class ImportGenericServiceBean {
             int event = xmlr.next();
             if (event == XMLStreamConstants.START_ELEMENT) {
                if (xmlr.getLocalName().equals("IDNo")) {
-                    returnValues.put("idType", xmlr.getAttributeValue(null, "agency") );
-                    returnValues.put("idNumber", parseText(xmlr) );                   
+                    returnValues.put("idType", xmlr.getAttributeValue(null, "agency"));
+                    returnValues.put("idNumber", parseText(xmlr));                   
                }
                 else if (xmlr.getLocalName().equals("biblCit")) {
-                    returnValues.put("text", parseText(xmlr) );                   
+                    returnValues.put("text", parseText(xmlr));                   
                 }
                 else if (xmlr.getLocalName().equals("holdings")) {
-                    returnValues.put("url", xmlr.getAttributeValue(null, "URI") );                 
+                    returnValues.put("url", xmlr.getAttributeValue(null, "URI"));                 
                 }
                 else if (xmlr.getLocalName().equals("notes")) {
-                    if (NOTE_TYPE_REPLICATION_FOR.equals(xmlr.getAttributeValue(null, "type")) ) {
+                    if (NOTE_TYPE_REPLICATION_FOR.equals(xmlr.getAttributeValue(null, "type"))) {
                         returnValues.put("replicationData", true);
                     }
                 }
@@ -864,8 +864,8 @@ public class ImportGenericServiceBean {
     }    
      
 
-    private void addToSet(HashSet<FieldDTO> set, String typeName, String value ) {
-        if (value!=null) {
+    private void addToSet(HashSet<FieldDTO> set, String typeName, String value) {
+        if (value != null) {
             set.add(FieldDTO.createPrimitiveFieldDTO(typeName, value));
         }
     }

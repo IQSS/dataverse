@@ -31,7 +31,7 @@ public class RRequest {
    * @param port an integer specifying the port
    * @param script a string representing the entire script to be executed
    */
-  public RRequest (String host, int port, String user, String pass, String script) {
+  public RRequest(String host, int port, String user, String pass, String script) {
     
     // Login info
     mHost = host;
@@ -45,7 +45,7 @@ public class RRequest {
   /*
    * Set the value of the Script
    */
-  public RRequest script (String script) {
+  public RRequest script(String script) {
     mScript = script;
     return this;
   }
@@ -53,7 +53,7 @@ public class RRequest {
    * Evaluate script
    * @return R-Expression
    */
-  public REXP eval () {
+  public REXP eval() {
     REXP result = null;
     
     try {
@@ -75,13 +75,13 @@ public class RRequest {
    * @return a string... representing the object
    */
   @Override
-  public String toString () {
+  public String toString() {
     return "Host: " + mHost + "\nPort: " + String.valueOf(mPort) + "\n";
   }
   /*
    * Open the R Connection
    */
-  private void open () {
+  private void open() {
     LOG.fine(String.format("RRequest: Attempting connection to RSERVE %s on port %d", mHost, mPort));
 
     try {
@@ -119,13 +119,13 @@ public class RRequest {
   /*
    * Close the R Connection
    */
-  private void close () {
+  private void close() {
     mRC.close();
   }
   /*
    * Get R Connection
    */
-  public RConnection getRConnection () {
+  public RConnection getRConnection() {
     return mRC;
   }
 }

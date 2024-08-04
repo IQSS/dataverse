@@ -218,7 +218,7 @@ public class SchemaDotOrgExporterTest {
         version.setFileMetadatas(fileMetadatas);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        if(schemaDotOrgExporter == null) logger.fine("sdoe" + " null");
+        if (schemaDotOrgExporter == null) logger.fine("sdoe" + " null");
         try {
             ExportDataProvider provider2 = new InternalExportDataProvider(version);
             schemaDotOrgExporter.exportDataset(provider2, byteArrayOutputStream);

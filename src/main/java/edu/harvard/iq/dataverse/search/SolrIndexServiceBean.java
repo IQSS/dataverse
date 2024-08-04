@@ -361,7 +361,7 @@ public class SolrIndexServiceBean {
 
     public IndexResponse indexPermissionsOnSelfAndChildren(long definitionPointId) {
         DvObject definitionPoint = dvObjectService.findDvObject(definitionPointId);
-        if ( definitionPoint == null ) {
+        if (definitionPoint == null) {
             logger.log(Level.WARNING, "Cannot find a DvOpbject with id of {0}", definitionPointId);
             return null;
         } else {

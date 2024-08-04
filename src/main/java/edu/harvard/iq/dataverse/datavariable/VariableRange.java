@@ -25,7 +25,7 @@ import jakarta.persistence.Table;
  * 
  */
 @Entity
-@Table(indexes = {@Index(columnList="datavariable_id")})
+@Table(indexes = {@Index(columnList = "datavariable_id")})
 public class VariableRange implements Serializable {
     
     /*
@@ -47,7 +47,7 @@ public class VariableRange implements Serializable {
      * DataVariable for which this range is defined.
      */
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataVariable dataVariable;
     
     /*
@@ -226,7 +226,7 @@ public class VariableRange implements Serializable {
         if (!(object instanceof VariableRange)) {
             return false;
         }
-        VariableRange other = (VariableRange)object;
+        VariableRange other = (VariableRange) object;
         if (this.id != other.id) {
             if (this.id == null || !this.id.equals(other.id)) {
                 return false;

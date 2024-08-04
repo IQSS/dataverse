@@ -60,20 +60,20 @@ public class DashboardUsersPage implements java.io.Serializable {
 
     private static Map<String, String> sortingMap = new LinkedHashMap<>();
     static {
-        sortingMap.put("id",                  "dashboard.list_users.tbl_header.userIdAZ");
-        sortingMap.put("id desc",             "dashboard.list_users.tbl_header.userIdZA");
-        sortingMap.put("userIdentifier",      "dashboard.list_users.tbl_header.userIdentifierAZ");
+        sortingMap.put("id", "dashboard.list_users.tbl_header.userIdAZ");
+        sortingMap.put("id desc", "dashboard.list_users.tbl_header.userIdZA");
+        sortingMap.put("userIdentifier", "dashboard.list_users.tbl_header.userIdentifierAZ");
         sortingMap.put("userIdentifier desc", "dashboard.list_users.tbl_header.userIdentifierZA");
-        sortingMap.put("lastName",            "dashboard.list_users.tbl_header.lastNameAZ");
-        sortingMap.put("lastName desc",       "dashboard.list_users.tbl_header.lastNameZA");
-        sortingMap.put("email",               "dashboard.list_users.tbl_header.emailAZ");
-        sortingMap.put("email desc",          "dashboard.list_users.tbl_header.emailZA");
-        sortingMap.put("affiliation",         "dashboard.list_users.tbl_header.affiliationAZ");
-        sortingMap.put("affiliation desc",    "dashboard.list_users.tbl_header.affiliationZA");
-        sortingMap.put("authProviderId",      "dashboard.list_users.tbl_header.authProviderFactoryAliasAZ");
+        sortingMap.put("lastName", "dashboard.list_users.tbl_header.lastNameAZ");
+        sortingMap.put("lastName desc", "dashboard.list_users.tbl_header.lastNameZA");
+        sortingMap.put("email", "dashboard.list_users.tbl_header.emailAZ");
+        sortingMap.put("email desc", "dashboard.list_users.tbl_header.emailZA");
+        sortingMap.put("affiliation", "dashboard.list_users.tbl_header.affiliationAZ");
+        sortingMap.put("affiliation desc", "dashboard.list_users.tbl_header.affiliationZA");
+        sortingMap.put("authProviderId", "dashboard.list_users.tbl_header.authProviderFactoryAliasAZ");
         sortingMap.put("authProviderId desc", "dashboard.list_users.tbl_header.authProviderFactoryAliasZA");
-        sortingMap.put("superuser",           "dashboard.list_users.tbl_header.superuserAZ");
-        sortingMap.put("superuser desc",      "dashboard.list_users.tbl_header.superuserZA");
+        sortingMap.put("superuser", "dashboard.list_users.tbl_header.superuserAZ");
+        sortingMap.put("superuser desc", "dashboard.list_users.tbl_header.superuserZA");
     }
 
     public String init() {
@@ -89,7 +89,7 @@ public class DashboardUsersPage implements java.io.Serializable {
         return null;
     }
 
-    public boolean runUserSearchWithPage(Integer pageNumber){
+    public boolean runUserSearchWithPage(Integer pageNumber) {
         logger.fine("runUserSearchWithPage");
         setSelectedPage(pageNumber);
         runUserSearch();
@@ -103,7 +103,7 @@ public class DashboardUsersPage implements java.io.Serializable {
         return true;
     }
 
-    public boolean runUserSearch(){
+    public boolean runUserSearch() {
         logger.fine("Run the search!");
         /**
          * (1) Determine the number of users returned by the count
@@ -232,7 +232,7 @@ public class DashboardUsersPage implements java.io.Serializable {
         }
     }
 
-    public void cancelSuperuserStatusChange(){
+    public void cancelSuperuserStatusChange() {
         selectedUserDetached.setSuperuser(!selectedUserDetached.isSuperuser());
         selectedUserPersistent = null;
     }

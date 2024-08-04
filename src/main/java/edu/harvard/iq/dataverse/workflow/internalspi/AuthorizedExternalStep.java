@@ -40,7 +40,7 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
  */
 public class AuthorizedExternalStep implements WorkflowStep {
     private static final Logger logger = Logger.getLogger(AuthorizedExternalStep.class.getName());
-    private final Map<String,String> params;
+    private final Map<String, String> params;
 
     public AuthorizedExternalStep(Map<String, String> paramSet) {
         params = new HashMap<>(paramSet);
@@ -55,9 +55,9 @@ public class AuthorizedExternalStep implements WorkflowStep {
             HttpMethodBase mtd = buildMethod(false, context);
             // execute
             int responseStatus = client.executeMethod(mtd);
-            if (responseStatus>=200 && responseStatus<300 ) {
+            if (responseStatus >= 200 && responseStatus < 300) {
                 // HTTP OK range
-                Map<String, String> data = new HashMap<String, String> ();
+                Map<String, String> data = new HashMap<String, String>();
                 //Allow external client to use invocationId as a key to act on the user's behalf
                 data.put(PendingWorkflowInvocation.AUTHORIZED, "true");
                 return new Pending(data);
@@ -87,7 +87,7 @@ public class AuthorizedExternalStep implements WorkflowStep {
             
             // execute
             int responseStatus = client.executeMethod(mtd);
-            if (responseStatus<200 || responseStatus>=300 ) {
+            if (responseStatus < 200 || responseStatus >= 300) {
                 // out of HTTP OK range
                 String responseBody = mtd.getResponseBodyAsString();
                 Logger.getLogger(AuthorizedExternalStep.class.getName()).log(Level.WARNING, 
@@ -100,7 +100,7 @@ public class AuthorizedExternalStep implements WorkflowStep {
     }
     
     HttpMethodBase buildMethod(boolean rollback, WorkflowContext ctxt) throws Exception {
-        String methodName = params.getOrDefault("method" + (rollback ? "-rollback":""), "GET").trim().toUpperCase();
+        String methodName = params.getOrDefault("method" + (rollback ? "-rollback" : ""), "GET").trim().toUpperCase();
         HttpMethodBase m = null;
         switch (methodName) {
             case "GET":    m = new GetMethod(); m.setFollowRedirects(true); break;
@@ -111,47 +111,47 @@ public class AuthorizedExternalStep implements WorkflowStep {
         }
         
         
-        Map<String,String> templateParams = new HashMap<>();
-        templateParams.put( "invocationId", ctxt.getInvocationId() );
-        templateParams.put( "dataset.id", Long.toString(ctxt.getDataset().getId()) );
-        templateParams.put( "dataset.identifier", ctxt.getDataset().getIdentifier() );
-        templateParams.put( "dataset.globalId", ctxt.getDataset().getGlobalId().toString() );
-        templateParams.put( "dataset.displayName", ctxt.getDataset().getDisplayName() );
-        templateParams.put( "dataset.citation", ctxt.getDataset().getCitation() );
-        templateParams.put( "minorVersion", Long.toString(ctxt.getNextMinorVersionNumber()) );
-        templateParams.put( "majorVersion", Long.toString(ctxt.getNextVersionNumber()) );
-        templateParams.put( "releaseStatus", (ctxt.getType()==TriggerType.PostPublishDataset) ? "done":"in-progress" );
-        templateParams.put( "language", BundleUtil.getDefaultLocale().getISO3Language());
+        Map<String, String> templateParams = new HashMap<>();
+        templateParams.put("invocationId", ctxt.getInvocationId());
+        templateParams.put("dataset.id", Long.toString(ctxt.getDataset().getId()));
+        templateParams.put("dataset.identifier", ctxt.getDataset().getIdentifier());
+        templateParams.put("dataset.globalId", ctxt.getDataset().getGlobalId().toString());
+        templateParams.put("dataset.displayName", ctxt.getDataset().getDisplayName());
+        templateParams.put("dataset.citation", ctxt.getDataset().getCitation());
+        templateParams.put("minorVersion", Long.toString(ctxt.getNextMinorVersionNumber()));
+        templateParams.put("majorVersion", Long.toString(ctxt.getNextVersionNumber()));
+        templateParams.put("releaseStatus", (ctxt.getType() == TriggerType.PostPublishDataset) ? "done" : "in-progress");
+        templateParams.put("language", BundleUtil.getDefaultLocale().getISO3Language());
 
         
         m.addRequestHeader("Content-Type", params.getOrDefault("contentType", "text/plain"));
         
-        String urlKey = rollback ? "rollbackUrl":"url";
+        String urlKey = rollback ? "rollbackUrl" : "url";
         String url = params.get(urlKey);
         try {
-            m.setURI(new URI(process(url,templateParams), true) );
+            m.setURI(new URI(process(url, templateParams), true));
         } catch (URIException ex) {
             throw new IllegalStateException("Illegal URL: '" + url + "'");
         }
         
         String bodyKey = (rollback ? "rollbackBody" : "body");
-        if ( params.containsKey(bodyKey) && m instanceof EntityEnclosingMethod ) {
+        if (params.containsKey(bodyKey) && m instanceof EntityEnclosingMethod) {
             String body = params.get(bodyKey);
-            ((EntityEnclosingMethod)m).setRequestEntity(new StringRequestEntity(process( body, templateParams), params.getOrDefault("contentType", "text/plain"), StandardCharsets.UTF_8.name()));
+            ((EntityEnclosingMethod) m).setRequestEntity(new StringRequestEntity(process(body, templateParams), params.getOrDefault("contentType", "text/plain"), StandardCharsets.UTF_8.name()));
         }
         
         return m;
     }
     
-    String process(String template, Map<String,String> values ) {
+    String process(String template, Map<String, String> values) {
         String curValue = template;
-        for ( Map.Entry<String, String> ent : values.entrySet() ) {
+        for (Map.Entry<String, String> ent : values.entrySet()) {
             String val = ent.getValue();
-            if ( val == null ) { 
-                val = "" ;
+            if (val == null) { 
+                val = "";
             }
             String varRef = "${" + ent.getKey() + "}";
-            while ( curValue.contains(varRef) ) {
+            while (curValue.contains(varRef)) {
                 curValue = curValue.replace(varRef, val);
             }
         }

@@ -183,7 +183,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         JsonObjectBuilder response = Json.createObjectBuilder();
         //Try to create the directory (202 status) if it does not exist (502-already exists)
         int mkDirStatus = makeDirs(endpoint, dataset);
-        if (!(mkDirStatus== 202 || mkDirStatus == 502)) {
+        if (!(mkDirStatus == 202 || mkDirStatus == 502)) {
             return response.add("status", mkDirStatus).build();
         }
         //The dir for the dataset's data exists, so try to request permission for the principal
@@ -990,7 +990,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                         UserNotification.Type.GLOBUSDOWNLOADCOMPLETEDWITHERRORS, dataset.getId(), comment, true);
             }
             
-            globusLogger.info("Globus task failed during download process: "+comment);
+            globusLogger.info("Globus task failed during download process: " + comment);
         } else if (authUser != null && authUser instanceof AuthenticatedUser) {
         
             boolean taskSkippedFiles = (task.getSkip_source_errors() == null) ? false : task.getSkip_source_errors();

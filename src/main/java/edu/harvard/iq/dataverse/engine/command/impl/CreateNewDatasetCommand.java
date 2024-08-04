@@ -51,7 +51,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     private final Dataverse dv;
 
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
-        this( theDataset, aRequest, null);
+        this(theDataset, aRequest, null);
     }
     
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, Template template) {
@@ -89,24 +89,24 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     }
     
     @Override
-    protected DatasetVersion getVersionToPersist( Dataset theDataset ) {
+    protected DatasetVersion getVersionToPersist(Dataset theDataset) {
         return theDataset.getOrCreateEditVersion();
     }
 
     @Override
     protected void handlePid(Dataset theDataset, CommandContext ctxt) throws CommandException {
         PidProvider pidProvider = PidUtil.getPidProvider(theDataset.getGlobalId().getProviderId());
-        if(!pidProvider.canManagePID()) {
+        if (!pidProvider.canManagePID()) {
             throw new IllegalCommandException("PID Provider " + pidProvider.getId() + " is not configured.", this);
         }
-        if ( !pidProvider.registerWhenPublished() ) {
+        if (!pidProvider.registerWhenPublished()) {
             // pre-register a persistent id
             registerExternalIdentifier(theDataset, ctxt, true);
         }
     }
     
     @Override
-    protected void postPersist( Dataset theDataset, CommandContext ctxt ){
+    protected void postPersist(Dataset theDataset, CommandContext ctxt) {
         // set the role to be default contributor role for its dataverse
         String privateUrlToken = null;
         if (theDataset.getOwner().getDefaultContributorRole() != null) {
@@ -127,7 +127,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
             theDataset.setPermissionModificationTime(getTimestamp());
         }
         
-        if ( template != null ) {
+        if (template != null) {
             ctxt.templates().incrementUsageCount(template.getId());
         }
     }
@@ -136,14 +136,14 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
      * that a new dataset exists. 
      * NB: Needs dataset id so has to be postDBFlush (vs postPersist())
      */
-    protected void postDBFlush( Dataset theDataset, CommandContext ctxt ){
-        if(ctxt.settings().isTrueForKey(SettingsServiceBean.Key.SendNotificationOnDatasetCreation, false)) {
+    protected void postDBFlush(Dataset theDataset, CommandContext ctxt) {
+        if (ctxt.settings().isTrueForKey(SettingsServiceBean.Key.SendNotificationOnDatasetCreation, false)) {
         //QDR - alert curators that a dataset has been created
         //Should this create a notification too? (which would let us use the notification mailcapbilities to generate the subject/body.
         AuthenticatedUser requestor = getUser().isAuthenticated() ? (AuthenticatedUser) getUser() : null;
         List<AuthenticatedUser> authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, theDataset);
         for (AuthenticatedUser au : authUsers) {
-            if(!au.equals(requestor)) {
+            if (!au.equals(requestor)) {
                 ctxt.notifications().sendNotification(
                         au,
                         Timestamp.from(Instant.now()),

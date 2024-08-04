@@ -63,7 +63,7 @@ public class StorageIOTest {
     @Test
     public void testGetDvObject() {
         assertEquals(null, instance.getDvObject());
-        Dataset d= new Dataset();
+        Dataset d = new Dataset();
         instance.setDvObject(d);
         //assertSame uses == rather than the .equals() method which would (currently) be true for any two Datasets 
         assertSame(d, instance.getDataset());
@@ -81,7 +81,7 @@ public class StorageIOTest {
             //Test succeeds
         }
         // null driver defaults to 'file'
-        DataFile f= new DataFile();
+        DataFile f = new DataFile();
         Dataverse dv = new Dataverse();
         assertSame(f, new FileAccessIO<>(f, null, null).getDataFile());
         assertSame(dv, new FileAccessIO<>(dv, null, null).getDataverse());
@@ -235,7 +235,7 @@ public class StorageIOTest {
 
     @Test
     public void testGenerateVariableHeader() {
-        DataVariable var = new DataVariable(0,null);
+        DataVariable var = new DataVariable(0, null);
         var.setName("Random");
 
         @SuppressWarnings("unchecked")

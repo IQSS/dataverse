@@ -10,7 +10,7 @@ public class GroupException extends Exception {
     private final Group theGroup;
     
     public GroupException(Group aGroup, String message) {
-        this( aGroup, message, null);
+        this(aGroup, message, null);
     }
     
     public GroupException(Group aGroup, String message, Throwable cause) {

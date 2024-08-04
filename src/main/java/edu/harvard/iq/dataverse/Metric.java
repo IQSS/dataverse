@@ -47,8 +47,8 @@ public class Metric implements Serializable {
     @Column(columnDefinition = "TEXT", nullable = true)
     private String dayString;
 
-    @ManyToOne(optional=true)
-    @JoinColumn(name="dataverse_id", nullable=true)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "dataverse_id", nullable = true)
     private Dataverse dataverse;
     
     @Temporal(value = TemporalType.TIMESTAMP)

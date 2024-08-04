@@ -17,10 +17,10 @@ import jakarta.validation.constraints.NotEmpty;
  * A group that explicitly lists email address domains that a user might have to belong to this group.
  */
 @NamedQueries({
-    @NamedQuery(name="MailDomainGroup.findAll",
-        query="SELECT g FROM MailDomainGroup g"),
-    @NamedQuery(name="MailDomainGroup.findByPersistedGroupAlias",
-        query="SELECT g FROM MailDomainGroup g WHERE g.persistedGroupAlias=:persistedGroupAlias"),
+    @NamedQuery(name = "MailDomainGroup.findAll",
+        query = "SELECT g FROM MailDomainGroup g"),
+    @NamedQuery(name = "MailDomainGroup.findByPersistedGroupAlias",
+        query = "SELECT g FROM MailDomainGroup g WHERE g.persistedGroupAlias=:persistedGroupAlias"),
 })
 @Entity
 public class MailDomainGroup extends PersistedGlobalGroup {
@@ -105,11 +105,11 @@ public class MailDomainGroup extends PersistedGlobalGroup {
         if (obj == null) {
             return false;
         }
-        if ( ! (obj instanceof MailDomainGroup)) {
+        if (!(obj instanceof MailDomainGroup)) {
             return false;
         }
         final MailDomainGroup other = (MailDomainGroup) obj;
-        if ( this.getId() != null && other.getId() != null) {
+        if (this.getId() != null && other.getId() != null) {
             return Objects.equals(this.getId(), other.getId());
         } else {
             return Objects.equals(this.emailDomains, other.getEmailDomains());
@@ -118,7 +118,7 @@ public class MailDomainGroup extends PersistedGlobalGroup {
     
     @Override
     public String toString() {
-        return "[MailDomainGroup " + this.getPersistedGroupAlias() + ": id=" + this.getId() + " domains="+this.emailDomains+" ]";
+        return "[MailDomainGroup " + this.getPersistedGroupAlias() + ": id=" + this.getId() + " domains=" + this.emailDomains + " ]";
     }
     
     public MailDomainGroup update(MailDomainGroup src) {

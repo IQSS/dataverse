@@ -77,7 +77,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
      * To be absolutely sure this may not be abused to DDoS us and not let unused verifiers rot,
      * use an evicting cache implementation and not a standard map.
      */
-    private final Cache<String,CodeVerifier> verifierCache = Caffeine.newBuilder()
+    private final Cache<String, CodeVerifier> verifierCache = Caffeine.newBuilder()
         .maximumSize(JvmSettings.OIDC_PKCE_CACHE_MAXSIZE.lookup(Integer.class))
         .expireAfterWrite(Duration.of(JvmSettings.OIDC_PKCE_CACHE_MAXAGE.lookup(Integer.class), ChronoUnit.SECONDS))
         .build();
@@ -118,15 +118,15 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
             var metadata = getMetadata(this.issuer);
             // Assert that the provider supports the code flow
             if (metadata.getResponseTypes().stream().noneMatch(ResponseType::impliesCodeFlow)) {
-                throw new AuthorizationSetupException("OIDC provider at "+this.issuer.getValue()+" does not support code flow, disabling.");
+                throw new AuthorizationSetupException("OIDC provider at " + this.issuer.getValue() + " does not support code flow, disabling.");
             }
             return metadata;
         } catch (IOException ex) {
-            logger.severe("OIDC provider metadata at \"+issuerEndpointURL+\" not retrievable: "+ex.getMessage());
-            throw new AuthorizationSetupException("OIDC provider metadata at "+this.issuer.getValue()+" not retrievable.");
+            logger.severe("OIDC provider metadata at \"+issuerEndpointURL+\" not retrievable: " + ex.getMessage());
+            throw new AuthorizationSetupException("OIDC provider metadata at " + this.issuer.getValue() + " not retrievable.");
         } catch (ParseException ex) {
-            logger.severe("OIDC provider metadata at \"+issuerEndpointURL+\" not parsable: "+ex.getMessage());
-            throw new AuthorizationSetupException("OIDC provider metadata at "+this.issuer.getValue()+" not parsable.");
+            logger.severe("OIDC provider metadata at \"+issuerEndpointURL+\" not parsable: " + ex.getMessage());
+            throw new AuthorizationSetupException("OIDC provider metadata at " + this.issuer.getValue() + " not parsable.");
         }
     }
     
@@ -272,13 +272,13 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
             TokenResponse tokenRespone = OIDCTokenResponseParser.parse(response);
     
             // If error --> oauth2 ex
-            if (! tokenRespone.indicatesSuccess() ) {
+            if (!tokenRespone.indicatesSuccess()) {
                 ErrorObject error = tokenRespone.toErrorResponse().getErrorObject();
                 throw new OAuth2Exception(error.getHTTPStatusCode(), error.getDescription(), "auth.providers.token.failRetrieveToken");
             }
     
             // Success --> return token
-            OIDCTokenResponse successResponse = (OIDCTokenResponse)tokenRespone.toSuccessResponse();
+            OIDCTokenResponse successResponse = (OIDCTokenResponse) tokenRespone.toSuccessResponse();
             
             return Optional.of(successResponse.getOIDCTokens().getBearerAccessToken());
             
@@ -302,7 +302,7 @@ public class OIDCAuthProvider extends AbstractOAuth2AuthenticationProvider {
             UserInfoResponse infoResponse = UserInfoResponse.parse(response);
     
             // If error --> oauth2 ex
-            if (! infoResponse.indicatesSuccess() ) {
+            if (!infoResponse.indicatesSuccess()) {
                 ErrorObject error = infoResponse.toErrorResponse().getErrorObject();
                 throw new OAuth2Exception(error.getHTTPStatusCode(),
                                           error.getDescription(),

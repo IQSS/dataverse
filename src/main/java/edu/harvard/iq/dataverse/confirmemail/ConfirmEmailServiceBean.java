@@ -221,7 +221,7 @@ public class ConfirmEmailServiceBean {
     }
     
     public boolean hasActiveVerificationToken(AuthenticatedUser au) {
-        if (findSingleConfirmEmailDataByUser(au) == null){
+        if (findSingleConfirmEmailDataByUser(au) == null) {
             return false;
         }
         return !findSingleConfirmEmailDataByUser(au).isExpired();

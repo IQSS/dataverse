@@ -97,11 +97,11 @@ public class RoleAssigneeServiceBean {
         if (identifier == null || identifier.isEmpty()) {
             throw new IllegalArgumentException("Identifier cannot be null or empty string.");
         }
-        switch (identifier.substring(0,1)) {
+        switch (identifier.substring(0, 1)) {
             case ":":
                 return predefinedRoleAssignees.get(identifier);
             case AuthenticatedUser.IDENTIFIER_PREFIX:
-                if (!augmented){
+                if (!augmented) {
                     return authSvc.getAuthenticatedUser(identifier.substring(1));
                 } else {
                     return authSvc.getAuthenticatedUserWithProvider(identifier.substring(1));
@@ -154,11 +154,11 @@ public class RoleAssigneeServiceBean {
 
     public List<DataverseRole> getAssigneeDataverseRoleFor(DataverseRequest dataverseRequest) {
         
-        if (dataverseRequest == null){
+        if (dataverseRequest == null) {
             throw new NullPointerException("dataverseRequest cannot be null!");
         }
         AuthenticatedUser au = dataverseRequest.getAuthenticatedUser();
-        if (au.getUserIdentifier() == null){
+        if (au.getUserIdentifier() == null) {
             return null;
         }
         String roleAssigneeIdentifier = "@" + au.getUserIdentifier();
@@ -187,7 +187,7 @@ public class RoleAssigneeServiceBean {
 
     public List<Object[]> getAssigneeAndRoleIdListFor(MyDataFilterParams filterParams) {
          
-        if (filterParams == null){
+        if (filterParams == null) {
             throw new NullPointerException("Cannot be null! filterParams must be an instance of MyDataFilterParams");
         }
         
@@ -220,11 +220,11 @@ public class RoleAssigneeServiceBean {
     }
 
     public List<Long> getRoleIdListForGivenAssigneeDvObject(DataverseRequest dataverseRequest, List<Long> roleIdList, Long defPointId) {
-        if (dataverseRequest == null){
+        if (dataverseRequest == null) {
             throw new NullPointerException("dataverseRequest cannot be null!");
         }
         AuthenticatedUser au = dataverseRequest.getAuthenticatedUser();
-        if (au.getUserIdentifier() == null){
+        if (au.getUserIdentifier() == null) {
             return null;
         }
         String roleAssigneeIdentifier = "@" + au.getUserIdentifier();
@@ -289,11 +289,11 @@ public class RoleAssigneeServiceBean {
     }
 
     public List<Object[]> getRoleIdsFor(DataverseRequest dataverseRequest, List<Long> dvObjectIdList) {
-        if (dataverseRequest == null){
+        if (dataverseRequest == null) {
             throw new NullPointerException("dataverseRequest cannot be null!");
         }
         AuthenticatedUser au = dataverseRequest.getAuthenticatedUser();
-        if (au.getUserIdentifier() == null){
+        if (au.getUserIdentifier() == null) {
             return null;
         }
         String roleAssigneeIdentifier = "@" + au.getUserIdentifier();
@@ -341,7 +341,7 @@ public class RoleAssigneeServiceBean {
      */
     public List<String> getUserExplicitGroups(RoleAssignee ra) {
         return explicitGroupSvc.findGroups(ra).stream()
-                               .map( g -> g.getAlias())
+                               .map(g -> g.getAlias())
                                .collect(Collectors.toList());
     }
 
@@ -355,9 +355,9 @@ public class RoleAssigneeServiceBean {
            // if (group.getGroupProvider().getGroupProviderAlias().equals("shib") || group.getGroupProvider().getGroupProviderAlias().equals("ip")) {
                 String groupAlias = group.getAlias();
                 if (groupAlias != null && !groupAlias.isEmpty()) {
-                    if( group instanceof ExplicitGroup){
+                    if (group instanceof ExplicitGroup) {
                         retVal.add("&explicit/" + groupAlias);
-                    } else{
+                    } else {
                         retVal.add('&' + groupAlias);
                     }
                 }

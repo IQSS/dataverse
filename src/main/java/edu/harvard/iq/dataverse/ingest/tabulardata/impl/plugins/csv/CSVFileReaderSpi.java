@@ -30,7 +30,7 @@ import java.util.Locale;
 /*
  * @author Leonid Andreev
  */
-public class CSVFileReaderSpi extends TabularDataFileReaderSpi{
+public class CSVFileReaderSpi extends TabularDataFileReaderSpi {
 
   private static Logger LOG = Logger.getLogger(CSVFileReaderSpi.class.getPackage().getName());
 
@@ -55,7 +55,7 @@ public class CSVFileReaderSpi extends TabularDataFileReaderSpi{
     if (!(source instanceof BufferedInputStream))
       return false;
 
-    return canDecodeInput((BufferedInputStream)source);
+    return canDecodeInput((BufferedInputStream) source);
   }
   
   @Override

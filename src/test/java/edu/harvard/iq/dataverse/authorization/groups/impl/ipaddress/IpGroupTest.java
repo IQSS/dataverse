@@ -35,18 +35,18 @@ public class IpGroupTest {
         sut.add(allIPv4);
         sut.add(allIPv6);
         
-        assertTrue( sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.2.3.4"))) );
-        assertTrue( sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("11::fff"))) );
+        assertTrue(sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.2.3.4"))));
+        assertTrue(sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("11::fff"))));
         
-        sut.remove( allIPv4 );
-        assertFalse( sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.2.3.4"))) );
+        sut.remove(allIPv4);
+        assertFalse(sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("1.2.3.4"))));
         
-        sut.remove( allIPv6 );
-        assertFalse( sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("11::fff"))) );
+        sut.remove(allIPv6);
+        assertFalse(sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("11::fff"))));
         
-        sut.add( IpAddressRange.make(IpAddress.valueOf("0.0.0.0"), IpAddress.valueOf("168.0.0.0")) );
-        assertFalse( sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("169.0.0.0"))) );
-        assertTrue( sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("167.0.0.0"))) );
+        sut.add(IpAddressRange.make(IpAddress.valueOf("0.0.0.0"), IpAddress.valueOf("168.0.0.0")));
+        assertFalse(sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("169.0.0.0"))));
+        assertTrue(sut.contains(new DataverseRequest(GuestUser.get(), IpAddress.valueOf("167.0.0.0"))));
         
     }
 
@@ -57,7 +57,7 @@ public class IpGroupTest {
     @Test
     public void testIsEditable() {
         IpGroup instance = new IpGroup();
-        assertTrue( instance.isEditable() );
+        assertTrue(instance.isEditable());
     }
 
     /**
@@ -70,22 +70,22 @@ public class IpGroupTest {
         a.setDescription("A's description");
         a.setDisplayName("A");
         a.setPersistedGroupAlias("&ip/a");
-        a.add( IpAddressRange.make(IpAddress.valueOf("0.0.0.0"), IpAddress.valueOf("1.1.1.1")));
+        a.add(IpAddressRange.make(IpAddress.valueOf("0.0.0.0"), IpAddress.valueOf("1.1.1.1")));
         
-        assertFalse( a.equals("banana") );
-        assertFalse( a.equals( null ) );
-        assertTrue( a.equals( a) );
+        assertFalse(a.equals("banana"));
+        assertFalse(a.equals(null));
+        assertTrue(a.equals(a));
         
         IpGroup aa = new IpGroup();
         aa.setId(a.getId());
         aa.setDescription("A's description");
         aa.setDisplayName("A");
         aa.setPersistedGroupAlias("&ip/a");
-        aa.add( IpAddressRange.make(IpAddress.valueOf("0.0.0.0"), IpAddress.valueOf("1.1.1.1")));
+        aa.add(IpAddressRange.make(IpAddress.valueOf("0.0.0.0"), IpAddress.valueOf("1.1.1.1")));
         
-        assertTrue( a.equals(aa) );
-        aa.add( IpAddressRange.make(IpAddress.valueOf("9.0.0.0"), IpAddress.valueOf("9.1.1.1")));
-        assertFalse( a.equals(aa) );
+        assertTrue(a.equals(aa));
+        aa.add(IpAddressRange.make(IpAddress.valueOf("9.0.0.0"), IpAddress.valueOf("9.1.1.1")));
+        assertFalse(a.equals(aa));
         
     }
     

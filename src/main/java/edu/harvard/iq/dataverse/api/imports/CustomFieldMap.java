@@ -23,10 +23,10 @@ import jakarta.persistence.Table;
 
 @Entity
 @NamedQueries(
-        @NamedQuery( name="CustomFieldMap.findByTemplateField",
-                     query="SELECT cfm FROM CustomFieldMap cfm WHERE cfm.sourceTemplate=:template and cfm.sourceDatasetField =:field")
+        @NamedQuery(name = "CustomFieldMap.findByTemplateField",
+                     query = "SELECT cfm FROM CustomFieldMap cfm WHERE cfm.sourceTemplate=:template and cfm.sourceDatasetField =:field")
 )
-@Table(indexes = {@Index(columnList="sourcedatasetfield"), @Index(columnList="sourcetemplate")})
+@Table(indexes = {@Index(columnList = "sourcedatasetfield"), @Index(columnList = "sourcetemplate")})
 public class CustomFieldMap implements Serializable {
 
     private static final long serialVersionUID = 1L;

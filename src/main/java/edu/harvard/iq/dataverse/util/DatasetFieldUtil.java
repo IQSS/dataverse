@@ -21,7 +21,7 @@ public class DatasetFieldUtil {
      * @param removeBlanks if remove blank fields
      */
     public static void tidyUpFields(List<DatasetField> datasetFields, boolean removeBlanks) {
-        if(removeBlanks){
+        if (removeBlanks) {
             Iterator<DatasetField> dsfIt = datasetFields.iterator();
             while (dsfIt.hasNext()) {
                 if (dsfIt.next().removeBlankDatasetFieldValues()) {

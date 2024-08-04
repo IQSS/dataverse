@@ -40,7 +40,7 @@ import org.apache.solr.client.solrj.SolrServerException;
  */
 // Since this is used by DeleteDatasetCommand, must have at least that permission
 // (for released, user is checked for superuser)
-@RequiredPermissions( Permission.DeleteDatasetDraft )
+@RequiredPermissions(Permission.DeleteDatasetDraft)
 public class DestroyDatasetCommand extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(DestroyDatasetCommand.class.getCanonicalName());
@@ -61,9 +61,9 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
         // first check if dataset is released, and if so, if user is a superuser
-        if ( doomed.isReleased() && (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
+        if (doomed.isReleased() && (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {      
             throw new PermissionException("Destroy can only be called by superusers.",
-                this,  Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
+                this, Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
         }
         Dataset managedDoomed = ctxt.em().merge(doomed);
         
@@ -75,8 +75,8 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         // optimistic lock issues... (plus the physical files need to be 
         // deleted too!)
         DatasetVersion dv = managedDoomed.getLatestVersion();
-        Iterator <DataFile> dfIt = managedDoomed.getFiles().iterator();
-        while (dfIt.hasNext()){
+        Iterator<DataFile> dfIt = managedDoomed.getFiles().iterator();
+        while (dfIt.hasNext()) {
             DataFile df = dfIt.next();
             // Gather potential Solr IDs of files. As of this writing deaccessioned files are never indexed.
             String solrIdOfPublishedFile = IndexServiceBean.solrDocIdentifierFile + df.getId();
@@ -150,7 +150,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         } catch (IOException | SolrServerException e) {    
             String failureLogText = "Post-destroy dataset indexing of the owning dataverse failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + toReIndex.getId().toString();
             failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  toReIndex);
+            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, toReIndex);
             retVal = false;
         }
         

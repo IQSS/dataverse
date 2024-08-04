@@ -10,9 +10,9 @@ import java.util.Map;
  */
 public class Pending implements WorkflowStepResult {
     
-    private final Map<String,String> data = new HashMap<>();
+    private final Map<String, String> data = new HashMap<>();
 
-    public Pending(Map<String,String> someData) {
+    public Pending(Map<String, String> someData) {
         data.putAll(someData);
     }
     public Pending() {}

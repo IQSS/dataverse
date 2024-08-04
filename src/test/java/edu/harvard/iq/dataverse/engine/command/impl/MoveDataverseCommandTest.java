@@ -64,15 +64,15 @@ public class MoveDataverseCommandTest {
         root.setPublicationDate(new Timestamp(new Date().getTime()));
         
         childA = new Dataverse();
-        childA.setOwner( root );
+        childA.setOwner(root);
         childA.setId(2l);
         
         childB = new Dataverse();
-        childB.setOwner( root );
+        childB.setOwner(root);
         childB.setId(3l);
         
         grandchildAA = new Dataverse();
-        grandchildAA.setOwner( childA );
+        grandchildAA.setOwner(childA);
         grandchildAA.setId(4l);
 
         childC = new Dataverse();
@@ -109,7 +109,7 @@ public class MoveDataverseCommandTest {
         datasetCC.setId(2l);
         
         // Guestbooks
-        gbA= new Guestbook();
+        gbA = new Guestbook();
         gbA.setId(1l);
         gbA.setDataverse(childC);
         
@@ -182,7 +182,7 @@ public class MoveDataverseCommandTest {
                     public Dataverse find(Object pk) {
                     // fake this for what we need
                         if (pk instanceof Long) {
-                            if ((Long)pk == 10) {
+                            if ((Long) pk == 10) {
                                 return grandchildEE;
                             }
                         }
@@ -196,7 +196,7 @@ public class MoveDataverseCommandTest {
                     public List<Long> findAllDataverseDataverseChildren(Long dvId) {
                         // fake this for what we need 
                         List<Long> fakeChildren = new ArrayList<>();
-                        if (dvId == 9){ 
+                        if (dvId == 9) { 
                             fakeChildren.add(grandchildEE.getId());
                         }
                         return fakeChildren;
@@ -213,29 +213,29 @@ public class MoveDataverseCommandTest {
                 };
             }
             @Override
-            public IndexServiceBean index(){
+            public IndexServiceBean index() {
                 return new IndexServiceBean(){
                     @Override
-                    public Future<String> indexDataverse(Dataverse dataverse){
+                    public Future<String> indexDataverse(Dataverse dataverse) {
                         return null;
                     }
 
                     @Override
-                    public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp){
+                    public void asyncIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) {
                     }
                     @Override
-                    public Future<String> indexDataverseInNewTransaction(Dataverse dataverse){
+                    public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) {
                         return null;
                     }
 
                     @Override
-                    public void indexDatasetInNewTransaction(Long id){
+                    public void indexDatasetInNewTransaction(Long id) {
                     }                    
                 };
 
             }
             @Override
-            public IndexBatchServiceBean indexBatch(){
+            public IndexBatchServiceBean indexBatch() {
                 return new IndexBatchServiceBean(){
                     @Override
                     public void indexDataverseRecursively(Dataverse dataverse) {
@@ -255,7 +255,7 @@ public class MoveDataverseCommandTest {
                     public Dataset find(Object pk) {
                         // fake this for what we need
                         if (pk instanceof Long) {
-                            if ((Long)pk == 2) {
+                            if ((Long) pk == 2) {
                                 return datasetCC;
                             }
                         }
@@ -288,15 +288,15 @@ public class MoveDataverseCommandTest {
         testEngine.submit(
                         new MoveDataverseCommand(aRequest, childB, childA, null));
 
-        assertEquals( childA, childB.getOwner() );
-        assertEquals( Arrays.asList(root, childA), childB.getOwners() );
+        assertEquals(childA, childB.getOwner());
+        assertEquals(Arrays.asList(root, childA), childB.getOwners());
         
         // move back
         testEngine.submit(
                         new MoveDataverseCommand(aRequest, childB, root, null));
         
-        assertEquals( root, childB.getOwner() );
-        assertEquals( Arrays.asList(root), childB.getOwners() );
+        assertEquals(root, childB.getOwner());
+        assertEquals(Arrays.asList(root), childB.getOwners());
     }
 
     /**
@@ -348,7 +348,7 @@ public class MoveDataverseCommandTest {
         // move back
         testEngine.submit(
                         new MoveDataverseCommand(aRequest, childC, root, null));
-        assertEquals( root, childC.getOwner() );
+        assertEquals(root, childC.getOwner());
     }
     
     @Test
@@ -365,12 +365,12 @@ public class MoveDataverseCommandTest {
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
                         new MoveDataverseCommand(aRequest, grandchildCC, root, true));
-        assertNull( datasetCC.getGuestbook());
+        assertNull(datasetCC.getGuestbook());
         
         // move back
         testEngine.submit(
                         new MoveDataverseCommand(aRequest, grandchildCC, childC, true));
-        assertEquals( childC, grandchildCC.getOwner() );
+        assertEquals(childC, grandchildCC.getOwner());
     }
     
     @Test
@@ -384,7 +384,7 @@ public class MoveDataverseCommandTest {
         // move back
         testEngine.submit(
                         new MoveDataverseCommand(aRequest, childD, root, null));
-        assertEquals( root, childD.getOwner() );
+        assertEquals(root, childD.getOwner());
         
     }
     
@@ -402,12 +402,12 @@ public class MoveDataverseCommandTest {
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
                         new MoveDataverseCommand(aRequest, grandchildDD, root, true));
-        assertNull( grandchildDD.getDefaultTemplate());
+        assertNull(grandchildDD.getDefaultTemplate());
         
         // move back
         testEngine.submit(
                         new MoveDataverseCommand(aRequest, grandchildDD, childD, true));
-        assertEquals( childD, grandchildDD.getOwner() );
+        assertEquals(childD, grandchildDD.getOwner());
     }
     
     @Test
@@ -421,7 +421,7 @@ public class MoveDataverseCommandTest {
         // move back
         testEngine.submit(
                         new MoveDataverseCommand(aRequest, childE, root, null));
-        assertEquals( root, childE.getOwner() );
+        assertEquals(root, childE.getOwner());
     }
     
     @Test
@@ -442,6 +442,6 @@ public class MoveDataverseCommandTest {
         // move back
         testEngine.submit(
                         new MoveDataverseCommand(aRequest, grandchildEE, childE, true));
-        assertEquals( childE, grandchildEE.getOwner() );
+        assertEquals(childE, grandchildEE.getOwner());
     }
 }

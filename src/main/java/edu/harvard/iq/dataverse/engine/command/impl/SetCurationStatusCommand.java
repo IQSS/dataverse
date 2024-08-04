@@ -40,7 +40,7 @@ public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
     
     public SetCurationStatusCommand(DataverseRequest aRequest, Dataset dataset, String label) {
         super(aRequest, dataset);
-        this.label=label;
+        this.label = label;
     }
 
     @Override
@@ -49,23 +49,23 @@ public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
         if (getDataset().getLatestVersion().isReleased()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.isReleased"), this);
         }
-        if (label==null || label.isEmpty()) {
+        if (label == null || label.isEmpty()) {
             getDataset().getLatestVersion().setExternalStatusLabel(null);
         } else {
             String setName = getDataset().getEffectiveCurationLabelSetName();
-            if(setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
+            if (setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.disabled"), this);
             }
             String[] labelArray = ctxt.systemConfig().getCurationLabels().get(setName);
             boolean found = false;
-            for(String name: labelArray) {
-                if(name.equals(label)) {
-                    found=true;
+            for (String name : labelArray) {
+                if (name.equals(label)) {
+                    found = true;
                     getDataset().getLatestVersion().setExternalStatusLabel(label);
                     break;
                 }
             }
-            if(!found) {
+            if (!found) {
                 logger.fine("Label not found: " + label + " in set " + setName);
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.notallowed"), this);
             }

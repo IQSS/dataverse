@@ -27,8 +27,8 @@ public class UpdatePermissionRootCommand extends AbstractCommand<Dataverse> {
 	}
 	
 	@Override
-	public Dataverse execute( final CommandContext ctxt) throws CommandException {
-		if ( dvoc.isPermissionRoot() == newValue ) {
+	public Dataverse execute(final CommandContext ctxt) throws CommandException {
+		if (dvoc.isPermissionRoot() == newValue) {
             return dvoc;
 
         } else {
@@ -39,7 +39,7 @@ public class UpdatePermissionRootCommand extends AbstractCommand<Dataverse> {
 
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {  
-        return ctxt.dataverses().index((Dataverse) r,true);
+        return ctxt.dataverses().index((Dataverse) r, true);
     }        
 
 

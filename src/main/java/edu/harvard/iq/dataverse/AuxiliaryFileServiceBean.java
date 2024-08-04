@@ -133,7 +133,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             // record if needed. 
             if (auxFile.getFileSize() != null 
                     && auxFile.getFileSize() > 0 
-                    && dataFile.getOwner() != null ) {
+                    && dataFile.getOwner() != null) {
                 storageUseService.incrementStorageSizeRecursively(dataFile.getOwner().getId(), auxFile.getFileSize());
             }
         } catch (IOException ioex) {
@@ -163,9 +163,9 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         query.setParameter("formatTag", formatTag);
         query.setParameter("formatVersion", formatVersion);
         try {
-            AuxiliaryFile retVal = (AuxiliaryFile)query.getSingleResult();
+            AuxiliaryFile retVal = (AuxiliaryFile) query.getSingleResult();
             return retVal;
-        } catch(NoResultException nr) {
+        } catch (NoResultException nr) {
             return null;
         }
     }

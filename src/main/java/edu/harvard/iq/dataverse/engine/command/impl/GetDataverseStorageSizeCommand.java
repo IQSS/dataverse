@@ -44,7 +44,7 @@ public class GetDataverseStorageSizeCommand extends AbstractCommand<Long> {
     
     @Override
     public Long execute(CommandContext ctxt) throws CommandException {
-        logger.fine("getDataverseStorageSize called on "+dataverse.getAlias());
+        logger.fine("getDataverseStorageSize called on " + dataverse.getAlias());
        
         
         long total = 0L; 

@@ -316,7 +316,7 @@ public class DataversesIT {
      * when the query string has a malformed url
      */
     @Test
-    public void testMalformedFacetQueryString(){
+    public void testMalformedFacetQueryString() {
         
         Response createUser = UtilIT.createRandomUser();
         //        createUser.prettyPrint();
@@ -571,7 +571,7 @@ public class DataversesIT {
         // This XML is a full DDI export without a PID.
         String xml = new String(Files.readAllBytes(Paths.get("doc/sphinx-guides/source/_static/api/ddi_dataset.xml")));
 
-        Response importDDI = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  null, "no");
+        Response importDDI = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml, null, "no");
         logger.info(importDDI.prettyPrint());
         assertEquals(201, importDDI.getStatusCode());
 
@@ -582,17 +582,17 @@ public class DataversesIT {
 //        Response destroy2 = UtilIT.destroyDataset("doi:10.5072/FK2/ABCD22", apiToken);
 //        destroy2.prettyPrint();
 
-        Response importDDIPid = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  "doi:10.5072/FK2/ABCD11", "no");
+        Response importDDIPid = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml, "doi:10.5072/FK2/ABCD11", "no");
         logger.info(importDDIPid.prettyPrint());
         assertEquals(201, importDDIPid.getStatusCode());
 
-        Response importDDIPidRel = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml,  "doi:10.5072/FK2/ABCD22", "yes");
+        Response importDDIPidRel = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml, "doi:10.5072/FK2/ABCD22", "yes");
         logger.info(importDDIPidRel.prettyPrint());
         assertEquals(201, importDDIPidRel.getStatusCode());
 
 
         Response importDDIRelease = UtilIT.importDatasetDDIViaNativeApi(apiToken, dataverseAlias, xml, null, "yes");
-        logger.info( importDDIRelease.prettyPrint());
+        logger.info(importDDIRelease.prettyPrint());
         assertEquals(201, importDDIRelease.getStatusCode());
 
         Integer datasetIdInt = JsonPath.from(importDDI.body().asString()).getInt("data.id");

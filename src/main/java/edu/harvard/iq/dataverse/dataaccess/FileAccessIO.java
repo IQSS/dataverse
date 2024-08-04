@@ -61,7 +61,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         super(null, null, null);
     }
 
-    public FileAccessIO(T dvObject, DataAccessRequest req, String driverId ) {
+    public FileAccessIO(T dvObject, DataAccessRequest req, String driverId) {
 
         super(dvObject, req, driverId);
 
@@ -80,7 +80,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     private Path physicalPath = null; 
     
     @Override
-    public void open (DataAccessOption... options) throws IOException {
+    public void open(DataAccessOption... options) throws IOException {
         DataFile dataFile;
         Dataset dataset;
         Dataverse dataverse = null;
@@ -109,7 +109,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
                 FileInputStream fin = openLocalFileAsInputStream();
 
                 if (fin == null) {
-                    throw new IOException ("Failed to open local file "+getStorageLocation());
+                    throw new IOException("Failed to open local file " + getStorageLocation());
                 }
 
                 this.setInputStream(fin);
@@ -129,14 +129,14 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
                 }
             } else if (isWriteAccess) {
                 // Creates a new directory as needed for a dataset.
-                Path datasetPath=Paths.get(getDatasetDirectory());
+                Path datasetPath = Paths.get(getDatasetDirectory());
                 if (datasetPath != null && !Files.exists(datasetPath)) {
                     Files.createDirectories(datasetPath);
                 }
                 FileOutputStream fout = openLocalFileAsOutputStream();
 
                 if (fout == null) {
-                    throw new IOException ("Failed to open local file "+getStorageLocation()+" for writing.");
+                    throw new IOException("Failed to open local file " + getStorageLocation() + " for writing.");
                 }
 
                 this.setOutputStream(fout);
@@ -168,7 +168,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 //                this.setInputStream(fin);  
               } else if (isWriteAccess) {
                 //this checks whether a directory for a dataset exists 
-                  Path datasetPath=Paths.get(getDatasetDirectory());
+                  Path datasetPath = Paths.get(getDatasetDirectory());
                   if (datasetPath != null && !Files.exists(datasetPath)) {
                       Files.createDirectories(datasetPath);
                   }
@@ -179,7 +179,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             dataverse = this.getDataverse();
         } else {
             logger.fine("Overlay case: FileAccessIO open for : " + physicalPath.toString());
-            Path datasetPath= physicalPath.getParent();
+            Path datasetPath = physicalPath.getParent();
             if (datasetPath != null && !Files.exists(datasetPath)) {
                 Files.createDirectories(datasetPath);
             }
@@ -295,7 +295,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         Path auxPath = getAuxObjectAsPath(auxItemTag);
         
         if (!auxPath.toFile().exists()) {
-            throw new FileNotFoundException ("Aux file does not exist.");
+            throw new FileNotFoundException("Aux file does not exist.");
         }
         
         return auxPath.toFile().length();
@@ -307,7 +307,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         if (auxItemTag == null || "".equals(auxItemTag)) {
             throw new IOException("Null or invalid Auxiliary Object Tag.");
         }
-        if(isDirectAccess()) {
+        if (isDirectAccess()) {
             //includes overlay case
             return Paths.get(physicalPath.toString() + "." + auxItemTag);
         }
@@ -506,7 +506,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     
     // Auxilary helper methods, filesystem access-specific:
     
-    public FileInputStream openLocalFileAsInputStream () {
+    public FileInputStream openLocalFileAsInputStream() {
         FileInputStream in;
 
         try {
@@ -526,7 +526,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         return in;
     }
     
-    public FileOutputStream openLocalFileAsOutputStream () {
+    public FileOutputStream openLocalFileAsOutputStream() {
         FileOutputStream out;
 
         try {
@@ -637,16 +637,16 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
         InputStream in = null;
 
-        if(this.isAuxObjectCached(auxItemTag))
+        if (this.isAuxObjectCached(auxItemTag))
         {
-            Path path=getAuxObjectAsPath(auxItemTag);
-            in=Files.newInputStream(path);
+            Path path = getAuxObjectAsPath(auxItemTag);
+            in = Files.newInputStream(path);
         }
         return in;
     }
     private String stripDriverId(String storageIdentifier) {
         int separatorIndex = storageIdentifier.indexOf(DataAccess.SEPARATOR);
-        if(separatorIndex>0) {
+        if (separatorIndex > 0) {
             return storageIdentifier.substring(separatorIndex + DataAccess.SEPARATOR.length());
         }
         return storageIdentifier;
@@ -659,7 +659,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             String rawPathString = basePath + pathString;
             Path normalized = Paths.get(rawPathString).normalize();
-            if(!rawPathString.equals(normalized.toString())) {
+            if (!rawPathString.equals(normalized.toString())) {
                 logger.warning("Non-normalized path in submitted identifier " + storageId);
                 return false;
             }

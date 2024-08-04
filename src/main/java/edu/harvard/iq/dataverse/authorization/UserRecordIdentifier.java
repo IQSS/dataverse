@@ -36,7 +36,7 @@ public class UserRecordIdentifier {
         return "[UserRecordIdentifier " + repoId + "/" + userIdInRepo + ']';
     }
     
-    public AuthenticatedUserLookup createAuthenticatedUserLookup( AuthenticatedUser u ) {
+    public AuthenticatedUserLookup createAuthenticatedUserLookup(AuthenticatedUser u) {
         return new AuthenticatedUserLookup(userIdInRepo, repoId, u);
     }
     

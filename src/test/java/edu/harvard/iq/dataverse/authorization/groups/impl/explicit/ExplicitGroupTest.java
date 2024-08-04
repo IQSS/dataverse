@@ -38,27 +38,27 @@ public class ExplicitGroupTest {
     public void addGroupToSelf() throws Exception {
         ExplicitGroup sut = new ExplicitGroup();
         sut.setDisplayName("a group");
-        assertThrows(GroupException.class, () -> sut.add( sut ), "A group cannot be added to itself.");
+        assertThrows(GroupException.class, () -> sut.add(sut), "A group cannot be added to itself.");
     }
     
     @Test
-    public void addGroupToDescendant() throws GroupException{
+    public void addGroupToDescendant() throws GroupException {
         Dataverse dv = makeDataverse();
         ExplicitGroup root = new ExplicitGroup(prv);
-        root.setId( nextId() );
+        root.setId(nextId());
         root.setGroupAliasInOwner("top");
         ExplicitGroup sub = new ExplicitGroup(prv);
         sub.setGroupAliasInOwner("sub");
-        sub.setId( nextId() );
+        sub.setId(nextId());
         ExplicitGroup subSub = new ExplicitGroup(prv);
         subSub.setGroupAliasInOwner("subSub");
-        subSub.setId( nextId() );
+        subSub.setId(nextId());
         root.setOwner(dv);
         sub.setOwner(dv);
         subSub.setOwner(dv);
         
-        sub.add( subSub );
-        root.add( sub );
+        sub.add(subSub);
+        root.add(sub);
         assertThrows(GroupException.class, () -> subSub.add(root), "A group cannot contain its parent");
     }
     
@@ -88,7 +88,7 @@ public class ExplicitGroupTest {
         g2.setOwner(dvParent);
         
         g1.add(g2);
-        assertTrue( g1.structuralContains(g2) );
+        assertTrue(g1.structuralContains(g2));
     }
     
     @Test
@@ -99,20 +99,20 @@ public class ExplicitGroupTest {
         
         AuthenticatedUser au1 = makeAuthenticatedUser("Lauren", "Ipsum");
         g1.add(au1);
-        g1.add( GuestUser.get() );
+        g1.add(GuestUser.get());
         
-        assertTrue( g1.structuralContains(GuestUser.get()) );
-        assertTrue( g1.structuralContains(au1) );
-        assertFalse( g1.structuralContains(makeAuthenticatedUser("Sima", "Kneidle")) );
-        assertFalse( g1.structuralContains(AllUsers.get()) );
+        assertTrue(g1.structuralContains(GuestUser.get()));
+        assertTrue(g1.structuralContains(au1));
+        assertFalse(g1.structuralContains(makeAuthenticatedUser("Sima", "Kneidle")));
+        assertFalse(g1.structuralContains(AllUsers.get()));
     }
     
     
     @Test
     public void recursiveStructuralContainment() throws GroupException {
         Dataverse dvParent = makeDataverse();
-        ExplicitGroup parentGroup     = roleAssigneeSvc.add(makeExplicitGroup(prv));
-        ExplicitGroup childGroup      = roleAssigneeSvc.add(makeExplicitGroup(prv));
+        ExplicitGroup parentGroup = roleAssigneeSvc.add(makeExplicitGroup(prv));
+        ExplicitGroup childGroup = roleAssigneeSvc.add(makeExplicitGroup(prv));
         ExplicitGroup grandChildGroup = roleAssigneeSvc.add(makeExplicitGroup(prv));
         parentGroup.setOwner(dvParent);
         childGroup.setOwner(dvParent);
@@ -122,43 +122,43 @@ public class ExplicitGroupTest {
         parentGroup.add(childGroup);
         
         AuthenticatedUser au = roleAssigneeSvc.add(makeAuthenticatedUser("Jane", "Doe"));
-        grandChildGroup.add( au );
-        childGroup.add( GuestUser.get() );
+        grandChildGroup.add(au);
+        childGroup.add(GuestUser.get());
         
-        assertTrue( grandChildGroup.structuralContains(au) );
-        assertTrue( childGroup.structuralContains(au) );
-        assertTrue( parentGroup.structuralContains(au) );
+        assertTrue(grandChildGroup.structuralContains(au));
+        assertTrue(childGroup.structuralContains(au));
+        assertTrue(parentGroup.structuralContains(au));
         
-        assertTrue( childGroup.structuralContains(GuestUser.get()) );
-        assertTrue( parentGroup.structuralContains(GuestUser.get()) );
+        assertTrue(childGroup.structuralContains(GuestUser.get()));
+        assertTrue(parentGroup.structuralContains(GuestUser.get()));
         
         grandChildGroup.remove(au);
         
-        assertFalse( grandChildGroup.structuralContains(au) );
-        assertFalse( childGroup.structuralContains(au) );
-        assertFalse( parentGroup.structuralContains(au) );
+        assertFalse(grandChildGroup.structuralContains(au));
+        assertFalse(childGroup.structuralContains(au));
+        assertFalse(parentGroup.structuralContains(au));
         
-        childGroup.add( AuthenticatedUsers.get() );
+        childGroup.add(AuthenticatedUsers.get());
         
-        assertFalse( grandChildGroup.structuralContains(au) );
-        assertFalse( childGroup.structuralContains(au) );
-        assertFalse( parentGroup.structuralContains(au) );
-        assertTrue( childGroup.structuralContains(AuthenticatedUsers.get()) );
+        assertFalse(grandChildGroup.structuralContains(au));
+        assertFalse(childGroup.structuralContains(au));
+        assertFalse(parentGroup.structuralContains(au));
+        assertTrue(childGroup.structuralContains(AuthenticatedUsers.get()));
 
         final IpGroup ipGroup = new IpGroup(new IpGroupProvider(null));
         grandChildGroup.add(ipGroup);
-        ipGroup.add( IpAddressRange.make(IpAddress.valueOf("0.0.1.1"), IpAddress.valueOf("0.0.255.255")) );
+        ipGroup.add(IpAddressRange.make(IpAddress.valueOf("0.0.1.1"), IpAddress.valueOf("0.0.255.255")));
         
-        assertTrue( grandChildGroup.structuralContains(ipGroup) );
-        assertTrue( childGroup.structuralContains(ipGroup) );
-        assertTrue( parentGroup.structuralContains(ipGroup) );
+        assertTrue(grandChildGroup.structuralContains(ipGroup));
+        assertTrue(childGroup.structuralContains(ipGroup));
+        assertTrue(parentGroup.structuralContains(ipGroup));
     }
     
     @Test
     public void recursiveLogicalContainment() throws GroupException {
         Dataverse dvParent = makeDataverse();
-        ExplicitGroup parentGroup     = roleAssigneeSvc.add(makeExplicitGroup("parent", prv));
-        ExplicitGroup childGroup      = roleAssigneeSvc.add(makeExplicitGroup("child", prv));
+        ExplicitGroup parentGroup = roleAssigneeSvc.add(makeExplicitGroup("parent", prv));
+        ExplicitGroup childGroup = roleAssigneeSvc.add(makeExplicitGroup("child", prv));
         ExplicitGroup grandChildGroup = roleAssigneeSvc.add(makeExplicitGroup("grandChild", prv));
         parentGroup.setOwner(dvParent);
         childGroup.setOwner(dvParent);
@@ -168,44 +168,44 @@ public class ExplicitGroupTest {
         parentGroup.add(childGroup);
         
         AuthenticatedUser au = roleAssigneeSvc.add(makeAuthenticatedUser("Jane", "Doe"));
-        grandChildGroup.add( au );
-        childGroup.add( GuestUser.get() );
+        grandChildGroup.add(au);
+        childGroup.add(GuestUser.get());
         DataverseRequest auReq = makeRequest(au);
         DataverseRequest guestReq = makeRequest();
         
-        assertTrue( grandChildGroup.contains(auReq) );
-        assertTrue( childGroup.contains(auReq) );
-        assertTrue( parentGroup.contains(auReq) );
+        assertTrue(grandChildGroup.contains(auReq));
+        assertTrue(childGroup.contains(auReq));
+        assertTrue(parentGroup.contains(auReq));
         
-        assertTrue( childGroup.contains(guestReq) );
-        assertTrue( parentGroup.contains(guestReq) );
+        assertTrue(childGroup.contains(guestReq));
+        assertTrue(parentGroup.contains(guestReq));
         
         grandChildGroup.remove(au);
         
-        assertFalse( grandChildGroup.contains(auReq) );
-        assertFalse( childGroup.contains(auReq) );
-        assertFalse( parentGroup.contains(auReq) );
+        assertFalse(grandChildGroup.contains(auReq));
+        assertFalse(childGroup.contains(auReq));
+        assertFalse(parentGroup.contains(auReq));
         
-        childGroup.add( AuthenticatedUsers.get() );
+        childGroup.add(AuthenticatedUsers.get());
         
-        assertFalse( grandChildGroup.contains(auReq) );
-        assertTrue( childGroup.contains(auReq) );
-        assertTrue( parentGroup.contains(auReq) );
+        assertFalse(grandChildGroup.contains(auReq));
+        assertTrue(childGroup.contains(auReq));
+        assertTrue(parentGroup.contains(auReq));
 
-        final IpGroup ipGroup = roleAssigneeSvc.add( new IpGroup(new IpGroupProvider(null)) );
+        final IpGroup ipGroup = roleAssigneeSvc.add(new IpGroup(new IpGroupProvider(null)));
         grandChildGroup.add(ipGroup);
-        ipGroup.add( IpAddressRange.make(IpAddress.valueOf("0.0.1.1"), IpAddress.valueOf("0.0.255.255")) );
+        ipGroup.add(IpAddressRange.make(IpAddress.valueOf("0.0.1.1"), IpAddress.valueOf("0.0.255.255")));
         final IpAddress ip = IpAddress.valueOf("0.0.128.128");
         final DataverseRequest request = new DataverseRequest(GuestUser.get(), ip);
         
-        assertTrue( ipGroup.contains(request) ); 
-        assertTrue( grandChildGroup.contains(request) );
-        assertTrue( parentGroup.contains(request) );
+        assertTrue(ipGroup.contains(request)); 
+        assertTrue(grandChildGroup.contains(request));
+        assertTrue(parentGroup.contains(request));
         
-        childGroup.add( GuestUser.get() );
-        assertTrue( childGroup.contains(guestReq) );
-        assertTrue( parentGroup.contains(guestReq) );
-        assertFalse( grandChildGroup.contains(guestReq) );
+        childGroup.add(GuestUser.get());
+        assertTrue(childGroup.contains(guestReq));
+        assertTrue(parentGroup.contains(guestReq));
+        assertFalse(grandChildGroup.contains(guestReq));
         
     }
 }

@@ -53,14 +53,14 @@ public class LruCacheTest {
         sut.setMaxSize(maxSize);
         sut.put(0l, "x");
         
-        for ( long l=10; l<20; l++ ) {
+        for (long l = 10; l < 20; l++) {
             sut.put(l, "filler" + l);
         }
         
         assertEquals(maxSize, sut.size());
-        assertNull( sut.get(0l) );
+        assertNull(sut.get(0l));
         
-        for ( long l=10; l<20; l++ ) {
+        for (long l = 10; l < 20; l++) {
             assertEquals(sut.get(l), "filler" + l);
         }
         

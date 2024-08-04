@@ -75,7 +75,7 @@ public class BagItFileHandlerPostProcessorTest {
     private List<DataFile> createDataFiles(String... filePathItems) throws Exception {
         List<DataFile> dataFiles = new ArrayList<>(filePathItems.length);
 
-        for(String filePath:  filePathItems) {
+        for (String filePath :  filePathItems) {
             String fileName = Path.of(filePath).getFileName().toString();
             DataFile dataFile = new DataFile();
             dataFile.setId(MocksFactory.nextId());

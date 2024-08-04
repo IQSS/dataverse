@@ -38,7 +38,7 @@ public class AuxiliaryFileServiceBeanTest {
     public void testFindAuxiliaryFileTypesInBundleFalse() {
         System.out.println("testFindAuxiliaryFileTypesInBundleFalse");
         boolean inBundle = false;
-        when(this.svc.em.createNamedQuery(ArgumentMatchers.anyString(),ArgumentMatchers.<Class<String>>any())).thenReturn(query);
+        when(this.svc.em.createNamedQuery(ArgumentMatchers.anyString(), ArgumentMatchers.<Class<String>>any())).thenReturn(query);
         when(query.getResultList()).thenReturn(types);
         List<String> result = svc.findAuxiliaryFileTypes(dataFile, inBundle);
         // None of these are in the bundle.
@@ -50,7 +50,7 @@ public class AuxiliaryFileServiceBeanTest {
     public void testFindAuxiliaryFileTypesInBundleTrue() {
         System.out.println("testFindAuxiliaryFileTypesInBundleTrue");
         boolean inBundle = true;
-        when(this.svc.em.createNamedQuery(ArgumentMatchers.anyString(),ArgumentMatchers.<Class<String>>any())).thenReturn(query);
+        when(this.svc.em.createNamedQuery(ArgumentMatchers.anyString(), ArgumentMatchers.<Class<String>>any())).thenReturn(query);
         when(query.getResultList()).thenReturn(types);
         List<String> result = svc.findAuxiliaryFileTypes(dataFile, inBundle);
         // DP is in the bundle.

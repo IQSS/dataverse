@@ -148,7 +148,7 @@ public class JsonPrinter {
                 .add("message", lock.getInfo());
     }
     
-    public static JsonObjectBuilder json( RoleAssigneeDisplayInfo d ) {
+    public static JsonObjectBuilder json(RoleAssigneeDisplayInfo d) {
         return jsonObjectBuilder()
                 .add("title", d.getTitle())
                 .add("email", d.getEmailAddress())
@@ -157,29 +157,29 @@ public class JsonPrinter {
 
     public static JsonObjectBuilder json(IpGroup grp) {
          // collect single addresses
-        List<String> singles = grp.getRanges().stream().filter( IpAddressRange::isSingleAddress )
-                                .map( IpAddressRange::getBottom )
-                                .map( IpAddress::toString ).collect(toList());
+        List<String> singles = grp.getRanges().stream().filter(IpAddressRange::isSingleAddress)
+                                .map(IpAddressRange::getBottom)
+                                .map(IpAddress::toString).collect(toList());
         // collect "real" ranges
-        List<List<String>> ranges = grp.getRanges().stream().filter( rng -> !rng.isSingleAddress() )
-                                .map( rng -> Arrays.asList(rng.getBottom().toString(), rng.getTop().toString()) )
+        List<List<String>> ranges = grp.getRanges().stream().filter(rng -> !rng.isSingleAddress())
+                                .map(rng -> Arrays.asList(rng.getBottom().toString(), rng.getTop().toString()))
                                 .collect(toList());
 
         JsonObjectBuilder bld = jsonObjectBuilder()
-                .add("alias", grp.getPersistedGroupAlias() )
+                .add("alias", grp.getPersistedGroupAlias())
                 .add("identifier", grp.getIdentifier())
-                .add("id", grp.getId() )
-                .add("name", grp.getDisplayName() )
-                .add("description", grp.getDescription() );
+                .add("id", grp.getId())
+                .add("name", grp.getDisplayName())
+                .add("description", grp.getDescription());
        
-        if ( ! singles.isEmpty() ) {
-            bld.add("addresses", asJsonArray(singles) );
+        if (!singles.isEmpty()) {
+            bld.add("addresses", asJsonArray(singles));
         }
         
-        if ( ! ranges.isEmpty() ) {
+        if (!ranges.isEmpty()) {
             JsonArrayBuilder rangesBld = Json.createArrayBuilder();
-            ranges.forEach( r -> rangesBld.add( Json.createArrayBuilder().add(r.get(0)).add(r.get(1))) );
-            bld.add("ranges", rangesBld );
+            ranges.forEach(r -> rangesBld.add(Json.createArrayBuilder().add(r.get(0)).add(r.get(1))));
+            bld.add("ranges", rangesBld);
         }
         
         return bld;
@@ -195,11 +195,11 @@ public class JsonPrinter {
     
     public static JsonObjectBuilder json(MailDomainGroup grp) {
         JsonObjectBuilder bld = jsonObjectBuilder()
-            .add("alias", grp.getPersistedGroupAlias() )
-            .add("id", grp.getId() )
-            .add("name", grp.getDisplayName() )
-            .add("description", grp.getDescription() )
-            .add("domains", asJsonArray(grp.getEmailDomainsAsList()) )
+            .add("alias", grp.getPersistedGroupAlias())
+            .add("id", grp.getId())
+            .add("name", grp.getDisplayName())
+            .add("description", grp.getDescription())
+            .add("domains", asJsonArray(grp.getEmailDomainsAsList()))
             .add("regex", grp.isRegEx());
         return bld;
     }
@@ -236,22 +236,22 @@ public class JsonPrinter {
         return bld;
     }
     
-    public static JsonObjectBuilder json(Workflow wf){
+    public static JsonObjectBuilder json(Workflow wf) {
         JsonObjectBuilder bld = jsonObjectBuilder();
         bld.add("name", wf.getName());
-        if ( wf.getId() != null ) {
+        if (wf.getId() != null) {
             bld.add("id", wf.getId());
         }
         
-        if ( wf.getSteps()!=null && !wf.getSteps().isEmpty()) {
+        if (wf.getSteps() != null && !wf.getSteps().isEmpty()) {
             JsonArrayBuilder arr = Json.createArrayBuilder();
-            for ( WorkflowStepData stp : wf.getSteps() ) {
-                arr.add( jsonObjectBuilder().add("stepType", stp.getStepType())
+            for (WorkflowStepData stp : wf.getSteps()) {
+                arr.add(jsonObjectBuilder().add("stepType", stp.getStepType())
                                    .add("provider", stp.getProviderId())
                                    .add("parameters", mapToObject(stp.getStepParameters()))
-                                   .add("requiredSettings", mapToObject(stp.getStepSettings())) );
+                                   .add("requiredSettings", mapToObject(stp.getStepSettings())));
             }
-            bld.add("steps", arr );
+            bld.add("steps", arr);
         }
         
         return bld;
@@ -268,10 +268,10 @@ public class JsonPrinter {
                 .add("alias", dv.getAlias())
                 .add("name", dv.getName())
                 .add("affiliation", dv.getAffiliation());
-        if(!hideEmail) { 
+        if (!hideEmail) { 
             bld.add("dataverseContacts", JsonPrinter.json(dv.getDataverseContacts()));
         }
-        if (returnOwners){
+        if (returnOwners) {
             bld.add("isPartOf", getOwnersFromDvObject(dv));
         }
         bld.add("permissionRoot", dv.isPermissionRoot())
@@ -286,7 +286,7 @@ public class JsonPrinter {
         if (dv.getDataverseTheme() != null) {
             bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));
         }
-        if(dv.getStorageDriverId() != null) {
+        if (dv.getStorageDriverId() != null) {
         	bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
         }
         if (dv.getFilePIDsEnabled() != null) {
@@ -295,7 +295,7 @@ public class JsonPrinter {
         bld.add("isReleased", dv.isReleased());
 
         List<DataverseFieldTypeInputLevel> inputLevels = dv.getDataverseFieldTypeInputLevels();
-        if(!inputLevels.isEmpty()) {
+        if (!inputLevels.isEmpty()) {
             bld.add("inputLevels", JsonPrinter.jsonDataverseFieldTypeInputLevels(inputLevels));
         }
 
@@ -313,12 +313,12 @@ public class JsonPrinter {
         return jsonArrayOfContacts;
     }
     
-    public static JsonObjectBuilder getOwnersFromDvObject(DvObject dvObject){
+    public static JsonObjectBuilder getOwnersFromDvObject(DvObject dvObject) {
         return getOwnersFromDvObject(dvObject, null);
     }
     
     public static JsonObjectBuilder getOwnersFromDvObject(DvObject dvObject, DatasetVersion dsv) {
-        List <DvObject> ownerList = new ArrayList();
+        List<DvObject> ownerList = new ArrayList();
         dvObject = dvObject.getOwner(); // We're going to ignore the object itself
         //Get "root" to top of list
         while (dvObject != null) {
@@ -333,7 +333,7 @@ public class JsonPrinter {
         return saved;
     }
     
-    private static JsonObjectBuilder addEmbeddedOwnerObject(DvObject dvo, JsonObjectBuilder isPartOf, DatasetVersion dsv ) {
+    private static JsonObjectBuilder addEmbeddedOwnerObject(DvObject dvo, JsonObjectBuilder isPartOf, DatasetVersion dsv) {
         JsonObjectBuilder ownerObject = jsonObjectBuilder();
 
         if (dvo.isInstanceofDataverse()) {
@@ -349,7 +349,7 @@ public class JsonPrinter {
             }
             ownerObject.add("identifier", dvo.getId());
             String versionString = dsv == null ? "" : dsv.getFriendlyVersionNumber();
-            if (!versionString.isEmpty()){
+            if (!versionString.isEmpty()) {
                ownerObject.add("version", versionString);
             }
         }
@@ -363,16 +363,16 @@ public class JsonPrinter {
         return ownerObject;
     }
     
-    public static JsonObjectBuilder json( DataverseTheme theme ) {
+    public static JsonObjectBuilder json(DataverseTheme theme) {
         final NullSafeJsonBuilder baseObject = jsonObjectBuilder()
-                .add("id", theme.getId() )
+                .add("id", theme.getId())
                 .add("logo", theme.getLogo())
                 .add("tagline", theme.getTagline())
                 .add("linkUrl", theme.getLinkUrl())
                 .add("linkColor", theme.getLinkColor())
                 .add("textColor", theme.getTextColor())
                 .add("backgroundColor", theme.getBackgroundColor());
-        if ( theme.getLogoAlignment() != null ) {
+        if (theme.getLogoAlignment() != null) {
             baseObject.add("logoBackgroundColor", theme.getLogoBackgroundColor());
         }
         return baseObject;
@@ -386,7 +386,7 @@ public class JsonPrinter {
                 .add("userName", user.getUserName());
     }
     
-    public static JsonObjectBuilder json(Dataset ds){
+    public static JsonObjectBuilder json(Dataset ds) {
        return json(ds, false);
     }
 
@@ -403,18 +403,18 @@ public class JsonPrinter {
         if (DvObjectContainer.isMetadataLanguageSet(ds.getMetadataLanguage())) {
             bld.add("metadataLanguage", ds.getMetadataLanguage());
         }
-        if (returnOwners){
+        if (returnOwners) {
             bld.add("isPartOf", getOwnersFromDvObject(ds));
         }
         return bld;
     }
 
     public static JsonObjectBuilder json(FileDetailsHolder ds) {
-        return Json.createObjectBuilder().add(ds.getStorageID() ,
+        return Json.createObjectBuilder().add(ds.getStorageID(),
                 Json.createObjectBuilder()
-                .add("id", ds.getStorageID() )
+                .add("id", ds.getStorageID())
                 .add("hash", ds.getHash())
-                .add("mime",ds.getMime()));
+                .add("mime", ds.getMime()));
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean includeFiles) {
@@ -472,7 +472,7 @@ public class JsonPrinter {
                 jsonByBlocks(dsv.getDatasetFields(), anonymizedFieldTypeNamesList)
                 : jsonByBlocks(dsv.getDatasetFields())
         );       
-        if(returnOwners){
+        if (returnOwners) {
             bld.add("isPartOf", getOwnersFromDvObject(dataset));
         }
         if (includeFiles) {
@@ -482,9 +482,9 @@ public class JsonPrinter {
         return bld;
     }
 
-    public static JsonObjectBuilder jsonDataFileList(List<DataFile> dataFiles){
+    public static JsonObjectBuilder jsonDataFileList(List<DataFile> dataFiles) {
     
-        if (dataFiles==null){
+        if (dataFiles == null) {
             throw new NullPointerException("dataFiles cannot be null");
         }
         
@@ -586,7 +586,7 @@ public class JsonPrinter {
         blockBld.add("name", block.getName());
         
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
-        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(true);
+        Map<Long, JsonObject> cvocMap = (datasetFieldService == null) ? new HashMap<Long, JsonObject>() : datasetFieldService.getCVocConf(true);
         DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray, anonymizedFieldTypeNamesList));
 
         blockBld.add("fields", fieldsArray);
@@ -620,7 +620,7 @@ public class JsonPrinter {
             return null;
         } else {
             JsonArrayBuilder fieldArray = Json.createArrayBuilder();
-            Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(true);
+            Map<Long, JsonObject> cvocMap = (datasetFieldService == null) ? new HashMap<Long, JsonObject>() : datasetFieldService.getCVocConf(true);
             DatasetFieldWalker.walk(dfv, new DatasetFieldsToJson(fieldArray), cvocMap);
             JsonArray out = fieldArray.build();
             return out.getJsonObject(0);
@@ -706,7 +706,7 @@ public class JsonPrinter {
         return fieldsBld;
     }
     
-    public static JsonObjectBuilder json(FileMetadata fmd){
+    public static JsonObjectBuilder json(FileMetadata fmd) {
         return json(fmd, false, false);
     }
 
@@ -752,7 +752,7 @@ public class JsonPrinter {
         return JsonPrinter.json(df, null, false);
     }
     
-    public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata, boolean forExportDataProvider){
+    public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata, boolean forExportDataProvider) {
         return json(df, fileMetadata, forExportDataProvider, false);
     }
     
@@ -767,7 +767,7 @@ public class JsonPrinter {
         // (TODO...? L.A. 4.5, Aug 7 2016)
         String fileName = null;
         
-        if (fileMetadata == null){
+        if (fileMetadata == null) {
             // Note that this may not necessarily grab the file metadata from the 
             // version *you want*! (L.A.)
             fileMetadata = df.getFileMetadata();
@@ -775,9 +775,9 @@ public class JsonPrinter {
          
         fileName = fileMetadata.getLabel();
         GlobalId filePid = df.getGlobalId();
-        String pidURL = (filePid!=null)? filePid.asURL(): null;
+        String pidURL = (filePid != null) ? filePid.asURL() : null;
         //For backward compatibility - prior to #8674, asString() returned "" for the value when no PID exists.
-        String pidString = (filePid!=null)? filePid.asString(): "";
+        String pidString = (filePid != null) ? filePid.asString() : "";
 
         JsonObjectBuilder embargo = df.getEmbargo() != null ? JsonPrinter.json(df.getEmbargo()) : null;
         JsonObjectBuilder retention = df.getRetention() != null ? JsonPrinter.json(df.getRetention()) : null;
@@ -798,7 +798,7 @@ public class JsonPrinter {
                 .add("storageIdentifier", df.getStorageIdentifier())
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
-                .add ("originalFileSize", df.getOriginalFileSize())
+                .add("originalFileSize", df.getOriginalFileSize())
                 .add("originalFileName", df.getOriginalFileName())
                 .add("UNF", df.getUnf())
                 //---------------------------------------------
@@ -816,7 +816,7 @@ public class JsonPrinter {
                 .add("tabularData", df.isTabularData())
                 .add("tabularTags", getTabularFileTags(df))
                 .add("creationDate", df.getCreateDateFormattedYYYYMMDD())
-                .add("publicationDate",  df.getPublicationDateFormattedYYYYMMDD());
+                .add("publicationDate", df.getPublicationDateFormattedYYYYMMDD());
         Dataset dfOwner = df.getOwner();
         if (dfOwner != null) {
             builder.add("fileAccessRequest", dfOwner.isFileAccessRequest());
@@ -834,7 +834,7 @@ public class JsonPrinter {
                     ? JsonPrinter.jsonVarGroup(fileMetadata.getVarGroups())
                     : null);
         }
-        if (returnOwners){
+        if (returnOwners) {
             builder.add("isPartOf", getOwnersFromDvObject(df, fileMetadata.getDatasetVersion()));
         }
         return builder;
@@ -843,7 +843,7 @@ public class JsonPrinter {
     //Started from https://github.com/RENCI-NRIG/dataverse/, i.e. https://github.com/RENCI-NRIG/dataverse/commit/2b5a1225b42cf1caba85e18abfeb952171c6754a
     public static JsonArrayBuilder jsonDT(List<DataTable> ldt) {
         JsonArrayBuilder ldtArr = Json.createArrayBuilder();
-        for(DataTable dt: ldt){
+        for (DataTable dt : ldt) {
             ldtArr.add(JsonPrinter.json(dt));
         }
         return ldtArr;
@@ -861,8 +861,8 @@ public class JsonPrinter {
 
     public static JsonArrayBuilder jsonDV(List<DataVariable> dvl) {
         JsonArrayBuilder varArr = Json.createArrayBuilder();
-        if(dvl!=null){
-            for (DataVariable dv: dvl){
+        if (dvl != null) {
+            for (DataVariable dv : dvl) {
                 varArr.add(JsonPrinter.json(dv));
             }
         }
@@ -882,12 +882,12 @@ public class JsonPrinter {
             .add("format", dv.getFormat())
             .add("isOrderedCategorical", dv.isOrderedCategorical()) 
             .add("fileOrder", dv.getFileOrder()) 
-            .add("UNF",dv.getUnf())
+            .add("UNF", dv.getUnf())
             .add("fileStartPosition", dv.getFileStartPosition())
             .add("fileEndPosition", dv.getFileEndPosition())
             .add("recordSegmentNumber", dv.getRecordSegmentNumber())
-            .add("numberOfDecimalPoints",dv.getNumberOfDecimalPoints())
-            .add("variableMetadata",jsonVarMetadata(dv.getVariableMetadatas()))
+            .add("numberOfDecimalPoints", dv.getNumberOfDecimalPoints())
+            .add("variableMetadata", jsonVarMetadata(dv.getVariableMetadatas()))
             .add("invalidRanges", dv.getInvalidRanges().isEmpty() ? null : JsonPrinter.jsonInvalidRanges(dv.getInvalidRanges()))
             .add("summaryStatistics", dv.getSummaryStatistics().isEmpty() ? null : JsonPrinter.jsonSumStat(dv.getSummaryStatistics()))
             .add("variableCategories", dv.getCategories().isEmpty() ? null : JsonPrinter.jsonCatStat(dv.getCategories()))
@@ -897,16 +897,16 @@ public class JsonPrinter {
     private static JsonArrayBuilder jsonInvalidRanges(Collection<VariableRange> invalidRanges) {
         JsonArrayBuilder invRanges = Json.createArrayBuilder();
         JsonObjectBuilder job = Json.createObjectBuilder();
-        for (VariableRange vr: invalidRanges){
+        for (VariableRange vr : invalidRanges) {
             job.add("beginValue", vr.getBeginValue())
-            .add("hasBeginValueType", vr.getBeginValueType()!=null)
+            .add("hasBeginValueType", vr.getBeginValueType() != null)
             .add("isBeginValueTypePoint", vr.isBeginValueTypePoint())
             .add("isBeginValueTypeMin", vr.isBeginValueTypeMin())
             .add("isBeginValueTypeMinExcl", vr.isBeginValueTypeMinExcl())
             .add("isBeginValueTypeMax", vr.isBeginValueTypeMax())
             .add("isBeginValueTypeMaxExcl", vr.isBeginValueTypeMaxExcl())
             .add("endValue", vr.getEndValue())
-            .add("hasEndValueType", vr.getEndValueType()!=null)
+            .add("hasEndValueType", vr.getEndValueType() != null)
             .add("endValueTypeMax", vr.isEndValueTypeMax())
             .add("endValueTypeMaxExcl", vr.isEndValueTypeMaxExcl());
             
@@ -915,26 +915,26 @@ public class JsonPrinter {
         return invRanges;
     }
 
-    private static JsonObjectBuilder jsonSumStat(Collection<SummaryStatistic> sumStat){
+    private static JsonObjectBuilder jsonSumStat(Collection<SummaryStatistic> sumStat) {
         //JsonArrayBuilder sumStatArr = Json.createArrayBuilder();
         JsonObjectBuilder sumStatObj = Json.createObjectBuilder();
-        for (SummaryStatistic stat: sumStat){
-            String label = stat.getTypeLabel()==null ? "unknown":stat.getTypeLabel();
+        for (SummaryStatistic stat : sumStat) {
+            String label = stat.getTypeLabel() == null ? "unknown" : stat.getTypeLabel();
             sumStatObj.add(label, stat.getValue());
         }
         return sumStatObj;
     }
 
 
-    private static JsonArrayBuilder jsonCatStat(Collection<VariableCategory> catStat){
+    private static JsonArrayBuilder jsonCatStat(Collection<VariableCategory> catStat) {
         JsonArrayBuilder catArr = Json.createArrayBuilder();
 
-        for (VariableCategory stat: catStat){
+        for (VariableCategory stat : catStat) {
             JsonObjectBuilder catStatObj = Json.createObjectBuilder();
             catStatObj.add("label", stat.getLabel())
                       .add("value", stat.getValue())
                       .add("isMissing", stat.isMissing());
-            if(stat.getFrequency()!=null){
+            if (stat.getFrequency() != null) {
                 catStatObj.add("frequency", stat.getFrequency());
             }
             catArr.add(catStatObj);
@@ -964,14 +964,14 @@ public class JsonPrinter {
                     .add("fileMetadataId", vm.getFileMetadata().getId())
                     .add("label", vm.getLabel())
                     .add("isWeightVar", vm.isIsweightvar())
-                    .add("isWeighted",vm.isWeighted())
-                    .add("weightVariableId", (vm.getWeightvariable()==null) ? null : vm.getWeightvariable().getId())
+                    .add("isWeighted", vm.isWeighted())
+                    .add("weightVariableId", (vm.getWeightvariable() == null) ? null : vm.getWeightvariable().getId())
                     .add("literalQuestion", vm.getLiteralquestion())
                     .add("interviewInstruction", vm.getInterviewinstruction())
                     .add("postQuestion", vm.getPostquestion())
                     .add("universe", vm.getUniverse())
                     .add("notes", vm.getNotes())
-                    .add("categoryMetadatas",json(vm.getCategoriesMetadata()));
+                    .add("categoryMetadatas", json(vm.getCategoriesMetadata()));
             JsonArrayBuilder jab = Json.createArrayBuilder();
         }
         return vmArr;
@@ -979,7 +979,7 @@ public class JsonPrinter {
     
     private static JsonArrayBuilder json(Collection<CategoryMetadata> categoriesMetadata) {
         JsonArrayBuilder cmArr = Json.createArrayBuilder();
-        for(CategoryMetadata cm: categoriesMetadata) {
+        for (CategoryMetadata cm : categoriesMetadata) {
             JsonObjectBuilder job = jsonObjectBuilder()
                     .add("wFreq", cm.getWfreq())
                     .add("categoryValue", cm.getCategory().getValue());
@@ -1112,7 +1112,7 @@ public class JsonPrinter {
             if (dsfv.getValue() != null) {
                 if (cvocEntry.containsKey("retrieval-filtering")) {
                     JsonObject value = datasetFieldService.getExternalVocabularyValue(dsfv.getValue());
-                    if (value!=null) {
+                    if (value != null) {
                         valueArrStack.peek().add(value);
                     }
                 }
@@ -1158,9 +1158,9 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(AuthenticationProviderRow aRow) {
         return jsonObjectBuilder()
                         .add("id", aRow.getId())
-                        .add("factoryAlias", aRow.getFactoryAlias() )
+                        .add("factoryAlias", aRow.getFactoryAlias())
                         .add("title", aRow.getTitle())
-                        .add("subtitle",aRow.getSubtitle())
+                        .add("subtitle", aRow.getSubtitle())
                         .add("factoryData", aRow.getFactoryData())
                         .add("enabled", aRow.isEnabled())
                 ;
@@ -1174,7 +1174,7 @@ public class JsonPrinter {
                 .add("roleAssignment", json(privateUrl.getRoleAssignment()));
     }
 
-    public static JsonObjectBuilder json( ExplicitGroup eg ) {
+    public static JsonObjectBuilder json(ExplicitGroup eg) {
         JsonArrayBuilder ras = Json.createArrayBuilder();
             for (String u : eg.getContainedRoleAssgineeIdentifiers()) {
                 ras.add(u);
@@ -1188,7 +1188,7 @@ public class JsonPrinter {
                     .add("containedRoleAssignees", ras);
     }
     
-    public static JsonObjectBuilder json( DataverseFacet aFacet ) {
+    public static JsonObjectBuilder json(DataverseFacet aFacet) {
         return jsonObjectBuilder()
                     .add("id", String.valueOf(aFacet.getId())) // TODO should just be id I think
                     .add("name", aFacet.getDatasetFieldType().getDisplayName());
@@ -1285,7 +1285,7 @@ public class JsonPrinter {
 
             @Override
             public BiConsumer<ArrayList<JsonObjectBuilder>, JsonObjectBuilder> accumulator() {
-                return (t, u) ->t.add(u);
+                return (t, u) -> t.add(u);
             }
 
             @Override
@@ -1300,7 +1300,7 @@ public class JsonPrinter {
             public Function<ArrayList<JsonObjectBuilder>, JsonArrayBuilder> finisher() {
                 return (l) -> {
                   JsonArrayBuilder bld = Json.createArrayBuilder();
-                  l.forEach( bld::add );
+                  l.forEach(bld::add);
                   return bld;
                 };
             }
@@ -1336,10 +1336,10 @@ public class JsonPrinter {
      * @param in the map to be translated
      * @return a Json Builder of the map, or {@code null}.
      */
-    public static JsonObjectBuilder mapToObject(Map<String,String> in) {
-        if ( in == null ) return null;
+    public static JsonObjectBuilder mapToObject(Map<String, String> in) {
+        if (in == null) return null;
         JsonObjectBuilder b = jsonObjectBuilder();
-        in.keySet().forEach( k->b.add(k, in.get(k)) );
+        in.keySet().forEach(k -> b.add(k, in.get(k)));
         return b;
     }
 

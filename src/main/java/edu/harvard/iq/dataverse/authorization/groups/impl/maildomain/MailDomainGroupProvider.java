@@ -57,7 +57,7 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
      * @return A set of groups, if any.
      */
     @Override
-    public Set<MailDomainGroup> groupsFor(DataverseRequest req, DvObject dvo ) {
+    public Set<MailDomainGroup> groupsFor(DataverseRequest req, DvObject dvo) {
         return groupsFor(req);
     }
     
@@ -69,8 +69,8 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
     @Override
     public Set<MailDomainGroup> groupsFor(DataverseRequest req) {
         AuthenticatedUser user = req.getAuthenticatedUser();
-        if ( user != null ) {
-            return updateProvider(emailGroupSvc.findAllWithDomain(user) );
+        if (user != null) {
+            return updateProvider(emailGroupSvc.findAllWithDomain(user));
         } else {
             return Collections.emptySet();
         }
@@ -87,7 +87,7 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
      */
     @Override
     public Set<MailDomainGroup> findGlobalGroups() {
-        return updateProvider( new HashSet<>(emailGroupSvc.findAll()) );
+        return updateProvider(new HashSet<>(emailGroupSvc.findAll()));
     }
     
     /**
@@ -117,7 +117,7 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
      * @param eg the collection
      * @return the passed group, updated.
      */
-    MailDomainGroup updateProvider(MailDomainGroup eg ) {
+    MailDomainGroup updateProvider(MailDomainGroup eg) {
         if (eg == null) {
             return null; 
         }
@@ -131,8 +131,8 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
      * @param mdgs the collection
      * @return the collection, with all the groups updated.
      */
-    <T extends Collection<MailDomainGroup>> T updateProvider(T mdgs ) {
-        for ( MailDomainGroup mdg : mdgs ) {
+    <T extends Collection<MailDomainGroup>> T updateProvider(T mdgs) {
+        for (MailDomainGroup mdg : mdgs) {
             updateProvider(mdg);
         }
         return mdgs;

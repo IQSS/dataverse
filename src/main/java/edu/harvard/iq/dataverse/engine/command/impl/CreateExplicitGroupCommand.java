@@ -15,8 +15,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  *
  * @author michael
  */
-@RequiredPermissions( Permission.ManageDataversePermissions )
-public class CreateExplicitGroupCommand extends AbstractCommand<ExplicitGroup>{
+@RequiredPermissions(Permission.ManageDataversePermissions)
+public class CreateExplicitGroupCommand extends AbstractCommand<ExplicitGroup> {
     
     public class GroupAliasExistsException extends CommandException {
         private final String alias;
@@ -49,8 +49,8 @@ public class CreateExplicitGroupCommand extends AbstractCommand<ExplicitGroup>{
         eg.setOwner(dv);
         eg.updateAlias();
         
-        ExplicitGroup existing = eg.getGroupProvider().get( eg.getAlias()  );
-        if ( existing != null ) {
+        ExplicitGroup existing = eg.getGroupProvider().get(eg.getAlias());
+        if (existing != null) {
             throw new GroupAliasExistsException( eg.getGroupAliasInOwner() );
         }
         

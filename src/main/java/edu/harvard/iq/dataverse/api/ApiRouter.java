@@ -27,7 +27,7 @@ public class ApiRouter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
         String requestUri = request.getRequestURI();
-        if ( requestUri.startsWith("/api/v1/") ) {
+        if (requestUri.startsWith("/api/v1/")) {
             fc.doFilter(req, sr1);
         } else {
             String newRequestUri = "/api/v1" + requestUri.substring(4);

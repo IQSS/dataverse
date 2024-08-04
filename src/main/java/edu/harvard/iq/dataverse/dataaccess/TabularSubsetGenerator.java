@@ -86,10 +86,10 @@ public class TabularSubsetGenerator implements SubsetGenerator {
 
     public void subsetFile(String infile, String outfile, List<Integer> columns, Long numCases,
         String delimiter) {
-        try (FileInputStream fis = new FileInputStream(new File(infile))){
+        try (FileInputStream fis = new FileInputStream(new File(infile))) {
             subsetFile(fis, outfile, columns, numCases, delimiter);
         } catch (IOException ex) {
-            throw new RuntimeException("Could not open file "+infile);
+            throw new RuntimeException("Could not open file " + infile);
         }
     }
 
@@ -101,19 +101,19 @@ public class TabularSubsetGenerator implements SubsetGenerator {
 
                 for (long caseIndex = 0; caseIndex < numCases; caseIndex++) {
                     if (scanner.hasNext()) {
-                        String[] line = (scanner.next()).split(delimiter,-1);
+                        String[] line = (scanner.next()).split(delimiter, -1);
                         List<String> ln = new ArrayList<String>();
                         for (Integer i : columns) {
                             ln.add(line[i]);
                         }
-                        out.write(StringUtils.join(ln,"\t")+"\n");
+                        out.write(StringUtils.join(ln, "\t") + "\n");
                     } else {
                         throw new RuntimeException("Tab file has fewer rows than the determined number of cases.");
                     }
                 }
 
               while (scanner.hasNext()) {
-                  if (!"".equals(scanner.next()) ) {
+                  if (!"".equals(scanner.next())) {
                       throw new RuntimeException("Tab file has extra nonempty rows than the determined number of cases.");
 
                   }
@@ -228,7 +228,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             while (scanner.hasNext()) {
                 String nextLine = scanner.next();
                 if (!"".equals(nextLine)) {
-                    throw new RuntimeException("Column "+column+": tab file has more nonempty rows than the stored number of cases ("+numCases+")! current index: "+tailIndex+", line: "+nextLine);
+                    throw new RuntimeException("Column " + column + ": tab file has more nonempty rows than the stored number of cases (" + numCases + ")! current index: " + tailIndex + ", line: " + nextLine);
                 }
                 tailIndex++;
             }
@@ -268,7 +268,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             while (scanner.hasNext()) {
                 String nextLine = scanner.next();
                 if (!"".equals(nextLine)) {
-                    throw new RuntimeException("Column "+column+": tab file has more nonempty rows than the stored number of cases ("+numCases+")! current index: "+tailIndex+", line: "+nextLine);
+                    throw new RuntimeException("Column " + column + ": tab file has more nonempty rows than the stored number of cases (" + numCases + ")! current index: " + tailIndex + ", line: " + nextLine);
                 }
                 tailIndex++;
             }
@@ -348,7 +348,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             while (scanner.hasNext()) {
                 String nextLine = scanner.next();
                 if (!"".equals(nextLine)) {
-                    throw new RuntimeException("Column "+column+": tab file has more nonempty rows than the stored number of cases ("+numCases+")! current index: "+tailIndex+", line: "+nextLine);
+                    throw new RuntimeException("Column " + column + ": tab file has more nonempty rows than the stored number of cases (" + numCases + ")! current index: " + tailIndex + ", line: " + nextLine);
                 }
                 tailIndex++;
             }

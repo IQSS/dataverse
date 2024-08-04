@@ -46,7 +46,7 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
         dataset.getOrCreateEditVersion().setLastUpdateTime(getTimestamp());
         dataset.setModificationTime(getTimestamp());
         
-        ctxt.engine().submit( new RemoveLockCommand(getRequest(), getDataset(), DatasetLock.Reason.InReview) );
+        ctxt.engine().submit(new RemoveLockCommand(getRequest(), getDataset(), DatasetLock.Reason.InReview));
         WorkflowComment workflowComment = new WorkflowComment(dataset.getOrCreateEditVersion(), WorkflowComment.Type.RETURN_TO_AUTHOR, comment, (AuthenticatedUser) this.getUser());
         ctxt.datasets().addWorkflowComment(workflowComment);
 
@@ -62,7 +62,7 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
             Finally send a notification to the remaining (non-reviewing) authors - Hey! your dataset was rejected.
         */
         List<AuthenticatedUser> reviewers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
-        List<AuthenticatedUser> authors   = ctxt.permissions().getUsersWithPermissionOn(Permission.EditDataset, savedDataset);
+        List<AuthenticatedUser> authors = ctxt.permissions().getUsersWithPermissionOn(Permission.EditDataset, savedDataset);
         authors.removeAll(reviewers);
         for (AuthenticatedUser au : authors) {
             ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.RETURNEDDS, savedDataset.getLatestVersion().getId(), comment);

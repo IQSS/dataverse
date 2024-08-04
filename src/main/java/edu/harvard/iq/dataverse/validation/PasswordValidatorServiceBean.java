@@ -302,7 +302,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         if (dictionaries == null) {
             final URL url = PasswordValidatorServiceBean.class.getResource(DICTIONARY_FILES);
             if (url == null) {
-                logger.fine(BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnDictionaryObj")+" " + DICTIONARY_FILES);
+                logger.fine(BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnDictionaryObj") + " " + DICTIONARY_FILES);
                 dictionaries = DICTIONARY_FILES;
             } else
                 dictionaries = url.getPath() + File.pathSeparator + url.getFile();
@@ -364,7 +364,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             dictionaryEnabled = true;
         }
         logger.fine("dictionaryEnabled: " + dictionaryEnabled);
-        if (errors == null){
+        if (errors == null) {
             errors = new ArrayList<>();
         }
         return PasswordValidatorUtil.getPasswordRequirements(getMinLength(), getMaxLength(), getCharacterRules(), getNumberOfCharacteristics(), getNumberOfConsecutiveDigitsAllowed(), getGoodStrength(), dictionaryEnabled, errors);
@@ -390,7 +390,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             int minLength = getMinLength();
             if (goodStrength <= minLength) {
                 int reset = minLength + 1;                
-                logger.log(Level.WARNING, BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnSetStrength" , Arrays.asList(Integer.toString(goodStrength),Integer.toString(minLength),Integer.toString(reset))));
+                logger.log(Level.WARNING, BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnSetStrength", Arrays.asList(Integer.toString(goodStrength), Integer.toString(minLength), Integer.toString(reset))));
                 goodStrength = reset;
             }
         }
@@ -441,7 +441,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     }
     
     public void setCharacterRules(List<CharacterRule> characterRules) {
-        if(!characterRules.equals(this.characterRules)) {
+        if (!characterRules.equals(this.characterRules)) {
             this.characterRules = characterRules;
             validators.remove(ValidatorTypes.StandardValidator);
         }

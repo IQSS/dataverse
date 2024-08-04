@@ -20,11 +20,11 @@ import java.util.logging.Logger;
 public class PauseWithMessageStep implements WorkflowStep {
     
     /** Constant used by testing to simulate a failed step. */
-    public static final String FAILURE_RESPONSE="fail";
+    public static final String FAILURE_RESPONSE = "fail";
     
-    private final Map<String,String> params = new HashMap<>();
+    private final Map<String, String> params = new HashMap<>();
 
-    public PauseWithMessageStep( Map<String,String> paramSet ) {
+    public PauseWithMessageStep(Map<String, String> paramSet) {
         params.putAll(paramSet);
     }
     

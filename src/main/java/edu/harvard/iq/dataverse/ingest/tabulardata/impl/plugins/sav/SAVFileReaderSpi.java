@@ -47,7 +47,7 @@ import org.apache.commons.codec.binary.Hex;
  * original
  * @author asone
  */
-public class SAVFileReaderSpi extends TabularDataFileReaderSpi{
+public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
     
     private static Logger dbgLog = Logger.getLogger(
             SAVFileReaderSpi.class.getPackage().getName());
@@ -76,32 +76,32 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi{
         dbgLog.fine("this method is actually called: object");
         if (!(source instanceof BufferedInputStream)) {
             return false;
-        } else if (source instanceof File){
+        } else if (source instanceof File) {
             dbgLog.fine("source is a File object");
         } else {
             dbgLog.fine("not File object");
         }
-        if (source  == null){
+        if (source == null) {
             throw new IllegalArgumentException("source == null!");
         }
-        BufferedInputStream stream = (BufferedInputStream)source;
+        BufferedInputStream stream = (BufferedInputStream) source;
 
         dbgLog.fine("applying the sav test\n");
 
         byte[] b = new byte[SAV_HEADER_SIZE];
 
-        if (stream.markSupported()){
+        if (stream.markSupported()) {
             stream.mark(0);
         }
         int nbytes = stream.read(b, 0, SAV_HEADER_SIZE);
 
-        if (nbytes == 0){
+        if (nbytes == 0) {
             throw new IOException();
         }
         //printHexDump(b, "hex dump of the byte-array");
-        dbgLog.fine("hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]="+
+        dbgLog.fine("hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]=" +
                 new String(Hex.encodeHex(b)));
-        if (stream.markSupported()){
+        if (stream.markSupported()) {
             stream.reset();
         }
 
@@ -122,7 +122,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi{
 
     @Override
     public boolean canDecodeInput(BufferedInputStream stream) throws IOException {
-        if (stream ==null){
+        if (stream == null) {
             throw new IllegalArgumentException("stream == null!");
         }
 
@@ -130,20 +130,20 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi{
 
         byte[] b = new byte[SAV_HEADER_SIZE];
         
-        if (stream.markSupported()){
+        if (stream.markSupported()) {
             stream.mark(0);
         }
         int nbytes = stream.read(b, 0, SAV_HEADER_SIZE);
 
-        if (nbytes == 0){
+        if (nbytes == 0) {
             throw new IOException();
         }
         //printHexDump(b, "hex dump of the byte-array");
-        dbgLog.fine("hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]="+
-                (new String (Hex.encodeHex(b))).toUpperCase());
+        dbgLog.fine("hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]=" +
+                (new String(Hex.encodeHex(b))).toUpperCase());
 
 
-        if (stream.markSupported()){
+        if (stream.markSupported()) {
             stream.reset();
         }
 
@@ -164,10 +164,10 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi{
 
     @Override
     public boolean canDecodeInput(File file) throws IOException {
-        if (file ==null){
+        if (file == null) {
             throw new IllegalArgumentException("file == null!");
         }
-        if (!file.canRead()){
+        if (!file.canRead()) {
             throw new IOException("cannot read the input file");
         }
 
@@ -180,7 +180,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi{
         MappedByteBuffer buff = srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, SAV_HEADER_SIZE);
 
         //printHexDump(buff, "hex dump of the byte-buffer");
-        dbgLog.fine("hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]="+
+        dbgLog.fine("hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]=" +
                 new String(Hex.encodeHex(buff.array())));
 
         buff.rewind();

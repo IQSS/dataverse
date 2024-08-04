@@ -102,7 +102,7 @@ public class FileRecordJobIT {
         if (specifiedUri != null) {
             restAssuredBaseUri = specifiedUri;
         }
-        System.out.println("Base URL for tests: " + restAssuredBaseUri +  "\n");
+        System.out.println("Base URL for tests: " + restAssuredBaseUri + "\n");
         RestAssured.baseURI = restAssuredBaseUri;
 
         // use properties file for everything else
@@ -238,7 +238,7 @@ public class FileRecordJobIT {
         try {
 
             // create a single test file and put it in two places
-            String file1 =  "testfile.txt";
+            String file1 = "testfile.txt";
             String file2 = "subdir/testfile.txt";
             File file = createTestFile(dsDir, file1, 0.25);
             if (file != null) {
@@ -296,12 +296,12 @@ public class FileRecordJobIT {
                     .get(props.getProperty("job.status.api") + job.getId())
                     .then().assertThat()
                     .body("status", equalTo("COMPLETED"));
-            List<Integer> ids =  given()
+            List<Integer> ids = given()
                     .header(API_TOKEN_HTTP_HEADER, token)
                     .get(props.getProperty("job.status.api"))
                     .then().extract().jsonPath()
                     .getList("jobs.id");
-            assertTrue(ids.contains((int)job.getId()));
+            assertTrue(ids.contains((int) job.getId()));
 
         } catch (Exception e) {
             System.out.println("Error testIdenticalFilesInDifferentDirectories: " + e.getMessage());
@@ -337,7 +337,7 @@ public class FileRecordJobIT {
             //grantRole.prettyPrint();
 
             // create a single test file and put it in two places
-            String file1 =  "testfile.txt";
+            String file1 = "testfile.txt";
             String file2 = "subdir/testfile.txt";
             File file = createTestFile(dsDir, file1, 0.25);
             if (file != null) {
@@ -395,12 +395,12 @@ public class FileRecordJobIT {
                     .get(props.getProperty("job.status.api") + job.getId())
                     .then().assertThat()
                     .body("status", equalTo("COMPLETED"));
-            List<Integer> ids =  given()
+            List<Integer> ids = given()
                     .header(API_TOKEN_HTTP_HEADER, contribToken)
                     .get(props.getProperty("job.status.api"))
                     .then().extract().jsonPath()
                     .getList("jobs.id");
-            assertTrue(ids.contains((int)job.getId()));
+            assertTrue(ids.contains((int) job.getId()));
 
         } catch (Exception e) {
             System.out.println("Error testNewEditor: " + e.getMessage());
@@ -436,7 +436,7 @@ public class FileRecordJobIT {
                     .extract().jsonPath().getString("data.apiToken");
 
             // create a single test file and put it in two places
-            String file1 =  "testfile.txt";
+            String file1 = "testfile.txt";
             String file2 = "subdir/testfile.txt";
             File file = createTestFile(dsDir, file1, 0.25);
             if (file != null) {
@@ -468,7 +468,7 @@ public class FileRecordJobIT {
 
             // delete unauthorized user
             given().header(API_TOKEN_HTTP_HEADER, token)
-                    .delete("/api/admin/authenticatedUsers/"+unauthUser+"/")
+                    .delete("/api/admin/authenticatedUsers/" + unauthUser + "/")
                     .then().assertThat().statusCode(200);
 
         } catch (Exception e) {
@@ -623,7 +623,7 @@ public class FileRecordJobIT {
         try {
 
             // create a single test file and put it in two places
-            String file1 =  "testfile.txt";
+            String file1 = "testfile.txt";
             String file2 = "subdir/testfile.txt";
             File file = createTestFile(dsDir, file1, 0.25);
             if (file != null) {
@@ -681,16 +681,16 @@ public class FileRecordJobIT {
                     .get(props.getProperty("job.status.api") + job.getId())
                     .then().assertThat()
                     .body("status", equalTo("COMPLETED"));
-            List<Integer> ids =  given()
+            List<Integer> ids = given()
                     .header(API_TOKEN_HTTP_HEADER, token)
                     .get(props.getProperty("job.status.api"))
                     .then().extract().jsonPath()
                     .getList("jobs.id");
-            assertTrue(ids.contains((int)job.getId()));
+            assertTrue(ids.contains((int) job.getId()));
 
 
             // add a new file and run the job again
-            String file3 =  "addedfile.txt";
+            String file3 = "addedfile.txt";
             File addedFile = createTestFile(dsDir, file3, 0.25);
 
             // mock the checksum manifest
@@ -744,12 +744,12 @@ public class FileRecordJobIT {
                     .get(props.getProperty("job.status.api") + newJob.getId())
                     .then().assertThat()
                     .body("status", equalTo("COMPLETED"));
-            List<Integer> newIds =  given()
+            List<Integer> newIds = given()
                     .header(API_TOKEN_HTTP_HEADER, token)
                     .get(props.getProperty("job.status.api"))
                     .then().extract().jsonPath()
                     .getList("jobs.id");
-            assertTrue(newIds.contains((int)job.getId()));
+            assertTrue(newIds.contains((int) job.getId()));
 
         } catch (Exception e) {
             System.out.println("Error testIdenticalFilesInDifferentDirectories: " + e.getMessage());
@@ -1032,15 +1032,15 @@ public class FileRecordJobIT {
             RestAssured.urlEncodingEnabled = false;
 
             // publish the dataverse
-            System.out.println("DATAVERSE: http://localhost:8080/api/dataverses/"+testName+"/actions/:publish?key="+token);
+            System.out.println("DATAVERSE: http://localhost:8080/api/dataverses/" + testName + "/actions/:publish?key=" + token);
             given().body("{}").contentType("application/json")
-                    .post("/api/dataverses/" + testName + "/actions/:publish?key="+token)
+                    .post("/api/dataverses/" + testName + "/actions/:publish?key=" + token)
                     .then().assertThat().statusCode(200);
 
             // publish the dataset
-            System.out.println("DATASET: http://localhost:8080/api/datasets/"+dsId+"/actions/:publish?type=major&key="+token);
+            System.out.println("DATASET: http://localhost:8080/api/datasets/" + dsId + "/actions/:publish?type=major&key=" + token);
             given()
-                    .get("/api/datasets/" + dsId + "/actions/:publish?type=major&key="+token)
+                    .get("/api/datasets/" + dsId + "/actions/:publish?type=major&key=" + token)
                     .then().assertThat().statusCode(200);
 
             isDraft = false;
@@ -1111,7 +1111,7 @@ public class FileRecordJobIT {
         try {
             String fakeDoi = "10.0001/FK2/FAKE";
             // run batch job
-            String dsNotFound  = given()
+            String dsNotFound = given()
                     .header(API_TOKEN_HTTP_HEADER, token)
                     .post(props.getProperty("filesystem.api") + "/" + fakeDoi)
                     .then().assertThat().statusCode(400)
@@ -1245,7 +1245,7 @@ public class FileRecordJobIT {
                     break;
                 }
             }
-        }catch (InterruptedException ie) {
+        } catch (InterruptedException ie) {
             System.out.println(ie.getMessage());
             ie.printStackTrace();
         }

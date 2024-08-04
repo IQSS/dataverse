@@ -32,7 +32,7 @@ public class ApiTokenPage implements java.io.Serializable {
     ApiToken apiToken;
     
     public boolean checkForApiToken() {
-        if (session.getUser().isAuthenticated()){
+        if (session.getUser().isAuthenticated()) {
             AuthenticatedUser au = (AuthenticatedUser) session.getUser();
             apiToken = authSvc.findApiTokenByUser(au);
             if (apiToken != null) {
@@ -91,7 +91,7 @@ public class ApiTokenPage implements java.io.Serializable {
         }
     }
     
-    public Boolean tokenIsExpired(){
+    public Boolean tokenIsExpired() {
         return apiToken.isExpired();
     }
     

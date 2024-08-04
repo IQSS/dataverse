@@ -126,10 +126,10 @@ public class NewDTAFileReader extends TabularDataFileReader {
     private static final int[] DBL_MV_PWR = {333, 1023};
 
     private static final int DTA_MAGIC_NUMBER_LENGTH = 4;
-    private static final int NVAR_FIELD_LENGTH       = 2;
-    private static final int NOBS_FIELD_LENGTH       = 4;
-    private static final int TIME_STAMP_LENGTH      = 18;
-    private static final int VAR_SORT_FIELD_LENGTH   = 2;
+    private static final int NVAR_FIELD_LENGTH = 2;
+    private static final int NOBS_FIELD_LENGTH = 4;
+    private static final int TIME_STAMP_LENGTH = 18;
+    private static final int VAR_SORT_FIELD_LENGTH = 2;
     private static final int VALUE_LABEL_HEADER_PADDING_LENGTH = 3;
 
     private static int MISSING_VALUE_BIAS = 26;
@@ -140,30 +140,30 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
     // Static initialization:
     static {
-        releaseconstant.put("HEADER",     LENGTH_HEADER[1]);
-        releaseconstant.put("LABEL",     LENGTH_LABEL[1]);
-        releaseconstant.put("NAME",      LENGTH_NAME[1]);
-        releaseconstant.put("FORMAT",    LENGTH_FORMAT_FIELD[1]);
+        releaseconstant.put("HEADER", LENGTH_HEADER[1]);
+        releaseconstant.put("LABEL", LENGTH_LABEL[1]);
+        releaseconstant.put("NAME", LENGTH_NAME[1]);
+        releaseconstant.put("FORMAT", LENGTH_FORMAT_FIELD[1]);
         releaseconstant.put("EXPANSION", LENGTH_EXPANSION_FIELD[2]);
         releaseconstant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
         
         // 1, 2 and 4-byte integers: 
-        byteLengthTable.put("Byte",1);
-        byteLengthTable.put("Integer",2);
-        byteLengthTable.put("Long",4);
+        byteLengthTable.put("Byte", 1);
+        byteLengthTable.put("Integer", 2);
+        byteLengthTable.put("Long", 4);
         // 4 and 8-byte floats: 
-        byteLengthTable.put("Float",4);
-        byteLengthTable.put("Double",8);
+        byteLengthTable.put("Float", 4);
+        byteLengthTable.put("Double", 8);
         // STRLs are defined in their own section, outside of the 
         // main data. In the <data> section they are referenced 
         // by 2 x 4 byte values, "(v,o)", 8 bytes total.
-        byteLengthTable.put("STRL",8);
+        byteLengthTable.put("STRL", 8);
 
-        variableTypeTable.put(65530,"Byte");
-        variableTypeTable.put(65529,"Integer");
-        variableTypeTable.put(65528,"Long");
-        variableTypeTable.put(65527,"Float");
-        variableTypeTable.put(65526,"Double");
+        variableTypeTable.put(65530, "Byte");
+        variableTypeTable.put(65529, "Integer");
+        variableTypeTable.put(65528, "Long");
+        variableTypeTable.put(65527, "Float");
+        variableTypeTable.put(65526, "Double");
     }
     
     private static String unfVersionNumber = "6";
@@ -234,10 +234,10 @@ public class NewDTAFileReader extends TabularDataFileReader {
         GCO_STATA.set(13, 0);// ss
         GCO_STATA.set(14, 0); // SS millisecond
 
-        STATA_BIAS_TO_EPOCH  = GCO_STATA.getTimeInMillis(); // =  -315619200000
+        STATA_BIAS_TO_EPOCH = GCO_STATA.getTimeInMillis(); // =  -315619200000
         
-        for (int i=0; i<DATE_TIME_FORMAT.length; i++){
-            DATE_TIME_FORMAT_TABLE.put(DATE_TIME_FORMAT[i],DATE_TIME_CATEGORY[i]);
+        for (int i = 0; i < DATE_TIME_FORMAT.length; i++) {
+            DATE_TIME_FORMAT_TABLE.put(DATE_TIME_FORMAT[i], DATE_TIME_CATEGORY[i]);
         }
     }
 
@@ -289,9 +289,9 @@ public class NewDTAFileReader extends TabularDataFileReader {
      * files.
      */
 
-    private String[] variableTypes=null;
+    private String[] variableTypes = null;
 
-    private String[] dateVariableFormats=null; 
+    private String[] dateVariableFormats = null; 
           
     private static final String MissingValueForTabDelimitedFile = "";
 
@@ -307,7 +307,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         super(originator);
         
         this.DTAVersion = DTAVersion;
-        STATA_RELEASE_NUMBER.put(DTAVersion, "v." + (DTAVersion-104));
+        STATA_RELEASE_NUMBER.put(DTAVersion, "v." + (DTAVersion - 104));
 
         CONSTANT_TABLE.put(DTAVersion, releaseconstant);
     }
@@ -396,17 +396,17 @@ public class NewDTAFileReader extends TabularDataFileReader {
         dataReader.readOpeningTag(TAG_HEADER);
         String dtaVersionTag = dataReader.readPrimitiveStringSection(TAG_HEADER_FILEFORMATID, 3);
 
-        if (!("117".equals(dtaVersionTag)||"118".equals(dtaVersionTag)||"119".equals(dtaVersionTag))) {
+        if (!("117".equals(dtaVersionTag) || "118".equals(dtaVersionTag) || "119".equals(dtaVersionTag))) {
             throw new IOException("Unexpected version tag found: " + dtaVersionTag + "; expected value: 117-119.");
         }
 
         String byteOrderTag = dataReader.readPrimitiveStringSection(TAG_HEADER_BYTEORDER);
 
-        logger.fine("byte order: "+byteOrderTag);
+        logger.fine("byte order: " + byteOrderTag);
 
         dataReader.setLSF("LSF".equals(byteOrderTag));
 
-        long varNumber = dataReader.readIntegerSection(TAG_HEADER_VARNUMBER, DTAVersion == 119? 4: 2);
+        long varNumber = dataReader.readIntegerSection(TAG_HEADER_VARNUMBER, DTAVersion == 119 ? 4 : 2);
         logger.fine("number of variables: " + varNumber);
 
         /**
@@ -415,7 +415,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
          * N, the number of observations stored in the dataset, is recorded as
          * a 4 or 8-byte unsigned integer field recorded according to byteorder.
          */
-        long obsNumber = dataReader.readIntegerSection(TAG_HEADER_OBSNUMBER, DTAVersion == 117? 4: 8);
+        long obsNumber = dataReader.readIntegerSection(TAG_HEADER_OBSNUMBER, DTAVersion == 117 ? 4 : 8);
         logger.fine("number of observations: " + obsNumber);
 
         dataTable.setVarQuantity(varNumber);
@@ -423,15 +423,15 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
         dataTable.setOriginalFileFormat(MIME_TYPE[0]);
         
-        dataTable.setOriginalFormatVersion("STATA " + (DTAVersion-104));
+        dataTable.setOriginalFormatVersion("STATA " + (DTAVersion - 104));
         dataTable.setUnf("UNF:pending");
 
         // The word "dataset" below is used in its STATA parlance meaning, 
         // i.e., this is a label that describes the datafile.
         String datasetLabel;
-        if (DTAVersion==117){
+        if (DTAVersion == 117) {
             datasetLabel = dataReader.readDefinedStringSection(TAG_HEADER_FILELABEL, 80);
-        }else{
+        } else {
             datasetLabel = dataReader.readLabelSection(TAG_HEADER_FILELABEL, 320);
         }
         logger.fine("Stata \"dataset\" label: " + datasetLabel);
@@ -597,7 +597,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         reader.readOpeningTag(TAG_VARIABLE_NAMES);
 
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
-            String variableName = reader.readString(DTAVersion == 117? 33: 129);
+            String variableName = reader.readString(DTAVersion == 117 ? 33 : 129);
             logger.fine("variable " + i + ": name=" + variableName);
             if ((variableName != null) && (!variableName.equals(""))) {
                 dataTable.getDataVariables().get(i).setName(variableName);
@@ -615,7 +615,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         reader.readOpeningTag(TAG_SORT_ORDER);
 
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
-            long order = reader.readULong(DTAVersion == 119? 4: 2);
+            long order = reader.readULong(DTAVersion == 119 ? 4 : 2);
             logger.fine("variable " + i + ": sort order=" + order);
             // We don't use this variable sort order at all. 
         }
@@ -623,7 +623,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         // Important! 
         // The SORT ORDER section (5.5 in the doc) always contains
         // number_of_variables + 1 2 or 4 byte integers depending on version!
-        long terminatingShort = reader.readULong(DTAVersion == 119? 4: 2);
+        long terminatingShort = reader.readULong(DTAVersion == 119 ? 4 : 2);
         reader.readClosingTag(TAG_SORT_ORDER);
     }
     
@@ -634,7 +634,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         dateVariableFormats = new String[dataTable.getVarQuantity().intValue()];
 
         for (int i = 0; i < dataTable.getVarQuantity(); i++) { 
-            String variableFormat = reader.readString(DTAVersion == 117? 49: 57);
+            String variableFormat = reader.readString(DTAVersion == 117 ? 49 : 57);
             logger.fine("variable " + i + ": displayFormat=" + variableFormat);
             
             String variableFormatKey;
@@ -674,7 +674,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         valueLabelsLookupTable = new String[dataTable.getVarQuantity().intValue()];
 
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
-            String valueLabelFormat = reader.readString(DTAVersion == 117? 33: 129);
+            String valueLabelFormat = reader.readString(DTAVersion == 117 ? 33 : 129);
             logger.fine("variable " + i + ": value label format=" + valueLabelFormat);
             if ((valueLabelFormat != null) && (!valueLabelFormat.equals(""))) {
                 valueLabelsLookupTable[i] = valueLabelFormat;
@@ -693,7 +693,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         reader.readOpeningTag(TAG_VARIABLE_LABELS);
 
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
-            String variableLabel = reader.readUtfString(DTAVersion == 117? 81: 321);
+            String variableLabel = reader.readUtfString(DTAVersion == 117 ? 81 : 321);
             logger.fine("variable " + i + ": label=" + variableLabel);
             if ((variableLabel != null) && (!variableLabel.equals(""))) {
                 dataTable.getDataVariables().get(i).setLabel(variableLabel);
@@ -929,7 +929,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                     long v;
                     long o;
                     
-                    if(DTAVersion == 117){
+                    if (DTAVersion == 117) {
                         v = reader.readUInt();
                         byte_offset += 4;
                         o = reader.readUInt();
@@ -1093,7 +1093,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
         // Reading the stored (v,o) pair: 
         long vStored = reader.readUInt();
-        long oStored = reader.readULong(DTAVersion == 117? 4: 8);
+        long oStored = reader.readULong(DTAVersion == 117 ? 4 : 8);
 
         String voPair = v + "," + o;
 
@@ -1160,7 +1160,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
             reader.readOpeningTag(TAG_VALUE_LABELS_LBL_DEF);
             long label_table_length = reader.readUInt();
 
-            String label_table_name = reader.readString(DTAVersion == 117? 33: 129);
+            String label_table_name = reader.readString(DTAVersion == 117 ? 33 : 129);
             
             reader.readBytes(3); 
 
@@ -1182,7 +1182,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 value_label_offsets[i] = reader.readUInt();
                 logger.fine("offset " + i + ": " + value_label_offsets[i]);
                 value_category_offset += 4;
-                if (i > 0 && value_label_offsets[i] < value_label_offsets[i-1]) {
+                if (i > 0 && value_label_offsets[i] < value_label_offsets[i - 1]) {
                     alreadySorted = false;
                 }
             }
@@ -1211,8 +1211,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
             // we encounter \000. Or we can rely on the (sorted) list of offsets
             // to determine where each label ends (implemented below). 
             byte[] labelBytes = null;
-            if((int)text_length != 0) { //If length is 0 we don't need to read any bytes
-                labelBytes = reader.readBytes((int)text_length);
+            if ((int) text_length != 0) { //If length is 0 we don't need to read any bytes
+                labelBytes = reader.readBytes((int) text_length);
             }
             
             for (int i = 0; i < number_of_categories; i++) {
@@ -1224,9 +1224,9 @@ public class NewDTAFileReader extends TabularDataFileReader {
                     int sortedPos = Arrays.binarySearch(value_label_offsets_sorted, label_offset);
                     label_end = sortedPos < number_of_categories - 1 ? value_label_offsets_sorted[sortedPos + 1] : text_length;
                 }
-                label_length = (int)(label_end - label_offset);
+                label_length = (int) (label_end - label_offset);
 
-                category_value_labels[i] = new String(Arrays.copyOfRange(labelBytes, (int)label_offset, (int)label_end-1), "UTF8");
+                category_value_labels[i] = new String(Arrays.copyOfRange(labelBytes, (int) label_offset, (int) label_end - 1), "UTF8");
                 total_label_bytes += label_length;
             }
 

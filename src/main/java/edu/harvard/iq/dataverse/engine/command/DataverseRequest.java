@@ -28,7 +28,7 @@ public class DataverseRequest {
     
     private final static String undefined = "0.0.0.0";
     
-    private final static String MDKEY_PREFIX="mdkey.";
+    private final static String MDKEY_PREFIX = "mdkey.";
     
     private static final Logger logger = Logger.getLogger(DataverseRequest.class.getName());
     
@@ -45,14 +45,14 @@ public class DataverseRequest {
             "http_forwarded_for",
             "http_forwarded",
             "http_via",
-            "remote_addr" ));
+            "remote_addr"));
      
     static {
         String header = System.getProperty("dataverse.useripaddresssourceheader");
         // Security check - make sure any supplied header is one that is used to forward
         // IP addresses (case insensitive)
-        if((header!=null) && (ALLOWED_HEADERS.contains(header.toLowerCase()))) {
-            headerToUse=header;
+        if ((header != null) && (ALLOWED_HEADERS.contains(header.toLowerCase()))) {
+            headerToUse = header;
         }
     }
     
@@ -97,7 +97,7 @@ public class DataverseRequest {
                     if (index >= 0) {
                         ip = ip.substring(index + 1);
                     }
-                    ip=ip.trim();
+                    ip = ip.trim();
                     /*
                      * We should have a valid, single IP address string here. The IpAddress.valueOf
                      * call will throw an exception if it can't be parsed into a valid address (e.g.
@@ -111,7 +111,7 @@ public class DataverseRequest {
                             logger.warning("Ignoring invalid IP address received in header " + headerToUse + " : " + ip);
                             address = null;
                         }
-                        if (address!= null && address.isLocalhost()) {
+                        if (address != null && address.isLocalhost()) {
                             // Not allowed since it is hard to image why a localhost request would be
                             // proxied and we want to protect
                             // the internal admin apis that can be restricted to localhost access
@@ -142,20 +142,20 @@ public class DataverseRequest {
             String headerParamWFKey = aHttpServletRequest.getHeader(AbstractApiBean.DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME);
             String queryParamWFKey = aHttpServletRequest.getParameter("invocationId");
                     
-            invocationId = headerParamWFKey!=null ? headerParamWFKey : queryParamWFKey;
+            invocationId = headerParamWFKey != null ? headerParamWFKey : queryParamWFKey;
 
         } else {
-            invocationId=null;
+            invocationId = null;
         }
         
         sourceAddress = address;
     }
 
-    public DataverseRequest( User aUser, IpAddress aSourceAddress ) {
+    public DataverseRequest(User aUser, IpAddress aSourceAddress) {
         user = aUser;
         sourceAddress = aSourceAddress;
-        invocationId=null;
-        httpServletRequest=null;
+        invocationId = null;
+        httpServletRequest = null;
     }
     
     public User getUser() {
@@ -178,12 +178,12 @@ public class DataverseRequest {
      * Get an AuthenticatedUser or return null
      * @return 
      */
-    public AuthenticatedUser getAuthenticatedUser(){
+    public AuthenticatedUser getAuthenticatedUser() {
         
         User authUser = this.getUser();
         
-        if (authUser instanceof AuthenticatedUser){
-            return (AuthenticatedUser)authUser;
+        if (authUser instanceof AuthenticatedUser) {
+            return (AuthenticatedUser) authUser;
         }
         return null;
     }
@@ -200,10 +200,10 @@ public class DataverseRequest {
         String key = null;
         if (httpServletRequest != null) {
             key = httpServletRequest.getHeader(MDKEY_PREFIX + blockName);
-            logger.log(Level.FINE, ((key==null)? "Didn't find": "Found") + "system metadata block key for " + blockName + " in header");
+            logger.log(Level.FINE, ((key == null) ? "Didn't find" : "Found") + "system metadata block key for " + blockName + " in header");
             if (key == null) {
                 key = httpServletRequest.getParameter(MDKEY_PREFIX + blockName);
-                logger.log(Level.FINE, ((key==null)? "Didn't find": "Found") + "system metadata block key for " + blockName + " in query parameter");
+                logger.log(Level.FINE, ((key == null) ? "Didn't find" : "Found") + "system metadata block key for " + blockName + " in query parameter");
             }
         }
         return key;

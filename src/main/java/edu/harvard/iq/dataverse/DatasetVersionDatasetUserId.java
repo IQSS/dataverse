@@ -22,7 +22,7 @@ public class DatasetVersionDatasetUserId implements Serializable {
             return false;
         }
         DatasetVersionDatasetUserId other = (DatasetVersionDatasetUserId) object;
-        return (this.userIdentifier.equals(other.userIdentifier) && this.datasetversionid == other.datasetversionid ); 
+        return (this.userIdentifier.equals(other.userIdentifier) && this.datasetversionid == other.datasetversionid); 
     }
 
     @Override

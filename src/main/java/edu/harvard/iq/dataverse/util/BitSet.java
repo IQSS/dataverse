@@ -34,34 +34,34 @@ public class BitSet implements Serializable {
 	 */
 	public static short[] allIndices() {
 		short[] retVal = new short[64];
-		for ( short s=0; s<64; s++ ) retVal[s]=s;
+		for (short s = 0; s < 64; s++) retVal[s] = s;
 		return retVal;
 	}
 	
-	public static BitSet from( EnumSet<?> es ) {
-		if ( es.isEmpty() ) return emptySet();
+	public static BitSet from(EnumSet<?> es) {
+		if (es.isEmpty()) return emptySet();
 		BitSet retVal = new BitSet();
-		for ( Enum e : es ) {
-			retVal.set( e.ordinal() );
+		for (Enum e : es) {
+			retVal.set(e.ordinal());
 		}
 		return retVal;
 	}
 
 	public BitSet() {}
 	
-	public BitSet( BitSet other ) {
+	public BitSet(BitSet other) {
 		store = other.getBits();
 	}
 	
-	public BitSet( long initial ) {
+	public BitSet(long initial) {
 		store = initial;
 	}
 	
-	public <E extends Enum<E>> EnumSet<E> asSetOf( Class<E> enumClass ) {
+	public <E extends Enum<E>> EnumSet<E> asSetOf(Class<E> enumClass) {
 		EnumSet<E> retVal = EnumSet.noneOf(enumClass);
-		if ( isEmpty() ) return retVal;
-		for ( E e : EnumSet.allOf(enumClass) ) {
-			if ( isSet(e.ordinal()) ) {
+		if (isEmpty()) return retVal;
+		for (E e : EnumSet.allOf(enumClass)) {
+			if (isSet(e.ordinal())) {
 				retVal.add(e);
 			}
 		}
@@ -72,22 +72,22 @@ public class BitSet implements Serializable {
 		return store == 0;
 	}
 	
-	public BitSet set( int idx, boolean value ) {
+	public BitSet set(int idx, boolean value) {
 		return value ? set(idx) : unset(idx);
 	}
 	
-	public BitSet set( int idx ) {
-		store = store | (1l<<idx);
+	public BitSet set(int idx) {
+		store = store | (1l << idx);
 		return this;
 	}
 	
-	public BitSet unset( int idx ) {
-		store = store & (~(1l<<idx));
+	public BitSet unset(int idx) {
+		store = store & (~(1l << idx));
 		return this;
 	}
 	
-	public boolean isSet( int idx ) {
-		return ( (store&(1l<<idx)) != 0 );
+	public boolean isSet(int idx) {
+		return ((store & (1l << idx)) != 0);
 	}
 	
 	public BitSet copy() {
@@ -99,17 +99,17 @@ public class BitSet implements Serializable {
 	 * @param other The we union with.
 	 * @return {@code this}, for call chaining.
 	 */
-	public BitSet union( BitSet other ) {
+	public BitSet union(BitSet other) {
 		store = store | other.getBits();
 		return this;
 	}
 	
-	public BitSet intersect( BitSet other ) {
+	public BitSet intersect(BitSet other) {
 		store = store & other.getBits();
 		return this;
 	}
 	
-	public BitSet xor( BitSet other ) {
+	public BitSet xor(BitSet other) {
 		store = store ^ other.getBits();
 		return this;
 	}

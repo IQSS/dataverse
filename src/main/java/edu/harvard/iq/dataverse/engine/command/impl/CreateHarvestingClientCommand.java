@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  *
  * @author Leonid Andreev
  */
-@RequiredPermissions( Permission.EditDataverse )
+@RequiredPermissions(Permission.EditDataverse)
 public class CreateHarvestingClientCommand extends AbstractCommand<HarvestingClient> {
     
     private final Dataverse dv;

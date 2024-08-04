@@ -42,7 +42,7 @@ import org.apache.commons.codec.binary.Hex;
  * original
  * @author Akio Sone
  */
-public class PORFileReaderSpi extends TabularDataFileReaderSpi{
+public class PORFileReaderSpi extends TabularDataFileReaderSpi {
     
     private static Logger dbgLog = Logger.getLogger(
             PORFileReaderSpi.class.getPackage().getName());
@@ -72,15 +72,15 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
         if (!(source instanceof BufferedInputStream)) {
             return false;
         }
-        if (source  == null){
+        if (source == null) {
             throw new IllegalArgumentException("source == null!");
         }
-        BufferedInputStream stream = (BufferedInputStream)source;
+        BufferedInputStream stream = (BufferedInputStream) source;
         dbgLog.fine("applying the por test\n");
 
         byte[] b = new byte[POR_HEADER_SIZE];
 
-        if (stream.markSupported()){
+        if (stream.markSupported()) {
             stream.mark(0);
         }
 
@@ -88,15 +88,15 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
 
         //printHexDump(b, "hex dump of the byte-array");
 
-        if (nbytes == 0){
+        if (nbytes == 0) {
             throw new IOException();
-        } else if ( nbytes < 491) {
+        } else if (nbytes < 491) {
            // size test
            dbgLog.fine("this file is NOT spss-por type");
             return false;
         }
 
-        if (stream.markSupported()){
+        if (stream.markSupported()) {
             stream.reset();
         }
 
@@ -210,7 +210,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
 
     @Override
     public boolean canDecodeInput(BufferedInputStream stream) throws IOException {
-        if (stream  == null){
+        if (stream == null) {
             throw new IllegalArgumentException("file == null!");
         }
         
@@ -218,7 +218,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
         
         byte[] b = new byte[POR_HEADER_SIZE];
         
-        if (stream.markSupported()){
+        if (stream.markSupported()) {
             stream.mark(0);
         }
         
@@ -226,15 +226,15 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
         
         //printHexDump(b, "hex dump of the byte-array");
 
-        if (nbytes == 0){
+        if (nbytes == 0) {
             throw new IOException();
-        } else if ( nbytes < 491) {
+        } else if (nbytes < 491) {
            // size test
            dbgLog.fine("this file is NOT spss-por type");
             return false;
         }
         
-        if (stream.markSupported()){
+        if (stream.markSupported()) {
             stream.reset();
         }
 
@@ -348,10 +348,10 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi{
 
     @Override
     public boolean canDecodeInput(File file) throws IOException {
-        if (file ==null){
+        if (file == null) {
             throw new IllegalArgumentException("file == null!");
         }
-        if (!file.canRead()){
+        if (!file.canRead()) {
             throw new IOException("cannot read the input file");
         }
 

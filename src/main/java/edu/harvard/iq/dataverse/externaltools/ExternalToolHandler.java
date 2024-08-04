@@ -102,11 +102,11 @@ public class ExternalToolHandler extends URLTokenUtil {
                 String callback = null;
                 switch (externalTool.getScope()) {
                 case DATASET:
-                    callback=SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/datasets/"
+                    callback = SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/datasets/"
                             + dataset.getId() + "/versions/" + DS_VERSION_LATEST + "/toolparams/" + externalTool.getId();
                     break;
                 case FILE:
-                    callback= SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/files/"
+                    callback = SystemConfig.getDataverseSiteUrlStatic() + "/api/v1/files/"
                             + dataFile.getId() + "/metadata/" + fileMetadata.getId() + "/toolparams/"
                             + externalTool.getId();
                 }
@@ -114,7 +114,7 @@ public class ExternalToolHandler extends URLTokenUtil {
                     callback = UrlSignerUtil.signUrl(callback, 5, apiToken.getAuthenticatedUser().getUserIdentifier(), HttpMethod.GET,
                         JvmSettings.API_SIGNING_SECRET.lookupOptional().orElse("") + apiToken.getTokenString());
                 }
-                paramsString= "?callback=" + Base64.getEncoder().encodeToString(StringUtils.getBytesUtf8(callback));
+                paramsString = "?callback=" + Base64.getEncoder().encodeToString(StringUtils.getBytesUtf8(callback));
                 if (getLocaleCode() != null) {
                     paramsString += "&locale=" + getLocaleCode();
                 }

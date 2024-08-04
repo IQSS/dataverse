@@ -19,7 +19,7 @@ import jakarta.persistence.TemporalType;
  * @author michael
  */
 @Entity
-@Table(indexes = {@Index(columnList="useridentifier"), @Index(columnList="actiontype"), @Index(columnList="starttime")})
+@Table(indexes = {@Index(columnList = "useridentifier"), @Index(columnList = "actiontype"), @Index(columnList = "starttime")})
 public class ActionLogRecord implements java.io.Serializable {
     
     public enum Result {
@@ -48,7 +48,7 @@ public class ActionLogRecord implements java.io.Serializable {
     }
     
     @Id
-    @Column( length=36 )
+    @Column(length = 36)
     private String id;
     
     @Temporal(value = TemporalType.TIMESTAMP)
@@ -67,17 +67,17 @@ public class ActionLogRecord implements java.io.Serializable {
     
     private String actionSubType;
     
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String info;
     
-    public ActionLogRecord(){}
+    public ActionLogRecord() {}
     
     /**
      * @param anActionType
      * @param anActionSubType
      */
     // TODO: Add ability to set `info` in constructor.
-    public ActionLogRecord( ActionType anActionType, String anActionSubType ) {
+    public ActionLogRecord(ActionType anActionType, String anActionSubType) {
         actionType = anActionType;
         actionSubType = anActionSubType;
         startTime = new Date();
@@ -92,7 +92,7 @@ public class ActionLogRecord implements java.io.Serializable {
     
     @PrePersist
     void prepresist() {
-        if ( id == null ) {
+        if (id == null) {
             id = UUID.randomUUID().toString();
         }
     }

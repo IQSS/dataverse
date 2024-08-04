@@ -142,7 +142,7 @@ public class DownloadInstance {
                             return true;
                         }
                     }
-                } else if ("imageThumb".equals(serviceArg)&&dataService.getServiceName().equals("thumbnail")) {
+                } else if ("imageThumb".equals(serviceArg) && dataService.getServiceName().equals("thumbnail")) {
                     if ("true".equals(serviceArgValue)) {
                         this.conversionParam = serviceArg;
                         this.conversionParamValue = "";

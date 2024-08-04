@@ -103,7 +103,7 @@ public class DataversesTest {
     }
 
     @Test
-    public void listMetadataBlockFacets_should_return_the_list_of_metadataBlockFacetDTOs() throws Exception{
+    public void listMetadataBlockFacets_should_return_the_list_of_metadataBlockFacetDTOs() throws Exception {
         MetadataBlock metadataBlock = Mockito.mock(MetadataBlock.class);
         Mockito.when(metadataBlock.getName()).thenReturn("test_metadata_block_name");
         Mockito.when(metadataBlock.getLocaleDisplayFacet()).thenReturn("test_metadata_facet_name");
@@ -116,7 +116,7 @@ public class DataversesTest {
 
         MatcherAssert.assertThat(response.getStatus(), Matchers.is(200));
         MatcherAssert.assertThat(response.getEntity(), Matchers.notNullValue());
-        DataverseMetadataBlockFacetDTO result = (DataverseMetadataBlockFacetDTO)response.getEntity();
+        DataverseMetadataBlockFacetDTO result = (DataverseMetadataBlockFacetDTO) response.getEntity();
         MatcherAssert.assertThat(result.getDataverseId(), Matchers.is(VALID_DATAVERSE.getId()));
         MatcherAssert.assertThat(result.getDataverseAlias(), Matchers.is(VALID_DATAVERSE.getAlias()));
         MatcherAssert.assertThat(result.isMetadataBlockFacetRoot(), Matchers.is(VALID_DATAVERSE.isMetadataBlockFacetRoot()));
@@ -128,13 +128,13 @@ public class DataversesTest {
     }
 
     @Test
-    public void listMetadataBlockFacets_should_return_empty_list_when_metadata_block_facet_is_null() throws Exception{
+    public void listMetadataBlockFacets_should_return_empty_list_when_metadata_block_facet_is_null() throws Exception {
         Mockito.when(engineSvc.submit(Mockito.any(ListMetadataBlockFacetsCommand.class))).thenReturn(null);
 
         Response response = target.listMetadataBlockFacets(containerRequestContext, VALID_DATAVERSE.getAlias());
 
         MatcherAssert.assertThat(response.getStatus(), Matchers.is(200));
-        DataverseMetadataBlockFacetDTO result = (DataverseMetadataBlockFacetDTO)response.getEntity();
+        DataverseMetadataBlockFacetDTO result = (DataverseMetadataBlockFacetDTO) response.getEntity();
         MatcherAssert.assertThat(result.getDataverseId(), Matchers.is(VALID_DATAVERSE.getId()));
         MatcherAssert.assertThat(result.getDataverseAlias(), Matchers.is(VALID_DATAVERSE.getAlias()));
         MatcherAssert.assertThat(result.isMetadataBlockFacetRoot(), Matchers.is(VALID_DATAVERSE.isMetadataBlockFacetRoot()));
@@ -195,7 +195,7 @@ public class DataversesTest {
     }
 
     @Test
-    public void setMetadataBlockFacets_should_support_empty_metadatablock_list() throws Exception{
+    public void setMetadataBlockFacets_should_support_empty_metadatablock_list() throws Exception {
         Response result = target.setMetadataBlockFacets(containerRequestContext, VALID_DATAVERSE.getAlias(), Collections.emptyList());
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(200));
@@ -213,7 +213,7 @@ public class DataversesTest {
     }
 
     @Test
-    public void updateMetadataBlockFacetsRoot_should_return_400_when_invalid_boolean() throws Exception{
+    public void updateMetadataBlockFacetsRoot_should_return_400_when_invalid_boolean() throws Exception {
         Response result = target.updateMetadataBlockFacetsRoot(containerRequestContext, VALID_DATAVERSE.getAlias(), "invalid");
 
         MatcherAssert.assertThat(result.getStatus(), Matchers.is(400));

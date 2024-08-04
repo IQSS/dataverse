@@ -45,11 +45,11 @@ public class ShapefileHandlerTest {
     @TempDir
     Path tempFolder;
     
-    public void msg(String s){
+    public void msg(String s) {
             System.out.println(s);
     }
     
-    public void msgt(String s){
+    public void msgt(String s) {
         msg("------------------------------------------------------------");
         msg(s);
         msg("------------------------------------------------------------");
@@ -58,16 +58,16 @@ public class ShapefileHandlerTest {
     
     
      private File createBlankFile(String filename) throws IOException {
-        if (filename == null){
+        if (filename == null) {
             return null;
         }
         return Files.createFile(tempFolder.resolve(filename)).toFile();
     }
     
-    private FileInputStream createZipReturnFilestream(List<String> file_names, String zipfile_name) throws IOException{
+    private FileInputStream createZipReturnFilestream(List<String> file_names, String zipfile_name) throws IOException {
         
         File zip_file_obj = this.createAndZipFiles(file_names, zipfile_name);
-        if (zip_file_obj == null){
+        if (zip_file_obj == null) {
             return null;
         }
         
@@ -83,8 +83,8 @@ public class ShapefileHandlerTest {
         @param List<String> file_names - List of filenames to add to .zip.  These names will be used to create 0 length files
         @param String zipfile_name - Name of .zip file to create
     */
-    private File createAndZipFiles(List<String> file_names, String zipfile_name) throws IOException{
-        if ((file_names == null)||(zipfile_name == null)){
+    private File createAndZipFiles(List<String> file_names, String zipfile_name) throws IOException {
+        if ((file_names == null) || (zipfile_name == null)) {
             return null;
         }
         
@@ -118,7 +118,7 @@ public class ShapefileHandlerTest {
     
     
     @Test
-    public void testCreateZippedNonShapefile() throws IOException{
+    public void testCreateZippedNonShapefile() throws IOException {
         msgt("(1) testCreateZippedNonShapefile");
                 
         // Create files and put them in a .zip
@@ -127,7 +127,7 @@ public class ShapefileHandlerTest {
         
         // Pass the .zip to the ShapefileHandler
         ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zipfile_obj));
-        shp_handler.DEBUG= true;
+        shp_handler.DEBUG = true;
 
         // Contains shapefile?
         assertFalse(shp_handler.containsShapefile());
@@ -179,20 +179,20 @@ public class ShapefileHandlerTest {
 
 
     @Test
-    public void testZippedTwoShapefiles() throws IOException{
+    public void testZippedTwoShapefiles() throws IOException {
         msgt("(2) testZippedTwoShapefiles");
                 
         // Create files and put them in a .zip
         List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.fbn", "shape1.fbx", // 1st shapefile
                                             "shape2.shp", "shape2.shx", "shape2.dbf", "shape2.prj",     // 2nd shapefile
                                             "shape2.txt", "shape2.pdf", "shape2",                  // single files, same basename as 2nd shapefile
-                                            "README.MD", "shp_dictionary.xls", "notes"  ); //, "prj");                  // single files
+                                            "README.MD", "shp_dictionary.xls", "notes"); //, "prj");                  // single files
         
         File zipfile_obj = createAndZipFiles(file_names, "two-shapes.zip");
         
         // Pass the .zip to the ShapefileHandler
         ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zipfile_obj));
-        shp_handler.DEBUG= true;
+        shp_handler.DEBUG = true;
         
         assertTrue(shp_handler.containsShapefile(), "verify shapefile existance");
         assertFalse(shp_handler.errorFound, "verify that no error was found");
@@ -217,7 +217,7 @@ public class ShapefileHandlerTest {
         // Rezip/Reorder the files
         File test_unzip_folder = Files.createDirectory(this.tempFolder.resolve("test_unzip")).toFile();
         //File test_unzip_folder = new File("/Users/rmp553/Desktop/blah");
-        shp_handler.rezipShapefileSets(new FileInputStream(zipfile_obj), test_unzip_folder );
+        shp_handler.rezipShapefileSets(new FileInputStream(zipfile_obj), test_unzip_folder);
         
    
         // Does the re-ordering do what we wanted?
@@ -236,7 +236,7 @@ public class ShapefileHandlerTest {
     
     
     @Test
-    public void testZippedShapefileWithExtraFiles() throws IOException{
+    public void testZippedShapefileWithExtraFiles() throws IOException {
         msgt("(3) testZippedShapefileWithExtraFiles");
                 
         // Create files and put them in a .zip
@@ -245,7 +245,7 @@ public class ShapefileHandlerTest {
 
         // Pass the .zip to the ShapefileHandler
         ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zipfile_obj));
-        shp_handler.DEBUG= true;
+        shp_handler.DEBUG = true;
         
         assertTrue(shp_handler.containsShapefile(), "verify shapefile existance");
 
@@ -287,7 +287,7 @@ public class ShapefileHandlerTest {
     public void testHiddenFiles() {
         // test with shapefiles in hidden directory
         ShapefileHandler shp_handler = new ShapefileHandler("src/test/resources/hiddenShapefiles.zip");
-        shp_handler.DEBUG= true;
+        shp_handler.DEBUG = true;
         assertFalse(shp_handler.containsShapefile());
     }
     

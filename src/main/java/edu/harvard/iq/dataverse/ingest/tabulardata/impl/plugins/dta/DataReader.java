@@ -86,7 +86,7 @@ public class DataReader {
                 bytes_read += this.buffer_size;
                 buffer_byte_offset = this.buffer_size;
                 morebytes = bufferMoreBytes();
-                logger.fine("buffered "+morebytes+" bytes");
+                logger.fine("buffered " + morebytes + " bytes");
             }
 
             /* 
@@ -136,7 +136,7 @@ public class DataReader {
     /*
      * Checks that LSF is not null, and sets the buffer byte order accordingly
      */
-    private void checkLSF(ByteBuffer buffer) throws IOException{
+    private void checkLSF(ByteBuffer buffer) throws IOException {
         if (LSF == null) {
             throw new IOException("Byte order not determined for reading numeric values.");
         } else if (LSF) {
@@ -243,7 +243,7 @@ public class DataReader {
 
             ret += unsigned_byte_value * (1L << (8 * i));
         }
-        if(ret < 0){
+        if (ret < 0) {
             throw new IOException("Sorry for hoping this wouldn't be used with values over 2^63-1");
         }
         return ret;
@@ -400,9 +400,9 @@ public class DataReader {
 
         int n = tag.length();
         if ((this.buffer_size - buffer_byte_offset) >= n) {
-            return (tag).equals(new String(Arrays.copyOfRange(buffer, buffer_byte_offset, buffer_byte_offset+n),"US-ASCII"));
+            return (tag).equals(new String(Arrays.copyOfRange(buffer, buffer_byte_offset, buffer_byte_offset + n), "US-ASCII"));
         }
-        else{
+        else {
             bufferMoreBytes();
             return checkTag(tag);
         }
@@ -415,8 +415,8 @@ public class DataReader {
         }
 
         String openTagString = new String(readBytes(tag.length() + 2), "US-ASCII");
-        if (openTagString == null || !openTagString.equals("<"+tag+">")) {
-            throw new IOException("Could not read opening tag <"+tag+">");
+        if (openTagString == null || !openTagString.equals("<" + tag + ">")) {
+            throw new IOException("Could not read opening tag <" + tag + ">");
         }
     }
 

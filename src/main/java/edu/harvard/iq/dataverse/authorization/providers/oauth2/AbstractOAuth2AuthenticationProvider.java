@@ -105,7 +105,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
      */
     public abstract DefaultApi20 getApiInstance();
     
-    protected abstract ParsedUserResponse parseUserResponse( String responseBody );
+    protected abstract ParsedUserResponse parseUserResponse(String responseBody);
     
     /**
      * Build an Authorization URL for this identity provider
@@ -155,8 +155,8 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         
         // We need to check if scope is null first: GitHub is used without scope, so the responses scope is null.
         // Checking scopes via Stream to be independent from order.
-        if ( ( accessToken.getScope() != null && ! getScope().stream().allMatch(accessToken.getScope()::contains) ) ||
-             ( accessToken.getScope() == null && ! getSpacedScope().isEmpty() ) ) {
+        if ((accessToken.getScope() != null && !getScope().stream().allMatch(accessToken.getScope()::contains)) ||
+             (accessToken.getScope() == null && !getSpacedScope().isEmpty())) {
             // We did not get the permissions on the scope(s) we need. Abort and inform the user.
             throw new OAuth2Exception(200, BundleUtil.getStringFromBundle("auth.providers.insufficientScope", Arrays.asList(this.getTitle())), "");
         }
@@ -170,7 +170,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         int responseCode = response.getCode();
         String body = response.getBody();
         logger.log(Level.FINE, "In requestUserRecord. Body: {0}", body);
-        if ( responseCode == 200 && body != null ) {
+        if (responseCode == 200 && body != null) {
             return getUserRecord(body, accessToken, service);
         } else {
             throw new OAuth2Exception(responseCode, body, BundleUtil.getStringFromBundle("auth.providers.exception.userinfo", Arrays.asList(this.getTitle())));
@@ -240,7 +240,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         return clientSecret;
     }
 
-    public String getUserEndpoint( OAuth2AccessToken token ) {
+    public String getUserEndpoint(OAuth2AccessToken token) {
         return baseUserEndpoint;
     }
     
@@ -288,7 +288,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         if (obj == null) {
             return false;
         }
-        if ( ! (obj instanceof AbstractOAuth2AuthenticationProvider)) {
+        if (!(obj instanceof AbstractOAuth2AuthenticationProvider)) {
             return false;
         }
         final AbstractOAuth2AuthenticationProvider other = (AbstractOAuth2AuthenticationProvider) obj;

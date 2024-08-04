@@ -20,12 +20,12 @@ import java.io.Serializable;
  * @author landreev
  */
 @NamedQueries({
-    @NamedQuery(name = "StorageUse.findByteSizeByDvContainerId",query = "SELECT su.sizeInBytes FROM StorageUse su WHERE su.dvObjectContainer.id =:dvObjectId "),
-    @NamedQuery(name = "StorageUse.findByDvContainerId",query = "SELECT su FROM StorageUse su WHERE su.dvObjectContainer.id =:dvObjectId "),
+    @NamedQuery(name = "StorageUse.findByteSizeByDvContainerId", query = "SELECT su.sizeInBytes FROM StorageUse su WHERE su.dvObjectContainer.id =:dvObjectId "),
+    @NamedQuery(name = "StorageUse.findByDvContainerId", query = "SELECT su FROM StorageUse su WHERE su.dvObjectContainer.id =:dvObjectId "),
     @NamedQuery(name = "StorageUse.incrementByteSizeByDvContainerId", query = "UPDATE StorageUse su SET su.sizeInBytes = su.sizeInBytes +:fileSize WHERE su.dvObjectContainer.id =:dvObjectId")
 })
 @Entity
-@Table(indexes = {@Index(columnList="dvobjectcontainer_id")})
+@Table(indexes = {@Index(columnList = "dvobjectcontainer_id")})
 public class StorageUse implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -42,7 +42,7 @@ public class StorageUse implements Serializable {
     }
 
     @OneToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DvObject dvObjectContainer; 
     
     @Column

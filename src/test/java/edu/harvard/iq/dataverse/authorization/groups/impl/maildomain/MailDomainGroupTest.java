@@ -40,8 +40,8 @@ public class MailDomainGroupTest {
         // given
         MailDomainGroup a = new MailDomainGroup();
         // when, then
-        assertThrows(UnsupportedOperationException.class, () -> { a.isEditable(); } );
-        assertThrows(UnsupportedOperationException.class, () -> { a.contains(dvr); } );
+        assertThrows(UnsupportedOperationException.class, () -> { a.isEditable(); });
+        assertThrows(UnsupportedOperationException.class, () -> { a.contains(dvr); });
     }
     
     @Test
@@ -83,7 +83,7 @@ public class MailDomainGroupTest {
         t.setPersistedGroupAlias(RandomStringUtils.randomAlphanumeric(4));
         t.setDisplayName(RandomStringUtils.randomAlphanumeric(8));
         t.setDescription(RandomStringUtils.randomAlphanumeric(8));
-        t.setEmailDomains(RandomStringUtils.randomAlphanumeric(5)+".com;"+RandomStringUtils.randomAlphanumeric(5)+".co.uk");
+        t.setEmailDomains(RandomStringUtils.randomAlphanumeric(5) + ".com;" + RandomStringUtils.randomAlphanumeric(5) + ".co.uk");
         return t;
     }
     

@@ -34,9 +34,9 @@ public class DeleteCollectionQuotaCommand  extends AbstractVoidCommand {
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
         // first check if  user is a superuser
-        if ( (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
+        if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {      
             throw new PermissionException(BundleUtil.getStringFromBundle("dataverse.storage.quota.superusersonly"),
-                this,  null, targetDataverse);                
+                this, null, targetDataverse);                
         }
         
         if (targetDataverse == null) {

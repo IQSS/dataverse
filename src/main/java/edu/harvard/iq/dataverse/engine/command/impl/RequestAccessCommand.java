@@ -89,7 +89,7 @@ public class RequestAccessCommand extends AbstractCommand<DataFile> {
         }
         file.addFileAccessRequest(fileAccessRequest);
         List<FileAccessRequest> fars = requester.getFileAccessRequests();
-        if(fars!=null) {
+        if (fars != null) {
             fars.add(fileAccessRequest);
         } else {
             requester.setFileAccessRequests(Arrays.asList(fileAccessRequest));

@@ -94,7 +94,7 @@ public class HandlePidProvider extends AbstractPidProvider {
     }
 
     public void reRegisterHandle(DvObject dvObject) {
-        logger.log(Level.FINE,"reRegisterHandle");
+        logger.log(Level.FINE, "reRegisterHandle");
         if (!HDL_PROTOCOL.equals(dvObject.getProtocol())) {
             logger.log(Level.WARNING, "reRegisterHandle called on a dvObject with the non-handle global id: {0}", dvObject.getId());
         }
@@ -154,7 +154,7 @@ public class HandlePidProvider extends AbstractPidProvider {
     }
     
     public Throwable registerNewHandle(DvObject dvObject) {
-        logger.log(Level.FINE,"registerNewHandle");
+        logger.log(Level.FINE, "registerNewHandle");
         String handlePrefix = dvObject.getAuthority();
         String handle = getDvObjectHandle(dvObject);
         String datasetUrl = getRegistrationUrl(dvObject);
@@ -200,8 +200,8 @@ public class HandlePidProvider extends AbstractPidProvider {
         }
     }
     
-    public boolean isHandleRegistered(String handle){
-        logger.log(Level.FINE,"isHandleRegistered");
+    public boolean isHandleRegistered(String handle) {
+        logger.log(Level.FINE, "isHandleRegistered");
         boolean handleRegistered = false;
         ResolutionRequest req = buildResolutionRequest(handle);
         AbstractResponse response = null;
@@ -211,7 +211,7 @@ public class HandlePidProvider extends AbstractPidProvider {
         } catch (HandleException ex) {
             logger.log(Level.WARNING, "Caught exception trying to process lookup request", ex);
         }
-        if((response!=null && response.responseCode==AbstractMessage.RC_SUCCESS)) {
+        if ((response != null && response.responseCode == AbstractMessage.RC_SUCCESS)) {
             logger.log(Level.INFO, "Handle {0} registered.", handle);
             handleRegistered = true;
         } 
@@ -219,8 +219,8 @@ public class HandlePidProvider extends AbstractPidProvider {
     }
     
     private ResolutionRequest buildResolutionRequest(final String handle) {
-        logger.log(Level.FINE,"buildResolutionRequest");
-        String handlePrefix = handle.substring(0,handle.indexOf("/"));
+        logger.log(Level.FINE, "buildResolutionRequest");
+        String handlePrefix = handle.substring(0, handle.indexOf("/"));
         
         PublicKeyAuthenticationInfo auth = getAuthInfo(handlePrefix);
         
@@ -238,20 +238,20 @@ public class HandlePidProvider extends AbstractPidProvider {
     }
     
     private PublicKeyAuthenticationInfo getAuthInfo(String handlePrefix) {
-        logger.log(Level.FINE,"getAuthInfo");
+        logger.log(Level.FINE, "getAuthInfo");
         byte[] key = null;
         String adminCredFile = getKeyPath();
        
         key = readKey(adminCredFile);
         PrivateKey privkey = null;
         privkey = readPrivKey(key, adminCredFile);
-        String authHandle =  getAuthenticationHandle(handlePrefix);
+        String authHandle = getAuthenticationHandle(handlePrefix);
         PublicKeyAuthenticationInfo auth =
                 new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), handlenetIndex, privkey);
         return auth;
     }
     private String getRegistrationUrl(DvObject dvObject) {
-        logger.log(Level.FINE,"getRegistrationUrl");
+        logger.log(Level.FINE, "getRegistrationUrl");
         String siteUrl = SystemConfig.getDataverseSiteUrlStatic();
         String targetUrl = siteUrl + dvObject.getTargetUrl() + "hdl:" + dvObject.getAuthority()
                 + "/" + dvObject.getIdentifier();         
@@ -263,34 +263,34 @@ public class HandlePidProvider extends AbstractPidProvider {
     }
     
     private byte[] readKey(final String file) {
-        logger.log(Level.FINE,"readKey");
+        logger.log(Level.FINE, "readKey");
         byte[] key = null;
         try {
             File f = new File(file);
             FileInputStream fs = new FileInputStream(f);
-            key = new byte[(int)f.length()];
-            int n=0;
-            while(n<key.length) {
-                key[n++] = (byte)fs.read();
+            key = new byte[(int) f.length()];
+            int n = 0;
+            while (n < key.length) {
+                key[n++] = (byte) fs.read();
             }
-        } catch (Throwable t){
+        } catch (Throwable t) {
             logger.log(Level.SEVERE, "Cannot read private key {0}: {1}", new Object[]{file, t});
         }
         return key;
     }
     
     private PrivateKey readPrivKey(byte[] key, final String file) {
-        logger.log(Level.FINE,"readPrivKey");
+        logger.log(Level.FINE, "readPrivKey");
         PrivateKey privkey = null;
         
         try {
             byte[] secKey = null;
-            if ( Util.requiresSecretKey(key) ) {
+            if (Util.requiresSecretKey(key)) {
                 secKey = getKeyPassphrase().getBytes(StandardCharsets.UTF_8);
             }
             key = Util.decrypt(key, secKey);
             privkey = Util.getPrivateKeyFromBytes(key, 0);
-        } catch (Throwable t){
+        } catch (Throwable t) {
             logger.log(Level.SEVERE, "Can''t load private key in {0}: {1}", new Object[]{file, t});
         }
         return privkey;
@@ -305,13 +305,13 @@ public class HandlePidProvider extends AbstractPidProvider {
         return handle;
     }
     
-    private String getAuthenticationHandle(DvObject dvObject){
+    private String getAuthenticationHandle(DvObject dvObject) {
         return getAuthenticationHandle(dvObject.getAuthority());
     }
     
     private String getAuthenticationHandle(String handlePrefix) {
-        logger.log(Level.FINE,"getAuthenticationHandle");
-        if (getHandleAuthHandle()!=null) {
+        logger.log(Level.FINE, "getAuthenticationHandle");
+        if (getHandleAuthHandle() != null) {
             return getHandleAuthHandle();
         } else if (isIndependentHandleService()) {
             return handlePrefix + "/ADMIN";
@@ -333,15 +333,15 @@ public class HandlePidProvider extends AbstractPidProvider {
     }
     
     @Override
-    public Map<String,String> getIdentifierMetadata(DvObject dvObject) {
+    public Map<String, String> getIdentifierMetadata(DvObject dvObject) {
         throw new NotImplementedException();
     }
 
     @Override
-    public String modifyIdentifierTargetURL(DvObject dvObject) throws Exception  {
-        logger.log(Level.FINE,"modifyIdentifier");
+    public String modifyIdentifierTargetURL(DvObject dvObject) throws Exception {
+        logger.log(Level.FINE, "modifyIdentifier");
         reRegisterHandle(dvObject);
-        if(dvObject instanceof Dataset){
+        if (dvObject instanceof Dataset) {
             Dataset dataset = (Dataset) dvObject;
             dataset.getFiles().forEach((df) -> {
                 reRegisterHandle(df);
@@ -351,7 +351,7 @@ public class HandlePidProvider extends AbstractPidProvider {
     }
 
     @Override
-    public void deleteIdentifier(DvObject dvObject) throws Exception  {
+    public void deleteIdentifier(DvObject dvObject) throws Exception {
         String handle = getDvObjectHandle(dvObject);
         String authHandle = getAuthenticationHandle(dvObject);
     
@@ -368,27 +368,27 @@ public class HandlePidProvider extends AbstractPidProvider {
 
         DeleteHandleRequest req =
                 new DeleteHandleRequest(Util.encodeString(handle), auth);
-        AbstractResponse response=null;
+        AbstractResponse response = null;
         try {
             response = resolver.processRequest(req);
         } catch (HandleException ex) {
             ex.printStackTrace();
         }
-        if(response==null || response.responseCode!=AbstractMessage.RC_SUCCESS) {
-            logger.fine("error deleting '"+handle+"': "+response);
+        if (response == null || response.responseCode != AbstractMessage.RC_SUCCESS) {
+            logger.fine("error deleting '" + handle + "': " + response);
         } else {
-            logger.fine("deleted "+handle);
+            logger.fine("deleted " + handle);
         }
     }
 
     private boolean updateIdentifierStatus(DvObject dvObject, String statusIn) {
-        logger.log(Level.FINE,"updateIdentifierStatus");
+        logger.log(Level.FINE, "updateIdentifierStatus");
         reRegisterHandle(dvObject); // No Need to register new - this is only called when a handle exists
         return true;
     }
     
     @Override
-    public List<String> getProviderInformation(){
+    public List<String> getProviderInformation() {
         return List.of(getId(), HDL_RESOLVER_URL);
     }
 
@@ -406,7 +406,7 @@ public class HandlePidProvider extends AbstractPidProvider {
 
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
-        if (dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty()){
+        if (dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty()) {
             generatePid(dvObject);
         }
         return updateIdentifierStatus(dvObject, "public");

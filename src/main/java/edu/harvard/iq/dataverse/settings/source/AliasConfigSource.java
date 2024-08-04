@@ -42,7 +42,7 @@ public final class AliasConfigSource implements ConfigSource {
         } catch (IOException e) {
             // Usually it's an anti-pattern to catch the exception here, but skipping the file
             // should be fine here, as it's optional.
-            logger.log(Level.INFO, "Could not read from "+ALIASES_PROP_FILE+". Skipping MPCONFIG alias setup.", e);
+            logger.log(Level.INFO, "Could not read from " + ALIASES_PROP_FILE + ". Skipping MPCONFIG alias setup.", e);
         }
     
         // Store all old names from JvmSettings
@@ -52,7 +52,7 @@ public final class AliasConfigSource implements ConfigSource {
     private void importJvmSettings(List<JvmSettings> aliasedSettings) {
         // First add all simple aliases not containing placeholders
         aliasedSettings.stream()
-            .filter(s -> ! s.needsVarArgs())
+            .filter(s -> !s.needsVarArgs())
             .forEach(setting -> aliases.put(setting.getScopedKey(), setting.getOldNames()));
         
         // Aliases with placeholders need to be compiled into a regex
@@ -119,7 +119,7 @@ public final class AliasConfigSource implements ConfigSource {
         
         // If the key is null or not starting with the prefix ("dataverse"), we are not going to jump through loops,
         // avoiding computation overhead
-        if (key == null || ! key.startsWith(JvmSettings.PREFIX.getScopedKey())) {
+        if (key == null || !key.startsWith(JvmSettings.PREFIX.getScopedKey())) {
             return null;
         }
         

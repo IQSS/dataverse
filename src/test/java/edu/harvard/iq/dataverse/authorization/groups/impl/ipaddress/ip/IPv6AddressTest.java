@@ -201,10 +201,10 @@ public class IPv6AddressTest {
     @Test
     public void testEquals() {
         IPv6Address sut = IPv6Address.valueOf("ff:ff:12:23:34::0");
-        assertEquals( sut, sut );
-        assertFalse( sut.equals(null) );
-        assertFalse( sut.equals(IPv4Address.valueOf("12.23.34.54")) );
-        assertFalse( sut.equals(IPv6Address.valueOf("1:2:3:4::0")));
+        assertEquals(sut, sut);
+        assertFalse(sut.equals(null));
+        assertFalse(sut.equals(IPv4Address.valueOf("12.23.34.54")));
+        assertFalse(sut.equals(IPv6Address.valueOf("1:2:3:4::0")));
     }
 
     public boolean above(long[] top, long[] addr) {

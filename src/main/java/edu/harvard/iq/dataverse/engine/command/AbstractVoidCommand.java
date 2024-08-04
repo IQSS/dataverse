@@ -30,6 +30,6 @@ public abstract class AbstractVoidCommand extends AbstractCommand<Void> {
 		return null;
 	}
 	
-	protected abstract void executeImpl( CommandContext ctxt ) throws CommandException;
+	protected abstract void executeImpl(CommandContext ctxt) throws CommandException;
 	
 }

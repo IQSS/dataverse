@@ -252,14 +252,14 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = parseDataset(jsonBody);
             ds.setOwner(owner);
             // Will make validation happen always except for the (rare) occasion of all three conditions are true
-            boolean validate = ! ( u.isAuthenticated() && StringUtil.isTrue(doNotValidateParam) &&
-                JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false) );
+            boolean validate = !(u.isAuthenticated() && StringUtil.isTrue(doNotValidateParam) &&
+                JvmSettings.API_ALLOW_INCOMPLETE_METADATA.lookupOptional(Boolean.class).orElse(false));
 
             if (ds.getVersions().isEmpty()) {
                 return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeVersion"));
             }
             
-            if (!ds.getFiles().isEmpty() && !u.isSuperuser()){
+            if (!ds.getFiles().isEmpty() && !u.isSuperuser()) {
                 return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.superuserFiles"));
             }
 
@@ -450,11 +450,11 @@ public class Dataverses extends AbstractApiBean {
                 ds = jsonParser().parseDataset(importService.ddiToJson(xml));
                 DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
             } catch (JsonParseException jpe) {
-                return badRequest("Error parsing data as Json: "+jpe.getMessage());
+                return badRequest("Error parsing data as Json: " + jpe.getMessage());
             } catch (ImportException e) {
-                return badRequest("Invalid DOI found in the XML: "+e.getMessage());
+                return badRequest("Invalid DOI found in the XML: " + e.getMessage());
             } catch (XMLStreamException e) {
-                return badRequest("Invalid file content: "+e.getMessage());
+                return badRequest("Invalid file content: " + e.getMessage());
             }
 
             swordService.addDatasetSubjectIfMissing(ds.getLatestVersion());
@@ -531,7 +531,7 @@ public class Dataverses extends AbstractApiBean {
               throw new BadRequestException(
                       "Cannot recreate a dataset that has a PID that doesn't match the server's settings");
           }
-            if(!dvObjectSvc.isGlobalIdLocallyUnique(ds.getGlobalId())) {
+            if (!dvObjectSvc.isGlobalIdLocallyUnique(ds.getGlobalId())) {
                 throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
             
@@ -638,10 +638,10 @@ public class Dataverses extends AbstractApiBean {
                     break;
                  */
                 case "filePIDsEnabled":
-                    if(!user.isSuperuser()) {
+                    if (!user.isSuperuser()) {
                         return forbidden("You must be a superuser to change this setting");
                     }
-                    if(!settingsService.isTrueForKey(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection, false)) {
+                    if (!settingsService.isTrueForKey(SettingsServiceBean.Key.AllowEnablingFilePIDsPerCollection, false)) {
                         return forbidden("Changing File PID policy per collection is not enabled on this server");
                     }
                     collection.setFilePIDsEnabled(parseBooleanOrDie(value));
@@ -869,7 +869,7 @@ public class Dataverses extends AbstractApiBean {
     Allows user to get the collections that are featured by a given collection
     probably more for SPA than end user
     */
-    public Response getFeaturedDataverses(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,  String dvAliases) {
+    public Response getFeaturedDataverses(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String dvAliases) {
 
         try {
             User u = getRequestUser(crc);
@@ -893,7 +893,7 @@ public class Dataverses extends AbstractApiBean {
      * Allows user to set featured dataverses - must have edit dataverse permission
      *
      */
-    public Response setFeaturedDataverses(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf,  String dvAliases) {
+    public Response setFeaturedDataverses(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, String dvAliases) {
         List<Dataverse> dvsFromInput = new LinkedList<>();
 
 
@@ -946,7 +946,7 @@ public class Dataverses extends AbstractApiBean {
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
-        } catch (JsonParsingException jpe){
+        } catch (JsonParsingException jpe) {
             return error(Response.Status.BAD_REQUEST, "Please provide a valid Json array of dataverse collection aliases to be featured.");
         }
 
@@ -1026,12 +1026,12 @@ public class Dataverses extends AbstractApiBean {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
 
-            if(!dataverse.isMetadataBlockFacetRoot()) {
+            if (!dataverse.isMetadataBlockFacetRoot()) {
                 return badRequest(String.format("Dataverse: %s must have metadata block facet root set to true", dvIdtf));
             }
 
             List<DataverseMetadataBlockFacet> metadataBlockFacets = new LinkedList<>();
-            for(String metadataBlockName: metadataBlockNames) {
+            for (String metadataBlockName : metadataBlockNames) {
                 MetadataBlock metadataBlock = findMetadataBlock(metadataBlockName);
                 if (metadataBlock == null) {
                     return badRequest(String.format("Invalid metadata block name: %s", metadataBlockName));
@@ -1060,7 +1060,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             final boolean blockFacetsRoot = parseBooleanOrDie(body);
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            if(dataverse.isMetadataBlockFacetRoot() == blockFacetsRoot) {
+            if (dataverse.isMetadataBlockFacetRoot() == blockFacetsRoot) {
                 return ok(String.format("No update needed, dataverse already consistent with new value. DataverseId: %s blockFacetsRoot: %s", dvIdtf, blockFacetsRoot));
             }
 
@@ -1124,7 +1124,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             Long bytesAllocated = execCommand(new GetCollectionQuotaCommand(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf)));
             if (bytesAllocated != null) {
-                return ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation"),bytesAllocated));
+                return ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.storage.quota.allocation"), bytesAllocated));
             }
             return ok(BundleUtil.getStringFromBundle("dataverse.storage.quota.notdefined"));
         } catch (WrappedResponse ex) {

@@ -25,9 +25,9 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author gdurand
  */
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="contactemail")
-		, @Index(columnList="displayorder")})
+@Table(indexes = {@Index(columnList = "dataverse_id")
+		, @Index(columnList = "contactemail")
+		, @Index(columnList = "displayorder")})
 public class DataverseContact implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -62,7 +62,7 @@ public class DataverseContact implements Serializable {
 
     @NotBlank(message = "{user.invalidEmail}")
     @ValidateEmail(message = "{user.invalidEmail}")
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String contactEmail;
     private int displayOrder;
 

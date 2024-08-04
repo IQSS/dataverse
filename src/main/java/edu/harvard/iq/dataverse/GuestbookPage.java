@@ -156,12 +156,12 @@ public class GuestbookPage implements java.io.Serializable {
             guestbook.setCustomQuestions(new ArrayList<CustomQuestion>());
             initCustomQuestion();
             editMode = EditMode.CREATE;
-        } else if (ownerId != null && sourceId != null ) {
+        } else if (ownerId != null && sourceId != null) {
             // Clone mode for a new template from source
             editMode = EditMode.CLONE;
             sourceGB = guestbookService.find(sourceId);
             guestbook = sourceGB.copyGuestbook(sourceGB, dataverse);
-            String name = BundleUtil.getStringFromBundle("page.copy") +" " + sourceGB.getName();
+            String name = BundleUtil.getStringFromBundle("page.copy") + " " + sourceGB.getName();
             guestbook.setName(name);
             guestbook.setUsageCount(new Long(0));
             guestbook.setCreateTime(new Timestamp(new Date().getTime()));
@@ -178,16 +178,16 @@ public class GuestbookPage implements java.io.Serializable {
         
     }
 
-    public String removeCustomQuestion(Long index){
+    public String removeCustomQuestion(Long index) {
         guestbook.removeCustomQuestion(index.intValue());
         return "";
     }
     
-    public List<GuestbookResponse> getGuestbookResponses(){
+    public List<GuestbookResponse> getGuestbookResponses() {
         return null;
     }
     
-    private void initCustomQuestion(){
+    private void initCustomQuestion() {
         CustomQuestion toAdd = new CustomQuestion();
         toAdd.setQuestionType("text");
         toAdd.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
@@ -196,7 +196,7 @@ public class GuestbookPage implements java.io.Serializable {
         guestbook.addCustomQuestion(index, toAdd);       
     }
         
-    public void addCustomQuestion(Integer indexIn){
+    public void addCustomQuestion(Integer indexIn) {
         CustomQuestion toAdd = new CustomQuestion();
         toAdd.setQuestionType("text");
         toAdd.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
@@ -204,20 +204,20 @@ public class GuestbookPage implements java.io.Serializable {
         guestbook.addCustomQuestion(indexIn, toAdd);
     }
     
-    public void addCustomQuestionValue(CustomQuestion cq, int index){
+    public void addCustomQuestionValue(CustomQuestion cq, int index) {
         CustomQuestionValue toAdd = new CustomQuestionValue();
         toAdd.setValueString("");
         toAdd.setCustomQuestion(cq);
         cq.addCustomQuestionValue(index, toAdd);    
     }
     
-    public void removeCustomQuestionValue(CustomQuestion cq, Long index){
+    public void removeCustomQuestionValue(CustomQuestion cq, Long index) {
         cq.removeCustomQuestionValue(index.intValue());
     }
     
     public void toggleQuestionType(CustomQuestion questionIn) {
         if (questionIn.getCustomQuestionValues() != null && questionIn.getCustomQuestionValues().isEmpty() 
-                && questionIn.getQuestionType() !=null && questionIn.getQuestionType().equals("options")){
+                && questionIn.getQuestionType() != null && questionIn.getQuestionType().equals("options")) {
             questionIn.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
             CustomQuestionValue addCQV = new CustomQuestionValue();
             addCQV.setCustomQuestion(questionIn);
@@ -262,11 +262,11 @@ public class GuestbookPage implements java.io.Serializable {
             
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
                 if (cq != null && cq.getQuestionType().equals("options")) {
-                    if (cq.getCustomQuestionValues() == null || cq.getCustomQuestionValues().isEmpty()){
+                    if (cq.getCustomQuestionValues() == null || cq.getCustomQuestionValues().isEmpty()) {
                         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("guestbook.save.fail"), BundleUtil.getStringFromBundle("guestbook.option.msg") ));
                         return null;
                     }
-                    if (cq.getCustomQuestionValues().size() == 1){
+                    if (cq.getCustomQuestionValues().size() == 1) {
                         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("guestbook.save.fail"), BundleUtil.getStringFromBundle("guestbook.option.msg") ));
                         return null; 
                     }
@@ -276,8 +276,8 @@ public class GuestbookPage implements java.io.Serializable {
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
                 int j = 0;
                 cq.setDisplayOrder(i);
-                if (cq.getCustomQuestionValues() != null &&  !cq.getCustomQuestionValues().isEmpty()){
-                    for (CustomQuestionValue cqv : cq.getCustomQuestionValues()){
+                if (cq.getCustomQuestionValues() != null && !cq.getCustomQuestionValues().isEmpty()) {
+                    for (CustomQuestionValue cqv : cq.getCustomQuestionValues()) {
                         cqv.setDisplayOrder(j);
                         j++;
                     }
@@ -293,7 +293,7 @@ public class GuestbookPage implements java.io.Serializable {
             // UpdateDataverseCommand when saving new guestbooks, and that involved 
             // an unnecessary reindexing of the dataverse (and, in some cases, 
             // reindexing of the underlying datasets). - L.A.
-            if (editMode == EditMode.CREATE || editMode == EditMode.CLONE ) {
+            if (editMode == EditMode.CREATE || editMode == EditMode.CLONE) {
                 guestbook.setCreateTime(new Timestamp(new Date().getTime()));
                 guestbook.setUsageCount(Long.valueOf(0));
                 guestbook.setEnabled(true);
@@ -325,7 +325,7 @@ public class GuestbookPage implements java.io.Serializable {
             //logger.severe(ex.getMessage());
         }
         editMode = null;
-        String msg = (create)? BundleUtil.getStringFromBundle("guestbook.create"): BundleUtil.getStringFromBundle("guestbook.save");
+        String msg = (create) ? BundleUtil.getStringFromBundle("guestbook.create") : BundleUtil.getStringFromBundle("guestbook.save");
         JsfHelper.addFlashMessage(msg);
         return "/manage-guestbooks.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
     }

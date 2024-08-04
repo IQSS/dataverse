@@ -195,7 +195,7 @@ public class DDIExportServiceBean {
             if (dataObject == null) {
                 throw new IllegalArgumentException("Metadata Export: Invalid dataset id supplied.");
             }
-            releasedVersion = ((Dataset)dataObject).getReleasedVersion();
+            releasedVersion = ((Dataset) dataObject).getReleasedVersion();
             if (releasedVersion == null) {
                 throw new IllegalArgumentException("Metadata Export: Dataset not released.");
             }
@@ -229,7 +229,7 @@ public class DDIExportServiceBean {
         }
     }
 
-    private void createVarGroupDDI(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, VarGroup varGrp) throws XMLStreamException{
+    private void createVarGroupDDI(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, VarGroup varGrp) throws XMLStreamException {
         xmlw.writeStartElement("varGrp");
         writeAttribute(xmlw, "ID", "VG" + varGrp.getId().toString());
         String vars = "";
@@ -238,7 +238,7 @@ public class DDIExportServiceBean {
             vars = vars + " v" + var.getId();
         }
         vars = vars.trim();
-        writeAttribute(xmlw, "var", vars );
+        writeAttribute(xmlw, "var", vars);
 
         if (checkField("labl", excludedFieldSet, includedFieldSet)) {
             if (!StringUtilisEmpty(varGrp.getLabel())) {
@@ -261,7 +261,7 @@ public class DDIExportServiceBean {
 
         List<VariableMetadata> vmList = variableService.findByDataVarIdAndFileMetaId(dv.getId(), fileMetadataId);
         VariableMetadata vm = null;
-        if (vmList != null && vmList.size() >0) {
+        if (vmList != null && vmList.size() > 0) {
             vm = vmList.get(0);
         }
 
@@ -285,7 +285,7 @@ public class DDIExportServiceBean {
                 writeAttribute(xmlw, "wgt", "wgt");
             }
             if (vm.isWeighted() && vm.getWeightvariable() != null) {
-                writeAttribute(xmlw, "wgt-var", "v"+vm.getWeightvariable().getId().toString());
+                writeAttribute(xmlw, "wgt-var", "v" + vm.getWeightvariable().getId().toString());
             }
         }
 
@@ -595,7 +595,7 @@ public class DDIExportServiceBean {
             DataConverter dc = new DataConverter();
             File tabFile = dc.downloadFromStorageIO(df.getStorageIO());
 
-            ingestService.produceFrequencies(tabFile, vars );
+            ingestService.produceFrequencies(tabFile, vars);
 
         } catch (Exception ex)
         {
@@ -635,7 +635,7 @@ public class DDIExportServiceBean {
         if (checkField("fileDscr", excludedFieldSet, includedFieldSet)) {
             for (FileMetadata fileMetadata : tabularDataFiles) {
                 DataTable dt = fileService.findDataTableByFileId(fileMetadata.getDataFile().getId());
-                createFileDscr(xmlw, excludedFieldSet, includedFieldSet, fileMetadata.getDataFile(),dt, fileMetadata);
+                createFileDscr(xmlw, excludedFieldSet, includedFieldSet, fileMetadata.getDataFile(), dt, fileMetadata);
             }
             
             // 2nd pass, to create data (variable) description sections: 
@@ -688,7 +688,7 @@ public class DDIExportServiceBean {
 
                     xmlw.writeStartElement("IDNo");
                     writeAttribute(xmlw, "agency", persistentAgency);
-                    xmlw.writeCharacters( persistentAuthority + "/" + persistentId );
+                    xmlw.writeCharacters(persistentAuthority + "/" + persistentId);
                     xmlw.writeEndElement(); // IDNo
         
                 xmlw.writeEndElement(); // titlStmt
@@ -696,7 +696,7 @@ public class DDIExportServiceBean {
                 xmlw.writeStartElement("rspStmt");
         
                     xmlw.writeStartElement("AuthEnty");
-                    xmlw.writeCharacters( authors );
+                    xmlw.writeCharacters(authors);
                     xmlw.writeEndElement(); // AuthEnty
         
                 xmlw.writeEndElement(); // rspStmt
@@ -716,11 +716,11 @@ public class DDIExportServiceBean {
         writeAttribute(xmlw, "ID", "f" + fm.getDataFile().getId().toString());
         
         xmlw.writeStartElement("labl");
-        xmlw.writeCharacters( fm.getLabel() );
+        xmlw.writeCharacters(fm.getLabel());
         xmlw.writeEndElement(); // labl
 
         xmlw.writeStartElement("txt");
-        xmlw.writeCharacters( fm.getDescription() );
+        xmlw.writeCharacters(fm.getDescription());
         xmlw.writeEndElement(); // txt
         
         xmlw.writeEndElement(); // otherMat

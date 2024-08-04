@@ -27,7 +27,7 @@ class ZipFileDataProvider implements FileDataProvider {
     }
 
     public ZipFileDataProvider(String name, File file) throws IOException {
-        this(name,  new ZipFile(file));
+        this(name, new ZipFile(file));
     }
 
     @Override

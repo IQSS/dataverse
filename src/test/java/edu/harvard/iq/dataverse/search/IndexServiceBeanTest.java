@@ -136,7 +136,7 @@ public class IndexServiceBeanTest {
 
     private IndexableDataset createIndexableDataset() {
         final Dataset dataset = MocksFactory.makeDataset();
-        dataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.666", "FAKE/fake", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
+        dataset.setGlobalId(new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.666", "FAKE/fake", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null));
         final DatasetVersion datasetVersion = dataset.getCreateVersion(null);
         DatasetField field = createCVVField("language", "English", false);
         datasetVersion.getDatasetFields().add(field);

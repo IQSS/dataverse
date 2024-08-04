@@ -63,8 +63,8 @@ public class Notifications extends AbstractApiBean {
                 notificationObjectBuilder.add("reasonsForReturn", reasonsForReturn);
             }
             */
-            Object objectOfNotification =  mailService.getObjectOfNotification(notification);
-            if (objectOfNotification != null){
+            Object objectOfNotification = mailService.getObjectOfNotification(notification);
+            if (objectOfNotification != null) {
                 String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, objectOfNotification);
                 String messageText = mailService.getMessageTextBasedOnNotification(notification, objectOfNotification, null, notification.getRequestor());
                 notificationObjectBuilder.add("subjectText", subjectText);

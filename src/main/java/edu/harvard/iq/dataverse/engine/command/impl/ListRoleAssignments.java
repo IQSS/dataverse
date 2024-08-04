@@ -28,8 +28,8 @@ public class ListRoleAssignments extends AbstractCommand<List<RoleAssignment>> {
 
 	@Override
 	public List<RoleAssignment> execute(CommandContext ctxt) throws CommandException {
-            if(definitionPoint.isInstanceofDataset()){
-                List <RoleAssignment> retVal = new ArrayList();
+            if (definitionPoint.isInstanceofDataset()) {
+                List<RoleAssignment> retVal = new ArrayList();
                 retVal.addAll(ctxt.permissions().assignmentsOn(definitionPoint));
                 retVal.addAll(ctxt.permissions().assignmentsOn(definitionPoint.getOwner()));
                 return retVal;

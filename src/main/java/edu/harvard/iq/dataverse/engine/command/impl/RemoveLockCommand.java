@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  * Removes a lock from the passed dataset;
  * @author michael
  */
-@RequiredPermissions( Permission.EditDataset )
+@RequiredPermissions(Permission.EditDataset)
 public class RemoveLockCommand extends AbstractVoidCommand {
 
     private final Dataset dataset;

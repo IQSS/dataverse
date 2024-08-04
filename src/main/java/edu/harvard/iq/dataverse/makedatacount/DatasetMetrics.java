@@ -202,7 +202,7 @@ public class DatasetMetrics implements Serializable {
     }
 
     public void setDownloadsTotalMachine(Long downloadsTotalMachine) {
-        this.downloadsTotalMachine= downloadsTotalMachine;
+        this.downloadsTotalMachine = downloadsTotalMachine;
     }
 
     public Long getDownloadsUniqueMachine() {
@@ -258,7 +258,7 @@ public class DatasetMetrics implements Serializable {
         this.downloadsTotal = downloadsTotal;
     }
     
-    public void initCounts(){
+    public void initCounts() {
         this.setDownloadsTotalMachine(new Long(0));
         this.setDownloadsTotalRegular(new Long(0));
         this.setDownloadsUniqueMachine(new Long(0));

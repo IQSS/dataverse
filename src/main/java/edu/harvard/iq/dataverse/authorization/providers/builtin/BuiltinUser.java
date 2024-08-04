@@ -26,15 +26,15 @@ import jakarta.validation.constraints.Size;
  * @author mbarsinai
  */
 @NamedQueries({
-		@NamedQuery( name="BuiltinUser.findAll",
+		@NamedQuery(name = "BuiltinUser.findAll",
 				query = "SELECT u FROM BuiltinUser u ORDER BY u.userName"),
-		@NamedQuery( name="BuiltinUser.findByUserName",
+		@NamedQuery(name = "BuiltinUser.findByUserName",
 				query = "SELECT u FROM BuiltinUser u WHERE LOWER(u.userName)=LOWER(:userName)"),
-		@NamedQuery( name="BuiltinUser.listByUserNameLike",
+		@NamedQuery(name = "BuiltinUser.listByUserNameLike",
 				query = "SELECT u FROM BuiltinUser u WHERE u.userName LIKE :userNameLike")
 })
 @Entity
-@Table(indexes = {@Index(columnList="userName")})  // for sorting the NamedQuery BuiltinUser.findAll
+@Table(indexes = {@Index(columnList = "userName")})  // for sorting the NamedQuery BuiltinUser.findAll
 public class BuiltinUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -43,7 +43,7 @@ public class BuiltinUser implements Serializable {
     private Long id;
     
     @ValidateUserName
-    @Column(nullable = false, unique=true)  
+    @Column(nullable = false, unique = true)  
     private String userName;
     
     private int passwordEncryptionVersion; 
@@ -112,7 +112,7 @@ public class BuiltinUser implements Serializable {
        this.position = position;
     }
     
-    public void updateEncryptedPassword( String encryptedPassword, int algorithmVersion ) {
+    public void updateEncryptedPassword(String encryptedPassword, int algorithmVersion) {
         setEncryptedPassword(encryptedPassword);
         setPasswordEncryptionVersion(algorithmVersion);
     }

@@ -41,7 +41,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
             throw new PermissionException(BundleUtil.getStringFromBundle("datasets.api.updatePIDMetadata.auth.mustBeSuperUser"),
                     this, Collections.singleton(Permission.EditDataset), target);
         }
-        if (!this.target.isReleased()){
+        if (!this.target.isReleased()) {
             //This is for the bulk update version of the api.
             //We don't want to modify drafts, but we want it to keep going
             //the single dataset update api checks for drafts before calling the command

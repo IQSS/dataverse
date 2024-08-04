@@ -132,7 +132,7 @@ public class Dataset extends DvObjectContainer {
     @JoinColumn(name = "guestbook_id", unique = false, nullable = true, insertable = true, updatable = true)
     private Guestbook guestbook;
     
-    @OneToMany(mappedBy="dataset", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "dataset", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLinkingDataverse> datasetLinkingDataverses;
 
     public List<DatasetLinkingDataverse> getDatasetLinkingDataverses() {
@@ -178,7 +178,7 @@ public class Dataset extends DvObjectContainer {
     
     
     @ManyToOne
-    @JoinColumn(name="template_id",nullable = true)
+    @JoinColumn(name = "template_id", nullable = true)
     private Template template;
     
     public Template getTemplate() {
@@ -213,9 +213,9 @@ public class Dataset extends DvObjectContainer {
      * @param reason the reason we test for.
      * @return {@code true} iff the data set is locked for {@code reason}.
      */
-    public boolean isLockedFor( DatasetLock.Reason reason ) {
-        for ( DatasetLock l : getLocks() ) {
-            if ( l.getReason() == reason ) {
+    public boolean isLockedFor(DatasetLock.Reason reason) {
+        for (DatasetLock l : getLocks()) {
+            if (l.getReason() == reason) {
                 return true;
             }
         }
@@ -227,9 +227,9 @@ public class Dataset extends DvObjectContainer {
      * @param reason
      * @return the dataset lock, or {@code null}.
      */
-    public DatasetLock getLockFor( DatasetLock.Reason reason ) {
-        for ( DatasetLock l : getLocks() ) {
-            if ( l.getReason() == reason ) {
+    public DatasetLock getLockFor(DatasetLock.Reason reason) {
+        for (DatasetLock l : getLocks()) {
+            if (l.getReason() == reason) {
                 return l;
             }
         }
@@ -238,7 +238,7 @@ public class Dataset extends DvObjectContainer {
     
     public Set<DatasetLock> getLocks() {
         // lazy set creation
-        if ( datasetLocks == null ) {
+        if (datasetLocks == null) {
             datasetLocks = new HashSet<>();
         }
         return datasetLocks;
@@ -256,8 +256,8 @@ public class Dataset extends DvObjectContainer {
         getLocks().add(datasetLock);
     }
     
-    public void removeLock( DatasetLock aDatasetLock ) {
-        getLocks().remove( aDatasetLock );
+    public void removeLock(DatasetLock aDatasetLock) {
+        getLocks().remove(aDatasetLock);
     }
 
     public boolean isLocked() {
@@ -354,7 +354,7 @@ public class Dataset extends DvObjectContainer {
         } else {
             latestVersion = getLatestVersionForCopy();
             
-            if (latestVersion.getUNF() != null){
+            if (latestVersion.getUNF() != null) {
                 dsv.setUNF(latestVersion.getUNF());
             }
             
@@ -385,7 +385,7 @@ public class Dataset extends DvObjectContainer {
                 newFm.setInPriorVersion(true);
 
                 //fmVarMet would be updated in DCT
-                if ((fmVarMet != null && !fmVarMet.getId().equals(fm.getId())) || (fmVarMet == null))  {
+                if ((fmVarMet != null && !fmVarMet.getId().equals(fm.getId())) || (fmVarMet == null)) {
                     if (fm.getVariableMetadatas() != null) {
                         newFm.copyVariableMetadata(fm.getVariableMetadatas());
                     }
@@ -397,7 +397,7 @@ public class Dataset extends DvObjectContainer {
                 dsv.getFileMetadatas().add(newFm);
             }
             
-            if (latestVersion.getTermsOfUseAndAccess()!= null){
+            if (latestVersion.getTermsOfUseAndAccess() != null) {
                 TermsOfUseAndAccess terms = latestVersion.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
                 terms.setDatasetVersion(dsv);
                 dsv.setTermsOfUseAndAccess(terms);
@@ -548,8 +548,8 @@ public class Dataset extends DvObjectContainer {
     private Collection<String> getCategoryNames() {
         if (dataFileCategories != null) {
             ArrayList<String> ret = new ArrayList<>(dataFileCategories.size());
-            for ( DataFileCategory dfc : dataFileCategories ) {
-                ret.add( dfc.getName() );
+            for (DataFileCategory dfc : dataFileCategories) {
+                ret.add(dfc.getName());
             }
             return ret;
         } else {
@@ -583,20 +583,20 @@ public class Dataset extends DvObjectContainer {
         return studyDir;
     }
     
-    public String getAlternativePersistentIdentifier(){
+    public String getAlternativePersistentIdentifier() {
         String retVal = null;            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
             for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
                 retVal = retVal != null ? retVal + "; " : "";
                 retVal += api.getProtocol() + ":";
                 retVal += api.getAuthority() + "/";
-                retVal +=  api.getIdentifier();
+                retVal += api.getIdentifier();
             }
         }
         return retVal;       
     }
     
-    public String getProtocolForFileStorage(){
+    public String getProtocolForFileStorage() {
         String retVal = getProtocol();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
             for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
@@ -608,7 +608,7 @@ public class Dataset extends DvObjectContainer {
         return retVal;         
     }
     
-    public String getAuthorityForFileStorage(){
+    public String getAuthorityForFileStorage() {
         String retVal = getAuthority();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
             for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
@@ -620,7 +620,7 @@ public class Dataset extends DvObjectContainer {
         return retVal;         
     }
     
-    public String getIdentifierForFileStorage(){
+    public String getIdentifierForFileStorage() {
         String retVal = getIdentifier();            
         if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
             for (AlternativePersistentIdentifier altpid : this.getAlternativePersistentIndentifiers()) {
@@ -694,7 +694,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getPublicationDateFormattedYYYYMMDD() {
-        if (getPublicationDate() != null){
+        if (getPublicationDate() != null) {
                    return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate()); 
         }
         return null;
@@ -715,7 +715,7 @@ public class Dataset extends DvObjectContainer {
     }
     
     public String getCitationDateFormattedYYYYMMDD() {
-        if (getCitationDate() != null){
+        if (getCitationDate() != null) {
                    return new SimpleDateFormat("yyyy-MM-dd").format(getCitationDate()); 
         }
         return null;
@@ -754,7 +754,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     @ManyToOne
-    @JoinColumn(name="harvestingClient_id")
+    @JoinColumn(name = "harvestingClient_id")
     private  HarvestingClient harvestedFrom;
 
     public HarvestingClient getHarvestedFrom() {
@@ -897,10 +897,10 @@ public class Dataset extends DvObjectContainer {
         return null;
     }
 
-    public boolean hasEnabledGuestbook(){
+    public boolean hasEnabledGuestbook() {
         Guestbook gb = this.getGuestbook();
 
-        return ( gb != null && gb.isEnabled());
+        return (gb != null && gb.isEnabled());
     }
     
     @Override
@@ -935,7 +935,7 @@ public class Dataset extends DvObjectContainer {
     }
     
     @Override
-    public String getCurrentName(){
+    public String getCurrentName() {
         return getLatestVersion().getTitle();
     }
 
@@ -945,7 +945,7 @@ public class Dataset extends DvObjectContainer {
     }
     
     @Override
-    public boolean isAncestorOf( DvObject other ) {
+    public boolean isAncestorOf(DvObject other) {
         return equals(other) || equals(other.getOwner());
     }
 

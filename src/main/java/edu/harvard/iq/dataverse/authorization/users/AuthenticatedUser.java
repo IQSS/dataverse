@@ -57,23 +57,23 @@ import jakarta.validation.constraints.NotNull;
  * @author rmp553
  */
 @NamedQueries({
-    @NamedQuery( name="AuthenticatedUser.findAll",
-                query="select au from AuthenticatedUser au"),
-    @NamedQuery( name="AuthenticatedUser.findSuperUsers",
-                query="SELECT au FROM AuthenticatedUser au WHERE au.superuser = TRUE"),
-    @NamedQuery( name="AuthenticatedUser.findByIdentifier",
-                query="select au from AuthenticatedUser au WHERE LOWER(au.userIdentifier)=LOWER(:identifier)"),
-    @NamedQuery( name="AuthenticatedUser.findByEmail",
-                query="select au from AuthenticatedUser au WHERE LOWER(au.email)=LOWER(:email)"),
-    @NamedQuery( name="AuthenticatedUser.countOfIdentifier",
-                query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE LOWER(a.userIdentifier)=LOWER(:identifier)"),
-    @NamedQuery( name="AuthenticatedUser.filter",
-                query="select au from AuthenticatedUser au WHERE ("
+    @NamedQuery(name = "AuthenticatedUser.findAll",
+                query = "select au from AuthenticatedUser au"),
+    @NamedQuery(name = "AuthenticatedUser.findSuperUsers",
+                query = "SELECT au FROM AuthenticatedUser au WHERE au.superuser = TRUE"),
+    @NamedQuery(name = "AuthenticatedUser.findByIdentifier",
+                query = "select au from AuthenticatedUser au WHERE LOWER(au.userIdentifier)=LOWER(:identifier)"),
+    @NamedQuery(name = "AuthenticatedUser.findByEmail",
+                query = "select au from AuthenticatedUser au WHERE LOWER(au.email)=LOWER(:email)"),
+    @NamedQuery(name = "AuthenticatedUser.countOfIdentifier",
+                query = "SELECT COUNT(a) FROM AuthenticatedUser a WHERE LOWER(a.userIdentifier)=LOWER(:identifier)"),
+    @NamedQuery(name = "AuthenticatedUser.filter",
+                query = "select au from AuthenticatedUser au WHERE ("
                         + "LOWER(au.userIdentifier) like LOWER(:query) OR "
                         + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query) or "
                         + "lower(au.email) like lower(:query))"),
-    @NamedQuery( name="AuthenticatedUser.findAdminUser",
-                query="select au from AuthenticatedUser au WHERE "
+    @NamedQuery(name = "AuthenticatedUser.findAdminUser",
+                query = "select au from AuthenticatedUser au WHERE "
                         + "au.superuser = true "
                         + "order by au.id")
     
@@ -97,12 +97,12 @@ public class AuthenticatedUser implements User, Serializable {
      * https://github.com/IQSS/dataverse/issues/2945
      */
     @NotNull
-    @Column(nullable = false, unique=true)
+    @Column(nullable = false, unique = true)
     private String userIdentifier;
 
     @ValidateEmail(message = "{user.invalidEmail}")
     @NotNull
-    @Column(nullable = false, unique=true)
+    @Column(nullable = false, unique = true)
     private String email;
     private String affiliation;
     private String position;
@@ -116,13 +116,13 @@ public class AuthenticatedUser implements User, Serializable {
     @Column(nullable = true)
     private Timestamp emailConfirmed;
  
-    @Column(nullable=false)
+    @Column(nullable = false)
     private Timestamp createdTime;
     
-    @Column(nullable=true)
+    @Column(nullable = true)
     private Timestamp lastLoginTime;    // last user login timestamp
 
-    @Column(nullable=true)
+    @Column(nullable = true)
     private Timestamp lastApiUseTime;   // last API use with user's token
     
     @Transient
@@ -130,16 +130,16 @@ public class AuthenticatedUser implements User, Serializable {
     
     private boolean superuser;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private boolean deactivated;
 
-    @Column(nullable=true)
+    @Column(nullable = true)
     private Timestamp deactivatedTime;
 
-    @Column(columnDefinition="TEXT", nullable=true)
+    @Column(columnDefinition = "TEXT", nullable = true)
     private String mutedEmails;
 
-    @Column(columnDefinition="TEXT", nullable=true)
+    @Column(columnDefinition = "TEXT", nullable = true)
     private String mutedNotifications;
     
     @Transient
@@ -148,7 +148,7 @@ public class AuthenticatedUser implements User, Serializable {
     @Transient
     private Set<Type> mutedNotificationsSet = new HashSet<>();
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     @Min(value = 1, message = "Rate Limit Tier must be greater than 0.")
     private int rateLimitTier = 1;
 
@@ -176,7 +176,7 @@ public class AuthenticatedUser implements User, Serializable {
         return IDENTIFIER_PREFIX + userIdentifier;
     }
 
-    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE})
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.REMOVE})
     private List<UserNotification> notifications;
 
     public List<UserNotification> getUserNotifications() {
@@ -187,7 +187,7 @@ public class AuthenticatedUser implements User, Serializable {
         this.notifications = notifications;
     }
     
-    @OneToMany(mappedBy = "requestor", cascade={CascadeType.REMOVE})
+    @OneToMany(mappedBy = "requestor", cascade = {CascadeType.REMOVE})
     private List<UserNotification> requests;
 
     public List<UserNotification> getUserRequests() {
@@ -199,7 +199,7 @@ public class AuthenticatedUser implements User, Serializable {
     }
 
     
-    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLock> datasetLocks;
 	
     public List<DatasetLock> getDatasetLocks() {
@@ -210,11 +210,11 @@ public class AuthenticatedUser implements User, Serializable {
         this.datasetLocks = datasetLocks;
     }
 
-    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<OAuth2TokenData> oAuth2TokenDatas;
 
     /*for many to many fileAccessRequests*/
-    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     private List<FileAccessRequest> fileAccessRequests;
 
     public List<FileAccessRequest> getFileAccessRequests() {
@@ -225,11 +225,11 @@ public class AuthenticatedUser implements User, Serializable {
         this.fileAccessRequests = fARs;
     }
 
-    public List<DataFile> getRequestedDataFiles(){
+    public List<DataFile> getRequestedDataFiles() {
         List<DataFile> requestedDataFiles = new ArrayList<>();
 
-        for(FileAccessRequest far : getFileAccessRequests()){
-            if(far.isStateCreated()) {
+        for (FileAccessRequest far : getFileAccessRequests()) {
+            if (far.isStateCreated()) {
                 requestedDataFiles.add(far.getDataFile());
             }
         }
@@ -245,17 +245,17 @@ public class AuthenticatedUser implements User, Serializable {
      * Takes the passed info object and updated the internal fields according to it.
      * @param inf the info from which we update the fields.
     */
-    public void applyDisplayInfo( AuthenticatedUserDisplayInfo inf ) {
+    public void applyDisplayInfo(AuthenticatedUserDisplayInfo inf) {
         setFirstName(inf.getFirstName());
         setLastName(inf.getLastName());
-        if ( nonEmpty(inf.getEmailAddress()) ) {
+        if (nonEmpty(inf.getEmailAddress())) {
             setEmail(inf.getEmailAddress());
         }
-        if ( nonEmpty(inf.getAffiliation()) ) {
-            setAffiliation( inf.getAffiliation() );
+        if (nonEmpty(inf.getAffiliation())) {
+            setAffiliation(inf.getAffiliation());
         }
-        if ( nonEmpty(inf.getPosition()) ) {
-            setPosition( inf.getPosition());
+        if (nonEmpty(inf.getPosition())) {
+            setPosition(inf.getPosition());
         }
     }
 
@@ -481,7 +481,7 @@ public class AuthenticatedUser implements User, Serializable {
      * 
      * @return 
      */
-    public static JsonObjectBuilder getBundleStrings(){
+    public static JsonObjectBuilder getBundleStrings() {
      
            return Json.createObjectBuilder()                   
                 .add("userId", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userId"))
@@ -516,7 +516,7 @@ public class AuthenticatedUser implements User, Serializable {
      * 
      * @param lastLoginTime 
      */
-    public void setLastLoginTime(Timestamp lastLoginTime){
+    public void setLastLoginTime(Timestamp lastLoginTime) {
         
         this.lastLoginTime = lastLoginTime;
     }
@@ -524,16 +524,16 @@ public class AuthenticatedUser implements User, Serializable {
     /**
      * @param lastLoginTime
      */
-    public Timestamp getLastLoginTime(){
+    public Timestamp getLastLoginTime() {
         return this.lastLoginTime;
     }
     
     
-    public void setCreatedTime(Timestamp createdTime){
+    public void setCreatedTime(Timestamp createdTime) {
         this.createdTime = createdTime;
     }
     
-    public Timestamp getCreatedTime(){
+    public Timestamp getCreatedTime() {
         return this.createdTime;
     }
 
@@ -542,7 +542,7 @@ public class AuthenticatedUser implements User, Serializable {
      * 
      * @param lastApiUseTime 
      */
-    public void setLastApiUseTime(Timestamp lastApiUseTime){        
+    public void setLastApiUseTime(Timestamp lastApiUseTime) {        
         this.lastApiUseTime = lastApiUseTime;
     }
     
@@ -550,7 +550,7 @@ public class AuthenticatedUser implements User, Serializable {
      * 
      * @param lastApiUseTime
      */
-    public Timestamp getLastApiUseTime(){
+    public Timestamp getLastApiUseTime() {
         
         return this.lastApiUseTime;
     }
@@ -564,7 +564,7 @@ public class AuthenticatedUser implements User, Serializable {
     }
     
     public Cart getCart() {
-        if (cart == null){
+        if (cart == null) {
             cart = new Cart();
         }
         return cart;

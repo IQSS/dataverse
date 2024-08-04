@@ -26,11 +26,11 @@ import jakarta.persistence.Table;
  */
 
 @NamedQueries({
-    @NamedQuery( name="ForeignMetadataFormatMapping.listAll", query = "SELECT fmfm FROM ForeignMetadataFormatMapping fmfm"),
-    @NamedQuery( name="ForeignMetadataFormatMapping.findByName", query = "SELECT fmfm FROM ForeignMetadataFormatMapping fmfm WHERE fmfm.name=:name")
+    @NamedQuery(name = "ForeignMetadataFormatMapping.listAll", query = "SELECT fmfm FROM ForeignMetadataFormatMapping fmfm"),
+    @NamedQuery(name = "ForeignMetadataFormatMapping.findByName", query = "SELECT fmfm FROM ForeignMetadataFormatMapping fmfm WHERE fmfm.name=:name")
 })
 @Entity
-@Table(indexes = {@Index(columnList="name")})
+@Table(indexes = {@Index(columnList = "name")})
 public class ForeignMetadataFormatMapping implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -40,9 +40,9 @@ public class ForeignMetadataFormatMapping implements Serializable {
     @OneToMany(mappedBy = "foreignMetadataFormatMapping", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<ForeignMetadataFieldMapping> foreignMetadataFieldMappings;
     
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String name;
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String displayName;
     private String schemaLocation;
     private String startElement; 
@@ -80,7 +80,7 @@ public class ForeignMetadataFormatMapping implements Serializable {
     }
     
     public String getSchemaLocation() {
-        return schemaLocation ;
+        return schemaLocation;
     }
     public void setSchemaLocation(String schemaLocation) {
         this.schemaLocation = schemaLocation; 

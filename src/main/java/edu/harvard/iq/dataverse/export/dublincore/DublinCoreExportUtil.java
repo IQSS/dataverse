@@ -42,8 +42,8 @@ public class DublinCoreExportUtil {
     public static String DC_XML_NAMESPACE = "http://purl.org/dc/elements/1.1/";
     
     public static String DCTERMS_XML_NAMESPACE = "http://purl.org/dc/terms/";
-    public static String DCTERMS_DEFAULT_NAMESPACE="http://dublincore.org/documents/dcmi-terms/";
-    public static String DCTERMS_XML_SCHEMALOCATION="http://dublincore.org/schemas/xmls/qdc/dcterms.xsd";
+    public static String DCTERMS_DEFAULT_NAMESPACE = "http://dublincore.org/documents/dcmi-terms/";
+    public static String DCTERMS_XML_SCHEMALOCATION = "http://dublincore.org/schemas/xmls/qdc/dcterms.xsd";
     public static String DEFAULT_XML_VERSION = "2.0";
     
     public static String DC_FLAVOR_OAI = "dc";
@@ -79,7 +79,7 @@ public class DublinCoreExportUtil {
             xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
             xmlw.writeAttribute("xmlns:oai_dc", OAI_DC_XML_NAMESPACE);
             xmlw.writeAttribute("xmlns:dc", DC_XML_NAMESPACE);
-            xmlw.writeAttribute("xsi:schemaLocation", OAI_DC_XML_NAMESPACE+" "+OAI_DC_XML_SCHEMALOCATION);
+            xmlw.writeAttribute("xsi:schemaLocation", OAI_DC_XML_NAMESPACE + " " + OAI_DC_XML_SCHEMALOCATION);
             //writeAttribute(xmlw, "version", DEFAULT_XML_VERSION);
             createOAIDC(xmlw, datasetDto, dcFlavor);
         }
@@ -103,22 +103,22 @@ public class DublinCoreExportUtil {
         String persistentId = datasetDto.getIdentifier();
         GlobalId globalId = PidUtil.parseAsGlobalID(persistentAgency, persistentAuthority, persistentId);
   
-        writeFullElement(xmlw, dcFlavor+":"+"title", dto2Primitive(version, DatasetFieldConstant.title));                       
+        writeFullElement(xmlw, dcFlavor + ":" + "title", dto2Primitive(version, DatasetFieldConstant.title));                       
         
-        xmlw.writeStartElement(dcFlavor+":"+"identifier");
+        xmlw.writeStartElement(dcFlavor + ":" + "identifier");
         xmlw.writeCharacters(globalId.asURL());
         xmlw.writeEndElement(); // decterms:identifier       
 
         writeAuthorsElement(xmlw, version, dcFlavor);
         
-        writeFullElement(xmlw, dcFlavor+":"+"publisher", datasetDto.getPublisher());
-        writeFullElement(xmlw, dcFlavor+":"+"issued", datasetDto.getPublicationDate());
+        writeFullElement(xmlw, dcFlavor + ":" + "publisher", datasetDto.getPublisher());
+        writeFullElement(xmlw, dcFlavor + ":" + "issued", datasetDto.getPublicationDate());
         
-        writeFullElement(xmlw, dcFlavor+":"+"modified", datasetDto.getDatasetVersion().getLastUpdateTime());
+        writeFullElement(xmlw, dcFlavor + ":" + "modified", datasetDto.getDatasetVersion().getLastUpdateTime());
         writeAbstractElement(xmlw, version, dcFlavor); // Description
         writeSubjectElement(xmlw, version, dcFlavor);   //Subjects and Key Words
         
-        writeFullElementList(xmlw, dcFlavor+":"+"language", dto2PrimitiveList(version, DatasetFieldConstant.language));        
+        writeFullElementList(xmlw, dcFlavor + ":" + "language", dto2PrimitiveList(version, DatasetFieldConstant.language));        
         
         writeRelPublElement(xmlw, version, dcFlavor);
         
@@ -126,31 +126,31 @@ public class DublinCoreExportUtil {
         if (date == null) {
             date = datasetDto.getPublicationDate();
         }
-        writeFullElement(xmlw, dcFlavor+":"+"date", date);
+        writeFullElement(xmlw, dcFlavor + ":" + "date", date);
         
-        writeFullElement(xmlw, dcFlavor+":"+"contributor", dto2Primitive(version, DatasetFieldConstant.depositor));  
+        writeFullElement(xmlw, dcFlavor + ":" + "contributor", dto2Primitive(version, DatasetFieldConstant.depositor));  
         
         writeContributorElement(xmlw, version, dcFlavor);
-        writeFullElement(xmlw, dcFlavor+":"+"dateSubmitted", dto2Primitive(version, DatasetFieldConstant.dateOfDeposit));  
+        writeFullElement(xmlw, dcFlavor + ":" + "dateSubmitted", dto2Primitive(version, DatasetFieldConstant.dateOfDeposit));  
         
         writeTimeElements(xmlw, version, dcFlavor);
         
-        writeFullElementList(xmlw, dcFlavor+":"+"relation", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
+        writeFullElementList(xmlw, dcFlavor + ":" + "relation", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
         
-        writeFullElementList(xmlw, dcFlavor+":"+"type", dto2PrimitiveList(version, DatasetFieldConstant.kindOfData));
+        writeFullElementList(xmlw, dcFlavor + ":" + "type", dto2PrimitiveList(version, DatasetFieldConstant.kindOfData));
         
-        writeFullElementList(xmlw, dcFlavor+":"+"source", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
+        writeFullElementList(xmlw, dcFlavor + ":" + "source", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
         
         //Geo Elements
         writeSpatialElements(xmlw, version, dcFlavor);
         
         //License and Terms
         LicenseDTO licDTO = version.getLicense();
-        if(licDTO != null) {
-            writeFullElement(xmlw, dcFlavor+":"+"license", licDTO.getName());
+        if (licDTO != null) {
+            writeFullElement(xmlw, dcFlavor + ":" + "license", licDTO.getName());
         }
-        writeFullElement(xmlw, dcFlavor+":"+"rights", version.getTermsOfUse()); 
-        writeFullElement(xmlw, dcFlavor+":"+"rights", version.getRestrictions()); 
+        writeFullElement(xmlw, dcFlavor + ":" + "rights", version.getTermsOfUse()); 
+        writeFullElement(xmlw, dcFlavor + ":" + "rights", version.getRestrictions()); 
 
     }
     
@@ -161,36 +161,36 @@ public class DublinCoreExportUtil {
         String persistentId = datasetDto.getIdentifier();
         GlobalId globalId = PidUtil.parseAsGlobalID(persistentAgency, persistentAuthority, persistentId);
   
-        writeFullElement(xmlw, dcFlavor+":"+"title", dto2Primitive(version, DatasetFieldConstant.title));                       
+        writeFullElement(xmlw, dcFlavor + ":" + "title", dto2Primitive(version, DatasetFieldConstant.title));                       
         
-        xmlw.writeStartElement(dcFlavor+":"+"identifier");
+        xmlw.writeStartElement(dcFlavor + ":" + "identifier");
         xmlw.writeCharacters(globalId.asURL());
         xmlw.writeEndElement(); // decterms:identifier       
 
         writeAuthorsElement(xmlw, version, dcFlavor); //creator
         
-        writeFullElement(xmlw, dcFlavor+":"+"publisher", datasetDto.getPublisher());
+        writeFullElement(xmlw, dcFlavor + ":" + "publisher", datasetDto.getPublisher());
         
         writeAbstractElement(xmlw, version, dcFlavor); // Description
         writeSubjectElement(xmlw, version, dcFlavor);   //Subjects and Key Words
         
-        writeFullElementList(xmlw, dcFlavor+":"+"language", dto2PrimitiveList(version, DatasetFieldConstant.language));        
+        writeFullElementList(xmlw, dcFlavor + ":" + "language", dto2PrimitiveList(version, DatasetFieldConstant.language));        
         
         String date = dto2Primitive(version, DatasetFieldConstant.productionDate);
         if (date == null) {
             date = datasetDto.getPublicationDate();
         }
-        writeFullElement(xmlw, dcFlavor+":"+"date", date);  
+        writeFullElement(xmlw, dcFlavor + ":" + "date", date);  
         
-        writeFullElement(xmlw, dcFlavor+":"+"contributor", dto2Primitive(version, DatasetFieldConstant.depositor));  
+        writeFullElement(xmlw, dcFlavor + ":" + "contributor", dto2Primitive(version, DatasetFieldConstant.depositor));  
         
         writeContributorElement(xmlw, version, dcFlavor);
         
-        writeFullElementList(xmlw, dcFlavor+":"+"relation", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
+        writeFullElementList(xmlw, dcFlavor + ":" + "relation", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
         
-        writeFullElementList(xmlw, dcFlavor+":"+"type", dto2PrimitiveList(version, DatasetFieldConstant.kindOfData));
+        writeFullElementList(xmlw, dcFlavor + ":" + "type", dto2PrimitiveList(version, DatasetFieldConstant.kindOfData));
         
-        writeFullElementList(xmlw, dcFlavor+":"+"source", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
+        writeFullElementList(xmlw, dcFlavor + ":" + "source", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
         
 
     }
@@ -205,14 +205,14 @@ public class DublinCoreExportUtil {
                     if (DatasetFieldConstant.author.equals(fieldDTO.getTypeName())) {
                         String authorName = "";
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.authorName.equals(next.getTypeName())) {
                                     authorName = next.getSinglePrimitive();
                                 }
                             }
                             if (!authorName.isEmpty()) {
-                                xmlw.writeStartElement(dcFlavor+":"+"creator");
+                                xmlw.writeStartElement(dcFlavor + ":" + "creator");
                                 xmlw.writeCharacters(authorName);
                                 xmlw.writeEndElement(); //AuthEnty
                             }
@@ -232,14 +232,14 @@ public class DublinCoreExportUtil {
                     if (DatasetFieldConstant.description.equals(fieldDTO.getTypeName())) {
                         String descriptionText = "";
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.descriptionText.equals(next.getTypeName())) {
-                                    descriptionText =  next.getSinglePrimitive();
+                                    descriptionText = next.getSinglePrimitive();
                                 }
                             }
-                            if (!descriptionText.isEmpty()){
-                                xmlw.writeStartElement(dcFlavor+":"+"description");  
+                            if (!descriptionText.isEmpty()) {
+                                xmlw.writeStartElement(dcFlavor + ":" + "description");  
                                 xmlw.writeCharacters(descriptionText);
                                 xmlw.writeEndElement(); //abstract
                             }
@@ -250,7 +250,7 @@ public class DublinCoreExportUtil {
         }
     }
     
-    private static void writeSubjectElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String dcFlavor) throws XMLStreamException{ 
+    private static void writeSubjectElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String dcFlavor) throws XMLStreamException { 
         
         //Key Words and Subject
       
@@ -259,9 +259,9 @@ public class DublinCoreExportUtil {
             MetadataBlockDTO value = entry.getValue();
             if ("citation".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
-                    if (DatasetFieldConstant.subject.equals(fieldDTO.getTypeName())){
-                        for ( String subject : fieldDTO.getMultipleVocab()){
-                            xmlw.writeStartElement(dcFlavor+":"+"subject");
+                    if (DatasetFieldConstant.subject.equals(fieldDTO.getTypeName())) {
+                        for (String subject : fieldDTO.getMultipleVocab()) {
+                            xmlw.writeStartElement(dcFlavor + ":" + "subject");
                             xmlw.writeCharacters(subject);
                             xmlw.writeEndElement(); //Keyword
                         }
@@ -270,14 +270,14 @@ public class DublinCoreExportUtil {
                     if (DatasetFieldConstant.keyword.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String keywordValue = "";
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.keywordValue.equals(next.getTypeName())) {
-                                    keywordValue =  next.getSinglePrimitive();
+                                    keywordValue = next.getSinglePrimitive();
                                 }
                             }
-                            if (!keywordValue.isEmpty()){
-                                xmlw.writeStartElement(dcFlavor+":"+"subject"); 
+                            if (!keywordValue.isEmpty()) {
+                                xmlw.writeStartElement(dcFlavor + ":" + "subject"); 
                                 xmlw.writeCharacters(keywordValue);
                                 xmlw.writeEndElement(); //Keyword
                             }
@@ -301,26 +301,26 @@ public class DublinCoreExportUtil {
                             String IDType = "";
                             String IDNo = "";
                             String url = "";
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.publicationCitation.equals(next.getTypeName())) {
-                                    citation =  next.getSinglePrimitive();
+                                    citation = next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.publicationIDType.equals(next.getTypeName())) {
-                                    IDType =  next.getSinglePrimitive();
+                                    IDType = next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.publicationIDNumber.equals(next.getTypeName())) {
-                                    IDNo =   next.getSinglePrimitive();
+                                    IDNo = next.getSinglePrimitive();
                                 }
                                 if (DatasetFieldConstant.publicationURL.equals(next.getTypeName())) {
-                                    url =  next.getSinglePrimitive();
+                                    url = next.getSinglePrimitive();
                                 }
                             }
                             pubString = appendCommaSeparatedValue(citation, IDType);
                             pubString = appendCommaSeparatedValue(pubString, IDNo);
                             pubString = appendCommaSeparatedValue(pubString, url);
-                            if (!pubString.isEmpty()){
-                                xmlw.writeStartElement(dcFlavor+":"+"isReferencedBy"); 
+                            if (!pubString.isEmpty()) {
+                                xmlw.writeStartElement(dcFlavor + ":" + "isReferencedBy"); 
                                 xmlw.writeCharacters(pubString);
                                 xmlw.writeEndElement(); //relPubl
                             }
@@ -340,14 +340,14 @@ public class DublinCoreExportUtil {
                     if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
                         String contributorName = "";
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.contributorName.equals(next.getTypeName())) {
-                                    contributorName =  next.getSinglePrimitive();
+                                    contributorName = next.getSinglePrimitive();
                                 }
                             }
-                            if (!contributorName.isEmpty()){
-                                xmlw.writeStartElement(dcFlavor+":"+"contributor");  
+                            if (!contributorName.isEmpty()) {
+                                xmlw.writeStartElement(dcFlavor + ":" + "contributor");  
                                 xmlw.writeCharacters(contributorName);
                                 xmlw.writeEndElement(); //abstract
                             }
@@ -368,7 +368,7 @@ public class DublinCoreExportUtil {
                         String dateValStart = "";
                         String dateValEnd = "";
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.timePeriodCoveredStart.equals(next.getTypeName())) {
                                     dateValStart = next.getSinglePrimitive();
@@ -378,10 +378,10 @@ public class DublinCoreExportUtil {
                                 }
                             }
                             if (!dateValStart.isEmpty()) {
-                                writeFullElement(xmlw, dcFlavor+":"+"temporal", dateValStart); 
+                                writeFullElement(xmlw, dcFlavor + ":" + "temporal", dateValStart); 
                             }
                             if (!dateValEnd.isEmpty()) {
-                                writeFullElement(xmlw, dcFlavor+":"+"temporal", dateValEnd); 
+                                writeFullElement(xmlw, dcFlavor + ":" + "temporal", dateValEnd); 
                             }
                         }
                     }
@@ -389,7 +389,7 @@ public class DublinCoreExportUtil {
                         String dateValStart = "";
                         String dateValEnd = "";
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.dateOfCollectionStart.equals(next.getTypeName())) {
                                     dateValStart = next.getSinglePrimitive();
@@ -399,10 +399,10 @@ public class DublinCoreExportUtil {
                                 }
                             }
                             if (!dateValStart.isEmpty()) {
-                               writeFullElement(xmlw, dcFlavor+":"+"temporal", dateValStart); 
+                               writeFullElement(xmlw, dcFlavor + ":" + "temporal", dateValStart); 
                             }
                             if (!dateValEnd.isEmpty()) {
-                                writeFullElement(xmlw, dcFlavor+":"+"temporal", dateValEnd); 
+                                writeFullElement(xmlw, dcFlavor + ":" + "temporal", dateValEnd); 
                             }
                         }
                     }
@@ -415,23 +415,23 @@ public class DublinCoreExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if("geospatial".equals(key)){                
+            if ("geospatial".equals(key)) {                
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.geographicCoverage.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.country.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, dcFlavor+":"+"spatial", next.getSinglePrimitive());
+                                    writeFullElement(xmlw, dcFlavor + ":" + "spatial", next.getSinglePrimitive());
                                 }
                                 if (DatasetFieldConstant.city.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, dcFlavor+":"+"spatial", next.getSinglePrimitive());
+                                    writeFullElement(xmlw, dcFlavor + ":" + "spatial", next.getSinglePrimitive());
                                 }
                                 if (DatasetFieldConstant.state.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, dcFlavor+":"+"spatial", next.getSinglePrimitive());
+                                    writeFullElement(xmlw, dcFlavor + ":" + "spatial", next.getSinglePrimitive());
                                 } 
                                 if (DatasetFieldConstant.otherGeographicCoverage.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, dcFlavor+":"+"spatial", next.getSinglePrimitive());
+                                    writeFullElement(xmlw, dcFlavor + ":" + "spatial", next.getSinglePrimitive());
                                 } 
                             }
                         }
@@ -489,7 +489,7 @@ public class DublinCoreExportUtil {
     }
     
     
-    private static void writeFullElement (XMLStreamWriter xmlw, String name, String value) throws XMLStreamException {
+    private static void writeFullElement(XMLStreamWriter xmlw, String name, String value) throws XMLStreamException {
         //For the simplest Elements we can 
         if (!StringUtilisEmpty(value)) {
             xmlw.writeStartElement(name);

@@ -20,17 +20,17 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
      * authenticateduser table.
      */
     public AuthenticatedUserDisplayInfo(String firstName, String lastName, String emailAddress, String affiliation, String position) {
-        super(firstName + " " + lastName,emailAddress,affiliation);
+        super(firstName + " " + lastName, emailAddress, affiliation);
         this.firstName = firstName;
         this.lastName = lastName;
         this.position = position;        
     }
 
     public AuthenticatedUserDisplayInfo() {
-        super("","","");
-        firstName="";
-        lastName="";
-        position="";
+        super("", "", "");
+        firstName = "";
+        lastName = "";
+        position = "";
     }
 
     
@@ -38,8 +38,8 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
      * Copy constructor (old school!)
      * @param src the display info {@code this} will be a copy of.
      */
-    public AuthenticatedUserDisplayInfo( AuthenticatedUserDisplayInfo src ) {
-        this( src.getFirstName(), src.getLastName(), src.getEmailAddress(), src.getAffiliation(), src.getPosition());
+    public AuthenticatedUserDisplayInfo(AuthenticatedUserDisplayInfo src) {
+        this(src.getFirstName(), src.getLastName(), src.getEmailAddress(), src.getAffiliation(), src.getPosition());
     }
     
     public String getLastName() {

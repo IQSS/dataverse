@@ -26,15 +26,15 @@ public class MockResponse extends Response {
     
     private final int status;
     private final Object entity;
-    private final MultivaluedMap<String,Object> headers = new MultivaluedHashMap<>();
+    private final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
     
-    public MockResponse( int aStatus, Object anEntity ) {
+    public MockResponse(int aStatus, Object anEntity) {
         status = aStatus;
         entity = anEntity;
     }
     
-    public MockResponse( int aStatus ){
-        this( aStatus, null );
+    public MockResponse(int aStatus) {
+        this(aStatus, null);
     }
     
     @Override
@@ -54,27 +54,27 @@ public class MockResponse extends Response {
 
     @Override
     public <T> T readEntity(Class<T> entityType) {
-        return (T)entity;
+        return (T) entity;
     }
 
     @Override
     public <T> T readEntity(GenericType<T> entityType) {
-        return (T)entity;
+        return (T) entity;
     }
 
     @Override
     public <T> T readEntity(Class<T> entityType, Annotation[] annotations) {
-        return (T)entity;
+        return (T) entity;
     }
 
     @Override
     public <T> T readEntity(GenericType<T> entityType, Annotation[] annotations) {
-        return (T)entity;
+        return (T) entity;
     }
 
     @Override
     public boolean hasEntity() {
-        return (entity!=null);
+        return (entity != null);
     }
 
     @Override
@@ -158,7 +158,7 @@ public class MockResponse extends Response {
 
     @Override
     public MultivaluedMap<String, String> getStringHeaders() {
-        MultivaluedMap<String,String> retVal = new MultivaluedHashMap<>();
+        MultivaluedMap<String, String> retVal = new MultivaluedHashMap<>();
         headers.entrySet().forEach(e -> {
             retVal.put(e.getKey(), e.getValue().stream().map(Object::toString).collect(toList()));
         });

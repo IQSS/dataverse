@@ -59,7 +59,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
             return em.createNamedQuery("HarvestingClient.findByNickname", HarvestingClient.class)
 					.setParameter("nickName", nickName.toLowerCase())
 					.getSingleResult();
-        } catch ( NoResultException|NonUniqueResultException ex ) {
+        } catch (NoResultException | NonUniqueResultException ex) {
             logger.fine("Unable to find a single harvesting client by nickname \"" + nickName + "\": " + ex);
             return null;
         }
@@ -69,7 +69,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         try {
             return em.createQuery("SELECT object(c) FROM HarvestingClient AS c WHERE c.harvestType='oai' ORDER BY c.name", HarvestingClient.class).getResultList();
         } catch (Exception ex) {
-            logger.warning("Unknown exception caught while looking up configured Harvesting Clients: "+ex.getMessage());
+            logger.warning("Unknown exception caught while looking up configured Harvesting Clients: " + ex.getMessage());
         }
         return null; 
     }
@@ -210,11 +210,11 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     
     public Long getNumberOfHarvestedDatasetByClients(List<HarvestingClient> clients) {
         String clientIds = null; 
-        for (HarvestingClient client: clients) {
+        for (HarvestingClient client : clients) {
             if (clientIds == null) {
                 clientIds = client.getId().toString();
             } else {
-                clientIds = clientIds.concat(","+client.getId().toString());
+                clientIds = clientIds.concat("," + client.getId().toString());
             }
         }
         

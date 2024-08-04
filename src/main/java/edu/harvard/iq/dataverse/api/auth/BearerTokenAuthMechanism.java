@@ -78,7 +78,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
                     .map(providerId -> (OIDCAuthProvider) authSvc.getAuthenticationProvider(providerId))
                     .collect(Collectors.toUnmodifiableList());
             // If not OIDC Provider are configured we cannot validate a Token
-            if(providers.isEmpty()){
+            if (providers.isEmpty()) {
                 logger.log(Level.WARNING, "Bearer token detected, no OIDC provider configured");
                 throw new WrappedAuthErrorResponse(BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED);
             }
@@ -88,7 +88,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
                 try {
                     // The OIDCAuthProvider need to verify a Bearer Token and equip the client means to identify the corresponding AuthenticatedUser.
                     Optional<UserRecordIdentifier> userInfo = provider.getUserIdentifier(accessToken);
-                    if(userInfo.isPresent()) {
+                    if (userInfo.isPresent()) {
                         logger.log(Level.FINE, "Bearer token detected, provider {0} confirmed validity and provided identifier", provider.getId());
                         return userInfo.get();
                     }

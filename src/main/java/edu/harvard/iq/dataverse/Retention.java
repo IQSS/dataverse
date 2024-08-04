@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Objects;
 
 @NamedQueries({
-        @NamedQuery( name="Retention.findAll",
+        @NamedQuery(name = "Retention.findAll",
                 query = "SELECT r FROM Retention r"),
-        @NamedQuery( name="Retention.findById",
+        @NamedQuery(name = "Retention.findById",
                 query = "SELECT r FROM Retention r WHERE r.id=:id"),
-        @NamedQuery( name="Retention.findByDateUnavailable",
+        @NamedQuery(name = "Retention.findByDateUnavailable",
                 query = "SELECT r FROM Retention r WHERE r.dateUnavailable=:dateUnavailable"),
-        @NamedQuery( name="Retention.deleteById",
+        @NamedQuery(name = "Retention.deleteById",
                 query = "DELETE FROM Retention r WHERE r.id=:id")
 })
 @Entity
@@ -27,13 +27,13 @@ public class Retention {
     @Column(nullable = false)
     private LocalDate dateUnavailable;
 
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String reason;
 
-    @OneToMany(mappedBy="retention", cascade={ CascadeType.REMOVE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "retention", cascade = {CascadeType.REMOVE, CascadeType.PERSIST})
     private List<DataFile> dataFiles;
 
-    public Retention(){
+    public Retention() {
         dateUnavailable = LocalDate.now().plusYears(1000); // Most likely valid with respect to configuration
     }
 

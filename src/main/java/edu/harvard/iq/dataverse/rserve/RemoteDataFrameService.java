@@ -114,7 +114,7 @@ public class RemoteDataFrameService {
 
     }
     
-    public Map<String, String> directConvert(File originalFile, String fmt){
+    public Map<String, String> directConvert(File originalFile, String fmt) {
         
         Map<String, String> result = new HashMap<>();
         try {
@@ -135,17 +135,17 @@ public class RemoteDataFrameService {
             // data file to be copied back to the dvn
             String dsnprfx = RSERVE_TMP_DIR + "/" + dataFileName;
             
-            String command = "direct_export(file='"+tempFileNameIn+"'," +
+            String command = "direct_export(file='" + tempFileNameIn + "'," +
                              "fmt='" + fmt + "'" + ", dsnprfx='" + dsnprfx + "')";
                         
             connection.voidEval(command);
             
             int wbFileSize = getFileSize(connection, dsnprfx);
-            File localDataFrameFile = transferRemoteFile(connection, dsnprfx, RWRKSP_FILE_PREFIX,"RData", wbFileSize);
+            File localDataFrameFile = transferRemoteFile(connection, dsnprfx, RWRKSP_FILE_PREFIX, "RData", wbFileSize);
             
-            if (localDataFrameFile != null){
-                logger.fine("data frame file name: "+localDataFrameFile.getAbsolutePath());
-                result.put("dataFrameFileName",localDataFrameFile.getAbsolutePath());
+            if (localDataFrameFile != null) {
+                logger.fine("data frame file name: " + localDataFrameFile.getAbsolutePath());
+                result.put("dataFrameFileName", localDataFrameFile.getAbsolutePath());
             } else {
                 logger.fine("data frame file is null!");
                 // throw an exception??
@@ -153,9 +153,9 @@ public class RemoteDataFrameService {
             
             result.put("Rversion", connection.eval("R.Version()$version.string").asString());
             
-            logger.fine("result object (before closing the Rserve):\n"+result);
+            logger.fine("result object (before closing the Rserve):\n" + result);
             
-            String deleteLine = "file.remove('"+tempFileNameIn+"')";
+            String deleteLine = "file.remove('" + tempFileNameIn + "')";
             connection.eval(deleteLine);
  
             connection.close();
@@ -194,13 +194,13 @@ public class RemoteDataFrameService {
             copyWithBuffer(inFile, rOutFile, 1024);
             
             // Rserve code starts here
-            logger.fine("wrkdir="+RSERVE_TMP_DIR);
+            logger.fine("wrkdir=" + RSERVE_TMP_DIR);
                         
             // We need to initialize our R session:
             // send custom R code library over to the Rserve and load the code:
             String rscript = readLocalResource(DATAVERSE_R_FUNCTIONS);
             connection.voidEval(rscript);
-            logger.fine("raw variable type="+Arrays.toString(jobRequest.getVariableTypes()));
+            logger.fine("raw variable type=" + Arrays.toString(jobRequest.getVariableTypes()));
             connection.assign("vartyp", new REXPInteger(jobRequest.getVariableTypes()));
         
             // variable *formats* - not to be confused with variable *types*!
@@ -209,19 +209,19 @@ public class RemoteDataFrameService {
             
             Map<String, String> varFormat = jobRequest.getVariableFormats();
             
-            logger.fine("tmpFmt="+varFormat);
+            logger.fine("tmpFmt=" + varFormat);
             
             // In the fragment below we create an R list varFrmt storing 
             // these format specifications: 
             
-            if (varFormat != null){
+            if (varFormat != null) {
                 String[] formatKeys = varFormat.keySet().toArray(new String[varFormat.size()]);
                 String[] formatValues = getValueSet(varFormat, formatKeys);
                 connection.assign("tmpfk", new REXPString(formatKeys));
                 connection.assign("tmpfv", new REXPString(formatValues));
                 String fmtNamesLine = "names(tmpfv)<- tmpfk";
                 connection.voidEval(fmtNamesLine);
-                String fmtValuesLine ="varFmt<- as.list(tmpfv)";
+                String fmtValuesLine = "varFmt<- as.list(tmpfv)";
                 connection.voidEval(fmtValuesLine);
             } else {
                 connection.assign("varFmt", new REXPList(new RList(new ArrayList<>(),
@@ -232,10 +232,10 @@ public class RemoteDataFrameService {
             String [] jvnamesRaw = jobRequest.getVariableNames();
             String [] jvnames;
             
-            if (jobRequest.hasUnsafeVariableNames){
+            if (jobRequest.hasUnsafeVariableNames) {
                 // create  list
-                jvnames =  jobRequest.safeVarNames;
-                logger.fine("renamed="+StringUtils.join(jvnames,","));
+                jvnames = jobRequest.safeVarNames;
+                logger.fine("renamed=" + StringUtils.join(jvnames, ","));
             } else {
                 jvnames = jvnamesRaw;
             }
@@ -245,7 +245,7 @@ public class RemoteDataFrameService {
             // confirm:
             
             String [] tmpjvnames = connection.eval("vnames").asStrings();
-            logger.fine("vnames:"+ StringUtils.join(tmpjvnames, ","));
+            logger.fine("vnames:" + StringUtils.join(tmpjvnames, ","));
             
            
             // read.dataverseTabData method, from dataverse_r_functions.R, 
@@ -267,16 +267,16 @@ public class RemoteDataFrameService {
             logger.fine("colClassesx = " + Arrays.deepToString((new REXPInteger(jobRequest.getVariableTypes())).asStrings()));
             logger.fine("varFormat = " + Arrays.deepToString((new REXPString(getValueSet(varFormat, varFormat.keySet().toArray(new String[varFormat.keySet().size()])))).asStrings()));
             
-            String readtableline = "x<-read.dataverseTabData(file='"+tempFileNameIn+
+            String readtableline = "x<-read.dataverseTabData(file='" + tempFileNameIn +
                 "', col.names=vnames, colClassesx=vartyp, varFormat=varFmt )";
-            logger.fine("readtable="+readtableline);
+            logger.fine("readtable=" + readtableline);
 
             connection.voidEval(readtableline);
         
-            if (jobRequest.hasUnsafeVariableNames){
+            if (jobRequest.hasUnsafeVariableNames) {
                 logger.fine("unsafeVariableNames exist");
                 jvnames = jobRequest.safeVarNames;
-                String[] rawNameSet  = jobRequest.renamedVariableArray;
+                String[] rawNameSet = jobRequest.renamedVariableArray;
                 String[] safeNameSet = jobRequest.renamedResultArray;
                 
                 connection.assign("tmpRN", new REXPString(rawNameSet));
@@ -296,7 +296,7 @@ public class RemoteDataFrameService {
             // Why are we doing it here? And not in the dataverse_r_functions.R 
             // fragment? 
             
-            String asIsline  = "for (i in 1:dim(x)[2]){ "+
+            String asIsline = "for (i in 1:dim(x)[2]){ " +
                 "if (attr(x,'var.type')[i] == 0) {" +
                 "x[[i]]<-I(x[[i]]);  x[[i]][ x[[i]] == '' ]<-NA  }}";
             connection.voidEval(asIsline);
@@ -310,7 +310,7 @@ public class RemoteDataFrameService {
             
             // Confirm:
             String [] vlbl = connection.eval("attr(x, 'var.labels')").asStrings();
-            logger.fine("varlabels="+StringUtils.join(vlbl, ","));
+            logger.fine("varlabels=" + StringUtils.join(vlbl, ","));
         
             // create the VALTABLE and VALORDER lists:
             connection.voidEval("VALTABLE<-list()");
@@ -375,10 +375,10 @@ public class RemoteDataFrameService {
                     List<String> orderList = orderedCategoryValues.get(varId);
                     if (orderList != null) {
                         String[] ordv = (String[]) orderList.toArray(new String[orderList.size()]);
-                        logger.fine("ordv="+ StringUtils.join(ordv,","));
+                        logger.fine("ordv=" + StringUtils.join(ordv, ","));
                         connection.assign("ordv", new REXPString(ordv));
-                        String sbvl = "VALORDER[['"+ Integer.toString(j + 1)+"']]" + "<- as.list(ordv)";
-                        logger.fine("VALORDER[...]="+sbvl);
+                        String sbvl = "VALORDER[['" + Integer.toString(j + 1) + "']]" + "<- as.list(ordv)";
+                        logger.fine("VALORDER[...]=" + sbvl);
                         connection.voidEval(sbvl);
                     } else {
                         logger.fine("NULL orderedCategoryValues list.");
@@ -450,15 +450,15 @@ public class RemoteDataFrameService {
             // data file to be copied back to the dvn
             String dsnprfx = RSERVE_TMP_DIR + "/" + dataFileName;
             
-            String dataverseDataFrameCommand = "createDataverseDataFrame(dtfrm=x,"+
-                "dwnldoptn='"+jobRequest.getFormatRequested()+"'"+
-                ", dsnprfx='"+dsnprfx+"')";
+            String dataverseDataFrameCommand = "createDataverseDataFrame(dtfrm=x," +
+                "dwnldoptn='" + jobRequest.getFormatRequested() + "'" +
+                ", dsnprfx='" + dsnprfx + "')";
                         
             connection.voidEval(dataverseDataFrameCommand);
             
-            int wbFileSize = getFileSize(connection,dsnprfx);
+            int wbFileSize = getFileSize(connection, dsnprfx);
             
-            logger.fine("wbFileSize="+wbFileSize);
+            logger.fine("wbFileSize=" + wbFileSize);
             
             result.putAll(buildResult(connection, dsnprfx, wbFileSize, result));
         } catch (Exception e) {
@@ -474,11 +474,11 @@ public class RemoteDataFrameService {
         // If the above succeeded, the dataframe has been saved on the
         // Rserve side as an .Rdata file. Now we can transfer it back to the
         // dataverse side:
-        File localDataFrameFile = transferRemoteFile(connection, dsnprfx, RWRKSP_FILE_PREFIX,"RData", wbFileSize);
+        File localDataFrameFile = transferRemoteFile(connection, dsnprfx, RWRKSP_FILE_PREFIX, "RData", wbFileSize);
         
-        if (localDataFrameFile != null){
-            logger.fine("data frame file name: "+localDataFrameFile.getAbsolutePath());
-            result.put("dataFrameFileName",localDataFrameFile.getAbsolutePath());
+        if (localDataFrameFile != null) {
+            logger.fine("data frame file name: " + localDataFrameFile.getAbsolutePath());
+            result.put("dataFrameFileName", localDataFrameFile.getAbsolutePath());
         } else {
             logger.warning("data frame file is null!");
             // throw an exception??
@@ -486,9 +486,9 @@ public class RemoteDataFrameService {
         
         result.put("Rversion", connection.eval("R.Version()$version.string").asString());
         
-        logger.fine("result object (before closing the Rserve):\n"+result);
+        logger.fine("result object (before closing the Rserve):\n" + result);
         
-        String deleteLine = "file.remove('"+tempFileNameIn+"')";
+        String deleteLine = "file.remove('" + tempFileNameIn + "')";
         connection.eval(deleteLine);
         connection.close();
         return result;
@@ -496,10 +496,10 @@ public class RemoteDataFrameService {
 
     private RConnection setupConnection() throws REXPMismatchException, RserveException {
         // Set up an Rserve connection
-        logger.fine("RSERVE_USER="+RSERVE_USER+"[default=rserve]");
-        logger.fine("RSERVE_PASSWORD="+RSERVE_PWD+"[default=rserve]");
-        logger.fine("RSERVE_PORT="+RSERVE_PORT+"[default=6311]");
-        logger.fine("RSERVE_HOST="+RSERVE_HOST);
+        logger.fine("RSERVE_USER=" + RSERVE_USER + "[default=rserve]");
+        logger.fine("RSERVE_PASSWORD=" + RSERVE_PWD + "[default=rserve]");
+        logger.fine("RSERVE_PORT=" + RSERVE_PORT + "[default=6311]");
+        logger.fine("RSERVE_HOST=" + RSERVE_HOST);
         RConnection connection = new RConnection(RSERVE_HOST, RSERVE_PORT);
         connection.login(RSERVE_USER, RSERVE_PWD);
         logger.fine(">" + connection.eval("R.version$version.string").asString() + "<");
@@ -572,41 +572,41 @@ public class RemoteDataFrameService {
                 rOutStream.write(accessObject.getVarHeader().getBytes());
             }
 
-            copyWithBuffer(is, rOutStream, 4*8192); 
+            copyWithBuffer(is, rOutStream, 4 * 8192); 
             
             // Rserve code starts here
-            logger.fine("wrkdir="+RSERVE_TMP_DIR);
+            logger.fine("wrkdir=" + RSERVE_TMP_DIR);
             
             // Locate the R code and run it on the temp file we've just 
             // created: 
             
             connection.voidEval("library(rjson)");
             String rscript = readLocalResource(DATAVERSE_R_PREPROCESSING);
-            logger.fine("preprocessing R code: "+rscript.substring(0,64));
+            logger.fine("preprocessing R code: " + rscript.substring(0, 64));
             connection.voidEval(rscript);
             
-            String runPreprocessing = "json<-preprocess(filename=\""+ tempFileNameIn +"\")";
-            logger.fine("data preprocessing command: "+runPreprocessing);
+            String runPreprocessing = "json<-preprocess(filename=\"" + tempFileNameIn + "\")";
+            logger.fine("data preprocessing command: " + runPreprocessing);
             connection.voidEval(runPreprocessing);
                         
             // Save the output in a temp file: 
             
-            String saveResult = "write(json, file='"+ tempFileNameOut +"')";
-            logger.fine("data preprocessing save command: "+saveResult);
+            String saveResult = "write(json, file='" + tempFileNameOut + "')";
+            logger.fine("data preprocessing save command: " + saveResult);
             connection.voidEval(saveResult);
             
             // Finally, transfer the saved file back on the application side:
             
-            int fileSize = getFileSize(connection,tempFileNameOut);
+            int fileSize = getFileSize(connection, tempFileNameOut);
             preprocessedDataFile = transferRemoteFile(connection, tempFileNameOut, PREPROCESS_FILE_PREFIX, "json", fileSize);
             
-            String deleteLine = "file.remove('"+tempFileNameOut+"')";
+            String deleteLine = "file.remove('" + tempFileNameOut + "')";
             connection.eval(deleteLine);
             
             connection.close();
-        } catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
-            return null ;
+            return null;
         }
 
             
@@ -634,7 +634,7 @@ public class RemoteDataFrameService {
      */
     public static String[] getValueSet(Map<String, String> map, String[] keys) {
         String[] result = new String[keys.length];
-        for (int i = 0; i<keys.length; i++){
+        for (int i = 0; i < keys.length; i++) {
             result[i] = map.get(keys[i]);
         }
         return result;
@@ -646,7 +646,7 @@ public class RemoteDataFrameService {
      * (TODO: may not need to be a separate method -- something for the final cleanup ?
      * -- L.A. 4.0 alpha 1)
      */
-    public Map<String, String> runDataFrameRequest(RJobRequest jobRequest, RConnection connection){
+    public Map<String, String> runDataFrameRequest(RJobRequest jobRequest, RConnection connection) {
             
         Map<String, String> sr = new HashMap<>();
                 
@@ -656,15 +656,15 @@ public class RemoteDataFrameService {
             // data file to be copied back to the dvn
             String dsnprfx = RSERVE_TMP_DIR + "/" + dataFileName;
             
-            String dataverseDataFrameCommand = "createDataverseDataFrame(dtfrm=x,"+
-                "dwnldoptn='"+jobRequest.getFormatRequested()+"'"+
-                ", dsnprfx='"+dsnprfx+"')";
+            String dataverseDataFrameCommand = "createDataverseDataFrame(dtfrm=x," +
+                "dwnldoptn='" + jobRequest.getFormatRequested() + "'" +
+                ", dsnprfx='" + dsnprfx + "')";
                         
             connection.voidEval(dataverseDataFrameCommand);
             
-            int wbFileSize = getFileSize(connection,dsnprfx);
+            int wbFileSize = getFileSize(connection, dsnprfx);
             
-            logger.fine("wbFileSize="+wbFileSize);
+            logger.fine("wbFileSize=" + wbFileSize);
             
         } catch (RserveException rse) {
             rse.printStackTrace();
@@ -685,7 +685,7 @@ public class RemoteDataFrameService {
         RFileInputStream rInStream = null;
         OutputStream outbr = null;
         try {
-            tmpResultFile = File.createTempFile(tmpFilePrefix + PID, "."+tmpFileExt);
+            tmpResultFile = File.createTempFile(tmpFilePrefix + PID, "." + tmpFileExt);
             outbr = new BufferedOutputStream(new FileOutputStream(tmpResultFile));
             // open the input stream
             rInStream = connection.openFile(targetFilename);
@@ -726,7 +726,7 @@ public class RemoteDataFrameService {
         // delete remote file: 
         
         try {
-            String deleteLine = "file.remove('"+targetFilename+"')";
+            String deleteLine = "file.remove('" + targetFilename + "')";
             connection.eval(deleteLine);
         } catch (Exception ex) {
             // do nothing.
@@ -736,11 +736,11 @@ public class RemoteDataFrameService {
     }
     
    
-    public int getFileSize(RConnection connection, String targetFilename){
-        logger.fine("targetFilename="+targetFilename);
+    public int getFileSize(RConnection connection, String targetFilename) {
+        logger.fine("targetFilename=" + targetFilename);
         int fileSize = 0;
         try {
-            String fileSizeLine = "round(file.info('"+targetFilename+"')$size)";
+            String fileSizeLine = "round(file.info('" + targetFilename + "')$size)";
             fileSize = connection.eval(fileSizeLine).asInteger();
         } catch (RserveException | REXPMismatchException ex) {
             ex.printStackTrace();

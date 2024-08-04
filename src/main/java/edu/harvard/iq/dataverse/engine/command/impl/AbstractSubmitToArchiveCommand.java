@@ -32,7 +32,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
 
     private final DatasetVersion version;
     private final Map<String, String> requestedSettings = new HashMap<String, String>();
-    protected boolean success=false;
+    protected boolean success = false;
     private static final Logger logger = Logger.getLogger(AbstractSubmitToArchiveCommand.class.getName());
     private static final int MAX_ZIP_WAIT = 20000;
     private static final int DEFAULT_THREADS = 2;
@@ -94,7 +94,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     @Override
     public String describe() {
         return super.describe() + "DatasetVersion: [" + version.getId() + " (v"
-                + version.getFriendlyVersionNumber()+")]";
+                + version.getFriendlyVersionNumber() + ")]";
     }
     
     String getDataCiteXml(DatasetVersion dv) {
@@ -164,7 +164,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
             i++;
         }
         logger.fine("Bag: transfer started, i=" + i + ", avail = " + digestInputStream2.available());
-        if(i==MAX_ZIP_WAIT) {
+        if (i == MAX_ZIP_WAIT) {
             throw new IOException("Stream not available");
         }
         return bagThread;

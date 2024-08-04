@@ -22,8 +22,8 @@ import jakarta.persistence.OrderColumn;
  * @author michael
  */
 @NamedQueries({
-    @NamedQuery(name="Workflow.listAll", query="Select w from Workflow w"),
-    @NamedQuery(name="Workflow.deleteById", query="Delete from Workflow w WHERE w.id=:id")
+    @NamedQuery(name = "Workflow.listAll", query = "Select w from Workflow w"),
+    @NamedQuery(name = "Workflow.deleteById", query = "Delete from Workflow w WHERE w.id=:id")
 })
 @Entity
 public class Workflow implements Serializable {
@@ -60,14 +60,14 @@ public class Workflow implements Serializable {
 
     public void setSteps(List<WorkflowStepData> steps) {
         this.steps = steps;
-        for ( WorkflowStepData s : steps ) {
+        for (WorkflowStepData s : steps) {
             s.setParent(this);
         }
     }
 
     Map<String, String> getRequiredSettings() {
         Map<String, String> settings = new HashMap<String, String>();
-        for(WorkflowStepData step: steps) {
+        for (WorkflowStepData step : steps) {
             settings.putAll(step.getStepSettings());
         }
         return settings;
@@ -88,7 +88,7 @@ public class Workflow implements Serializable {
         if (obj == null) {
             return false;
         }
-        if ( !(obj instanceof Workflow) ) {
+        if (!(obj instanceof Workflow)) {
             return false;
         }
         final Workflow other = (Workflow) obj;

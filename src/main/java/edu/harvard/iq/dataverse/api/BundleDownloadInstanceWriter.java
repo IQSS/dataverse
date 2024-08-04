@@ -147,11 +147,11 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                         } catch (IOException ioex) {
                             // ignore; if for whatever reason RData conversion is not
                             // available, we'll just skip it.
-                            logger.warning("failed to convert tabular data file "+fileName+" to RData.");
+                            logger.warning("failed to convert tabular data file " + fileName + " to RData.");
                         } finally {
                             if (instream != null) {
-                                try{instream.close();}catch(IOException ioex){}
-                                try{zout.closeEntry();}catch(IOException ioex){}
+                                try {instream.close();} catch (IOException ioex) {}
+                                try {zout.closeEntry();} catch (IOException ioex) {}
                             }
                         }
                     }
@@ -167,7 +167,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
 
                     // And now the citations: 
                     if (di.getFileCitationEndNote() != null) {
-                        e = new ZipEntry(fileName.replaceAll("\\.tab$","citation-endnote.xml"));
+                        e = new ZipEntry(fileName.replaceAll("\\.tab$", "citation-endnote.xml"));
 
                         zout.putNextEntry(e);
                         zout.write(di.getFileCitationEndNote().getBytes());
@@ -176,7 +176,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     }
 
                     if (di.getFileCitationRIS() != null) {
-                        e = new ZipEntry(fileName.replaceAll("\\.tab$","citation-ris.ris"));
+                        e = new ZipEntry(fileName.replaceAll("\\.tab$", "citation-ris.ris"));
 
                         zout.putNextEntry(e);
                         zout.write(di.getFileCitationRIS().getBytes());
@@ -184,7 +184,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     }
 
                     if (di.getFileCitationBibtex() != null) {
-                        e = new ZipEntry(fileName.replaceAll("\\.tab$","citation-bib.bib"));
+                        e = new ZipEntry(fileName.replaceAll("\\.tab$", "citation-bib.bib"));
 
                         zout.putNextEntry(e);
                         zout.write(di.getFileCitationBibtex().getBytes());

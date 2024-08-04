@@ -36,7 +36,7 @@ public class CreateRoleCommand extends AbstractCommand<DataverseRole> {
         User user = getUser();
         //todo: temporary for 4.0 - only superusers can create and edit roles
         if ((!(user instanceof AuthenticatedUser) || !user.isSuperuser())) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("permission.role.must.be.created.by.superuser"),this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("permission.role.must.be.created.by.superuser"), this);
         }
         //Test to see if the role already exists in DB
         try {

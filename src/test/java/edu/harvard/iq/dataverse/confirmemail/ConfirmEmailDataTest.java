@@ -37,12 +37,12 @@ public class ConfirmEmailDataTest {
     }
 
     @Test
-    public void testTokenCreationTimestampNotNull () {
+    public void testTokenCreationTimestampNotNull() {
         assertTrue(instance.getCreated() != null);
     }
 
     @Test
-    public void testTokenExpirationTimestampNotNull () {
+    public void testTokenExpirationTimestampNotNull() {
         assertTrue(instance.getExpires() != null);
     }
 

@@ -50,7 +50,7 @@ public class DatasetLinkingDataverse implements Serializable {
     private Dataverse linkingDataverse;
     
     @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable=false )
+    @Column(nullable = false)
     private Date linkCreateTime;
 
     public Long getId() {

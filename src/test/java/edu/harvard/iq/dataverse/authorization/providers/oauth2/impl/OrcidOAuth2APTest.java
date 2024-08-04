@@ -18,8 +18,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author pameyer
  */
 public class OrcidOAuth2APTest extends OrcidOAuth2AP {
-    private static final String PERSON_FILE="src/test/resources/xml/oauth2/orcid/v20_person.xml";
-	private static final String ACTIVITIES_FILE="src/test/resources/xml/oauth2/orcid/v20_activities.xml";
+    private static final String PERSON_FILE = "src/test/resources/xml/oauth2/orcid/v20_person.xml";
+	private static final String ACTIVITIES_FILE = "src/test/resources/xml/oauth2/orcid/v20_activities.xml";
 	private static final String PERSON;
 	private static final String ACTIVITIES;
     
@@ -28,8 +28,8 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
     }
 
     static {
-	    PERSON = loadResponseXML( PERSON_FILE );
-        ACTIVITIES = loadResponseXML( ACTIVITIES_FILE );
+	    PERSON = loadResponseXML(PERSON_FILE);
+        ACTIVITIES = loadResponseXML(ACTIVITIES_FILE);
     }
     /**
      * load XML responses from filesystem (resources).
@@ -39,8 +39,8 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
 	    String txt = null;
 	    try {
 		    java.io.File inp = new java.io.File( fname );
-		    txt = org.apache.commons.io.FileUtils.readFileToString( inp );
-	    } catch( java.io.IOException ie ) {
+		    txt = org.apache.commons.io.FileUtils.readFileToString(inp);
+	    } catch (java.io.IOException ie) {
 		    // no-op; assert that the needed strings are not null in tests
 	    }
 	    return txt;
@@ -58,7 +58,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
     @Test
     public void testParseUserResponse() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
-        assertNotNull( PERSON );
+        assertNotNull(PERSON);
         final AbstractOAuth2AuthenticationProvider.ParsedUserResponse actual = sut.parseUserResponse(PERSON);
 
         assertEquals("bdoc", actual.username);
@@ -108,7 +108,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
     @Test
     public void testParseActivitiesResponse() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
-        assertNotNull( ACTIVITIES );
+        assertNotNull(ACTIVITIES);
         final AuthenticatedUserDisplayInfo actual = sut.parseActivitiesResponse(ACTIVITIES);
 
         assertEquals("My Organization Name", actual.getAffiliation());
@@ -118,9 +118,9 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
     @Test
     public void testParseActivitiesResponseNoOrgName() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
-        assertNotNull( ACTIVITIES );
+        assertNotNull(ACTIVITIES);
         
-        String responseWithNoOrg = ACTIVITIES.replaceAll("\n","").replaceAll("<employment:organization>.*</employment:organization>", "");
+        String responseWithNoOrg = ACTIVITIES.replaceAll("\n", "").replaceAll("<employment:organization>.*</employment:organization>", "");
         
         final AuthenticatedUserDisplayInfo actual = sut.parseActivitiesResponse(responseWithNoOrg);
 
@@ -131,9 +131,9 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
     @Test
     public void testParseActivitiesResponseNoRole() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
-        assertNotNull( ACTIVITIES );
+        assertNotNull(ACTIVITIES);
         
-        String responseWithNoOrg = ACTIVITIES.replaceAll("\n","").replaceAll("<employment:role-title>.*</employment:role-title>", "");
+        String responseWithNoOrg = ACTIVITIES.replaceAll("\n", "").replaceAll("<employment:role-title>.*</employment:role-title>", "");
         
         final AuthenticatedUserDisplayInfo actual = sut.parseActivitiesResponse(responseWithNoOrg);
 

@@ -66,7 +66,7 @@ class DataFileDataProvider implements FileDataProvider {
 
         Path actualFileLocation = Path.of(fileUtilWrapper.getFilesTempDirectory(), storageLocation);
         if (actualFileLocation.toFile().exists()) {
-            return Optional.of(() ->  fileUtilWrapper.newInputStream(actualFileLocation));
+            return Optional.of(() -> fileUtilWrapper.newInputStream(actualFileLocation));
         }
 
         logger.fine(String.format("action=getFileInputStream result=file-not-found filePath=%s actualFileLocation=%s", filePath, actualFileLocation));

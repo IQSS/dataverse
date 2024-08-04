@@ -34,12 +34,12 @@ import jakarta.persistence.UniqueConstraint;
     @NamedQuery(name = "DataverseFieldTypeInputLevel.findRequiredByDataverseId",
             query = "select f from DataverseFieldTypeInputLevel f where f.dataverse.id = :dataverseId and f.required = 'true' ")
 })
-@Table(name="DataverseFieldTypeInputLevel"
-        ,  uniqueConstraints={
-            @UniqueConstraint(columnNames={"dataverse_id", "datasetfieldtype_id"})}
-        , indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="datasetfieldtype_id")
-		, @Index(columnList="required")}
+@Table(name = "DataverseFieldTypeInputLevel"
+        , uniqueConstraints = {
+            @UniqueConstraint(columnNames = {"dataverse_id", "datasetfieldtype_id"})}
+        , indexes = {@Index(columnList = "dataverse_id")
+		, @Index(columnList = "datasetfieldtype_id")
+		, @Index(columnList = "required")}
 )
 @Entity
 public class DataverseFieldTypeInputLevel implements Serializable {
@@ -59,9 +59,9 @@ public class DataverseFieldTypeInputLevel implements Serializable {
     private boolean include;
     private boolean required;
     
-    public DataverseFieldTypeInputLevel () {}
+    public DataverseFieldTypeInputLevel() {}
   
-    public DataverseFieldTypeInputLevel (DatasetFieldType fieldType, Dataverse dataverse, boolean required, boolean include) {
+    public DataverseFieldTypeInputLevel(DatasetFieldType fieldType, Dataverse dataverse, boolean required, boolean include) {
         this.datasetFieldType = fieldType;
         this.dataverse = dataverse;
         this.required = required;

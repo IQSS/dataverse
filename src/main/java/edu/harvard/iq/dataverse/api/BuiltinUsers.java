@@ -47,7 +47,7 @@ public class BuiltinUsers extends AbstractApiBean {
 
     @GET
     @Path("{username}/api-token")
-    public Response getApiToken( @PathParam("username") String username, @QueryParam("password") String password ) {
+    public Response getApiToken(@PathParam("username") String username, @QueryParam("password") String password) {
         boolean disabled = true;
         boolean lookupAllowed = settingsSvc.isTrueForKey(SettingsServiceBean.Key.AllowApiTokenLookupViaApi, false);
         if (lookupAllowed) {
@@ -60,17 +60,17 @@ public class BuiltinUsers extends AbstractApiBean {
 
         u = builtinUserSvc.findByUserName(username);
 
-        if ( u == null ) return badRequest("Bad username or password");
+        if (u == null) return badRequest("Bad username or password");
         
         boolean passwordOk = PasswordEncryption.getVersion(u.getPasswordEncryptionVersion())
-                                            .check(password, u.getEncryptedPassword() );
-        if ( ! passwordOk ) return badRequest("Bad username or password");
+                                            .check(password, u.getEncryptedPassword());
+        if (!passwordOk) return badRequest("Bad username or password");
         
         AuthenticatedUser authUser = authSvc.lookupUser(BuiltinAuthenticationProvider.PROVIDER_ID, u.getUserName());
         
         ApiToken t = authSvc.findApiTokenByUser(authUser);
         
-        return (t != null ) ? ok(t.getTokenString()) : notFound("User " + username + " does not have an API token");
+        return (t != null) ? ok(t.getTokenString()) : notFound("User " + username + " does not have an API token");
     }
     
     
@@ -83,7 +83,7 @@ public class BuiltinUsers extends AbstractApiBean {
     //--MAD 4.9.3
     @POST
     public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key, @QueryParam("sendEmailNotification") Boolean sendEmailNotification) {   
-        if( sendEmailNotification == null )
+        if (sendEmailNotification == null)
             sendEmailNotification = true;
         
         return internalSave(user, password, key, sendEmailNotification);
@@ -186,14 +186,14 @@ public class BuiltinUsers extends AbstractApiBean {
             resp.add("authenticatedUser", json(au));
             resp.add("apiToken", token.getTokenString());
             
-            alr.setInfo("builtinUser:" + user.getUserName() + " authenticatedUser:" + au.getIdentifier() );
+            alr.setInfo("builtinUser:" + user.getUserName() + " authenticatedUser:" + au.getIdentifier());
             return ok(resp);
             
-        } catch ( EJBException ejbx ) {
+        } catch (EJBException ejbx) {
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             String errorMessage = ejbx.getCausedByException().getLocalizedMessage();
-            alr.setInfo( alr.getInfo() + "// " + errorMessage);
-            if ( ejbx.getCausedByException() instanceof IllegalArgumentException ) {
+            alr.setInfo(alr.getInfo() + "// " + errorMessage);
+            if (ejbx.getCausedByException() instanceof IllegalArgumentException) {
                 return error(Status.BAD_REQUEST, "Bad request: can't save user. " + errorMessage);
             } else {
                 logger.log(Level.WARNING, "Error saving user: ", ejbx);
@@ -203,7 +203,7 @@ public class BuiltinUsers extends AbstractApiBean {
         } catch (Exception e) {
             logger.log(Level.WARNING, "Error saving user", e);
             alr.setActionResult(ActionLogRecord.Result.InternalError);
-            alr.setInfo( alr.getInfo() + "// " + e.getMessage());
+            alr.setInfo(alr.getInfo() + "// " + e.getMessage());
             return error(Status.INTERNAL_SERVER_ERROR, "Can't save user: " + e.getMessage());
         } finally {
             actionLogSvc.log(alr);

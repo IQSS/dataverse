@@ -73,7 +73,7 @@ public class DataverseUserPageTest {
       Mockito.when(mockConfirmEmailService.findSingleConfirmEmailDataByUser(user)).thenReturn(null);
     }
     
-    if(emailConfirmed != null){
+    if (emailConfirmed != null) {
         
     Mockito.when(mockConfirmEmailService.hasVerifiedEmail(user))
           .thenReturn(true);

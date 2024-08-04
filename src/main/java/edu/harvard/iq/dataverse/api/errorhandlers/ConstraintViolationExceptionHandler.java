@@ -34,7 +34,7 @@ public class ConstraintViolationExceptionHandler implements ExceptionMapper<Cons
             .collect(Collectors.toList());
         
         return Response.status(Response.Status.BAD_REQUEST)
-                       .entity( Json.createObjectBuilder()
+                       .entity(Json.createObjectBuilder()
                            .add("status", "ERROR")
                            .add("code", Response.Status.BAD_REQUEST.getStatusCode())
                            .add("message", "JPA validation constraints failed persistence. See list of violations for details.")

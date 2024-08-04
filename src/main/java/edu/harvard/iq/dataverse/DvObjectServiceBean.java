@@ -85,7 +85,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
     public boolean checkExists(Long id) {
         Query query = em.createNamedQuery("DvObject.checkExists");
         query.setParameter("id", id);
-        Long result =(Long)query.getSingleResult();
+        Long result = (Long) query.getSingleResult();
         return result > 0;
     }   
 
@@ -242,28 +242,28 @@ public class DvObjectServiceBean implements java.io.Serializable {
         return numRowsUpdated;
     }
     
-    private String getDvObjectIdListClause(List<Long> dvObjectIdList){
-        if (dvObjectIdList == null){
+    private String getDvObjectIdListClause(List<Long> dvObjectIdList) {
+        if (dvObjectIdList == null) {
             return null;
         }
         List<String> outputList = new ArrayList<>();
         
-        for(Long id : dvObjectIdList){
-            if (id != null){
+        for (Long id : dvObjectIdList) {
+            if (id != null) {
                 outputList.add(id.toString());
             }
         }
-        if (outputList.isEmpty()){
+        if (outputList.isEmpty()) {
             return null;
         }        
         return " (" + StringUtils.join(outputList, ",") + ")";        
     }
     
-    public List<Object[]> getDvObjectInfoForMyData(List<Long> dvObjectIdList){
+    public List<Object[]> getDvObjectInfoForMyData(List<Long> dvObjectIdList) {
         //msgt("getAssigneeAndRoleIdListFor");
 
         String dvObjectClause = getDvObjectIdListClause(dvObjectIdList);
-        if (dvObjectClause==null){
+        if (dvObjectClause == null) {
             return null;
         }
         
@@ -285,11 +285,11 @@ public class DvObjectServiceBean implements java.io.Serializable {
      * @param dvObjectParentIdList
      * @return 
      */
-    public List<Object[]> getDvObjectInfoByParentIdForMyData(List<Long> dvObjectParentIdList){
+    public List<Object[]> getDvObjectInfoByParentIdForMyData(List<Long> dvObjectParentIdList) {
         //msgt("getAssigneeAndRoleIdListFor");
 
         String dvObjectClause = getDvObjectIdListClause(dvObjectParentIdList);
-        if (dvObjectClause==null){
+        if (dvObjectClause == null) {
             return null;
         }
         
@@ -307,7 +307,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
      * 
      * @return 
      */
-    public List<Long> getAllHarvestedDataverseIds(){
+    public List<Long> getAllHarvestedDataverseIds() {
         
         String qstr = "SELECT h.dataverse_id FROM harvestingclient h;";
 
@@ -323,7 +323,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
      * @param objectIds
      * @return 
      */
-    public Map<Long, String> getObjectPathsByIds(Set<Long> objectIds){
+    public Map<Long, String> getObjectPathsByIds(Set<Long> objectIds) {
         if (objectIds == null || objectIds.size() < 1) {
             return null;
         }
@@ -364,8 +364,8 @@ public class DvObjectServiceBean implements java.io.Serializable {
                     continue;
                 }
                 
-                ownerId = (Long)result[1];
-                logger.fine("OBJECT PATH: id: "+objectId+", owner: "+ownerId);
+                ownerId = (Long) result[1];
+                logger.fine("OBJECT PATH: id: " + objectId + ", owner: " + ownerId);
                 if (ownerId != null && (ownerId != 1L)) {
                     treeMap.put(objectId, ownerId);
                 }
@@ -383,7 +383,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 treePosition = treeMap.get(treePosition);
             }
             
-            logger.fine("OBJECT PATH: returning "+treePath+" for "+objectId);
+            logger.fine("OBJECT PATH: returning " + treePath + " for " + objectId);
             ret.put(objectId, treePath);
         }
         return ret;        

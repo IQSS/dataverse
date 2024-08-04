@@ -37,12 +37,12 @@ import jakarta.persistence.metamodel.Metamodel;
 public class TestEntityManager implements EntityManager {
     
     Set<Object> newlyPersistedObjects = new HashSet<>();
-    Map<Class,Map<Object,Object>> tables = new HashMap<>();
+    Map<Class, Map<Object, Object>> tables = new HashMap<>();
     final AtomicLong nextId = new AtomicLong(0);
     
     @Override
     public void persist(Object entity) {
-        newlyPersistedObjects.add( entity );
+        newlyPersistedObjects.add(entity);
     }
 
     @Override
@@ -82,13 +82,13 @@ public class TestEntityManager implements EntityManager {
 
     @Override
     public void flush() {
-        newlyPersistedObjects.stream().forEach( o -> {
+        newlyPersistedObjects.stream().forEach(o -> {
             Class<?> clz = o.getClass();
-            if ( ! tables.containsKey(clz) ) {
-                tables.put( clz, new HashMap<>());
+            if (!tables.containsKey(clz)) {
+                tables.put(clz, new HashMap<>());
             }
-            for ( Field f : clz.getFields() ) {
-                if ( f.getAnnotation(Id.class) != null ) {
+            for (Field f : clz.getFields()) {
+                if (f.getAnnotation(Id.class) != null) {
                     long id = nextId.incrementAndGet();
                     try {
                         f.setAccessible(true);

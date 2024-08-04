@@ -27,7 +27,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Leonid Andreev
  */
 @Entity
-@Table(indexes = {@Index(columnList="datafile_id")})
+@Table(indexes = {@Index(columnList = "datafile_id")})
 public class DataFileTag implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -46,7 +46,7 @@ public class DataFileTag implements Serializable {
      * DataFile to which this tag belongs.
      */
      @ManyToOne
-     @JoinColumn(nullable=false)
+     @JoinColumn(nullable = false)
      private DataFile dataFile;
      
      
@@ -84,14 +84,14 @@ public class DataFileTag implements Serializable {
     public static List<String> listTags() {
         List<String> retlist = new ArrayList<>();
         
-        for(TagType t : TagType.values()) {
+        for (TagType t : TagType.values()) {
             retlist.add(TagTypeToLabels.get(t));
         }
         
         return retlist;
     }
     
-    @Column( nullable = false )
+    @Column(nullable = false)
     private TagType type; 
     
     public DataFile getDataFile() {
@@ -115,7 +115,7 @@ public class DataFileTag implements Serializable {
         TagType tagtype = TagLabelToTypes.get(label);
         
         if (tagtype == null) {
-            throw new IllegalArgumentException("Unknown DataFile Tag: "+label);
+            throw new IllegalArgumentException("Unknown DataFile Tag: " + label);
         }
         
         this.type = tagtype; 
@@ -133,8 +133,8 @@ public class DataFileTag implements Serializable {
      * Is this a geospatial tag, e.g. TagType.Geospatial
      * @return 
      */
-    public boolean isGeospatialTag(){
-        if (this.type == null){
+    public boolean isGeospatialTag() {
+        if (this.type == null) {
             return false;
         }
         return this.type == TagType.Geospatial;
@@ -171,18 +171,18 @@ public class DataFileTag implements Serializable {
      * @param tagString
      * @return 
      */
-    public static boolean isDataFileTag(String label){
+    public static boolean isDataFileTag(String label) {
         
-        if (label == null){
+        if (label == null) {
             throw new NullPointerException("label cannot be null");
         }
        
         return TagLabelToTypes.containsKey(label);
     }
     
-    public TagType getDataFileTagFromLabel(String label){
+    public TagType getDataFileTagFromLabel(String label) {
         
-        if (!TagLabelToTypes.containsKey(label)){
+        if (!TagLabelToTypes.containsKey(label)) {
             return null;
         }
         
@@ -190,12 +190,12 @@ public class DataFileTag implements Serializable {
     }
     
     
-    public static List<String> getListofLabels(){
+    public static List<String> getListofLabels() {
     
         return new ArrayList<>(TagTypeToLabels.values());
     }
     
-    public static String getListofLabelsAsString(){
+    public static String getListofLabelsAsString() {
         
         return StringUtils.join(DataFileTag.getListofLabels(), ", ");
     }

@@ -48,17 +48,17 @@ public class Pager {
     public String endCardNumberString;
 
     public int remainingCards = 0;
-    public int numberNextResults =0;
+    public int numberNextResults = 0;
     
     public Pager(int numResults, int docsPerPage, int selectedPageNumber) {
         
-        if (numResults < 0){
+        if (numResults < 0) {
             throw new IllegalArgumentException("numResults must be 0 or higher");
         }
-        if (docsPerPage < 1){
+        if (docsPerPage < 1) {
             throw new IllegalArgumentException("docsPerPage must be 1 or higher");
         }
-        if (selectedPageNumber < 1){
+        if (selectedPageNumber < 1) {
             throw new IllegalArgumentException("selectedPageNumber must be 1 or higher");
         }      
         this.numResults = numResults;
@@ -67,21 +67,21 @@ public class Pager {
         makePageStats();
     }
 
-    private void makePageStats(){
+    private void makePageStats() {
         
-        if (numResults == 0){
+        if (numResults == 0) {
             this.selectedPageNumber = 0;
             return;
         }
         
        // page count
         this.pageCount = numResults / docsPerPage;
-        if ((this.numResults % this.docsPerPage) > 0){
+        if ((this.numResults % this.docsPerPage) > 0) {
             this.pageCount++;
         }
     
         // Sanity check for the selected page
-        if (this.selectedPageNumber > this.pageCount){
+        if (this.selectedPageNumber > this.pageCount) {
             this.selectedPageNumber = 1;
         }
     
@@ -93,47 +93,47 @@ public class Pager {
         makePageNumberList();
 
         // prev/next page numbers
-        this.previousPageNumber =  max(this.selectedPageNumber-1, 1); // must be at least 1
-        this.nextPageNumber =  min(this.selectedPageNumber+1, this.pageCount); // must be at least 1
+        this.previousPageNumber = max(this.selectedPageNumber - 1, 1); // must be at least 1
+        this.nextPageNumber = min(this.selectedPageNumber + 1, this.pageCount); // must be at least 1
         this.nextPageNumber = max(this.nextPageNumber, 1);
         
         // start/end card numbers
-        this.startCardNumber =  (this.docsPerPage * (this.selectedPageNumber - 1)) + 1;
-        if (this.numResults == 0){
+        this.startCardNumber = (this.docsPerPage * (this.selectedPageNumber - 1)) + 1;
+        if (this.numResults == 0) {
             this.endCardNumber = 0;
-        }else{
-            this.endCardNumber = min(this.startCardNumber + (this.docsPerPage-1), this.numResults );
+        } else {
+            this.endCardNumber = min(this.startCardNumber + (this.docsPerPage - 1), this.numResults);
         }
         
         this.remainingCards = this.numResults - this.endCardNumber;
         this.remainingCards = max(this.remainingCards, 0);
         
-        if (this.remainingCards > 0){
-            if (this.remainingCards < this.docsPerPage){
+        if (this.remainingCards > 0) {
+            if (this.remainingCards < this.docsPerPage) {
                 this.numberNextResults = this.remainingCards;
-            }else{
+            } else {
                 this.numberNextResults = this.docsPerPage;
             }
         }        
     }
     
     
-    public boolean isPagerNecessary(){
+    public boolean isPagerNecessary() {
         
-        if (this.pageCount > 1){
+        if (this.pageCount > 1) {
             return true;
         }
         return false;
     }
     
-    public boolean hasPreviousPageNumber(){
+    public boolean hasPreviousPageNumber() {
         
         return this.selectedPageNumber > 1;
     }
     
-    public boolean hasNextPageNumber(){
-        if (this.pageCount > 1){
-            if (selectedPageNumber < this.pageCount){
+    public boolean hasNextPageNumber() {
+        if (this.pageCount > 1) {
+            if (selectedPageNumber < this.pageCount) {
                 return true;
             }
         }
@@ -145,7 +145,7 @@ public class Pager {
      * get numResults
      * @return 
      */
-    public int getNumResults(){
+    public int getNumResults() {
         return this.numResults;
     }
     
@@ -153,7 +153,7 @@ public class Pager {
     /**
      * @param numResults
      */
-    public void setNumResults(int numResults){
+    public void setNumResults(int numResults) {
         this.numResults = numResults;
     }
     
@@ -162,7 +162,7 @@ public class Pager {
      * get docsPerPage
      * @return 
      */
-    public int getDocsPerPage(){
+    public int getDocsPerPage() {
         return this.docsPerPage;
     }
     
@@ -170,7 +170,7 @@ public class Pager {
     /**
      * @param docsPerPage
      */
-    public void setDocsPerPage(int docsPerPage){
+    public void setDocsPerPage(int docsPerPage) {
         this.docsPerPage = docsPerPage;
     }
     
@@ -179,7 +179,7 @@ public class Pager {
      * get selectedPageNumber
      * @return 
      */
-    public int getSelectedPageNumber(){
+    public int getSelectedPageNumber() {
         return this.selectedPageNumber;
     }
     
@@ -187,7 +187,7 @@ public class Pager {
     /**
      * @param selectedPageNumber
      */
-    public void setSelectedPageNumber(int selectedPageNumber){
+    public void setSelectedPageNumber(int selectedPageNumber) {
         this.selectedPageNumber = selectedPageNumber;
     }
     
@@ -196,7 +196,7 @@ public class Pager {
      * get pageCount
      * @return 
      */
-    public int getPageCount(){
+    public int getPageCount() {
         return this.pageCount;
     }
     
@@ -204,7 +204,7 @@ public class Pager {
     /**
      * @param pageCount
      */
-    public void setPageCount(int pageCount){
+    public void setPageCount(int pageCount) {
         this.pageCount = pageCount;
     }
     
@@ -212,7 +212,7 @@ public class Pager {
      * get getPageNumberListAsStringList
      * @return 
      */
-    public List<String> getPageNumberListAsStringList(){
+    public List<String> getPageNumberListAsStringList() {
         List<String> newList = new ArrayList<String>(pageNumberList.length);
         for (int pgNum : pageNumberList) { 
           newList.add(String.valueOf(pgNum)); 
@@ -224,18 +224,18 @@ public class Pager {
      * get pageNumberList
      * @return 
      */
-    public int[] getPageNumberList(){
+    public int[] getPageNumberList() {
         return this.pageNumberList;
     }
     
-    public Integer[] getPageListAsIntegerList(){
+    public Integer[] getPageListAsIntegerList() {
 
-        if (pageNumberList == null){
+        if (pageNumberList == null) {
             return null;
         }
         
         // source: https://stackoverflow.com/questions/880581/how-to-convert-int-to-integer-in-java            
-        return Arrays.stream(pageNumberList).boxed().toArray( Integer[]::new );
+        return Arrays.stream(pageNumberList).boxed().toArray(Integer[]::new);
         
 
     }
@@ -243,7 +243,7 @@ public class Pager {
     /**
      * @param pageNumberList
      */
-    public void setPageNumberList(int[] pageNumberList){
+    public void setPageNumberList(int[] pageNumberList) {
         this.pageNumberList = pageNumberList;
     }
     
@@ -252,7 +252,7 @@ public class Pager {
      * get previousPageNumber
      * @return 
      */
-    public int getPreviousPageNumber(){
+    public int getPreviousPageNumber() {
         return this.previousPageNumber;
     }
     
@@ -260,7 +260,7 @@ public class Pager {
     /**
      * @param previousPageNumber
      */
-    public void setPreviousPageNumber(int previousPageNumber){
+    public void setPreviousPageNumber(int previousPageNumber) {
         this.previousPageNumber = previousPageNumber;
     }
     
@@ -269,7 +269,7 @@ public class Pager {
      * get nextPageNumber
      * @return 
      */
-    public int getNextPageNumber(){
+    public int getNextPageNumber() {
         return this.nextPageNumber;
     }
     
@@ -277,7 +277,7 @@ public class Pager {
     /**
      * @param nextPageNumber
      */
-    public void setNextPageNumber(int nextPageNumber){
+    public void setNextPageNumber(int nextPageNumber) {
         this.nextPageNumber = nextPageNumber;
     }
     
@@ -286,11 +286,11 @@ public class Pager {
      * get startCardNumber
      * @return 
      */
-    public int getStartCardNumber(){
+    public int getStartCardNumber() {
         return this.startCardNumber;
     }
     
-    public String getStartCardNumberString(){
+    public String getStartCardNumberString() {
         
         return this.addCommasToNumber(startCardNumber);
 
@@ -298,7 +298,7 @@ public class Pager {
     /**
      * @param startCardNumber
      */
-    public void setStartCardNumber(int startCardNumber){
+    public void setStartCardNumber(int startCardNumber) {
         this.startCardNumber = startCardNumber;
     }
     
@@ -307,11 +307,11 @@ public class Pager {
      * get endCardNumber
      * @return 
      */
-    public int getEndCardNumber(){
+    public int getEndCardNumber() {
         return this.endCardNumber;
     }
     
-    public String getEndCardNumberString(){
+    public String getEndCardNumberString() {
         
         return this.addCommasToNumber(endCardNumber);
 
@@ -319,26 +319,26 @@ public class Pager {
     /**
      * @param endCardNumber
      */
-    public void setEndCardNumber(int endCardNumber){
+    public void setEndCardNumber(int endCardNumber) {
         this.endCardNumber = endCardNumber;
     }
 
-    public void showClasspaths(){
+    public void showClasspaths() {
         ClassLoader cl = ClassLoader.getSystemClassLoader();
  
-        URL[] urls = ((URLClassLoader)cl).getURLs();
+        URL[] urls = ((URLClassLoader) cl).getURLs();
  
-        for(URL url: urls){
+        for (URL url : urls) {
         	System.out.println(url.getFile());
         }
     }
     
-    public String asJSONString(){
+    public String asJSONString() {
         return this.asJsonObjectBuilder().build().toString();
     }
     
     
-    public String addCommasToNumber(int count){
+    public String addCommasToNumber(int count) {
         
         return NumberFormat.getInstance().format(count);
     }
@@ -352,7 +352,7 @@ public class Pager {
      * 
      * @return 
      */
-    public JsonObjectBuilder asJsonObjectBuilderUsingCardTerms(){
+    public JsonObjectBuilder asJsonObjectBuilderUsingCardTerms() {
     
         return asJsonObjectBuilderCore(true);
     }
@@ -363,13 +363,13 @@ public class Pager {
      * 
      * @return 
      */
-    public JsonObjectBuilder asJsonObjectBuilder(){
+    public JsonObjectBuilder asJsonObjectBuilder() {
     
         return asJsonObjectBuilderCore(false);
     }
 
     
-    private JsonObjectBuilder asJsonObjectBuilderCore(boolean useCardTerms){
+    private JsonObjectBuilder asJsonObjectBuilderCore(boolean useCardTerms) {
         
         JsonObjectBuilder jsonPageInfo = Json.createObjectBuilder();
                 
@@ -385,13 +385,13 @@ public class Pager {
                     .add("hasNextPageNumber", this.hasNextPageNumber())
                     .add("nextPageNumber", this.nextPageNumber);
         
-        if (useCardTerms){
+        if (useCardTerms) {
             jsonPageInfo.add("startCardNumber", this.startCardNumber)
                     .add("endCardNumber", this.endCardNumber)
                     .add("startCardNumberString", this.addCommasToNumber(this.startCardNumber))
                     .add("endCardNumberString", this.addCommasToNumber(this.endCardNumber))
                     .add("remainingCards", this.remainingCards);
-        }else{
+        } else {
             jsonPageInfo.add("startResultNumber", this.startCardNumber)
                     .add("endResultNumber", this.endCardNumber)
                     .add("startResultNumberString", this.addCommasToNumber(this.startCardNumber))
@@ -419,19 +419,19 @@ public class Pager {
              
     }
     
-    private void makePageNumberList(){
-        if (this.numResults <  1){
+    private void makePageNumberList() {
+        if (this.numResults < 1) {
             return;
         }
                         
         // In this case, there are 1 to 5 pages
         //
-        if ((this.pageCount <= NUM_VISIBLE_PAGES_BUTTONS)||(this.selectedPageNumber <= 3)){
+        if ((this.pageCount <= NUM_VISIBLE_PAGES_BUTTONS) || (this.selectedPageNumber <= 3)) {
             
             int numButtons = min(this.pageCount, NUM_VISIBLE_PAGES_BUTTONS);
             this.pageNumberList = new int[numButtons];
         
-            for(int i=0; i < numButtons; i++){
+            for (int i = 0; i < numButtons; i++) {
                 this.pageNumberList[i] = i + 1;
             }
             return;
@@ -446,22 +446,22 @@ public class Pager {
 
         // 8 - 7 = 1
         int buttonsToRight = this.pageCount - this.selectedPageNumber;
-        if (buttonsToRight < 0){
+        if (buttonsToRight < 0) {
             throw new IllegalStateException("Page count cannot be less than the selected page");
         }
         int startPage;
-        if (buttonsToRight >= defaultButtonsToRight){
+        if (buttonsToRight >= defaultButtonsToRight) {
             startPage = this.selectedPageNumber - defaultButtonsToRight;
-        }else{
+        } else {
             // 7 -2 -1 = 4 - start on page 4
-            startPage = this.selectedPageNumber - (defaultButtonsToRight-buttonsToRight) - defaultButtonsToRight;           
+            startPage = this.selectedPageNumber - (defaultButtonsToRight - buttonsToRight) - defaultButtonsToRight;           
         }
-        for(int i=0; i< NUM_VISIBLE_PAGES_BUTTONS; i++){
+        for (int i = 0; i < NUM_VISIBLE_PAGES_BUTTONS; i++) {
             this.pageNumberList[i] = i + startPage;
         }        
     }
     
-    public String getNumResultsString(){
+    public String getNumResultsString() {
         
         return this.addCommasToNumber(numResults);
 
@@ -473,11 +473,11 @@ public class Pager {
                
     }
     
-    private void msg(String s){
+    private void msg(String s) {
         //System.out.println(s);
     }
     
-    private void msgt(String s){
+    private void msgt(String s) {
         msg("-------------------------------");
         msg(s);
         msg("-------------------------------");

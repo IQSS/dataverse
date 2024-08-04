@@ -20,10 +20,10 @@ public class UrlSignerUtil {
 
     private static final Logger logger = Logger.getLogger(UrlSignerUtil.class.getName());
 
-    public static final String SIGNED_URL_TOKEN="token";
-    public static final String SIGNED_URL_METHOD="method";
-    public static final String SIGNED_URL_USER="user";
-    public static final String SIGNED_URL_UNTIL="until";
+    public static final String SIGNED_URL_TOKEN = "token";
+    public static final String SIGNED_URL_METHOD = "method";
+    public static final String SIGNED_URL_USER = "user";
+    public static final String SIGNED_URL_UNTIL = "until";
     /**
      * 
      * @param baseUrl - the URL to sign - cannot contain query params
@@ -58,12 +58,12 @@ public class UrlSignerUtil {
         }
         if (method != null) {
             signedUrlBuilder.append(firstParam ? "?" : "&").append(SIGNED_URL_METHOD + "=").append(method);
-            firstParam=false;
+            firstParam = false;
         }
         signedUrlBuilder.append(firstParam ? "?" : "&").append(SIGNED_URL_TOKEN + "=");
         logger.fine("String to sign: " + signedUrlBuilder.toString() + "<key>");
         String signedUrl = signedUrlBuilder.toString();
-        signedUrl= signedUrl + (DigestUtils.sha512Hex(signedUrl + key));
+        signedUrl = signedUrl + (DigestUtils.sha512Hex(signedUrl + key));
         if (logger.isLoggable(Level.FINE)) {
             logger.fine(
                     "URL signature is " + (isValidUrl(signedUrl, user, method, key) ? "valid" : "invalid"));
@@ -120,7 +120,7 @@ public class UrlSignerUtil {
                 }
             }
 
-            int index = signedUrl.indexOf(((dateString==null && allowedMethod==null && allowedUser==null) ? "?":"&") + "token=");
+            int index = signedUrl.indexOf(((dateString == null && allowedMethod == null && allowedUser == null) ? "?" : "&") + "token=");
             // Assuming the token is last - doesn't have to be, but no reason for the URL
             // params to be rearranged either, and this should only cause false negatives if
             // it does happen

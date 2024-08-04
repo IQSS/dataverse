@@ -34,7 +34,7 @@ public class OAI_DDIExporter implements XMLExporter {
     @Override
     public String getDisplayName(Locale locale) {
         // dataset.exportBtn.itemLabel.ddi is shared with the DDIExporter
-        String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi",locale);
+        String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi", locale);
         return Optional.ofNullable(displayName).orElse("DDI");
     }
 
@@ -43,7 +43,7 @@ public class OAI_DDIExporter implements XMLExporter {
         try {
             DdiExportUtil.datasetJson2ddi(dataProvider.getDatasetJson(), outputStream);
         } catch (XMLStreamException xse) {
-            throw new ExportException ("Caught XMLStreamException performing DDI export");
+            throw new ExportException("Caught XMLStreamException performing DDI export");
         }
     }
 

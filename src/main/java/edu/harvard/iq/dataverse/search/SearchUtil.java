@@ -140,7 +140,7 @@ public class SearchUtil {
                 while (st.hasMoreElements()) {
                     String nextElement = (String) st.nextElement();
                     //Entries such as URIs will get tokenized into individual words by solr unless they are in quotes
-                    if(addQuotes) {
+                    if (addQuotes) {
                         nextElement = "\"" + nextElement + "\"";
                     }
                     queryStrings.add(solrField + ":" + nextElement);

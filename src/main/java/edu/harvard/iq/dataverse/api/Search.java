@@ -108,17 +108,17 @@ public class Search extends AbstractApiBean {
                 numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
                 
                  // we have to add "" (root) otherwise there is no permissions check
-                if(subtrees.isEmpty()) {
+                if (subtrees.isEmpty()) {
                     dataverseSubtrees.add(getSubtree(""));
                 }
                 else {
-                    for(String subtree : subtrees) {
+                    for (String subtree : subtrees) {
                         dataverseSubtrees.add(getSubtree(subtree));
                     }
                 }
                 filterQueries.add(getFilterQueryFromSubtrees(dataverseSubtrees));
                 
-                if(filterQueries.isEmpty()) { //Extra sanity check just in case someone else touches this
+                if (filterQueries.isEmpty()) { //Extra sanity check just in case someone else touches this
                     throw new IOException("Filter is empty, which should never happen, as this allows unfettered searching of our index");
                 }
                 
@@ -332,7 +332,7 @@ public class Search extends AbstractApiBean {
     private String getFilterQueryFromSubtrees(List<Dataverse> subtrees) throws Exception {
         String subtreesFilter = "";
         
-        for(Dataverse dv : subtrees) {
+        for (Dataverse dv : subtrees) {
             if (!dv.equals(dataverseService.findRootDataverse())) {
                 String dataversePath = dataverseService.determineDataversePath(dv);
 
@@ -340,7 +340,7 @@ public class Search extends AbstractApiBean {
 
             }
         }
-        try{
+        try {
             subtreesFilter = subtreesFilter.substring(0, subtreesFilter.lastIndexOf("OR"));
         } catch (StringIndexOutOfBoundsException ex) {
             //This case should only happen the root subtree is searched 
@@ -348,8 +348,8 @@ public class Search extends AbstractApiBean {
             subtreesFilter = "";
         }
         
-        if(!subtreesFilter.equals("")) {
-            subtreesFilter =  SearchFields.SUBTREE + ":(" + subtreesFilter + ")";
+        if (!subtreesFilter.equals("")) {
+            subtreesFilter = SearchFields.SUBTREE + ":(" + subtreesFilter + ")";
         }
         
         return subtreesFilter;

@@ -43,7 +43,7 @@ import jakarta.inject.Named;
 
 @Named
 @Stateless
-public class S3PackageImporter extends AbstractApiBean implements java.io.Serializable{
+public class S3PackageImporter extends AbstractApiBean implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(S3PackageImporter.class.getName());
 
@@ -92,7 +92,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             storedDcmDatsetFilesList = s3.listObjects(req);
         } catch (SdkClientException sce) {
             logger.info("Caught an SdkClientException in s3ImportUtil:    " + sce.getMessage());
-            throw new IOException ("S3 listAuxObjects: failed to get a listing for "+dcmDatasetKey);
+            throw new IOException("S3 listAuxObjects: failed to get a listing for " + dcmDatasetKey);
         }
         List<S3ObjectSummary> storedDcmDatasetFilesSummary = storedDcmDatsetFilesList.getObjectSummaries();
         try {
@@ -115,13 +115,13 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
             String copyFileName = dcmFileKey.substring(dcmFileKey.lastIndexOf('/') + 1);
 
             logger.log(Level.INFO, "S3 file copy related attributes. dcmBucketName: {0} | dcmFileKey: {1} | dvBucketName: {2} | copyFilePath: {3} |", 
-                new Object[]{dcmBucketName, dcmFileKey, dvBucketName, dvDatasetKey+"/"+copyFileName});
+                new Object[]{dcmBucketName, dcmFileKey, dvBucketName, dvDatasetKey + "/" + copyFileName});
 
-            s3.copyObject(new CopyObjectRequest(dcmBucketName, dcmFileKey, dvBucketName, dvDatasetKey+"/"+copyFileName));                
+            s3.copyObject(new CopyObjectRequest(dcmBucketName, dcmFileKey, dvBucketName, dvDatasetKey + "/" + copyFileName));                
             
             try {
                 s3.deleteObject(new DeleteObjectRequest(dcmBucketName, dcmFileKey));
-            }  catch (AmazonClientException ase) {
+            } catch (AmazonClientException ase) {
                 logger.warning("Caught an AmazonClientException deleting s3 object from dcm bucket: " + ase.getMessage());
                 throw new IOException("Failed to delete object" + new Object[]{item});
             }
@@ -139,33 +139,33 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         String dvDatasetKey = getS3DatasetKey(dataset);
 
         //getting the name of the .sha file via substring, ${packageName}.sha
-        logger.log(Level.INFO, "shaname {0}", new Object[]{rootPackageName  + ".sha"});
+        logger.log(Level.INFO, "shaname {0}", new Object[]{rootPackageName + ".sha"});
 
-        if(!s3.doesObjectExist(dvBucketName, dvDatasetKey + "/" + rootPackageName + ".zip")) {
-            throw new IOException ("S3 Package data file could not be found after copy from dcm. Name: " + dvDatasetKey + "/" + rootPackageName + ".zip");
+        if (!s3.doesObjectExist(dvBucketName, dvDatasetKey + "/" + rootPackageName + ".zip")) {
+            throw new IOException("S3 Package data file could not be found after copy from dcm. Name: " + dvDatasetKey + "/" + rootPackageName + ".zip");
         }
 
-        S3Object s3FilesSha = s3.getObject(new GetObjectRequest(dvBucketName, dvDatasetKey + "/" + rootPackageName  + ".sha"));
+        S3Object s3FilesSha = s3.getObject(new GetObjectRequest(dvBucketName, dvDatasetKey + "/" + rootPackageName + ".sha"));
 
         InputStreamReader str = new InputStreamReader(s3FilesSha.getObjectContent());
         BufferedReader reader = new BufferedReader(str);
         String checksumVal = "";
         try {
             String line;
-            while((line = reader.readLine()) != null && checksumVal.isEmpty()) {
+            while ((line = reader.readLine()) != null && checksumVal.isEmpty()) {
                 logger.log(Level.FINE, "line {0}", new Object[]{line});
                 String[] splitLine = line.split("  ");
 
                 //the sha file should only contain one entry, but incase it doesn't we will check for the one for our zip
-                if(splitLine[1].contains(rootPackageName + ".zip")) { 
+                if (splitLine[1].contains(rootPackageName + ".zip")) { 
                     checksumVal = splitLine[0];
                     logger.log(Level.FINE, "checksumVal found {0}", new Object[]{checksumVal});
                 }
             }
-            if(checksumVal.isEmpty()) {
+            if (checksumVal.isEmpty()) {
                 logger.log(Level.SEVERE, "No checksum found for uploaded DCM S3 zip on dataset {0}", new Object[]{dataset.getIdentifier()});
             }                
-        } catch (IOException ex){
+        } catch (IOException ex) {
             logger.log(Level.SEVERE, "Error parsing DCM s3 checksum file on dataset {0} . Error: {1} ", new Object[]{dataset.getIdentifier(), ex});
         } finally {
             try {

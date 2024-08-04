@@ -25,31 +25,31 @@ import jakarta.persistence.UniqueConstraint;
  */
 @Entity
 @Table(
-	uniqueConstraints = @UniqueConstraint(columnNames={"assigneeIdentifier","role_id","definitionPoint_id"})
-      , indexes = {@Index(columnList="assigneeidentifier")
-		, @Index(columnList="definitionpoint_id")
-		, @Index(columnList="role_id")}
+	uniqueConstraints = @UniqueConstraint(columnNames = {"assigneeIdentifier", "role_id", "definitionPoint_id"})
+      , indexes = {@Index(columnList = "assigneeidentifier")
+		, @Index(columnList = "definitionpoint_id")
+		, @Index(columnList = "role_id")}
 )
 @NamedQueries({
-	@NamedQuery( name  = "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId",
-				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.definitionPoint.id=:definitionPointId" ),
-    	@NamedQuery( name  = "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId_RoleId",
-				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.definitionPoint.id=:definitionPointId and r.role.id=:roleId" ),
-	@NamedQuery( name  = "RoleAssignment.listByAssigneeIdentifier",
-				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier" ),
-	@NamedQuery( name  = "RoleAssignment.listByAssigneeIdentifiers",
-				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier in :assigneeIdentifiers AND r.definitionPoint.id in :definitionPointIds" ),
-	@NamedQuery( name  = "RoleAssignment.listByDefinitionPointId",
-				 query = "SELECT r FROM RoleAssignment r WHERE r.definitionPoint.id=:definitionPointId" ),
-	@NamedQuery( name  = "RoleAssignment.listByRoleId",
-				 query = "SELECT r FROM RoleAssignment r WHERE r.role.id=:roleId" ),
-	@NamedQuery( name  = "RoleAssignment.listByPrivateUrlToken",
-				 query = "SELECT r FROM RoleAssignment r WHERE r.privateUrlToken=:privateUrlToken" ),
-	@NamedQuery( name  = "RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId",
+	@NamedQuery(name = "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId",
+				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.definitionPoint.id=:definitionPointId"),
+    	@NamedQuery(name = "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId_RoleId",
+				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.definitionPoint.id=:definitionPointId and r.role.id=:roleId"),
+	@NamedQuery(name = "RoleAssignment.listByAssigneeIdentifier",
+				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier"),
+	@NamedQuery(name = "RoleAssignment.listByAssigneeIdentifiers",
+				 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier in :assigneeIdentifiers AND r.definitionPoint.id in :definitionPointIds"),
+	@NamedQuery(name = "RoleAssignment.listByDefinitionPointId",
+				 query = "SELECT r FROM RoleAssignment r WHERE r.definitionPoint.id=:definitionPointId"),
+	@NamedQuery(name = "RoleAssignment.listByRoleId",
+				 query = "SELECT r FROM RoleAssignment r WHERE r.role.id=:roleId"),
+	@NamedQuery(name = "RoleAssignment.listByPrivateUrlToken",
+				 query = "SELECT r FROM RoleAssignment r WHERE r.privateUrlToken=:privateUrlToken"),
+	@NamedQuery(name = "RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId",
 				 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.role.id=:roleId AND r.definitionPoint.id=:definitionPointId"),
-        @NamedQuery( name = "RoleAssignment.deleteAllByAssigneeIdentifier",
+        @NamedQuery(name = "RoleAssignment.deleteAllByAssigneeIdentifier",
 				 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier"),
-        @NamedQuery( name = "RoleAssignment.deleteAllByAssigneeIdentifier_Definition_PointId_RoleType",
+        @NamedQuery(name = "RoleAssignment.deleteAllByAssigneeIdentifier_Definition_PointId_RoleType",
 				 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.role.id=:roleId and r.definitionPoint.id=:definitionPointId")
 })
 public class RoleAssignment implements java.io.Serializable {
@@ -57,15 +57,15 @@ public class RoleAssignment implements java.io.Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column( nullable=false )
+	@Column(nullable = false)
 	private String assigneeIdentifier;
 		
-	@ManyToOne( cascade = {CascadeType.MERGE} )
-	@JoinColumn( nullable=false )
+	@ManyToOne(cascade = {CascadeType.MERGE})
+	@JoinColumn(nullable = false)
 	private DataverseRole role;
 	
-	@ManyToOne( cascade = {CascadeType.MERGE} ) 
-	@JoinColumn( nullable=false )
+	@ManyToOne(cascade = {CascadeType.MERGE}) 
+	@JoinColumn(nullable = false)
 	private DvObject definitionPoint;
 
     @Column(nullable = true)
@@ -85,7 +85,7 @@ public class RoleAssignment implements java.io.Serializable {
         assigneeIdentifier = anAssignee.getIdentifier();
         definitionPoint = aDefinitionPoint;
         this.privateUrlToken = privateUrlToken;
-        this.privateUrlAnonymizedAccess=anonymizedAccess;
+        this.privateUrlAnonymizedAccess = anonymizedAccess;
     }
 	
 	public Long getId() {
@@ -124,8 +124,8 @@ public class RoleAssignment implements java.io.Serializable {
         return privateUrlToken;
     }
 
-    public boolean isAnonymizedAccess(){
-        return (privateUrlAnonymizedAccess==null) ? false: privateUrlAnonymizedAccess;
+    public boolean isAnonymizedAccess() {
+        return (privateUrlAnonymizedAccess == null) ? false : privateUrlAnonymizedAccess;
     }
 
 	@Override
@@ -141,12 +141,12 @@ public class RoleAssignment implements java.io.Serializable {
 		if (obj == null) {
 			return false;
 		}
-		if ( ! (obj instanceof RoleAssignment) ) {
+		if (!(obj instanceof RoleAssignment)) {
 			return false;
 		}
 		final RoleAssignment other = (RoleAssignment) obj;
 		
-		return ( Objects.equals(getRole(), other.getRole() )
+		return (Objects.equals(getRole(), other.getRole())
 				 && Objects.equals(getAssigneeIdentifier(), other.getAssigneeIdentifier())
 					&& Objects.equals(getDefinitionPoint(), other.getDefinitionPoint()));
 		

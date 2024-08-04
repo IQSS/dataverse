@@ -134,9 +134,9 @@ public class OptionalFileParamsTest {
         String val = "A new file";
         String jsonParams = "{\"dataFileTags\": [\"Survey\", \"Event\", \"xPanel\"], \"description\": \"A new file\"}";
         
-        try{
+        try {
             OptionalFileParams instance = new OptionalFileParams(jsonParams);
-        }catch(DataFileTagException ex){
+        } catch (DataFileTagException ex) {
            // msgt("ex: " + ex.getMessage());
             String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.invalid_datafile_tag");
             msgt("errMsg: " + errMsg);
@@ -159,7 +159,7 @@ public class OptionalFileParamsTest {
                                 dataFileTags);
 
          assertEquals(val, instance.getDescription());
-         assertEquals( Arrays.asList("dog", "cat", "mouse"), instance.getCategories());
+         assertEquals(Arrays.asList("dog", "cat", "mouse"), instance.getCategories());
          assertEquals(dataFileTags, instance.getDataFileTags());
          
     }
@@ -248,11 +248,11 @@ public class OptionalFileParamsTest {
         assertEquals(fmc.getName(), instance.getCategories().get(0));
     }
 
-    private void msg(String s){
+    private void msg(String s) {
         System.out.println(s);
     }
     
-    private void msgt(String s){
+    private void msgt(String s) {
         msg("-------------------------------");
         msg(s);
         msg("-------------------------------");

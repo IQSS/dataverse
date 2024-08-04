@@ -54,7 +54,7 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
 
         DatasetFieldType dsfType = value.getDatasetFieldType();
         //SEK Additional logic turns off validation for templates
-        if (isTemplateDatasetField(value)){
+        if (isTemplateDatasetField(value)) {
             return true;
         }
 
@@ -69,13 +69,13 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
             if (parent == null || parent.getParentDatasetField().isRequired()) {
                 errorMessage = BundleUtil.getStringFromBundle("isrequired", List.of(dsfType.getDisplayName()));
             } else if (areSiblingsPopulated(value)) {
-                errorMessage = BundleUtil.getStringFromBundle("isrequired.conditional", List.of(dsfType.getDisplayName(),parent.getParentDatasetField().getDatasetFieldType().getDisplayName()));
+                errorMessage = BundleUtil.getStringFromBundle("isrequired.conditional", List.of(dsfType.getDisplayName(), parent.getParentDatasetField().getDatasetFieldType().getDisplayName()));
             }
 
             if (errorMessage != null) {
                 try {
                     context.buildConstraintViolationWithTemplate(errorMessage).addConstraintViolation();
-                } catch (NullPointerException npe){
+                } catch (NullPointerException npe) {
                     //if there's no context for the error we can't put it anywhere....
                 }
                 

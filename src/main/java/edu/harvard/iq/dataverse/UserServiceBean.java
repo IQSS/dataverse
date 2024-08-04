@@ -84,7 +84,7 @@ public class UserServiceBean {
         //
         List<AuthenticatedUser> viewObjects = new ArrayList<>();
 
-        if (userResults == null){
+        if (userResults == null) {
             return viewObjects;
         }
 
@@ -111,8 +111,8 @@ public class UserServiceBean {
 
             //String roles = getUserRolesAsString((Integer) dbResultRow[0]);
             roleString = "";
-            List<String> roleList = roleLookup.get("@" + (String)userInfo[1]);
-            if ((roleList != null)&&(!roleList.isEmpty())){
+            List<String> roleList = roleLookup.get("@" + (String) userInfo[1]);
+            if ((roleList != null) && (!roleList.isEmpty())) {
                 roleString = roleList.stream().collect(Collectors.joining(", "));
             }
             AuthenticatedUser singleUser = createAuthenticatedUserForView(userInfo, roleString, rowNum);
@@ -122,16 +122,16 @@ public class UserServiceBean {
         return viewObjects;
     }
 
-    private AuthenticatedUser createAuthenticatedUserForView (Object[] dbRowValues, String roles, int rowNum){
+    private AuthenticatedUser createAuthenticatedUserForView(Object[] dbRowValues, String roles, int rowNum) {
         AuthenticatedUser user = new AuthenticatedUser();
 
-        user.setId(new Long((int)dbRowValues[0]));
-        user.setUserIdentifier((String)dbRowValues[1]);
+        user.setId(new Long((int) dbRowValues[0]));
+        user.setUserIdentifier((String) dbRowValues[1]);
         user.setLastName(UserUtil.getStringOrNull(dbRowValues[2]));
         user.setFirstName(UserUtil.getStringOrNull(dbRowValues[3]));
         user.setEmail(UserUtil.getStringOrNull(dbRowValues[4]));
         user.setAffiliation(UserUtil.getStringOrNull(dbRowValues[5]));
-        user.setSuperuser((Boolean)(dbRowValues[6]));
+        user.setSuperuser((Boolean) (dbRowValues[6]));
         user.setPosition(UserUtil.getStringOrNull(dbRowValues[7]));
 
         user.setCreatedTime(UserUtil.getTimestampOrNull(dbRowValues[8]));
@@ -141,13 +141,13 @@ public class UserServiceBean {
         user.setAuthProviderId(UserUtil.getStringOrNull(dbRowValues[11]));
         user.setAuthProviderFactoryAlias(UserUtil.getStringOrNull(dbRowValues[12]));
 
-        user.setDeactivated((Boolean)(dbRowValues[13]));
+        user.setDeactivated((Boolean) (dbRowValues[13]));
         user.setDeactivatedTime(UserUtil.getTimestampOrNull(dbRowValues[14]));
 
         user.setMutedEmails(Type.tokenizeToSet((String) dbRowValues[15]));
         user.setMutedNotifications(Type.tokenizeToSet((String) dbRowValues[15]));
 
-        user.setRateLimitTier((int)dbRowValues[17]);
+        user.setRateLimitTier((int) dbRowValues[17]);
 
         user.setRoles(roles);
         return user;
@@ -160,20 +160,20 @@ public class UserServiceBean {
      * @param userIdentifierList
      * @return
      */
-    private HashMap<String, List<String>> retrieveRolesForUsers(List<Object[]> userObjectList){
+    private HashMap<String, List<String>> retrieveRolesForUsers(List<Object[]> userObjectList) {
         // Iterate through results, retrieving only the assignee identifiers
         // Note: userInfo[1], the assigneeIdentifier, cannot be null in the database
         //
         List<String> userIdentifierList = userObjectList.stream()
-                                        .map(userInfo -> (String)userInfo[1])
+                                        .map(userInfo -> (String) userInfo[1])
                                         .collect(Collectors.toList())
                                        ;
 
         List<Integer> databaseIds = userObjectList.stream()
-                                        .map(userInfo -> (Integer)userInfo[0])
+                                        .map(userInfo -> (Integer) userInfo[0])
                                         .collect(Collectors.toList());
 
-        if ((userIdentifierList==null)||(userIdentifierList.isEmpty())){
+        if ((userIdentifierList == null) || (userIdentifierList.isEmpty())) {
             return null;
         }
 
@@ -266,13 +266,13 @@ public class UserServiceBean {
         for (Object group[] : groupResults) {
             String alias = UserUtil.getStringOrNull(group[0]);
             String user = UserUtil.getStringOrNull(group[1]);
-            if (alias != null ) {
-                alias = "&explicit/"+alias;
+            if (alias != null) {
+                alias = "&explicit/" + alias;
 
                 if (groupIdentifiers == null) {
-                    groupIdentifiers = "'"+alias+"'";
+                    groupIdentifiers = "'" + alias + "'";
                 } else {
-                    groupIdentifiers += ", '"+alias+"'";
+                    groupIdentifiers += ", '" + alias + "'";
                 }
 
                 List<String> groupUserList = groupsLookup.getOrDefault(alias, new ArrayList<String>());
@@ -396,7 +396,7 @@ public class UserServiceBean {
             resultLimit = 1;
         }
 
-        if ((searchTerm==null) || (searchTerm.isEmpty())) {
+        if ((searchTerm == null) || (searchTerm.isEmpty())) {
             searchTerm = "";
         }
 
@@ -481,7 +481,7 @@ public class UserServiceBean {
         Query query = em.createQuery(qstr);
         query.setParameter("superuserTrue", true);
 
-        return (Long)query.getSingleResult();
+        return (Long) query.getSingleResult();
     }
 
     /**
@@ -498,7 +498,7 @@ public class UserServiceBean {
      * @return
      */
     public Long getUserCount(String searchTerm) {
-        if ((searchTerm==null) || (searchTerm.isEmpty())) {
+        if ((searchTerm == null) || (searchTerm.isEmpty())) {
             searchTerm = "";
         }
         searchTerm = searchTerm.trim();
@@ -521,7 +521,7 @@ public class UserServiceBean {
 
         Query nativeQuery = em.createNativeQuery(qstr);
 
-        return (Long)nativeQuery.getSingleResult();
+        return (Long) nativeQuery.getSingleResult();
     }
 
     public AuthenticatedUser updateLastLogin(AuthenticatedUser user) {

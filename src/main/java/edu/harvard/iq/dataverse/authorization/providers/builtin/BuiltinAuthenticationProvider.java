@@ -37,7 +37,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     final AuthenticationServiceBean authBean;
     private PasswordValidatorServiceBean passwordValidatorService;
 
-    public BuiltinAuthenticationProvider( BuiltinUserServiceBean aBean, PasswordValidatorServiceBean passwordValidatorService, AuthenticationServiceBean auBean  ) {
+    public BuiltinAuthenticationProvider(BuiltinUserServiceBean aBean, PasswordValidatorServiceBean passwordValidatorService, AuthenticationServiceBean auBean) {
         this.bean = aBean;
         this.authBean = auBean;
         this.passwordValidatorService = passwordValidatorService;
@@ -76,7 +76,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     
     @Override
     public void updatePassword(String userIdInProvider, String newPassword) {
-        BuiltinUser biUser = bean.findByUserName( userIdInProvider  );
+        BuiltinUser biUser = bean.findByUserName(userIdInProvider);
         biUser.updateEncryptedPassword(PasswordEncryption.get().encrypt(newPassword),
                                        PasswordEncryption.getLatestVersionNumber());
         bean.save(biUser);
@@ -89,20 +89,20 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
      * @return {@code true} if the password matches the user's password; {@code false} otherwise.
      */
     @Override
-    public Boolean verifyPassword( String userIdInProvider, String password ) {
-        BuiltinUser biUser = bean.findByUserName( userIdInProvider  );
-        if ( biUser == null ) return null;
+    public Boolean verifyPassword(String userIdInProvider, String password) {
+        BuiltinUser biUser = bean.findByUserName(userIdInProvider);
+        if (biUser == null) return null;
         return PasswordEncryption.getVersion(biUser.getPasswordEncryptionVersion())
                                  .check(password, biUser.getEncryptedPassword());
     }
     
 
     @Override
-    public AuthenticationResponse authenticate( AuthenticationRequest authReq ) {
-        BuiltinUser u = bean.findByUserName(authReq.getCredential(KEY_USERNAME_OR_EMAIL) );
+    public AuthenticationResponse authenticate(AuthenticationRequest authReq) {
+        BuiltinUser u = bean.findByUserName(authReq.getCredential(KEY_USERNAME_OR_EMAIL));
         AuthenticatedUser authUser = null;
         
-        if(u == null) { //If can't find by username in builtin, get the auth user and then the builtin
+        if (u == null) { //If can't find by username in builtin, get the auth user and then the builtin
             authUser = authBean.getAuthenticatedUserByEmail(authReq.getCredential(KEY_USERNAME_OR_EMAIL));
             if (authUser == null) { //if can't find by email return bad username, etc.
                 return AuthenticationResponse.makeFail("Bad username, email address, or password");
@@ -110,16 +110,16 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
             u = bean.findByUserName(authUser.getUserIdentifier());
         }
         
-        if ( u == null ) return AuthenticationResponse.makeFail("Bad username, email address, or password");
+        if (u == null) return AuthenticationResponse.makeFail("Bad username, email address, or password");
         
         boolean userAuthenticated = PasswordEncryption.getVersion(u.getPasswordEncryptionVersion())
-                                            .check(authReq.getCredential(KEY_PASSWORD), u.getEncryptedPassword() );
-        if ( ! userAuthenticated ) {
+                                            .check(authReq.getCredential(KEY_PASSWORD), u.getEncryptedPassword());
+        if (!userAuthenticated) {
             return AuthenticationResponse.makeFail("Bad username or password");
         }
         
         
-        if ( u.getPasswordEncryptionVersion() < PasswordEncryption.getLatestVersionNumber() ) {
+        if (u.getPasswordEncryptionVersion() < PasswordEncryption.getLatestVersionNumber()) {
             try {
                 String passwordResetUrl = bean.requestPasswordUpgradeLink(u);
                 
@@ -139,7 +139,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
                 return AuthenticationResponse.makeError("Error while attempting to upgrade password", ex);
             }
         }
-        if(null == authUser) {
+        if (null == authUser) {
             authUser = authBean.getAuthenticatedUser(u.getUserName());
         }
         

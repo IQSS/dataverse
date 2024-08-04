@@ -131,18 +131,18 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
         if (getExcludedSet().contains(cleanIdentifier)) {
             return null;
         }
-        if(getManagedSet().contains(cleanIdentifier)) {
+        if (getManagedSet().contains(cleanIdentifier)) {
             /** With a variable separator that could also be empty, there is no way to determine the authority and shoulder for an unknown permalink.
              * Since knowing this split isn't relevant for permalinks except for minting, the code below just assumes the authority
              * is the first 4 characters and that the separator and the shoulder are empty.
              * If this is found to cause issues, users should be able to use a managed permalink provider as a work-around. The code here could 
              * be changed to allow default lengths for the authority, separator, and shoulder and/or to add a list of known (but unmanaged) authority, separator, shoulder combos.
              */
-            if(identifierString.length() < 4) {
+            if (identifierString.length() < 4) {
                 return new GlobalId(protocol, "", identifierString, SEPARATOR, getUrlPrefix(),
                         getId());
             }
-            return new GlobalId(protocol, identifierString.substring(0,4), identifierString.substring(4), SEPARATOR, getUrlPrefix(),
+            return new GlobalId(protocol, identifierString.substring(0, 4), identifierString.substring(4), SEPARATOR, getUrlPrefix(),
                     getId());
         }
         String identifier = null;
@@ -164,7 +164,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
         if (PidProvider.testforNullTerminator(identifier)) {
             return null;
         }
-        if(!identifier.startsWith(getShoulder())) {
+        if (!identifier.startsWith(getShoulder())) {
             //Doesn't match shoulder
             return null;
         }

@@ -15,7 +15,7 @@ public class CustomQuestionValue implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column( nullable = false )
+    @Column(nullable = false)
     @NotBlank(message = "{custom.response}")
     private String valueString;
     
@@ -46,7 +46,7 @@ public class CustomQuestionValue implements Serializable {
     }
     
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private CustomQuestion customQuestion;
 
     public Long getId() {

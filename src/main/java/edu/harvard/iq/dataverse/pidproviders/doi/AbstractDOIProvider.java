@@ -55,7 +55,7 @@ public abstract class AbstractDOIProvider extends AbstractPidProvider {
             return null;
         }
         GlobalId globalId = super.parsePersistentId(protocol, identifierString);
-        if (globalId!=null && !PidProvider.checkDOIAuthority(globalId.getAuthority())) {
+        if (globalId != null && !PidProvider.checkDOIAuthority(globalId.getAuthority())) {
             return null;
         }
         return globalId;

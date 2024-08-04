@@ -52,7 +52,7 @@ public interface Group extends RoleAssignee {
      * @param aRequest The request whose inclusion we test 
      * @return {@code true} iff {@code anAssignee} is in this group; {@code false} otherwise.
      */
-    public boolean contains( DataverseRequest aRequest );
+    public boolean contains(DataverseRequest aRequest);
     
     public boolean isEditable();
     

@@ -122,10 +122,10 @@ public class CacheFactoryBeanTest {
     }
     @Test
     public void testGuestUserGettingRateLimited() {
-        Command action = new ListDataverseContentCommand(null,null);
+        Command action = new ListDataverseContentCommand(null, null);
         boolean rateLimited = false;
         int cnt = 0;
-        for (; cnt <100; cnt++) {
+        for (; cnt < 100; cnt++) {
             rateLimited = !cache.checkRate(guestUser, action);
             if (rateLimited) {
                 break;
@@ -133,35 +133,35 @@ public class CacheFactoryBeanTest {
         }
         String key = RateLimitUtil.generateCacheKey(guestUser, action.getClass().getSimpleName());
         assertTrue(cache.rateLimitCache.containsKey(key));
-        assertTrue(rateLimited && cnt > 1 && cnt <= 30, "rateLimited:"+rateLimited + " cnt:"+cnt);
+        assertTrue(rateLimited && cnt > 1 && cnt <= 30, "rateLimited:" + rateLimited + " cnt:" + cnt);
     }
 
     @Test
     public void testAdminUserExemptFromGettingRateLimited() {
-        Command action = new ListExplicitGroupsCommand(null,null);
+        Command action = new ListExplicitGroupsCommand(null, null);
         authUser.setSuperuser(true);
         authUser.setUserIdentifier("admin");
         boolean rateLimited = false;
         int cnt = 0;
-        for (; cnt <100; cnt++) {
+        for (; cnt < 100; cnt++) {
             rateLimited = !cache.checkRate(authUser, action);
             if (rateLimited) {
                 break;
             }
         }
         assertFalse(rateLimited);
-        assertTrue(cnt >= 99, "cnt:"+cnt);
+        assertTrue(cnt >= 99, "cnt:" + cnt);
     }
 
     @Test
     @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
     @ResourceLock(value = "cache")
     public void testAuthenticatedUserGettingRateLimited() throws InterruptedException {
-        Command action = new ListFacetsCommand(null,null);
+        Command action = new ListFacetsCommand(null, null);
         authUser.setRateLimitTier(2); // 120 cals per hour - 1 added token every 30 seconds
         boolean rateLimited = false;
         int cnt;
-        for (cnt = 0; cnt <200; cnt++) {
+        for (cnt = 0; cnt < 200; cnt++) {
             rateLimited = !cache.checkRate(authUser, action);
             if (rateLimited) {
                 break;
@@ -170,18 +170,18 @@ public class CacheFactoryBeanTest {
         assertTrue(rateLimited);
         assertEquals(120, cnt);
 
-        for (cnt = 0; cnt <60; cnt++) {
+        for (cnt = 0; cnt < 60; cnt++) {
             Thread.sleep(1000);// Wait for bucket to be replenished (check each second for 1 minute max)
             rateLimited = !cache.checkRate(authUser, action);
             if (!rateLimited) {
                 break;
             }
         }
-        assertFalse(rateLimited, "rateLimited:"+rateLimited + " cnt:"+cnt);
+        assertFalse(rateLimited, "rateLimited:" + rateLimited + " cnt:" + cnt);
 
         // Now change the user's tier, so it is no longer limited
         authUser.setRateLimitTier(3); // tier 3 = no limit
-        for (cnt = 0; cnt <200; cnt++) {
+        for (cnt = 0; cnt < 200; cnt++) {
             rateLimited = !cache.checkRate(authUser, action);
             if (rateLimited) {
                 break;
@@ -209,7 +209,7 @@ public class CacheFactoryBeanTest {
     }
 
     // convert Hazelcast IMap<String,String> to JCache Cache<Object, Object>
-    private class TestCache implements Cache<String, String>{
+    private class TestCache implements Cache<String, String> {
         HazelcastInstance hzInstance;
         IMap<String, String> cache;
         TestCache(Config config) {
@@ -236,7 +236,7 @@ public class CacheFactoryBeanTest {
         }
         @Override
         public void put(String s, String s2) {
-            cache.put(s,s2);
+            cache.put(s, s2);
         }
         @Override
         public String getAndPut(String s, String s2) {

@@ -32,7 +32,7 @@ public class RemoteOverlayAccessIOTest {
     private Dataset dataset;
     private DataFile datafile;
     private DataFile badDatafile;
-    private String baseStoreId="182ad2bda2f-c3508e719076";
+    private String baseStoreId = "182ad2bda2f-c3508e719076";
     private String logoPath = "images/dataverse_project_logo.svg";
     private String authority = "10.5072";
     private String identifier = "F2/ABCDEF";

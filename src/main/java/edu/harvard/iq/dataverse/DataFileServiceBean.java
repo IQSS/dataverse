@@ -82,11 +82,11 @@ public class DataFileServiceBean implements java.io.Serializable {
     private static final String MIME_TYPE_STATA = "application/x-stata";
     private static final String MIME_TYPE_STATA13 = "application/x-stata-13";
     private static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
-    private static final String MIME_TYPE_CSV   = "text/csv";
+    private static final String MIME_TYPE_CSV = "text/csv";
     private static final String MIME_TYPE_CSV_ALT = "text/comma-separated-values";
-    private static final String MIME_TYPE_TSV   = "text/tsv";
-    public static final String MIME_TYPE_TSV_ALT   = "text/tab-separated-values";
-    private static final String MIME_TYPE_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private static final String MIME_TYPE_TSV = "text/tsv";
+    public static final String MIME_TYPE_TSV_ALT = "text/tab-separated-values";
+    private static final String MIME_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
     private static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
     
@@ -118,7 +118,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     // Supported Astrophysics formats: 
     // (only FITS at this point)
     
-    private static final String MIME_TYPE_FITS  = "application/fits";
+    private static final String MIME_TYPE_FITS = "application/fits";
 
     // Network Data files: 
     // (only GRAPHML at this point): 
@@ -128,7 +128,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     // SHAPE file type: 
     // this is the only supported file type in the GEO DATA class:
         
-    private static final String MIME_TYPE_ZIP   = "application/zip";
+    private static final String MIME_TYPE_ZIP = "application/zip";
     
     private static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
     private static final String MIME_TYPE_UNDETERMINED_BINARY = "application/binary";
@@ -158,21 +158,21 @@ public class DataFileServiceBean implements java.io.Serializable {
         
     }*/
     
-    public List<DataFile> findAll(List<Long> fileIds){
+    public List<DataFile> findAll(List<Long> fileIds) {
         List<DataFile> dataFiles = new ArrayList<>();
 
-         for (Long fileId : fileIds){
+         for (Long fileId : fileIds) {
              dataFiles.add(find(fileId));
          }
 
         return dataFiles;
     }
 
-    public List<DataFile> findAll(String fileIdsAsString){
+    public List<DataFile> findAll(String fileIdsAsString) {
         ArrayList<Long> dataFileIds = new ArrayList<>();
 
         String[] fileIds = fileIdsAsString.split(",");
-        for (String fId : fileIds){
+        for (String fId : fileIds) {
             dataFileIds.add(Long.parseLong(fId));
         }
 
@@ -191,25 +191,25 @@ public class DataFileServiceBean implements java.io.Serializable {
         return em.createNamedQuery("DataFile.findByReleaseUserId").setParameter("releaseUserId", releaseUserId).getResultList();
     }
 
-    public DataFile findReplacementFile(Long previousFileId){
+    public DataFile findReplacementFile(Long previousFileId) {
         Query query = em.createQuery("select object(o) from DataFile as o where o.previousDataFileId = :previousFileId");
         query.setParameter("previousFileId", previousFileId);
         try {
-            DataFile retVal = (DataFile)query.getSingleResult();
+            DataFile retVal = (DataFile) query.getSingleResult();
             return retVal;
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             return null;
         }
     }
 
     
-    public DataFile findPreviousFile(DataFile df){
+    public DataFile findPreviousFile(DataFile df) {
         TypedQuery<DataFile> query = em.createQuery("select o from DataFile o" + " WHERE o.id = :dataFileId", DataFile.class);
         query.setParameter("dataFileId", df.getPreviousDataFileId());
         try {
             DataFile retVal = query.getSingleResult();
             return retVal;
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             return null;
         }
     }
@@ -282,13 +282,13 @@ public class DataFileServiceBean implements java.io.Serializable {
                     .getResultList();
     }
     
-    public List<FileMetadata> findFileMetadataByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
+    public List<FileMetadata> findFileMetadataByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
 
         String sortField = sortFieldAndOrder.getSortField();
         String sortOrder = sortFieldAndOrder.getSortOrder();
         String searchClause = "";
-        if(searchTerm != null && !searchTerm.isEmpty()){
+        if (searchTerm != null && !searchTerm.isEmpty()) {
             searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
         }
         
@@ -300,38 +300,38 @@ public class DataFileServiceBean implements java.io.Serializable {
             .getResultList();
     }
     
-    public List<Integer> findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
+    public List<Integer> findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
         
-        searchTerm=searchTerm.trim();
+        searchTerm = searchTerm.trim();
         String sortField = sortFieldAndOrder.getSortField();
         String sortOrder = sortFieldAndOrder.getSortOrder();
         String searchClause = "";
-        if(searchTerm != null && !searchTerm.isEmpty()){
+        if (searchTerm != null && !searchTerm.isEmpty()) {
             searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
         }
         
         //the createNativeQuary takes persistant entities, which Integer.class is not,
         //which is causing the exception. Hence, this query does not need an Integer.class
         //as the second parameter. 
-        return em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
+        return em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = " + datasetVersionId
                 + searchClause
                 + " order by o." + sortField + " " + sortOrder)
                 .getResultList();
     }
     
-    public List<Long> findDataFileIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder){
+    public List<Long> findDataFileIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder) {
         FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
         
-        searchTerm=searchTerm.trim();
+        searchTerm = searchTerm.trim();
         String sortField = sortFieldAndOrder.getSortField();
         String sortOrder = sortFieldAndOrder.getSortOrder();
         String searchClause = "";
-        if(searchTerm != null && !searchTerm.isEmpty()){
+        if (searchTerm != null && !searchTerm.isEmpty()) {
             searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
         }
         
-        return em.createNativeQuery("select o.datafile_id from FileMetadata o where o.datasetVersion_id = "  + datasetVersionId
+        return em.createNativeQuery("select o.datafile_id from FileMetadata o where o.datasetVersion_id = " + datasetVersionId
                 + searchClause
                 + " order by o." + sortField + " " + sortOrder)
                 .getResultList();
@@ -353,7 +353,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                 .getResultList();
     }
     
-    public Long findCountByDatasetVersionId(Long datasetVersionId){
+    public Long findCountByDatasetVersionId(Long datasetVersionId) {
         return (Long) em.createNativeQuery("select count(*)  from FileMetadata fmd "
                 + " where fmd.datasetVersion_id = " + datasetVersionId
                 + ";").getSingleResult();
@@ -371,7 +371,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         try {
             FileMetadata retVal = (FileMetadata) query.getSingleResult();
             return retVal;
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             return null;
         }
     }
@@ -389,12 +389,12 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
     
-    public List<DataFile> findAllCheapAndEasy(String fileIdsAsString){ 
+    public List<DataFile> findAllCheapAndEasy(String fileIdsAsString) { 
         //assumption is that the fileIds are separated by ','
-        ArrayList <DataFile> dataFilesFound = new ArrayList<>();
+        ArrayList<DataFile> dataFilesFound = new ArrayList<>();
         String[] fileIds = fileIdsAsString.split(",");
         DataFile df = this.findCheapAndEasy(Long.parseLong(fileIds[0]));
-        if(df != null){
+        if (df != null) {
             dataFilesFound.add(df);
         }
 
@@ -512,9 +512,9 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         
         // TODO: check for nulls
-        owner.setId((Long)result[16]);
-        owner.setAuthority((String)result[17]);
-        owner.setIdentifier((String)result[18]);
+        owner.setId((Long) result[16]);
+        owner.setAuthority((String) result[17]);
+        owner.setIdentifier((String) result[18]);
 
         String checksumType = (String) result[19];
         if (checksumType != null) {
@@ -528,12 +528,12 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         
         Long previousDataFileId = (Long) result[20];
-        if (previousDataFileId != null){
+        if (previousDataFileId != null) {
             dataFile.setPreviousDataFileId(previousDataFileId);
         }
         
         Long rootDataFileId = (Long) result[21];
-        if (rootDataFileId != null){
+        if (rootDataFileId != null) {
             dataFile.setRootDataFileId(rootDataFileId);
         } 
         
@@ -572,15 +572,15 @@ public class DataFileServiceBean implements java.io.Serializable {
 
                 dataTable.setId(((Integer) dtResult[0]).longValue());
             
-                dataTable.setUnf((String)dtResult[1]);
+                dataTable.setUnf((String) dtResult[1]);
             
-                dataTable.setCaseQuantity((Long)dtResult[2]);
+                dataTable.setCaseQuantity((Long) dtResult[2]);
             
-                dataTable.setVarQuantity((Long)dtResult[3]);
+                dataTable.setVarQuantity((Long) dtResult[3]);
             
-                dataTable.setOriginalFileFormat((String)dtResult[4]);
+                dataTable.setOriginalFileFormat((String) dtResult[4]);
                 
-                dataTable.setOriginalFileSize((Long)dtResult[5]);
+                dataTable.setOriginalFileSize((Long) dtResult[5]);
                 
                 dataTable.setDataFile(dataFile);
                 dataFile.setDataTable(dataTable);
@@ -599,7 +599,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                     List<String> fileTagLabels = DataFileTag.listTags();
                     
                     for (Object[] tagResult : tagResults) {
-                        Integer tagId = (Integer)tagResult[0];
+                        Integer tagId = (Integer) tagResult[0];
                         DataFileTag tag = new DataFileTag();
                         tag.setTypeByLabel(fileTagLabels.get(tagId));
                         tag.setDataFile(dataFile);
@@ -636,7 +636,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         List<FileMetadata> retList = new ArrayList<>();
         Map<Long, Set<Long>> categoryMetaMap = new HashMap<>();
         
-        List<Object[]> categoryResults = em.createNativeQuery("select t0.filecategories_id, t0.filemetadatas_id from filemetadata_datafilecategory t0, filemetadata t1 where (t0.filemetadatas_id = t1.id) AND (t1.datasetversion_id = "+version.getId()+")").getResultList();
+        List<Object[]> categoryResults = em.createNativeQuery("select t0.filecategories_id, t0.filemetadatas_id from filemetadata_datafilecategory t0, filemetadata t1 where (t0.filemetadatas_id = t1.id) AND (t1.datasetversion_id = " + version.getId() + ")").getResultList();
         int i = 0;
         for (Object[] result : categoryResults) {
             Long category_id = (Long) result[0];
@@ -647,9 +647,9 @@ public class DataFileServiceBean implements java.io.Serializable {
             categoryMetaMap.get(filemeta_id).add(category_id);
             i++;
         }
-        logger.fine("Retrieved and mapped "+i+" file categories attached to files in the version "+version.getId());
+        logger.fine("Retrieved and mapped " + i + " file categories attached to files in the version " + version.getId());
         
-        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL, prov_freeform from FileMetadata where datasetversion_id = "+version.getId() + " ORDER BY LABEL").getResultList();
+        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL, prov_freeform from FileMetadata where datasetversion_id = " + version.getId() + " ORDER BY LABEL").getResultList();
         
         for (Object[] result : metadataResults) {
             Integer filemeta_id = (Integer) result[0];
@@ -704,19 +704,19 @@ public class DataFileServiceBean implements java.io.Serializable {
             }
             
             String dirLabel = (String) result[5];
-            if (dirLabel != null){
+            if (dirLabel != null) {
                 fileMetadata.setDirectoryLabel(dirLabel);
             }
             
             String provFreeForm = (String) result[6];
-            if (provFreeForm != null){
+            if (provFreeForm != null) {
                 fileMetadata.setProvFreeForm(provFreeForm);
             }
                         
             retList.add(fileMetadata);
         }
         
-        logger.fine("Retrieved "+retList.size()+" file metadatas for version "+version.getId()+" (inside the retrieveFileMetadataForVersion method).");
+        logger.fine("Retrieved " + retList.size() + " file metadatas for version " + version.getId() + " (inside the retrieveFileMetadataForVersion method).");
                 
         
         /* 
@@ -732,7 +732,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public List<DataFile> findIngestsInProgress() {
-        if ( em.isOpen() ) {
+        if (em.isOpen()) {
             String qr = "select object(o) from DataFile as o where o.ingestStatus =:scheduledStatusCode or o.ingestStatus =:progressStatusCode order by o.id";
             return em.createQuery(qr, DataFile.class)
                 .setParameter("scheduledStatusCode", DataFile.INGEST_STATUS_SCHEDULED)
@@ -750,9 +750,9 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         Object singleResult;
         
-        try{
-            return (DataTable)query.getSingleResult();
-        }catch(NoResultException ex){
+        try {
+            return (DataTable) query.getSingleResult();
+        } catch (NoResultException ex) {
             return null;
         }
     }
@@ -789,13 +789,13 @@ public class DataFileServiceBean implements java.io.Serializable {
         } 
     }
     
-    private void msg(String m){
+    private void msg(String m) {
         System.out.println(m);
     }
-    private void dashes(){
+    private void dashes() {
         msg("----------------");
     }
-    private void msgt(String m){
+    private void msgt(String m) {
         dashes(); msg(m); dashes();
     }
     
@@ -804,12 +804,12 @@ public class DataFileServiceBean implements java.io.Serializable {
         of a file
     
     */
-    public DataFile setAndCheckFileReplaceAttributes(DataFile savedDataFile){
+    public DataFile setAndCheckFileReplaceAttributes(DataFile savedDataFile) {
                
         // Is this the initial version of a file?
         
-        if ((savedDataFile.getRootDataFileId() == null)||
-                (savedDataFile.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT))){
+        if ((savedDataFile.getRootDataFileId() == null) ||
+                (savedDataFile.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT))) {
             msg("yes, initial version");
  
            // YES!  Set the RootDataFileId to the Id
@@ -820,7 +820,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
             return em.merge(savedDataFile);   
            
-        }else{       
+        } else {       
             // Looking Good Billy Ray! Feeling Good Louis!    
             msg("nope, looks ok");
 
@@ -829,14 +829,14 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     
-    public Boolean isPreviouslyPublished(Long fileId){
+    public Boolean isPreviouslyPublished(Long fileId) {
         Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id =:fileId");
         query.setParameter("fileId", fileId);
         List<?> retList = query.getResultList();
         return (retList.size() > 1);
     }
     
-    public void deleteFromVersion( DatasetVersion d, DataFile f ) {
+    public void deleteFromVersion(DatasetVersion d, DataFile f) {
 		em.createNamedQuery("DataFile.removeFromDatasetVersion")
 			.setParameter("versionId", d.getId()).setParameter("fileId", f.getId())
 				.executeUpdate();
@@ -910,11 +910,11 @@ public class DataFileServiceBean implements java.io.Serializable {
         return storageIdentifier; 
     }
     
-    public boolean isSpssPorFile (DataFile file) {
+    public boolean isSpssPorFile(DataFile file) {
         return (file != null) ? MIME_TYPE_SPSS_POR.equalsIgnoreCase(file.getContentType()) : false;
     }
     
-    public boolean isSpssSavFile (DataFile file) {
+    public boolean isSpssSavFile(DataFile file) {
         return (file != null) ? MIME_TYPE_SPSS_SAV.equalsIgnoreCase(file.getContentType()) : false;
     }
     
@@ -932,7 +932,7 @@ public class DataFileServiceBean implements java.io.Serializable {
      * ready to be downloaded. (it will try to generate a thumbnail for supported
      * file types, if not yet available)
      */
-    public boolean isThumbnailAvailable (DataFile file) {
+    public boolean isThumbnailAvailable(DataFile file) {
         if (file == null) {
             return false; 
         } 
@@ -978,7 +978,7 @@ public class DataFileServiceBean implements java.io.Serializable {
      * Methods for identifying "classes" (groupings) of files by type:
     */
     
-    public String getFileClassById (Long fileId) {
+    public String getFileClassById(Long fileId) {
         DataFile file = find(fileId);
         
         if (file == null) {
@@ -988,7 +988,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         return getFileThumbnailClass(file);
     }
     
-    public String getFileThumbnailClass (DataFile file) {
+    public String getFileThumbnailClass(DataFile file) {
         // there's no solr search facet for "package files", but
         // there is a special thumbnail icon:
         if (isFileClassPackage(file)) {
@@ -1008,7 +1008,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     
     
-    public boolean isFileClassImage (DataFile file) {
+    public boolean isFileClassImage(DataFile file) {
         if (file == null) {
             return false;
         }
@@ -1030,7 +1030,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (contentType != null && (contentType.toLowerCase().startsWith("image/")));
     }
     
-    public boolean isFileClassAudio (DataFile file) {
+    public boolean isFileClassAudio(DataFile file) {
         if (file == null) {
             return false;
         }
@@ -1044,7 +1044,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         return (contentType != null && (contentType.toLowerCase().startsWith("audio/")));    
     }
     
-    public boolean isFileClassCode (DataFile file) {
+    public boolean isFileClassCode(DataFile file) {
         if (file == null) {
             return false;
         }
@@ -1061,7 +1061,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
     }
     
-    public boolean isFileClassDocument (DataFile file) {
+    public boolean isFileClassDocument(DataFile file) {
         if (file == null) {
             return false;
         }
@@ -1082,7 +1082,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
     }
     
-    public boolean isFileClassAstro (DataFile file) {
+    public boolean isFileClassAstro(DataFile file) {
         if (file == null) {
             return false;
         }
@@ -1096,7 +1096,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
     }
     
-    public boolean isFileClassNetwork (DataFile file) {
+    public boolean isFileClassNetwork(DataFile file) {
         if (file == null) {
             return false;
         }
@@ -1122,7 +1122,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     */
     
-    public boolean isFileClassGeo (DataFile file) {
+    public boolean isFileClassGeo(DataFile file) {
         if (file == null) {
             return false;
         }
@@ -1135,7 +1135,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         return FileUtil.MIME_TYPE_GEO_SHAPE.equalsIgnoreCase(contentType);
     }
     
-    public boolean isFileClassTabularData (DataFile file) {
+    public boolean isFileClassTabularData(DataFile file) {
         if (file == null) {
             return false;
         }
@@ -1166,7 +1166,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
     }
     
-    public boolean isFileClassVideo (DataFile file) {
+    public boolean isFileClassVideo(DataFile file) {
         if (file == null) {
             return false;
         }
@@ -1181,7 +1181,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
     }
     
-    public boolean isFileClassPackage (DataFile file) {
+    public boolean isFileClassPackage(DataFile file) {
         if (file == null) {
             return false;
         }
@@ -1195,7 +1195,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         solrSearchResult.setEntity(this.findCheapAndEasy(solrSearchResult.getEntityId()));
     }
     
-    public boolean hasBeenDeleted(DataFile df){
+    public boolean hasBeenDeleted(DataFile df) {
         Dataset dataset = df.getOwner();
         DatasetVersion dsv = dataset.getLatestVersion();
         
@@ -1213,15 +1213,15 @@ public class DataFileServiceBean implements java.io.Serializable {
      */
     public boolean isReplacementFile(DataFile df) {
 
-        if (df.getPreviousDataFileId() == null){
+        if (df.getPreviousDataFileId() == null) {
             return false;
-        }else if (df.getPreviousDataFileId() < 1){
+        } else if (df.getPreviousDataFileId() < 1) {
             String errMSg = "Stop! previousDataFileId should either be null or a number greater than 0";
             logger.severe(errMSg);
             return false;
             // blow up -- this shouldn't happen!
             //throw new FileReplaceException(errMSg);
-        }else if (df.getPreviousDataFileId() > 0){
+        } else if (df.getPreviousDataFileId() > 0) {
             return true;
         }
         return false;
@@ -1262,7 +1262,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             throw new IOException("Attempted to permanently delete a physical file still associated with an existing DvObject "
                     + "(id: " + dataFileId + ", location: " + storageLocation);
         }
-        if(storageLocation == null || storageLocation.isBlank()) {
+        if (storageLocation == null || storageLocation.isBlank()) {
             throw new IOException("Attempted to delete a physical file with no location "
                     + "(id: " + dataFileId + ", location: " + storageLocation);
         }
@@ -1357,7 +1357,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
     
     public boolean isFoldersMetadataPresentInVersion(DatasetVersion datasetVersion) {
-        Query query = em.createNativeQuery("SELECT id FROM fileMetadata WHERE datasetversion_id="+datasetVersion.getId()+" AND directoryLabel IS NOT null LIMIT 1");
+        Query query = em.createNativeQuery("SELECT id FROM fileMetadata WHERE datasetversion_id=" + datasetVersion.getId() + " AND directoryLabel IS NOT null LIMIT 1");
         
         try {
             int count = query.getResultList().size();

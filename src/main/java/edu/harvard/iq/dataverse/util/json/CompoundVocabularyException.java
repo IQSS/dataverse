@@ -26,10 +26,10 @@ public class CompoundVocabularyException extends JsonParseException {
     public CompoundVocabularyException(String message, List<ControlledVocabularyException>  cause, List<DatasetFieldCompoundValue> vals) {
         super(message);
         exList = cause;
-        this.message=message;
-        this.validValues=vals;
+        this.message = message;
+        this.validValues = vals;
         for (ControlledVocabularyException ex : exList) {
-            this.message+= ex.getMessage() +";";
+            this.message += ex.getMessage() + ";";
         }
     }
 

@@ -17,7 +17,7 @@ public class DatasetAuthor {
     public static Comparator<DatasetAuthor> DisplayOrder = new Comparator<DatasetAuthor>(){
         @Override
         public int compare(DatasetAuthor o1, DatasetAuthor o2) {
-            return o1.getDisplayOrder()-o2.getDisplayOrder();
+            return o1.getDisplayOrder() - o2.getDisplayOrder();
         }
     };
     
@@ -58,7 +58,7 @@ public class DatasetAuthor {
     private String idType;
 
     public String getIdType() {
-        if ((this.idType == null || this.idType.isEmpty()) && (this.idValue != null && !this.idValue.isEmpty())){
+        if ((this.idType == null || this.idType.isEmpty()) && (this.idValue != null && !this.idValue.isEmpty())) {
             return ("ORCID");
         } else {
             return idType;
@@ -81,8 +81,8 @@ public class DatasetAuthor {
     }
 
     public boolean isEmpty() {
-        return ( (affiliation==null || affiliation.getValue().trim().equals(""))
-            && (name==null || name.getValue().trim().equals(""))
+        return ((affiliation == null || affiliation.getValue().trim().equals(""))
+            && (name == null || name.getValue().trim().equals(""))
            );
     }
 

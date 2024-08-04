@@ -158,7 +158,7 @@ public class SystemConfig {
 
     public boolean isProvCollectionEnabled() {
         String provCollectionEnabled = settingsService.getValueForKey(SettingsServiceBean.Key.ProvCollectionEnabled, null);
-        if("true".equalsIgnoreCase(provCollectionEnabled)){         
+        if ("true".equalsIgnoreCase(provCollectionEnabled)) {         
             return true;
         }
         return false;
@@ -385,7 +385,7 @@ public class SystemConfig {
         return getLongLimitFromStringOrDefault(limitSetting, DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT);
     }
     
-    public long getUploadLogoSizeLimit(){
+    public long getUploadLogoSizeLimit() {
         return 500000;
     }
 
@@ -435,7 +435,7 @@ public class SystemConfig {
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
         //Now get the language-specific value if it exists
         if (language != null && !language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage())) {
-            appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language,	appTermsOfUse);
+            appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language, appTermsOfUse);
         }
         return appTermsOfUse;
     }
@@ -465,7 +465,7 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FilesOnDatasetPageFromSolr, safeDefaultIfKeyNotFound);
     }
 
-    public Long getMaxFileUploadSizeForStore(String driverId){
+    public Long getMaxFileUploadSizeForStore(String driverId) {
          return settingsService.getValueForCompoundKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes, driverId);
      }
     
@@ -518,7 +518,7 @@ public class SystemConfig {
                 Long sizeOption = new Long(limitEntry);
                 return sizeOption;
             } catch (NumberFormatException nfe) {
-                logger.warning("Invalid value for TabularIngestSizeLimit:" + formatName + "? - " + limitEntry );
+                logger.warning("Invalid value for TabularIngestSizeLimit:" + formatName + "? - " + limitEntry);
             }
         }
         
@@ -848,7 +848,7 @@ public class SystemConfig {
             return text;
         }
         
-        private DataFilePIDFormat(final String text){
+        private DataFilePIDFormat(final String text) {
             this.text = text;
         }
         
@@ -897,40 +897,40 @@ public class SystemConfig {
 
     }
     
-    public boolean isPublicInstall(){
+    public boolean isPublicInstall() {
         boolean saneDefault = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
     }
 
     @Deprecated(forRemoval = true, since = "2024-07-07")
-    public boolean isRsyncUpload(){
+    public boolean isRsyncUpload() {
         return getMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString(), true);
     }
 
-    public boolean isGlobusUpload(){
+    public boolean isGlobusUpload() {
         return getMethodAvailable(FileUploadMethods.GLOBUS.toString(), true);
     }
     
-    public boolean isWebloaderUpload(){
+    public boolean isWebloaderUpload() {
         return getMethodAvailable(FileUploadMethods.WEBLOADER.toString(), true);
     }
 
     // Controls if HTTP upload is enabled for both GUI and API.
-    public boolean isHTTPUpload(){       
+    public boolean isHTTPUpload() {       
         return getMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString(), true);
     }
 
     @Deprecated(forRemoval = true, since = "2024-07-07")
-    public boolean isRsyncOnly(){
+    public boolean isRsyncOnly() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        if(downloadMethods == null){
+        if (downloadMethods == null) {
             return false;
         }
-        if (!downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString())){
+        if (!downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString())) {
             return false;
         }
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
-        if (uploadMethods==null){
+        if (uploadMethods == null) {
             return false;
         } else {
            return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
@@ -964,9 +964,9 @@ public class SystemConfig {
         }
     }
     
-    public Integer getUploadMethodCount(){
+    public Integer getUploadMethodCount() {
         String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
-        if (uploadMethods==null){
+        if (uploadMethods == null) {
             return 0;
         } else {
            return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
@@ -1091,7 +1091,7 @@ public class SystemConfig {
         Map<String, String[]> labelMap = new HashMap<String, String[]>();
         String setting = settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "");
         if (!setting.isEmpty()) {
-            try (JsonReader jsonReader = Json.createReader(new StringReader(setting))){
+            try (JsonReader jsonReader = Json.createReader(new StringReader(setting))) {
                 
                 Pattern pattern = Pattern.compile("(^[\\w ]+$)"); // alphanumeric, underscore and whitespace allowed
 
@@ -1128,7 +1128,7 @@ public class SystemConfig {
     }
     
     public boolean isSignupDisabledForRemoteAuthProvider(String providerId) {
-        Boolean ret =  settingsService.getValueForCompoundKeyAsBoolean(SettingsServiceBean.Key.AllowRemoteAuthSignUp, providerId);
+        Boolean ret = settingsService.getValueForCompoundKeyAsBoolean(SettingsServiceBean.Key.AllowRemoteAuthSignUp, providerId);
         
         // we default to false - i.e., "not disabled" if the setting is not present: 
         if (ret == null) {

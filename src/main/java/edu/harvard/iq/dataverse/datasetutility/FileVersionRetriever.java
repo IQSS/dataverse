@@ -30,11 +30,11 @@ public class FileVersionRetriever {
      * @param fileService
      * @param chosenFileId 
      */
-    public FileVersionRetriever(DataFileServiceBean fileService, Long chosenFileId){
-        if (fileService == null){
+    public FileVersionRetriever(DataFileServiceBean fileService, Long chosenFileId) {
+        if (fileService == null) {
             throw new NullPointerException("fileService cannot be null");
         }
-        if (chosenFileId == null){
+        if (chosenFileId == null) {
             throw new NullPointerException("chosenFileId cannot be null");
         }
         dataFileService = fileService;
@@ -52,11 +52,11 @@ public class FileVersionRetriever {
      * @param fileService
      * @param chosenFile 
      */
-    public FileVersionRetriever(DataFileServiceBean fileService, DataFile selectedFile){
-        if (fileService == null){
+    public FileVersionRetriever(DataFileServiceBean fileService, DataFile selectedFile) {
+        if (fileService == null) {
             throw new NullPointerException("fileService cannot be null");
         }
-        if (selectedFile == null){
+        if (selectedFile == null) {
             throw new NullPointerException("selectedFile cannot be null");
         }
         dataFileService = fileService;
@@ -68,7 +68,7 @@ public class FileVersionRetriever {
      * 
      * 
      */
-    private void buildFileVersionHistory(){
+    private void buildFileVersionHistory() {
         
         
         //dataFileService.

@@ -24,7 +24,7 @@ public interface CredentialsAuthenticationProvider extends AuthenticationProvide
             this.secret = secret;
         }
         public Credential(String key) {
-            this( key, false); 
+            this(key, false); 
         }
        
         public String getKey() {
@@ -52,5 +52,5 @@ public interface CredentialsAuthenticationProvider extends AuthenticationProvide
      * @return response with the result of the authentication process.
      * TODO BACKLOG push this method down to CredentialsAuthenticationProvider.
      */
-    AuthenticationResponse authenticate( AuthenticationRequest request );
+    AuthenticationResponse authenticate(AuthenticationRequest request);
 }

@@ -41,7 +41,7 @@ public class DataReaderTest {
     // This should throw until we figure out what to do with uLongs that are large
     @Test
     void testReadULong() throws IOException {
-        byte[] bytes = {-1,-1,-1,-1,-1,-1,-1,-1,};
+        byte[] bytes = {-1, -1, -1, -1, -1, -1, -1, -1,};
         BufferedInputStream stream = new BufferedInputStream(new ByteArrayInputStream(bytes));
         DataReader reader = new DataReader(stream);
         reader.setLSF(true);

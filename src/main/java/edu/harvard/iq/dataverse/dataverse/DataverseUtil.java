@@ -82,7 +82,7 @@ public class DataverseUtil {
             FileUtils.writeStringToFile(tempFile, jsonMetadata);
 
             // run the external executable:
-            String[] params = { executable, tempFile.getAbsolutePath() };
+            String[] params = {executable, tempFile.getAbsolutePath()};
             Process p = Runtime.getRuntime().exec(params);
             p.waitFor();
 

@@ -17,10 +17,10 @@ import jakarta.validation.constraints.NotNull;
 
 @Entity
 @NamedQueries({
-    @NamedQuery( name="ApiToken.findByTokenString", query="SELECT t FROM ApiToken t WHERE t.tokenString = :tokenString" ),
-    @NamedQuery( name="ApiToken.findByUser",        query="SELECT t FROM ApiToken t WHERE t.authenticatedUser = :user")
+    @NamedQuery(name = "ApiToken.findByTokenString", query = "SELECT t FROM ApiToken t WHERE t.tokenString = :tokenString"),
+    @NamedQuery(name = "ApiToken.findByUser", query = "SELECT t FROM ApiToken t WHERE t.authenticatedUser = :user")
 })
-@Table(indexes = {@Index(columnList="authenticateduser_id")})
+@Table(indexes = {@Index(columnList = "authenticateduser_id")})
 public class ApiToken implements Serializable {
 
     @Id

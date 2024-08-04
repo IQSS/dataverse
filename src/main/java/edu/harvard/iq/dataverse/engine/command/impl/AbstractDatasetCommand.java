@@ -118,13 +118,13 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                     .map(cv -> cv.getMessage() + " (Invalid value:" + cv.getInvalidValue() + ")")
                     .collect(joining(", ", "Validation Failed: ", "."));
                 
-                validationMessage  += constraintViolations.stream()
+                validationMessage += constraintViolations.stream()
                     .filter(cv -> cv.getRootBean() instanceof TermsOfUseAndAccess)
                     .map(cv -> cv.toString());
                 
-                for (ConstraintViolation cv : constraintViolations){
-                    if (cv.getRootBean() instanceof TermsOfUseAndAccess){
-                        throw new IllegalCommandException(validationMessage,  this);
+                for (ConstraintViolation cv : constraintViolations) {
+                    if (cv.getRootBean() instanceof TermsOfUseAndAccess) {
+                        throw new IllegalCommandException(validationMessage, this);
                     }
                 }
 
@@ -156,23 +156,23 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
     protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt, boolean retry) throws CommandException {
         if (!theDataset.isIdentifierRegistered()) {
             PidProvider pidProvider = PidUtil.getPidProvider(theDataset.getGlobalId().getProviderId());
-            if ( pidProvider != null ) {
+            if (pidProvider != null) {
                 try {
                     if (pidProvider.alreadyRegistered(theDataset)) {
                         int attempts = 0;
-                        if(retry) {
-                            do  {
+                        if (retry) {
+                            do {
                                 pidProvider.generatePid(theDataset);
                                 logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
                                     new Object[]{theDataset.getId(), theDataset.getIdentifier()});
                                 attempts++;
                             } while (pidProvider.alreadyRegistered(theDataset) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
                         }
-                        if(!retry) {
-                            logger.warning("Reserving PID for: "  + getDataset().getId() + " during publication failed.");
+                        if (!retry) {
+                            logger.warning("Reserving PID for: " + getDataset().getId() + " during publication failed.");
                             throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.pidNotReserved"), this);
                         }
-                        if(attempts > FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+                        if (attempts > FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
                             //Didn't work - we existed the loop with too many tries
                             throw new CommandExecutionException("This dataset may not be published because its identifier is already in use by another dataset; "
                                 + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);

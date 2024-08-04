@@ -46,7 +46,7 @@ public class RateLimitUtil {
         long currentTime = System.currentTimeMillis() / 60000L; // convert to minutes
         double tokensPerMinute = (capacityPerHour / 60.0);
         // Get the last time this bucket was added to
-        final String keyLastUpdate = String.format("%s:last_update",key);
+        final String keyLastUpdate = String.format("%s:last_update", key);
         long lastUpdate = longFromKey(rateLimitCache, keyLastUpdate);
         long deltaTime = currentTime - lastUpdate;
         // Get the current number of tokens in the bucket
@@ -57,7 +57,7 @@ public class RateLimitUtil {
             rateLimitCache.put(keyLastUpdate, String.valueOf(currentTime));
         }
         // Update with any added tokens and decrement 1 token for this call if not rate limited (0 tokens)
-        rateLimitCache.put(key, String.valueOf(max(0, tokens-1)));
+        rateLimitCache.put(key, String.valueOf(max(0, tokens - 1)));
         return tokens < 1;
     }
 
@@ -67,7 +67,7 @@ public class RateLimitUtil {
         }
         
         if (rateLimitMap.containsKey(getMapKey(tier, action))) {
-            return rateLimitMap.get(getMapKey(tier,action));
+            return rateLimitMap.get(getMapKey(tier, action));
         } else if (rateLimitMap.containsKey(getMapKey(tier))) {
             return rateLimitMap.get(getMapKey(tier));
         } else {

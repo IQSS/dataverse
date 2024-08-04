@@ -72,8 +72,8 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             Optional<String> failureMessage = validateChildConstraints(value.getDatasetField());
             if (failureMessage.isPresent()) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getParentDatasetFieldType().getDisplayName() +  "  " +
-                            BundleUtil.getStringFromBundle(failureMessage.get()) ).addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(dsfType.getParentDatasetFieldType().getDisplayName() + "  " +
+                            BundleUtil.getStringFromBundle(failureMessage.get())).addConstraintViolation();
 
                     // save the failure message in the parent so we don't keep validating the children
                     value.getDatasetField().getParentDatasetFieldCompoundValue().getParentDatasetField().setValidationMessage(failureMessage.get());
@@ -157,7 +157,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
             if (!valid) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() +  "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidDate")  ).addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidDate")).addConstraintViolation();
                 } catch (NullPointerException npe) {
 
                 }
@@ -172,7 +172,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             } catch (Exception e) {
                 logger.fine("Float value failed validation: " + value.getValue() + " (" + dsfType.getDisplayName() + ")");
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() +  "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidNumber") ).addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidNumber")).addConstraintViolation();
                 } catch (NullPointerException npe) {
 
                 }
@@ -186,7 +186,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
                 Integer.parseInt(value.getValue());
             } catch (Exception e) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() +  "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidInteger")  ).addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidInteger")).addConstraintViolation();
                 } catch (NullPointerException npe) {
 
                 }
@@ -199,7 +199,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         if (fieldType.equals(FieldType.URL) && !lengthOnly) {
             boolean isValidUrl = URLValidator.isURLValid(value.getValue());
             if (!isValidUrl) {
-                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() +  "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidURL")).addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidURL")).addConstraintViolation();
                 return false;
             }
         }
@@ -207,7 +207,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         if (fieldType.equals(FieldType.EMAIL) && !lengthOnly) {
             boolean isValidMail = EMailValidator.isEmailValid(value.getValue());
             if (!isValidMail) {
-                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() +  "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidEmail")).addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  " + BundleUtil.getStringFromBundle("dataset.metadata.invalidEmail")).addConstraintViolation();
                 return false;
             }
         }

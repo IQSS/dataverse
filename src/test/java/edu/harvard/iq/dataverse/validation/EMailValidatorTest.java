@@ -83,7 +83,7 @@ class EMailValidatorTest {
         
         // then
         assertEquals(expected ? 0 : 1, violations.size());
-        violations.stream().findFirst().ifPresent( c -> {
+        violations.stream().findFirst().ifPresent(c -> {
             assertTrue(c.getMessage().contains(mail)); });
     }
     

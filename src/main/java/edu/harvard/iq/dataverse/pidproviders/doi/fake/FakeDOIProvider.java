@@ -20,8 +20,8 @@ public class FakeDOIProvider extends AbstractDOIProvider {
     //Only need to check locally
     public boolean isGlobalIdUnique(GlobalId globalId) {
         try {
-            return ! alreadyRegistered(globalId, false);
-        } catch (Exception e){
+            return !alreadyRegistered(globalId, false);
+        } catch (Exception e) {
             //we can live with failure - means identifier not found remotely
         }
         return true;
@@ -66,7 +66,7 @@ public class FakeDOIProvider extends AbstractDOIProvider {
 
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
-        if(dvObject.isInstanceofDataFile() && dvObject.getGlobalId()==null) {
+        if (dvObject.isInstanceofDataFile() && dvObject.getGlobalId() == null) {
             generatePid(dvObject);
         }
         return true;

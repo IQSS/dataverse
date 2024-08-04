@@ -29,7 +29,7 @@ public class OffsetPageValues {
      *  Set offset
      *  @param offset
      */
-    public void setOffset(int offset){
+    public void setOffset(int offset) {
         this.offset = offset;
     }
 
@@ -37,7 +37,7 @@ public class OffsetPageValues {
      *  Get for offset
      *  @return int
      */
-    public int getOffset(){
+    public int getOffset() {
         return this.offset;
     }
     
@@ -46,7 +46,7 @@ public class OffsetPageValues {
      *  Set pageNumber
      *  @param pageNumber
      */
-    public void setPageNumber(int pageNumber){
+    public void setPageNumber(int pageNumber) {
         this.pageNumber = pageNumber;
     }
 
@@ -54,7 +54,7 @@ public class OffsetPageValues {
      *  Get for pageNumber
      *  @return int
      */
-    public int getPageNumber(){
+    public int getPageNumber() {
         return this.pageNumber;
     }
       

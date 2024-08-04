@@ -109,7 +109,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     }
     
     private boolean isManaged() {
-        if(dataverseManaged==null) {
+        if (dataverseManaged == null) {
             dataverseManaged = GlobusAccessibleStore.isDataverseManaged(this.driverId);
         }
         return dataverseManaged;
@@ -138,7 +138,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
         logger.fine("endpointPath: " + endpointPath);
         
 
-        if (isManaged() && (dvObject!=null)) {
+        if (isManaged() && (dvObject != null)) {
             
             Dataset ds = null;
             if (dvObject instanceof Dataset) {
@@ -161,7 +161,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     }
 
     private static String findMatchingEndpoint(String path, String[] allowedEndpoints) {
-        for(int i=0;i<allowedEndpoints.length;i++) {
+        for (int i = 0; i < allowedEndpoints.length; i++) {
             if (path.startsWith(allowedEndpoints[i])) {
                 return allowedEndpoints[i];
             }
@@ -240,7 +240,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     public InputStream getInputStream() throws IOException {
         //Currently only supported when using an S3 store with the Globus S3Connector.
         //ToDo: Support when using a managed Globus endpoint that supports http access
-        if(StorageIO.isDataverseAccessible(endpoint)) {
+        if (StorageIO.isDataverseAccessible(endpoint)) {
             return baseStore.getInputStream();
         } else {
             throw new IOException("Not implemented");
@@ -281,12 +281,12 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                                 endpointPath + relativeDirectoryPath + "/" + filename)));
                 post.setHeader("Content-Type", "application/json");
                 post.addHeader("Authorization", "Bearer " + globusAccessToken);
-                String taskJson= JsonUtil.prettyPrint(taskJsonBuilder.build());
+                String taskJson = JsonUtil.prettyPrint(taskJsonBuilder.build());
                 logger.fine("Sending: " + taskJson);
                 post.setEntity(new StringEntity(taskJson, "utf-8"));
                 CloseableHttpResponse postResponse = getSharedHttpClient().execute(post, localContext);
-                int statusCode=postResponse.getStatusLine().getStatusCode();
-                logger.fine("Response :" + statusCode + ": " +postResponse.getStatusLine().getReasonPhrase());
+                int statusCode = postResponse.getStatusLine().getStatusCode();
+                logger.fine("Response :" + statusCode + ": " + postResponse.getStatusLine().getReasonPhrase());
                 switch (statusCode) {
                 case 202:
                     // ~Success - delete task was accepted
@@ -340,7 +340,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
         String baseIdentifier = storageId.substring(storageId.lastIndexOf("//") + 2);
         try {
             
-        String[] allowedEndpoints =getAllowedEndpoints(driverId);
+        String[] allowedEndpoints = getAllowedEndpoints(driverId);
             
         // Internally managed endpoints require standard name pattern (submitted via
         // /addFile(s) api)
@@ -357,7 +357,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
         try {
             String endpoint = findMatchingEndpoint(baseIdentifier, allowedEndpoints);
             
-            if(endpoint==null || !Paths.get(endpoint, baseIdentifier).normalize().startsWith(endpoint)) {
+            if (endpoint == null || !Paths.get(endpoint, baseIdentifier).normalize().startsWith(endpoint)) {
                 logger.warning("storageidentifier doesn't start with one of " + driverId + "'s allowed endpoints");
                 return false;
             }

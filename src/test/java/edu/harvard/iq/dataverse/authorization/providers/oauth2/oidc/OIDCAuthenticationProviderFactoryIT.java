@@ -225,10 +225,10 @@ class OIDCAuthenticationProviderFactoryIT {
             //System.out.println(callbackLocation);
             
             String queryPart = callbackLocation.trim().split("\\?")[1];
-            Map<String,String> parameters = Pattern.compile("\\s*&\\s*")
+            Map<String, String> parameters = Pattern.compile("\\s*&\\s*")
                 .splitAsStream(queryPart)
                 .map(s -> s.split("=", 2))
-                .collect(Collectors.toMap(a -> a[0], a -> a.length > 1 ? a[1]: ""));
+                .collect(Collectors.toMap(a -> a[0], a -> a.length > 1 ? a[1] : ""));
             //System.out.println(map);
             assertTrue(parameters.containsKey("code"));
             assertTrue(parameters.containsKey("state"));

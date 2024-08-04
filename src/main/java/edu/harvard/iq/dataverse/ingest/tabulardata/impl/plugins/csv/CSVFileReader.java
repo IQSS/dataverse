@@ -90,9 +90,9 @@ public class CSVFileReader extends TabularDataFileReader {
 
     public CSVFileReader(TabularDataFileReaderSpi originator, char delim) {
         super(originator);
-        if (delim == ','){
+        if (delim == ',') {
             inFormat = CSVFormat.EXCEL;
-        } else if (delim == '\t'){
+        } else if (delim == '\t') {
             inFormat = CSVFormat.TDF;
         }
     }
@@ -218,7 +218,7 @@ public class CSVFileReader extends TabularDataFileReader {
                                            && (varString.isEmpty()
                                                || varString.equals("null")
                                                || (StringUtils.isNumeric(varString)
-                                                    || (varString.substring(0,1).matches("[+-]") 
+                                                    || (varString.substring(0, 1).matches("[+-]") 
                                                         && StringUtils.isNumeric(varString.substring(1)))));
                     if (isNumericVariable[i]) {
                         // If variable might be "numeric" test to see if this value is a parsable number:

@@ -23,23 +23,23 @@ public class Util {
         BOOLEAN_TRUE_VALUES.add("1");
 
         VALID_BOOLEAN_VALUES = new TreeSet<>();
-        VALID_BOOLEAN_VALUES.addAll(BOOLEAN_TRUE_VALUES );
+        VALID_BOOLEAN_VALUES.addAll(BOOLEAN_TRUE_VALUES);
         VALID_BOOLEAN_VALUES.add("no");
         VALID_BOOLEAN_VALUES.add("false");
         VALID_BOOLEAN_VALUES.add("0");
     }
 
-    static JsonArray asJsonArray( String str ) {
-        try ( JsonReader rdr = Json.createReader(new StringReader(str)) ) {
+    static JsonArray asJsonArray(String str) {
+        try (JsonReader rdr = Json.createReader(new StringReader(str))) {
             return rdr.readArray();
         }
     }
 
-    static boolean isBoolean( String s ) {
+    static boolean isBoolean(String s) {
         return VALID_BOOLEAN_VALUES.contains(s.toLowerCase());
     }
 
-    static boolean isTrue( String s ) {
+    static boolean isTrue(String s) {
         return BOOLEAN_TRUE_VALUES.contains(s.toLowerCase());
     }
 
@@ -70,7 +70,7 @@ public class Util {
         @Override
         protected SimpleDateFormat initialValue()
         {
-            SimpleDateFormat format =  new SimpleDateFormat(DATE_TIME_FORMAT_STRING);
+            SimpleDateFormat format = new SimpleDateFormat(DATE_TIME_FORMAT_STRING);
             format.setTimeZone(TimeZone.getTimeZone("UTC"));
             return format;
         }
@@ -80,7 +80,7 @@ public class Util {
         @Override
         protected SimpleDateFormat initialValue()
         {
-            SimpleDateFormat format =  new SimpleDateFormat(DATE_FORMAT_STRING);
+            SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT_STRING);
             format.setTimeZone(TimeZone.getTimeZone("UTC"));
             return format;
         }
@@ -108,16 +108,16 @@ public class Util {
      * @return
      */
 
-    public static List<String> removeDuplicatesNullsEmptyStrings(List<String> stringsToCheck){
+    public static List<String> removeDuplicatesNullsEmptyStrings(List<String> stringsToCheck) {
 
-        if (stringsToCheck == null){
+        if (stringsToCheck == null) {
             throw new NullPointerException("stringsToCheck cannot be null");
         }
 
         return stringsToCheck.stream()
                         .filter(p -> p != null)         // no nulls
-                        .map(String :: trim)            // strip strings
-                        .filter(p -> p.length() > 0 )   // no empty strings
+                        .map(String::trim)            // strip strings
+                        .filter(p -> p.length() > 0)   // no empty strings
                         .distinct()                     // distinct
                         .collect(Collectors.toList());
     }

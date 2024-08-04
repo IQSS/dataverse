@@ -229,7 +229,7 @@ public class OpenAireExportUtil {
                             String nameIdentifier = null;
                             String nameIdentifierScheme = null;
 
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.authorName.equals(next.getTypeName())) {
                                     creatorName = next.getSinglePrimitive();
@@ -329,7 +329,7 @@ public class OpenAireExportUtil {
         MetadataBlockDTO block = datasetVersionDTO.getMetadataBlocks().get(metadataBlockName);
         if (block != null) {
             logger.fine("Block is not empty");
-            List<FieldDTO> fieldsBlock =  block.getFields();
+            List<FieldDTO> fieldsBlock = block.getFields();
             if (fieldsBlock != null) {
                 for (FieldDTO fieldDTO : fieldsBlock) {
                     logger.fine(titleType + " " + fieldDTO.getTypeName());
@@ -449,7 +449,7 @@ public class OpenAireExportUtil {
                             String keywordTermURI = null;
                             String keywordVocabURI = null;
 
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.keywordValue.equals(next.getTypeName())) {
                                     subject = next.getSinglePrimitive();
@@ -481,7 +481,7 @@ public class OpenAireExportUtil {
                             String subjectScheme = null;
                             String schemeURI = null;
 
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.topicClassValue.equals(next.getTypeName())) {
                                     subject = next.getSinglePrimitive();
@@ -571,7 +571,7 @@ public class OpenAireExportUtil {
                             String producerName = null;
                             String producerAffiliation = null;
 
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.producerName.equals(next.getTypeName())) {
                                     producerName = next.getSinglePrimitive();
@@ -591,7 +591,7 @@ public class OpenAireExportUtil {
                             String distributorName = null;
                             String distributorAffiliation = null;
 
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.distributorName.equals(next.getTypeName())) {
                                     distributorName = next.getSinglePrimitive();
@@ -611,7 +611,7 @@ public class OpenAireExportUtil {
                             String contactAffiliation = null;
                             String contactName = null;
 
-                            for (Iterator<String> iterator = fieldDTO.getMultiplePrimitive().iterator(); iterator.hasNext();) {
+                            for (Iterator<String> iterator = fieldDTO.getMultiplePrimitive().iterator(); iterator.hasNext(); ) {
                                 contactName = iterator.next();
 
                                 if (StringUtils.isNotBlank(contactName)) {
@@ -624,7 +624,7 @@ public class OpenAireExportUtil {
                                 String contactName = null;
                                 String contactAffiliation = null;
 
-                                for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                                for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                     FieldDTO next = iterator.next();
                                     if (DatasetFieldConstant.datasetContactName.equals(next.getTypeName())) {
                                         contactName = next.getSinglePrimitive();
@@ -645,7 +645,7 @@ public class OpenAireExportUtil {
                             String contributorName = null;
                             String contributorType = null;
 
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.contributorName.equals(next.getTypeName())) {
                                     contributorName = next.getSinglePrimitive();
@@ -696,7 +696,7 @@ public class OpenAireExportUtil {
                 ("ContactPerson".equals(contributorType) && !isValidEmailAddress(contributorName)), false);
 
         if (contributorObj.getBoolean("isPerson")) {
-            if(contributorObj.containsKey("givenName")) {
+            if (contributorObj.containsKey("givenName")) {
                 contributor_map.put("nameType", "Personal");
             }
         } else {
@@ -774,7 +774,7 @@ public class OpenAireExportUtil {
                             String dateOfCollectionStart = null;
                             String dateOfCollectionEnd = null;
 
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.dateOfCollectionStart.equals(next.getTypeName())) {
                                     dateOfCollectionStart = next.getSinglePrimitive();
@@ -858,7 +858,7 @@ public class OpenAireExportUtil {
                             String alternateIdentifier = null;
                             String alternateIdentifierType = null;
 
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.otherIdValue.equals(next.getTypeName())) {
                                     alternateIdentifier = next.getSinglePrimitive();
@@ -933,7 +933,7 @@ public class OpenAireExportUtil {
                             String relatedIdentifier = null; // is used when relatedIdentifierType variable is not URL
                             String relatedURL = null; // is used when relatedIdentifierType variable is URL
 
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.publicationIDType.equals(next.getTypeName())) {
                                     relatedIdentifierType = next.getSinglePrimitive();
@@ -1135,7 +1135,7 @@ public class OpenAireExportUtil {
                         for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
                             String descriptionOfAbstract = null;
 
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.descriptionText.equals(next.getTypeName())) {
                                     descriptionOfAbstract = next.getSinglePrimitive();
@@ -1162,7 +1162,7 @@ public class OpenAireExportUtil {
                             String softwareName = null;
                             String softwareVersion = null;
 
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.softwareName.equals(next.getTypeName())) {
                                     softwareName = next.getSinglePrimitive();
@@ -1209,7 +1209,7 @@ public class OpenAireExportUtil {
                         // String seriesName = null;
                         String seriesInformation = null;
                         for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.seriesInformation.equals(next.getTypeName())) {
                                     seriesInformation = next.getSinglePrimitive();
@@ -1327,7 +1327,7 @@ public class OpenAireExportUtil {
         geoLocation_check = writeOpenTag(xmlw, "geoLocation", geoLocation_check);
         geoLocationbox_check = writeOpenTag(xmlw, "geoLocationBox", geoLocationbox_check);
 
-        for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+        for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
             FieldDTO next = iterator.next();
             String typeName = next.getTypeName();
 
@@ -1383,7 +1383,7 @@ public class OpenAireExportUtil {
                             String awardNumber = null;
                             String funderName = null;
 
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.grantNumberValue.equals(next.getTypeName())) {
                                     awardNumber = next.getSinglePrimitive();
@@ -1410,7 +1410,7 @@ public class OpenAireExportUtil {
                             String contributorName = null;
                             String contributorType = null;
 
-                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
+                            for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.contributorName.equals(next.getTypeName())) {
                                     contributorName = next.getSinglePrimitive();

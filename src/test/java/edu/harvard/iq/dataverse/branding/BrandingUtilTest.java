@@ -79,7 +79,7 @@ public class BrandingUtilTest {
     }
     
     @ParameterizedTest
-    @CsvSource(value ={
+    @CsvSource(value = {
         "NULL, " + DEFAULT_NAME, // (Defaults to root collection name)
         "NotLibraScholar, NotLibraScholar"
     }, nullValues = {"NULL"})

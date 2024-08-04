@@ -21,7 +21,7 @@ public class StartupFlywayMigrator {
     @PostConstruct
     void migrateDatabase() {
 
-        if (dataSource == null){
+        if (dataSource == null) {
             throw new NullPointerException("Failed to migrate, cannot connect to database");
         }
 

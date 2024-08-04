@@ -62,10 +62,10 @@ public class DatasetUtil {
 //                    byte[] bytes = Files.readAllBytes(file.toPath());
             StorageIO<Dataset> dataAccess = null;
 
-            try{
+            try {
                 dataAccess = DataAccess.getStorageIO(dataset);
             }
-            catch(IOException ioex){
+            catch (IOException ioex) {
             }
 
             InputStream in = null;
@@ -123,10 +123,10 @@ public class DatasetUtil {
 
         StorageIO<Dataset> dataAccess = null;
                 
-        try{
+        try {
             dataAccess = DataAccess.getStorageIO(dataset);
         }
-        catch(IOException ioex){
+        catch (IOException ioex) {
             logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
         }
         
@@ -160,9 +160,9 @@ public class DatasetUtil {
         } else {
             DataFile thumbnailFile = dataset.getThumbnailFile();
 
-            if (thumbnailFile !=null && (thumbnailFile.isRestricted() || FileUtil.isActivelyEmbargoed(thumbnailFile))) {
+            if (thumbnailFile != null && (thumbnailFile.isRestricted() || FileUtil.isActivelyEmbargoed(thumbnailFile))) {
                 logger.fine("Dataset (id :" + dataset.getId() + ") has a thumbnail (user selected or automatically chosen) but the file must have later been restricted or embargoed. Returning null.");
-                thumbnailFile= null;
+                thumbnailFile = null;
             }
             if (thumbnailFile == null) {
                 if (dataset.isUseGenericThumbnail()) {
@@ -286,10 +286,10 @@ public class DatasetUtil {
 
         StorageIO<Dataset> dataAccess = null;
                 
-        try{
+        try {
              dataAccess = DataAccess.getStorageIO(dataset);
         }
-        catch(IOException ioex){
+        catch (IOException ioex) {
             //TODO: Add a suitable warning message
             logger.warning("Failed to save the file, storage id " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
         }
@@ -537,7 +537,7 @@ public class DatasetUtil {
     public static String[] getDatasetSummaryFieldNames(String customFieldNames) {
         String summaryFieldNames;
         // If the custom fields are empty, go with the default fields.
-        if(customFieldNames == null || customFieldNames.isEmpty()){
+        if (customFieldNames == null || customFieldNames.isEmpty()) {
             summaryFieldNames = datasetDefaultSummaryFieldNames;
         } else {
             summaryFieldNames = customFieldNames;
@@ -545,7 +545,7 @@ public class DatasetUtil {
         return summaryFieldNames.split(",");
     }
 
-    public static boolean isRsyncAppropriateStorageDriver(Dataset dataset){
+    public static boolean isRsyncAppropriateStorageDriver(Dataset dataset) {
         // ToDo - rsync was written before multiple store support and currently is hardcoded to use the DataAccess.S3 store.
         // When those restrictions are lifted/rsync can be configured per store, this test should check that setting
         // instead of testing for the 's3" store,
@@ -614,7 +614,7 @@ public class DatasetUtil {
                     .add("parentAlias", ds.getOwner().getAlias())
                     .build().toString();
         } catch (Exception ex) {
-            logger.warning("Failed to export dataset metadata as json; "+ex.getMessage() == null ? "" : ex.getMessage());
+            logger.warning("Failed to export dataset metadata as json; " + ex.getMessage() == null ? "" : ex.getMessage());
             return false; 
         }
         
@@ -630,7 +630,7 @@ public class DatasetUtil {
             FileUtils.writeStringToFile(tempFile, jsonMetadata);
             
             // run the external executable: 
-            String[] params = { executable, tempFile.getAbsolutePath() };
+            String[] params = {executable, tempFile.getAbsolutePath()};
             Process p = Runtime.getRuntime().exec(params);
             p.waitFor(); 
             
@@ -646,7 +646,7 @@ public class DatasetUtil {
     public static License getLicense(DatasetVersion dsv) {
         License license = null;
         TermsOfUseAndAccess tua = dsv.getTermsOfUseAndAccess();
-        if(tua!=null) {
+        if (tua != null) {
             license = tua.getLicense();
         }
         return license;
@@ -667,7 +667,7 @@ public class DatasetUtil {
     }
     
     public static String getLocalizedLicenseName(License license) {
-        return license != null ? getLocalizedLicenseDetails(license,"NAME")
+        return license != null ? getLocalizedLicenseDetails(license, "NAME")
                 : BundleUtil.getStringFromBundle("license.custom");
     }
 
@@ -702,18 +702,18 @@ public class DatasetUtil {
         }
         License license = DatasetUtil.getLicense(dsv);
         
-        return license != null ? getLocalizedLicenseDetails(license,"DESCRIPTION") : BundleUtil.getStringFromBundle("license.custom.description");
+        return license != null ? getLocalizedLicenseDetails(license, "DESCRIPTION") : BundleUtil.getStringFromBundle("license.custom.description");
     }
 
     public enum LicenseOption {
         NAME, DESCRIPTION
     };
 
-    public static String getLocalizedLicenseDetails(License license,String keyPart) {
+    public static String getLocalizedLicenseDetails(License license, String keyPart) {
         String licenseName = license.getName();
-        String localizedLicenseValue =  "" ;
+        String localizedLicenseValue = "";
         try {
-            if (EnumUtils.isValidEnum(LicenseOption.class, keyPart ) ){
+            if (EnumUtils.isValidEnum(LicenseOption.class, keyPart)) {
                 String key = "license." + licenseName.toLowerCase().replace(" ", "_") + "." + keyPart.toLowerCase();
                 localizedLicenseValue = BundleUtil.getStringFromPropertyFile(key, "License");
             }
@@ -723,13 +723,13 @@ public class DatasetUtil {
         }
 
         if (localizedLicenseValue == null) {
-            localizedLicenseValue = licenseName ;
+            localizedLicenseValue = licenseName;
         }
         return localizedLicenseValue;
     }
 
     public static String getLocaleExternalStatus(String status) {
-        String localizedName =  "" ;
+        String localizedName = "";
         try {
             localizedName = BundleUtil.getStringFromPropertyFile(status.toLowerCase().replace(" ", "_"), "CurationLabels");
         }
@@ -738,7 +738,7 @@ public class DatasetUtil {
         }
 
         if (localizedName == null) {
-            localizedName = status ;
+            localizedName = status;
         }
         return localizedName;
     }

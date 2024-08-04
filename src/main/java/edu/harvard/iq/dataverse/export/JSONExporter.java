@@ -34,10 +34,10 @@ public class JSONExporter implements Exporter {
 
     @Override
     public void exportDataset(ExportDataProvider dataProvider, OutputStream outputStream) throws ExportException {
-        try{
+        try {
             outputStream.write(dataProvider.getDatasetJson().toString().getBytes("UTF8"));
             outputStream.flush();
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new ExportException("Unknown exception caught during JSON export.");
         }
     }

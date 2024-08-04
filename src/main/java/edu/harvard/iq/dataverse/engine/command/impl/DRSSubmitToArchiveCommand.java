@@ -297,7 +297,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
 
     @Override
     protected String getDataCiteFileName(String spaceName, DatasetVersion dv) {
-        return spaceName + ("_datacite.v" + dv.getFriendlyVersionNumber()).replace('.','_');
+        return spaceName + ("_datacite.v" + dv.getFriendlyVersionNumber()).replace('.', '_');
     }
 
     
@@ -305,7 +305,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
         String canonicalBody = new JsonCanonicalizer(body).getEncodedString();
         logger.fine("Canonical body: " + canonicalBody);
         String digest = DigestUtils.sha256Hex(canonicalBody);
-        if(installationBrandName==null) {
+        if (installationBrandName == null) {
             installationBrandName = BrandingUtil.getInstallationBrandName();
         }
         return JWT.create().withIssuer(installationBrandName).withIssuedAt(Date.from(Instant.now()))

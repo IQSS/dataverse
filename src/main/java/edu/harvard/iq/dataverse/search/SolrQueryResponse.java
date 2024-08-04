@@ -31,7 +31,7 @@ public class SolrQueryResponse {
     public static String DATAVERSES_COUNT_KEY = "dataverses_count";
     public static String DATASETS_COUNT_KEY = "datasets_count";
     public static String FILES_COUNT_KEY = "files_count";
-    public static String[] DVOBJECT_COUNT_KEYS = { DATAVERSES_COUNT_KEY, DATASETS_COUNT_KEY, FILES_COUNT_KEY};
+    public static String[] DVOBJECT_COUNT_KEYS = {DATAVERSES_COUNT_KEY, DATASETS_COUNT_KEY, FILES_COUNT_KEY};
     SolrQuery solrQuery;
 
     public SolrQueryResponse(SolrQuery solrQuery) {
@@ -44,37 +44,37 @@ public class SolrQueryResponse {
         return solrSearchResults;
     }
 
-    public void setPublicationStatusCounts(FacetField facetField){        
+    public void setPublicationStatusCounts(FacetField facetField) {        
         setFacetFieldCounts(facetField, this.publicationStatusCounts);
     }
     
-    public Map<String, Long> getPublicationStatusCounts(){
+    public Map<String, Long> getPublicationStatusCounts() {
         return this.publicationStatusCounts;
     }
     
-    public void setDvObjectCounts(FacetField facetField){
+    public void setDvObjectCounts(FacetField facetField) {
         setFacetFieldCounts(facetField, this.dvObjectCounts);
       
     }
     
-    public Map<String, Long> getDvObjectCounts(){
+    public Map<String, Long> getDvObjectCounts() {
         return this.dvObjectCounts;
     }
     
         
-    private void setFacetFieldCounts(FacetField facetField,  Map<String, Long> countMap){
-        if ((facetField ==null)||(countMap==null)){
+    private void setFacetFieldCounts(FacetField facetField, Map<String, Long> countMap) {
+        if ((facetField == null) || (countMap == null)) {
             return;
         }
         
-        for (FacetField.Count fcnt :  facetField.getValues()){
+        for (FacetField.Count fcnt :  facetField.getValues()) {
             countMap.put(fcnt.getName().toLowerCase().replace(" ", "_") + "_count", fcnt.getCount());
         }
     }
  
-    public JsonObjectBuilder getPublicationStatusCountsAsJSON(){
+    public JsonObjectBuilder getPublicationStatusCountsAsJSON() {
         
-        if (this.publicationStatusCounts == null){
+        if (this.publicationStatusCounts == null) {
             return null;
         }
 
@@ -83,10 +83,10 @@ public class SolrQueryResponse {
        //   - e.g. You always want these variable to show up in the JSON,
        //       even if they're not returned via Solr
        //
-       String[] requiredVars = { "in_review_count", "unpublished_count", "published_count", "draft_count", "deaccessioned_count"};
+       String[] requiredVars = {"in_review_count", "unpublished_count", "published_count", "draft_count", "deaccessioned_count"};
 
-        for (String var : requiredVars){
-            if (!publicationStatusCounts.containsKey(var)){
+        for (String var : requiredVars) {
+            if (!publicationStatusCounts.containsKey(var)) {
                 publicationStatusCounts.put(var, new Long(0));
             }
         }
@@ -101,15 +101,15 @@ public class SolrQueryResponse {
         this.solrTemporarilyUnavailable = solrTemporarilyUnavailable;
     }
     
-    public JsonObjectBuilder getDvObjectCountsAsJSON(){
+    public JsonObjectBuilder getDvObjectCountsAsJSON() {
         
-        if (this.dvObjectCounts == null){
+        if (this.dvObjectCounts == null) {
             return null;
         }
         
         //String[] requiredVars = { "dataverses_count", "datasets_count", "files_count"};
-        for (String var : SolrQueryResponse.DVOBJECT_COUNT_KEYS){
-            if (!dvObjectCounts.containsKey(var)){
+        for (String var : SolrQueryResponse.DVOBJECT_COUNT_KEYS) {
+            if (!dvObjectCounts.containsKey(var)) {
                 dvObjectCounts.put(var, new Long(0));
             }
         }
@@ -117,9 +117,9 @@ public class SolrQueryResponse {
         return this.getMapCountsAsJSON(dvObjectCounts);
     }
     
-    public JsonObjectBuilder getMapCountsAsJSON(Map<String, Long> countMap){
+    public JsonObjectBuilder getMapCountsAsJSON(Map<String, Long> countMap) {
         
-        if (countMap == null){
+        if (countMap == null) {
             return null;
         }
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
@@ -203,7 +203,7 @@ public class SolrQueryResponse {
      * Check if the error string has been set
      * @return 
      */
-    public boolean hasError(){
+    public boolean hasError() {
         return error != null;
     }
     

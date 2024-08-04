@@ -367,7 +367,7 @@ public enum JvmSettings {
                         name + "' has more placeholders than the current name");
                 }
             }
-        } else if (! this.oldNames.stream().noneMatch(OLD_NAME_PLACEHOLDER_PATTERN.asPredicate())) {
+        } else if (!this.oldNames.stream().noneMatch(OLD_NAME_PLACEHOLDER_PATTERN.asPredicate())) {
             throw new IllegalArgumentException("JvmSettings." + this.name() + " has no placeholder but old name requires it");
         }
         

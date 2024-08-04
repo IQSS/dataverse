@@ -137,7 +137,7 @@ class MailDomainGroupServiceBeanTest {
     @Test
     void findAll() {
         // given
-        List<MailDomainGroup> db = Arrays.asList(MailDomainGroupTest.genGroup(),MailDomainGroupTest.genGroup(),MailDomainGroupTest.genGroup());
+        List<MailDomainGroup> db = Arrays.asList(MailDomainGroupTest.genGroup(), MailDomainGroupTest.genGroup(), MailDomainGroupTest.genGroup());
         mockQuery("MailDomainGroup.findAll", db);
         
         // when & then

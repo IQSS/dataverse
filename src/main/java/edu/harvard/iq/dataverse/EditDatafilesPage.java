@@ -692,7 +692,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             setUpRsync();
         }
 
-        if (isHasPublicStore()){
+        if (isHasPublicStore()) {
             JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.label.fileAccess"), getBundleString("dataset.message.publicInstall"));
         }
        
@@ -835,11 +835,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
     }
     
-    public boolean getHasValidTermsOfAccess(){
+    public boolean getHasValidTermsOfAccess() {
         return isHasValidTermsOfAccess(); //HasValidTermsOfAccess
     }
     
-    public void setHasValidTermsOfAccess(boolean value){
+    public void setHasValidTermsOfAccess(boolean value) {
         //dummy for ui
     }
 
@@ -1790,8 +1790,8 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         // refresh the warning message below the upload component, if exists:
         if (uploadComponentId != null) {
-            if(!errorMessages.isEmpty()) {
-                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR,  BundleUtil.getStringFromBundle("dataset.file.uploadFailure"), editDataFilesPageHelper.consolidateHtmlErrorMessages(errorMessages)));
+            if (!errorMessages.isEmpty()) {
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadFailure"), editDataFilesPageHelper.consolidateHtmlErrorMessages(errorMessages)));
             }
 
             if (uploadWarningMessage != null) {
@@ -2078,7 +2078,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
             dFileList = createDataFilesResult.getDataFiles();
             String createDataFilesError = editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult);
-            if(createDataFilesError != null) {
+            if (createDataFilesError != null) {
                 errorMessages.add(createDataFilesError);
                 uploadComponentId = event.getComponent().getClientId();
             }
@@ -2142,7 +2142,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         //Should only be one colon with curent design
         int lastColon = fullStorageIdentifier.lastIndexOf(':');
-        String storageLocation = fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
+        String storageLocation = fullStorageIdentifier.substring(0, lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon + 1);
         storageLocation = DataAccess.expandStorageIdentifierIfNeeded(storageLocation);
 
         if (uploadInProgress.isFalse()) {
@@ -2801,7 +2801,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String[] selectedTags = {};
 
     public void refreshTagsPopUp(FileMetadata fm) {
-                if(!isHasValidTermsOfAccess()){
+                if (!isHasValidTermsOfAccess()) {
                 PrimeFaces.current().executeScript("PF('blockDatasetForm').show()");
                 PrimeFaces.current().executeScript("PF('accessPopup').show()");
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editTerms.label"), BundleUtil.getStringFromBundle("dataset.message.editTerms.message"));
@@ -2845,10 +2845,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         Arrays.sort(selectedTabFileTags);
     }
     
-    private void refreshCategoriesByName(){
-        categoriesByName= new ArrayList<>();
+    private void refreshCategoriesByName() {
+        categoriesByName = new ArrayList<>();
         List<String> datasetFileCategories = dataFileCategoryService.mergeDatasetFileCategories(dataset.getCategories());
-        for (String category: datasetFileCategories ){
+        for (String category : datasetFileCategories) {
             categoriesByName.add(category);
         }
         refreshSelectedTags();

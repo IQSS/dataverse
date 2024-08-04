@@ -127,13 +127,13 @@ public class DashboardDatamovePage implements java.io.Serializable {
         return null;
     }
     
-    public void move(){
+    public void move() {
         Dataset ds = selectedSourceDataset;
-        String dsPersistentId = ds!=null?ds.getGlobalId().asString():null;
-        String srcAlias = ds!=null?ds.getOwner().getAlias():null;
+        String dsPersistentId = ds != null ? ds.getGlobalId().asString() : null;
+        String srcAlias = ds != null ? ds.getOwner().getAlias() : null;
 
         Dataverse target = selectedDestinationDataverse;
-        String dstAlias = target!=null?target.getAlias():null;
+        String dstAlias = target != null ? target.getAlias() : null;
 
         if (ds == null || target == null) {
             // Move only works if both inputs are correct 
@@ -148,9 +148,9 @@ public class DashboardDatamovePage implements java.io.Serializable {
 
         // construct arguments for message
         List<String> arguments = new ArrayList<>();
-        arguments.add(ds!=null?ds.getDisplayName():"-");
-        arguments.add(dsPersistentId!=null?dsPersistentId:"-");
-        arguments.add(target!=null?target.getName():"-");
+        arguments.add(ds != null ? ds.getDisplayName() : "-");
+        arguments.add(dsPersistentId != null ? dsPersistentId : "-");
+        arguments.add(target != null ? target.getName() : "-");
 
         // copied logic from Datasets API move
         //Command requires Super user - it will be tested by the command
@@ -166,7 +166,7 @@ public class DashboardDatamovePage implements java.io.Serializable {
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.card.datamove.message.success", arguments));
         }
         catch (CommandException e) {
-            logger.log(Level.SEVERE,"Unable to move "+ dsPersistentId + " from " + srcAlias + " to " + dstAlias, e);
+            logger.log(Level.SEVERE, "Unable to move " + dsPersistentId + " from " + srcAlias + " to " + dstAlias, e);
             arguments.add(e.getLocalizedMessage());
             if (e instanceof UnforcedCommandException) {
                 String guidesBaseUrl = settingsWrapper.getGuidesBaseUrl();

@@ -35,7 +35,7 @@ public class UserBannerMessage implements Serializable {
     private BannerMessage bannerMessage;
     
     @Temporal(value = TemporalType.TIMESTAMP)
-    @Column( nullable=false )
+    @Column(nullable = false)
     private Date bannerDismissalTime;
 
     public Long getId() {

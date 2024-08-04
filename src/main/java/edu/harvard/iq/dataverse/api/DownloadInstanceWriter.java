@@ -204,7 +204,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         }
                     }
                 }
-                String redirect_url_str=null;
+                String redirect_url_str = null;
 
                 if (redirectSupported) {
                     // definitely close the (potentially still open) input stream, 
@@ -494,7 +494,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             if (ranges.isEmpty()) {
                                 logger.fine("Content size (retrieved from the AccessObject): " + contentSize);
                                 httpHeaders.add("Content-Length", contentSize);
-                            } else  {
+                            } else {
                                 // For now we only support a single rangeHeader.
                                 long rangeContentSize = ranges.get(0).getLength();
                                 logger.fine("Content size (Range header in use): " + rangeContentSize);
@@ -503,7 +503,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 offset = ranges.get(0).getStart();
                                 leftToRead = rangeContentSize;
                                 httpHeaders.add("Accept-Ranges", "bytes");
-                                httpHeaders.add("Content-Range", "bytes "+offset+"-"+(offset+rangeContentSize-1)+"/"+contentSize);
+                                httpHeaders.add("Content-Range", "bytes " + offset + "-" + (offset + rangeContentSize - 1) + "/" + contentSize);
 
                             }
                         } else {
@@ -557,13 +557,13 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                             // This is a more straightforward case - we just need to 
                                             // write a portion of the header, and then we are done!
                                             logger.fine("Writing this many bytes of the variable header line: " + leftToRead);
-                                            outstream.write(Arrays.copyOfRange(storageIO.getVarHeader().getBytes(), (int)offset, (int)offset + (int)leftToRead));
+                                            outstream.write(Arrays.copyOfRange(storageIO.getVarHeader().getBytes(), (int) offset, (int) offset + (int) leftToRead));
                                             // set "left to read" to zero, indicating that we are done:
                                             leftToRead = 0; 
                                         } else {
                                             // write the requested portion of the header:
                                             logger.fine("Writing this many bytes of the variable header line: " + (headerLength - offset));
-                                            outstream.write(Arrays.copyOfRange(storageIO.getVarHeader().getBytes(), (int)offset, headerLength));
+                                            outstream.write(Arrays.copyOfRange(storageIO.getVarHeader().getBytes(), (int) offset, headerLength));
                                             // and adjust the file offset and remaining number of bytes accordingly: 
                                             leftToRead -= (headerLength - offset);
                                             offset = 0;

@@ -104,16 +104,16 @@ public class EditDDI  extends AbstractApiBean {
         User apiTokenUser = checkAuth(getRequestUser(crc), dataFile);
 
         if (apiTokenUser == null) {
-            return unauthorized("Cannot edit metadata, access denied" );
+            return unauthorized("Cannot edit metadata, access denied");
         }
 
         Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
-        Map<Long,VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
+        Map<Long, VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
         try {
-            readXML(body, mapVarToVarMet,varGroupMap);
+            readXML(body, mapVarToVarMet, varGroupMap);
         } catch (XMLStreamException e) {
             logger.warning(e.getMessage());
-            return error(Response.Status.NOT_ACCEPTABLE, "bad xml file" );
+            return error(Response.Status.NOT_ACCEPTABLE, "bad xml file");
         }
 
         DatasetVersion latestVersion = dataFile.getOwner().getLatestVersion();
@@ -129,8 +129,8 @@ public class EditDDI  extends AbstractApiBean {
             boolean groupUpdate = newGroups(varGroupMap, latestFml);
             boolean varUpdate = varUpdates(mapVarToVarMet, latestFml, neededToUpdateVM, true);
             if (varUpdate || groupUpdate) {
-                if (!createNewDraftVersion(neededToUpdateVM,  varGroupMap, dataset, dataFile, apiTokenUser)) {
-                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Failed to create new draft version" );
+                if (!createNewDraftVersion(neededToUpdateVM, varGroupMap, dataset, dataFile, apiTokenUser)) {
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Failed to create new draft version");
                 }
             } else {
                 return ok("Nothing to update");
@@ -143,7 +143,7 @@ public class EditDDI  extends AbstractApiBean {
             if (varUpdate || groupUpdate) {
 
                 if (!updateDraftVersion(neededToUpdateVM, varGroupMap, dataset, apiTokenUser, groupUpdate, fml)) {
-                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Failed to update draft version" );
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, "Failed to update draft version");
                 }
             } else {
                 return ok("Nothing to update");
@@ -153,14 +153,14 @@ public class EditDDI  extends AbstractApiBean {
         return ok("Updated");
     }
 
-    private boolean varUpdates( Map<Long, VariableMetadata> mapVarToVarMet , FileMetadata fm, ArrayList<VariableMetadata> neededToUpdateVM, boolean newVersion) {
+    private boolean varUpdates(Map<Long, VariableMetadata> mapVarToVarMet, FileMetadata fm, ArrayList<VariableMetadata> neededToUpdateVM, boolean newVersion) {
         boolean updates = false;
 
-        for ( Long varId : mapVarToVarMet.keySet()) {
+        for (Long varId : mapVarToVarMet.keySet()) {
             VariableMetadata varMet = mapVarToVarMet.get(varId);
             List<VariableMetadata> vml = variableService.findByDataVarIdAndFileMetaId(varMet.getDataVariable().getId(), fm.getId());
             if (vml.size() > 0) {
-                if (!variableMetadataUtil.compareVarMetadata(vml.get(0), varMet )) {
+                if (!variableMetadataUtil.compareVarMetadata(vml.get(0), varMet)) {
                     updates = true;
                     neededToUpdateVM.add(varMet);
                 } else if (newVersion) {
@@ -177,7 +177,7 @@ public class EditDDI  extends AbstractApiBean {
         return updates;
     }
 
-    private boolean createNewDraftVersion(ArrayList<VariableMetadata> neededToUpdateVM, Map<Long,VarGroup> varGroupMap, Dataset dataset, DataFile dataFile, User apiTokenUser ) {
+    private boolean createNewDraftVersion(ArrayList<VariableMetadata> neededToUpdateVM, Map<Long, VarGroup> varGroupMap, Dataset dataset, DataFile dataFile, User apiTokenUser) {
 
 
         FileMetadata fm = dataFile.getFileMetadata();
@@ -249,12 +249,12 @@ public class EditDDI  extends AbstractApiBean {
 
         Collection<CategoryMetadata> cms = varMet.getCategoriesMetadata();
         DataVariable dv = em.find(DataVariable.class, varMet.getDataVariable().getId());
-        Collection<VariableCategory> vcl =  dv.getCategories();
+        Collection<VariableCategory> vcl = dv.getCategories();
         for (CategoryMetadata cm : cms) {
             String catValue = cm.getCategory().getValue();
             Long varId = varMet.getDataVariable().getId();
             for (VariableCategory vc : vcl) {
-                if ((catValue != null && catValue.equals(vc.getValue())) || (catValue == null && vc.getValue()==null )) {
+                if ((catValue != null && catValue.equals(vc.getValue())) || (catValue == null && vc.getValue() == null)) {
                     cm.getCategory().setId(vc.getId());
                     break;
                 }
@@ -275,13 +275,13 @@ public class EditDDI  extends AbstractApiBean {
 
     }
 
-    private boolean updateDraftVersion(ArrayList<VariableMetadata> neededToUpdateVM, Map<Long,VarGroup> varGroupMap, Dataset dataset, User apiTokenUser, boolean groupUpdate, FileMetadata fml ) {
+    private boolean updateDraftVersion(ArrayList<VariableMetadata> neededToUpdateVM, Map<Long, VarGroup> varGroupMap, Dataset dataset, User apiTokenUser, boolean groupUpdate, FileMetadata fml) {
 
 
-        for (int i = 0; i < neededToUpdateVM.size(); i++)  {
+        for (int i = 0; i < neededToUpdateVM.size(); i++) {
             VariableMetadata vm = neededToUpdateVM.get(i);
-            DataVariable dv = em.find(DataVariable.class, vm.getDataVariable().getId() );
-            if (dv==null) { //Variable does not exist in database
+            DataVariable dv = em.find(DataVariable.class, vm.getDataVariable().getId());
+            if (dv == null) { //Variable does not exist in database
                 return false;
             }
             vm.setDataVariable(dv);
@@ -302,8 +302,8 @@ public class EditDDI  extends AbstractApiBean {
                 vm.setFileMetadata(fml);
                 em.merge(vm);
             } catch (ConstraintViolationException e) {
-                logger.log(Level.SEVERE,"Exception: ");
-                e.getConstraintViolations().forEach(err->logger.log(Level.SEVERE,err.toString()));
+                logger.log(Level.SEVERE, "Exception: ");
+                e.getConstraintViolations().forEach(err -> logger.log(Level.SEVERE, err.toString()));
             }
 
         }
@@ -349,16 +349,16 @@ public class EditDDI  extends AbstractApiBean {
         return true;
     }
 
-    private  void readXML(InputStream body, Map<Long,VariableMetadata> mapVarToVarMet, Map<Long,VarGroup> varGroupMap) throws XMLStreamException {
-        XMLInputFactory factory=XMLInputFactory.newInstance();
-        XMLStreamReader xmlr=factory.createXMLStreamReader(body);
+    private  void readXML(InputStream body, Map<Long, VariableMetadata> mapVarToVarMet, Map<Long, VarGroup> varGroupMap) throws XMLStreamException {
+        XMLInputFactory factory = XMLInputFactory.newInstance();
+        XMLStreamReader xmlr = factory.createXMLStreamReader(body);
         VariableMetadataDDIParser vmdp = new VariableMetadataDDIParser();
 
-        vmdp.processDataDscr(xmlr,mapVarToVarMet, varGroupMap);
+        vmdp.processDataDscr(xmlr, mapVarToVarMet, varGroupMap);
 
     }
 
-    private boolean newGroups(Map<Long,VarGroup> varGroupMap, FileMetadata fm) {
+    private boolean newGroups(Map<Long, VarGroup> varGroupMap, FileMetadata fm) {
         boolean areNewGroups = false;
 
         List<VarGroup> varGroups = variableService.findAllGroupsByFileMetadata(fm.getId());
@@ -393,7 +393,7 @@ public class EditDDI  extends AbstractApiBean {
 
         if (varMet.getNotes() != null && !varMet.getNotes().trim().equals("")) {
             thedefault = false;
-        } else if (varMet.getUniverse() != null && !varMet.getUniverse().trim().equals("") ) {
+        } else if (varMet.getUniverse() != null && !varMet.getUniverse().trim().equals("")) {
             thedefault = false;
         } else if (varMet.getInterviewinstruction() != null && !varMet.getInterviewinstruction().trim().equals("")) {
             thedefault = false;
@@ -401,7 +401,7 @@ public class EditDDI  extends AbstractApiBean {
             thedefault = false;
         } else if (varMet.getPostquestion() != null && !varMet.getPostquestion().trim().equals("")) {
             thedefault = false;
-        } else if (varMet.isIsweightvar() != false ) {
+        } else if (varMet.isIsweightvar() != false) {
             thedefault = false;
         } else if (varMet.isWeighted() != false) {
             thedefault = false;

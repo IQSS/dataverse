@@ -316,8 +316,8 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
     
     @Override
     public boolean updateIdentifier(DvObject dvObject) {
-        logger.log(Level.FINE,"updateIdentifierStatus");
-        if(dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty() ){
+        logger.log(Level.FINE, "updateIdentifierStatus");
+        if (dvObject.getIdentifier() == null || dvObject.getIdentifier().isEmpty()) {
             dvObject = generatePid(dvObject);
         }
         String identifier = getIdentifier(dvObject);
@@ -327,8 +327,8 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         metadata.put("_target", getTargetUrl(dvObject));
         try {
             String updated = doiDataCiteRegisterService.reRegisterIdentifier(identifier, metadata, dvObject);
-            if(updated.length()!=0) {
-                logger.info(identifier + "updated: " + updated );
+            if (updated.length() != 0) {
+                logger.info(identifier + "updated: " + updated);
                 return true;
             } else {
                 logger.info("No updated needed for " + identifier);

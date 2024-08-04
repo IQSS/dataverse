@@ -213,7 +213,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     public void runHarvest(HarvestingClient harvestingClient) {
         try {
-            DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), (HttpServletRequest)null);
+            DataverseRequest dataverseRequest = new DataverseRequest(session.getUser(), (HttpServletRequest) null);
             harvesterService.doAsyncHarvest(dataverseRequest, harvestingClient);        
         } catch (Exception ex) {
             String failMessage = BundleUtil.getStringFromBundle("harvest.start.error");
@@ -230,7 +230,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         // for it:
         // (looks like we need to sleep for a few milliseconds here, to make sure 
         // it has already been updated with the "inprogress" setting)
-        try{Thread.sleep(500L);}catch(Exception e){}
+        try {Thread.sleep(500L);} catch (Exception e) {}
         
         
         configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
@@ -297,7 +297,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
             
             //configuredHarvestingClients.remove(selectedClient);
             
-            logger.info("proceeding to delete harvesting client "+selectedClient.getName());
+            logger.info("proceeding to delete harvesting client " + selectedClient.getName());
             try {
                 harvestingClientService.setDeleteInProgress(selectedClient.getId());
                 
@@ -309,7 +309,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
             //    String failMessage = "Selected harvesting client cannot be deleted.";
             //    JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             } catch (Exception ex) {
-                String failMessage = BundleUtil.getStringFromBundle("harvest.delete.error")+ex.getMessage();
+                String failMessage = BundleUtil.getStringFromBundle("harvest.delete.error") + ex.getMessage();
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             }
         } else {
@@ -329,7 +329,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         newHarvestingClient.setName(newNickname);
         
         if (getSelectedDestinationDataverse() == null) {
-            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,BundleUtil.getStringFromBundle("harvest.create.error"));
+            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("harvest.create.error"));
         }
         
         newHarvestingClient.setDataverse(getSelectedDestinationDataverse());
@@ -378,7 +378,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         // will try to save it now:
         
         try {
-            newHarvestingClient = engineService.submit( new CreateHarvestingClientCommand(dvRequestService.getDataverseRequest(), newHarvestingClient));
+            newHarvestingClient = engineService.submit(new CreateHarvestingClientCommand(dvRequestService.getDataverseRequest(), newHarvestingClient));
             
             configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
             
@@ -457,7 +457,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         // will try to save it now:
         
         try {
-            harvestingClient = engineService.submit( new UpdateHarvestingClientCommand(dvRequestService.getDataverseRequest(), harvestingClient));
+            harvestingClient = engineService.submit(new UpdateHarvestingClientCommand(dvRequestService.getDataverseRequest(), harvestingClient));
             
             configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
             
@@ -518,16 +518,16 @@ public class HarvestingClientsPage implements java.io.Serializable {
     
     public boolean validateNickname() {
 
-        if ( !StringUtils.isEmpty(getNewNickname()) ) {
+        if (!StringUtils.isEmpty(getNewNickname())) {
 
-            if (getNewNickname().length() > 30 || (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", getNewNickname())) ) {
+            if (getNewNickname().length() > 30 || (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", getNewNickname()))) {
                 //input.setValid(false);
                 FacesContext.getCurrentInstance().addMessage(getNewClientNicknameInputField().getClientId(),
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.nickname.invalid")));
                 return false;
 
                 // If it passes the regex test, check 
-            } else if ( harvestingClientService.findByNickname(getNewNickname()) != null ) {
+            } else if (harvestingClientService.findByNickname(getNewNickname()) != null) {
                 //input.setValid(false);
                 FacesContext.getCurrentInstance().addMessage(getNewClientNicknameInputField().getClientId(),
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.nickname.alreadyused")));
@@ -582,7 +582,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
                 logger.info("metadataformats: success");
                 logger.info(getOaiMetadataFormatSelectItems().size() + " metadata formats total.");
             } else {
-                logger.info("metadataformats: failed;"+message);
+                logger.info("metadataformats: failed;" + message);
             }
             // And if that worked, the list of sets provided:
 
@@ -644,7 +644,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
             // TODO: put this method somewhere else as a static utility
             
             // check that it's looking like "{header-name}: {header value}" at least
-            if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+:.*",getNewCustomHeader())) {
+            if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+:.*", getNewCustomHeader())) {
                 FacesContext.getCurrentInstance().addMessage(getNewClientCustomHeaderInputField().getClientId(),
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.customHeader.invalid")));
 
@@ -963,7 +963,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
             
             Collections.sort(setNames, String.CASE_INSENSITIVE_ORDER);
             
-            for (String set: setNames) {
+            for (String set : setNames) {
                 if (!StringUtils.isEmpty(set)) {
                     getOaiSetsSelectItems().add(new SelectItem(set, set));
                 }
@@ -984,7 +984,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     private void createOaiMetadataFormatSelectItems(List<String> formats) {
         setOaiMetadataFormatSelectItems(new ArrayList<>());
         if (formats != null) {
-            for (String f: formats) {
+            for (String f : formats) {
                 if (!StringUtils.isEmpty(f)) {
                     getOaiMetadataFormatSelectItems().add(new SelectItem(f, f));
                 }
@@ -1034,10 +1034,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
         return weekDays;
     }
     
-    private Integer getWeekDayNumber (String weekDayName) {
+    private Integer getWeekDayNumber(String weekDayName) {
         List<String> weekDays = getWeekDays();
         int i = 0;
-        for (String weekDayString: weekDays) {
+        for (String weekDayString : weekDays) {
             if (weekDayString.equals(weekDayName)) {
                 return new Integer(i);
             }
@@ -1120,9 +1120,9 @@ public class HarvestingClientsPage implements java.io.Serializable {
     public List<SelectItem> getHoursOfDaySelectItems() {
         if (this.hoursOfDaySelectItems == null) {
             this.hoursOfDaySelectItems = new ArrayList<>();
-            this.hoursOfDaySelectItems.add(new SelectItem( 12+"", "12:00"));
+            this.hoursOfDaySelectItems.add(new SelectItem( 12 + "", "12:00"));
             for (int i = 1; i < 12; i++) {
-                this.hoursOfDaySelectItems.add(new SelectItem(i+"", i+":00"));
+                this.hoursOfDaySelectItems.add(new SelectItem(i + "", i + ":00"));
             }
         }
         

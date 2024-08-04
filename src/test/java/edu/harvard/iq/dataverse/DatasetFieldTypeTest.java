@@ -77,7 +77,7 @@ public class DatasetFieldTypeTest {
     }
     
     @Test
-    public void testIsEscapeOutputText(){
+    public void testIsEscapeOutputText() {
                 System.out.println("testIsEscapeOutputText");
         DatasetFieldType instance = new DatasetFieldType();
         instance.setFieldType(DatasetFieldType.FieldType.TEXT);
@@ -92,7 +92,7 @@ public class DatasetFieldTypeTest {
         //if textbox then sanitize - allow tags
         instance.setFieldType(DatasetFieldType.FieldType.TEXTBOX);
         result = instance.isEscapeOutputText();
-        assertFalse( result);
+        assertFalse(result);
         
         //if textbox then don't sanitize - allow tags
         instance.setFieldType(DatasetFieldType.FieldType.EMAIL);
@@ -107,7 +107,7 @@ public class DatasetFieldTypeTest {
     }
     
     @Test
-    public void testGetSolrField(){
+    public void testGetSolrField() {
         
         DatasetFieldType instance = new DatasetFieldType();
         instance.setFieldType(DatasetFieldType.FieldType.DATE);

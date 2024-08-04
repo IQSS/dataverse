@@ -22,7 +22,7 @@ public class SolrQueryFormatter {
     
     public static int SOLR_ID_GROUP_SIZE = 1000; 
     
-    public void setSolrIdGroupSize(int groupSize){
+    public void setSolrIdGroupSize(int groupSize) {
         SOLR_ID_GROUP_SIZE = groupSize;
     }
     
@@ -32,27 +32,27 @@ public class SolrQueryFormatter {
      * @param paramName
      * @return
      */
-    protected String formatIdsForSolrClause(List<Long> sliceOfIds, String paramName,  String dvObjectType){ //='entityId'):
-        if (paramName == null){
+    protected String formatIdsForSolrClause(List<Long> sliceOfIds, String paramName, String dvObjectType) { //='entityId'):
+        if (paramName == null) {
             throw new NullPointerException("paramName cannot be null");
         }
-        if (sliceOfIds == null){
+        if (sliceOfIds == null) {
             throw new NullPointerException("sliceOfIds cannot be null");
         }
-        if (sliceOfIds.isEmpty()){
+        if (sliceOfIds.isEmpty()) {
             throw new IllegalStateException("sliceOfIds must have at least 1 value");
         }
         
         List<String> idList = new ArrayList<>();        
         for (Long id : sliceOfIds) {          
-            if (id != null){
+            if (id != null) {
                 idList.add("" + id);
             }
         }
         String orClause = StringUtils.join(idList, " ");
-        String qPart = "(" + paramName  + ":(" + orClause + "))";
-        if (dvObjectType != null){
-             qPart = "(" + paramName  + ":(" + orClause + ") AND " + SearchFields.TYPE + ":(" +  dvObjectType + "))";
+        String qPart = "(" + paramName + ":(" + orClause + "))";
+        if (dvObjectType != null) {
+             qPart = "(" + paramName + ":(" + orClause + ") AND " + SearchFields.TYPE + ":(" + dvObjectType + "))";
              //valStr;
         }
 
@@ -67,11 +67,11 @@ public class SolrQueryFormatter {
      * @param paramName
      * @return 
      */    
-    public String buildIdQuery(Set<Long> idListSet, String paramName, String dvObjectType){
-        if (paramName == null){
+    public String buildIdQuery(Set<Long> idListSet, String paramName, String dvObjectType) {
+        if (paramName == null) {
             throw new NullPointerException("paramName cannot be null");
         }
-        if ((idListSet == null)||(idListSet.isEmpty())){
+        if ((idListSet == null) || (idListSet.isEmpty())) {
             return null;
         }
         
@@ -87,10 +87,10 @@ public class SolrQueryFormatter {
         // -------------------------------------------
         // Ids in groups of SOLR_ID_GROUP_SIZE (1,000)
         // -------------------------------------------
-        for (int current_group_num=0; current_group_num < numFullGroups; current_group_num++){
+        for (int current_group_num = 0; current_group_num < numFullGroups; current_group_num++) {
             // slice group of ids off
             //
-            sliceOfIds = idList.subList(idCnt, this.SOLR_ID_GROUP_SIZE * (current_group_num+1));
+            sliceOfIds = idList.subList(idCnt, this.SOLR_ID_GROUP_SIZE * (current_group_num + 1));
             
             // add them to the count
             idCnt += sliceOfIds.size();
@@ -105,7 +105,7 @@ public class SolrQueryFormatter {
         // -------------------------------------------
         int extraIdCount = numIds % this.SOLR_ID_GROUP_SIZE;
 
-        if (extraIdCount > 0){
+        if (extraIdCount > 0) {
             // slice group of ids off
             //
             sliceOfIds = idList.subList(idCnt, idCnt + extraIdCount);

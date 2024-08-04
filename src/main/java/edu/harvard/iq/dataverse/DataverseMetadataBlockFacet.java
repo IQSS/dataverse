@@ -16,8 +16,8 @@ import java.util.Objects;
  * @author adaybujeda
  */
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")
-        , @Index(columnList="metadatablock_id")})
+@Table(indexes = {@Index(columnList = "dataverse_id")
+        , @Index(columnList = "metadatablock_id")})
 public class DataverseMetadataBlockFacet implements Serializable {
     private static final long serialVersionUID = 1L;
 

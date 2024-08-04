@@ -90,7 +90,7 @@ public class MetricsServiceBean implements Serializable {
                 + "join dvobject on dvobject.id = dataverse.id\n"
                 + "where dvobject.publicationdate is not null\n"
                 + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
-                + "and publicationdate > current_date - interval '"+days+"' day;\n"
+                + "and publicationdate > current_date - interval '" + days + "' day;\n"
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
 
@@ -137,11 +137,11 @@ public class MetricsServiceBean implements Serializable {
                 + "select min(to_char(COALESCE(releasetime, createtime), 'YYYY-MM')) as date, dataset_id\n"
                 + "from datasetversion\n"
                 + "where versionstate='RELEASED' \n"
-                + (((d == null)&&(DATA_LOCATION_ALL.equals(dataLocation))) ? "" : "and dataset_id in (select dataset.id from dataset, dvobject where dataset.id=dvobject.id\n")
+                + (((d == null) && (DATA_LOCATION_ALL.equals(dataLocation))) ? "" : "and dataset_id in (select dataset.id from dataset, dvobject where dataset.id=dvobject.id\n")
                 + ((DATA_LOCATION_LOCAL.equals(dataLocation)) ? "and dataset.harvestingclient_id IS NULL and publicationdate is not null\n " : "")
-                + ((DATA_LOCATION_REMOTE.equals(dataLocation)) ? "and dataset.harvestingclient_id IS NOT NULL\n "  : "")
+                + ((DATA_LOCATION_REMOTE.equals(dataLocation)) ? "and dataset.harvestingclient_id IS NOT NULL\n " : "")
                 + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n ")
-                + (((d == null)&&(DATA_LOCATION_ALL.equals(dataLocation))) ? "" : ")\n")
+                + (((d == null) && (DATA_LOCATION_ALL.equals(dataLocation))) ? "" : ")\n")
                 + "group by dataset_id) as subq group by subq.date order by date;"
 
         );
@@ -195,7 +195,7 @@ public class MetricsServiceBean implements Serializable {
                         + "and \n"
                         + dataLocationLine // be careful about adding more and statements after this line.
                         + "group by dataset_id \n"
-            +") sub_temp"
+            + ") sub_temp"
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
 
@@ -282,7 +282,7 @@ public class MetricsServiceBean implements Serializable {
                         + "and \n"
                         + dataLocationLine // be careful about adding more and statements after this line.
                         + "group by dataset_id \n"
-            +") sub_temp"
+            + ") sub_temp"
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
 
@@ -376,7 +376,7 @@ public class MetricsServiceBean implements Serializable {
         try {
             List<Object[]> results = query.getResultList();
             for (Object[] result : results) {
-                if((BigDecimal)result[2]==BigDecimal.ZERO) {
+                if ((BigDecimal) result[2] == BigDecimal.ZERO) {
                     logger.warning("File(s) of type " + (String) result[0] + " are reported as having 0 total size");
                 }
                 JsonObject stats = Json.createObjectBuilder().add(MetricsUtil.CONTENTTYPE, (String) result[0]).add(MetricsUtil.COUNT, (long) result[1]).add(MetricsUtil.SIZE, (BigDecimal) result[2]).build();
@@ -425,7 +425,7 @@ public class MetricsServiceBean implements Serializable {
                 + "select  distinct COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "') as date, count(id)\n"
                 + "from guestbookresponse\n"
                 + ((d == null) ? "" : "where dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")")
-                + ((d == null) ? "where ":" and ") + "eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
+                + ((d == null) ? "where " : " and ") + "eventtype!='" + GuestbookResponse.ACCESS_REQUEST + "'\n"
                 + " group by COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "') order by  COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -458,8 +458,8 @@ public class MetricsServiceBean implements Serializable {
                         + "from guestbookresponse\n"
                         + "where (date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
                         + "or responsetime is NULL)\n" // includes historic guestbook records without date
-                        + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
-                    + ((d==null) ? ";": "AND dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ");")
+                        + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST + "'\n"
+                    + ((d == null) ? ";" : "AND dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ");")
                 );
                 logger.log(Level.FINE, "Metric query: {0}", query);
                 return (long) query.getSingleResult();
@@ -480,8 +480,8 @@ public class MetricsServiceBean implements Serializable {
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
                 + "where responsetime > current_date - interval '" + days + "' day\n"
-                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
-                + ((d==null) ? ";": "AND dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ");")
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST + "'\n"
+                + ((d == null) ? ";" : "AND dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ");")
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
 
@@ -493,7 +493,7 @@ public class MetricsServiceBean implements Serializable {
                 + " FROM guestbookresponse gb, DvObject ob"
                 + " where ob.id = gb.datafile_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
-                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST + "'\n"
                 + "group by gb.datafile_id, ob.id, ob.protocol, ob.authority, ob.identifier, to_char(gb.responsetime, 'YYYY-MM') order by to_char(gb.responsetime, 'YYYY-MM');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -508,7 +508,7 @@ public class MetricsServiceBean implements Serializable {
                 + " where ob.id = gb.datafile_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
                 + " and date_trunc('month', gb.responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST + "'\n"
                 + "group by gb.datafile_id, ob.id, ob.protocol, ob.authority, ob.identifier order by count desc;");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -518,7 +518,7 @@ public class MetricsServiceBean implements Serializable {
             for (Object[] result : results) {
                 JsonObjectBuilder job = Json.createObjectBuilder();
                 job.add(MetricsUtil.ID, (int) result[0]);
-                if(result[1]!=null) {
+                if (result[1] != null) {
                     job.add(MetricsUtil.PID, (String) result[1]);
                 }
                 job.add(MetricsUtil.COUNT, (long) result[2]);
@@ -535,7 +535,7 @@ public class MetricsServiceBean implements Serializable {
                 + " FROM guestbookresponse gb, DvObject ob"
                 + " where ob.id = gb.dataset_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
-                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST + "'\n"
                 + "group by gb.dataset_id, ob.protocol, ob.authority, ob.identifier, to_char(gb.responsetime, 'YYYY-MM') order by to_char(gb.responsetime, 'YYYY-MM');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -553,7 +553,7 @@ public class MetricsServiceBean implements Serializable {
                 + " where ob.id = gb.dataset_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
                 + " and date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST +"'\n"
+                + "and eventtype!='" + GuestbookResponse.ACCESS_REQUEST + "'\n"
                 + "group by gb.dataset_id, ob.protocol, ob.authority, ob.identifier order by count(distinct email) desc;");
         JsonArrayBuilder jab = Json.createArrayBuilder();
         try {
@@ -761,12 +761,12 @@ public class MetricsServiceBean implements Serializable {
                 + " where o.name = :name"
                 + " and o.dataLocation" + (dataLocation == null ? " is null" : " = :dataLocation")
                 + " and o.dayString" + (dayString == null ? " is null" : " = :dayString")
-                + (dataverse == null ? " and o.dataverse is null" :  " and o.dataverse.id = :dataverseId")
+                + (dataverse == null ? " and o.dataverse is null" : " and o.dataverse.id = :dataverseId")
                 , Metric.class);
         query.setParameter("name", name);
-        if(dataLocation != null){ query.setParameter("dataLocation", dataLocation);}
-        if(dayString != null) {query.setParameter("dayString", dayString);}
-        if(dataverse != null) {query.setParameter("dataverseId", dataverse.getId());}
+        if (dataLocation != null) { query.setParameter("dataLocation", dataLocation);}
+        if (dayString != null) {query.setParameter("dayString", dayString);}
+        if (dataverse != null) {query.setParameter("dataverseId", dataverse.getId());}
 
         logger.log(Level.FINE, "getMetric query: {0}", query);
 

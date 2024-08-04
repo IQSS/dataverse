@@ -32,7 +32,7 @@ public class BannerMessageText implements Serializable {
     private String lang;
     
     @ManyToOne
-    @JoinColumn( nullable = false )
+    @JoinColumn(nullable = false)
     private BannerMessage bannerMessage;
     
     public BannerMessage getBannerMessage() {

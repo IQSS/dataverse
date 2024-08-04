@@ -196,7 +196,7 @@ public class FileUtilTest {
             FileMetadata embargoedFileMetadata = new FileMetadata();
             DataFile df = new DataFile();
             Embargo e = new Embargo();
-            e.setDateAvailable(LocalDate.now().plusDays(4) );
+            e.setDateAvailable(LocalDate.now().plusDays(4));
             df.setEmbargo(e);
             embargoedFileMetadata.setDataFile(df);
             DatasetVersion dsv = new DatasetVersion();
@@ -214,7 +214,7 @@ public class FileUtilTest {
             FileMetadata retentionFileMetadata = new FileMetadata();
             DataFile df = new DataFile();
             Retention r = new Retention();
-            r.setDateUnavailable(LocalDate.now().minusDays(1) );
+            r.setDateUnavailable(LocalDate.now().minusDays(1));
             df.setRetention(r);
             retentionFileMetadata.setDataFile(df);
             DatasetVersion dsv = new DatasetVersion();

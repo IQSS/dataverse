@@ -35,9 +35,9 @@ public class SetCollectionQuotaCommand  extends AbstractVoidCommand {
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
         // Check if user is a superuser:
-        if ( (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser() ) ) {      
+        if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {      
             throw new PermissionException(BundleUtil.getStringFromBundle("dataverse.storage.quota.superusersonly"),
-                this,  null, dataverse);                
+                this, null, dataverse);                
         }
         
         if (dataverse == null) {

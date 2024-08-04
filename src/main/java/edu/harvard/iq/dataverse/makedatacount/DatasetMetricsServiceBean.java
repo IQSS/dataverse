@@ -44,7 +44,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         Query query = em.createQuery(queryStr);
         List resultList = query.getResultList();
         if (resultList.size() > 1) {
-            throw new EJBException("More than one Dataset Metric found in the dataset (id= " + dataset.getId() + "), with monthYear= " + monthYear + " and Country code = " + country  + ".");
+            throw new EJBException("More than one Dataset Metric found in the dataset (id= " + dataset.getId() + "), with monthYear= " + monthYear + " and Country code = " + country + ".");
         }
         if (resultList.size() == 1) {
             dsm = (DatasetMetrics) resultList.get(0);
@@ -91,7 +91,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         dm.setCountryCode(country);
         dm.setMonth(monthYear);
         dm.setViewsTotalRegular(row[0] == null ? 0 : ((BigDecimal) row[0]).longValue());
-        dm.setViewsUniqueRegular( row[1] == null ? 0 : ((BigDecimal) row[1]).longValue());
+        dm.setViewsUniqueRegular(row[1] == null ? 0 : ((BigDecimal) row[1]).longValue());
         dm.setDownloadsTotalRegular(row[2] == null ? 0 : ((BigDecimal) row[2]).longValue());
         dm.setDownloadsUniqueRegular(row[3] == null ? 0 : ((BigDecimal) row[3]).longValue());
         dm.setViewsTotalMachine(row[4] == null ? 0 : ((BigDecimal) row[4]).longValue());
@@ -107,7 +107,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
 
     }
         
-    public List<DatasetMetrics> parseSushiReport(JsonObject report){
+    public List<DatasetMetrics> parseSushiReport(JsonObject report) {
         return parseSushiReport(report, null);
     }
     
@@ -116,7 +116,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         List<DatasetMetrics> datasetMetricsAll = new ArrayList<>();
         //Current counter-processor v 0.1.04+ format
         JsonArray reportDatasets = report.getJsonArray("report-datasets");
-        if(reportDatasets==null) {
+        if (reportDatasets == null) {
             //Try counter-processor v 0.0.1 name
             reportDatasets = report.getJsonArray("report_datasets");
         }
@@ -243,11 +243,11 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         dm.setDataset(ds);
         dm.setCountryCode("");
         dm.setMonth(monthYear);
-        dm = loadMetrics(dm, remaining, accessMethod,  metricType ); 
+        dm = loadMetrics(dm, remaining, accessMethod, metricType); 
         return dm;
     }
     
-    private List<DatasetMetrics> addUpdateMetrics(List<DatasetMetrics> currentList, List<DatasetMetrics> compareList, String countField, String accessMethod){
+    private List<DatasetMetrics> addUpdateMetrics(List<DatasetMetrics> currentList, List<DatasetMetrics> compareList, String countField, String accessMethod) {
         
         List<DatasetMetrics> toAdd = new ArrayList();
         
@@ -259,29 +259,29 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                 DatasetMetrics next = iterator.next();
                 if (next.getCountryCode().equals(testMetric.getCountryCode())) {
                     //Replace element      
-                    if (countField.equals("total-dataset-investigations")){
-                        if(accessMethod.equals("regular")){
+                    if (countField.equals("total-dataset-investigations")) {
+                        if (accessMethod.equals("regular")) {
                             next.setViewsTotalRegular(testMetric.getViewsTotalRegular());
                         } else {
                             next.setViewsTotalMachine(testMetric.getViewsTotalMachine());
                         }                      
                     }
-                    if (countField.equals("unique-dataset-investigations")){
-                        if(accessMethod.equals("regular")){
+                    if (countField.equals("unique-dataset-investigations")) {
+                        if (accessMethod.equals("regular")) {
                             next.setViewsUniqueRegular(testMetric.getViewsUniqueRegular());
                         } else {
                             next.setViewsUniqueMachine(testMetric.getViewsUniqueMachine());
                         }
                     }                    
-                    if (countField.equals("total-dataset-requests")){
-                        if(accessMethod.equals("regular")){
+                    if (countField.equals("total-dataset-requests")) {
+                        if (accessMethod.equals("regular")) {
                             next.setDownloadsTotalRegular(testMetric.getDownloadsTotalRegular());
                         } else {
                             next.setDownloadsTotalMachine(testMetric.getDownloadsTotalMachine());
                         }
                     }                    
-                    if (countField.equals("unique-dataset-requests")){
-                        if(accessMethod.equals("regular")){
+                    if (countField.equals("unique-dataset-requests")) {
+                        if (accessMethod.equals("regular")) {
                             next.setDownloadsUniqueRegular(testMetric.getDownloadsUniqueRegular());
                         } else {
                             next.setDownloadsUniqueMachine(testMetric.getDownloadsUniqueMachine());
@@ -292,12 +292,12 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                     add = false;
                 }
             }
-            if(add){
+            if (add) {
                toAdd.add(testMetric);
             }
         }
         
-        if(!toAdd.isEmpty()){
+        if (!toAdd.isEmpty()) {
             currentList.addAll(toAdd);
         }
         
@@ -306,14 +306,14 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
     
     public DatasetMetrics save(DatasetMetrics datasetMetrics) {  
         //Replace existing if necessary
-        if(datasetMetrics.getDataset() == null){
+        if (datasetMetrics.getDataset() == null) {
             return null;
         }
-        Dataset testDs =  datasetMetrics.getDataset();
+        Dataset testDs = datasetMetrics.getDataset();
         String testMonth = datasetMetrics.getMonthYear();
         String testCountry = datasetMetrics.getCountryCode();
         DatasetMetrics getExisting = getDatasetMetricsByDatasetMonthCountry(testDs, testMonth, testCountry);
-        if (getExisting != null){
+        if (getExisting != null) {
             em.remove(getExisting);
         }
         DatasetMetrics savedDatasetMetrics = em.merge(datasetMetrics);

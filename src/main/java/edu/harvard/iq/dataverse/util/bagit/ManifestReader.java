@@ -24,7 +24,7 @@ public class ManifestReader {
     private static final Logger logger = Logger.getLogger(ManifestReader.class.getCanonicalName());
 
     public Optional<Path> getSupportedManifest(FileDataProvider fileDataProvider, Path bagRoot) {
-        for(BagChecksumType type: BagChecksumType.values()) {
+        for (BagChecksumType type : BagChecksumType.values()) {
             Path manifestPath = bagRoot.resolve(type.getFileName());
             Optional<InputStreamProvider> manifestEntry = fileDataProvider.getInputStreamProvider(manifestPath);
             if (manifestEntry.isPresent()) {
@@ -36,7 +36,7 @@ public class ManifestReader {
     }
 
     public Optional<ManifestChecksum> getManifestChecksums(FileDataProvider fileDataProvider, Path bagRoot) {
-        for(BagChecksumType type: BagChecksumType.values()) {
+        for (BagChecksumType type : BagChecksumType.values()) {
             Path manifestPath = bagRoot.resolve(type.getFileName());
             try {
                 Optional<InputStreamProvider> manifestEntry = fileDataProvider.getInputStreamProvider(manifestPath);
@@ -51,16 +51,16 @@ public class ManifestReader {
                 return Optional.empty();
             }
         }
-        logger.log(Level.WARNING,String.format("action=getManifestChecksums result=no-supported-manifest-found fileDataProvider=%s bagRoot=%s supportedTypes=%s", fileDataProvider.getName(), bagRoot, BagChecksumType.asList()));
+        logger.log(Level.WARNING, String.format("action=getManifestChecksums result=no-supported-manifest-found fileDataProvider=%s bagRoot=%s supportedTypes=%s", fileDataProvider.getName(), bagRoot, BagChecksumType.asList()));
         return Optional.empty();
     }
 
-    private Map<Path, String> readManifestChecksums(Path bagRoot, InputStream manifestEntry) throws Exception{
+    private Map<Path, String> readManifestChecksums(Path bagRoot, InputStream manifestEntry) throws Exception {
         final HashMap<Path, String> checksumsMap = new HashMap<>();
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(manifestEntry));
             String line = br.readLine();
-            while(line != null){
+            while (line != null) {
                 final String[] parts = line.split("\\s+", 2);
                 final Path file = bagRoot.resolve(Path.of(parts[1]));
                 final String hash = parts[0];

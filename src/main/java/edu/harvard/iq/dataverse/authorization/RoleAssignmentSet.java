@@ -20,26 +20,26 @@ public class RoleAssignmentSet implements Iterable<RoleAssignment> {
 	private final RoleAssignee roas;
 	private final Set<RoleAssignment> assignments = new HashSet<>();
 	
-	public RoleAssignmentSet( RoleAssignee aRoleAssignee) {
+	public RoleAssignmentSet(RoleAssignee aRoleAssignee) {
 		roas = aRoleAssignee;
 	}
 	
-	public void add( Iterable<RoleAssignment> ras ) {
-		for ( RoleAssignment ra : ras ) {
+	public void add(Iterable<RoleAssignment> ras) {
+		for (RoleAssignment ra : ras) {
 			assignments.add(ra);
 		}
 	}
 	
-	public void add( RoleAssignment ra ) {
-		assignments.add( ra );
+	public void add(RoleAssignment ra) {
+		assignments.add(ra);
 	}
 	
 	public Set<Permission> getPermissions() {
 		BitSet acc = new BitSet();
-		for ( RoleAssignment ra : assignments ) {
-			acc.union( new BitSet(ra.getRole().getPermissionsBits()) );
+		for (RoleAssignment ra : assignments) {
+			acc.union(new BitSet(ra.getRole().getPermissionsBits()));
 		}
-		return acc.asSetOf( Permission.class );
+		return acc.asSetOf(Permission.class);
 	}
 
     public RoleAssignee getRoleAssignee() {

@@ -39,7 +39,7 @@ public class FileVersionInfo {
      * Constructor
      * 
      */
-    public FileVersionInfo(){
+    public FileVersionInfo() {
         
         
     }
@@ -48,7 +48,7 @@ public class FileVersionInfo {
      *  Set id
      *  @param id
      */
-    public void setId(Long id){
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -56,7 +56,7 @@ public class FileVersionInfo {
      *  Get for id
      *  @return Long
      */
-    public Long getId(){
+    public Long getId() {
         return this.id;
     }
     
@@ -65,7 +65,7 @@ public class FileVersionInfo {
      *  Set doi
      *  @param doi
      */
-    public void setDoi(String doi){
+    public void setDoi(String doi) {
         this.doi = doi;
     }
 
@@ -73,7 +73,7 @@ public class FileVersionInfo {
      *  Get for doi
      *  @return String
      */
-    public String getDoi(){
+    public String getDoi() {
         return this.doi;
     }
     
@@ -82,7 +82,7 @@ public class FileVersionInfo {
      *  Set majorVersion
      *  @param majorVersion
      */
-    public void setMajorVersion(Long majorVersion){
+    public void setMajorVersion(Long majorVersion) {
         this.majorVersion = majorVersion;
     }
 
@@ -90,7 +90,7 @@ public class FileVersionInfo {
      *  Get for majorVersion
      *  @return Long
      */
-    public Long getMajorVersion(){
+    public Long getMajorVersion() {
         return this.majorVersion;
     }
     
@@ -99,7 +99,7 @@ public class FileVersionInfo {
      *  Set minorVersion
      *  @param minorVersion
      */
-    public void setMinorVersion(Long minorVersion){
+    public void setMinorVersion(Long minorVersion) {
         this.minorVersion = minorVersion;
     }
 
@@ -107,7 +107,7 @@ public class FileVersionInfo {
      *  Get for minorVersion
      *  @return Long
      */
-    public Long getMinorVersion(){
+    public Long getMinorVersion() {
         return this.minorVersion;
     }
     
@@ -116,7 +116,7 @@ public class FileVersionInfo {
      *  Set datasetId
      *  @param datasetId
      */
-    public void setDatasetId(Long datasetId){
+    public void setDatasetId(Long datasetId) {
         this.datasetId = datasetId;
     }
 
@@ -124,7 +124,7 @@ public class FileVersionInfo {
      *  Get for datasetId
      *  @return Long
      */
-    public Long getDatasetId(){
+    public Long getDatasetId() {
         return this.datasetId;
     }
     
@@ -133,7 +133,7 @@ public class FileVersionInfo {
      *  Set datasetVersionId
      *  @param datasetVersionId
      */
-    public void setDatasetVersionId(Long datasetVersionId){
+    public void setDatasetVersionId(Long datasetVersionId) {
         this.datasetVersionId = datasetVersionId;
     }
 
@@ -141,7 +141,7 @@ public class FileVersionInfo {
      *  Get for datasetVersionId
      *  @return Long
      */
-    public Long getDatasetVersionId(){
+    public Long getDatasetVersionId() {
         return this.datasetVersionId;
     }
     
@@ -150,7 +150,7 @@ public class FileVersionInfo {
      *  Set dataFile
      *  @param dataFile
      */
-    public void setDataFile(DataFile dataFile){
+    public void setDataFile(DataFile dataFile) {
         this.dataFile = dataFile;
     }
 
@@ -158,7 +158,7 @@ public class FileVersionInfo {
      *  Get for dataFile
      *  @return DataFile
      */
-    public DataFile getDataFile(){
+    public DataFile getDataFile() {
         return this.dataFile;
     }
     
@@ -167,7 +167,7 @@ public class FileVersionInfo {
      *  Set fileMetadata
      *  @param fileMetadata
      */
-    public void setFileMetadata(FileMetadata fileMetadata){
+    public void setFileMetadata(FileMetadata fileMetadata) {
         this.fileMetadata = fileMetadata;
     }
 
@@ -175,7 +175,7 @@ public class FileVersionInfo {
      *  Get for fileMetadata
      *  @return FileMetadata
      */
-    public FileMetadata getFileMetadata(){
+    public FileMetadata getFileMetadata() {
         return this.fileMetadata;
     }
     

@@ -30,14 +30,14 @@ public class OptionalAccessService {
     private String contentMimeType; 
     private String serviceArguments; 
     
-    public OptionalAccessService (String name, String mimeType, String arguments, String desc) {
+    public OptionalAccessService(String name, String mimeType, String arguments, String desc) {
         this.serviceName = name; 
         this.serviceDescription = desc; 
         this.contentMimeType = mimeType; 
         this.serviceArguments = arguments; 
     }
     
-    public OptionalAccessService (String name, String mimeType, String arguments) {
+    public OptionalAccessService(String name, String mimeType, String arguments) {
         this(name, mimeType, arguments, null);
     }
     

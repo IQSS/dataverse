@@ -48,7 +48,7 @@ public class DatasetTest {
         assertEquals(2, sut.getLocks().size(), "After adding a review lock, verify that the dataset is locked by two locks");
         
         DatasetLock retrievedDl = sut.getLockFor(DatasetLock.Reason.Ingest);
-        assertEquals( dlIngest, retrievedDl );
+        assertEquals(dlIngest, retrievedDl);
         sut.removeLock(dlIngest);
         assertNull(sut.getLockFor(DatasetLock.Reason.Ingest), "After removing the ingest lock, verify that the dataset does not have any ingest locks");
         

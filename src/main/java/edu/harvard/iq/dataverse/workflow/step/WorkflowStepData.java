@@ -24,7 +24,7 @@ import jakarta.persistence.ManyToOne;
 public class WorkflowStepData implements Serializable {
     
     @Id
-    @GeneratedValue( strategy=GenerationType.IDENTITY )
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
     
     @ManyToOne
@@ -34,13 +34,13 @@ public class WorkflowStepData implements Serializable {
     
     private String stepType;
     
-    @ElementCollection( fetch=FetchType.EAGER )
+    @ElementCollection(fetch = FetchType.EAGER)
     @Column(length = 2048)
-    private Map<String,String> stepParameters;
+    private Map<String, String> stepParameters;
 
-    @ElementCollection( fetch=FetchType.EAGER )
+    @ElementCollection(fetch = FetchType.EAGER)
     @Column(length = 2048)
-    private Map<String,String> stepSettings;
+    private Map<String, String> stepSettings;
 
 
     public Workflow getParent() {
@@ -89,7 +89,7 @@ public class WorkflowStepData implements Serializable {
     }
 
     public void setStepSettings(Map<String, String> settingsMap) {
-        this.stepSettings=settingsMap;
+        this.stepSettings = settingsMap;
     }
 
     public Map<String, String> getStepSettings() {

@@ -34,7 +34,7 @@ import jakarta.persistence.Query;
  * @author Leonid Andreev 
  */
 @RequiredPermissions({})
-public class UningestFileCommand extends AbstractVoidCommand  {
+public class UningestFileCommand extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(UningestFileCommand.class.getCanonicalName());
     final DataFile uningest;
@@ -55,7 +55,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         
         // is this actually a tabular data file?
         if (!uningest.isTabularData()) {
-            throw new IllegalCommandException("UningestFileCommand called on a non-tabular data file (id="+uningest.getId()+")", this);
+            throw new IllegalCommandException("UningestFileCommand called on a non-tabular data file (id=" + uningest.getId() + ")", this);
         }
 
         String originalFileName = uningest.getOriginalFileName();
@@ -71,7 +71,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
             dataAccess.open();
             storedOriginalFileSize = dataAccess.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
         } catch (IOException ioex) {
-            String errorMessage = "Failed to open StorageIO for " + uningest.getStorageIdentifier() + " attempting to revert tabular ingest" +  " aborting. (";
+            String errorMessage = "Failed to open StorageIO for " + uningest.getStorageIdentifier() + " attempting to revert tabular ingest" + " aborting. (";
             if (ioex.getMessage() != null) {
                 errorMessage += "(" + ioex.getMessage() + ")";
             } else {
@@ -91,7 +91,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         try {
             dataAccess.revertBackupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
         } catch (IOException ioex) {
-            String errorMessage = "Failed to revert backup as Aux for " + uningest.getStorageIdentifier() + " attempting to revert tabular ingest" +  " aborting. (";
+            String errorMessage = "Failed to revert backup as Aux for " + uningest.getStorageIdentifier() + " attempting to revert tabular ingest" + " aborting. (";
             if (ioex.getMessage() != null) {
                 errorMessage += "(" + ioex.getMessage() + ")";
             } else {
@@ -129,7 +129,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         
         //probably unnecessary - why would you add tags to a file and then say "oops this shouldn't have been ingested"?
         DataFileTag tag;
-        for (DataFileTag tagLoop: uningest.getTags()){
+        for (DataFileTag tagLoop : uningest.getTags()) {
             tag = ctxt.em().find(DataFileTag.class, tagLoop.getId());
             ctxt.em().remove(tag);
         }
@@ -165,9 +165,9 @@ public class UningestFileCommand extends AbstractVoidCommand  {
             ctxt.datasetVersion().fixMissingUnf(dv.getId().toString(), true);
         }
 
-        try{
+        try {
             dataAccess.deleteAllAuxObjects();
-        } catch (IOException e){
+        } catch (IOException e) {
             logger.warning("Io Exception deleting all aux objects : " + uningest.getId());
         }
         
@@ -186,7 +186,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         return true; 
     }
     
-    private void resetIngestStats(DataFile uningest, CommandContext ctxt){
+    private void resetIngestStats(DataFile uningest, CommandContext ctxt) {
         
         Long fileid = uningest.getId();        
         Query query = ctxt.em().createQuery("DELETE from IngestReport as o where o.dataFile.id  =:fileid");

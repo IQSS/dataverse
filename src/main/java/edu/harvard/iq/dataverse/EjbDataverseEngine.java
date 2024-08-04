@@ -198,7 +198,7 @@ public class EjbDataverseEngine {
         return submit(aCommand);
     }
     
-    private DvObject getRetType(Object r){
+    private DvObject getRetType(Object r) {
 
         return (DvObject) r;
        
@@ -211,7 +211,7 @@ public class EjbDataverseEngine {
         final ActionLogRecord logRec = new ActionLogRecord(ActionLogRecord.ActionType.Command, aCommand.getClass().getCanonicalName());
 
         try {
-            logRec.setUserIdentifier( aCommand.getRequest().getUser().getIdentifier() );
+            logRec.setUserIdentifier(aCommand.getRequest().getUser().getIdentifier());
             // Check for rate limit exceeded. Must be done before anything else to prevent unnecessary processing.
             if (!cacheFactory.checkRate(aCommand.getRequest().getUser(), aCommand)) {
                 throw new RateLimitCommandException(BundleUtil.getStringFromBundle("command.exception.user.ratelimited", Arrays.asList(aCommand.getClass().getSimpleName())), aCommand);
@@ -269,7 +269,7 @@ public class EjbDataverseEngine {
                 }
             }
             try {
-                if (getContext().getCommandsCalled() == null){
+                if (getContext().getCommandsCalled() == null) {
                     getContext().beginCommandSequence();
                 }
                 getContext().addCommand(aCommand);
@@ -277,8 +277,8 @@ public class EjbDataverseEngine {
                 //to be run on completeCommand method when the outermost command is completed
                 Stack<Command> previouslyCalled = getContext().getCommandsCalled();
                 R r = innerEngine.submit(aCommand, getContext());   
-                if (getContext().getCommandsCalled().empty() && !previouslyCalled.empty()){
-                    for (Command c: previouslyCalled){
+                if (getContext().getCommandsCalled().empty() && !previouslyCalled.empty()) {
+                    for (Command c : previouslyCalled) {
                         getContext().getCommandsCalled().add(c);
                     }
                 }
@@ -286,18 +286,18 @@ public class EjbDataverseEngine {
                 this.completeCommand(aCommand, r, getContext().getCommandsCalled());
                 return r;
                 
-            } catch ( EJBException ejbe ) {
+            } catch (EJBException ejbe) {
                 throw new CommandException("Command " + aCommand.toString() + " failed: " + ejbe.getMessage(), ejbe.getCausedByException(), aCommand);
             } 
         } catch (CommandException cmdEx) {
             if (!(cmdEx instanceof PermissionException)) {            
                 logRec.setActionResult(ActionLogRecord.Result.InternalError); 
             } 
-            logRec.setInfo(logRec.getInfo() + " (" + cmdEx.getMessage() +")");
+            logRec.setInfo(logRec.getInfo() + " (" + cmdEx.getMessage() + ")");
             throw cmdEx;
-        } catch ( RuntimeException re ) {
+        } catch (RuntimeException re) {
             logRec.setActionResult(ActionLogRecord.Result.InternalError);
-            logRec.setInfo(logRec.getInfo() + " (" + re.getMessage() +")");   
+            logRec.setInfo(logRec.getInfo() + " (" + re.getMessage() + ")");   
             
             Throwable cause = re;          
             while (cause != null) {
@@ -307,7 +307,7 @@ public class EjbDataverseEngine {
                     sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                     logger.log(Level.SEVERE, sb.toString());
                     // set this more detailed info in action log
-                    logRec.setInfo(logRec.getInfo() + " (" +  sb.toString() +")");
+                    logRec.setInfo(logRec.getInfo() + " (" + sb.toString() + ")");
                 }
                 cause = cause.getCause();
             }           
@@ -321,9 +321,9 @@ public class EjbDataverseEngine {
             if (logRec.getActionResult() == null) {
                 logRec.setActionResult(ActionLogRecord.Result.OK);
             } else {
-                try{
+                try {
                      ejbCtxt.setRollbackOnly();
-                } catch (IllegalStateException isEx){
+                } catch (IllegalStateException isEx) {
                     //Not in a transaction nothing to rollback
                 }                  
             }
@@ -334,7 +334,7 @@ public class EjbDataverseEngine {
     
     protected void completeCommand(Command command, Object r, Stack<Command> called) {
         
-        if (called.isEmpty()){
+        if (called.isEmpty()) {
             return;
         }
         
@@ -388,7 +388,7 @@ public class EjbDataverseEngine {
                 
                 
                 @Override
-                public Stack<Command> getCommandsCalled(){
+                public Stack<Command> getCommandsCalled() {
                     return commandsCalled;
                 }
                 

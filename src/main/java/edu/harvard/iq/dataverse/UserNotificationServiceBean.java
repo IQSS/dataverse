@@ -67,8 +67,8 @@ public class UserNotificationServiceBean {
         return query.getResultList();
     }
     
-    public Long getUnreadNotificationCountByUser(Long userId){
-        if (userId == null){
+    public Long getUnreadNotificationCountByUser(Long userId) {
+        if (userId == null) {
             return new Long("0");
         }
         Query query = em.createNativeQuery("select count(id) from usernotification as o where o.user_id = " + userId + " and o.readnotification = 'false';");

@@ -16,15 +16,15 @@ import jakarta.ws.rs.ext.Provider;
  * and send a message what just failed...
  */
 @Provider
-public class JsonParseExceptionHandler implements ExceptionMapper<JsonParseException>{
+public class JsonParseExceptionHandler implements ExceptionMapper<JsonParseException> {
     
     @Context
     HttpServletRequest request;
     
     @Override
-    public Response toResponse(JsonParseException ex){
+    public Response toResponse(JsonParseException ex) {
         return Response.status(Response.Status.BAD_REQUEST)
-                       .entity( Json.createObjectBuilder()
+                       .entity(Json.createObjectBuilder()
                            .add("status", "ERROR")
                            .add("code", Response.Status.BAD_REQUEST.getStatusCode())
                            .add("message", ex.getMessage())

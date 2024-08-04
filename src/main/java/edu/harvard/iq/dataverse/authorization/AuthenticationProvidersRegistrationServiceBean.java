@@ -100,10 +100,10 @@ public class AuthenticationProvidersRegistrationServiceBean {
             // using @AutoService - similiarly how we are using with the 
             // metadata Exporter classes. (may not necessarily be possible, or 
             // easy; hence "consider" -- L.A.)
-            registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService, authenticationService) );
-            registerProviderFactory( new ShibAuthenticationProviderFactory() );
-            registerProviderFactory( new OAuth2AuthenticationProviderFactory() );
-            registerProviderFactory( new OIDCAuthenticationProviderFactory() );
+            registerProviderFactory(new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService, authenticationService));
+            registerProviderFactory(new ShibAuthenticationProviderFactory());
+            registerProviderFactory(new OAuth2AuthenticationProviderFactory());
+            registerProviderFactory(new OIDCAuthenticationProviderFactory());
         
         } catch (AuthorizationSetupException ex) { 
             logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);
@@ -113,10 +113,10 @@ public class AuthenticationProvidersRegistrationServiceBean {
         em.createNamedQuery("AuthenticationProviderRow.findAllEnabled", AuthenticationProviderRow.class)
                 .getResultList().forEach((row) -> {
                     try {
-                        registerProvider( loadProvider(row) );
+                        registerProvider(loadProvider(row));
                         
-                    } catch ( AuthenticationProviderFactoryNotFoundException e ) {
-                        logger.log(Level.SEVERE, "Cannot find authentication provider factory with alias '" + e.getFactoryAlias() + "'",e);
+                    } catch (AuthenticationProviderFactoryNotFoundException e) {
+                        logger.log(Level.SEVERE, "Cannot find authentication provider factory with alias '" + e.getFactoryAlias() + "'", e);
                         
                     } catch (AuthorizationSetupException ex) {
                         logger.log(Level.SEVERE, "Exception setting up the authentication provider '" + row.getId() + "': " + ex.getMessage(), ex);
@@ -136,12 +136,12 @@ public class AuthenticationProvidersRegistrationServiceBean {
     private void registerProviderFactory(AuthenticationProviderFactory aFactory) 
             throws AuthorizationSetupException 
     {
-        if ( providerFactories.containsKey(aFactory.getAlias()) ) {
+        if (providerFactories.containsKey(aFactory.getAlias())) {
             throw new AuthorizationSetupException(
                     "Duplicate alias " + aFactory.getAlias() + " for authentication provider factory.");
         }
-        providerFactories.put( aFactory.getAlias(), aFactory);
-        logger.log( Level.FINE, "Registered Authentication Provider Factory {0} as {1}", 
+        providerFactories.put(aFactory.getAlias(), aFactory);
+        logger.log(Level.FINE, "Registered Authentication Provider Factory {0} as {1}", 
                 new Object[]{aFactory.getInfo(), aFactory.getAlias()});
     }
     
@@ -153,25 +153,25 @@ public class AuthenticationProvidersRegistrationServiceBean {
      * @throws AuthorizationSetupException If the factory failed to instantiate a provider from the row.
      */
     @Lock(WRITE)
-    public AuthenticationProvider loadProvider( AuthenticationProviderRow aRow )
+    public AuthenticationProvider loadProvider(AuthenticationProviderRow aRow)
                 throws AuthenticationProviderFactoryNotFoundException, AuthorizationSetupException {
         AuthenticationProviderFactory fact = providerFactories.get((aRow.getFactoryAlias()));
         
-        if ( fact == null ) throw new AuthenticationProviderFactoryNotFoundException(aRow.getFactoryAlias());
+        if (fact == null) throw new AuthenticationProviderFactoryNotFoundException(aRow.getFactoryAlias());
         
         return fact.buildProvider(aRow);
     }
     
     @Lock(WRITE)
     public void registerProvider(AuthenticationProvider aProvider) throws AuthorizationSetupException {
-        if ( authenticationProviders.containsKey(aProvider.getId()) ) {
+        if (authenticationProviders.containsKey(aProvider.getId())) {
             throw new AuthorizationSetupException(
                     "Duplicate id " + aProvider.getId() + " for authentication provider.");
         }
-        authenticationProviders.put( aProvider.getId(), aProvider);
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "registerProvider")
+        authenticationProviders.put(aProvider.getId(), aProvider);
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "registerProvider")
             .setInfo(aProvider.getId() + ":" + aProvider.getInfo().getTitle()));
-        if ( aProvider instanceof AbstractOAuth2AuthenticationProvider ) {
+        if (aProvider instanceof AbstractOAuth2AuthenticationProvider) {
             oAuth2authenticationProviders.put(aProvider.getId(), (AbstractOAuth2AuthenticationProvider) aProvider);
         }
     }
@@ -202,13 +202,13 @@ public class AuthenticationProvidersRegistrationServiceBean {
     }
     
     @Lock(WRITE)
-    public void deregisterProvider( String id ) {
-        oAuth2authenticationProviders.remove( id );
-        if ( authenticationProviders.remove(id) != null ) {
-            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deregisterProvider")
+    public void deregisterProvider(String id) {
+        oAuth2authenticationProviders.remove(id);
+        if (authenticationProviders.remove(id) != null) {
+            actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deregisterProvider")
                 .setInfo(id));
-            logger.log(Level.INFO,"Deregistered provider {0}", new Object[]{id});
-            logger.log(Level.INFO,"Providers left {0}", new Object[]{authenticationProviders.values()});
+            logger.log(Level.INFO, "Deregistered provider {0}", new Object[]{id});
+            logger.log(Level.INFO, "Providers left {0}", new Object[]{authenticationProviders.values()});
         }
     }
     

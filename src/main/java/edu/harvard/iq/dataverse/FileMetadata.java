@@ -61,7 +61,7 @@ import jakarta.validation.constraints.Pattern;
  *
  * @author skraffmiller
  */
-@Table(indexes = {@Index(columnList="datafile_id"), @Index(columnList="datasetversion_id")} )
+@Table(indexes = {@Index(columnList = "datafile_id"), @Index(columnList = "datasetversion_id")})
 @Entity
 public class FileMetadata implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -69,16 +69,16 @@ public class FileMetadata implements Serializable {
 
 
     @Expose
-    @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$", 
+    @Pattern(regexp = "^[^:<>;#/\"\\*\\|\\?\\\\]*$", 
             message = "{filename.illegalCharacters}")
     @NotBlank(message = "{filename.blank}")
-    @Column( nullable=false )
+    @Column(nullable = false)
     private String label = "";
     
     
     @ValidateDataFileDirectoryName(message = "{directoryname.illegalCharacters}")
     @Expose
-    @Column ( nullable=true )
+    @Column(nullable = true)
 
     private String directoryLabel;
     @Expose
@@ -96,11 +96,11 @@ public class FileMetadata implements Serializable {
     private boolean restricted;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DatasetVersion datasetVersion;
     
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataFile dataFile;
 
     /**
@@ -109,10 +109,10 @@ public class FileMetadata implements Serializable {
      * is based on PROV-JSON from the W3C.
      */
     @Expose
-    @Column(columnDefinition = "TEXT", nullable = true, name="prov_freeform")
+    @Column(columnDefinition = "TEXT", nullable = true, name = "prov_freeform")
     private String provFreeForm;
 
-    @OneToMany (mappedBy="fileMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @OneToMany(mappedBy = "fileMetadata", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<VariableMetadata> variableMetadatas;
         
     /**
@@ -123,12 +123,12 @@ public class FileMetadata implements Serializable {
      */
     public FileMetadata createCopy() {
         FileMetadata fmd = new FileMetadata();
-        fmd.setCategories(new LinkedList<>(getCategories()) );
-        fmd.setDataFile( getDataFile() );
-        fmd.setDatasetVersion( getDatasetVersion() );
-        fmd.setDescription( getDescription() );
-        fmd.setLabel( getLabel() );
-        fmd.setRestricted( isRestricted() );
+        fmd.setCategories(new LinkedList<>(getCategories()));
+        fmd.setDataFile(getDataFile());
+        fmd.setDatasetVersion(getDatasetVersion());
+        fmd.setDescription(getDescription());
+        fmd.setLabel(getLabel());
+        fmd.setRestricted(isRestricted());
         fmd.setDirectoryLabel(getDirectoryLabel());
         
         return fmd;
@@ -177,7 +177,7 @@ public class FileMetadata implements Serializable {
         this.restricted = restricted;
     }
 
-    @OneToMany(mappedBy="fileMetadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @OneToMany(mappedBy = "fileMetadata", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<VarGroup> varGroups;
 
     public Collection<VariableMetadata> getVariableMetadatas() {
@@ -201,7 +201,7 @@ public class FileMetadata implements Serializable {
      */
     @SerializedName("categories") //Used for OptionalFileParams serialization
     @ManyToMany
-    @JoinTable(indexes = {@Index(columnList="filecategories_id"),@Index(columnList="filemetadatas_id")})
+    @JoinTable(indexes = {@Index(columnList = "filecategories_id"), @Index(columnList = "filemetadatas_id")})
     @OrderBy("name")
     private List<DataFileCategory> fileCategories;
     
@@ -397,15 +397,15 @@ public class FileMetadata implements Serializable {
         return "";
     }
 
-    public String getFileCitation(){
+    public String getFileCitation() {
         return getFileCitation(false, false);
     }
 
-    public String getFileCitation(boolean html, boolean anonymized){
+    public String getFileCitation(boolean html, boolean anonymized) {
          return new DataCitation(this).toString(html, anonymized);
     }
 
-    public String getDirectFileCitation(boolean html, boolean anonymized){
+    public String getDirectFileCitation(boolean html, boolean anonymized) {
         return new DataCitation(this, true).toString(html, anonymized);
     }
 
@@ -503,7 +503,7 @@ public class FileMetadata implements Serializable {
     }
     
     @Transient
-    private FileVersionDifference fileVersionDifference ;
+    private FileVersionDifference fileVersionDifference;
 
     public FileVersionDifference getFileVersionDifference() {
         return fileVersionDifference;
@@ -551,7 +551,7 @@ public class FileMetadata implements Serializable {
     }
 
     
-    public boolean compareContent(FileMetadata other){
+    public boolean compareContent(FileMetadata other) {
          FileVersionDifference diffObj = new FileVersionDifference(this, other, false);
          return diffObj.isSame();
     }
@@ -568,18 +568,18 @@ public class FileMetadata implements Serializable {
         }
     };
     
-    static Map<String,Long> categoryMap=null;
+    static Map<String, Long> categoryMap = null;
     
     public static void setCategorySortOrder(String categories) {
-       categoryMap=new HashMap<String, Long>();
-       long i=1;
-       for(String cat: categories.split(",\\s*")) {
+       categoryMap = new HashMap<String, Long>();
+       long i = 1;
+       for (String cat : categories.split(",\\s*")) {
            categoryMap.put(cat.toUpperCase(), i);
            i++;
        }
     }
     
-    public static Map<String,Long> getCategorySortOrder() {
+    public static Map<String, Long> getCategorySortOrder() {
         return categoryMap;
     }
     
@@ -591,10 +591,10 @@ public class FileMetadata implements Serializable {
                 //If one is in the map and one is not, the former is first, otherwise sort by name
                 boolean o1InMap = categoryMap.containsKey(o1.getName().toUpperCase()); 
                 boolean o2InMap = categoryMap.containsKey(o2.getName().toUpperCase());
-                if(o1InMap && !o2InMap) {
+                if (o1InMap && !o2InMap) {
                     return (-1);
                 }
-                if(!o1InMap && o2InMap) {
+                if (!o1InMap && o2InMap) {
                     return 1;
                 }
             }
@@ -613,12 +613,12 @@ public class FileMetadata implements Serializable {
     };
     
     
-    public String toPrettyJSON(){
+    public String toPrettyJSON() {
         
         return serializeAsJSON(true);
     }
 
-    public String toJSON(){
+    public String toJSON() {
         
         return serializeAsJSON(false);
     }
@@ -628,7 +628,7 @@ public class FileMetadata implements Serializable {
      * @param prettyPrint
      * @return 
      */
-    private String serializeAsJSON(boolean prettyPrint){
+    private String serializeAsJSON(boolean prettyPrint) {
         
         JsonObject jsonObj = asGsonObject(prettyPrint);
                 
@@ -637,10 +637,10 @@ public class FileMetadata implements Serializable {
     }
 
     
-    public JsonObject asGsonObject(boolean prettyPrint){
+    public JsonObject asGsonObject(boolean prettyPrint) {
         
         GsonBuilder builder;
-        if (prettyPrint){  // Add pretty printing
+        if (prettyPrint) {  // Add pretty printing
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
         } else {
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();                        
@@ -653,20 +653,20 @@ public class FileMetadata implements Serializable {
         //Add categories without the "name"
         List<String> cats = this.getCategoriesByName();
         JsonArray jsonCats = new JsonArray();
-        for(String t : cats) {
+        for (String t : cats) {
             jsonCats.add(new JsonPrimitive(t));
         }
-        if(jsonCats.size() > 0) {
+        if (jsonCats.size() > 0) {
             jsonObj.getAsJsonObject().add(OptionalFileParams.CATEGORIES_ATTR_NAME, jsonCats);
         }
         
         //Add tags without the "name"
         List<String> tags = this.getDataFile().getTagLabels();
         JsonArray jsonTags = new JsonArray();
-        for(String t : tags) {
+        for (String t : tags) {
             jsonTags.add(new JsonPrimitive(t));
         }
-        if(jsonTags.size() > 0) {
+        if (jsonTags.size() > 0) {
             jsonObj.getAsJsonObject().add(OptionalFileParams.FILE_DATA_TAGS_ATTR_NAME, jsonTags);
         }
 
@@ -692,7 +692,7 @@ public class FileMetadata implements Serializable {
         for (VariableMetadata vm : vml) {
             VariableMetadata vmNew = null;
             boolean flagNew = true;
-            for (VariableMetadata vmThis: variableMetadatas) {
+            for (VariableMetadata vmThis : variableMetadatas) {
                 if (vmThis.getDataVariable().getId().equals(vm.getDataVariable().getId())) {
                     vmNew = vmThis;
                     flagNew = false;

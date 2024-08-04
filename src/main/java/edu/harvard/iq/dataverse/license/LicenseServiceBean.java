@@ -43,7 +43,7 @@ public class LicenseServiceBean {
             return em.createNamedQuery("License.findById", License.class)
                     .setParameter("id", id)
                     .getSingleResult();
-        }catch (NoResultException noResultException) {
+        } catch (NoResultException noResultException) {
             logger.log(Level.WARNING, "License with ID {0} doesn't exist.", id);
             return null;
         }
@@ -91,7 +91,7 @@ public class LicenseServiceBean {
         return null; 
     }
 
-    public int setDefault(Long id) throws WrappedResponse{
+    public int setDefault(Long id) throws WrappedResponse {
         License candidate = getById(id);
         if (candidate == null) return 0;
         if (candidate.isActive()) {
@@ -108,7 +108,7 @@ public class LicenseServiceBean {
             return 0;
         
         if (candidate.isActive() != state) {
-            if(candidate.isDefault() && state==false) {
+            if (candidate.isDefault() && state == false) {
                 throw new WrappedResponse(
                         new IllegalArgumentException("Cannot inactivate the default license"), null);
             }
@@ -152,7 +152,7 @@ public class LicenseServiceBean {
     }
 
     public int deleteById(long id) throws WrappedResponse {
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Admin, "delete")
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "delete")
                             .setInfo(Long.toString(id)));
         try {
             return em.createNamedQuery("License.deleteById").setParameter("id", id).executeUpdate();

@@ -15,7 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  *
  * @author skraffmiller
  */
-@RequiredPermissions( Permission.ManageDataversePermissions )
+@RequiredPermissions(Permission.ManageDataversePermissions)
 public class UpdateDataverseDefaultContributorRoleCommand extends AbstractCommand<Dataverse> {
 
     	private final DataverseRole role;

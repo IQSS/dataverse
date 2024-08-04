@@ -95,10 +95,10 @@ public class StatementManagerImpl implements StatementManager {
             Boolean isMinorUpdate = dataset.getLatestVersion().isMinorUpdate();
             states.put("isMinorUpdate", isMinorUpdate.toString());
             
-            if ( dataset.isLocked() ) {
+            if (dataset.isLocked()) {
                 states.put("locked", "true");
-                states.put("lockedDetail", dataset.getLocks().stream().map( l-> l.getInfo() ).collect( joining(",")) );
-                Optional<DatasetLock> earliestLock = dataset.getLocks().stream().min((l1, l2) -> (int)Math.signum(l1.getStartTime().getTime()-l2.getStartTime().getTime()) );
+                states.put("lockedDetail", dataset.getLocks().stream().map(l -> l.getInfo()).collect(joining(",")));
+                Optional<DatasetLock> earliestLock = dataset.getLocks().stream().min((l1, l2) -> (int) Math.signum(l1.getStartTime().getTime() - l2.getStartTime().getTime()));
                 states.put("lockedStartTime", earliestLock.get().getStartTime().toString());
             } else {
                 states.put("locked", "false");

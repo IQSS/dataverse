@@ -16,32 +16,32 @@ import java.util.Set;
 import edu.harvard.iq.dataverse.FileMetadata;
 
 @Entity
-@Table(indexes = {@Index(columnList="filemetadata_id")})
+@Table(indexes = {@Index(columnList = "filemetadata_id")})
 public class VarGroup {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String label;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private FileMetadata fileMetadata;
 
     private Set<DataVariable> varsInGroup;
 
 
-    public VarGroup () {
+    public VarGroup() {
         varsInGroup = new HashSet<DataVariable>();
     }
 
-    public VarGroup (FileMetadata fileMetadata) {
+    public VarGroup(FileMetadata fileMetadata) {
         this.fileMetadata = fileMetadata;
         varsInGroup = new HashSet<DataVariable>();
     }
 
-    public VarGroup (FileMetadata fileMetadata, Set<DataVariable> varsInGroup ) {
+    public VarGroup(FileMetadata fileMetadata, Set<DataVariable> varsInGroup) {
         this.fileMetadata = fileMetadata;
         this.varsInGroup = varsInGroup;
     }

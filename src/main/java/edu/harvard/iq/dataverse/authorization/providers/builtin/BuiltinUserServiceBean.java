@@ -59,13 +59,13 @@ public class BuiltinUserServiceBean {
             });
             throw new IllegalArgumentException("BuiltinUser could not be saved to due constraint violations: " + sb);
         }
-        if ( aUser.getId() == null ) {
+        if (aUser.getId() == null) {
             // see that the username is unique
-            if ( em.createNamedQuery("BuiltinUser.findByUserName")
-                    .setParameter("userName", aUser.getUserName()).getResultList().size() > 0 ) {
+            if (em.createNamedQuery("BuiltinUser.findByUserName")
+                    .setParameter("userName", aUser.getUserName()).getResultList().size() > 0) {
                 throw new IllegalArgumentException( "BuiltinUser with username '" + aUser.getUserName() + "' already exists.");
             }
-            em.persist( aUser );
+            em.persist(aUser);
             return aUser;
         } else {
             return em.merge(aUser);
@@ -76,9 +76,9 @@ public class BuiltinUserServiceBean {
         return em.find(BuiltinUser.class, pk);
     }    
     
-    public void removeUser( String userName ) {
+    public void removeUser(String userName) {
         final BuiltinUser user = findByUserName(userName);
-        if ( user != null ) {
+        if (user != null) {
             em.remove(user);
         }
     }
@@ -96,7 +96,7 @@ public class BuiltinUserServiceBean {
         }
     }
 	
-    public List<BuiltinUser> listByUsernamePart ( String part ) {
+    public List<BuiltinUser> listByUsernamePart(String part) {
             return em.createNamedQuery("BuiltinUser.listByUserNameLike", BuiltinUser.class)
                             .setParameter("userNameLike", "%" + part + "%")
                             .getResultList();
@@ -106,13 +106,13 @@ public class BuiltinUserServiceBean {
 		return em.createNamedQuery("BuiltinUser.findAll", BuiltinUser.class).getResultList();
 	}
     
-    public String requestPasswordUpgradeLink( BuiltinUser aUser ) throws PasswordResetException {
-        PasswordResetInitResponse prir = passwordResetService.requestPasswordReset(aUser, false, PasswordResetData.Reason.UPGRADE_REQUIRED );
+    public String requestPasswordUpgradeLink(BuiltinUser aUser) throws PasswordResetException {
+        PasswordResetInitResponse prir = passwordResetService.requestPasswordReset(aUser, false, PasswordResetData.Reason.UPGRADE_REQUIRED);
         return "passwordreset.xhtml?token=" + prir.getPasswordResetData().getToken() + "&faces-redirect=true";
     }
     
-    public String requestPasswordComplianceLink( BuiltinUser aUser ) throws PasswordResetException {
-        PasswordResetInitResponse prir = passwordResetService.requestPasswordReset(aUser, false, PasswordResetData.Reason.NON_COMPLIANT_PASSWORD );
+    public String requestPasswordComplianceLink(BuiltinUser aUser) throws PasswordResetException {
+        PasswordResetInitResponse prir = passwordResetService.requestPasswordReset(aUser, false, PasswordResetData.Reason.NON_COMPLIANT_PASSWORD);
         return "passwordreset.xhtml?token=" + prir.getPasswordResetData().getToken() + "&faces-redirect=true";
     }
 }

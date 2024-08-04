@@ -28,7 +28,7 @@ public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<Da
     private boolean checkPermsWhenDeaccessioned;
 
     public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset) {
-        this(aRequest, anAffectedDataset,false, false);
+        this(aRequest, anAffectedDataset, false, false);
     }
 
     public GetLatestAccessibleDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) {

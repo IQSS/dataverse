@@ -10,14 +10,14 @@ import java.util.Map.Entry;
  */
 public class Cart {
 
-    List<Entry<String,String>> contents = new ArrayList<>();
+    List<Entry<String, String>> contents = new ArrayList<>();
 
-    private Entry<String,String> createEntry(String title, String persistentId) {
-        Entry<String,String> entry = new AbstractMap.SimpleEntry<>(title,persistentId);
+    private Entry<String, String> createEntry(String title, String persistentId) {
+        Entry<String, String> entry = new AbstractMap.SimpleEntry<>(title, persistentId);
         return entry;
     }
     
-    public void addItem(String title, String persistentId) throws Exception{
+    public void addItem(String title, String persistentId) throws Exception {
         if (!checkCartForItem(title, persistentId)) {
             contents.add(createEntry(title, persistentId));
         } else {
@@ -25,14 +25,14 @@ public class Cart {
         }
     }
 
-    public void removeItem(String title, String persistentId) throws Exception{
+    public void removeItem(String title, String persistentId) throws Exception {
         boolean result = contents.remove(createEntry(title, persistentId));
         if (result == false) {
             throw new Exception(title + " not in cart.");
         }
     }
 
-    public List<Entry<String,String>> getContents() {
+    public List<Entry<String, String>> getContents() {
         return contents;
     }
     

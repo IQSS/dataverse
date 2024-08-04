@@ -14,7 +14,7 @@ public class RoleAssigneeDisplayInfo implements java.io.Serializable {
     private String affiliation;
 
     public RoleAssigneeDisplayInfo(String title, String emailAddress) {
-        this( title, emailAddress, null );
+        this(title, emailAddress, null);
     }
     
     public RoleAssigneeDisplayInfo(String title, String emailAddress, String anAffiliation) {
@@ -67,7 +67,7 @@ public class RoleAssigneeDisplayInfo implements java.io.Serializable {
         if (obj == null) {
             return false;
         }
-        if ( ! (obj instanceof RoleAssigneeDisplayInfo)) {
+        if (!(obj instanceof RoleAssigneeDisplayInfo)) {
             return false;
         }
         final RoleAssigneeDisplayInfo other = (RoleAssigneeDisplayInfo) obj;

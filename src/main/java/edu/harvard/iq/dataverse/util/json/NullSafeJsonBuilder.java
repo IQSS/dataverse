@@ -32,27 +32,27 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 
 	@Override
 	public NullSafeJsonBuilder add(String name, JsonValue value) {
-		if ( value!=null ) delegate.add(name, value);
+		if (value != null) delegate.add(name, value);
 		return this;
 	}
 
 	@Override
 	public NullSafeJsonBuilder add(String name, String value) {
-		if ( value!=null ) 
+		if (value != null) 
 			 delegate.add(name, value);
 		return this;
 	}
 
 	@Override
 	public NullSafeJsonBuilder add(String name, BigInteger value) {
-		if ( value!=null ) 
+		if (value != null) 
 			 delegate.add(name, value);
 		return this;
 	}
 
 	@Override
 	public NullSafeJsonBuilder add(String name, BigDecimal value) {
-		if ( value!=null ) 
+		if (value != null) 
 			delegate.add(name, value);
 		
 		return this;
@@ -65,7 +65,7 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 	}
 
 	public NullSafeJsonBuilder add(String name, Long value) {
-        return ( value != null ) ? add(name, value.longValue()) : this;
+        return (value != null) ? add(name, value.longValue()) : this;
     }
     
 	@Override
@@ -94,21 +94,21 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 
 	@Override
 	public NullSafeJsonBuilder add(String name, JsonObjectBuilder builder) {
-		if ( builder!=null ) 
+		if (builder != null) 
 			 delegate.add(name, builder);
 		return this;
 	}
 
 	@Override
 	public NullSafeJsonBuilder add(String name, JsonArrayBuilder builder) {
-		if ( builder!=null ) 
+		if (builder != null) 
 			delegate.add(name, builder);
 		return this;
 	}
 	
-	public NullSafeJsonBuilder addStrValue( String name, DatasetField field ) {
-		if ( field != null ) {
-			delegate.add( name, field.getValue() );
+	public NullSafeJsonBuilder addStrValue(String name, DatasetField field) {
+		if (field != null) {
+			delegate.add(name, field.getValue());
 		}
 		return this;
 	}

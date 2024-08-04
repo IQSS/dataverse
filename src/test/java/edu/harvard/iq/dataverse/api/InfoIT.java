@@ -83,7 +83,7 @@ public class InfoIT {
 
 
     private void testSettingEndpoint(SettingsServiceBean.Key settingKey, String testSettingValue) {
-        String endpoint =  "/api/info/settings/" + settingKey;
+        String endpoint = "/api/info/settings/" + settingKey;
         // Setting not found
         Response response = given().urlEncodingEnabled(false).get(endpoint);
         response.prettyPrint();

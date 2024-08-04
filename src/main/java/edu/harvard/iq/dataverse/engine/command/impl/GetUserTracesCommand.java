@@ -216,7 +216,7 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                                     .add("filename", guestbookResponse.getDataFile().getCurrentName())
                                     .add("date", guestbookResponse.getResponseDate())
                                     .add("guestbookName", guestbookResponse.getGuestbook().getName());
-                            if(guestbookResponse.getDataset().getGlobalId()!=null) {
+                            if (guestbookResponse.getDataset().getGlobalId() != null) {
                                 gbe.add("dataset", guestbookResponse.getDataset().getGlobalId().asString());
                             }
                             if (guestbookResponse.getDatasetVersion() != null) {

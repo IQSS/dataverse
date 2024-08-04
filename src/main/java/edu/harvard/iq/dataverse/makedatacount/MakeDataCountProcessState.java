@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.Arrays;
 
 @Entity
-@Table(indexes = {@Index(columnList="yearMonth")})
+@Table(indexes = {@Index(columnList = "yearMonth")})
 public class MakeDataCountProcessState implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,7 +44,7 @@ public class MakeDataCountProcessState implements Serializable {
     private Timestamp stateChangeTimestamp;
 
     public MakeDataCountProcessState() { }
-    public MakeDataCountProcessState (String yearMonth, String state) {
+    public MakeDataCountProcessState(String yearMonth, String state) {
         this.setYearMonth(yearMonth);
         this.setState(state);
     }

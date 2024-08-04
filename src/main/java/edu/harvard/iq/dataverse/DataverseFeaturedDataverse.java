@@ -19,14 +19,14 @@ import jakarta.persistence.Table;
  */
 
 @NamedQueries({
-	@NamedQuery( name="DataverseFeaturedDataverse.removeByOwnerId",
-				 query="DELETE FROM DataverseFeaturedDataverse f WHERE f.dataverse.id=:ownerId")
+	@NamedQuery(name = "DataverseFeaturedDataverse.removeByOwnerId",
+				 query = "DELETE FROM DataverseFeaturedDataverse f WHERE f.dataverse.id=:ownerId")
 })
 
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")
-		, @Index(columnList="featureddataverse_id")
-		, @Index(columnList="displayorder")})
+@Table(indexes = {@Index(columnList = "dataverse_id")
+		, @Index(columnList = "featureddataverse_id")
+		, @Index(columnList = "displayorder")})
 public class DataverseFeaturedDataverse implements Serializable {
         private static final long serialVersionUID = 1L;
 
@@ -43,11 +43,11 @@ public class DataverseFeaturedDataverse implements Serializable {
     }
 
     @ManyToOne
-    @JoinColumn(name="dataverse_id")
+    @JoinColumn(name = "dataverse_id")
     private Dataverse dataverse;
 
     @ManyToOne
-    @JoinColumn(name="featureddataverse_id")
+    @JoinColumn(name = "featureddataverse_id")
     private Dataverse featuredDataverse;
 
     private int displayOrder;

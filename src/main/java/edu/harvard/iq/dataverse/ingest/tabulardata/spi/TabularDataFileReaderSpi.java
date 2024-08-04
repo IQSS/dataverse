@@ -31,7 +31,7 @@ import java.io.*;
  * 
  * @author akio sone at UNC-Odum
  */
-public abstract class TabularDataFileReaderSpi extends TabularDataFileReaderWriterSpi{
+public abstract class TabularDataFileReaderSpi extends TabularDataFileReaderWriterSpi {
 
     private static Logger dbgLog = 
     Logger.getLogger(TabularDataFileReaderSpi.class.getPackage().getName());
@@ -50,7 +50,7 @@ public abstract class TabularDataFileReaderSpi extends TabularDataFileReaderWrit
      */
     public String[] getStatDataFileWriterSpiNames() {
         return writerSpiNames == null ?
-            null : (String[])writerSpiNames.clone();
+            null : (String[]) writerSpiNames.clone();
     }
     
     /**
@@ -147,7 +147,7 @@ public abstract class TabularDataFileReaderSpi extends TabularDataFileReaderWrit
      * @throws java.io.IOException if an error occurs during the 
      *         reader instantiation.
      */
-    public TabularDataFileReader createReaderInstance() throws IOException{
+    public TabularDataFileReader createReaderInstance() throws IOException {
         return createReaderInstance(null);
     }
     

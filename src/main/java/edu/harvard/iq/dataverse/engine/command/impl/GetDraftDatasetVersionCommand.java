@@ -13,8 +13,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  *
  * @author Naomi
  */
-@RequiredPermissions( Permission.ViewUnpublishedDataset )
-public class GetDraftDatasetVersionCommand extends AbstractCommand<DatasetVersion>{
+@RequiredPermissions(Permission.ViewUnpublishedDataset)
+public class GetDraftDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     private final Dataset ds;
 
     public GetDraftDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset) {

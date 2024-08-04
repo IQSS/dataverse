@@ -17,7 +17,7 @@ public class LoggingWorkflowStep implements WorkflowStep {
     
     private static final Logger logger = Logger.getLogger(LoggingWorkflowStep.class.getName());
     
-    private final Map<String,String> params;
+    private final Map<String, String> params;
 
     public LoggingWorkflowStep(Map<String, String> paramSet) {
         params = new HashMap<>(paramSet);
@@ -31,7 +31,7 @@ public class LoggingWorkflowStep implements WorkflowStep {
         logger.log(Level.INFO, "Trigger Type {0}", context.getType());
         logger.log(Level.INFO, "Next version:{0}.{1} isMinor:{2}",
                     new Object[]{context.getNextVersionNumber(), context.getNextMinorVersionNumber(), context.isMinorRelease()});
-        params.entrySet().forEach(kv->logger.log(Level.INFO, "{0} -> {1}", new Object[]{kv.getKey(), kv.getValue()}) );
+        params.entrySet().forEach(kv -> logger.log(Level.INFO, "{0} -> {1}", new Object[]{kv.getKey(), kv.getValue()}));
         logger.info("/Logging Step");
         
         return WorkflowStepResult.OK;

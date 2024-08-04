@@ -38,13 +38,13 @@ public class MakeDataCountLoggingServiceBean {
     SystemConfig systemConfig;
 
     public void logEntry(MakeDataCountEntry entry) {
-        if(systemConfig.getMDCLogPath() != null) {
-            LoggingUtil.saveLogFileAppendWithHeader(entry.toString(), systemConfig.getMDCLogPath(), getLogFileName() , LOG_HEADER);
+        if (systemConfig.getMDCLogPath() != null) {
+            LoggingUtil.saveLogFileAppendWithHeader(entry.toString(), systemConfig.getMDCLogPath(), getLogFileName(), LOG_HEADER);
         }
     }
     
     public String getLogFileName() {
-        return "counter_"+new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime()))+".log";
+        return "counter_" + new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime())) + ".log";
     }
 
     // Sanitize the values to a safe string for the log file
@@ -80,8 +80,8 @@ public class MakeDataCountLoggingServiceBean {
         }
 
         public MakeDataCountEntry(FacesContext fc, DataverseRequestServiceBean dvRequestService, DatasetVersion publishedVersion) {
-            if(fc != null) {
-                HttpServletRequest req = (HttpServletRequest)fc.getExternalContext().getRequest();
+            if (fc != null) {
+                HttpServletRequest req = (HttpServletRequest) fc.getExternalContext().getRequest();
                 setRequestUrl(req.getRequestURI() + "?" + req.getQueryString());
                 setTargetUrl(req.getRequestURI() + "?" + req.getQueryString());
                 setUserAgent(req.getHeader("user-agent")); 
@@ -89,7 +89,7 @@ public class MakeDataCountLoggingServiceBean {
                 setSessionCookieId(session.getId());
             }
 
-            if(publishedVersion != null) {
+            if (publishedVersion != null) {
                 setIdentifier(publishedVersion.getDataset().getGlobalId().asString());
                 setAuthors(publishedVersion.getAuthorsStr(false).replace(";", "|"));
                 
@@ -104,7 +104,7 @@ public class MakeDataCountLoggingServiceBean {
                 setVersion(String.valueOf(publishedVersion.getVersionNumber()));
                 
                 Date releaseTime = publishedVersion.getReleaseTime();
-                if(null == releaseTime) { //Seems to be null when called from Datasets api
+                if (null == releaseTime) { //Seems to be null when called from Datasets api
                     releaseTime = publishedVersion.getLastUpdateTime();
                 }
                 setPublicationYear(new SimpleDateFormat("yyyy").format(releaseTime));
@@ -114,7 +114,7 @@ public class MakeDataCountLoggingServiceBean {
                 setPublicationDate(format.format(releaseTime));
             }
 
-            if(dvRequestService != null) {
+            if (dvRequestService != null) {
                 setClientIp(String.valueOf(dvRequestService.getDataverseRequest().getSourceAddress()));
                 setUserId(dvRequestService.getDataverseRequest().getUser().getIdentifier());
             }
@@ -138,14 +138,14 @@ public class MakeDataCountLoggingServiceBean {
 
         //Exception thrown if no published metadata exists for DataFile
         //This is passed a DataFile to log the file downloaded. uriInfo and headers are passed in lieu of FacesContext
-        public MakeDataCountEntry(UriInfo uriInfo, HttpHeaders headers, DataverseRequestServiceBean dvRequestService, DataFile df) throws UnsupportedOperationException{
+        public MakeDataCountEntry(UriInfo uriInfo, HttpHeaders headers, DataverseRequestServiceBean dvRequestService, DataFile df) throws UnsupportedOperationException {
             this(null, dvRequestService, df.getLatestPublishedFileMetadata().getDatasetVersion());
             
-            if(uriInfo != null) {
+            if (uriInfo != null) {
                 setRequestUrl(uriInfo.getRequestUri().toString());
                 setTargetUrl(uriInfo.getRequestUri().toString());
             }
-            if(null != headers && null != headers.getRequestHeader("user-agent")) {
+            if (null != headers && null != headers.getRequestHeader("user-agent")) {
                 setUserAgent(headers.getRequestHeader("user-agent").get(0));
             }
             
@@ -154,14 +154,14 @@ public class MakeDataCountLoggingServiceBean {
         }
         
         //Originally used when downloading dataset metadata
-        public MakeDataCountEntry(UriInfo uriInfo, HttpHeaders headers, DataverseRequestServiceBean dvRequestService, Dataset ds) throws UnsupportedOperationException{
+        public MakeDataCountEntry(UriInfo uriInfo, HttpHeaders headers, DataverseRequestServiceBean dvRequestService, Dataset ds) throws UnsupportedOperationException {
             this(null, dvRequestService, ds.getReleasedVersion());
             
-            if(uriInfo != null) {
+            if (uriInfo != null) {
                 setRequestUrl(uriInfo.getRequestUri().toString());
                 setTargetUrl(uriInfo.getRequestUri().toString());
             }
-            if(null != headers && null != headers.getRequestHeader("user-agent")) {
+            if (null != headers && null != headers.getRequestHeader("user-agent")) {
                 setUserAgent(headers.getRequestHeader("user-agent").get(0));
             }
         }
@@ -193,7 +193,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the eventTime
          */
         public String getEventTime() {
-            if(eventTime == null) {
+            if (eventTime == null) {
                 return "-";
             }
             return eventTime;
@@ -210,7 +210,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the clientIp
          */
         public String getClientIp() {
-            if(clientIp == null) {
+            if (clientIp == null) {
                 return "-";
             }
             return clientIp;
@@ -227,7 +227,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the sessionCookieId
          */
         public String getSessionCookieId() {
-            if(sessionCookieId == null) {
+            if (sessionCookieId == null) {
                 return "-";
             }
             return sessionCookieId;
@@ -244,7 +244,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the uesrCookieId
          */
         public String getUserCookieId() {
-            if(userCookieId == null) {
+            if (userCookieId == null) {
                 return "-";
             }
             return userCookieId;
@@ -261,7 +261,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the userId
          */
         public String getUserId() {
-            if(userId == null) {
+            if (userId == null) {
                 return "-";
             }
             return userId;
@@ -278,7 +278,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the requestUrl
          */
         public String getRequestUrl() {
-            if(requestUrl == null) {
+            if (requestUrl == null) {
                 return "-";
             }
             return requestUrl;
@@ -295,7 +295,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the identifier
          */
         public String getIdentifier() {
-            if(identifier == null) {
+            if (identifier == null) {
                 return "-";
             }
             return identifier;
@@ -312,7 +312,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the filename
          */
         public String getFilename() {
-            if(filename == null) {
+            if (filename == null) {
                 return "-";
             }
             return filename;
@@ -329,7 +329,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the size
          */
         public String getSize() {
-            if(size == null) {
+            if (size == null) {
                 return "-";
             }
             return size;
@@ -346,7 +346,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the userAgent
          */
         public String getUserAgent() {
-            if(userAgent == null) {
+            if (userAgent == null) {
                 return "-";
             }
             return userAgent;
@@ -363,7 +363,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the title
          */
         public String getTitle() {
-            if(title == null) {
+            if (title == null) {
                 return "-";
             }
             return title;
@@ -380,7 +380,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the publisher
          */
         public String getPublisher() {
-            if(publisher == null) {
+            if (publisher == null) {
                 return "-";
             }
             return publisher;
@@ -397,7 +397,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the publisherId
          */
         public String getPublisherId() {
-            if(publisherId == null) {
+            if (publisherId == null) {
                 return "-";
             }
             return publisherId;
@@ -414,7 +414,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the authors
          */
         public String getAuthors() {
-            if(authors == null) {
+            if (authors == null) {
                 return "-";
             }
             return authors;
@@ -431,7 +431,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the publicationDate
          */
         public String getPublicationDate() {
-            if(publicationDate == null) {
+            if (publicationDate == null) {
                 return "-";
             }
             return publicationDate;
@@ -448,7 +448,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the version
          */
         public String getVersion() {
-            if(version == null) {
+            if (version == null) {
                 return "-";
             }
             return version;
@@ -465,7 +465,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the otherId
          */
         public String getOtherId() {
-            if(otherId == null) {
+            if (otherId == null) {
                 return "-";
             }
             return otherId;
@@ -482,7 +482,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the targetUrl
          */
         public String getTargetUrl() {
-            if(targetUrl == null) {
+            if (targetUrl == null) {
                 return "-";
             }
             return targetUrl;
@@ -499,7 +499,7 @@ public class MakeDataCountLoggingServiceBean {
          * @return the publicationYear
          */
         public String getPublicationYear() {
-            if(publicationYear == null) {
+            if (publicationYear == null) {
                 return "-";
             }
             return publicationYear;

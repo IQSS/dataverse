@@ -195,7 +195,7 @@ public class SwordServiceBean {
         if (StringUtils.isBlank(licenseProvided)) {
             throw new SwordError("License provided was blank.");
         }
-        if (StringUtils.equalsIgnoreCase(licenseProvided, BundleUtil.getStringFromBundle("license.custom"))){
+        if (StringUtils.equalsIgnoreCase(licenseProvided, BundleUtil.getStringFromBundle("license.custom"))) {
             terms.setLicense(null);
             setTermsOfUse(datasetVersionToMutate, dcterms, null);
         } else {

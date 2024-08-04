@@ -41,10 +41,10 @@ public class GroupServiceBeanTest {
         ExplicitGroup gAstar = new ExplicitGroup(prv);
         gAstar.setDisplayName("A*");
         Dataverse dv = MocksFactory.makeDataverse();
-        Stream.of( gA, gAa, gAb, gAstar).forEach( g -> {
-            g.setId( MocksFactory.nextId() );
+        Stream.of(gA, gAa, gAb, gAstar).forEach(g -> {
+            g.setId(MocksFactory.nextId());
             g.setOwner(dv);
-            g.setGroupAliasInOwner( g.getDisplayName() );
+            g.setGroupAliasInOwner(g.getDisplayName());
             roleAssigneeSvc.add(g);
             g.updateAlias();
         });
@@ -54,19 +54,19 @@ public class GroupServiceBeanTest {
         gA.add(gAb);
         gAb.add(gAstar);
         gAa.add(gAstar);
-        gAa.add( AuthenticatedUsers.get() );
+        gAa.add(AuthenticatedUsers.get());
         
         // Test
         GroupServiceBean sut = new GroupServiceBean();
         sut.roleAssigneeSvc = roleAssigneeSvc;
         
-        Set<Group> grps = setOf( AllUsers.get(), gA );
+        Set<Group> grps = setOf(AllUsers.get(), gA);
                 
         List<Group> result = sut.flattenGroupsCollection(grps).collect(toList());
         
         assertEquals(result.size(), new HashSet<>(result).size(), "Groups should appear only once");
         
-        grps.addAll( listOf(gAa, gAb, gAstar, AuthenticatedUsers.get()) );
+        grps.addAll(listOf(gAa, gAb, gAstar, AuthenticatedUsers.get()));
         assertEquals(grps, new HashSet<>(result), "All groups should appear");
         
     }
@@ -87,10 +87,10 @@ public class GroupServiceBeanTest {
         ExplicitGroup gAstar = new ExplicitGroup(prv);
         gAstar.setDisplayName("A*");
         Dataverse dv = MocksFactory.makeDataverse();
-        Stream.of( gA, gAa, gAb, gAstar).forEach( g -> {
-            g.setId( MocksFactory.nextId() );
+        Stream.of(gA, gAa, gAb, gAstar).forEach(g -> {
+            g.setId(MocksFactory.nextId());
             g.setOwner(dv);
-            g.setGroupAliasInOwner( g.getDisplayName() );
+            g.setGroupAliasInOwner(g.getDisplayName());
             g.updateAlias();
             roleAssigneeSvc.add(g);
             explicitGroupSvc.registerGroup(g);
@@ -108,12 +108,12 @@ public class GroupServiceBeanTest {
         sut.roleAssigneeSvc = roleAssigneeSvc;
         sut.explicitGroupService = explicitGroupSvc;
         
-        assertEquals( setOf(gA), sut.collectAncestors(setOf(gA)) );
-        assertEquals( setOf(gA, gAb), sut.collectAncestors(setOf(gAb)) );
-        assertEquals( setOf(gA, gAa, AuthenticatedUsers.get()), 
-                      sut.collectAncestors(setOf(AuthenticatedUsers.get())) );
-        assertEquals( setOf(gA, gAb, gAa, gAstar), 
-                      sut.collectAncestors(setOf(gAstar)) );
+        assertEquals(setOf(gA), sut.collectAncestors(setOf(gA)));
+        assertEquals(setOf(gA, gAb), sut.collectAncestors(setOf(gAb)));
+        assertEquals(setOf(gA, gAa, AuthenticatedUsers.get()), 
+                      sut.collectAncestors(setOf(AuthenticatedUsers.get())));
+        assertEquals(setOf(gA, gAb, gAa, gAstar), 
+                      sut.collectAncestors(setOf(gAstar)));
         
     }
     

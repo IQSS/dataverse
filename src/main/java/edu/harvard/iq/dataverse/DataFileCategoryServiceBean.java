@@ -33,11 +33,11 @@ public class DataFileCategoryServiceBean {
         //avoid resizing
         List<String> mergedFileCategories = new ArrayList<>(defaultFileCategories.size() + fileCategories.size());
 
-        for(DataFileCategory category: fileCategories) {
+        for (DataFileCategory category : fileCategories) {
             mergedFileCategories.add(category.getName());
         }
 
-        for(String defaultCategory: defaultFileCategories) {
+        for (String defaultCategory : defaultFileCategories) {
             if (!mergedFileCategories.contains(defaultCategory)) {
                 mergedFileCategories.add(defaultCategory);
             }

@@ -50,31 +50,31 @@ public class GuestbookResponse implements Serializable {
     private Long id;
             
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private Guestbook guestbook;
     
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DataFile dataFile;
     
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private Dataset dataset;
     
     @ManyToOne
-    @JoinColumn(nullable=true)
+    @JoinColumn(nullable = true)
     private DatasetVersion datasetVersion;
 
     @ManyToOne
-    @JoinColumn(nullable=true)
+    @JoinColumn(nullable = true)
     private AuthenticatedUser authenticatedUser;
 
-    @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "guestbookResponse", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY)
     //private FileAccessRequest fileAccessRequest;
     private List<FileAccessRequest> fileAccessRequests;
      
-    @OneToMany(mappedBy="guestbookResponse",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST},orphanRemoval=true)
-    @OrderBy ("id")
+    @OneToMany(mappedBy = "guestbookResponse", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
+    @OrderBy("id")
     private List<CustomQuestionResponse> customQuestionResponses;
 
     @Size(max = 255, message = "{guestbook.response.nameLength}")
@@ -140,7 +140,7 @@ public class GuestbookResponse implements Serializable {
         this.writeResponse = writeResponse;
     }
 
-    public String getSelectedFileIds(){
+    public String getSelectedFileIds() {
         return this.selectedFileIds;
     }
     
@@ -164,10 +164,10 @@ public class GuestbookResponse implements Serializable {
         this.externalTool = externalTool;
     }
 
-    public GuestbookResponse(){
+    public GuestbookResponse() {
     }
     
-    public GuestbookResponse(GuestbookResponse source){
+    public GuestbookResponse(GuestbookResponse source) {
         //makes a clone of a response for adding of studyfiles in case of multiple downloads
         this.setName(source.getName());
         this.setEmail(source.getEmail());
@@ -178,9 +178,9 @@ public class GuestbookResponse implements Serializable {
         this.setDatasetVersion(source.getDatasetVersion());
         this.setAuthenticatedUser(source.getAuthenticatedUser());
         this.setSessionId(source.getSessionId());
-        List <CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
-        if (!source.getCustomQuestionResponses().isEmpty()){
-            for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponsesSorted() ){
+        List<CustomQuestionResponse> customQuestionResponses = new ArrayList<>();
+        if (!source.getCustomQuestionResponses().isEmpty()) {
+            for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponsesSorted()) {
                 CustomQuestionResponse customQuestionResponseAdd = new CustomQuestionResponse();
                 customQuestionResponseAdd.setResponse(customQuestionResponse.getResponse());  
                 customQuestionResponseAdd.setCustomQuestion(customQuestionResponse.getCustomQuestion());
@@ -257,7 +257,7 @@ public class GuestbookResponse implements Serializable {
         return customQuestionResponses;
     }
     
-    public List<CustomQuestionResponse> getCustomQuestionResponsesSorted(){
+    public List<CustomQuestionResponse> getCustomQuestionResponsesSorted() {
         
         Collections.sort(customQuestionResponses, (CustomQuestionResponse cqr1, CustomQuestionResponse cqr2) -> {
             int a = cqr1.getCustomQuestion().getDisplayOrder();
@@ -273,11 +273,11 @@ public class GuestbookResponse implements Serializable {
         this.customQuestionResponses = customQuestionResponses;
     }
     
-    public List<FileAccessRequest> getFileAccessRequests(){
+    public List<FileAccessRequest> getFileAccessRequests() {
         return fileAccessRequests;
     }
 
-    public void setFileAccessRequest(List<FileAccessRequest> fARs){
+    public void setFileAccessRequest(List<FileAccessRequest> fARs) {
         this.fileAccessRequests = fARs;
     }
     
@@ -328,10 +328,10 @@ public class GuestbookResponse implements Serializable {
 
     public void setSessionId(String sessionId) {
         
-        this.sessionId= sessionId;
+        this.sessionId = sessionId;
     }
     
-    public String toHtmlFormattedResponse(){
+    public String toHtmlFormattedResponse() {
         return toHtmlFormattedResponse(null);
     }
     
@@ -348,9 +348,9 @@ public class GuestbookResponse implements Serializable {
         sb.append("  " + BundleUtil.getStringFromBundle("position") + ": " + wrapNullAnswer(getPosition()) + "</li>");
         
         //Add requestor information to response to help dataset admin with request processing
-        if (requestor != null){
-            sb.append("\n<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.requestor.id") + ": " + requestor.getId()+ "</li>");
-            sb.append("\n<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.requestor.identifier") + ": " + requestor.getIdentifier()+ "</li></ul>\n");
+        if (requestor != null) {
+            sb.append("\n<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.requestor.id") + ": " + requestor.getId() + "</li>");
+            sb.append("\n<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.requestor.identifier") + ": " + requestor.getIdentifier() + "</li></ul>\n");
         } else {
             sb.append("</ul>\n");
         }

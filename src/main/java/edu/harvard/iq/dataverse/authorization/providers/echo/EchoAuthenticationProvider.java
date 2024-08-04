@@ -45,9 +45,9 @@ public class EchoAuthenticationProvider implements CredentialsAuthenticationProv
     
     @Override
     public List<Credential> getRequiredCredentials() {
-        return Arrays.asList( new Credential(KEY_NAME),
+        return Arrays.asList(new Credential(KEY_NAME),
                               new Credential(KEY_EMAIL),
-                              new Credential(KEY_AFFILIATION) );
+                              new Credential(KEY_AFFILIATION));
     }
 
     @Override

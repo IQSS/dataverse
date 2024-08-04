@@ -30,7 +30,7 @@ public class SuperUserPage implements java.io.Serializable {
 
     private Future<JsonObjectBuilder> indexAllFuture;
     
-    public String init(){
+    public String init() {
         if (!session.getUser().isSuperuser()) {
             return  permissionsWrapper.notAuthorized();
         }

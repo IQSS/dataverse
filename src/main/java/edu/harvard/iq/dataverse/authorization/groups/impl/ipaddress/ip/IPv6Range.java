@@ -13,10 +13,10 @@ import jakarta.persistence.Table;
  * 
  * @author michael
  */
-@Table(indexes = {@Index(columnList="owner_id")})
+@Table(indexes = {@Index(columnList = "owner_id")})
 @NamedQueries({
-    @NamedQuery( name="IPv6Range.findGroupsContainingABCD",
-                query="SELECT DISTINCT r.owner FROM IPv6Range r "
+    @NamedQuery(name = "IPv6Range.findGroupsContainingABCD",
+                query = "SELECT DISTINCT r.owner FROM IPv6Range r "
                     + "WHERE "
                         + "(    (r.topA>:a) "
                           + "or (r.topA=:a and r.topB>:b) "
@@ -40,18 +40,18 @@ public class IPv6Range extends IpAddressRange implements Serializable {
     long bottomA, bottomB, bottomC, bottomD;
     
     public IPv6Range(IPv6Address bottom, IPv6Address top) {
-        setTop( top );
-        setBottom( bottom );
+        setTop(top);
+        setBottom(bottom);
     }
     
     public IPv6Range() {}
     
     @Override
     public Boolean contains(IpAddress anAddress) {
-        if ( anAddress == null ) return null;
-        if ( anAddress instanceof IPv6Address ) {
+        if (anAddress == null) return null;
+        if (anAddress instanceof IPv6Address) {
             IPv6Address adr = (IPv6Address) anAddress;
-            return getBottom().compareTo(adr)<=0 && getTop().compareTo(adr)>=0;
+            return getBottom().compareTo(adr) <= 0 && getTop().compareTo(adr) >= 0;
         }
         return null;
     }
@@ -66,7 +66,7 @@ public class IPv6Range extends IpAddressRange implements Serializable {
         return new IPv6Address( new long[]{bottomA, bottomB, bottomC, bottomD} );
     }
     
-    public final void setTop( IPv6Address t ) {
+    public final void setTop(IPv6Address t) {
         long[] tArr = t.toLongArray();
         topA = tArr[0];
         topB = tArr[1];
@@ -74,7 +74,7 @@ public class IPv6Range extends IpAddressRange implements Serializable {
         topD = tArr[3];
     }
     
-    public final void setBottom( IPv6Address b ) {
+    public final void setBottom(IPv6Address b) {
         long[] bArr = b.toLongArray();
         bottomA = bArr[0];
         bottomB = bArr[1];

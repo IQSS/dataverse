@@ -33,11 +33,11 @@ public class URLTokenUtil {
     protected String localeCode;
     
     
-    public static final String HTTP_METHOD="httpMethod";
-    public static final String TIMEOUT="timeOut";
-    public static final String SIGNED_URL="signedUrl";
-    public static final String NAME="name";
-    public static final String URL_TEMPLATE="urlTemplate";
+    public static final String HTTP_METHOD = "httpMethod";
+    public static final String TIMEOUT = "timeOut";
+    public static final String SIGNED_URL = "signedUrl";
+    public static final String NAME = "name";
+    public static final String URL_TEMPLATE = "urlTemplate";
 
     /**
      * File level
@@ -119,10 +119,10 @@ public class URLTokenUtil {
         String tokenValue = null;
         tokenValue = getTokenValue(value);
         if (tokenValue != null && !tokenValue.isBlank()) {
-            try{
-                int x =Integer.parseInt(tokenValue);
+            try {
+                int x = Integer.parseInt(tokenValue);
                 return Json.createValue(x);
-            } catch (NumberFormatException nfe){
+            } catch (NumberFormatException nfe) {
                 return Json.createValue(tokenValue);
             }
         } else {
@@ -145,7 +145,7 @@ public class URLTokenUtil {
         String newUrl = url;
         Pattern pattern = Pattern.compile("(\\{.*?\\})");
         Matcher matcher = pattern.matcher(url);
-        while(matcher.find()) {
+        while (matcher.find()) {
             String token = matcher.group(1);
             ReservedWord reservedWord = ReservedWord.fromString(token);
             String tValue = getTokenValue(token);

@@ -53,7 +53,7 @@ public class FileChecksumValidationJob implements Runnable {
         }
     }
 
-    private String getMessage(String propertyKey, Object... parameters){
+    private String getMessage(String propertyKey, Object... parameters) {
         List<String> parameterList = Arrays.stream(parameters).map(param -> param.toString()).collect(Collectors.toList());
         return BundleUtil.getStringFromBundle(propertyKey, parameterList);
     }

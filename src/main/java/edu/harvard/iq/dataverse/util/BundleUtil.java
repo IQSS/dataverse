@@ -23,7 +23,7 @@ public class BundleUtil {
     private static final Map<String, ClassLoader> classLoaderCache = new HashMap<String, ClassLoader>();
 
     public static String getStringFromBundle(String key) {
-        return getStringFromBundle(key, (List<String>)null);
+        return getStringFromBundle(key, (List<String>) null);
     }
     
     public static String getStringFromBundle(String key, Locale locale) {
@@ -39,7 +39,7 @@ public class BundleUtil {
     }
 
     public static String getStringFromBundle(String key, List<String> arguments) {
-        ResourceBundle bundle = getResourceBundle(defaultBundleFile );
+        ResourceBundle bundle = getResourceBundle(defaultBundleFile);
         if (bundle == null) {
             return null;
         }
@@ -84,14 +84,14 @@ public class BundleUtil {
     }
     
     public static String getStringFromPropertyFile(String key, String propertyFileName, Locale locale) throws MissingResourceException {
-        ResourceBundle bundle = getResourceBundle(propertyFileName,locale);
+        ResourceBundle bundle = getResourceBundle(propertyFileName, locale);
         if (bundle == null) {
             return null;
         }
         return getStringFromBundleNoMissingCheck(key, null, bundle);
     }
 
-    public static ResourceBundle getResourceBundle(String propertyFileName ) {
+    public static ResourceBundle getResourceBundle(String propertyFileName) {
         return getResourceBundle(propertyFileName, null);
     }
 
@@ -100,7 +100,7 @@ public class BundleUtil {
 
         String filesRootDirectory = System.getProperty("dataverse.lang.directory");
 
-        if(currentLocale == null) {
+        if (currentLocale == null) {
             currentLocale = getCurrentLocale();
         }
 
@@ -117,15 +117,15 @@ public class BundleUtil {
             }
         }
 
-        return bundle ;
+        return bundle;
     }
 
     private static ClassLoader getClassLoader(String filesRootDirectory) {
-        if (classLoaderCache.containsKey(filesRootDirectory)){
+        if (classLoaderCache.containsKey(filesRootDirectory)) {
             return classLoaderCache.get(filesRootDirectory);
         }
 
-        File bundleFileDir  = new File(filesRootDirectory);
+        File bundleFileDir = new File(filesRootDirectory);
         URL[] urls = null;
         try {
             urls = new URL[]{bundleFileDir.toURI().toURL()};
@@ -147,7 +147,7 @@ public class BundleUtil {
                     localeEnvVar = localeEnvVar.substring(0, localeEnvVar.indexOf('.'));
                 }
                 if (!"en_US".equals(localeEnvVar)) {
-                    logger.fine("BundleUtil: LOCALE code from the environmental variable is "+localeEnvVar);
+                    logger.fine("BundleUtil: LOCALE code from the environmental variable is " + localeEnvVar);
                     return new Locale(localeEnvVar);
                 }
             }
@@ -166,7 +166,7 @@ public class BundleUtil {
 
     public static String getStringFromDefaultBundle(String key) {
         try {
-            return getStringFromBundleNoMissingCheck(key, null, getResourceBundle(defaultBundleFile , getDefaultLocale() ));
+            return getStringFromBundleNoMissingCheck(key, null, getResourceBundle(defaultBundleFile, getDefaultLocale()));
         } catch (MissingResourceException ex) {
             logger.warning("Could not find key \"" + key + "\" in bundle file: ");
             logger.log(Level.CONFIG, ex.getMessage(), ex);
@@ -174,7 +174,7 @@ public class BundleUtil {
         }
     }
 
-    public static String getStringFromDefaultPropertyFile(String key, String propertyFileName  ) throws MissingResourceException {
+    public static String getStringFromDefaultPropertyFile(String key, String propertyFileName) throws MissingResourceException {
         ResourceBundle bundle = getResourceBundle(propertyFileName, getDefaultLocale());
         if (bundle == null) {
             return null;

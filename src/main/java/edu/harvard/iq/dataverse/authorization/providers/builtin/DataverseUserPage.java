@@ -261,7 +261,7 @@ public class DataverseUserPage implements java.io.Serializable {
             // In edit mode...
             // if there's a match on edit make sure that the email belongs to the 
             // user doing the editing by checking ids
-            if ( aUser!=null && ! aUser.getId().equals(currentUser.getId()) ){
+            if (aUser != null && !aUser.getId().equals(currentUser.getId())) {
                 userEmailFound = true;
             }
         }
@@ -275,7 +275,7 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public void validateNewPassword(FacesContext context, UIComponent toValidate, Object value) {
         String password = (String) value;
-        if (StringUtils.isBlank(password)){
+        if (StringUtils.isBlank(password)) {
             logger.log(Level.WARNING, "new password is blank");
 
             ((UIInput) toValidate).setValid(false);
@@ -323,14 +323,14 @@ public class DataverseUserPage implements java.io.Serializable {
         if (editMode == EditMode.CREATE) {
             // Create a new built-in user.
             BuiltinUser builtinUser = new BuiltinUser();
-            builtinUser.setUserName( getUsername() );
+            builtinUser.setUserName(getUsername());
             builtinUser.updateEncryptedPassword(PasswordEncryption.get().encrypt(inputPassword),
                                                 PasswordEncryption.getLatestVersionNumber());
             
             AuthenticatedUser au = authenticationService.createAuthenticatedUser(
                     new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName()),
                     builtinUser.getUserName(), userDisplayInfo, false);
-            if ( au == null ) {
+            if (au == null) {
                 // Username already exists, show an error message
                 getUsernameField().setValid(false);
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
@@ -384,18 +384,18 @@ public class DataverseUserPage implements java.io.Serializable {
         } else if (!session.getUser().isAuthenticated()) {
             logger.info("Redirecting");
             return permissionsWrapper.notAuthorized() + "faces-redirect=true";
-        }else {
+        } else {
             currentUser.setMutedEmails(mutedEmails);
             currentUser.setMutedNotifications(mutedNotifications);
             String emailBeforeUpdate = currentUser.getEmail();
             AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
             String emailAfterUpdate = savedUser.getEmail();
             editMode = null;
-            StringBuilder msg = new StringBuilder( passwordChanged ? BundleUtil.getStringFromBundle("userPage.passwordChanged" )
-                                                                   :  BundleUtil.getStringFromBundle("userPage.informationUpdated"));
+            StringBuilder msg = new StringBuilder( passwordChanged ? BundleUtil.getStringFromBundle("userPage.passwordChanged")
+                                                                   : BundleUtil.getStringFromBundle("userPage.informationUpdated"));
             if (!emailBeforeUpdate.equals(emailAfterUpdate)) {
                 String expTime = ConfirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
-                List<String> args = Arrays.asList(currentUser.getEmail(),expTime);
+                List<String> args = Arrays.asList(currentUser.getEmail(), expTime);
                 // delete unexpired token, if it exists (clean slate)
                 confirmEmailService.deleteTokenForUser(currentUser);
                 try {
@@ -436,7 +436,7 @@ public class DataverseUserPage implements java.io.Serializable {
         if (event.getTab().getId().equals("notifications")) {
             displayNotification();
         }
-        if (event.getTab().getId().equals("dataRelatedToMe")){
+        if (event.getTab().getId().equals("dataRelatedToMe")) {
             mydatapage.init();
         }
     }
@@ -455,7 +455,7 @@ public class DataverseUserPage implements java.io.Serializable {
         for (RoleAssignment ra : roles) {
             roleNames.add(ra.getRole().getName());
         }
-        if (roleNames.isEmpty()){
+        if (roleNames.isEmpty()) {
             return "[Unknown]";
         }
         return StringUtils.join(roleNames, "/");
@@ -469,16 +469,16 @@ public class DataverseUserPage implements java.io.Serializable {
                     // Can either be a dataverse or dataset, so search both
                     Dataverse dataverse = dataverseService.find(userNotification.getObjectId());
                     if (dataverse != null) {
-                        userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), dataverse ));
+                        userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), dataverse));
                         userNotification.setTheObject(dataverse);
                     } else {
                         Dataset dataset = datasetService.find(userNotification.getObjectId());
-                        if (dataset != null){
-                            userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), dataset ));
+                        if (dataset != null) {
+                            userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), dataset));
                             userNotification.setTheObject(dataset);
                         } else {
                             DataFile datafile = fileService.find(userNotification.getObjectId());
-                            userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), datafile ));
+                            userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), datafile));
                             userNotification.setTheObject(datafile);
                         }
                     }
@@ -586,7 +586,7 @@ public class DataverseUserPage implements java.io.Serializable {
     }
     
     public AuthenticationProvider getUserAuthProvider() {
-        if ( userAuthProvider == null  ) {
+        if (userAuthProvider == null) {
             userAuthProvider = authenticationService.lookupProvider(currentUser);
         }
         return userAuthProvider;
@@ -608,7 +608,7 @@ public class DataverseUserPage implements java.io.Serializable {
         this.userDisplayInfo = userDisplayInfo;
     }
     
-    public EditMode getChangePasswordMode () {
+    public EditMode getChangePasswordMode() {
         return EditMode.CHANGE_PASSWORD;
     }
 
@@ -720,14 +720,14 @@ public class DataverseUserPage implements java.io.Serializable {
     }
     
     public String getRequestorName(UserNotification notification) {
-        if(notification == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");
-        if(notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
+        if (notification == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+        if (notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
         return (notification.getRequestor().getLastName() != null && notification.getRequestor().getLastName() != null) ? notification.getRequestor().getFirstName() + " " + notification.getRequestor().getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
     }
     
     public String getRequestorEmail(UserNotification notification) {
-        if(notification == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
-        if(notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
+        if (notification == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
+        if (notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
         return notification.getRequestor().getEmail() != null ? notification.getRequestor().getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
     }
 

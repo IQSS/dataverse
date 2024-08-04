@@ -35,7 +35,7 @@ class FolderDataProvider implements FileDataProvider {
 
     @Override
     public List<Path> getFilePaths() {
-        if(!folderLocation.toFile().exists()) {
+        if (!folderLocation.toFile().exists()) {
             logger.warning(String.format("action=getFilePaths result=folder-not-found folderLocation=%s", folderLocation));
             return Collections.emptyList();
         }
@@ -52,7 +52,7 @@ class FolderDataProvider implements FileDataProvider {
     public Optional<InputStreamProvider> getInputStreamProvider(Path filePath) {
         Path actualFileLocation = folderLocation.resolve(filePath);
         if (actualFileLocation.toFile().exists()) {
-            return Optional.of(() ->  fileUtilWrapper.newInputStream(actualFileLocation));
+            return Optional.of(() -> fileUtilWrapper.newInputStream(actualFileLocation));
         }
 
         logger.fine(String.format("action=getFileInputStream result=file-not-found filePath=%s", actualFileLocation));

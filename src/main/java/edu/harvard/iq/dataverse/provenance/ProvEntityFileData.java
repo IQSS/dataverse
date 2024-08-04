@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.provenance;
  *
  * @author madunlap
  */
-public class ProvEntityFileData implements Comparable{
+public class ProvEntityFileData implements Comparable {
     String entityName;
     String fileName;
     String fileType;
@@ -32,6 +32,6 @@ public class ProvEntityFileData implements Comparable{
         throw new ClassCastException("A ProvEntityFileData object expected.");
     }
         
-        return this.entityName.compareToIgnoreCase(((ProvEntityFileData) o).entityName)*-1; //the -1 is to flip the order of sorting
+        return this.entityName.compareToIgnoreCase(((ProvEntityFileData) o).entityName) * -1; //the -1 is to flip the order of sorting
     }
 }

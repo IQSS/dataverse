@@ -89,12 +89,12 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         logger.info("Getting dataset children of dataverse...");
         List<Dataset> datasetChildren = new ArrayList<>();
         List<Long> datasetChildrenIds = ctxt.dataverses().findAllDataverseDatasetChildren(moved.getId());
-        datasetChildrenIds.forEach( (dsId) -> datasetChildren.add(ctxt.datasets().find(dsId)) );
+        datasetChildrenIds.forEach((dsId) -> datasetChildren.add(ctxt.datasets().find(dsId)));
 
         logger.info("Getting dataverse children of dataverse...");
         List<Dataverse> dataverseChildren = new ArrayList<>();
         List<Long> dataverseChildrenIds = ctxt.dataverses().findAllDataverseDataverseChildren(moved.getId());
-        dataverseChildrenIds.forEach( (dvId) -> dataverseChildren.add(ctxt.dataverses().find(dvId)) );
+        dataverseChildrenIds.forEach((dvId) -> dataverseChildren.add(ctxt.dataverses().find(dvId)));
 
         dataverseChildren.add(moved); // include the root of the children
 
@@ -235,8 +235,8 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         // its destinations owners, remove the link
         logger.info("Checking linked dataverses....");
         for (DataverseLinkingDataverse dvld : linkingDataverses) {
-            for (Dataverse owner : ownersToCheck){
-                if ((dvld.getLinkingDataverse()).equals(owner)){
+            for (Dataverse owner : ownersToCheck) {
+                if ((dvld.getLinkingDataverse()).equals(owner)) {
                     if (force == null || !force) {
                         removeLinkDv = true;
                         break;

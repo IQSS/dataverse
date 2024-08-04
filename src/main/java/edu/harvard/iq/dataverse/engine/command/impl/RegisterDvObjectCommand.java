@@ -44,7 +44,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         DvObjectContainer container = (target instanceof DvObjectContainer) ? (DvObjectContainer) target : target.getOwner();
         // Get the pidProvider that is configured to mint new IDs
         PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(container);
-        if(this.migrateHandle){
+        if (this.migrateHandle) {
             //Only continue if you can successfully migrate the handle
             if (HandlePidProvider.HDL_PROTOCOL.equals(pidProvider.getProtocol()) || !processMigrateHandle(ctxt)) return;
         }
@@ -118,14 +118,14 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             boolean doNormalSolrDocCleanUp = true;
             Dataset dataset = (Dataset) target;
             ctxt.index().asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
-            ctxt.solrIndex().indexPermissionsForOneDvObject( dataset);
+            ctxt.solrIndex().indexPermissionsForOneDvObject(dataset);
         }
     }
     
-    private Boolean processMigrateHandle (CommandContext ctxt){
+    private Boolean processMigrateHandle(CommandContext ctxt) {
         boolean retval = true;
-        if(!target.isInstanceofDataset()) return false;
-        if(!target.getProtocol().equals(HandlePidProvider.HDL_PROTOCOL)) return false;
+        if (!target.isInstanceofDataset()) return false;
+        if (!target.getProtocol().equals(HandlePidProvider.HDL_PROTOCOL)) return false;
         
         AlternativePersistentIdentifier api = new AlternativePersistentIdentifier();
         api.setProtocol(target.getProtocol());

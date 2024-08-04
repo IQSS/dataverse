@@ -22,7 +22,7 @@ import jakarta.persistence.Table;
  * @author qqmyers
  */
 @Entity
-@Table(indexes = { @Index(columnList = "uri")})
+@Table(indexes = {@Index(columnList = "uri")})
 public class ExternalVocabularyValue implements Serializable {
 
     public ExternalVocabularyValue() {
@@ -38,7 +38,7 @@ public class ExternalVocabularyValue implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(columnDefinition = "TEXT", unique=true, nullable = false)
+    @Column(columnDefinition = "TEXT", unique = true, nullable = false)
     private String uri;
 
     public String getUri() {

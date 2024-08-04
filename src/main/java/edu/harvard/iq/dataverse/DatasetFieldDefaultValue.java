@@ -26,10 +26,10 @@ import jakarta.persistence.Table;
  * @author skraffmiller
  */
 @Entity
-@Table(indexes = {@Index(columnList="datasetfield_id"), 
-    @Index(columnList="defaultvalueset_id"), 
-    @Index(columnList="parentdatasetfielddefaultvalue_id"), 
-    @Index(columnList="displayorder")})
+@Table(indexes = {@Index(columnList = "datasetfield_id"), 
+    @Index(columnList = "defaultvalueset_id"), 
+    @Index(columnList = "parentdatasetfielddefaultvalue_id"), 
+    @Index(columnList = "displayorder")})
 public class DatasetFieldDefaultValue implements Serializable {
     
     @Id
@@ -53,7 +53,7 @@ public class DatasetFieldDefaultValue implements Serializable {
     } 
     
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DatasetFieldType datasetField;
     public DatasetFieldType getDatasetField() {
         return datasetField;
@@ -63,7 +63,7 @@ public class DatasetFieldDefaultValue implements Serializable {
     }
     
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DefaultValueSet defaultValueSet;
     public DefaultValueSet getDefaultValueSet() {
         return defaultValueSet;
@@ -92,7 +92,7 @@ public class DatasetFieldDefaultValue implements Serializable {
         this.parentDatasetFieldDefaultValue = parentDatasetFieldDefaultValue;
     }
         
-    @Column(columnDefinition="TEXT", nullable=false )
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String strValue;
 
     public String getStrValue() {
@@ -126,7 +126,7 @@ public class DatasetFieldDefaultValue implements Serializable {
     }
     
      public boolean isEmpty() {
-        return ((strValue==null || strValue.trim().equals("")));
+        return ((strValue == null || strValue.trim().equals("")));
     }
     
     private int displayOrder;

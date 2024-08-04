@@ -157,7 +157,7 @@ public class IngestableDataChecker implements java.io.Serializable {
         // -----------------------------------------
         // Avoid java.nio.BufferUnderflowException
         // -----------------------------------------
-        if (buff.capacity() < 4){
+        if (buff.capacity() < 4) {
             return null;
         }
         
@@ -244,7 +244,7 @@ public class IngestableDataChecker implements java.io.Serializable {
             result = "application/x-stata";
         }
         
-        if ((result == null)&&(buff.capacity() >= STATA_13_HEADER.length())) {
+        if ((result == null) && (buff.capacity() >= STATA_13_HEADER.length())) {
             // Let's see if it's a "new" STATA (v.13+) format: 
             buff.rewind();
             byte[] headerBuffer = null; 
@@ -369,7 +369,7 @@ public class IngestableDataChecker implements java.io.Serializable {
 
         // size test
 	int bufferCapacity = buff.capacity();
-	dbgLog.fine("Subsettable Checker: buffer capacity: "+bufferCapacity);
+	dbgLog.fine("Subsettable Checker: buffer capacity: " + bufferCapacity);
 
         if (bufferCapacity < 491) {
             if (DEBUG) {
@@ -404,8 +404,8 @@ public class IngestableDataChecker implements java.io.Serializable {
             // 1-char case
             pos1 = baseBias + i;
 
-	    if ( pos1 > bufferCapacity - 1 ) {
-		dbgLog.fine("Subsettable Checker: request to go beyond buffer capacity ("+pos1+")");
+	    if (pos1 > bufferCapacity - 1) {
+		dbgLog.fine("Subsettable Checker: request to go beyond buffer capacity (" + pos1 + ")");
 		return result; 
 	    }
 
@@ -425,8 +425,8 @@ public class IngestableDataChecker implements java.io.Serializable {
             // 2-char case
             pos2 = baseBias + 2 * i;
 
-	    if ( pos2 > bufferCapacity - 2 ) {
-		dbgLog.fine("Subsettable Checker: request to read 2 bytes beyond buffer capacity ("+pos2+")");
+	    if (pos2 > bufferCapacity - 2) {
+		dbgLog.fine("Subsettable Checker: request to read 2 bytes beyond buffer capacity (" + pos2 + ")");
 		return result; 
 	    }
 
@@ -441,8 +441,8 @@ public class IngestableDataChecker implements java.io.Serializable {
             // 3-char case
             pos3 = baseBias + 3 * i;
 
-	    if ( pos3 > bufferCapacity - 3 ) {
-		dbgLog.fine("Subsettable Checker: request to read 3 bytes beyond buffer capacity ("+pos3+")");
+	    if (pos3 > bufferCapacity - 3) {
+		dbgLog.fine("Subsettable Checker: request to read 3 bytes beyond buffer capacity (" + pos3 + ")");
 		return result; 
 	    }
 
@@ -528,7 +528,7 @@ public class IngestableDataChecker implements java.io.Serializable {
         String result = null;
         buff.rewind();
         
-        if (buff.capacity() < 4){
+        if (buff.capacity() < 4) {
             return null;
         }
         
@@ -663,7 +663,7 @@ public class IngestableDataChecker implements java.io.Serializable {
                     }
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
-                } catch (BufferUnderflowException e){
+                } catch (BufferUnderflowException e) {
                     dbgLog.info("BufferUnderflowException " + e);
                     e.printStackTrace();
                 }

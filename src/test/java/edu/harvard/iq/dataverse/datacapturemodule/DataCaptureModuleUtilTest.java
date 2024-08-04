@@ -41,7 +41,7 @@ public class DataCaptureModuleUtilTest {
         Dataset dataset = new Dataset();
         dataset.setIdentifier("42");
         JsonObject result = DataCaptureModuleUtil.generateJsonForUploadRequest(user, dataset);
-        assertEquals("42", result.getString("datasetIdentifier") );
+        assertEquals("42", result.getString("datasetIdentifier"));
         int userId = result.getInt("userId");
         assertTrue(Integer.MIN_VALUE <= userId && userId <= Integer.MAX_VALUE);
     }
@@ -59,7 +59,7 @@ public class DataCaptureModuleUtilTest {
         HttpResponse<JsonNode> httpResponse = new HttpResponse<>(response, JsonNode.class);
         ScriptRequestResponse result = DataCaptureModuleUtil.getScriptFromRequest(httpResponse);
         assertEquals(200, result.getHttpStatusCode());
-        assertEquals("123", result.getDatasetIdentifier() );
+        assertEquals("123", result.getDatasetIdentifier());
         assertEquals(42, result.getUserId());
         assertEquals("#!/bin/sh", result.getScript());
     }

@@ -55,7 +55,7 @@ public class BatchJobResource extends AbstractApiBean {
     @GET
     @Path("/jobs/name/{jobName}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listBatchJobsByName( @PathParam("jobName") String jobName) {
+    public Response listBatchJobsByName(@PathParam("jobName") String jobName) {
         try {
             final List<JobExecutionEntity> executionEntities = new ArrayList<>();
             final JobOperator jobOperator = BatchRuntime.getJobOperator();

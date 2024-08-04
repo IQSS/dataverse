@@ -16,7 +16,7 @@ public class MockExplicitGroupService extends ExplicitGroupServiceBean {
     
     private Map<Long, ExplicitGroup> groups = new HashMap<>();
     
-    public ExplicitGroup registerGroup( ExplicitGroup grp ) {
+    public ExplicitGroup registerGroup(ExplicitGroup grp) {
         groups.put(grp.getId(), grp);
         return grp;
     }
@@ -24,7 +24,7 @@ public class MockExplicitGroupService extends ExplicitGroupServiceBean {
     @Override
     public Set<ExplicitGroup> findDirectlyContainingGroups(RoleAssignee ra) {
         return groups.values().stream()
-                .filter( g -> g.getDirectMembers().contains(ra) )
+                .filter(g -> g.getDirectMembers().contains(ra))
                 .collect(toSet());
     }
     

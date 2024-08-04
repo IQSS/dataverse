@@ -45,11 +45,11 @@ public class HarvestTimerInfo implements Serializable {
     
    
     public HarvestTimerInfo(Long harvestingClientId, String name, String schedulePeriod, Integer scheduleHourOfDay, Integer scheduleDayOfWeek) {
-        this.harvestingClientId=harvestingClientId;
-        this.name=name;
-        this.schedulePeriod=schedulePeriod;
-        this.scheduleDayOfWeek=scheduleDayOfWeek;
-        this.scheduleHourOfDay=scheduleHourOfDay;
+        this.harvestingClientId = harvestingClientId;
+        this.name = name;
+        this.schedulePeriod = schedulePeriod;
+        this.scheduleDayOfWeek = scheduleDayOfWeek;
+        this.scheduleHourOfDay = scheduleHourOfDay;
     }
     
     

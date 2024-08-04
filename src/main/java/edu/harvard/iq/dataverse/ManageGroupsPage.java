@@ -220,8 +220,8 @@ public class ManageGroupsPage implements java.io.Serializable {
     public String getMembershipString(ExplicitGroup eg) {
         long userCount = 0;
         long groupCount = 0;
-        for ( RoleAssignee ra : eg.getDirectMembers() ) {
-            if ( ra instanceof User ) {
+        for (RoleAssignee ra : eg.getDirectMembers()) {
+            if (ra instanceof User) {
                 userCount++;
             } else {
                 groupCount++;
@@ -234,9 +234,9 @@ public class ManageGroupsPage implements java.io.Serializable {
 
         String memberString = "";
         if (userCount == 1) {
-            memberString = "1 "+BundleUtil.getStringFromBundle("dataverse.manageGroups.user");
+            memberString = "1 " + BundleUtil.getStringFromBundle("dataverse.manageGroups.user");
         } else if (userCount != 1) {
-            memberString = Long.toString(userCount) + " "+BundleUtil.getStringFromBundle("dataverse.manageGroups.users");
+            memberString = Long.toString(userCount) + " " + BundleUtil.getStringFromBundle("dataverse.manageGroups.users");
         }
 
         if (groupCount == 1) {
@@ -252,7 +252,7 @@ public class ManageGroupsPage implements java.io.Serializable {
         selectedGroup.remove(ra);
     }
 
-    public List<RoleAssignee> completeRoleAssignee( String query ) {
+    public List<RoleAssignee> completeRoleAssignee(String query) {
         List<RoleAssignee> alreadyAssignedRoleAssignees = new ArrayList<>();
 
         if (this.getNewExplicitGroupRoleAssignees() != null) {
@@ -295,16 +295,16 @@ public class ManageGroupsPage implements java.io.Serializable {
     public void createExplicitGroup(ActionEvent ae) {
 
         ExplicitGroup eg = explicitGroupService.getProvider().makeGroup();
-        eg.setDisplayName( getExplicitGroupName() );
-        eg.setGroupAliasInOwner( getExplicitGroupIdentifier() );
-        eg.setDescription( getNewExplicitGroupDescription() );
+        eg.setDisplayName(getExplicitGroupName());
+        eg.setGroupAliasInOwner(getExplicitGroupIdentifier());
+        eg.setDescription(getNewExplicitGroupDescription());
 
-        if ( getNewExplicitGroupRoleAssignees()!= null ) {
+        if (getNewExplicitGroupRoleAssignees() != null) {
             try {
-                for ( RoleAssignee ra : getNewExplicitGroupRoleAssignees() ) {
-                    eg.add( ra );
+                for (RoleAssignee ra : getNewExplicitGroupRoleAssignees()) {
+                    eg.add(ra);
                 }
-            } catch ( GroupException ge ) {
+            } catch (GroupException ge) {
                 JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
                         BundleUtil.getStringFromBundle("dataverse.manageGroups.create.fail"),
                         ge.getMessage());
@@ -312,13 +312,13 @@ public class ManageGroupsPage implements java.io.Serializable {
             }
         }
         try {
-            eg = engineService.submit( new CreateExplicitGroupCommand(dvRequestService.getDataverseRequest(), this.dataverse, eg));
+            eg = engineService.submit(new CreateExplicitGroupCommand(dvRequestService.getDataverseRequest(), this.dataverse, eg));
             explicitGroups.add(eg);
             List<String> args = Arrays.asList(eg.getDisplayName());
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.create.success", args));
 
-        } catch ( CreateExplicitGroupCommand.GroupAliasExistsException gaee ) {
-            explicitGroupIdentifierField.setValid( false );
+        } catch (CreateExplicitGroupCommand.GroupAliasExistsException gaee) {
+            explicitGroupIdentifierField.setValid(false);
             FacesContext.getCurrentInstance().addMessage(explicitGroupIdentifierField.getClientId(),
                     new FacesMessage( FacesMessage.SEVERITY_ERROR, gaee.getMessage(), null));
 
@@ -337,12 +337,12 @@ public class ManageGroupsPage implements java.io.Serializable {
     public void saveExplicitGroup(ActionEvent ae) {
         ExplicitGroup eg = selectedGroup;
 
-        if ( getSelectedGroupAddRoleAssignees() != null ) {
+        if (getSelectedGroupAddRoleAssignees() != null) {
             try {
-                for ( RoleAssignee ra : getSelectedGroupAddRoleAssignees() ) {
-                    eg.add( ra );
+                for (RoleAssignee ra : getSelectedGroupAddRoleAssignees()) {
+                    eg.add(ra);
                 }
-            } catch ( GroupException ge ) {
+            } catch (GroupException ge) {
                 JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
                         BundleUtil.getStringFromBundle("dataverse.manageGroups.edit.fail"),
                         ge.getMessage());
@@ -351,12 +351,12 @@ public class ManageGroupsPage implements java.io.Serializable {
         }
 
         try {
-            eg = engineService.submit( new UpdateExplicitGroupCommand(dvRequestService.getDataverseRequest(), eg));
+            eg = engineService.submit(new UpdateExplicitGroupCommand(dvRequestService.getDataverseRequest(), eg));
             List<String> args = Arrays.asList(eg.getDisplayName());
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.save.success", args));
 
         } catch (CommandException ex) {
-            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,BundleUtil.getStringFromBundle("dataverse.manageGroups.save.fail"),
+            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataverse.manageGroups.save.fail"),
                     ex.getMessage());
         } catch (Exception ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.roleNotSaved"));
@@ -394,16 +394,16 @@ public class ManageGroupsPage implements java.io.Serializable {
         UIInput input = (UIInput) toValidate;
         input.setValid(true); // Optimistic approach
 
-        if ( context.getExternalContext().getRequestParameterMap().get("DO_GROUP_VALIDATION") != null
-                && !StringUtils.isEmpty(value) ) {
+        if (context.getExternalContext().getRequestParameterMap().get("DO_GROUP_VALIDATION") != null
+                && !StringUtils.isEmpty(value)) {
 
             // cheap test - regex
-            if (! Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", value) ) {
+            if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", value)) {
                 input.setValid(false);
                 context.addMessage(toValidate.getClientId(),
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataverse.permissions.explicitGroupEditDialog.groupIdentifier.invalid")));
 
-            } else if ( explicitGroupService.findInOwner(dataverse.getId(), value) != null ) {
+            } else if (explicitGroupService.findInOwner(dataverse.getId(), value) != null) {
                 // Ok, see that the alias is not taken
                 input.setValid(false);
                 context.addMessage(toValidate.getClientId(),

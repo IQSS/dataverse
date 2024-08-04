@@ -31,7 +31,7 @@ class StringUtilTest {
         "true, \t \t \n"
     }, nullValues = "NULL")
     void testIsEmpty(boolean isValid, String inputString) {
-        assertEquals( isValid, StringUtil.isEmpty(inputString) );
+        assertEquals(isValid, StringUtil.isEmpty(inputString));
     }
     
     /**
@@ -46,7 +46,7 @@ class StringUtilTest {
         "false,1230abcABC#"
     })
     void testIsAlphaNumeric(boolean isValid, String inputString) {
-        assertEquals(isValid, StringUtil.isAlphaNumeric(inputString) );
+        assertEquals(isValid, StringUtil.isAlphaNumeric(inputString));
     }
     
     /**
@@ -66,7 +66,7 @@ class StringUtilTest {
         "false,'@'"
     })
     void testIsAlphaNumericChar(boolean isValid, char inputChar) {
-        assertEquals(isValid, StringUtil.isAlphaNumericChar(inputChar) );
+        assertEquals(isValid, StringUtil.isAlphaNumericChar(inputChar));
     }
     
     @ParameterizedTest
@@ -90,7 +90,7 @@ class StringUtilTest {
         "abcdfg, b, bcdfg"
     }, nullValues = "NULL")
     void testSubstringIncludingLast(String str, String separator, String expectedString) {
-        assertEquals( expectedString, StringUtil.substringIncludingLast(str, separator) );
+        assertEquals(expectedString, StringUtil.substringIncludingLast(str, separator));
     }
 
     static Stream<Arguments> toOptionData() {
@@ -140,7 +140,7 @@ class StringUtilTest {
         assertEquals(expected, StringUtil.sanitizeFileDirectory(inputString, aggressively));
     }
 
-    public static class StringUtilNoParamTest{
+    public static class StringUtilNoParamTest {
 
         @Test
         public void testHtml2Text() {
@@ -179,8 +179,8 @@ class StringUtilTest {
         
         @Test
         public void testNullToEmpty() {
-            assertEquals( "hello", StringUtil.nullToEmpty("hello") );
-            assertEquals( "", StringUtil.nullToEmpty(null) );
+            assertEquals("hello", StringUtil.nullToEmpty("hello"));
+            assertEquals("", StringUtil.nullToEmpty(null));
         }
         
         @Test
@@ -196,12 +196,12 @@ class StringUtilTest {
         @Test
         public void testIsTrue() {
             Stream.of("yes", "Yes", "  yes  ", "1", "allow", "tRuE")
-                .forEach( v -> assertTrue(StringUtil.isTrue(v)) );
+                .forEach(v -> assertTrue(StringUtil.isTrue(v)));
             
             Stream.of("es", "no", " 0 s  ", "0", "x", "false")
-                .forEach( v -> assertFalse(StringUtil.isTrue(v)) );
+                .forEach(v -> assertFalse(StringUtil.isTrue(v)));
             
-            assertFalse( StringUtil.isTrue(null) );
+            assertFalse(StringUtil.isTrue(null));
         }
 
         @Test

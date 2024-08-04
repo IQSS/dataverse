@@ -28,6 +28,6 @@ public interface AuthenticationProviderFactory {
      * @return The provider
      * @throws AuthorizationSetupException If {@code aRow} contains malformed data.
      */
-    AuthenticationProvider buildProvider( AuthenticationProviderRow aRow ) throws AuthorizationSetupException;
+    AuthenticationProvider buildProvider(AuthenticationProviderRow aRow) throws AuthorizationSetupException;
     
 }

@@ -64,7 +64,7 @@ public class FileAccessIOTest {
         dataFile.setOwner(dataset);
         dataFile.setStorageIdentifier("DataFile");
         
-        datasetAccess = new FileAccessIO<>(dataset,null, dummyDriverId);
+        datasetAccess = new FileAccessIO<>(dataset, null, dummyDriverId);
         dataFileAccess = new FileAccessIO<>(dataFile, null, dummyDriverId);
         dataverseAccess = new FileAccessIO<>(dataverse, null, dummyDriverId);
 
@@ -306,7 +306,7 @@ public class FileAccessIOTest {
         //Assure file isn't a defined store before test and reset afterwards if it was
         System.clearProperty("dataverse.files.file.type");
         assertFalse(DataAccess.isValidDirectStorageIdentifier("file://" + FileUtil.generateStorageIdentifier()));
-        if(defaultType!=null) {
+        if (defaultType != null) {
             System.out.println("dataverse.files.file.type reset to " + defaultType);
             System.setProperty("dataverse.files.file.type", defaultType);
         }

@@ -62,7 +62,7 @@ public class RestrictFileCommandTest {
         engine = new TestDataverseEngine(new TestCommandContext(){
 
             @Override
-            public SettingsServiceBean settings(){
+            public SettingsServiceBean settings() {
                 return new SettingsServiceBean(){
                     //override for a public install, 
                     //assume false
@@ -81,7 +81,7 @@ public class RestrictFileCommandTest {
     }
         
     @Test
-    public void testRestrictUnpublishedFile() throws CommandException{
+    public void testRestrictUnpublishedFile() throws CommandException {
         file.setOwner(dataset);
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
         engine.submit(cmd);
@@ -92,7 +92,7 @@ public class RestrictFileCommandTest {
     }
     
     @Test
-    public void testRestrictPublishedFile() throws Exception{
+    public void testRestrictPublishedFile() throws Exception {
         dataset.setPublicationDate(new Timestamp(new Date().getTime()));
         // Restrict on a published file will cause the creation of a new draft dataset version
         // and should update only the FileMetadata in the draft version for the test file.
@@ -112,7 +112,7 @@ public class RestrictFileCommandTest {
         boolean fileFound = false;
         for (FileMetadata fmw : dataset.getOrCreateEditVersion().getFileMetadatas()) {
             if (file.equals(fmw.getDataFile())) {
-                fileFound=true;
+                fileFound = true;
                 //If it worked fmw is for the draft version and file.getFileMetadata() is for the published version
                 assertTrue(fmw.isRestricted());
                 assertTrue(!file.getFileMetadata().isRestricted());
@@ -168,7 +168,7 @@ public class RestrictFileCommandTest {
 
     
     @Test
-    public void testUnrestrictUnpublishedFile() throws CommandException{
+    public void testUnrestrictUnpublishedFile() throws CommandException {
         file.setOwner(dataset);
         file.setRestricted(true);
         file.getFileMetadata().setRestricted(true);
@@ -181,7 +181,7 @@ public class RestrictFileCommandTest {
     }
     
     @Test
-    public void testUnrestrictPublishedFile() throws Exception{
+    public void testUnrestrictPublishedFile() throws Exception {
         //see comments in testRestrictPublishedFile()
         dataset.setPublicationDate(new Timestamp(new Date().getTime()));
         DataFile file = dataset.getFiles().get(0);

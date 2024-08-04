@@ -30,6 +30,6 @@ public class EMailValidator implements ConstraintValidator<ValidateEmail, String
             // If the MTA isn't able to handle UTF-8 mail addresses following RFC 6530/6531/6532, we can only declare
             // mail addresses using 7bit ASCII (RFC 821) as valid.
             // Beyond scope for Apache Commons Validator, see also https://issues.apache.org/jira/browse/VALIDATOR-487
-            (value.codePoints().noneMatch(c -> c > 127) || mtaSupportsUTF8) );
+            (value.codePoints().noneMatch(c -> c > 127) || mtaSupportsUTF8));
     }
 }

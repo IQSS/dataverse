@@ -23,7 +23,7 @@ import jakarta.persistence.Table;
  * @author Leonid Andreev
  */
 @Entity
-@Table(indexes = {@Index(columnList="datafile_id")})
+@Table(indexes = {@Index(columnList = "datafile_id")})
 public class IngestRequest implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -38,8 +38,8 @@ public class IngestRequest implements Serializable {
         this.id = id;
     }
 
-    @OneToOne(cascade={CascadeType.MERGE,CascadeType.PERSIST})
-    @JoinColumn(name="datafile_id")
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name = "datafile_id")
     private DataFile dataFile;
     
     private String textEncoding; 

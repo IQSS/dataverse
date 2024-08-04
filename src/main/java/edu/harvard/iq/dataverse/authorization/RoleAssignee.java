@@ -25,7 +25,7 @@ public interface RoleAssignee extends Comparable<RoleAssignee> {
 
     public RoleAssigneeDisplayInfo getDisplayInfo();
     
-    default String getSortByString(){
+    default String getSortByString() {
         return this.getDisplayInfo().getTitle();
     }
        

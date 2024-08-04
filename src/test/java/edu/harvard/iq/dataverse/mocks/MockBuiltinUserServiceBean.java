@@ -26,10 +26,10 @@ public class MockBuiltinUserServiceBean extends BuiltinUserServiceBean {
 
     @Override
     public BuiltinUser save(BuiltinUser aUser) {
-        if ( aUser.getId() == null ) {
-            aUser.setId( MocksFactory.nextId() );
+        if (aUser.getId() == null) {
+            aUser.setId(MocksFactory.nextId());
         }
-        users.put( aUser.getUserName(), aUser );
+        users.put(aUser.getUserName(), aUser);
         return aUser;
     }
 

@@ -21,7 +21,7 @@ class GoodStrengthRule extends LengthRule {
     @Override
     public RuleResult validate(PasswordData passwordData) {
         final RuleResult result = super.validate(passwordData);
-        if ( !result.isValid()) {
+        if (!result.isValid()) {
             result.getDetails().clear();
             result.getDetails().add(new RuleResultDetail(ERROR_CODE_GOODSTRENGTH, createRuleResultDetailParameters()));
         }

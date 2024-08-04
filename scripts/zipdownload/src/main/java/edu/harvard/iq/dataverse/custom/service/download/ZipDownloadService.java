@@ -179,16 +179,16 @@ public class ZipDownloadService {
                         throw new IOException("Byte size mismatch: expected " + fileSize + ", read: " + readSize);
                     }*/
                 } catch (IOException ioex) {
-                    System.err.println("Failed to compress "+storageLocation);
+                    System.err.println("Failed to compress " + storageLocation);
                 } finally {
                     try {
                         inputStream.close();
                     } catch (IOException ioexIgnore) {
-                        System.err.println("Warning: IO exception trying to close input stream - "+storageLocation);
+                        System.err.println("Warning: IO exception trying to close input stream - " + storageLocation);
                     }
                 }
             } else {
-                System.err.println("Failed to access "+storageLocation);
+                System.err.println("Failed to access " + storageLocation);
             }
                 
         }

@@ -29,14 +29,14 @@ public class DatasetFieldWalker {
     private static final Logger logger = Logger.getLogger(DatasetFieldWalker.class.getCanonicalName());
 
     public interface Listener {
-        void startField( DatasetField f );
-        void addExpandedValuesArray( DatasetField f );
-        void endField( DatasetField f );
-        void externalVocabularyValue( DatasetFieldValue dsfv, JsonObject cvocEntry );
-        void primitiveValue( DatasetFieldValue dsfv );
-        void controlledVocabularyValue( ControlledVocabularyValue cvv );
-        void startCompoundValue( DatasetFieldCompoundValue dsfcv );
-        void endCompoundValue( DatasetFieldCompoundValue dsfcv );
+        void startField(DatasetField f);
+        void addExpandedValuesArray(DatasetField f);
+        void endField(DatasetField f);
+        void externalVocabularyValue(DatasetFieldValue dsfv, JsonObject cvocEntry);
+        void primitiveValue(DatasetFieldValue dsfv);
+        void controlledVocabularyValue(ControlledVocabularyValue cvv);
+        void startCompoundValue(DatasetFieldCompoundValue dsfcv);
+        void endCompoundValue(DatasetFieldCompoundValue dsfcv);
     }
     
     /**
@@ -44,7 +44,7 @@ public class DatasetFieldWalker {
      * @param dsf the field to walk over.
      * @param l the listener to execute on {@code dsf}'s values and structure.
      */
-    public static void walk( DatasetField dsf, Listener l, Map<Long, JsonObject> cvocMap ) {
+    public static void walk(DatasetField dsf, Listener l, Map<Long, JsonObject> cvocMap) {
         DatasetFieldWalker joe = new DatasetFieldWalker(l, cvocMap);
         SettingsServiceBean nullServiceBean = null;
         joe.walk(dsf, nullServiceBean);
@@ -59,7 +59,7 @@ public class DatasetFieldWalker {
      */
     public static void walk(List<DatasetField> fields, SettingsServiceBean settingsService, Map<Long, JsonObject> cvocMap, Listener l) {
         DatasetFieldWalker joe = new DatasetFieldWalker(l, cvocMap);
-        for ( DatasetField dsf : sort( fields, DatasetField.DisplayOrder) ) {
+        for (DatasetField dsf : sort(fields, DatasetField.DisplayOrder)) {
             joe.walk(dsf, settingsService);
         }
     }
@@ -73,40 +73,40 @@ public class DatasetFieldWalker {
         this.cvocMap = cvocMap;
     }
     
-    public DatasetFieldWalker(){
-        this( null, null);
+    public DatasetFieldWalker() {
+        this(null, null);
     }
     
     public void walk(DatasetField fld, SettingsServiceBean settingsService) {
         l.startField(fld);
         DatasetFieldType datasetFieldType = fld.getDatasetFieldType();
         
-        if ( datasetFieldType.isControlledVocabulary() ) {
-            for ( ControlledVocabularyValue cvv 
-                    : sort(fld.getControlledVocabularyValues(), ControlledVocabularyValue.DisplayOrder) ) {
+        if (datasetFieldType.isControlledVocabulary()) {
+            for (ControlledVocabularyValue cvv 
+                    : sort(fld.getControlledVocabularyValues(), ControlledVocabularyValue.DisplayOrder)) {
                 l.controlledVocabularyValue(cvv);
             }
             
-        } else if ( datasetFieldType.isPrimitive() ) {
-            for ( DatasetFieldValue pv : sort(fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder) ) {
+        } else if (datasetFieldType.isPrimitive()) {
+            for (DatasetFieldValue pv : sort(fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder)) {
                 if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false) && DatasetFieldType.FieldType.EMAIL.equals(pv.getDatasetField().getDatasetFieldType().getFieldType())) {
                     continue;
                 }
                 l.primitiveValue(pv);
             }
             
-        } else if ( datasetFieldType.isCompound() ) {
-           for ( DatasetFieldCompoundValue dsfcv : sort( fld.getDatasetFieldCompoundValues(), DatasetFieldCompoundValue.DisplayOrder) ) {
+        } else if (datasetFieldType.isCompound()) {
+           for (DatasetFieldCompoundValue dsfcv : sort(fld.getDatasetFieldCompoundValues(), DatasetFieldCompoundValue.DisplayOrder)) {
                l.startCompoundValue(dsfcv);
-               for ( DatasetField dsf : sort(dsfcv.getChildDatasetFields(), DatasetField.DisplayOrder ) ) {
+               for (DatasetField dsf : sort(dsfcv.getChildDatasetFields(), DatasetField.DisplayOrder)) {
                    walk(dsf, settingsService);
                }
                l.endCompoundValue(dsfcv);
            }
         }
         l.addExpandedValuesArray(fld); 
-        if(datasetFieldType.isPrimitive() && cvocMap.containsKey(datasetFieldType.getId())) {
-            for ( DatasetFieldValue evv : sort(fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder) ) {
+        if (datasetFieldType.isPrimitive() && cvocMap.containsKey(datasetFieldType.getId())) {
+            for (DatasetFieldValue evv : sort(fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder)) {
                 if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false) && DatasetFieldType.FieldType.EMAIL.equals(evv.getDatasetField().getDatasetFieldType().getFieldType())) {
                     continue;
                 }
@@ -122,7 +122,7 @@ public class DatasetFieldWalker {
         this.l = l;
     }
     
-    static private <T> Iterable<T> sort( List<T> list, Comparator<T> cmp ) {
+    static private <T> Iterable<T> sort(List<T> list, Comparator<T> cmp) {
         ArrayList<T> tbs = new ArrayList<>(list);
         Collections.sort(tbs, cmp);
         return tbs;

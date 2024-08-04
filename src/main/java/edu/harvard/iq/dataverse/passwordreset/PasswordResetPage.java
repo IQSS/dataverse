@@ -102,7 +102,7 @@ public class PasswordResetPage implements java.io.Serializable {
             passwordResetData = passwordResetExecResponse.getPasswordResetData();
             if (passwordResetData != null) {
                 user = passwordResetData.getBuiltinUser();
-                if (passwordResetData.getReason().equals(PasswordResetData.Reason.UPGRADE_REQUIRED)){
+                if (passwordResetData.getReason().equals(PasswordResetData.Reason.UPGRADE_REQUIRED)) {
                     newPassword = (String) FacesContext.getCurrentInstance().getExternalContext().getFlash().get("silentUpgradePasswd");
                     validationFailed = false;
                 }
@@ -116,16 +116,16 @@ public class PasswordResetPage implements java.io.Serializable {
 
     public String sendPasswordResetLink() {
             
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetRequest")
-                            .setInfo("Email Address: " + emailAddress) );
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetRequest")
+                            .setInfo("Email Address: " + emailAddress));
         try {
             PasswordResetInitResponse passwordResetInitResponse = passwordResetService.requestReset(emailAddress);
             PasswordResetData passwordResetData = passwordResetInitResponse.getPasswordResetData();
             if (passwordResetData != null) {
                 BuiltinUser foundUser = passwordResetData.getBuiltinUser();
                 passwordResetUrl = passwordResetInitResponse.getResetUrl(systemConfig.getDataverseSiteUrl());
-                actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetSent")
-                            .setInfo("Email Address: " + emailAddress) );
+                actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetSent")
+                            .setInfo("Email Address: " + emailAddress));
             } else {
                 logger.log(Level.INFO, "Cannot find account (or it's deactivated) given {0}", emailAddress);
             }
@@ -165,7 +165,7 @@ public class PasswordResetPage implements java.io.Serializable {
     //Note: Ported from DataverseUserPage
     public void validateNewPassword(FacesContext context, UIComponent toValidate, Object value) {
         String password = (String) value;
-        if (StringUtils.isBlank(password)){
+        if (StringUtils.isBlank(password)) {
             logger.log(Level.WARNING, BundleUtil.getStringFromBundle("passwdVal.passwdReset.valBlankLog"));
 
             ((UIInput) toValidate).setValid(false);
@@ -205,7 +205,7 @@ public class PasswordResetPage implements java.io.Serializable {
         this.token = token;
     }
 
-    public boolean isFailedValidation(){
+    public boolean isFailedValidation() {
         return validationFailed;
     }
 
@@ -248,7 +248,7 @@ public class PasswordResetPage implements java.io.Serializable {
 
     public String getCustomPasswordResetAlertMessage() {
         String customPasswordResetAlertMessage = settingsWrapper.getValueForKey(SettingsServiceBean.Key.PVCustomPasswordResetAlertMessage);
-        if(customPasswordResetAlertMessage != null && !customPasswordResetAlertMessage.isEmpty()){
+        if (customPasswordResetAlertMessage != null && !customPasswordResetAlertMessage.isEmpty()) {
             return customPasswordResetAlertMessage;
         } else {
             return BundleUtil.getStringFromBundle("passwdReset.newPasswd.details");

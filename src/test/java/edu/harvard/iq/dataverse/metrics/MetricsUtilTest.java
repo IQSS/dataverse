@@ -37,15 +37,15 @@ class MetricsUtilTest {
         @Test
         void testDataversesByCategoryToJson() {
             List<Object[]> list = new ArrayList<>();
-            Object[] obj00 = { "RESEARCH_PROJECTS", 791l };
-            Object[] obj01 = { "RESEARCHERS", 745l };
-            Object[] obj02 = { "UNCATEGORIZED", 565l };
-            Object[] obj03 = { "ORGANIZATIONS_INSTITUTIONS", 250l };
-            Object[] obj04 = { "JOURNALS", 106l };
-            Object[] obj05 = { "RESEARCH_GROUP", 106l };
-            Object[] obj06 = { "TEACHING_COURSES", 20l };
-            Object[] obj07 = { "LABORATORY", 17l };
-            Object[] obj08 = { "DEPARTMENT", 7l };
+            Object[] obj00 = {"RESEARCH_PROJECTS", 791l};
+            Object[] obj01 = {"RESEARCHERS", 745l};
+            Object[] obj02 = {"UNCATEGORIZED", 565l};
+            Object[] obj03 = {"ORGANIZATIONS_INSTITUTIONS", 250l};
+            Object[] obj04 = {"JOURNALS", 106l};
+            Object[] obj05 = {"RESEARCH_GROUP", 106l};
+            Object[] obj06 = {"TEACHING_COURSES", 20l};
+            Object[] obj07 = {"LABORATORY", 17l};
+            Object[] obj08 = {"DEPARTMENT", 7l};
             list.add(obj00);
             list.add(obj01);
             list.add(obj02);
@@ -66,20 +66,20 @@ class MetricsUtilTest {
         @Test
         void testDatasetsBySubjectToJson() {
             List<Object[]> list = new ArrayList<>();
-            Object[] obj00 = { "Social Sciences", 24955l };
-            Object[] obj01 = { "Medicine, Health and Life Sciences", 2262l };
-            Object[] obj02 = { "Earth and Environmental Sciences", 1631l };
-            Object[] obj03 = { "Agricultural Sciences", 1187l };
-            Object[] obj04 = { "Other", 980l };
-            Object[] obj05 = { "Computer and Information Science", 888l };
-            Object[] obj06 = { "Arts and Humanities", 832l };
-            Object[] obj07 = { "Astronomy and Astrophysics", 353l };
-            Object[] obj08 = { "Business and Management", 346l };
-            Object[] obj09 = { "Law", 220l };
-            Object[] obj10 = { "Engineering", 203l };
-            Object[] obj11 = { "Mathematical Sciences", 123l };
-            Object[] obj12 = { "Chemistry", 116l };
-            Object[] obj13 = { "Physics", 98l };
+            Object[] obj00 = {"Social Sciences", 24955l};
+            Object[] obj01 = {"Medicine, Health and Life Sciences", 2262l};
+            Object[] obj02 = {"Earth and Environmental Sciences", 1631l};
+            Object[] obj03 = {"Agricultural Sciences", 1187l};
+            Object[] obj04 = {"Other", 980l};
+            Object[] obj05 = {"Computer and Information Science", 888l};
+            Object[] obj06 = {"Arts and Humanities", 832l};
+            Object[] obj07 = {"Astronomy and Astrophysics", 353l};
+            Object[] obj08 = {"Business and Management", 346l};
+            Object[] obj09 = {"Law", 220l};
+            Object[] obj10 = {"Engineering", 203l};
+            Object[] obj11 = {"Mathematical Sciences", 123l};
+            Object[] obj12 = {"Chemistry", 116l};
+            Object[] obj13 = {"Physics", 98l};
             list.add(obj00);
             list.add(obj01);
             list.add(obj02);
@@ -105,20 +105,20 @@ class MetricsUtilTest {
         @Test
         void testDataversesBySubjectToJson() {
             List<Object[]> list = new ArrayList<>();
-            Object[] obj00 = { "Social Sciences", 24955l };
-            Object[] obj01 = { "Medicine, Health and Life Sciences", 2262l };
-            Object[] obj02 = { "Earth and Environmental Sciences", 1631l };
-            Object[] obj03 = { "Agricultural Sciences", 1187l };
-            Object[] obj04 = { "Other", 980l };
-            Object[] obj05 = { "Computer and Information Science", 888l };
-            Object[] obj06 = { "Arts and Humanities", 832l };
-            Object[] obj07 = { "Astronomy and Astrophysics", 353l };
-            Object[] obj08 = { "Business and Management", 346l };
-            Object[] obj09 = { "Law", 220l };
-            Object[] obj10 = { "Engineering", 203l };
-            Object[] obj11 = { "Mathematical Sciences", 123l };
-            Object[] obj12 = { "Chemistry", 116l };
-            Object[] obj13 = { "Physics", 98l };
+            Object[] obj00 = {"Social Sciences", 24955l};
+            Object[] obj01 = {"Medicine, Health and Life Sciences", 2262l};
+            Object[] obj02 = {"Earth and Environmental Sciences", 1631l};
+            Object[] obj03 = {"Agricultural Sciences", 1187l};
+            Object[] obj04 = {"Other", 980l};
+            Object[] obj05 = {"Computer and Information Science", 888l};
+            Object[] obj06 = {"Arts and Humanities", 832l};
+            Object[] obj07 = {"Astronomy and Astrophysics", 353l};
+            Object[] obj08 = {"Business and Management", 346l};
+            Object[] obj09 = {"Law", 220l};
+            Object[] obj10 = {"Engineering", 203l};
+            Object[] obj11 = {"Mathematical Sciences", 123l};
+            Object[] obj12 = {"Chemistry", 116l};
+            Object[] obj13 = {"Physics", 98l};
             list.add(obj00);
             list.add(obj01);
             list.add(obj02);
@@ -174,7 +174,7 @@ class MetricsUtilTest {
         void testStringToJsonArrayBuilder() {
             System.out.println("testStringToJsonArrayBuilder");
             List<Object[]> list = new ArrayList<>();
-            Object[] obj00 = { "Social Sciences", 24955l };
+            Object[] obj00 = {"Social Sciences", 24955l};
             list.add(obj00);
 
             JsonArray jsonArrayBefore = MetricsUtil.datasetsBySubjectToJson(list).build();

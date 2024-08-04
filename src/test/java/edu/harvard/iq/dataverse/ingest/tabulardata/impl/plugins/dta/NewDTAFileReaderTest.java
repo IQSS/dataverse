@@ -44,9 +44,9 @@ public class NewDTAFileReaderTest {
         assertEquals("application/x-stata", table.getOriginalFileFormat());
         assertEquals("STATA 14", table.getOriginalFormatVersion());
         assertEquals(7, table.getDataVariables().size());
-        assertEquals(3, (long)table.getCaseQuantity());
+        assertEquals(3, (long) table.getCaseQuantity());
         
-        String[] vars = {"make","price","mpg","rep78","trunk","gear_ratio","strls"};
+        String[] vars = {"make", "price", "mpg", "rep78", "trunk", "gear_ratio", "strls"};
         String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
         assertArrayEquals(vars, actualVars);
         String expected = "\"Buick LeSabre\"	5788	1.1111111111111111E21	100	32767	2.73	\"a\"\n" +
@@ -63,8 +63,8 @@ public class NewDTAFileReaderTest {
         assertEquals("application/x-stata", table.getOriginalFileFormat());
         assertEquals("STATA 14", table.getOriginalFormatVersion());
         assertEquals(7, table.getDataVariables().size());
-        assertEquals(4, (long)table.getCaseQuantity());
-        String[] vars = {"Clock","Daily","Weekly","Monthly","Quarterly","BiAnnually","Annually"};
+        assertEquals(4, (long) table.getCaseQuantity());
+        String[] vars = {"Clock", "Daily", "Weekly", "Monthly", "Quarterly", "BiAnnually", "Annually"};
         String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
         assertArrayEquals(vars, actualVars);
         String expected = "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-01-01	2018-01-01	2018\n" +

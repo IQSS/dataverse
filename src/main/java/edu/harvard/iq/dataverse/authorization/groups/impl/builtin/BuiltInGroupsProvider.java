@@ -21,7 +21,7 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
     
     private static final BuiltInGroupsProvider instance = new BuiltInGroupsProvider();
     
-    private BuiltInGroupsProvider(){}
+    private BuiltInGroupsProvider() {}
     
     public static BuiltInGroupsProvider get() {
         return instance;
@@ -38,12 +38,12 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
     }
 
     @Override
-    public Set<Group> groupsFor(DataverseRequest req, DvObject dvo ) {
+    public Set<Group> groupsFor(DataverseRequest req, DvObject dvo) {
         return groupsFor(req.getUser());
     }
 
     @Override
-    public Set<Group> groupsFor( RoleAssignee ra, DvObject dvo ) {
+    public Set<Group> groupsFor(RoleAssignee ra, DvObject dvo) {
         return groupsFor(ra);
     }
     
@@ -54,9 +54,9 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
 
     @Override
     public Set<Group> groupsFor(RoleAssignee ra) {
-        if (ra instanceof AuthenticatedUser){
+        if (ra instanceof AuthenticatedUser) {
             return Set.of(AllUsers.get(), AuthenticatedUsers.get());
-        } else if ( ra instanceof User) {
+        } else if (ra instanceof User) {
             return Collections.singleton(AllUsers.get());
         } else {
             return Collections.emptySet();
@@ -66,7 +66,7 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
     @Override
     public Group get(String groupAlias) {
         return groupAlias.equals(AllUsers.get().getAlias()) ? AllUsers.get()
-                : ( groupAlias.equals(AuthenticatedUsers.get().getAlias()) ? AuthenticatedUsers.get() : null );
+                : (groupAlias.equals(AuthenticatedUsers.get().getAlias()) ? AuthenticatedUsers.get() : null);
     }
 
     @Override

@@ -117,7 +117,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
         List<DataFile> datafiles = new ArrayList<>();
 
         //When there is no checksum/checksumtype being sent (normal upload, needs to be calculated), set the type to the current default
-        if(newCheckSumType == null) {
+        if (newCheckSumType == null) {
             newCheckSumType = ctxt.systemConfig().getFileFixityChecksumAlgorithm();
         }
 
@@ -323,9 +323,9 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                      * that are files.
                      */
 
-                    for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements();) {
+                    for (Enumeration<? extends ZipEntry> entries = zipFile.entries(); entries.hasMoreElements(); ) {
                         ZipEntry entry = entries.nextElement();
-                        logger.fine("inside first zip pass; this entry: "+entry.getName());
+                        logger.fine("inside first zip pass; this entry: " + entry.getName());
                         if (!entry.isDirectory()) {
                             String shortName = entry.getName().replaceFirst("^.*[\\/]", "");
                             // ... and, finally, check if it's a "fake" file - a zip archive entry
@@ -487,7 +487,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     datafiles.clear();
                 } catch (FileExceedsMaxSizeException femsx) {
                     logger.warning("One of the unzipped files exceeds the size limit; resorting to saving the file as is. " + femsx.getMessage());
-                    warningMessage =  BundleUtil.getStringFromBundle("file.addreplace.warning.unzip.failed.size", Arrays.asList(FileSizeChecker.bytesToHumanReadable(fileSizeLimit)));
+                    warningMessage = BundleUtil.getStringFromBundle("file.addreplace.warning.unzip.failed.size", Arrays.asList(FileSizeChecker.bytesToHumanReadable(fileSizeLimit)));
                     datafiles.clear();
                 } /*catch (FileExceedsStorageQuotaException fesqx) {
                     //logger.warning("One of the unzipped files exceeds the storage quota limit; resorting to saving the file as is. " + fesqx.getMessage());

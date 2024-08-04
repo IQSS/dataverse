@@ -259,7 +259,7 @@ public class PermissionServiceBean {
             return children; // it's good to be king
             
         } else if (!user.isAuthenticated()) {
-            if ( required.stream().anyMatch(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY::contains) ){
+            if (required.stream().anyMatch(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY::contains)) {
                 // At least one of the permissions requires that the user is authenticated, which is not the case.
                 return Collections.emptyList();
             }
@@ -282,13 +282,13 @@ public class PermissionServiceBean {
         // Looking at each child at a time now.
         // 1. Map childs to permissions
         List<RoleAssignment> childrenAssignments = roleService.directRoleAssignments(ras, 
-                includeReleased ? children.stream().filter( child ->
-                    (!child.isReleased())).collect( toList()) : children);
+                includeReleased ? children.stream().filter(child ->
+                    (!child.isReleased())).collect(toList()) : children);
         
         Map<DvObject, Set<Permission>> roleMap = new HashMap<>();
-        childrenAssignments.forEach( assignment -> {
+        childrenAssignments.forEach(assignment -> {
             DvObject definitionPoint = assignment.getDefinitionPoint();
-            if (!roleMap.containsKey(definitionPoint)){
+            if (!roleMap.containsKey(definitionPoint)) {
                 roleMap.put(definitionPoint, assignment.getRole().permissions());
             } else {
                 roleMap.get(definitionPoint).addAll(assignment.getRole().permissions());
@@ -296,11 +296,11 @@ public class PermissionServiceBean {
         });
         
         // 2. Filter by permission map created at (1).
-        return children.stream().filter( child -> 
+        return children.stream().filter(child -> 
                 ((includeReleased && child.isReleased()) 
                         || ((roleMap.containsKey(child)) &&
                             (roleMap.get(child).containsAll(required.stream().filter(perm -> perm.appliesTo(child.getClass())).collect(Collectors.toSet())))))
-        ).collect( toList() );
+        ).collect(toList());
         
     }
     

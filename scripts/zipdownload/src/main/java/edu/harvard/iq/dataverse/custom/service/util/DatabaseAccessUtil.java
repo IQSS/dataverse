@@ -34,7 +34,7 @@ import java.util.List;
  * 
  * @author Leonid Andreev
  */
-public class DatabaseAccessUtil implements java.io.Serializable  {
+public class DatabaseAccessUtil implements java.io.Serializable {
 
     // The zipper needs to make one database call to initiate each job.
     // So the database connection can be closed immediately.
@@ -77,7 +77,7 @@ public class DatabaseAccessUtil implements java.io.Serializable  {
             stmt.setString(1, jobKey);
             rs = stmt.executeQuery();
             
-            while ( rs.next() ) {
+            while (rs.next()) {
                 String storageLocation = rs.getString("storageLocation");
                 String  fileName = rs.getString("fileName");
                 
@@ -93,7 +93,7 @@ public class DatabaseAccessUtil implements java.io.Serializable  {
             rs.close();
             stmt.close();            
         } catch (Exception e) {
-            System.err.println( "Database error: " + e.getClass().getName()+" "+ e.getMessage() );
+            System.err.println("Database error: " + e.getClass().getName() + " " + e.getMessage());
             // return null (but close the connection first):
             try {
                 c.close();

@@ -22,11 +22,11 @@ import java.util.Date;
  * @author skraffmi
  */
 @RequiredPermissions(Permission.EditDataset)
-public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand  {
+public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand {
 
     private final Dataset target;
     
-    public UpdateDatasetTargetURLCommand( Dataset target, DataverseRequest aRequest) {
+    public UpdateDatasetTargetURLCommand(Dataset target, DataverseRequest aRequest) {
         super(aRequest, target);
         this.target = target;
     }

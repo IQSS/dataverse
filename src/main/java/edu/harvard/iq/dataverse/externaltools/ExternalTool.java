@@ -313,8 +313,8 @@ public class ExternalTool implements Serializable {
         if (getContentType() != null) {
             jab.add(CONTENT_TYPE, getContentType());
         }
-        if (getAllowedApiCalls()!= null) {
-            jab.add(ALLOWED_API_CALLS,getAllowedApiCalls());
+        if (getAllowedApiCalls() != null) {
+            jab.add(ALLOWED_API_CALLS, getAllowedApiCalls());
         }
         return jab;
     }
@@ -365,7 +365,7 @@ public class ExternalTool implements Serializable {
 
     public boolean accessesAuxFiles() {
         String reqs = getRequirements(); 
-        return reqs!=null && reqs.contains(AUX_FILES_EXIST);
+        return reqs != null && reqs.contains(AUX_FILES_EXIST);
     }
 
 }

@@ -524,7 +524,7 @@ public class Index extends AbstractApiBean {
             }
 
             // <copyField source="*_i" dest="_text_" maxChars="3000"/>
-            sb.append("    <copyField source=\"").append(nameSearchable).append("\" dest=\""+ SearchFields.FULL_TEXT + "\" maxChars=\"3000\"/>\n");
+            sb.append("    <copyField source=\"").append(nameSearchable).append("\" dest=\"" + SearchFields.FULL_TEXT + "\" maxChars=\"3000\"/>\n");
         }
 
         return sb.toString();
@@ -734,14 +734,14 @@ public class Index extends AbstractApiBean {
     private String writeFailureToLog(String localizedMessage, DvObject dvo) {
         String retVal = "";
         String logString = "";
-        if(dvo.isInstanceofDataverse()){
-            retVal = "Dataverse Indexing failed. " ;
-           logString +=  retVal + " You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dvo.getId().toString(); 
+        if (dvo.isInstanceofDataverse()) {
+            retVal = "Dataverse Indexing failed. ";
+           logString += retVal + " You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dvo.getId().toString(); 
         }
         
-        if(dvo.isInstanceofDataset()){
+        if (dvo.isInstanceofDataset()) {
             retVal += " Dataset Indexing failed. ";
-            logString +=  retVal + " You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dvo.getId().toString(); 
+            logString += retVal + " You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dvo.getId().toString(); 
         }
         retVal += " \r\n " + localizedMessage;
         LoggingUtil.writeOnSuccessFailureLog(null, logString, dvo);

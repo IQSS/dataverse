@@ -65,7 +65,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     public static final String FILE_VALIDATION_ERROR = "FILE VALIDATION ERROR";
     
     public FinalizeDatasetPublicationCommand(Dataset aDataset, DataverseRequest aRequest) {
-        this( aDataset, aRequest, false );
+        this(aDataset, aRequest, false);
     }
     public FinalizeDatasetPublicationCommand(Dataset aDataset, DataverseRequest aRequest, boolean isPidPrePublished) {
         super(aDataset, aRequest);
@@ -76,7 +76,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     public Dataset execute(CommandContext ctxt) throws CommandException {
         Dataset theDataset = getDataset();
         
-        logger.info("Finalizing publication of the dataset "+theDataset.getGlobalId().asString());
+        logger.info("Finalizing publication of the dataset " + theDataset.getGlobalId().asString());
         
         // validate the physical files before we do anything else: 
         // (unless specifically disabled; or a minor version)
@@ -98,14 +98,14 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 		 * the registerExternalIdentifier command will make one try to create the identifier if needed (e.g. if reserving at dataset creation wasn't done/failed).
 		 * For registerWhenPublished == true providers, if a PID conflict is found, the call will retry with new PIDs. 
 		 */
-        if ( theDataset.getGlobalIdCreateTime() == null ) {
+        if (theDataset.getGlobalIdCreateTime() == null) {
             try {
                 // This can potentially throw a CommandException, so let's make 
                 // sure we exit cleanly:
 
             	registerExternalIdentifier(theDataset, ctxt, false);
             } catch (CommandException comEx) {
-                logger.warning("Failed to reserve the identifier "+theDataset.getGlobalId().asString()+"; notifying the user(s), unlocking the dataset");
+                logger.warning("Failed to reserve the identifier " + theDataset.getGlobalId().asString() + "; notifying the user(s), unlocking the dataset");
                 // Send failure notification to the user: 
                 notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
                 // Remove the dataset lock: 
@@ -241,11 +241,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         // Finally, unlock the dataset (leaving any post-publish workflow lock in place)
         ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.finalizePublication);
-        if (readyDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
+        if (readyDataset.isLockedFor(DatasetLock.Reason.InReview)) {
             ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.InReview);
         }
         
-        logger.info("Successfully published the dataset "+readyDataset.getGlobalId().asString());
+        logger.info("Successfully published the dataset " + readyDataset.getGlobalId().asString());
         readyDataset = ctxt.em().merge(readyDataset);
         
         return readyDataset;
@@ -255,10 +255,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     public boolean onSuccess(CommandContext ctxt, Object r) {
         boolean retVal = true;
         Dataset dataset = null;
-        try{
+        try {
             dataset = (Dataset) r;
-        } catch (ClassCastException e){
-            dataset  = ((PublishDatasetResult) r).getDataset();
+        } catch (ClassCastException e) {
+            dataset = ((PublishDatasetResult) r).getDataset();
         }
         
         try {
@@ -269,7 +269,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
         
         //re-indexing dataverses that have additional subjects
-        if (!dataversesToIndex.isEmpty()){
+        if (!dataversesToIndex.isEmpty()) {
             for (Dataverse dv : dataversesToIndex) {
                 try {
                     Future<String> indexString = ctxt.index().indexDataverse(dv);
@@ -293,7 +293,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             // Just like with indexing, a failure to export is not a fatal
             // condition. We'll just log the error as a warning and keep
             // going:
-            logger.log(Level.WARNING, "Finalization: exception caught while exporting: "+ex.getMessage(), ex);
+            logger.log(Level.WARNING, "Finalization: exception caught while exporting: " + ex.getMessage(), ex);
             // ... but it is important to only update the export time stamp if the 
             // export was indeed successful.
         }
@@ -314,11 +314,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     boolean newSubjectsAdded = false;
                     for (ControlledVocabularyValue cvv : dsf.getControlledVocabularyValues()) {                   
                         if (!dv.getDataverseSubjects().contains(cvv)) {
-                            logger.fine("dv "+dv.getAlias()+" does not have subject "+cvv.getStrValue());
+                            logger.fine("dv " + dv.getAlias() + " does not have subject " + cvv.getStrValue());
                             newSubjectsAdded = true;
                             dv.getDataverseSubjects().add(cvv);
                         } else {
-                            logger.fine("dv "+dv.getAlias()+" already has subject "+cvv.getStrValue());
+                            logger.fine("dv " + dv.getAlias() + " already has subject " + cvv.getStrValue());
                         }
                     }
                     if (newSubjectsAdded) {
@@ -351,7 +351,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     // major release; we can revisit the decision if there's any
                     // indication that this makes publishing take significantly longer.
                     String driverId = FileUtil.getStorageDriver(dataFile);
-                    if(StorageIO.isDataverseAccessible(driverId) && (maxFileSize == -1 || dataFile.getFilesize() < maxFileSize)) {
+                    if (StorageIO.isDataverseAccessible(driverId) && (maxFileSize == -1 || dataFile.getFilesize() < maxFileSize)) {
                         FileUtil.validateDataFileChecksum(dataFile);
                     }
                     else {
@@ -471,20 +471,20 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     //If more notifications are needed in this command, they should probably be collapsed.
     private void notifyUsersFileDownload(CommandContext ctxt, DvObject subject) {
         ctxt.roles().directRoleAssignments(subject).stream()
-            .filter(  ra -> ra.getRole().permissions().contains(Permission.DownloadFile) )
-            .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
+            .filter(ra -> ra.getRole().permissions().contains(Permission.DownloadFile))
+            .flatMap(ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream())
             .distinct() // prevent double-send
-            .forEach( au -> ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.GRANTFILEACCESS, getDataset().getId()) );
+            .forEach(au -> ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.GRANTFILEACCESS, getDataset().getId()));
     }
     
     private void notifyUsersDatasetPublishStatus(CommandContext ctxt, DvObject subject, UserNotification.Type type) {
         
         ctxt.roles().rolesAssignments(subject).stream()
-            .filter(  ra -> ra.getRole().permissions().contains(Permission.ViewUnpublishedDataset) || ra.getRole().permissions().contains(Permission.DownloadFile))
-            .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
+            .filter(ra -> ra.getRole().permissions().contains(Permission.ViewUnpublishedDataset) || ra.getRole().permissions().contains(Permission.DownloadFile))
+            .flatMap(ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream())
             .distinct() // prevent double-send
             //.forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) ); //not sure why this line doesn't work instead
-            .forEach( au -> ctxt.notifications().sendNotificationInNewTransaction(au, getTimestamp(), type, getDataset().getLatestVersion().getId()) ); 
+            .forEach(au -> ctxt.notifications().sendNotificationInNewTransaction(au, getTimestamp(), type, getDataset().getLatestVersion().getId())); 
     }
 
 }

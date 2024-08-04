@@ -29,7 +29,7 @@ class MailDomainGroupProviderTest {
         AuthenticatedUser u = new AuthenticatedUser();
         when(svc.findAllWithDomain(u)).thenReturn(set);
         
-        DataverseRequest req = new DataverseRequest(u, new IPv4Address(192,168,0,1));
+        DataverseRequest req = new DataverseRequest(u, new IPv4Address(192, 168, 0, 1));
         
         // when
         Set<MailDomainGroup> result = pvd.groupsFor(req);
@@ -44,7 +44,7 @@ class MailDomainGroupProviderTest {
         // given
         MailDomainGroupProvider pvd = new MailDomainGroupProvider(svc);
         AuthenticatedUser u = null;
-        DataverseRequest req = new DataverseRequest(u, new IPv4Address(192,168,0,1));
+        DataverseRequest req = new DataverseRequest(u, new IPv4Address(192, 168, 0, 1));
         
         // when & then
         assertEquals(Collections.emptySet(), pvd.groupsFor(req));
@@ -55,7 +55,7 @@ class MailDomainGroupProviderTest {
         // given
         MailDomainGroupProvider pvd = Mockito.spy(new MailDomainGroupProvider(svc));
         AuthenticatedUser u = null;
-        DataverseRequest req = new DataverseRequest(u, new IPv4Address(192,168,0,1));
+        DataverseRequest req = new DataverseRequest(u, new IPv4Address(192, 168, 0, 1));
         Dataset a = new Dataset();
         
         // when
@@ -81,7 +81,7 @@ class MailDomainGroupProviderTest {
         // include a null value to ensure null safety of the functions
         List<MailDomainGroup> test = Arrays.asList(new MailDomainGroup(), new MailDomainGroup(), null);
         for (MailDomainGroup mdg : test) {
-            if ( mdg != null ) {
+            if (mdg != null) {
                 assertNull(mdg.getGroupProvider());
             }
         }
@@ -91,7 +91,7 @@ class MailDomainGroupProviderTest {
         
         // then
         for (MailDomainGroup mdg : test) {
-            if ( mdg != null ) {
+            if (mdg != null) {
                 assertEquals(pvd, mdg.getGroupProvider());
             }
         }

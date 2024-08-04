@@ -79,15 +79,15 @@ public class OAIServlet extends HttpServlet {
     MailServiceBean mailServiceBean;
 
     @Inject
-    @ConfigProperty(name = "dataverse.oai.server.maxidentifiers", defaultValue="100")
+    @ConfigProperty(name = "dataverse.oai.server.maxidentifiers", defaultValue = "100")
     private Integer maxListIdentifiers;
     
     @Inject
-    @ConfigProperty(name = "dataverse.oai.server.maxsets", defaultValue="100")
+    @ConfigProperty(name = "dataverse.oai.server.maxsets", defaultValue = "100")
     private Integer maxListSets;
     
     @Inject
-    @ConfigProperty(name = "dataverse.oai.server.maxrecords", defaultValue="10")
+    @ConfigProperty(name = "dataverse.oai.server.maxrecords", defaultValue = "10")
     private Integer maxListRecords;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.web.servlet.OAIServlet");
@@ -123,7 +123,7 @@ public class OAIServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         
-        xoaiContext =  createContext();
+        xoaiContext = createContext();
         
         if (isDataverseOaiExtensionsSupported()) {
             xoaiContext = addDataverseJsonMetadataFormat(xoaiContext);
@@ -211,7 +211,7 @@ public class OAIServlet extends HttpServlet {
                 .withGranularity(Granularity.Lenient)
                 .withResumptionTokenFormat(new SimpleResumptionTokenFormat().withGranularity(Granularity.Second))
                 .withRepositoryName(repositoryName)
-                .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
+                .withBaseUrl(systemConfig.getDataverseSiteUrl() + "/oai")
                 .withEarliestDate(recordService.getEarliestDate())
                 .withMaxListIdentifiers(maxListIdentifiers)
                 .withMaxListSets(maxListSets)
@@ -281,12 +281,12 @@ public class OAIServlet extends HttpServlet {
             }
                        
         } catch (XMLStreamException | OAIException e) {
-            throw new ServletException (e);
+            throw new ServletException(e);
         }
         
     }
     
-    protected Context getXoaiContext () {
+    protected Context getXoaiContext() {
         return xoaiContext;
     }
     

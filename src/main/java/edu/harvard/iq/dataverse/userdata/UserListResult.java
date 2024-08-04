@@ -33,29 +33,29 @@ public class UserListResult {
     private String errorMessage;
         
     
-    public UserListResult(String searchTerm, Pager pager, List<AuthenticatedUser> userList){
+    public UserListResult(String searchTerm, Pager pager, List<AuthenticatedUser> userList) {
         
         
-        if (searchTerm == null){
+        if (searchTerm == null) {
             searchTerm = "";
         }
         this.searchTerm = searchTerm;
         
         this.pager = pager;
-        if (this.pager==null){
+        if (this.pager == null) {
             logger.severe("Pager should never be null!");
         }
         
         this.userList = userList;
-        if (this.userList == null){
+        if (this.userList == null) {
             this.userList = new ArrayList<>();  // new empty list
         }
        
     }
 
-    public Integer getSelectedPageNumber(){
+    public Integer getSelectedPageNumber() {
         
-        if (pager == null){
+        if (pager == null) {
             return 1;
         }
         return pager.getSelectedPageNumber();
@@ -65,7 +65,7 @@ public class UserListResult {
      *  Set searchTerm
      *  @param searchTerm
      */
-    public void setSearchTerm(String searchTerm){
+    public void setSearchTerm(String searchTerm) {
         this.searchTerm = searchTerm;
     }
 
@@ -73,7 +73,7 @@ public class UserListResult {
      *  Get for searchTerm
      *  @return String
      */
-    public String getSearchTerm(){
+    public String getSearchTerm() {
         return this.searchTerm;
     }
     
@@ -82,7 +82,7 @@ public class UserListResult {
      *  Set pager
      *  @param pager
      */
-    public void setPager(Pager pager){
+    public void setPager(Pager pager) {
         this.pager = pager;
     }
 
@@ -90,7 +90,7 @@ public class UserListResult {
      *  Get for pager
      *  @return Pager
      */
-    public Pager getPager(){
+    public Pager getPager() {
         return this.pager;
     }
     
@@ -99,7 +99,7 @@ public class UserListResult {
      *  Set userList
      *  @param userList
      */
-    public void setUserList(List<AuthenticatedUser> userList){
+    public void setUserList(List<AuthenticatedUser> userList) {
         this.userList = userList;
     }
 
@@ -107,7 +107,7 @@ public class UserListResult {
      *  Get for userList
      *  @return List<AuthenticatedUser>
      */
-    public List<AuthenticatedUser> getUserList(){
+    public List<AuthenticatedUser> getUserList() {
         return this.userList;
     }
     
@@ -116,7 +116,7 @@ public class UserListResult {
      *  Set success
      *  @param success
      */
-    public void setSuccess(boolean success){
+    public void setSuccess(boolean success) {
         this.success = success;
     }
 
@@ -124,7 +124,7 @@ public class UserListResult {
      *  Get for success
      *  @return boolean
      */
-    public boolean getSuccess(){
+    public boolean getSuccess() {
         return this.success;
     }
     
@@ -134,7 +134,7 @@ public class UserListResult {
      *  Set errorMessage
      *  @param errorMessage
      */
-    public void setErrorMessage(String errorMessage){
+    public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
     }
 
@@ -142,7 +142,7 @@ public class UserListResult {
      *  Get for errorMessage
      *  @return String
      */
-    public String getErrorMessage(){
+    public String getErrorMessage() {
         return this.errorMessage;
     }
 
@@ -153,12 +153,12 @@ public class UserListResult {
      * 
      * @return 
      */
-    public JsonObjectBuilder toJSON(){
+    public JsonObjectBuilder toJSON() {
         
-        if (userList.isEmpty()){
+        if (userList.isEmpty()) {
             return getNoResultsJSON();
         }
-        if (pager==null){
+        if (pager == null) {
             logger.severe("Pager should never be null!");
             return getNoResultsJSON();
            
@@ -176,12 +176,12 @@ public class UserListResult {
     
 
     
-    private JsonArrayBuilder getUsersAsJSONArray(){
+    private JsonArrayBuilder getUsersAsJSONArray() {
         
          // -------------------------------------------------
         // No results..... Return count of 0 and empty array
         // -------------------------------------------------
-        if ((userList==null)||(userList.isEmpty())){
+        if ((userList == null) || (userList.isEmpty())) {
             return Json.createArrayBuilder(); // return an empty array
         }
         
@@ -197,7 +197,7 @@ public class UserListResult {
     }
     
     
-    private JsonObjectBuilder getNoResultsJSON(){
+    private JsonObjectBuilder getNoResultsJSON() {
         
          return Json.createObjectBuilder()
                         .add("userCount", 0)

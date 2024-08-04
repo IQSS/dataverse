@@ -33,8 +33,8 @@ public class ControlledVocabularyException extends JsonParseException {
     
      public ControlledVocabularyException(String message, DatasetFieldType dsfType, String strValue) {         
         super(message);
-        this.dsfType=dsfType;
-        this.strValue=strValue;
+        this.dsfType = dsfType;
+        this.strValue = strValue;
     }
 
     public ControlledVocabularyException(String message, Throwable cause) {

@@ -54,13 +54,13 @@ public class IngestableDataCheckerTest {
     
     private File createTempFile(String filename, String fileContents) throws IOException {
 
-        if (filename == null){
+        if (filename == null) {
             return null;
         }
         
         Path tmpFile = Files.createTempFile("ingestdatachecker", "");
         
-        if (fileContents != null){
+        if (fileContents != null) {
             Files.writeString(tmpFile, fileContents, StandardCharsets.UTF_8);
         }
         
@@ -95,12 +95,12 @@ public class IngestableDataCheckerTest {
     }
     */
     
-    private void msg(String m){
+    private void msg(String m) {
         System.out.println(m);
     }
 
 
-    private void msgt(String m){
+    private void msgt(String m) {
         msg("---------------------------");
         msg(m);
         msg("---------------------------");

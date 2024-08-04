@@ -25,16 +25,16 @@ import jakarta.persistence.UniqueConstraint;
  * @author michael
  */
 @Table(
-    uniqueConstraints=
-        @UniqueConstraint(columnNames={"persistentuserid", "authenticationproviderid"})
+    uniqueConstraints =
+        @UniqueConstraint(columnNames = {"persistentuserid", "authenticationproviderid"})
 )
-@NamedQueries( {
-    @NamedQuery( name="AuthenticatedUserLookup.findByAuthPrvID_PersUserId",
-                 query="SELECT au FROM AuthenticatedUserLookup au "
+@NamedQueries({
+    @NamedQuery(name = "AuthenticatedUserLookup.findByAuthPrvID_PersUserId",
+                 query = "SELECT au FROM AuthenticatedUserLookup au "
                          + "WHERE au.authenticationProviderId=:authPrvId "
                          + "  AND au.persistentUserId=:persUserId "),
-    @NamedQuery( name="AuthenticatedUserLookup.findByAuthUser",
-                 query="SELECT au FROM AuthenticatedUserLookup au WHERE au.authenticatedUser=:authUser")
+    @NamedQuery(name = "AuthenticatedUserLookup.findByAuthUser",
+                 query = "SELECT au FROM AuthenticatedUserLookup au WHERE au.authenticatedUser=:authUser")
 })
 @Entity
 public class AuthenticatedUserLookup implements Serializable {
@@ -46,12 +46,12 @@ public class AuthenticatedUserLookup implements Serializable {
     private String authenticationProviderId;
     private String persistentUserId;
 
-    @OneToOne( cascade = {CascadeType.PERSIST, CascadeType.MERGE} )
-    @JoinColumn(unique=true, nullable=false)
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(unique = true, nullable = false)
     private AuthenticatedUser authenticatedUser;
 
     public AuthenticatedUserLookup(String persistentUserIdFromIdp, String idp) {
-        this( persistentUserIdFromIdp, idp, null );
+        this(persistentUserIdFromIdp, idp, null);
     }
 
     public AuthenticatedUserLookup(String persistentUserIdFromIdp, String authPrvId, AuthenticatedUser authenticatedUser) {
@@ -63,7 +63,7 @@ public class AuthenticatedUserLookup implements Serializable {
     /**
      * Constructor for JPA
      */
-    public AuthenticatedUserLookup(){}
+    public AuthenticatedUserLookup() {}
     
     public AuthenticatedUser getAuthenticatedUser() {
         return authenticatedUser;

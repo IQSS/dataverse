@@ -33,7 +33,7 @@ import java.util.ArrayList;
 public class IngestMessage implements Serializable {
     /** Creates a new instance of IngestMessage */
 
-    public IngestMessage()  {
+    public IngestMessage() {
         datafile_ids = new ArrayList<Long>();
     }
 

@@ -45,7 +45,7 @@ public class BagItFileHandler {
     }
 
     public boolean isBagItPackage(String uploadedFilename, File file) throws IOException {
-        try(FileDataProvider fileDataProvider = fileDataProviderFactory.getFileDataProvider(file)) {
+        try (FileDataProvider fileDataProvider = fileDataProviderFactory.getFileDataProvider(file)) {
             boolean isBagItPackage = bagValidator.hasBagItPackage(fileDataProvider);
             logger.fine(String.format("action=isBagItPackage uploadedFilename=%s file=%s isBagItPackage=%s", uploadedFilename, file.getName(), isBagItPackage));
             return isBagItPackage;
@@ -56,12 +56,12 @@ public class BagItFileHandler {
         logger.info(String.format("action=handleBagItPackage start uploadedFilename=%s file=%s", uploadedFilename, bagItPackageFile.getName()));
         try {
             List<DataFile> packageDataFiles = processBagItPackage(systemConfig, datasetVersion, uploadedFilename, bagItPackageFile);
-            if(packageDataFiles.isEmpty()) {
+            if (packageDataFiles.isEmpty()) {
                 return CreateDataFileResult.error(uploadedFilename, FILE_TYPE, Collections.emptyList());
             }
 
             BagValidation bagValidation = validateBagItPackage(uploadedFilename, packageDataFiles);
-            if(bagValidation.success()) {
+            if (bagValidation.success()) {
                 List<DataFile> finalItems = postProcessor.process(packageDataFiles);
                 logger.info(String.format("action=handleBagItPackage result=success uploadedFilename=%s file=%s", uploadedFilename, bagItPackageFile.getName()));
                 return CreateDataFileResult.success(uploadedFilename, FILE_TYPE, finalItems);
@@ -82,7 +82,7 @@ public class BagItFileHandler {
     }
 
     private BagValidation validateBagItPackage(String uploadedFilename, List<DataFile> packageDataFiles) throws IOException {
-        try(FileDataProvider fileDataProvider = fileDataProviderFactory.getFileDataProvider(uploadedFilename, packageDataFiles)) {
+        try (FileDataProvider fileDataProvider = fileDataProviderFactory.getFileDataProvider(uploadedFilename, packageDataFiles)) {
             BagValidation bagValidation = bagValidator.validateChecksums(fileDataProvider);
             logger.info(String.format("action=validateBagItPackage uploadedFilename=%s bagValidation=%s", uploadedFilename, bagValidation.report()));
             return bagValidation;
@@ -96,16 +96,16 @@ public class BagItFileHandler {
 
         List<DataFile> packageDataFiles = new LinkedList<>();
 
-        try(FileDataProvider fileDataProvider = fileDataProviderFactory.getFileDataProvider(bagItPackageFile)) {
+        try (FileDataProvider fileDataProvider = fileDataProviderFactory.getFileDataProvider(bagItPackageFile)) {
             List<Path> zipFileEntries = fileDataProvider.getFilePaths();
             if (zipFileEntries.size() > numberOfFilesLimit) {
                 throw new BagItFileHandlerException(String.format("Zip file: %s exceeds the number of files limit. Total: %s limit: %s", uploadedFilename, zipFileEntries.size(), numberOfFilesLimit));
             }
 
-            for(Path zipEntry: zipFileEntries) {
+            for (Path zipEntry : zipFileEntries) {
                 Optional<FileDataProvider.InputStreamProvider> zipEntryStream = fileDataProvider.getInputStreamProvider(zipEntry);
 
-                if(zipEntryStream.isEmpty()) {
+                if (zipEntryStream.isEmpty()) {
                     logger.warning(String.format("action=handleBagIt result=no-input-stream file=%s zipEntry=%s", uploadedFilename, zipEntry));
                     continue;
                 }
@@ -116,16 +116,16 @@ public class BagItFileHandler {
                     File zipEntryAsFile = fileUtil.saveInputStreamInTempFile(zipEntryStream.get().getInputStream(), sizeOfFilesLimit);
                     datafile = fileUtil.createSingleDataFile(datasetVersion, zipEntryAsFile, null, fileName,
                             FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT, checksumAlgorithm, null, false);
-                } catch(FileExceedsMaxSizeException e) {
+                } catch (FileExceedsMaxSizeException e) {
                     throw new BagItFileHandlerException(String.format("Zip entry: %s for file: %s exceeds the size limit", zipEntry, uploadedFilename), e);
                 }
 
-                if(datafile == null) {
+                if (datafile == null) {
                     logger.warning(String.format("action=handleBagIt result=null-datafile file=%s zipEntry=%s", uploadedFilename, zipEntry));
                     continue;
                 }
 
-                if(zipEntry.getParent() != null) {
+                if (zipEntry.getParent() != null) {
                     // Set directory
                     datafile.getFileMetadata().setDirectoryLabel(zipEntry.getParent().toString());
                 }

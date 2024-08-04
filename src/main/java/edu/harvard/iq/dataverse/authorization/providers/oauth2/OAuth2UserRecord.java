@@ -27,7 +27,7 @@ public class OAuth2UserRecord implements java.io.Serializable {
     private final OAuth2TokenData tokenData;
     
     public OAuth2UserRecord(String aServiceId, String anIdInService, String aUsername,
-                            OAuth2TokenData someTokenData,  AuthenticatedUserDisplayInfo aDisplayInfo,
+                            OAuth2TokenData someTokenData, AuthenticatedUserDisplayInfo aDisplayInfo,
                             List<String> someAvailableEmailAddresses) {
         serviceId = aServiceId;
         idInService = anIdInService;

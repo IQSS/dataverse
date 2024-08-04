@@ -24,11 +24,11 @@ import jakarta.persistence.Table;
  * @author skraffmiller
  */
 @Entity
-@Table(indexes = {@Index(columnList="authenticateduser_id"), @Index(columnList="datasetversion_id")})
+@Table(indexes = {@Index(columnList = "authenticateduser_id"), @Index(columnList = "datasetversion_id")})
 @NamedQueries({
     @NamedQuery(
-        name="DatasetVersionUser.findByVersionIdAndUserId",
-        query="select dvu from DatasetVersionUser dvu where dvu.datasetVersion.id =:versionId and dvu.authenticatedUser.id =:userId"
+        name = "DatasetVersionUser.findByVersionIdAndUserId",
+        query = "select dvu from DatasetVersionUser dvu where dvu.datasetVersion.id =:versionId and dvu.authenticatedUser.id =:userId"
     )
 })
 public class DatasetVersionUser implements Serializable {
@@ -64,7 +64,7 @@ public class DatasetVersionUser implements Serializable {
     @JoinColumn(name = "datasetversion_id")
     private DatasetVersion datasetVersion;
 
-    @Column( nullable=false )
+    @Column(nullable = false)
     private Timestamp lastUpdateDate;
 
 

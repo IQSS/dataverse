@@ -25,7 +25,7 @@ public class CustomFieldServiceBean {
             CustomFieldMap map = (CustomFieldMap) em.createNamedQuery("CustomFieldMap.findByTemplateField").setParameter("template", template).setParameter("field", field).getSingleResult();
             return map;
         } catch (Exception ex) {
-            System.out.println("Exception "+ ex + "template: "+template+" field: "+ field);
+            System.out.println("Exception " + ex + "template: " + template + " field: " + field);
             return null;
         }
 

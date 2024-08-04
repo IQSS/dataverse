@@ -9,29 +9,29 @@ package edu.harvard.iq.dataverse.authorization;
  */
 public class AuthenticationResponse {
     
-    public static AuthenticationResponse makeSuccess( String userId, AuthenticatedUserDisplayInfo disInf ) {
+    public static AuthenticationResponse makeSuccess(String userId, AuthenticatedUserDisplayInfo disInf) {
         return new AuthenticationResponse()
-               .setStatus( Status.SUCCESS )
+               .setStatus(Status.SUCCESS)
                .setUserId(userId)
                .setUserDisplayInfo(disInf);
     }
     
-    public static AuthenticationResponse makeBreakout( String userId, String redirectUrl ) {
+    public static AuthenticationResponse makeBreakout(String userId, String redirectUrl) {
         return new AuthenticationResponse()
-               .setStatus( Status.BREAKOUT )
+               .setStatus(Status.BREAKOUT)
                .setUserId(userId)
                .setMessage(redirectUrl);
     }
     
-    public static AuthenticationResponse makeFail( String message ) {
+    public static AuthenticationResponse makeFail(String message) {
         return new AuthenticationResponse()
-               .setStatus( Status.FAIL )
+               .setStatus(Status.FAIL)
                .setMessage(message);
     }
     
-    public static AuthenticationResponse makeError( String message, Throwable t ) {
+    public static AuthenticationResponse makeError(String message, Throwable t) {
         return new AuthenticationResponse()
-               .setStatus( Status.ERROR )
+               .setStatus(Status.ERROR)
                .setMessage(message)
                .setError(t);
     }

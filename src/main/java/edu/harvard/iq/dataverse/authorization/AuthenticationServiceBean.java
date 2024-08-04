@@ -129,7 +129,7 @@ public class AuthenticationServiceBean {
     private EntityManager em;
         
         
-    public AbstractOAuth2AuthenticationProvider getOAuth2Provider( String id ) {
+    public AbstractOAuth2AuthenticationProvider getOAuth2Provider(String id) {
         return authProvidersRegistrationService.getOAuth2AuthProvidersMap().get(id);
     }
     
@@ -145,33 +145,33 @@ public class AuthenticationServiceBean {
         return authProvidersRegistrationService.getAuthenticationProvidersMap().values();
     }
     
-    public <T extends AuthenticationProvider> Set<String> getAuthenticationProviderIdsOfType( Class<T> aClass ) {
+    public <T extends AuthenticationProvider> Set<String> getAuthenticationProviderIdsOfType(Class<T> aClass) {
         Set<String> retVal = new TreeSet<>();
-        for ( Map.Entry<String, AuthenticationProvider> p : authProvidersRegistrationService.getAuthenticationProvidersMap().entrySet() ) {
-            if ( aClass.isAssignableFrom( p.getValue().getClass() ) ) {
-                retVal.add( p.getKey() );
+        for (Map.Entry<String, AuthenticationProvider> p : authProvidersRegistrationService.getAuthenticationProvidersMap().entrySet()) {
+            if (aClass.isAssignableFrom(p.getValue().getClass())) {
+                retVal.add(p.getKey());
             }
         }
         return retVal;
     }
     
-    public AuthenticationProviderFactory getProviderFactory( String alias ) {
+    public AuthenticationProviderFactory getProviderFactory(String alias) {
         return authProvidersRegistrationService.getProviderFactoriesMap().get(alias);
     }
     
-    public AuthenticationProvider getAuthenticationProvider( String id ) {
-        return authProvidersRegistrationService.getAuthenticationProvidersMap().get( id );
+    public AuthenticationProvider getAuthenticationProvider(String id) {
+        return authProvidersRegistrationService.getAuthenticationProvidersMap().get(id);
     }
     
-    public AuthenticatedUser findByID(Object pk){
-        if (pk==null){
+    public AuthenticatedUser findByID(Object pk) {
+        if (pk == null) {
             return null;
         }
         return em.find(AuthenticatedUser.class, pk);
     }
 
-    public void removeApiToken(AuthenticatedUser user){
-        if (user!=null) {
+    public void removeApiToken(AuthenticatedUser user) {
+        if (user != null) {
             ApiToken apiToken = findApiTokenByUser(user);
             if (apiToken != null) {
                 em.remove(apiToken);
@@ -180,7 +180,7 @@ public class AuthenticationServiceBean {
     }
     
     public boolean isOrcidEnabled() {
-        return authProvidersRegistrationService.getOAuth2AuthProvidersMap().values().stream().anyMatch( s -> s.getId().toLowerCase().contains("orcid") );
+        return authProvidersRegistrationService.getOAuth2AuthProvidersMap().values().stream().anyMatch(s -> s.getId().toLowerCase().contains("orcid"));
     }
     
     /**
@@ -218,11 +218,11 @@ public class AuthenticationServiceBean {
             userNotificationService.findByUser(user.getId()).forEach(userNotificationService::delete);
             
             AuthenticationProvider prv = lookupProvider(user);
-            if ( prv != null && prv.isUserDeletionAllowed() ) {
+            if (prv != null && prv.isUserDeletionAllowed()) {
                 prv.deleteUser(user.getAuthenticatedUserLookup().getPersistentUserId());
             }
             
-            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deleteUser")
+            actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deleteUser")
                 .setInfo(user.getUserIdentifier()));
             em.remove(user.getAuthenticatedUserLookup());         
             em.remove(user);
@@ -230,17 +230,17 @@ public class AuthenticationServiceBean {
         }
     }
             
-    public AuthenticatedUser getAuthenticatedUser( String identifier ) {
+    public AuthenticatedUser getAuthenticatedUser(String identifier) {
         try {
             return em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)
                     .setParameter("identifier", identifier)
                     .getSingleResult();
-        } catch ( NoResultException nre ) {
+        } catch (NoResultException nre) {
             return null;
         }
     }
     
-    public AuthenticatedUser getAuthenticatedUserWithProvider( String identifier ) {
+    public AuthenticatedUser getAuthenticatedUserWithProvider(String identifier) {
         try {
             AuthenticatedUser authenticatedUser = em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)
                     .setParameter("identifier", identifier)
@@ -251,7 +251,7 @@ public class AuthenticationServiceBean {
             authenticatedUser.setAuthProviderId(aul.getAuthenticationProviderId());
             
             return authenticatedUser;
-        } catch ( NoResultException nre ) {
+        } catch (NoResultException nre) {
             return null;
         }
     }
@@ -266,15 +266,15 @@ public class AuthenticationServiceBean {
         }
     }
 
-    public AuthenticatedUser getAuthenticatedUserByEmail( String email ) {
+    public AuthenticatedUser getAuthenticatedUserByEmail(String email) {
         try {
             return em.createNamedQuery("AuthenticatedUser.findByEmail", AuthenticatedUser.class)
                     .setParameter("email", email)
                     .getSingleResult();
-        } catch ( NoResultException ex ) {
+        } catch (NoResultException ex) {
             logger.log(Level.INFO, "no user found using {0}", email);
             return null;
-        } catch ( NonUniqueResultException ex ) {
+        } catch (NonUniqueResultException ex) {
             logger.log(Level.INFO, "multiple users found using {0}: {1}", new Object[]{email, ex});
             return null;
         }
@@ -292,15 +292,15 @@ public class AuthenticationServiceBean {
      * @return The authenticated user for the passed provider id and authentication request.
      * @throws AuthenticationFailedException 
      */
-    public AuthenticatedUser getUpdateAuthenticatedUser( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
+    public AuthenticatedUser getUpdateAuthenticatedUser(String authenticationProviderId, AuthenticationRequest req) throws AuthenticationFailedException {
         AuthenticationProvider prv = getAuthenticationProvider(authenticationProviderId);
-        if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
-        if ( ! (prv instanceof CredentialsAuthenticationProvider) ) {
+        if (prv == null) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
+        if (!(prv instanceof CredentialsAuthenticationProvider)) {
             throw new IllegalArgumentException( authenticationProviderId + " does not support credentials-based authentication." );
         }
-        AuthenticationResponse resp = ((CredentialsAuthenticationProvider)prv).authenticate(req);
+        AuthenticationResponse resp = ((CredentialsAuthenticationProvider) prv).authenticate(req);
         
-        if ( resp.getStatus() == AuthenticationResponse.Status.SUCCESS ) {
+        if (resp.getStatus() == AuthenticationResponse.Status.SUCCESS) {
             // yay! see if we already have this user.
             AuthenticatedUser user = lookupUser(authenticationProviderId, resp.getUserId());
 
@@ -308,7 +308,7 @@ public class AuthenticationServiceBean {
                 user = userService.updateLastLogin(user);
             }
 
-            if ( user == null ) {
+            if (user == null) {
                 throw new IllegalStateException("Authenticated user does not exist. The functionality to support creating one at this point in authentication has been removed.");
             } else {
                 if (BuiltinAuthenticationProvider.PROVIDER_ID.equals(user.getAuthenticatedUserLookup().getAuthenticationProviderId())) {
@@ -348,7 +348,7 @@ public class AuthenticationServiceBean {
         }
     }
     
-    public AuthenticationProvider lookupProvider( AuthenticatedUser user )  {
+    public AuthenticationProvider lookupProvider(AuthenticatedUser user) {
         return authProvidersRegistrationService.getAuthenticationProvidersMap().get(user.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
     
@@ -417,19 +417,19 @@ public class AuthenticationServiceBean {
         c.roll(Calendar.YEAR, 1);
         apiToken.setExpireTime(new Timestamp(c.getTimeInMillis()));
         save(apiToken);
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "generateApiToken")
-            .setInfo("user:" + au.getIdentifier() + " token:" +  apiToken.getTokenString()));
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "generateApiToken")
+            .setInfo("user:" + au.getIdentifier() + " token:" + apiToken.getTokenString()));
 
         return apiToken;
     }
 
-    public AuthenticatedUser lookupUser( String apiToken ) {
+    public AuthenticatedUser lookupUser(String apiToken) {
         ApiToken tkn = findApiToken(apiToken);
-        if ( tkn == null ) return null;
+        if (tkn == null) return null;
         
-        if ( tkn.isDisabled() ) return null;
-        if ( tkn.getExpireTime() != null ) {
-            if ( tkn.getExpireTime().before( new Timestamp(new Date().getTime())) ) {
+        if (tkn.isDisabled()) return null;
+        if (tkn.getExpireTime() != null) {
+            if (tkn.getExpireTime().before(new Timestamp(new Date().getTime()))) {
                 em.remove(tkn);
 		logger.info("attempted access with expired token: " + apiToken);
                 return null;
@@ -476,7 +476,7 @@ public class AuthenticationServiceBean {
     
     public String getDeleteUserErrorMessages(AuthenticatedUser au) {
         String retVal = "";
-        List<String> reasons= new ArrayList();
+        List<String> reasons = new ArrayList();
         if (!dvObjSvc.findByAuthenticatedUserId(au).isEmpty()) {
             reasons.add(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.dvobjects"));
         }
@@ -486,7 +486,7 @@ public class AuthenticationServiceBean {
         }
 
         if (!gbRespSvc.findByAuthenticatedUserId(au).isEmpty()) {
-            reasons.add( BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.gbResps"));
+            reasons.add(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.gbResps"));
         }
 
         if (!datasetVersionService.getDatasetVersionUsersByAuthenticatedUser(au).isEmpty()) {
@@ -507,7 +507,7 @@ public class AuthenticationServiceBean {
         return retVal;
     }
     
-    public void removeAuthentictedUserItems(AuthenticatedUser au){
+    public void removeAuthentictedUserItems(AuthenticatedUser au) {
         /* if the user has pending access requests, is the member of a group or 
         we will delete them here 
         */
@@ -517,41 +517,41 @@ public class AuthenticationServiceBean {
         deleteBannerMessages(au);
                
         if (!explicitGroupService.findGroups(au).isEmpty()) {
-            for(ExplicitGroup explicitGroup: explicitGroupService.findGroups(au)){
+            for (ExplicitGroup explicitGroup : explicitGroupService.findGroups(au)) {
                 explicitGroup.removeByRoleAssgineeIdentifier(au.getIdentifier());
             }            
         }
         
     }
     
-    private void deleteBannerMessages(AuthenticatedUser  au){
+    private void deleteBannerMessages(AuthenticatedUser  au) {
         
-       em.createNativeQuery("delete from userbannermessage where user_id  = "+au.getId()).executeUpdate();
-        
-    }
-    
-    private void deletePendingAccessRequests(AuthenticatedUser  au){
-        
-       em.createNativeQuery("delete from fileaccessrequests where authenticated_user_id  = "+au.getId()).executeUpdate();
+       em.createNativeQuery("delete from userbannermessage where user_id  = " + au.getId()).executeUpdate();
         
     }
     
-    public AuthenticatedUser save( AuthenticatedUser user ) {
+    private void deletePendingAccessRequests(AuthenticatedUser  au) {
+        
+       em.createNativeQuery("delete from fileaccessrequests where authenticated_user_id  = " + au.getId()).executeUpdate();
+        
+    }
+    
+    public AuthenticatedUser save(AuthenticatedUser user) {
         em.persist(user);
         em.flush();
         return user;
     }
     
-    public AuthenticatedUser update( AuthenticatedUser user ) {
+    public AuthenticatedUser update(AuthenticatedUser user) {
         return em.merge(user);
     }
     
-    public ApiToken save( ApiToken aToken ) {
-        if ( aToken.getId() == null ) {
+    public ApiToken save(ApiToken aToken) {
+        if (aToken.getId() == null) {
             em.persist(aToken);
             return aToken;
         } else { 
-            return em.merge( aToken );
+            return em.merge(aToken);
             
         }
     }
@@ -563,18 +563,18 @@ public class AuthenticationServiceBean {
      * @param persistentIdInProvider Id of the user in the new provider
      * @return {@code true} iff the change was successful.
      */
-    public boolean updateProvider( AuthenticatedUser authenticatedUser, String authenticationProviderId, String persistentIdInProvider ) {
+    public boolean updateProvider(AuthenticatedUser authenticatedUser, String authenticationProviderId, String persistentIdInProvider) {
         try {
             AuthenticatedUserLookup aul = em.createNamedQuery("AuthenticatedUserLookup.findByAuthUser", AuthenticatedUserLookup.class)
                     .setParameter("authUser", authenticatedUser)
                     .getSingleResult();
             aul.setAuthenticationProviderId(authenticationProviderId);
             aul.setPersistentUserId(persistentIdInProvider);
-            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth,
-                    authenticatedUser.getIdentifier() + " now associated with provider " + authenticationProviderId + " id: " + persistentIdInProvider) );
+            actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth,
+                    authenticatedUser.getIdentifier() + " now associated with provider " + authenticationProviderId + " id: " + persistentIdInProvider));
             return true;
             
-        } catch ( NoResultException | NonUniqueResultException ex ) {
+        } catch (NoResultException | NonUniqueResultException ex) {
             logger.log(Level.WARNING, "Error converting user " + authenticatedUser.getUserIdentifier() + ": " + ex.getMessage(), ex);
             return false;
         }
@@ -612,13 +612,13 @@ public class AuthenticationServiceBean {
         // we now select a username for the generated AuthenticatedUser, or give up
         String internalUserIdentifier = proposedAuthenticatedUserIdentifier;
         // TODO should lock table authenticated users for write here
-        if ( identifierExists(internalUserIdentifier) ) {
-            if ( ! generateUniqueIdentifier ) {
+        if (identifierExists(internalUserIdentifier)) {
+            if (!generateUniqueIdentifier) {
                 return null;
             }
-            int i=1;
+            int i = 1;
             String identifier = internalUserIdentifier + i;
-            while ( identifierExists(identifier) ) {
+            while (identifierExists(identifier)) {
                 i += 1;
                 identifier = internalUserIdentifier + i;
             }
@@ -626,10 +626,10 @@ public class AuthenticationServiceBean {
         } else {
             authenticatedUser.setUserIdentifier(internalUserIdentifier);
         }
-        authenticatedUser = save( authenticatedUser );
+        authenticatedUser = save(authenticatedUser);
         // TODO should unlock table authenticated users for write here
         AuthenticatedUserLookup auusLookup = userRecordId.createAuthenticatedUserLookup(authenticatedUser);
-        em.persist( auusLookup );
+        em.persist(auusLookup);
         authenticatedUser.setAuthenticatedUserLookup(auusLookup);
 
         if (ShibAuthenticationProvider.PROVIDER_ID.equals(auusLookup.getAuthenticationProviderId())) {
@@ -642,7 +642,7 @@ public class AuthenticationServiceBean {
             confirmEmailService.createToken(authenticatedUser);
         }
         
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "createUser")
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "createUser")
             .setInfo(authenticatedUser.getIdentifier()));
         
         authenticatedUser.initialize();
@@ -655,7 +655,7 @@ public class AuthenticationServiceBean {
      * @param idtf
      * @return {@code true} iff there's already a user by that username.
      */
-    public boolean identifierExists( String idtf ) {
+    public boolean identifierExists(String idtf) {
         return em.createNamedQuery("AuthenticatedUser.countOfIdentifier", Number.class)
                 .setParameter("identifier", idtf)
                 .getSingleResult().intValue() > 0;
@@ -664,7 +664,7 @@ public class AuthenticationServiceBean {
     public AuthenticatedUser updateAuthenticatedUser(AuthenticatedUser user, AuthenticatedUserDisplayInfo userDisplayInfo) {
         user.applyDisplayInfo(userDisplayInfo);
         user.updateEmailConfirmedToNow();
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "updateUser")
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "updateUser")
             .setInfo(user.getIdentifier()));
         return update(user);
     }
@@ -931,7 +931,7 @@ public class AuthenticationServiceBean {
         }
     }
     
-    public List <WorkflowComment> getWorkflowCommentsByAuthenticatedUser(AuthenticatedUser user){ 
+    public List<WorkflowComment> getWorkflowCommentsByAuthenticatedUser(AuthenticatedUser user) { 
         Query query = em.createQuery("SELECT wc FROM WorkflowComment wc WHERE wc.authenticatedUser.id = :auid");
         query.setParameter("auid", user.getId());       
         return query.getResultList();

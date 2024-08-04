@@ -15,16 +15,16 @@ import jakarta.persistence.GenerationType;
  * @author michael
  */
 @NamedQueries({
-    @NamedQuery( name="Setting.deleteByName",
-                query="DELETE FROM Setting s WHERE s.name=:name AND s.lang IS NULL"),
-    @NamedQuery( name="Setting.findAll",
-                query="SELECT s FROM Setting s"),
-    @NamedQuery( name="Setting.findByName",
-            query = "SELECT s FROM Setting s WHERE s.name=:name AND s.lang IS NULL" ),
-    @NamedQuery( name="Setting.deleteByNameAndLang",
-            query="DELETE FROM Setting s WHERE s.name=:name AND s.lang=:lang"),
-    @NamedQuery( name="Setting.findByNameAndLang",
-                query = "SELECT s FROM Setting s WHERE s.name=:name AND s.lang=:lang" )
+    @NamedQuery(name = "Setting.deleteByName",
+                query = "DELETE FROM Setting s WHERE s.name=:name AND s.lang IS NULL"),
+    @NamedQuery(name = "Setting.findAll",
+                query = "SELECT s FROM Setting s"),
+    @NamedQuery(name = "Setting.findByName",
+            query = "SELECT s FROM Setting s WHERE s.name=:name AND s.lang IS NULL"),
+    @NamedQuery(name = "Setting.deleteByNameAndLang",
+            query = "DELETE FROM Setting s WHERE s.name=:name AND s.lang=:lang"),
+    @NamedQuery(name = "Setting.findByNameAndLang",
+                query = "SELECT s FROM Setting s WHERE s.name=:name AND s.lang=:lang")
 
 })
 @Entity
@@ -93,7 +93,7 @@ public class Setting implements Serializable {
         if (obj == null) {
             return false;
         }
-        if ( !(obj instanceof Setting) ) {
+        if (!(obj instanceof Setting)) {
             return false;
         }
         final Setting other = (Setting) obj;

@@ -86,7 +86,7 @@ public class ReturnDatasetToAuthorCommandTest {
                         return null;
                     }
                     @Override 
-                    public WorkflowComment addWorkflowComment(WorkflowComment comment){
+                    public WorkflowComment addWorkflowComment(WorkflowComment comment) {
                         return comment;
                     }
                     
@@ -184,13 +184,13 @@ public class ReturnDatasetToAuthorCommandTest {
 
     @Test
     @JvmSetting(key = JvmSettings.FEATURE_FLAG, value = "false", varArgs = "disable-return-to-author-reason")
-    public void testEmptyOrNullComment(){
+    public void testEmptyOrNullComment() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
         Dataset updatedDataset = null;
         String expected = "You must enter a reason for returning a dataset to the author(s).";
         String actual = null;
         try {
-            testEngine.submit( new AddLockCommand(dataverseRequest, dataset,
+            testEngine.submit(new AddLockCommand(dataverseRequest, dataset,
                     new DatasetLock(DatasetLock.Reason.InReview, dataverseRequest.getAuthenticatedUser())));
 
             assertThrowsExactly(IllegalArgumentException.class,
@@ -230,11 +230,11 @@ public class ReturnDatasetToAuthorCommandTest {
        dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
        Dataset updatedDataset = null;
        try {
-           testEngine.submit( new AddLockCommand(dataverseRequest, dataset, 
+           testEngine.submit(new AddLockCommand(dataverseRequest, dataset, 
                               new DatasetLock(DatasetLock.Reason.InReview, dataverseRequest.getAuthenticatedUser())));
            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "Update Your Files, Dummy"));
        } catch (CommandException ex) {
-            System.out.println("Error updating dataset: " + ex.getMessage() );
+            System.out.println("Error updating dataset: " + ex.getMessage());
        }
         assertNotNull(updatedDataset);
     }

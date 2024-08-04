@@ -19,11 +19,11 @@ import jakarta.persistence.Table;
  * @author michael
  */
 @NamedQueries({
-    @NamedQuery( name="PersistedGlobalGroup.persistedGroupAlias",
-                query="SELECT g FROM PersistedGlobalGroup g WHERE g.persistedGroupAlias=:persistedGroupAlias" )
+    @NamedQuery(name = "PersistedGlobalGroup.persistedGroupAlias",
+                query = "SELECT g FROM PersistedGlobalGroup g WHERE g.persistedGroupAlias=:persistedGroupAlias")
 })
 @Entity
-@Table(indexes = {@Index(columnList="dtype")})
+@Table(indexes = {@Index(columnList = "dtype")})
 public abstract class PersistedGlobalGroup implements Group, Serializable {
     
     @Id

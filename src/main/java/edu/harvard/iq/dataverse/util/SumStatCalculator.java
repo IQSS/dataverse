@@ -36,8 +36,8 @@ public class SumStatCalculator {
     
     private static Logger logger = Logger.getLogger(SumStatCalculator.class.getPackage().getName());
 
-    public static double[] calculateSummaryStatistics(Number[] x){
-        logger.fine("entering calculate summary statistics ("+x.length+" Number values);");
+    public static double[] calculateSummaryStatistics(Number[] x) {
+        logger.fine("entering calculate summary statistics (" + x.length + " Number values);");
         
         double[] nx = new double[8];
         //("mean", "medn", "mode", "vald", "invd", "min", "max", "stdev");
@@ -50,29 +50,29 @@ public class SumStatCalculator {
         
         int invalid = countInvalidValues(x);
         nx[4] = invalid;
-        logger.fine("counted invalid values: "+nx[4]);
+        logger.fine("counted invalid values: " + nx[4]);
         nx[3] = x.length - invalid;
-        logger.fine("counted valid values: "+nx[3]);
+        logger.fine("counted valid values: " + nx[3]);
         
         
         //double[] newx = prepareForSummaryStats(x);
         double[] newx = prepareForSummaryStatsAlternative(x, x.length - invalid);
-        logger.fine("prepared double vector for summary stats calculation ("+newx.length+" double values);");        
+        logger.fine("prepared double vector for summary stats calculation (" + newx.length + " double values);");        
         
         ////nx[0] = StatUtils.mean(newx);
         nx[0] = calculateMean(newx);
-        logger.fine("calculated mean: "+nx[0]);
+        logger.fine("calculated mean: " + nx[0]);
         ////nx[1] = StatUtils.percentile(newx, 50);
         nx[1] = calculateMedian(newx);
-        logger.fine("calculated medn: "+nx[1]);
+        logger.fine("calculated medn: " + nx[1]);
         nx[2] = 0.0; //getMode(newx); 
         
         nx[5] = StatUtils.min(newx);
-        logger.fine("calculated min: "+nx[5]);
+        logger.fine("calculated min: " + nx[5]);
         nx[6] = StatUtils.max(newx);
-        logger.fine("calculated max: "+nx[6]);
+        logger.fine("calculated max: " + nx[6]);
         nx[7] = Math.sqrt(StatUtils.variance(newx));
-        logger.fine("calculated stdev: "+nx[7]);
+        logger.fine("calculated stdev: " + nx[7]);
         return nx;
     }  
 
@@ -103,9 +103,9 @@ public class SumStatCalculator {
      * Converts an array of primitive Number types to doubles
      *
      */
-    private static Double[] numberToDouble(Number[] x){
-        Double[] z= new Double[x.length];
-        for (int i=0; i<x.length;i++){
+    private static Double[] numberToDouble(Number[] x) {
+        Double[] z = new Double[x.length];
+        for (int i = 0; i < x.length; i++) {
             z[i] = x[i] != null ? new Double( x[i].doubleValue() ) : null;
         }
         return z;
@@ -118,10 +118,10 @@ public class SumStatCalculator {
     // TODO: 
     // implement this in some way that does not require allocating a new 
     // ArrayList for the values of every vector. -- L.A. Aug. 11 2014
-    private static double[] removeInvalidValues(Double[] x){
+    private static double[] removeInvalidValues(Double[] x) {
         List<Double> dl = new ArrayList<Double>();
-        for (Double d : x){
-            if (d != null && !Double.isNaN(d)){
+        for (Double d : x) {
+            if (d != null && !Double.isNaN(d)) {
                 dl.add(d);
             }
         }
@@ -133,11 +133,11 @@ public class SumStatCalculator {
      * Returns the number of Double.NaNs (or nulls) in a double-type array
      *
      */
-    private static int countInvalidValues(Number[] x){
-        int counter=0;
-        for (int i=0; i<x.length;i++){
+    private static int countInvalidValues(Number[] x) {
+        int counter = 0;
+        for (int i = 0; i < x.length; i++) {
             ////if ( x[i] == null || x[i].equals(Double.NaN) ) {
-            if ( x[i] == null || (Double.isNaN(x[i].doubleValue())) ) {
+            if (x[i] == null || (Double.isNaN(x[i].doubleValue()))) {
                 counter++;
             }
         }
@@ -151,10 +151,10 @@ public class SumStatCalculator {
      * nulls separately;
      *  -- L.A. 4.0 alpha 1
      */
-    private static int countNaNs(double[] x){
-        int NaNcounter=0;
-        for (int i=0; i<x.length;i++){
-            if (Double.isNaN(x[i])){
+    private static int countNaNs(double[] x) {
+        int NaNcounter = 0;
+        for (int i = 0; i < x.length; i++) {
+            if (Double.isNaN(x[i])) {
                 NaNcounter++;
             }
         }
@@ -187,7 +187,7 @@ public class SumStatCalculator {
     }
     
     private static double calculateMean(double[] values) {
-        return calculateMean(values, 0 , values.length);
+        return calculateMean(values, 0, values.length);
     }
     
     private static double calculateMean(double[] values, final int begin, final int length) {

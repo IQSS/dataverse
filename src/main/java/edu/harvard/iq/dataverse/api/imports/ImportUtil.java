@@ -10,7 +10,7 @@ package edu.harvard.iq.dataverse.api.imports;
  * @author ellenk
  */
 public interface ImportUtil {
-   public enum ImportType{ 
+   public enum ImportType { 
        /** ? */
        NEW,
        /** TODO: had to do a distinction because of otherMath tag causing problem, will be discussing about it in pull request **/

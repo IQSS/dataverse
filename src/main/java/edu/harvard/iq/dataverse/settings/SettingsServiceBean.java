@@ -698,15 +698,15 @@ public class SettingsServiceBean {
      * @param name of the setting
      * @return the actual setting, or {@code null}.
      */
-    public String get( String name ) {
+    public String get(String name) {
         List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
-                .setParameter("name", name )
+                .setParameter("name", name)
                 .getResultList();
         String val = null;
-        if(tokens.size() > 0) {
+        if (tokens.size() > 0) {
             val = tokens.get(0).getContent();
         }
-        return (val!=null) ? val : null;
+        return (val != null) ? val : null;
     }
     
     /**
@@ -714,7 +714,7 @@ public class SettingsServiceBean {
      * @param key Enum value of the name.
      * @return The setting, or {@code null}.
      */
-    public String getValueForKey( Key key ) {
+    public String getValueForKey(Key key) {
         return get(key.toString());
     }
     
@@ -727,11 +727,11 @@ public class SettingsServiceBean {
      * @param key
      * @return 
      */
-       public Long getValueForKeyAsLong(Key key){
+       public Long getValueForKeyAsLong(Key key) {
         
         String val = this.getValueForKey(key);
 
-        if (val == null){
+        if (val == null) {
             return null;
         }
 
@@ -755,11 +755,11 @@ public class SettingsServiceBean {
         * @param key
         * @return 
         */
-       public Long getValueForCompoundKeyAsLong(Key key, String param){
+       public Long getValueForCompoundKeyAsLong(Key key, String param) {
 
     	   String val = this.getValueForKey(key);
 
-    	   if (val == null){
+    	   if (val == null) {
     		   return null;
     	   }
 
@@ -768,9 +768,9 @@ public class SettingsServiceBean {
     	   } catch (NumberFormatException ex) {
     		   try {
     			   JsonObject settings = JsonUtil.getJsonObject(val);
-    			   if(settings.containsKey(param)) {
+    			   if (settings.containsKey(param)) {
     				   return Long.parseLong(settings.getString(param));
-    			   } else if(settings.containsKey("default")) {
+    			   } else if (settings.containsKey("default")) {
     				   return Long.parseLong(settings.getString("default"));
     			   } else {
     				   return null;
@@ -825,39 +825,39 @@ public class SettingsServiceBean {
      * @param defaultValue The value to return if no setting is found in the DB.
      * @return Either the stored value, or the default value.
      */
-    public String get( String name, String defaultValue ) {
+    public String get(String name, String defaultValue) {
         String val = get(name);
-        return (val!=null) ? val : defaultValue;
+        return (val != null) ? val : defaultValue;
     }
 
-    public String get(String name, String lang, String defaultValue ) {
+    public String get(String name, String lang, String defaultValue) {
         List<Setting> tokens = em.createNamedQuery("Setting.findByNameAndLang", Setting.class)
-                .setParameter("name", name )
-                .setParameter("lang", lang )
+                .setParameter("name", name)
+                .setParameter("lang", lang)
                 .getResultList();
         String val = null;
-        if(tokens.size() > 0) {
+        if (tokens.size() > 0) {
             val = tokens.get(0).getContent();
         }
-        return (val!=null) ? val : defaultValue;
+        return (val != null) ? val : defaultValue;
     }
     
-    public String getValueForKey( Key key, String defaultValue ) {
-        return get( key.toString(), defaultValue );
+    public String getValueForKey(Key key, String defaultValue) {
+        return get(key.toString(), defaultValue);
     }
 
-    public String getValueForKey( Key key, String lang, String defaultValue ) {
-        return get( key.toString(), lang, defaultValue );
+    public String getValueForKey(Key key, String lang, String defaultValue) {
+        return get(key.toString(), lang, defaultValue);
     }
      
-    public Setting set( String name, String content ) {
+    public Setting set(String name, String content) {
         Setting s = null; 
         
         List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
-                .setParameter("name", name )
+                .setParameter("name", name)
                 .getResultList();
         
-        if(tokens.size() > 0) {
+        if (tokens.size() > 0) {
             s = tokens.get(0);
         }
         
@@ -868,20 +868,20 @@ public class SettingsServiceBean {
         }
         
         s = em.merge(s);
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
                             .setInfo(name + ": " + content));
         return s;
     }
 
-    public Setting set( String name, String lang, String content ) {
+    public Setting set(String name, String lang, String content) {
         Setting s = null; 
         
         List<Setting> tokens = em.createNamedQuery("Setting.findByNameAndLang", Setting.class)
-                .setParameter("name", name )
-                .setParameter("lang", lang )
+                .setParameter("name", name)
+                .setParameter("lang", lang)
                 .getResultList();
         
-        if(tokens.size() > 0) {
+        if (tokens.size() > 0) {
             s = tokens.get(0);
         }
         
@@ -892,13 +892,13 @@ public class SettingsServiceBean {
         }
         
         em.merge(s);
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
-                .setInfo(name + ": " +lang + ": " + content));
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
+                .setInfo(name + ": " + lang + ": " + content));
         return s;
     }
     
-    public Setting setValueForKey( Key key, String content ) {
-        return set( key.toString(), content );
+    public Setting setValueForKey(Key key, String content) {
+        return set(key.toString(), content);
     }
     
     /**
@@ -908,17 +908,17 @@ public class SettingsServiceBean {
      * @param defaultValue logical value of {@code null}.
      * @return boolean value of the setting.
      */
-    public boolean isTrue( String name, boolean defaultValue ) {
+    public boolean isTrue(String name, boolean defaultValue) {
         String val = get(name);
-        return ( val==null ) ? defaultValue : StringUtil.isTrue(val);
+        return (val == null) ? defaultValue : StringUtil.isTrue(val);
     }
     
-    public boolean isTrueForKey( Key key, boolean defaultValue ) {
-        return isTrue( key.toString(), defaultValue );
+    public boolean isTrueForKey(Key key, boolean defaultValue) {
+        return isTrue(key.toString(), defaultValue);
     }
 
-    public boolean isFalseForKey( Key key, boolean defaultValue ) {
-        return ! isTrue( key.toString(), defaultValue );
+    public boolean isFalseForKey(Key key, boolean defaultValue) {
+        return !isTrue(key.toString(), defaultValue);
     }
 
     public boolean containsCommaSeparatedValueForKey(Key key, String value) {
@@ -930,20 +930,20 @@ public class SettingsServiceBean {
             .anyMatch(token -> ((String) token).trim().equals(value));
     }
             
-    public void deleteValueForKey( Key name ) {
-        delete( name.toString() );
+    public void deleteValueForKey(Key name) {
+        delete(name.toString());
     }
     
-    public void delete( String name ) {
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
+    public void delete(String name) {
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
                             .setInfo(name));
         em.createNamedQuery("Setting.deleteByName")
                 .setParameter("name", name)
                 .executeUpdate();
     }
 
-    public void delete( String name, String lang ) {
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
+    public void delete(String name, String lang) {
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
                 .setInfo(name));
         em.createNamedQuery("Setting.deleteByNameAndLang")
                 .setParameter("name", name)
@@ -955,20 +955,20 @@ public class SettingsServiceBean {
         return new HashSet<>(em.createNamedQuery("Setting.findAll", Setting.class).getResultList());
     }
     
-    public Map<String, String> getBaseMetadataLanguageMap(Map<String,String> languageMap, boolean refresh) {
+    public Map<String, String> getBaseMetadataLanguageMap(Map<String, String> languageMap, boolean refresh) {
         if (languageMap == null || refresh) {
             languageMap = new HashMap<String, String>();
 
             /* If MetadataLanaguages is set, use it.
              * If not, we can't assume anything and should avoid assuming a metadata language
              */
-            String mlString = getValueForKey(SettingsServiceBean.Key.MetadataLanguages,"");
+            String mlString = getValueForKey(SettingsServiceBean.Key.MetadataLanguages, "");
             
-            if(mlString.isEmpty()) {
-                mlString="[]";
+            if (mlString.isEmpty()) {
+                mlString = "[]";
             }
             JsonArray languages = JsonUtil.getJsonArray(mlString);
-            for(JsonValue jv: languages) {
+            for (JsonValue jv : languages) {
                 JsonObject lang = (JsonObject) jv;
                 languageMap.put(lang.getString("locale"), lang.getString("title"));
             }

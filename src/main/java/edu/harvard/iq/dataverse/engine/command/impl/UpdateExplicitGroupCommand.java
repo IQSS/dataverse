@@ -12,8 +12,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  *
  * @author michael
  */
-@RequiredPermissions( Permission.ManageDataversePermissions )
-public class UpdateExplicitGroupCommand extends AbstractCommand<ExplicitGroup>{
+@RequiredPermissions(Permission.ManageDataversePermissions)
+public class UpdateExplicitGroupCommand extends AbstractCommand<ExplicitGroup> {
     
     private final ExplicitGroup explicitGroup;
     public UpdateExplicitGroupCommand(DataverseRequest aRequest, ExplicitGroup anExplicitGroup) {

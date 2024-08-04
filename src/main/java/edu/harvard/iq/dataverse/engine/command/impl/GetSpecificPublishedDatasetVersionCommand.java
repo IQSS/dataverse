@@ -49,8 +49,8 @@ public class GetSpecificPublishedDatasetVersionCommand extends AbstractCommand<D
         for (DatasetVersion dsv : ds.getVersions()) {
             if (dsv.isReleased() || (includeDeaccessioned && dsv.isDeaccessioned())) {
                 
-                if(dsv.isDeaccessioned() && checkPerms){
-                    if(!ctxt.permissions().requestOn(getRequest(), ds).has(Permission.EditDataset)){
+                if (dsv.isDeaccessioned() && checkPerms) {
+                    if (!ctxt.permissions().requestOn(getRequest(), ds).has(Permission.EditDataset)) {
                         return null;
                     }
                 }

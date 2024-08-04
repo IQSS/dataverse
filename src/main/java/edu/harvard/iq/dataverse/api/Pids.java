@@ -120,7 +120,7 @@ public class Pids extends AbstractApiBean {
             //Restrict to never-published datasets (that should have draft/nonpublic pids). The underlying code will invalidate
             //pids that have been made public by a pid-specific method, but it's not clear that invalidating such a pid via an api that doesn't
             //destroy the dataset is a good idea.
-            if(dataset.isReleased()) {
+            if (dataset.isReleased()) {
             	return badRequest("Not allowed for Datasets that have been published.");
             }
             execCommand(new DeletePidCommand(createDataverseRequest(getRequestUser(crc)), dataset));
@@ -155,11 +155,11 @@ public class Pids extends AbstractApiBean {
             return ex.getResponse();
         }
             GlobalId globalId = PidUtil.parseAsGlobalID(persistentId);
-            if(globalId== null) {
+            if (globalId == null) {
                 return error(Response.Status.NOT_FOUND, "No provider found for PID");
             } else {
                 String providerId = globalId.getProviderId();
-                if(PidUtil.getManagedProviderIds().contains(providerId)) {
+                if (PidUtil.getManagedProviderIds().contains(providerId)) {
                     return ok(globalId.getProviderId());
                 } else {
                     return ok("PID recognized as an unmanaged " + globalId.getProtocol());

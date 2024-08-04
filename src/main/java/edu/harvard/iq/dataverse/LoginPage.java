@@ -108,8 +108,8 @@ public class LoginPage implements java.io.Serializable {
     Long userSum;
 
     public void init() {
-        Iterator<String> credentialsIterator = authSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ).iterator();
-        if ( credentialsIterator.hasNext() ) {
+        Iterator<String> credentialsIterator = authSvc.getAuthenticationProviderIdsOfType(CredentialsAuthenticationProvider.class).iterator();
+        if (credentialsIterator.hasNext()) {
             setCredentialsAuthProviderId(credentialsIterator.next());
         }
         resetFilledCredentials(null);
@@ -119,9 +119,9 @@ public class LoginPage implements java.io.Serializable {
 
     public List<AuthenticationProviderDisplayInfo> listCredentialsAuthenticationProviders() {
         List<AuthenticationProviderDisplayInfo> infos = new LinkedList<>();
-        for ( String id : authSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ) ) {
+        for (String id : authSvc.getAuthenticationProviderIdsOfType(CredentialsAuthenticationProvider.class)) {
             AuthenticationProvider authenticationProvider = authSvc.getAuthenticationProvider(id);
-            infos.add( authenticationProvider.getInfo());
+            infos.add(authenticationProvider.getInfo());
         }
         return infos;
     }
@@ -157,15 +157,15 @@ public class LoginPage implements java.io.Serializable {
         
         AuthenticationRequest authReq = new AuthenticationRequest();
         List<FilledCredential> filledCredentialsList = getFilledCredentials();
-        if ( filledCredentialsList == null ) {
+        if (filledCredentialsList == null) {
             logger.info("Credential list is null!");
             return null;
         }
-        for ( FilledCredential fc : filledCredentialsList ) {       
+        for (FilledCredential fc : filledCredentialsList) {       
             authReq.putCredential(fc.getCredential().getKey(), fc.getValue());
         }
 
-        authReq.setIpAddress( dvRequestService.getDataverseRequest().getSourceAddress() );
+        authReq.setIpAddress(dvRequestService.getDataverseRequest().getSourceAddress());
         try {
             AuthenticatedUser r = authSvc.getUpdateAuthenticatedUser(credentialsAuthProviderId, authReq);
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
@@ -190,7 +190,7 @@ public class LoginPage implements java.io.Serializable {
             op1 = new Long(random.nextInt(10));
             op2 = new Long(random.nextInt(10));
             AuthenticationResponse response = ex.getResponse();
-            switch ( response.getStatus() ) {
+            switch (response.getStatus()) {
                 case FAIL:
                     JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("login.builtin.invalidUsernameEmailOrPassword"));
                     return null;
@@ -201,10 +201,10 @@ public class LoginPage implements java.io.Serializable {
                      * https://github.com/IQSS/dataverse/pull/2922
                      */
                     JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("login.error"));
-                    logger.log( Level.WARNING, "Error logging in: " + response.getMessage(), response.getError() );
+                    logger.log(Level.WARNING, "Error logging in: " + response.getMessage(), response.getError());
                     return null;
                 case BREAKOUT:
-                    FacesContext.getCurrentInstance().getExternalContext().getFlash().put("silentUpgradePasswd",authReq.getCredential(BuiltinAuthenticationProvider.KEY_PASSWORD));
+                    FacesContext.getCurrentInstance().getExternalContext().getFlash().put("silentUpgradePasswd", authReq.getCredential(BuiltinAuthenticationProvider.KEY_PASSWORD));
                     return response.getMessage();
                 default:
                     JsfHelper.addErrorMessage("INTERNAL ERROR");
@@ -214,7 +214,7 @@ public class LoginPage implements java.io.Serializable {
         
     }
     
-    private String redirectToRoot(){
+    private String redirectToRoot() {
         return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
     }
 
@@ -222,12 +222,12 @@ public class LoginPage implements java.io.Serializable {
         return credentialsAuthProviderId;
     }
     
-    public void resetFilledCredentials( AjaxBehaviorEvent event) {
-        if ( selectedCredentialsProvider()==null ) return;
+    public void resetFilledCredentials(AjaxBehaviorEvent event) {
+        if (selectedCredentialsProvider() == null) return;
         
         filledCredentials = new LinkedList<>();
-        for ( CredentialsAuthenticationProvider.Credential c : selectedCredentialsProvider().getRequiredCredentials() ) {
-            filledCredentials.add( new FilledCredential(c, ""));
+        for (CredentialsAuthenticationProvider.Credential c : selectedCredentialsProvider().getRequiredCredentials()) {
+            filledCredentials.add(new FilledCredential(c, ""));
         }
     }
     
@@ -244,7 +244,7 @@ public class LoginPage implements java.io.Serializable {
     }
 
     public boolean isMultipleProvidersAvailable() {
-        return authSvc.getAuthenticationProviderIds().size()>1;
+        return authSvc.getAuthenticationProviderIds().size() > 1;
     }
 
     public String getRedirectPage() {

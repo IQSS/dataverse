@@ -41,7 +41,7 @@ public class JsonLDTerm {
     public static JsonLDTerm originalFileFormat = JsonLDTerm.DVCore("originalFileFormat");
     @Deprecated
     public static JsonLDTerm originalFormatLabel = JsonLDTerm.DVCore("originalFormatLabel");
-    public static JsonLDTerm currentIngestedName= JsonLDTerm.DVCore("currentIngestedName");
+    public static JsonLDTerm currentIngestedName = JsonLDTerm.DVCore("currentIngestedName");
     public static JsonLDTerm UNF = JsonLDTerm.DVCore("UNF");
     public static JsonLDTerm rootDataFileId = JsonLDTerm.DVCore("rootDataFileId");
     public static JsonLDTerm previousDataFileId = JsonLDTerm.DVCore("previousDataFileId");

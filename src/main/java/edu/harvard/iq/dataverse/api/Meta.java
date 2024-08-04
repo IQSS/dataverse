@@ -88,8 +88,8 @@ public class Meta {
         }
         
         String fileName = dataFile.getFileMetadata().getLabel().replaceAll("\\.tab$", "-ddi.xml");
-        response.setHeader("Content-disposition", "attachment; filename=\""+fileName+"\"");
-        response.setHeader("Content-Type", "application/xml; name=\""+fileName+"\"");
+        response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + "\"");
+        response.setHeader("Content-Type", "application/xml; name=\"" + fileName + "\"");
         
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();

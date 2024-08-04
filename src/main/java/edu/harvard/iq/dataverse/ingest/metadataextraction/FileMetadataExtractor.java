@@ -22,7 +22,7 @@ public abstract class FileMetadataExtractor {
 
     protected FileMetadataExtractorSpi originatingProvider;
 
-    protected FileMetadataExtractor(FileMetadataExtractorSpi originatingProvider){
+    protected FileMetadataExtractor(FileMetadataExtractorSpi originatingProvider) {
         this.originatingProvider = originatingProvider;
     }
 
@@ -80,10 +80,10 @@ public abstract class FileMetadataExtractor {
      * @param rawString a<code>String</code> object
      * @return a new, null-character-free <code>String</code> object
      */
-    protected String getNullStrippedString(String rawString){
+    protected String getNullStrippedString(String rawString) {
         String nullRemovedString = null;
         int null_position = rawString.indexOf(0);
-        if (null_position >= 0){
+        if (null_position >= 0) {
             // string is terminated by the null
             nullRemovedString = rawString.substring(0, null_position);
         } else {

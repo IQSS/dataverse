@@ -45,7 +45,7 @@ public class FileMetadataUtil implements java.io.Serializable {
                 // datafile
                 if (fmToDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
                     // and a match on the datasetversion
-                    if(fmToDelete.getDatasetVersion() == null) {
+                    if (fmToDelete.getDatasetVersion() == null) {
                         //not yet associated with a version (i.e. deleting from the upload screen), so the match on datafile is good enough 
                         fmit.remove();
                     } else if (fmToDelete.getDatasetVersion().getId() == null) {
@@ -85,8 +85,8 @@ public class FileMetadataUtil implements java.io.Serializable {
     }
 
     public static FileMetadata getFmdForFileInEditVersion(FileMetadata fmd, DatasetVersion editVersion) {
-        for(FileMetadata editFmd: editVersion.getFileMetadatas()) {
-            if(editFmd.getDataFile().getId().equals(fmd.getDataFile().getId())) {
+        for (FileMetadata editFmd : editVersion.getFileMetadatas()) {
+            if (editFmd.getDataFile().getId().equals(fmd.getDataFile().getId())) {
                 return editFmd;
             }
         }

@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  * which had formerly specialised handlers, generating a generic error message. (This is now handled here.)
  */
 @Provider
-public class ThrowableHandler implements ExceptionMapper<Throwable>{
+public class ThrowableHandler implements ExceptionMapper<Throwable> {
     
     private static final Logger logger = Logger.getLogger(ThrowableHandler.class.getName());
     
@@ -26,7 +26,7 @@ public class ThrowableHandler implements ExceptionMapper<Throwable>{
     HttpServletRequest request;
     
     @Override
-    public Response toResponse(Throwable ex){
+    public Response toResponse(Throwable ex) {
         return JsonResponseBuilder.error(Response.Status.INTERNAL_SERVER_ERROR)
             .randomIncidentId()
             .internalError(ex)

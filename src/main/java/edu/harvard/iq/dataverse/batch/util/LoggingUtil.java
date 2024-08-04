@@ -66,7 +66,7 @@ public class LoggingUtil {
         }
     }
     
-    public static void writeOnSuccessFailureLog(Command command, String failureNotes, DvObject dvo){
+    public static void writeOnSuccessFailureLog(Command command, String failureNotes, DvObject dvo) {
         String logDir = System.getProperty("com.sun.aas.instanceRoot") + SEP + "logs" + SEP + "process-failures" + SEP;
         String identifier = dvo.getIdentifier();
         
@@ -75,12 +75,12 @@ public class LoggingUtil {
         } else {
             identifier = dvo.getId().toString();
         }
-        if (command != null){
-            failureNotes =  failureNotes + "\r\n Command: " + command.toString();
+        if (command != null) {
+            failureNotes = failureNotes + "\r\n Command: " + command.toString();
         }
 
         String logTimestamp = logFormatter.format(new Date());
-        String fileName = "/process-failure" +  "-" + identifier + "-" + logTimestamp + ".txt";
+        String fileName = "/process-failure" + "-" + identifier + "-" + logTimestamp + ".txt";
         LoggingUtil.saveLogFile(failureNotes, logDir, fileName);
         
     }
@@ -92,8 +92,8 @@ public class LoggingUtil {
             if (!dir.exists() && !dir.mkdirs()) {
                 logger.log(Level.SEVERE, "Couldn't create directory: " + dir.getAbsolutePath());
             }
-            File logFile = new File(dir.getAbsolutePath() +"/"+ fileName);
-            if(!logFile.exists() && null != logHeader) {
+            File logFile = new File(dir.getAbsolutePath() + "/" + fileName);
+            if (!logFile.exists() && null != logHeader) {
                 FileUtils.writeStringToFile(logFile, logHeader);
             }
             FileUtils.writeStringToFile(logFile, fileContent, true);
@@ -125,38 +125,38 @@ public class LoggingUtil {
     /**
      * check if the directory for log files exists, and create if necessary
      */
-    private static void checkCreateLogDirectory( String logDir )
+    private static void checkCreateLogDirectory(String logDir)
     {
 	    try
 	    {
 		    File d = new File( logDir );
-		    if ( ! d.exists() )
+		    if (!d.exists())
 		    {
-			    logger.log(Level.INFO,"log directory: " + d.getAbsolutePath() + " absent, trying to create");
+			    logger.log(Level.INFO, "log directory: " + d.getAbsolutePath() + " absent, trying to create");
 			    d.mkdirs();
-			    if ( ! d.exists() )
+			    if (!d.exists())
 			    {
-			    	logger.log(Level.SEVERE,"unable to create log directory: " + d.getAbsolutePath() );
+			    	logger.log(Level.SEVERE, "unable to create log directory: " + d.getAbsolutePath());
 			    }
 			    else
 			    {
-			    	logger.log(Level.INFO,"log directory: " + d.getAbsolutePath() + " created");
+			    	logger.log(Level.INFO, "log directory: " + d.getAbsolutePath() + " created");
 			    }
 		    }
 	    }
-	    catch( SecurityException e)
+	    catch (SecurityException e)
 	    {
-		    logger.log( Level.SEVERE, "security exception checking / creating log directory: " + logDir );
+		    logger.log(Level.SEVERE, "security exception checking / creating log directory: " + logDir);
 	    }
     }
     
     public static Logger getJobLogger(String jobId) {
 	    try {
-		    Logger jobLogger = Logger.getLogger("job-"+jobId);
+		    Logger jobLogger = Logger.getLogger("job-" + jobId);
 		    FileHandler fh;
 		    String logDir = System.getProperty("com.sun.aas.instanceRoot") + File.separator
 			    + "logs" + File.separator + "batch-jobs" + File.separator;
-		    checkCreateLogDirectory( logDir );
+		    checkCreateLogDirectory(logDir);
 		    fh = new FileHandler(logDir + "job-" + jobId + ".log");
 		    logger.log(Level.INFO, "JOB LOG: " + logDir + "job-" + jobId + ".log");
 		    jobLogger.addHandler(fh);

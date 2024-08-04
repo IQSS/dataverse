@@ -272,7 +272,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         for (String fq : Arrays.asList(fq0, fq1, fq2, fq3, fq4, fq5, fq6, fq7, fq8, fq9)) {
             if (fq != null) {
                 if (!isfilterQueryAlreadyInMap(fq)) {
-                    if(!fq.contains(SearchFields.TYPE)){
+                    if (!fq.contains(SearchFields.TYPE)) {
                         filterQueries.add(fq);
                     }                    
                 }
@@ -296,7 +296,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 /**
                  * @todo centralize this into SearchServiceBean
                  */
-                if (!isfilterQueryAlreadyInMap(filterDownToSubtree)){
+                if (!isfilterQueryAlreadyInMap(filterDownToSubtree)) {
                     filterQueriesExtended.add(filterDownToSubtree);
                 }
 //                this.dataverseSubtreeContext = dataversePath;
@@ -360,7 +360,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             List<Dataverse> dataverses = new ArrayList<>();
             dataverses.add(dataverse);
             solrQueryResponse = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false, null, null, !isFacetsDisabled(), true);
-            if (solrQueryResponse.hasError()){
+            if (solrQueryResponse.hasError()) {
                 logger.info(solrQueryResponse.getError());
                 setSolrErrorEncountered(true);
             } 
@@ -412,7 +412,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 }
                 filterQueriesFinalSecondPass.add(SearchFields.TYPE + ":(" + combine(arr, " OR ", c) + ")");
                 logger.fine("second pass query: " + queryToPassToSolr);
-                logger.fine("second pass filter query: "+filterQueriesFinalSecondPass.toString());
+                logger.fine("second pass filter query: " + filterQueriesFinalSecondPass.toString());
 
                 solrQueryResponseSecondPass = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalSecondPass, null, sortOrder.toString(), 0, onlyDataRelatedToMe, 1, false, null, null, false, false);
 
@@ -523,7 +523,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     if (dft.getFieldType() == FieldType.DATE) {
                         // Currently all date fields are stored in solr as strings and so get an "_s" appended. 
                         // If these someday are indexed as dates, this should change
-                        facetsToSort.add(dft.getName()+"_s");
+                        facetsToSort.add(dft.getName() + "_s");
                     }
                 }
 
@@ -594,12 +594,12 @@ public class SearchIncludeFragment implements java.io.Serializable {
      * 
      * @return 
      */
-    public boolean wasSolrErrorEncountered(){
+    public boolean wasSolrErrorEncountered() {
   
-        if (this.solrErrorEncountered){
+        if (this.solrErrorEncountered) {
             return true;
         }
-        if (!this.hasValidFilterQueries()){
+        if (!this.hasValidFilterQueries()) {
             setSolrErrorEncountered(true);
             return true;
         }
@@ -610,7 +610,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
      * Set the solrErrorEncountered flag
      * @param val 
      */
-    public void setSolrErrorEncountered(boolean val){
+    public void setSolrErrorEncountered(boolean val) {
         this.solrErrorEncountered = val;
     }
     
@@ -1202,14 +1202,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
     * 
     * @return 
     */
-    public boolean hasValidFilterQueries(){
+    public boolean hasValidFilterQueries() {
              
-        if (this.filterQueries.isEmpty()){   
+        if (this.filterQueries.isEmpty()) {   
             return true;        // empty is valid!
         }
 
-        for (String fq : this.filterQueries){
-            if (this.getFriendlyNamesFromFilterQuery(fq) == null){
+        for (String fq : this.filterQueries) {
+            if (this.getFriendlyNamesFromFilterQuery(fq) == null) {
                 return false;   // not parseable is bad!
             }
         }
@@ -1222,30 +1222,30 @@ public class SearchIncludeFragment implements java.io.Serializable {
             return null;
         }
 
-        if(!filterQuery.contains(":")) {
+        if (!filterQuery.contains(":")) {
             //Filter query must be delimited by a :
             return null;
         } else {
-            return filterQuery.substring(0,filterQuery.indexOf(":"));
+            return filterQuery.substring(0, filterQuery.indexOf(":"));
         }
     }
     
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
         
         
-        if ((filterQuery == null)||
-            (datasetfieldFriendlyNamesBySolrField == null)||
-            (staticSolrFieldFriendlyNamesBySolrField==null)){
+        if ((filterQuery == null) ||
+            (datasetfieldFriendlyNamesBySolrField == null) ||
+            (staticSolrFieldFriendlyNamesBySolrField == null)) {
             return null;
         }
         
-        if(!filterQuery.contains(":")) {
+        if (!filterQuery.contains(":")) {
             return null;
         }
         
         int index = filterQuery.indexOf(":");
-        String key = filterQuery.substring(0,index);
-        String value = filterQuery.substring(index+1);
+        String key = filterQuery.substring(0, index);
+        String value = filterQuery.substring(index + 1);
 
         List<String> friendlyNames = new ArrayList<>();
 
@@ -1278,13 +1278,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
         if (key.equals(SearchFields.METADATA_TYPES) && getDataverse() != null && getDataverse().getMetadataBlockFacets() != null) {
             Optional<String> friendlyName = getDataverse().getMetadataBlockFacets().stream().filter(block -> block.getMetadataBlock().getName().equals(valueWithoutQuotes)).findFirst().map(block -> block.getMetadataBlock().getLocaleDisplayFacet());
             logger.fine(String.format("action=getFriendlyNamesFromFilterQuery key=%s value=%s friendlyName=%s", key, value, friendlyName));
-            if(friendlyName.isPresent()) {
+            if (friendlyName.isPresent()) {
                 friendlyNames.add(friendlyName.get());
                 return friendlyNames;
             }
         } else if (key.equals(SearchFields.DATASET_LICENSE)) {
             try {
-                friendlyNames.add(BundleUtil.getStringFromPropertyFile("license." + valueWithoutQuotes.toLowerCase().replace(" ","_") + ".name", "License"));
+                friendlyNames.add(BundleUtil.getStringFromPropertyFile("license." + valueWithoutQuotes.toLowerCase().replace(" ", "_") + ".name", "License"));
             } catch (Exception e) {
                 logger.fine(String.format("action=getFriendlyNamesFromFilterQuery cannot find friendlyName for key=%s value=%s", key, value));
             }
@@ -1405,7 +1405,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     }
 
-    public boolean canPublishDataset(Long datasetId){
+    public boolean canPublishDataset(Long datasetId) {
         return permissionsWrapper.canIssuePublishDatasetCommand(dvObjectService.findDvObject(datasetId));
     }
     
@@ -1513,7 +1513,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     
     public boolean isActivelyEmbargoed(SolrSearchResult result) {
         Long embargoEndDate = result.getEmbargoEndDate();
-        if(embargoEndDate != null) {
+        if (embargoEndDate != null) {
             return LocalDate.now().toEpochDay() < embargoEndDate;
         } else {
             return false;
@@ -1522,7 +1522,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public boolean isRetentionExpired(SolrSearchResult result) {
         Long retentionEndDate = result.getRetentionEndDate();
-        if(retentionEndDate != null) {
+        if (retentionEndDate != null) {
             return LocalDate.now().toEpochDay() > retentionEndDate;
         } else {
             return false;
@@ -1538,7 +1538,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return result.isValid(x -> {
             Long id = x.getEntityId();
             DvObject obj = dvObjectService.findDvObject(id);
-            if(obj != null && obj instanceof Dataset) {
+            if (obj != null && obj instanceof Dataset) {
                 return permissionsWrapper.canUpdateDataset(getDataverseRequest(), (Dataset) obj);
             }
             logger.fine("isValid called for dvObject that is null (or not a dataset), id: " + id + "This can occur if a dataset is deleted while a search is in progress");

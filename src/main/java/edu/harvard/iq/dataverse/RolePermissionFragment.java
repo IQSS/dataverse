@@ -139,7 +139,7 @@ public class RolePermissionFragment implements java.io.Serializable {
         List<RoleAssignee> returnList = new ArrayList<>();
         for (RoleAssignee ra : roleAssigneeList) {
             // @todo unsure if containsIgnore case will work for all locales
-            if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(),query)) {
+            if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(), query)) {
                 returnList.add(ra);
             }
         }
@@ -194,23 +194,23 @@ public class RolePermissionFragment implements java.io.Serializable {
             String privateUrlToken = null;
             commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, dvRequestService.getDataverseRequest(), privateUrlToken));
             JH.addMessage(FacesMessage.SEVERITY_INFO,
-                BundleUtil.getStringFromBundle("permission.roleAssignedToOn" ,
-                        Arrays.asList( r.getName() , ra.getDisplayInfo().getTitle() , StringEscapeUtils.escapeHtml4(dvObject.getDisplayName()) )) );
+                BundleUtil.getStringFromBundle("permission.roleAssignedToOn",
+                        Arrays.asList(r.getName(), ra.getDisplayInfo().getTitle(), StringEscapeUtils.escapeHtml4(dvObject.getDisplayName()))));
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotAssignRole" , Arrays.asList( ex.getMessage())));
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotAssignRole", Arrays.asList(ex.getMessage())));
         }
     }
 
     public void revokeRole(Long roleAssignmentId) {
         try {
             commandEngine.submit(new RevokeRoleCommand(em.find(RoleAssignment.class, roleAssignmentId), dvRequestService.getDataverseRequest()));
-            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("permission.roleRevoked" ));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("permission.roleRevoked"));
         } catch (PermissionException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotRevokeRole1" , Arrays.asList(ex.getRequiredPermissions().toString())));
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotRevokeRole1", Arrays.asList(ex.getRequiredPermissions().toString())));
             logger.log(Level.SEVERE, "Error revoking role assignment: " + ex.getMessage(), ex);
 
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotRevokeRole2" , Arrays.asList( ex.getMessage())));
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotRevokeRole2", Arrays.asList(ex.getMessage())));
             logger.log(Level.SEVERE, "Error revoking role assignment: " + ex.getMessage(), ex);
         }
     }
@@ -319,9 +319,9 @@ public class RolePermissionFragment implements java.io.Serializable {
             }
             try {
                 setRole(commandEngine.submit(new CreateRoleCommand(role, dvRequestService.getDataverseRequest(), (Dataverse) role.getOwner())));
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("permission.roleSave" , Arrays.asList( role.getName() )));
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("permission.roleSave", Arrays.asList(role.getName())));
             } catch (CommandException ex) {
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotSaveRole" , Arrays.asList( ex.getMessage())));
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotSaveRole", Arrays.asList(ex.getMessage())));
                 logger.log(Level.SEVERE, "Saving role failed", ex);
             }
         }

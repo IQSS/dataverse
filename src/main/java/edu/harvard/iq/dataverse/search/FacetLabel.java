@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.search;
 import jakarta.inject.Named;
 
 @Named
-public class FacetLabel implements Comparable<FacetLabel>{
+public class FacetLabel implements Comparable<FacetLabel> {
 
     private String name;
     private Long count;

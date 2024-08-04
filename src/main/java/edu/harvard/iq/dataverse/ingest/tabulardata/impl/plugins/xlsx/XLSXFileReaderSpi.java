@@ -32,7 +32,7 @@ import java.util.Locale;
  *
  * @author Leonid Andreev
  */
-public class XLSXFileReaderSpi extends TabularDataFileReaderSpi{
+public class XLSXFileReaderSpi extends TabularDataFileReaderSpi {
 
   private static Logger LOG = Logger.getLogger(XLSXFileReaderSpi.class.getPackage().getName());
 
@@ -48,7 +48,7 @@ public class XLSXFileReaderSpi extends TabularDataFileReaderSpi{
    */
   public XLSXFileReaderSpi() {
     super("HU-IQSS-DVN-project", "4.0", formatNames, extensions, mimeType, XLSXFileReaderSpi.class.getName());
-    LOG.fine(XLSXFileReaderSpi.class.getName()+" is called");
+    LOG.fine(XLSXFileReaderSpi.class.getName() + " is called");
   }
   
   public String getDescription(Locale locale) {
@@ -61,7 +61,7 @@ public class XLSXFileReaderSpi extends TabularDataFileReaderSpi{
     if (!(source instanceof BufferedInputStream))
       return false;
 
-    return canDecodeInput((BufferedInputStream)source);
+    return canDecodeInput((BufferedInputStream) source);
   }
   
   @Override

@@ -37,7 +37,7 @@ public class RevokeRoleCommand extends AbstractVoidCommand {
         DvObject defPoint = toBeRevoked.getDefinitionPoint();
         return Collections.singletonMap("",
                 defPoint instanceof Dataverse ? Collections.singleton(Permission.ManageDataversePermissions)
-                : defPoint instanceof Dataset ? Collections.singleton(Permission.ManageDatasetPermissions): Collections.singleton(Permission.ManageFilePermissions));
+                : defPoint instanceof Dataset ? Collections.singleton(Permission.ManageDatasetPermissions) : Collections.singleton(Permission.ManageFilePermissions));
     }
     
     @Override public String describe() { 

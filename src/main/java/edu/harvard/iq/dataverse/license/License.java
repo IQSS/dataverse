@@ -22,27 +22,27 @@ import java.util.Objects;
  * @author Jing Ma
  */
  @NamedQueries({
-    @NamedQuery( name="License.findAll",
-            query="SELECT l FROM License l ORDER BY (case when l.isDefault then 0 else 1 end), l.sortOrder, l.id asc"),
-    @NamedQuery( name="License.findAllActive",
-            query="SELECT l FROM License l WHERE l.active='true' ORDER BY (case when l.isDefault then 0 else 1 end), l.sortOrder, l.id asc"),
-    @NamedQuery( name="License.findById",
+    @NamedQuery(name = "License.findAll",
+            query = "SELECT l FROM License l ORDER BY (case when l.isDefault then 0 else 1 end), l.sortOrder, l.id asc"),
+    @NamedQuery(name = "License.findAllActive",
+            query = "SELECT l FROM License l WHERE l.active='true' ORDER BY (case when l.isDefault then 0 else 1 end), l.sortOrder, l.id asc"),
+    @NamedQuery(name = "License.findById",
             query = "SELECT l FROM License l WHERE l.id=:id"),
-    @NamedQuery( name="License.findDefault",
+    @NamedQuery(name = "License.findDefault",
             query = "SELECT l FROM License l WHERE l.isDefault='true' "),
-    @NamedQuery( name="License.findActiveByNameOrUri",
+    @NamedQuery(name = "License.findActiveByNameOrUri",
             query = "SELECT l FROM License l WHERE l.name=:name AND l.active='true' OR l.uri=:uri AND l.active='true'"),
-    @NamedQuery( name="License.deleteById",
+    @NamedQuery(name = "License.deleteById",
             query = "DELETE FROM License l WHERE l.id=:id"),
-    @NamedQuery( name="License.deleteByName",
+    @NamedQuery(name = "License.deleteByName",
             query = "DELETE FROM License l WHERE l.name=:name"),
-    @NamedQuery( name="License.setDefault",
+    @NamedQuery(name = "License.setDefault",
             query = "UPDATE License l SET l.isDefault='true' WHERE l.id=:id"),
-    @NamedQuery( name="License.clearDefault",
+    @NamedQuery(name = "License.clearDefault",
                 query = "UPDATE License l SET l.isDefault='false'"),
-    @NamedQuery( name="License.setActiveState",
+    @NamedQuery(name = "License.setActiveState",
     query = "UPDATE License l SET l.active=:state WHERE l.id=:id"),
-    @NamedQuery( name="License.setSortOrder",
+    @NamedQuery(name = "License.setSortOrder",
     query = "UPDATE License l SET l.sortOrder=:sortOrder WHERE l.id=:id"),
 
 })
@@ -58,16 +58,16 @@ public class License {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition="TEXT", nullable = false, unique = true)
+    @Column(columnDefinition = "TEXT", nullable = false, unique = true)
     private String name;
 
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String shortDescription;
 
-    @Column(columnDefinition="TEXT", nullable = false, unique = true)
+    @Column(columnDefinition = "TEXT", nullable = false, unique = true)
     private String uri;
 
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String iconUrl;
 
     @Column(nullable = false)
@@ -79,7 +79,7 @@ public class License {
     @Column(nullable = false, columnDefinition = "BIGINT NOT NULL DEFAULT 0")
     private Long sortOrder;
     
-    @OneToMany(mappedBy="license")
+    @OneToMany(mappedBy = "license")
     private List<TermsOfUseAndAccess> termsOfUseAndAccess;
 
     public License() {

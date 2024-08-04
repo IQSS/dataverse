@@ -113,12 +113,12 @@ public class PersonOrOrgUtil {
                     // default
                     if (isOrganization || organizationIfTied) {
                         isOrganization = true;
-                        givenName=null;
+                        givenName = null;
                     }
                 }
             }
         }
-        if(!isOrganization && givenName == null && name.contains(",")) {
+        if (!isOrganization && givenName == null && name.contains(",")) {
             //If we still think this is a person and there's only one comma, assume we can extract the given name and family name
             if (!name.replaceFirst(",", "").contains(",")) {
                 // contributorName=<FamilyName>, <FirstName>

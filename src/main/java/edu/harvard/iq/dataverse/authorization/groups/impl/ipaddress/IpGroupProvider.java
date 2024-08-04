@@ -41,14 +41,14 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     }
         
     @Override
-    public Set<IpGroup> groupsFor( DataverseRequest req, DvObject dvo ) {
+    public Set<IpGroup> groupsFor(DataverseRequest req, DvObject dvo) {
         return groupsFor(req);
     }
 
     @Override
-    public Set<IpGroup> groupsFor( DataverseRequest req) {
-        if ( req.getSourceAddress() != null ) {
-            return updateProvider( ipGroupsService.findAllIncludingIp(req.getSourceAddress()) );
+    public Set<IpGroup> groupsFor(DataverseRequest req) {
+        if (req.getSourceAddress() != null) {
+            return updateProvider(ipGroupsService.findAllIncludingIp(req.getSourceAddress()));
         } else {
             return Collections.emptySet();
         }
@@ -65,18 +65,18 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     
     @Override
     public Set<IpGroup> findGlobalGroups() {
-        return updateProvider( new HashSet<>(ipGroupsService.findAll()) );
+        return updateProvider(new HashSet<>(ipGroupsService.findAll()));
     }
     
-    private IpGroup setProvider( IpGroup g ) {
-        if ( g != null ) {
+    private IpGroup setProvider(IpGroup g) {
+        if (g != null) {
             g.setGroupProvider(this);
         }
         return g;
     }
     
-    private Set<IpGroup> updateProvider( Set<IpGroup> groups ) {
-        groups.forEach( g -> g.setGroupProvider(this) );
+    private Set<IpGroup> updateProvider(Set<IpGroup> groups) {
+        groups.forEach(g -> g.setGroupProvider(this));
         return groups;
     }
     
@@ -103,12 +103,12 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
      * @param base A base name.
      * @return An available group name.
      */
-    public String findAvailableName( String base ) {
-        if ( ipGroupsService.getByGroupName(base) == null ) {
+    public String findAvailableName(String base) {
+        if (ipGroupsService.getByGroupName(base) == null) {
             return base;
         }
-        int i=1;
-        while ( ipGroupsService.getByGroupName(base + "-" + i) != null ) {
+        int i = 1;
+        while (ipGroupsService.getByGroupName(base + "-" + i) != null) {
             i++;
         }
         return base + "-" + i;

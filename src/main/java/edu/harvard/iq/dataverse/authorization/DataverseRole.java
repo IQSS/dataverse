@@ -49,10 +49,10 @@ import jakarta.validation.constraints.Size;
             query = "DELETE FROM DataverseRole r WHERE r.id=:id")
 })
 @Entity
-@Table(indexes = {@Index(columnList="owner_id")
-		, @Index(columnList="name")
-		, @Index(columnList="alias")})
-public class DataverseRole implements Serializable  {
+@Table(indexes = {@Index(columnList = "owner_id")
+		, @Index(columnList = "name")
+		, @Index(columnList = "alias")})
+public class DataverseRole implements Serializable {
     
     //constants for the built in roles references in the code
     public static final String ADMIN = "admin";
@@ -80,17 +80,17 @@ public class DataverseRole implements Serializable  {
 		@Override
 		public int compare(DataverseRole o1, DataverseRole o2) {
 			int cmp = o1.getName().compareTo(o2.getName());
-			if ( cmp != 0 ) return cmp;
+			if (cmp != 0) return cmp;
                         
             Long o1OwnerId = o1.getOwner() == null ? 0l : o1.getOwner().getId();
             Long o2OwnerId = o2.getOwner() == null ? 0l : o2.getOwner().getId();
 
-			return o1OwnerId.compareTo( o2OwnerId );
+			return o1OwnerId.compareTo(o2OwnerId);
 		}
 	};
-	public static Set<Permission> permissionSet( Iterable<DataverseRole> roles ) {
+	public static Set<Permission> permissionSet(Iterable<DataverseRole> roles) {
 		long miniset = 0l;
-		for ( DataverseRole role : roles ) {
+		for (DataverseRole role : roles) {
 			miniset |= role.permissionBits;
 		}
 		return new BitSet(miniset).asSetOf(Permission.class);
@@ -100,8 +100,8 @@ public class DataverseRole implements Serializable  {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Pattern(regexp=".+", message="{role.name}")
-    @Column( nullable = false )
+    @Pattern(regexp = ".+", message = "{role.name}")
+    @Column(nullable = false)
     private String name;
     
     @Size(max = 255, message = "{desc.maxLength}")
@@ -109,14 +109,14 @@ public class DataverseRole implements Serializable  {
     
     @Size(max = 16, message = "{alias.maxLength}")
     @Pattern(regexp = "[a-zA-Z0-9\\_\\-]+", message = "{alias.illegalCharacters}")
-    @Column(nullable = false, unique=true)
+    @Column(nullable = false, unique = true)
     private String alias;
 	
 	/** Stores the permissions in a bit set.  */
 	private long permissionBits;
 	
 	@ManyToOne
-    @JoinColumn(nullable=true)     
+    @JoinColumn(nullable = true)     
     private DvObject owner;
 	
 	public Long getId() {
@@ -190,11 +190,11 @@ public class DataverseRole implements Serializable  {
 		this.owner = owner;
 	}
 	
-	public void addPermissions( Collection<Permission> ps ) {
-		for ( Permission p : ps ) addPermission(p);
+	public void addPermissions(Collection<Permission> ps) {
+		for (Permission p : ps) addPermission(p);
 	}
 	
-	public void addPermission( Permission p ) {
+	public void addPermission(Permission p) {
 		permissionBits = new BitSet(permissionBits).set(p.ordinal()).getBits();
 	}
 	
@@ -244,9 +244,9 @@ public class DataverseRole implements Serializable  {
          * @param dvObject
          * @return 
          */
-        public boolean doesDvObjectHavePermissionForObject(DvObject dvObject){
+        public boolean doesDvObjectHavePermissionForObject(DvObject dvObject) {
             
-            if (dvObject == null){
+            if (dvObject == null) {
                 return false;
             }
             
@@ -264,16 +264,16 @@ public class DataverseRole implements Serializable  {
          * @param dvObjectClass
          * @return 
          */
-        public boolean doesDvObjectClassHavePermissionForObject(Class<? extends DvObject> dvObjectClass){
+        public boolean doesDvObjectClassHavePermissionForObject(Class<? extends DvObject> dvObjectClass) {
             
-            if (dvObjectClass == null){
+            if (dvObjectClass == null) {
                 return false;
             }
             
             // Iterate through permissions.  If one applies to this class, return true
             //
             for (Permission perm : this.permissions()) {
-               if (perm.appliesTo(dvObjectClass)){
+               if (perm.appliesTo(dvObjectClass)) {
                    return true;
                }
             }

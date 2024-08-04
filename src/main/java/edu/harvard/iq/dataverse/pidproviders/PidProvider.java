@@ -38,7 +38,7 @@ public interface PidProvider {
 
     String createIdentifier(DvObject dvo) throws Throwable;
 
-    Map<String,String> getIdentifierMetadata(DvObject dvo);
+    Map<String, String> getIdentifierMetadata(DvObject dvo);
 
     String modifyIdentifierTargetURL(DvObject dvo) throws Exception;
 
@@ -46,7 +46,7 @@ public interface PidProvider {
     
     Map<String, String> getMetadataForCreateIndicator(DvObject dvObject);
     
-    Map<String,String> getMetadataForTargetURL(DvObject dvObject);
+    Map<String, String> getMetadataForTargetURL(DvObject dvObject);
     
     DvObject generatePid(DvObject dvObject);
     
@@ -72,7 +72,7 @@ public interface PidProvider {
     public static Optional<GlobalId> parse(String identifierString) {
         try {
             return Optional.of(PidUtil.parseAsGlobalID(identifierString));
-        } catch ( IllegalArgumentException _iae) {
+        } catch (IllegalArgumentException _iae) {
             return Optional.empty();
         }
     }
@@ -106,13 +106,13 @@ public interface PidProvider {
         if (protocol == null || authority == null || identifier == null) {
             return false;
         }
-        if(!authority.equals(PidProvider.formatIdentifierString(authority))) {
+        if (!authority.equals(PidProvider.formatIdentifierString(authority))) {
             return false;
         }
         if (PidProvider.testforNullTerminator(authority)) {
             return false;
         }
-        if(!identifier.equals(PidProvider.formatIdentifierString(identifier))) {
+        if (!identifier.equals(PidProvider.formatIdentifierString(identifier))) {
             return false;
         }
         if (PidProvider.testforNullTerminator(identifier)) {
@@ -121,13 +121,13 @@ public interface PidProvider {
         return true;
     }
     
-    static String formatIdentifierString(String str){
+    static String formatIdentifierString(String str) {
         
-        if (str == null){
+        if (str == null) {
             return null;
         }
         // remove whitespace, single quotes, and semicolons
-        return str.replaceAll("\\s+|'|;","");  
+        return str.replaceAll("\\s+|'|;", "");  
         
         /*
         <   (%3C)
@@ -145,20 +145,20 @@ public interface PidProvider {
         // http://www.doi.org/doi_handbook/2_Numbering.html
     }
     
-    static boolean testforNullTerminator(String str){
-        if(str == null) {
+    static boolean testforNullTerminator(String str) {
+        if (str == null) {
             return false;
         }
         return str.indexOf('\u0000') > 0;
     }
     
-    static boolean checkDOIAuthority(String doiAuthority){
+    static boolean checkDOIAuthority(String doiAuthority) {
         
-        if (doiAuthority==null){
+        if (doiAuthority == null) {
             return false;
         }
         
-        if (!(doiAuthority.startsWith("10."))){
+        if (!(doiAuthority.startsWith("10."))) {
             return false;
         }
         

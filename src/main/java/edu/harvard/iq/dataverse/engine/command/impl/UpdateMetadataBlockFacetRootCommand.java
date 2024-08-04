@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  *
  * @author adaybujeda
  */
-@RequiredPermissions( Permission.EditDataverse )
+@RequiredPermissions(Permission.EditDataverse)
 public class UpdateMetadataBlockFacetRootCommand extends AbstractCommand<Dataverse> {
 
     private final Dataverse editedDv;
@@ -31,7 +31,7 @@ public class UpdateMetadataBlockFacetRootCommand extends AbstractCommand<Dataver
 
     @Override
     public Dataverse execute(CommandContext ctxt) throws CommandException {
-        if(editedDv.isMetadataBlockFacetRoot() != metadataBlockFacetRoot) {
+        if (editedDv.isMetadataBlockFacetRoot() != metadataBlockFacetRoot) {
             // Update metadata block facets when root changes value
             // if you set root to be false (i.e. inherit), it should clear the blocks.
             // if you set to true (i.e. use your own), it should make a copy of what is in the parent

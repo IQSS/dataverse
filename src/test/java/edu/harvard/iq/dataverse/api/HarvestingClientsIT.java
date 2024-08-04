@@ -68,7 +68,7 @@ public class HarvestingClientsIT {
 
             int i = 0;
             int maxWait = 20;
-            String query = "dsPersistentId:" + globalIdList.stream().map(s -> "\""+s+"\"").collect(Collectors.joining(","));
+            String query = "dsPersistentId:" + globalIdList.stream().map(s -> "\"" + s + "\"").collect(Collectors.joining(","));
             do {
                 if (UtilIT.search(query, normalUserAPIKey).prettyPrint().contains("count_in_response\": 0")) {
                     break;
@@ -108,7 +108,7 @@ public class HarvestingClientsIT {
         String nickName = "h" + UtilIT.getRandomString(6);
         
 
-        String clientApiPath = String.format(HARVEST_CLIENTS_API+"%s", nickName);
+        String clientApiPath = String.format(HARVEST_CLIENTS_API + "%s", nickName);
         String clientJson = String.format("{\"dataverseAlias\":\"%s\","
                 + "\"type\":\"oai\","
                 + "\"harvestUrl\":\"%s\","
@@ -204,7 +204,7 @@ public class HarvestingClientsIT {
         
         String nickName = "h" + UtilIT.getRandomString(6);
 
-        clientApiPath = String.format(HARVEST_CLIENTS_API+"%s", nickName);
+        clientApiPath = String.format(HARVEST_CLIENTS_API + "%s", nickName);
         String clientJson = String.format("{\"dataverseAlias\":\"%s\","
                 + "\"type\":\"oai\","
                 + "\"harvestUrl\":\"%s\","
@@ -223,7 +223,7 @@ public class HarvestingClientsIT {
         // API TEST 1. Run the harvest using the configuration (client) we have 
         // just created
         
-        String runHarvestApiPath = String.format(HARVEST_CLIENTS_API+"%s/run", nickName);
+        String runHarvestApiPath = String.format(HARVEST_CLIENTS_API + "%s/run", nickName);
         
         // TODO? - verify that a non-admin user cannot perform this operation (401)
         
@@ -238,7 +238,7 @@ public class HarvestingClientsIT {
         // running, and that it completes in some reasonable amount of time. 
         
         int i = 0;
-        int maxWait=20; // a very conservative interval; this harvest has no business taking this long
+        int maxWait = 20; // a very conservative interval; this harvest has no business taking this long
         do {
             // Give it an initial 2 sec. delay, to make sure the client state
             // has been updated in the database, which can take some appreciable 
@@ -265,10 +265,10 @@ public class HarvestingClientsIT {
                         + getClientResponse.prettyPrint());
                 // Check the values in the response:
                 // a) Confirm that the harvest has completed: 
-                assertEquals("inActive", clientStatus, "Unexpected client status: "+clientStatus);
+                assertEquals("inActive", clientStatus, "Unexpected client status: " + clientStatus);
                 
                 // b) Confirm that it has actually succeeded:
-                assertEquals("SUCCESS", responseJsonPath.getString("data.lastResult"), "Last harvest not reported a success (took "+i+" seconds)");
+                assertEquals("SUCCESS", responseJsonPath.getString("data.lastResult"), "Last harvest not reported a success (took " + i + " seconds)");
                 String harvestTimeStamp = responseJsonPath.getString("data.lastHarvest");
                 assertNotNull(harvestTimeStamp); 
                 
@@ -282,7 +282,7 @@ public class HarvestingClientsIT {
                 // ok, it looks like the harvest has completed successfully.
                 break;
             }
-        } while (i<maxWait); 
+        } while (i < maxWait); 
         
         System.out.println("Waited " + i + " seconds for the harvest to complete.");
 
@@ -294,8 +294,8 @@ public class HarvestingClientsIT {
         // Get all global ids for cleanup
         JsonPath jsonPath = searchHarvestedDatasets.getBody().jsonPath();
         int sz = jsonPath.getInt("data.items.size()");
-        for(int idx = 0; idx < sz; idx++) {
-            globalIdList.add(jsonPath.getString("data.items["+idx+"].global_id"));
+        for (int idx = 0; idx < sz; idx++) {
+            globalIdList.add(jsonPath.getString("data.items[" + idx + "].global_id"));
         }
         // verify count after collecting global ids
         assertEquals(expectedNumberOfSetsHarvested, jsonPath.getInt("data.total_count"));

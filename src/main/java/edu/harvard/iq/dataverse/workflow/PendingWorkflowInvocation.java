@@ -25,7 +25,7 @@ import jakarta.persistence.OneToOne;
  * @author michael
  */
 @NamedQueries({
-    @NamedQuery( name="PendingWorkflowInvocation.listAll", query="SELECT pw FROM PendingWorkflowInvocation pw")
+    @NamedQuery(name = "PendingWorkflowInvocation.listAll", query = "SELECT pw FROM PendingWorkflowInvocation pw")
 })
 @Entity
 public class PendingWorkflowInvocation implements Serializable {
@@ -42,8 +42,8 @@ public class PendingWorkflowInvocation implements Serializable {
     long nextVersionNumber;
     long nextMinorVersionNumber;
     
-    @ElementCollection( fetch=FetchType.EAGER )
-    private Map<String,String> localData;
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Map<String, String> localData;
     
     int pendingStepIdx;
     
@@ -54,10 +54,10 @@ public class PendingWorkflowInvocation implements Serializable {
     
     long lockid;
 
-    public static final String AUTHORIZED= "authorized";
+    public static final String AUTHORIZED = "authorized";
                 
     /** Empty constructor for JPA */
-    public PendingWorkflowInvocation(){
+    public PendingWorkflowInvocation() {
         
     }
     
@@ -71,12 +71,12 @@ public class PendingWorkflowInvocation implements Serializable {
         ipAddress = ctxt.getRequest().getSourceAddress().toString();
         localData = new HashMap<>(result.getData());
         typeOrdinal = ctxt.getType().ordinal();
-        datasetExternallyReleased=ctxt.getDatasetExternallyReleased();
-        lockid=ctxt.getLockId();
+        datasetExternallyReleased = ctxt.getDatasetExternallyReleased();
+        lockid = ctxt.getLockId();
     }
     
     public WorkflowContext reCreateContext(RoleAssigneeServiceBean roleAssignees) {
-        DataverseRequest aRequest = new DataverseRequest((User)roleAssignees.getRoleAssignee(userId), IpAddress.valueOf(ipAddress));
+        DataverseRequest aRequest = new DataverseRequest((User) roleAssignees.getRoleAssignee(userId), IpAddress.valueOf(ipAddress));
         final WorkflowContext workflowContext = new WorkflowContext(aRequest, dataset, nextVersionNumber, 
                 nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], null, null, datasetExternallyReleased, invocationId, lockid);
         return workflowContext;

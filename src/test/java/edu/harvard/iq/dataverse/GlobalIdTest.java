@@ -21,7 +21,7 @@ public class GlobalIdTest {
     @Test
     public void testValidDOI() {
         System.out.println("testValidDOI");
-        GlobalId instance = new GlobalId(AbstractDOIProvider.DOI_PROTOCOL,"10.5072","FK2/BYM3IW", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null);
+        GlobalId instance = new GlobalId(AbstractDOIProvider.DOI_PROTOCOL, "10.5072", "FK2/BYM3IW", "/", AbstractDOIProvider.DOI_RESOLVER_URL, null);
 
         assertEquals("doi", instance.getProtocol());
         assertEquals("10.5072", instance.getAuthority());
@@ -32,7 +32,7 @@ public class GlobalIdTest {
     @Test
     public void testValidHandle() {
         System.out.println("testValidDOI");
-        GlobalId instance = new GlobalId(HandlePidProvider.HDL_PROTOCOL, "1902.1","111012", "/", HandlePidProvider.HDL_RESOLVER_URL, null);
+        GlobalId instance = new GlobalId(HandlePidProvider.HDL_PROTOCOL, "1902.1", "111012", "/", HandlePidProvider.HDL_RESOLVER_URL, null);
 
         assertEquals("hdl", instance.getProtocol());
         assertEquals("1902.1", instance.getAuthority());

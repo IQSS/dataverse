@@ -71,13 +71,13 @@ public class PasswordResetServiceBean {
         BuiltinUser user = dataverseUserService.findByUserName(authUser.getUserIdentifier());
 
         if (user != null) {
-            return requestPasswordReset( user, true, PasswordResetData.Reason.FORGOT_PASSWORD );
+            return requestPasswordReset(user, true, PasswordResetData.Reason.FORGOT_PASSWORD);
         } else {
             return new PasswordResetInitResponse(false);
         }
     }
     
-    public PasswordResetInitResponse requestPasswordReset( BuiltinUser aUser, boolean sendEmail, PasswordResetData.Reason reason ) throws PasswordResetException {
+    public PasswordResetInitResponse requestPasswordReset(BuiltinUser aUser, boolean sendEmail, PasswordResetData.Reason reason) throws PasswordResetException {
         AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
         
         // delete old tokens for the user
@@ -92,7 +92,7 @@ public class PasswordResetServiceBean {
         try {
             em.persist(passwordResetData);
             PasswordResetInitResponse passwordResetInitResponse = new PasswordResetInitResponse(true, passwordResetData);
-            if ( sendEmail ) {
+            if (sendEmail) {
                 sendPasswordResetEmail(aUser, passwordResetInitResponse.getResetUrl(systemConfig.getDataverseSiteUrl()));
             }
 
@@ -110,7 +110,7 @@ public class PasswordResetServiceBean {
 
         String pattern = BundleUtil.getStringFromBundle("notification.email.passwordReset");
 
-        String[] paramArray = {authUser.getName(), aUser.getUserName() ,passwordResetUrl,  SystemConfig.getMinutesUntilPasswordResetTokenExpires()+""  };
+        String[] paramArray = {authUser.getName(), aUser.getUserName(), passwordResetUrl, SystemConfig.getMinutesUntilPasswordResetTokenExpires() + ""};
         String messageBody = MessageFormat.format(pattern, paramArray);
 
         try {

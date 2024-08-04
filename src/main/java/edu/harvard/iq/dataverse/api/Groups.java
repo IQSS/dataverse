@@ -62,20 +62,20 @@ public class Groups extends AbstractApiBean {
      */
     @POST
     @Path("ip")
-    public Response postIpGroup( JsonObject dto ){
+    public Response postIpGroup(JsonObject dto) {
         try {
            IpGroup grp = new JsonParser().parseIpGroup(dto);
-            grp.setGroupProvider( ipGroupPrv );
+            grp.setGroupProvider(ipGroupPrv);
             grp.setPersistedGroupAlias(
                     ipGroupPrv.findAvailableName(
-                            grp.getPersistedGroupAlias()==null ? "ipGroup" : grp.getPersistedGroupAlias()));
+                            grp.getPersistedGroupAlias() == null ? "ipGroup" : grp.getPersistedGroupAlias()));
 
             grp = ipGroupPrv.store(grp);
-            return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
+            return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp));
 
-        } catch ( Exception e ) {
-            logger.log( Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage());
 
         }
     }
@@ -89,23 +89,23 @@ public class Groups extends AbstractApiBean {
      */
     @PUT
     @Path("ip/{group}")
-    public Response putIpGroups( @PathParam("group") String groupName, JsonObject dto ){
+    public Response putIpGroups(@PathParam("group") String groupName, JsonObject dto) {
         try {
-            if ( groupName == null || groupName.trim().isEmpty() ) {
+            if (groupName == null || groupName.trim().isEmpty()) {
                 return badRequest("Group name cannot be empty");
             }
-            if ( ! legalGroupName.matcher(groupName).matches() ) {
+            if (!legalGroupName.matcher(groupName).matches()) {
                 return badRequest("Group name can contain only letters, digits, and the chars '-' and '_'");
             }
             IpGroup grp = new JsonParser().parseIpGroup(dto);
-            grp.setGroupProvider( ipGroupPrv );
-            grp.setPersistedGroupAlias( groupName );
+            grp.setGroupProvider(ipGroupPrv);
+            grp.setPersistedGroupAlias(groupName);
             grp = ipGroupPrv.store(grp);
-            return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp) );
+            return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp));
 
-        } catch ( Exception e ) {
-            logger.log( Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage());
 
         }
     }
@@ -113,46 +113,46 @@ public class Groups extends AbstractApiBean {
     @GET
     @Path("ip")
     public Response listIpGroups() {
-        return ok( ipGroupPrv.findGlobalGroups()
-                             .stream().map(g->json(g)).collect(toJsonArray()) );
+        return ok(ipGroupPrv.findGlobalGroups()
+                             .stream().map(g -> json(g)).collect(toJsonArray()));
     }
 
     @GET
     @Path("ip/{group}")
-    public Response getIpGroup( @PathParam("group") String groupIdtf ) {
+    public Response getIpGroup(@PathParam("group") String groupIdtf) {
         IpGroup grp;
-        if ( isNumeric(groupIdtf) ) {
-            grp = ipGroupPrv.get( Long.parseLong(groupIdtf) );
+        if (isNumeric(groupIdtf)) {
+            grp = ipGroupPrv.get(Long.parseLong(groupIdtf));
         } else {
             grp = ipGroupPrv.get(groupIdtf);
         }
 
-        return (grp == null) ? notFound( "Group " + groupIdtf + " not found") : ok(json(grp));
+        return (grp == null) ? notFound("Group " + groupIdtf + " not found") : ok(json(grp));
     }
 
     @DELETE
     @Path("ip/{group}")
-    public Response deleteIpGroup( @PathParam("group") String groupIdtf ) {
+    public Response deleteIpGroup(@PathParam("group") String groupIdtf) {
         IpGroup grp;
-        if ( isNumeric(groupIdtf) ) {
-            grp = ipGroupPrv.get( Long.parseLong(groupIdtf) );
+        if (isNumeric(groupIdtf)) {
+            grp = ipGroupPrv.get(Long.parseLong(groupIdtf));
         } else {
             grp = ipGroupPrv.get(groupIdtf);
         }
 
-        if (grp == null) return notFound( "Group " + groupIdtf + " not found");
+        if (grp == null) return notFound("Group " + groupIdtf + " not found");
 
         try {
             ipGroupPrv.deleteGroup(grp);
             return ok("Group " + grp.getAlias() + " deleted.");
-        } catch ( Exception topExp ) {
+        } catch (Exception topExp) {
             // get to the cause (unwraps EJB exception wrappers).
             Throwable e = topExp;
-            while ( e.getCause() != null ) {
+            while (e.getCause() != null) {
                 e = e.getCause();
             }
 
-            if ( e instanceof IllegalArgumentException ) {
+            if (e instanceof IllegalArgumentException) {
                 return error(Response.Status.BAD_REQUEST, e.getMessage());
             } else {
                 throw topExp;
@@ -199,7 +199,7 @@ public class Groups extends AbstractApiBean {
 
     @DELETE
     @Path("shib/{primaryKey}")
-    public Response deleteShibGroup( @PathParam("primaryKey") String id ) {
+    public Response deleteShibGroup(@PathParam("primaryKey") String id) {
         ShibGroup doomed = shibGroupPrv.get(id);
         if (doomed != null) {
             boolean deleted;
@@ -233,7 +233,7 @@ public class Groups extends AbstractApiBean {
         mailDomainGroupPrv.saveOrUpdate(Optional.empty(), grp);
         mailDomainGroupPrv.updateGroups();
 
-        return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp) );
+        return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp));
     }
     
     /**
@@ -246,10 +246,10 @@ public class Groups extends AbstractApiBean {
     @PUT
     @Path("domain/{groupAlias}")
     public Response updateMailDomainGroups(@PathParam("groupAlias") String groupAlias, JsonObject dto) throws JsonParseException {
-        if ( groupAlias == null || groupAlias.trim().isEmpty() ) {
+        if (groupAlias == null || groupAlias.trim().isEmpty()) {
             return badRequest("Group name cannot be empty");
         }
-        if ( ! legalGroupName.matcher(groupAlias).matches() ) {
+        if (!legalGroupName.matcher(groupAlias).matches()) {
             return badRequest("Group name can contain only letters, digits, and the chars '-' and '_'");
         }
         
@@ -257,21 +257,21 @@ public class Groups extends AbstractApiBean {
         mailDomainGroupPrv.saveOrUpdate(Optional.of(groupAlias), grp);
         mailDomainGroupPrv.updateGroups();
         
-        return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp) );
+        return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp));
     }
     
     @GET
     @Path("domain")
     public Response listMailDomainGroups() {
-        return ok( mailDomainGroupPrv.findGlobalGroups()
-            .stream().map(g->json(g)).collect(toJsonArray()) );
+        return ok(mailDomainGroupPrv.findGlobalGroups()
+            .stream().map(g -> json(g)).collect(toJsonArray()));
     }
     
     @GET
     @Path("domain/{groupAlias}")
     public Response getMailDomainGroup(@PathParam("groupAlias") String groupAlias) {
         MailDomainGroup grp = mailDomainGroupPrv.get(groupAlias);
-        return (grp == null) ? notFound( "Group " + groupAlias + " not found") : ok(json(grp));
+        return (grp == null) ? notFound("Group " + groupAlias + " not found") : ok(json(grp));
     }
     
     @DELETE

@@ -33,15 +33,15 @@ import jakarta.persistence.Table;
  * @author skraffmiller
  */
 @Entity
-@Table(indexes = {@Index(columnList="datasetfieldtype_id"), @Index(columnList="displayorder")})
-public class ControlledVocabularyValue implements Serializable  {
+@Table(indexes = {@Index(columnList = "datasetfieldtype_id"), @Index(columnList = "displayorder")})
+public class ControlledVocabularyValue implements Serializable {
     
     private static final Logger logger = Logger.getLogger(ControlledVocabularyValue.class.getCanonicalName());
     
     public static final Comparator<ControlledVocabularyValue> DisplayOrder = new Comparator<ControlledVocabularyValue>() {
         @Override
         public int compare(ControlledVocabularyValue o1, ControlledVocabularyValue o2) {
-            return Integer.compare( o1.getDisplayOrder(), o2.getDisplayOrder() );
+            return Integer.compare(o1.getDisplayOrder(), o2.getDisplayOrder());
     }};
 
     public ControlledVocabularyValue() {
@@ -65,7 +65,7 @@ public class ControlledVocabularyValue implements Serializable  {
         this.id = id;
     }
     
-    @Column(columnDefinition="TEXT", nullable=false) 
+    @Column(columnDefinition = "TEXT", nullable = false) 
     private String strValue;
 
     public String getStrValue() {
@@ -103,7 +103,7 @@ public class ControlledVocabularyValue implements Serializable  {
         this.datasetFieldType = datasetFieldType;
     }
   
-    @OneToMany(mappedBy = "controlledVocabularyValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval=true)
+    @OneToMany(mappedBy = "controlledVocabularyValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     private Collection<ControlledVocabAlternate> controlledVocabAlternates = new ArrayList<>();
 
     public Collection<ControlledVocabAlternate> getControlledVocabAlternates() {
@@ -120,18 +120,18 @@ public class ControlledVocabularyValue implements Serializable  {
     
     public String getLocaleStrValue(String language) {
         
-        if(language !=null && language.isBlank()) {
+        if (language != null && language.isBlank()) {
             //null picks up current UI lang
-            language=null;
+            language = null;
         }
         //Sword input uses a special controlled vacab value ("N/A" that does not have a datasetFieldType / is not part of any metadata block, so handle it specially
-        if(strValue.equals(DatasetField.NA_VALUE) && this.datasetFieldType == null) {
+        if (strValue.equals(DatasetField.NA_VALUE) && this.datasetFieldType == null) {
             return strValue;
         }
-        if(this.datasetFieldType == null) {
+        if (this.datasetFieldType == null) {
             logger.warning("Null datasetFieldType for value: " + strValue);
         }
-        return getLocaleStrValue(strValue, this.datasetFieldType.getName(),getDatasetFieldType().getMetadataBlock().getName(),language == null ? null : new Locale(language), true);
+        return getLocaleStrValue(strValue, this.datasetFieldType.getName(), getDatasetFieldType().getMetadataBlock().getName(), language == null ? null : new Locale(language), true);
     }
     
     public static String getLocaleStrValue(String strValue, String fieldTypeName, String metadataBlockName,
@@ -148,7 +148,7 @@ public class ControlledVocabularyValue implements Serializable  {
                 return sendDefault ? strValue : null;
             }
         } catch (MissingResourceException | NullPointerException e) {
-            logger.warning("Error finding " + "controlledvocabulary." + fieldTypeName + "." + key + " in " + ((locale==null)? "defaultLang" : locale.getLanguage()) + " : " + e.getLocalizedMessage());
+            logger.warning("Error finding " + "controlledvocabulary." + fieldTypeName + "." + key + " in " + ((locale == null) ? "defaultLang" : locale.getLanguage()) + " : " + e.getLocalizedMessage());
             return sendDefault ? strValue : null;
         }
     }

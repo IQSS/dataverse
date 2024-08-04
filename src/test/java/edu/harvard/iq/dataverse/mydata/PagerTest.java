@@ -76,7 +76,7 @@ public class PagerTest {
   }
 
   @ParameterizedTest
-  @CsvSource({ "0, false", "1, false", "2, true" })
+  @CsvSource({"0, false", "1, false", "2, true"})
   public void testIsPagerNecessary(int pageCount, boolean isNecessary) {
       Pager pager = new Pager(20, 10, 1);
       pager.setPageCount(pageCount);
@@ -84,14 +84,14 @@ public class PagerTest {
   }
 
   @ParameterizedTest
-  @CsvSource({ "1, false", "2, true" })
+  @CsvSource({"1, false", "2, true"})
   public void testHasPreviousPageNumber(int selectedPageNumber, boolean hasPreviousPage) {
     Pager pager = new Pager(20, 10, selectedPageNumber);
     assertEquals(hasPreviousPage, pager.hasPreviousPageNumber());
   }
 
   @ParameterizedTest
-  @CsvSource({ "0, 1, false", "1, 1, false", "2, 1, true" })
+  @CsvSource({"0, 1, false", "1, 1, false", "2, 1, true"})
   public void testHasNextPageNumber(int pageCount, int selectedPageNumber, boolean hasNextPage) {
     Pager pager = new Pager(20, 10, 1);
     pager.setPageCount(pageCount);
@@ -101,7 +101,7 @@ public class PagerTest {
   @Test
   public void testGetPageNumberListAsStringList() {
     Pager pager = new Pager(20, 10, 1);
-    int[] pageNumberList = { 1, 2, 3 };
+    int[] pageNumberList = {1, 2, 3};
     pager.setPageNumberList(pageNumberList);
     assertEquals(Arrays.asList("1", "2", "3"), pager.getPageNumberListAsStringList());
   }
@@ -116,7 +116,7 @@ public class PagerTest {
   @Test
   public void testGetPageListAsIntegerList_withValidPageNumberList() {
     Pager pager = new Pager(20, 10, 1);
-    int[] pageNumberList = { 1, 2, 3 };
+    int[] pageNumberList = {1, 2, 3};
     Integer[] pageNumberListIntegers = {Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3)};
     pager.setPageNumberList(pageNumberList);
     assertArrayEquals(pageNumberListIntegers, pager.getPageListAsIntegerList());
@@ -249,11 +249,11 @@ public class PagerTest {
 
     }
 
-    private void msg(String s){
+    private void msg(String s) {
       System.out.println(s);
     }
 
-    private void msgt(String s){
+    private void msgt(String s) {
         msg("-------------------------------");
         msg(s);
         msg("-------------------------------");

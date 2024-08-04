@@ -41,9 +41,9 @@ public class DataFileDataProviderTest {
         List<Path> result = target.getFilePaths();
 
         MatcherAssert.assertThat(result.size(), Matchers.is(3));
-        MatcherAssert.assertThat(result, Matchers.hasItem(Path.of("dir","file1.txt")));
-        MatcherAssert.assertThat(result, Matchers.hasItem(Path.of("dir","file2.csv")));
-        MatcherAssert.assertThat(result, Matchers.hasItem(Path.of("dir","file3.py")));
+        MatcherAssert.assertThat(result, Matchers.hasItem(Path.of("dir", "file1.txt")));
+        MatcherAssert.assertThat(result, Matchers.hasItem(Path.of("dir", "file2.csv")));
+        MatcherAssert.assertThat(result, Matchers.hasItem(Path.of("dir", "file3.py")));
     }
 
     @Test

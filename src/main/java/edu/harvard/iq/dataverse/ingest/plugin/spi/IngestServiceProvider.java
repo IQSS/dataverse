@@ -29,7 +29,7 @@ import java.util.Locale;
  * 
  * @author akio sone at UNC-Odum
  */
-public abstract class IngestServiceProvider  {
+public abstract class IngestServiceProvider {
 
     /**
      * The name of the vendor that is responsible for coding this
@@ -47,10 +47,10 @@ public abstract class IngestServiceProvider  {
 
     
     public IngestServiceProvider(String vendorName, String version) {
-        if (vendorName == null){
+        if (vendorName == null) {
             throw new IllegalArgumentException("vendorName is null!");
         }
-        if (version == null){
+        if (version == null) {
             throw new IllegalArgumentException("version string is null");
         }
         this.vendorName = vendorName;

@@ -34,7 +34,7 @@ public class XmlPrinter {
             return output
                         .toString()
                         .replaceFirst("encoding=\"UTF-8\"\\?>",
-                                      "encoding=\"UTF-8\"?>"+System.lineSeparator());
+                                      "encoding=\"UTF-8\"?>" + System.lineSeparator());
         } catch (IllegalArgumentException | TransformerException ex) {
             logger.info("Returning XML as-is due to problem pretty printing it: " + ex.toString());
             return xml;

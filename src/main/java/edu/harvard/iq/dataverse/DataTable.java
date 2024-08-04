@@ -35,7 +35,7 @@ import jakarta.persistence.Table;
  */
 
 @Entity
-@Table(indexes = {@Index(columnList="datafile_id")})
+@Table(indexes = {@Index(columnList = "datafile_id")})
 public class DataTable implements Serializable {
     
     /** Creates a new instance of DataTable */
@@ -51,7 +51,7 @@ public class DataTable implements Serializable {
      * unf: the Universal Numeric Signature of the 
      * data table.
      */
-    @Column( nullable = false )
+    @Column(nullable = false)
     private String unf;
     
     /*
@@ -77,14 +77,14 @@ public class DataTable implements Serializable {
       * DataFile that stores the data for this DataTable
       */
      @ManyToOne
-     @JoinColumn(nullable=false)
+     @JoinColumn(nullable = false)
      private DataFile dataFile;
 
      /*
       * DataVariables in this DataTable:
      */
-    @OneToMany (mappedBy="dataTable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
-    @OrderBy ("fileOrder")
+    @OneToMany(mappedBy = "dataTable", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OrderBy("fileOrder")
     private List<DataVariable> dataVariables;
     
     /* 
@@ -109,7 +109,7 @@ public class DataTable implements Serializable {
     /**
      * originalFileName: the file name upon upload/ingest
      */
-    @Column( nullable = true )
+    @Column(nullable = true)
     private String originalFileName;
     
     
@@ -240,7 +240,7 @@ public class DataTable implements Serializable {
         if (!(object instanceof DataTable)) {
             return false;
         }
-        DataTable other = (DataTable)object;
+        DataTable other = (DataTable) object;
         return !(!Objects.equals(this.id, other.id) && (this.id == null || !this.id.equals(other.id)));
     }
 

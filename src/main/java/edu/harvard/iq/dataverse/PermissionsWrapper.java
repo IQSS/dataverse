@@ -63,7 +63,7 @@ public class PermissionsWrapper implements java.io.Serializable {
      * @return {@code true} if the user can issue the command on the object.
      */
     public boolean canIssueCommand(DvObject dvo, Class<? extends Command<?>> command) {
-        if (dvo==null || dvo.getId()==null || command==null){
+        if (dvo == null || dvo.getId() == null || command == null) {
             return false;
         }
 
@@ -120,7 +120,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     // (below). For starters, need to investigate just how much these 
     // cost us under different scenarios. May be a moot point. -- L.A. 5.7
     public boolean canManagePermissions(DvObject dvo) {
-        if (dvo==null || (dvo.getId()==null) ){
+        if (dvo == null || (dvo.getId() == null)) {
             return false;
         }
         
@@ -131,20 +131,20 @@ public class PermissionsWrapper implements java.io.Serializable {
     }
     
     public boolean canManageDataversePermissions(User u, Dataverse dv) {
-        if ( dv==null || (dv.getId()==null)){
+        if (dv == null || (dv.getId() == null)) {
             return false;
         }
-        if (u==null){            
+        if (u == null) {            
             return false;
         }
         return permissionService.requestOn(dvRequestService.getDataverseRequest(), dv).has(Permission.ManageDataversePermissions);
     }
     
     public boolean canManageDatasetPermissions(User u, Dataset ds) {
-        if ( ds==null || (ds.getId()==null)){
+        if (ds == null || (ds.getId() == null)) {
             return false;
         }
-        if (u==null){            
+        if (u == null) {            
             return false;
         }
         return permissionService.requestOn(dvRequestService.getDataverseRequest(), ds).has(Permission.ManageDatasetPermissions);
@@ -173,8 +173,8 @@ public class PermissionsWrapper implements java.io.Serializable {
      * @param permissionToCheck
      * @return 
      */
-    public boolean doesSessionUserHaveDataSetPermission(DataverseRequest req, Dataset dataset, Permission permissionToCheck){
-        if (permissionToCheck == null){
+    public boolean doesSessionUserHaveDataSetPermission(DataverseRequest req, Dataset dataset, Permission permissionToCheck) {
+        if (permissionToCheck == null) {
             return false;
         }
                
@@ -182,7 +182,7 @@ public class PermissionsWrapper implements java.io.Serializable {
        
         // Has this check already been done? 
         // 
-        if (this.datasetPermissionMap.containsKey(permName)){
+        if (this.datasetPermissionMap.containsKey(permName)) {
             // Yes, return previous answer
             return this.datasetPermissionMap.get(permName);
         }
@@ -201,22 +201,22 @@ public class PermissionsWrapper implements java.io.Serializable {
      * @param dvo
      * @return 
      */
-    public boolean hasDownloadFilePermission(DvObject dvo){
+    public boolean hasDownloadFilePermission(DvObject dvo) {
         
-        if ((dvo==null)||(dvo.getId() == null)){
+        if ((dvo == null) || (dvo.getId() == null)) {
             return false;
         }
         
         // Has this check already been done? Check the hash
         //
-        if (this.fileDownloadPermissionMap.containsKey(dvo.getId())){
+        if (this.fileDownloadPermissionMap.containsKey(dvo.getId())) {
             // Yes, return previous answer
             return this.fileDownloadPermissionMap.get(dvo.getId());
         }
 
         // Check permissions
         //
-        if ( permissionService.on(dvo).has(Permission.DownloadFile) ){
+        if (permissionService.on(dvo).has(Permission.DownloadFile)) {
 
             // Yes, has permission, store result
             fileDownloadPermissionMap.put(dvo.getId(), true);
@@ -237,22 +237,22 @@ public class PermissionsWrapper implements java.io.Serializable {
      ----------------------------------- */
     
     // CREATE DATASET
-    public boolean canIssueCreateDatasetCommand(DvObject dvo){
+    public boolean canIssueCreateDatasetCommand(DvObject dvo) {
         return canIssueCommand(dvo, AbstractCreateDatasetCommand.class);
     }
 
     // UPDATE DATASET
-    public boolean canIssueUpdateDatasetCommand(DvObject dvo){
+    public boolean canIssueUpdateDatasetCommand(DvObject dvo) {
         return canIssueCommand(dvo, UpdateDatasetVersionCommand.class);
     }
 
     // DELETE DATASET
-    public boolean canIssueDeleteDatasetCommand(DvObject dvo){
+    public boolean canIssueDeleteDatasetCommand(DvObject dvo) {
         return canIssueCommand(dvo, DeleteDatasetCommand.class);
     }
     
     // PLUBLISH DATASET
-    public boolean canIssuePublishDatasetCommand(DvObject dvo){
+    public boolean canIssuePublishDatasetCommand(DvObject dvo) {
         return canIssueCommand(dvo, PublishDatasetCommand.class);
     }
     
@@ -271,10 +271,10 @@ public class PermissionsWrapper implements java.io.Serializable {
         }
         if (checkDvoCacheForCommandAuthorization(dvo.getId(), command, authUsersCommandMap) == null) {
             boolean canIssueCommand = permissionService.isUserAllowedOn(AuthenticatedUsers.get(), command, dvo);
-            logger.fine("retrieved the authorization for authenticated users to issue "+command.toString());
+            logger.fine("retrieved the authorization for authenticated users to issue " + command.toString());
             addCommandAuthorizationToDvoCache(dvo.getId(), command, authUsersCommandMap, canIssueCommand);
         } else {
-            logger.fine("using cached authorization for authenticated users to issue "+command.toString());
+            logger.fine("using cached authorization for authenticated users to issue " + command.toString());
         }
         return checkDvoCacheForCommandAuthorization(dvo.getId(), command, authUsersCommandMap);
     }
@@ -290,7 +290,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     // todo: move any calls to this to call NavigationWrapper   
     @Inject NavigationWrapper navigationWrapper;
     
-    public String notAuthorized(){
+    public String notAuthorized() {
         return navigationWrapper.notAuthorized();
     }
     

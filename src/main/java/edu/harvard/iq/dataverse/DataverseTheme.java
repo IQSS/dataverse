@@ -25,7 +25,7 @@ import jakarta.persistence.Table;
  */
 
 @Entity
-@Table(indexes = {@Index(columnList="dataverse_id")})
+@Table(indexes = {@Index(columnList = "dataverse_id")})
 public class DataverseTheme implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -161,7 +161,7 @@ public class DataverseTheme implements Serializable {
         this.backgroundColor = backgroundColor;
     }
     @OneToOne
-    @JoinColumn(name="dataverse_id")
+    @JoinColumn(name = "dataverse_id")
     private Dataverse dataverse;
 
     public Dataverse getDataverse() {

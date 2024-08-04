@@ -29,7 +29,7 @@ import jakarta.persistence.Transient;
  * @author xyang
  */
 @Entity
-@Table(indexes = {@Index(columnList="user_id")})
+@Table(indexes = {@Index(columnList = "user_id")})
 
 public class UserNotification implements Serializable {
     // Keep in sync with list at admin/user-administration.rst
@@ -74,20 +74,20 @@ public class UserNotification implements Serializable {
     private Long id;
 
     @ManyToOne
-    @JoinColumn( nullable = false )
+    @JoinColumn(nullable = false)
     private AuthenticatedUser user;
     @ManyToOne
     /** Requestor now has a more general meaning of 'actor' - the person who's action is causing the emails.
      * The original use of that was for people requesting dataset access
      * This is also now used for DATASETCREATED messages where it indicates who created the dataset
     */
-    @JoinColumn( nullable = true )
+    @JoinColumn(nullable = true)
     private AuthenticatedUser requestor;
     private Timestamp sendDate;
     private boolean readNotification;
     
     @Enumerated
-    @Column( nullable = false )
+    @Column(nullable = false)
     private Type type;
     private Long objectId;
     

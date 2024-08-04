@@ -63,7 +63,7 @@ public class MailSessionProducer {
         try {
             // Do JNDI lookup of legacy mail session programmatically to avoid deployment errors when not found.
             Context initialContext = new InitialContext();
-            this.appserverProvidedSession = (Session)initialContext.lookup("mail/notifyMailSession");
+            this.appserverProvidedSession = (Session) initialContext.lookup("mail/notifyMailSession");
         } catch (NamingException e) {
             // This exception simply means the appserver did not provide the legacy mail session.
             // Debug level output is just fine.

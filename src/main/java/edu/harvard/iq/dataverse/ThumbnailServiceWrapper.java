@@ -29,7 +29,7 @@ import jakarta.inject.Named;
 //@ViewScoped
 @RequestScoped
 @Named
-public class ThumbnailServiceWrapper implements java.io.Serializable  {
+public class ThumbnailServiceWrapper implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(ThumbnailServiceWrapper.class.getCanonicalName());
     
@@ -86,7 +86,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
                 }
             }
 
-            if ((!((DataFile)result.getEntity()).isRestricted()
+            if ((!((DataFile) result.getEntity()).isRestricted()
                         || permissionsWrapper.hasDownloadFilePermission(result.getEntity()))
                     && isThumbnailAvailable((DataFile) result.getEntity())) {
                 
@@ -115,7 +115,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
     }
 
     public boolean isThumbnailAvailable(DataFile entity) {
-        if(!hasThumbMap.containsKey(entity.getId())) {
+        if (!hasThumbMap.containsKey(entity.getId())) {
             hasThumbMap.put(entity.getId(), dataFileService.isThumbnailAvailable(entity));
         }
         return hasThumbMap.get(entity.getId());
@@ -140,7 +140,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
         if (result.getEntity() == null) {
             return null;
         }
-        Dataset dataset = (Dataset)result.getEntity();
+        Dataset dataset = (Dataset) result.getEntity();
         dataset.setId(result.getEntityId());
         
         Long versionId = result.getDatasetVersionId();
@@ -194,7 +194,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
         }
         String url = SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/" + dataset.getId() + "/logo";
         logger.fine("getDatasetCardImageAsUrl: " + url);
-        this.dvobjectThumbnailsMap.put(datasetId,url);
+        this.dvobjectThumbnailsMap.put(datasetId, url);
         return url;
         
     }

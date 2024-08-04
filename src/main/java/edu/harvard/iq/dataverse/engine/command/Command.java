@@ -19,7 +19,7 @@ public interface Command<R> {
 	 * @return A result. May be {@code null}
 	 * @throws CommandException If anything goes wrong.
 	 */
-	public R execute( CommandContext ctxt ) throws CommandException;
+	public R execute(CommandContext ctxt) throws CommandException;
 	
 	
 	/**
@@ -29,7 +29,7 @@ public interface Command<R> {
 	 * 
 	 * @return The DvObjects on which the command will work
 	 */
-	public Map<String,DvObject> getAffectedDvObjects();
+	public Map<String, DvObject> getAffectedDvObjects();
 	
 	
 	/**
@@ -40,7 +40,7 @@ public interface Command<R> {
 	/**
 	 * @return A map of the permissions required for this command
 	 */        
-    Map<String,Set<Permission>> getRequiredPermissions();
+    Map<String, Set<Permission>> getRequiredPermissions();
 
     public String describe();
     

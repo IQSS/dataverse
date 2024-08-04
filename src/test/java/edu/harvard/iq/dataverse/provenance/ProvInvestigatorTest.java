@@ -111,7 +111,7 @@ public class ProvInvestigatorTest {
     public void testProvNamesNotInsideEntity() throws IOException {
         //name and type on their own
         String jsonString = "{\"name\":\"testzame\",\"type\":\"ohno\"}";
-        HashMap<String,ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
+        HashMap<String, ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
         assertFalse(entities.size() > 0); 
         
         //name and type in an individual entity but not inside the "entity" grouping
@@ -154,7 +154,7 @@ public class ProvInvestigatorTest {
             "}\n" +
             "}";
         
-        HashMap<String,ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
+        HashMap<String, ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
         assertTrue(entities.size() == 0);
     }
     
@@ -228,7 +228,7 @@ public class ProvInvestigatorTest {
 "}";
         
         
-        HashMap<String,ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
+        HashMap<String, ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
         assertTrue(entities.get("ex:report5").fileType.equals("report"));
         assertTrue(entities.get("ex:report2").fileName.equals("best"));
         assertTrue(entities.size() == 7);
@@ -268,7 +268,7 @@ public class ProvInvestigatorTest {
 "    }\n" +
 "}";
         
-        HashMap<String,ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);   
+        HashMap<String, ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);   
         assertTrue(entities.get("ex:report2").fileType.equals("not report"));
         assertTrue(entities.size() == 3); //ex:report2 & ex:report1 are repeated
     }
@@ -550,7 +550,7 @@ public class ProvInvestigatorTest {
             "}";
         
         
-        HashMap<String,ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
+        HashMap<String, ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
         assertTrue(entities.size() == 6);
     }
 }

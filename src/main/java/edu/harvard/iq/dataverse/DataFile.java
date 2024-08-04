@@ -39,22 +39,22 @@ import jakarta.validation.constraints.NotBlank;
  * @author gdurand
  */
 @NamedQueries({
-	@NamedQuery( name="DataFile.removeFromDatasetVersion",
-		query="DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId"),
+	@NamedQuery(name = "DataFile.removeFromDatasetVersion",
+		query = "DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId"),
         @NamedQuery(name = "DataFile.findByCreatorId",
                 query = "SELECT o FROM DataFile o WHERE o.creator.id=:creatorId"),
         @NamedQuery(name = "DataFile.findByReleaseUserId",
                 query = "SELECT o FROM DataFile o WHERE o.releaseUser.id=:releaseUserId"),
-        @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth",
-                query="SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority"),
-        @NamedQuery(name="DataFile.findDataFileThatReplacedId",
-                query="SELECT s.id FROM DataFile s WHERE s.previousDataFileId=:identifier")
+        @NamedQuery(name = "DataFile.findDataFileByIdProtocolAuth",
+                query = "SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority"),
+        @NamedQuery(name = "DataFile.findDataFileThatReplacedId",
+                query = "SELECT s.id FROM DataFile s WHERE s.previousDataFileId=:identifier")
 })
 @Entity
-@Table(indexes = {@Index(columnList="ingeststatus")
-        , @Index(columnList="checksumvalue")
-        , @Index(columnList="contenttype")
-        , @Index(columnList="restricted")})
+@Table(indexes = {@Index(columnList = "ingeststatus")
+        , @Index(columnList = "checksumvalue")
+        , @Index(columnList = "contenttype")
+        , @Index(columnList = "restricted")})
 public class DataFile extends DvObject implements Comparable {
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
     private static final long serialVersionUID = 1L;
@@ -68,7 +68,7 @@ public class DataFile extends DvObject implements Comparable {
     
     @Expose
     @NotBlank
-    @Column( nullable = false )
+    @Column(nullable = false)
     @Pattern(regexp = "^.*/.*$", message = "{contenttype.slash}")
     private String contentType;
 
@@ -137,7 +137,7 @@ public class DataFile extends DvObject implements Comparable {
     // For the initial version of a file, this will be equivalent to the ID
     // Default is -1 until the intial id is generated
     @Expose
-    @Column(nullable=false)
+    @Column(nullable = false)
     private Long rootDataFileId;
 
     /**
@@ -147,21 +147,21 @@ public class DataFile extends DvObject implements Comparable {
     // null for initial version; subsequent versions will point to the previous file
     //
     @Expose
-    @Column(nullable=true)
+    @Column(nullable = true)
     private Long previousDataFileId;
     /* endt: FILE REPLACE ATTRIBUTES */
     
     
     
     @Expose
-    @Column(nullable=true)
+    @Column(nullable = true)
     private Long filesize;      // Number of bytes in file.  Allows 0 and null, negative numbers not permitted
 
     @Expose
     private boolean restricted;
     
     @Expose
-    @Column(columnDefinition = "TEXT", nullable = true, name="prov_entityname")
+    @Column(columnDefinition = "TEXT", nullable = true, name = "prov_entityname")
     private String provEntityName;
     
     /*Add when we integrate with provCPL*/
@@ -189,13 +189,13 @@ public class DataFile extends DvObject implements Comparable {
     @OneToMany(mappedBy = "dataFile", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DataFileTag> dataFileTags;
     
-    @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<FileMetadata> fileMetadatas;
     
-    @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<GuestbookResponse> guestbookResponses;
 
-    @OneToMany(mappedBy="dataFile",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @OneToMany(mappedBy = "dataFile", fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     private List<FileAccessRequest> fileAccessRequests;
 
     @ManyToMany
@@ -205,15 +205,15 @@ public class DataFile extends DvObject implements Comparable {
     private List<AuthenticatedUser> fileAccessRequesters;
 
     
-    public List<FileAccessRequest> getFileAccessRequests(){
+    public List<FileAccessRequest> getFileAccessRequests() {
         return fileAccessRequests;
     }
     
-    public List<FileAccessRequest> getFileAccessRequests(FileAccessRequest.RequestState state){
+    public List<FileAccessRequest> getFileAccessRequests(FileAccessRequest.RequestState state) {
         return fileAccessRequests.stream().filter(far -> far.getState() == state).collect(Collectors.toList());
     }
 
-    public void setFileAccessRequests(List<FileAccessRequest> fARs){
+    public void setFileAccessRequests(List<FileAccessRequest> fARs) {
         this.fileAccessRequests = fARs;
     }
     
@@ -231,7 +231,7 @@ public class DataFile extends DvObject implements Comparable {
     private Dataset thumbnailForDataset;
 
     @ManyToOne
-    @JoinColumn(name="embargo_id")
+    @JoinColumn(name = "embargo_id")
     private Embargo embargo;
 
     public Embargo getEmbargo() {
@@ -243,7 +243,7 @@ public class DataFile extends DvObject implements Comparable {
     }
 
     @ManyToOne
-    @JoinColumn(name="retention_id")
+    @JoinColumn(name = "retention_id")
     private Retention retention;
 
     public Retention getRetention() {
@@ -325,7 +325,7 @@ public class DataFile extends DvObject implements Comparable {
      * All constructors should use this method
      * to initialize this file replace attributes
      */
-    private void initFileReplaceAttributes(){
+    private void initFileReplaceAttributes() {
         this.rootDataFileId = ROOT_DATAFILE_ID_DEFAULT;
         this.previousDataFileId = null;
     }
@@ -344,7 +344,7 @@ public class DataFile extends DvObject implements Comparable {
     }
     
     public DataTable getDataTable() {
-        if ( getDataTables() != null && getDataTables().size() > 0 ) {
+        if (getDataTables() != null && getDataTables().size() > 0) {
             return getDataTables().get(0);
         } else {
             return null;
@@ -365,12 +365,12 @@ public class DataFile extends DvObject implements Comparable {
         return dataFileTags;
     }
     
-    public List<String> getTagLabels(){
+    public List<String> getTagLabels() {
         
         List<DataFileTag> currentDataTags = this.getTags();
         List<String> tagStrings = new ArrayList<>();
         
-        if (( currentDataTags != null)&&(!currentDataTags.isEmpty())){
+        if ((currentDataTags != null) && (!currentDataTags.isEmpty())) {
                        
             for (DataFileTag element : currentDataTags) {
                 tagStrings.add(element.getTypeLabel());
@@ -379,13 +379,13 @@ public class DataFile extends DvObject implements Comparable {
         return tagStrings;
     }
 
-    public JsonArrayBuilder getTagLabelsAsJsonArrayBuilder(){
+    public JsonArrayBuilder getTagLabelsAsJsonArrayBuilder() {
         
         List<DataFileTag> currentDataTags = this.getTags();
 
         JsonArrayBuilder builder = Json.createArrayBuilder();
         
-        if ( (currentDataTags == null)||(currentDataTags.isEmpty())){
+        if ((currentDataTags == null) || (currentDataTags.isEmpty())) {
             return builder;
         }
         
@@ -426,7 +426,7 @@ public class DataFile extends DvObject implements Comparable {
     }
     
     public IngestReport getIngestReport() {
-        if ( ingestReports != null && ingestReports.size() > 0 ) {
+        if (ingestReports != null && ingestReports.size() > 0) {
             return ingestReports.get(0);
         } else {
             return null;
@@ -452,7 +452,7 @@ public class DataFile extends DvObject implements Comparable {
     }
     
     public String getIngestReportMessage() {
-        if ( ingestReports != null && ingestReports.size() > 0 ) {
+        if (ingestReports != null && ingestReports.size() > 0) {
             if (ingestReports.get(0).getReport() != null && !"".equals(ingestReports.get(0).getReport())) {
                 return ingestReports.get(0).getReport();
             }
@@ -503,13 +503,13 @@ public class DataFile extends DvObject implements Comparable {
         String extensionToRemove = StringUtil.substringIncludingLast(filename, ".");
         if (StringUtil.nonEmpty(extensionToRemove)) {
             return filename.replaceAll(extensionToRemove + "$", originalExtension);
-        } else{
-            return filename + originalExtension ;
+        } else {
+            return filename + originalExtension;
         }        
     }
 
     @Override
-    public boolean isAncestorOf( DvObject other ) {
+    public boolean isAncestorOf(DvObject other) {
         return equals(other);
     }
     
@@ -634,7 +634,7 @@ public class DataFile extends DvObject implements Comparable {
      * @param filesize new value of property filesize.
      */
     public void setFilesize(long filesize) {
-        if (filesize < 0){
+        if (filesize < 0) {
             return;
         }
        this.filesize = filesize;
@@ -679,7 +679,7 @@ public class DataFile extends DvObject implements Comparable {
     }
 
     public String getOriginalChecksumType() {
-        return BundleUtil.getStringFromBundle("file.originalChecksumType", Arrays.asList(this.checksumType.toString()) );
+        return BundleUtil.getStringFromBundle("file.originalChecksumType", Arrays.asList(this.checksumType.toString()));
     }
 
     public StorageIO<DataFile> getStorageIO() throws IOException {
@@ -695,8 +695,8 @@ public class DataFile extends DvObject implements Comparable {
     /*
         Does the contentType indicate a shapefile?
     */
-    public boolean isShapefileType(){
-        if (this.contentType==null){
+    public boolean isShapefileType() {
+        if (this.contentType == null) {
             return false;
         }
         return ShapefileHandler.SHAPEFILE_FILE_TYPE.equalsIgnoreCase(this.contentType);
@@ -767,8 +767,8 @@ public class DataFile extends DvObject implements Comparable {
     /*
         8/10/2014 - Using the current "open access" url
     */
-    public String getMapItFileDownloadURL(String serverName){
-        if ((this.getId() == null)||(serverName == null)){
+    public String getMapItFileDownloadURL(String serverName) {
+        if ((this.getId() == null) || (serverName == null)) {
             return null;
         }
         return serverName + "/api/access/datafile/" + this.getId();
@@ -885,11 +885,11 @@ public class DataFile extends DvObject implements Comparable {
     @Override
     protected String toStringExtras() {
         FileMetadata fmd = getLatestFileMetadata();
-        return "label:" + (fmd!=null? fmd.getLabel() : "[no metadata]");
+        return "label:" + (fmd != null ? fmd.getLabel() : "[no metadata]");
     }
 	
 	@Override
-	public <T> T accept( Visitor<T> v ) {
+	public <T> T accept(Visitor<T> v) {
 		return v.visit(this);
 	}
         
@@ -903,7 +903,7 @@ public class DataFile extends DvObject implements Comparable {
     }
     
     @Override 
-    public String getCurrentName(){
+    public String getCurrentName() {
         return getLatestFileMetadata().getLabel();
     }
     
@@ -927,12 +927,12 @@ public class DataFile extends DvObject implements Comparable {
      * Check if the Geospatial Tag has been assigned to this file
      * @return 
      */
-    public boolean hasGeospatialTag(){
-        if (this.dataFileTags == null){
+    public boolean hasGeospatialTag() {
+        if (this.dataFileTags == null) {
             return false;
         }
-        for (DataFileTag tag : this.dataFileTags){
-            if (tag.isGeospatialTag()){
+        for (DataFileTag tag : this.dataFileTags) {
+            if (tag.isGeospatialTag()) {
                 return true;
             }
         }
@@ -944,7 +944,7 @@ public class DataFile extends DvObject implements Comparable {
      *  Set rootDataFileId
      *  @param rootDataFileId
      */
-    public void setRootDataFileId(Long rootDataFileId){
+    public void setRootDataFileId(Long rootDataFileId) {
         this.rootDataFileId = rootDataFileId;
     }
 
@@ -952,7 +952,7 @@ public class DataFile extends DvObject implements Comparable {
      *  Get for rootDataFileId
      *  @return Long
      */
-    public Long getRootDataFileId(){
+    public Long getRootDataFileId() {
         return this.rootDataFileId;
     }
 
@@ -976,7 +976,7 @@ public class DataFile extends DvObject implements Comparable {
      *  Set previousDataFileId
      *  @param previousDataFileId
      */
-    public void setPreviousDataFileId(Long previousDataFileId){
+    public void setPreviousDataFileId(Long previousDataFileId) {
         this.previousDataFileId = previousDataFileId;
     }
 
@@ -984,28 +984,28 @@ public class DataFile extends DvObject implements Comparable {
      *  Get for previousDataFileId
      *  @return Long
      */
-    public Long getPreviousDataFileId(){
+    public Long getPreviousDataFileId() {
         return this.previousDataFileId;
     }
 
-    public String toPrettyJSON(){
+    public String toPrettyJSON() {
         
         return serializeAsJSON(true);
     }
 
-    public String toJSON(){
+    public String toJSON() {
         
         return serializeAsJSON(false);
     }
     
     
     
-    public JsonObject asGsonObject(boolean prettyPrint){
+    public JsonObject asGsonObject(boolean prettyPrint) {
         
         GsonBuilder builder;
-        if (prettyPrint){  // Add pretty printing
+        if (prettyPrint) {  // Add pretty printing
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
-        }else{
+        } else {
             builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();                        
         }
         
@@ -1038,7 +1038,7 @@ public class DataFile extends DvObject implements Comparable {
         datasetMap.put("id", getOwner().getId());
         datasetMap.put("isPublished", thisFileMetadata.getDatasetVersion().isReleased());
         
-        jsonObj.getAsJsonObject().add("dataset",  gson.toJsonTree(datasetMap));
+        jsonObj.getAsJsonObject().add("dataset", gson.toJsonTree(datasetMap));
        
         // ----------------------------------
         //  Add dataverse info
@@ -1050,7 +1050,7 @@ public class DataFile extends DvObject implements Comparable {
         dataverseMap.put("alias", dv.getAlias());
         dataverseMap.put("id", dv.getId()); 
 
-        jsonObj.getAsJsonObject().add("dataverse",  gson.toJsonTree(dataverseMap));
+        jsonObj.getAsJsonObject().add("dataverse", gson.toJsonTree(dataverseMap));
         
         // ----------------------------------
         //  Add label (filename), description, and categories from the FileMetadata object
@@ -1087,7 +1087,7 @@ public class DataFile extends DvObject implements Comparable {
      * @param prettyPrint
      * @return 
      */
-    private String serializeAsJSON(boolean prettyPrint){
+    private String serializeAsJSON(boolean prettyPrint) {
         
         JsonObject fullFileJSON = asGsonObject(prettyPrint);
               
@@ -1097,14 +1097,14 @@ public class DataFile extends DvObject implements Comparable {
     }
     
     public String getPublicationDateFormattedYYYYMMDD() {
-        if (getPublicationDate() != null){
+        if (getPublicationDate() != null) {
                    return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate()); 
         }
         return null;
     }
     
     public String getCreateDateFormattedYYYYMMDD() {
-        if (getCreateDate() != null){
+        if (getCreateDate() != null) {
                    return new SimpleDateFormat("yyyy-MM-dd").format(getCreateDate()); 
         }
         return null;

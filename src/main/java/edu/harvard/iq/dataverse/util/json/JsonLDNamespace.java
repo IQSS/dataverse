@@ -16,9 +16,9 @@ public class JsonLDNamespace {
 	String url;
 
 	public static JsonLDNamespace dvcore = new JsonLDNamespace("dvcore", "https://dataverse.org/schema/core#");
-	public static JsonLDNamespace dcterms = new JsonLDNamespace("dcterms","http://purl.org/dc/terms/");
-	public static JsonLDNamespace ore = new JsonLDNamespace("ore","http://www.openarchives.org/ore/terms/");
-	public static JsonLDNamespace schema = new JsonLDNamespace("schema","http://schema.org/");
+	public static JsonLDNamespace dcterms = new JsonLDNamespace("dcterms", "http://purl.org/dc/terms/");
+	public static JsonLDNamespace ore = new JsonLDNamespace("ore", "http://www.openarchives.org/ore/terms/");
+	public static JsonLDNamespace schema = new JsonLDNamespace("schema", "http://schema.org/");
 
 	private static List<JsonLDNamespace> namespaces = new ArrayList<JsonLDNamespace>(Arrays.asList(dvcore, dcterms, ore, schema));
 	
@@ -26,7 +26,7 @@ public class JsonLDNamespace {
 	    
 	    JsonLDNamespace ns = new JsonLDNamespace(prefix, url);
 	    int i = namespaces.indexOf(ns);
-	    if(i>=0) {
+	    if (i >= 0) {
 	        return namespaces.get(i);
 	    } else {
 	      namespaces.add(ns);
@@ -39,8 +39,8 @@ public class JsonLDNamespace {
     }
     
 	public static boolean isInNamespace(String url) {
-	  for(JsonLDNamespace ns: namespaces) {
-	      if(url.startsWith(ns.getUrl())) {
+	  for (JsonLDNamespace ns : namespaces) {
+	      if (url.startsWith(ns.getUrl())) {
 	          return true;
 	      }
 	  }
@@ -48,7 +48,7 @@ public class JsonLDNamespace {
 	}
 	
 	public static void addNamespacesToContext(Map<String, String> context) {
-	    for(JsonLDNamespace ns: namespaces) {
+	    for (JsonLDNamespace ns : namespaces) {
 	        context.putIfAbsent(ns.getPrefix(), ns.getUrl());
 	    };
 	}

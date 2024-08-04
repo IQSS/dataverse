@@ -79,7 +79,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         /**
          * @todo update permissionModificationTime here.
          */
-        if ( createIndex ) {
+        if (createIndex) {
             indexAsync.indexRole(assignment);
         }
         return assignment;

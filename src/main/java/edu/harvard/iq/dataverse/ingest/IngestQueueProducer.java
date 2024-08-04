@@ -25,16 +25,16 @@ import jakarta.jms.QueueConnectionFactory;
     description = "Dataverse Ingest Queue",
     name = "java:app/jms/queue/ingest",
     resourceAdapter = "jmsra",
-    interfaceName="jakarta.jms.Queue",
+    interfaceName = "jakarta.jms.Queue",
     destinationName = "DataverseIngest"
 )
 @Singleton
 public class IngestQueueProducer {
     
-    @Resource(lookup="java:app/jms/queue/ingest")
+    @Resource(lookup = "java:app/jms/queue/ingest")
     Queue ingestQueue;
     
-    @Resource(lookup="java:app/jms/factory/ingest")
+    @Resource(lookup = "java:app/jms/factory/ingest")
     QueueConnectionFactory ingestQueueFactory;
     
     @Produces

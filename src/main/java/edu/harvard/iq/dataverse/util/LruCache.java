@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @param <K> Class for the cache keys
  * @param <V> Class for the cache values
  */
-public class LruCache<K,V> {
+public class LruCache<K, V> {
     private final LinkedHashMap<K, V> cache = new LinkedHashMap<>(10, 0.75f, true);
     private final ReentrantLock cacheLock = new ReentrantLock();
     private long maxSize = 128;
@@ -22,7 +22,7 @@ public class LruCache<K,V> {
      * @param k The key to get
      * @return The value associated with {@code k}, or {@code null}, if there isn't any.
      */
-    public V get( K k ) {
+    public V get(K k) {
         try {
             cacheLock.lock();
             return cache.get(k);
@@ -35,7 +35,7 @@ public class LruCache<K,V> {
      * @param v the value
      * @return {@code v}, to allow method call chaining.
      */
-    public V put( K k, V v ) {
+    public V put(K k, V v) {
         try {
             cacheLock.lock();
             cache.put(k, v);
@@ -56,7 +56,7 @@ public class LruCache<K,V> {
     }
 
     public void setMaxSize(long maxSize) {
-        if ( maxSize < 1 ) {
+        if (maxSize < 1) {
             throw new IllegalArgumentException("Max cache size can't be less than 1");
         }
         try {
@@ -73,7 +73,7 @@ public class LruCache<K,V> {
         } finally { cacheLock.unlock(); }
     }
     
-    public void invalidate( K k ) {
+    public void invalidate(K k) {
         try {
             cacheLock.lock();
             cache.remove(k);
@@ -81,8 +81,8 @@ public class LruCache<K,V> {
     }
     
     private void shrinkToMaxSize() {
-        while( cache.size() > getMaxSize() ) {
-            cache.remove( cache.entrySet().iterator().next().getKey() );
+        while (cache.size() > getMaxSize()) {
+            cache.remove(cache.entrySet().iterator().next().getKey());
         }
     }
 }

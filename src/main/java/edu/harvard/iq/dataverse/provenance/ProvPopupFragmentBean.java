@@ -48,7 +48,7 @@ import org.primefaces.model.file.UploadedFile;
 
 @ViewScoped
 @Named
-public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Serializable{
+public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(ProvPopupFragmentBean.class.getCanonicalName());
     
@@ -68,13 +68,13 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     ProvEntityFileData dropdownSelectedEntity;
     String storedSelectedEntityName;
     
-    HashMap<String,ProvEntityFileData> provJsonParsedEntities;
+    HashMap<String, ProvEntityFileData> provJsonParsedEntities;
    
     //This map uses ChecksumValue as the key. Tried storageIdentifier but that value switches during publication
     //UpdatesEntry contains the prov json, prov freeform and whether we will delete json
     //Originally there was a Hashmap<DataFile,String> to store this data 
     //but equality is "broken" for entities like DataFile --mad 4.8.5    
-    HashMap<String,UpdatesEntry> provenanceUpdates = new HashMap<>();
+    HashMap<String, UpdatesEntry> provenanceUpdates = new HashMap<>();
     
     @EJB
     DataFileServiceBean dataFileService;
@@ -94,7 +94,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputStream());
         
         
-        if(!provUtil.isProvValid(provJsonState)) { //if uploaded prov-json does not comply with schema
+        if (!provUtil.isProvValid(provJsonState)) { //if uploaded prov-json does not comply with schema
             Logger.getLogger(ProvPopupFragmentBean.class.getName())
                     .log(Level.INFO, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError")); 
             removeJsonAndRelatedData();
@@ -111,7 +111,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
                 removeJsonAndRelatedData();
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"));
             } 
-            if(provJsonParsedEntities.isEmpty()) {
+            if (provJsonParsedEntities.isEmpty()) {
                 removeJsonAndRelatedData();
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.editProvenanceDialog.noEntitiesError"));
             }
@@ -125,10 +125,10 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     }
      
     public void updatePopupState(FileMetadata fm, boolean clearUpdates) throws WrappedResponse, IOException {       
-        if(null == fm) {
+        if (null == fm) {
             throw new NullPointerException("FileMetadata initialized to null in provenance popup");
         } 
-        if(clearUpdates) {
+        if (clearUpdates) {
             clearProvenanceUpdates();
         }
         fileMetadata = fm;
@@ -138,10 +138,10 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     //This updates the popup for the selected file each time its open
     //You should call the one that takes fileMetadata if you are calling this fragment from another page.
     public void updatePopupState() throws AbstractApiBean.WrappedResponse, IOException {
-        if(null == fileMetadata) {
+        if (null == fileMetadata) {
             throw new NullPointerException("FileMetadata cannot be null when calling updatePopupState");
         }
-        if(null == dataset ) {
+        if (null == dataset) {
             dataset = fileMetadata.getDatasetVersion().getDataset(); //DatasetVersion is null here on file upload page...
         }
         
@@ -153,24 +153,24 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         freeformTextState = fileMetadata.getProvFreeForm();
         storedSelectedEntityName = popupDataFile.getProvEntityName();
      
-        if(provenanceUpdates.containsKey(popupDataFile.getChecksumValue())) { //If there is already staged provenance info 
+        if (provenanceUpdates.containsKey(popupDataFile.getChecksumValue())) { //If there is already staged provenance info 
             provJsonState = provenanceUpdates.get(popupDataFile.getChecksumValue()).provJson;
-            if(null != provenanceUpdates.get(popupDataFile.getChecksumValue()).provFreeform) {
+            if (null != provenanceUpdates.get(popupDataFile.getChecksumValue()).provFreeform) {
                 freeformTextState = provenanceUpdates.get(popupDataFile.getChecksumValue()).provFreeform;
             }
 
-            if(null != provenanceUpdates.get(popupDataFile.getChecksumValue()).provJson) {
+            if (null != provenanceUpdates.get(popupDataFile.getChecksumValue()).provJson) {
                 provJsonState = provenanceUpdates.get(popupDataFile.getChecksumValue()).provJson;
                 generateProvJsonParsedEntities(); //calling this each time is somewhat inefficient, but storing the state is a lot of lifting.
             }
 
-            if(null != provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile
+            if (null != provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile
                     && provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile.getProvEntityName() != null
                     && !provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile.getProvEntityName().isEmpty()) { 
-                if(null == provJsonState) { //If the prov json hasn't been updated but other values for the datafile have
+                if (null == provJsonState) { //If the prov json hasn't been updated but other values for the datafile have
                     
                     JsonObject provJsonObject = execCommand(new GetProvJsonCommand(dvRequestService.getDataverseRequest(), popupDataFile)); 
-                    if(null != provJsonObject) {
+                    if (null != provJsonObject) {
                         provJsonState = provUtil.getPrettyJsonString(provJsonObject);
                     }
                 }
@@ -180,9 +180,9 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
                 
             }
             
-        } else if(null != popupDataFile.getCreateDate()){ //Is this file fully uploaded and already has prov data saved?   
+        } else if (null != popupDataFile.getCreateDate()) { //Is this file fully uploaded and already has prov data saved?   
             JsonObject provJsonObject = execCommand(new GetProvJsonCommand(dvRequestService.getDataverseRequest(), popupDataFile));
-            if(null != provJsonObject) {
+            if (null != provJsonObject) {
                 provJsonState = provUtil.getPrettyJsonString(provJsonObject);
                 
                 generateProvJsonParsedEntities();
@@ -196,51 +196,51 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     }
     
     //Stores the provenance changes decided upon in the popup to be saved when all edits across files are done.
-    public String stagePopupChanges(boolean saveInPopup) throws IOException{
+    public String stagePopupChanges(boolean saveInPopup) throws IOException {
         UpdatesEntry stagingEntry = provenanceUpdates.get(popupDataFile.getChecksumValue());
-        if(stagingEntry == null) {
+        if (stagingEntry == null) {
             stagingEntry = new UpdatesEntry(popupDataFile, null, false, null);// (DataFile dataFile, String provJson, Boolean deleteJson, String provFreeform) { 
         }
-        if(null == freeformTextInput && null != freeformTextState) {
+        if (null == freeformTextInput && null != freeformTextState) {
             freeformTextInput = "";
         }
-        if(null != freeformTextInput && !freeformTextInput.equals(freeformTextState)) {
+        if (null != freeformTextInput && !freeformTextInput.equals(freeformTextState)) {
             stagingEntry.provFreeform = freeformTextInput;
         } 
-        if(deleteStoredJson) {
+        if (deleteStoredJson) {
             stagingEntry.deleteJson = true;
             stagingEntry.provJson = null;
             popupDataFile.setProvEntityName(null); 
         }        
-        if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) { //delete and create again can both happen at once
+        if (null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) { //delete and create again can both happen at once
             stagingEntry.provJson = IOUtils.toString(jsonUploadedTempFile.getInputStream());
             stagingEntry.deleteJson = false;
 
             jsonUploadedTempFile = null;
         } 
 
-        if(null != dropdownSelectedEntity && !(null != storedSelectedEntityName && storedSelectedEntityName.equals(dropdownSelectedEntity.getEntityName()))) {
-            if(null == stagingEntry.provJson) {
+        if (null != dropdownSelectedEntity && !(null != storedSelectedEntityName && storedSelectedEntityName.equals(dropdownSelectedEntity.getEntityName()))) {
+            if (null == stagingEntry.provJson) {
                 stagingEntry.provJson = provJsonState; //this will trigger the prov json save command to save the entity if it was set without a json update
             }
             popupDataFile.setProvEntityName(dropdownSelectedEntity.getEntityName());
         }
         
-        if(stagingEntry.provJson != null || stagingEntry.deleteJson != false || stagingEntry.provFreeform != null) { //if the entry isn't empty by our standards
+        if (stagingEntry.provJson != null || stagingEntry.deleteJson != false || stagingEntry.provFreeform != null) { //if the entry isn't empty by our standards
             provenanceUpdates.put(popupDataFile.getChecksumValue(), stagingEntry);
         }
 
         addSuccessMessageToPage(saveInPopup);
-        if(saveInPopup) { //file page needs to save here
+        if (saveInPopup) { //file page needs to save here
             try {
                 saveStagedProvJson(true);
                 stagingEntry = provenanceUpdates.get(popupDataFile.getChecksumValue()); //reloading as it can be set in saveStagedProvJson
-                if(null != stagingEntry && null != stagingEntry.provFreeform) {
+                if (null != stagingEntry && null != stagingEntry.provFreeform) {
                     String theReturn = filePage.saveProvFreeform(stagingEntry.provFreeform, stagingEntry.dataFile);
                     addSuccessMessageToPage(saveInPopup); //we have to call this again here otherwise the file page overrides it
                     return theReturn;
                 } 
-            } catch (AbstractApiBean.WrappedResponse|CommandException ex) {
+            } catch (AbstractApiBean.WrappedResponse | CommandException ex) {
                 filePage.showProvError();
                 Logger.getLogger(ProvPopupFragmentBean.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -251,9 +251,9 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     
     public void addSuccessMessageToPage(boolean saveInPopup) {
         String message = "";
-        if(saveInPopup) {
-            if(isJsonUpdated()) {
-                if(isDataFilePublishedRendering()) {
+        if (saveInPopup) {
+            if (isJsonUpdated()) {
+                if (isDataFilePublishedRendering()) {
                    message += BundleUtil.getStringFromBundle("file.provAlert.filePage.published.json");
                 } else {
                    message += BundleUtil.getStringFromBundle("file.provAlert.filePage.unpublished.json");
@@ -263,8 +263,8 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
                 message += BundleUtil.getStringFromBundle("file.provAlert.filePage.freeform");
             }
         } else {
-            if(isJsonUpdated()) {
-                if(isDataFilePublishedRendering()) {
+            if (isJsonUpdated()) {
+                if (isDataFilePublishedRendering()) {
                    message += BundleUtil.getStringFromBundle("file.provAlert.published.json");
                 } else {
                    message += BundleUtil.getStringFromBundle("file.provAlert.unpublished.json");
@@ -285,7 +285,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     
     public boolean saveStagedProvJson(boolean saveContext, List<FileMetadata> fileMetadatas) throws AbstractApiBean.WrappedResponse {
         boolean commandsCalled = false;
-        Set <String> finalChecksums = null; 
+        Set<String> finalChecksums = null; 
         
         /*
             Some of the files for which the users may have uploaded provenance metadata
@@ -298,7 +298,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         */
         if (fileMetadatas != null) {
             finalChecksums = new HashSet<>();
-            for(FileMetadata fm : fileMetadatas) {
+            for (FileMetadata fm : fileMetadatas) {
                 if (fm.getDataFile() != null && fm.getDataFile().getChecksumValue() != null) {
                     finalChecksums.add(fm.getDataFile().getChecksumValue());
                 }
@@ -313,10 +313,10 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             
             if (finalChecksums == null || finalChecksums.contains(checksumValue)) {
                 boolean entrySaved = false;
-                if(mapEntry.deleteJson) {
+                if (mapEntry.deleteJson) {
                     df = execCommand(new DeleteProvJsonCommand(dvRequestService.getDataverseRequest(), df, saveContext));
                     entrySaved = true;
-                } else if(null != provString) {
+                } else if (null != provString) {
                     df = execCommand(new PersistProvJsonCommand(dvRequestService.getDataverseRequest(), df, provString, df.getProvEntityName(), saveContext));
                     entrySaved = true;
                 }
@@ -343,9 +343,9 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     //Called by editFilesPage to update its metadata with stored prov freeform values for multiple DataFiles
     public Boolean updatePageMetadatasWithProvFreeform(List<FileMetadata> fileMetadatas) {
         Boolean changes = false;
-        for(FileMetadata fm : fileMetadatas) {
+        for (FileMetadata fm : fileMetadatas) {
             UpdatesEntry ue = provenanceUpdates.get(fm.getDataFile().getChecksumValue());
-            if(null != ue && null != ue.provFreeform) {
+            if (null != ue && null != ue.provFreeform) {
                 fm.setProvFreeForm(ue.provFreeform);
                 changes = true;
             }
@@ -379,7 +379,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     
     public boolean isFreeformUpdated() {
        return (null != freeformTextInput && !(freeformTextInput.equals(freeformTextState)))
-                || (null == freeformTextInput && null != freeformTextState) ;
+                || (null == freeformTextInput && null != freeformTextState);
     }
         
     public String getFreeformTextInput() {
@@ -406,19 +406,19 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         return null != fileMetadata && fileMetadata.getDatasetVersion().isDraft();
     }
     public boolean provJsonAlreadyPublishedRendering() {
-        if(null == popupDataFile) { //is hit on loading, returns true to prevent loading of upload elements
+        if (null == popupDataFile) { //is hit on loading, returns true to prevent loading of upload elements
             return false; 
         }
-        for(DataFile df : dataset.getFiles()) {
-            if(df.getChecksumType().equals(popupDataFile.getChecksumType())
+        for (DataFile df : dataset.getFiles()) {
+            if (df.getChecksumType().equals(popupDataFile.getChecksumType())
                && df.getChecksumValue().equals(popupDataFile.getChecksumValue())) { //our popup file exists in the dataset
                 
-                if(df.getFileMetadatas().size() == 1 && df.getFileMetadata().getDatasetVersion().isDraft()) { 
+                if (df.getFileMetadatas().size() == 1 && df.getFileMetadata().getDatasetVersion().isDraft()) { 
                     //On file upload, the dataset has the file in the draft so we need a different check
                     return false;
                 }
                 
-                if(null != df.getProvEntityName() && !df.getProvEntityName().isEmpty()) { //we use entity name to see that the prov json was added before
+                if (null != df.getProvEntityName() && !df.getProvEntityName().isEmpty()) { //we use entity name to see that the prov json was added before
                     return true;
                 }
             }
@@ -450,8 +450,8 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     public ArrayList<ProvEntityFileData> searchParsedEntities(String query) throws IOException {
         ArrayList<ProvEntityFileData> fd = new ArrayList<>();
         
-        for ( ProvEntityFileData s : getProvJsonParsedEntitiesArray()) {
-            if(s.entityName.contains(query) || s.fileName.contains(query) || s.fileType.contains(query)) {
+        for (ProvEntityFileData s : getProvJsonParsedEntitiesArray()) {
+            if (s.entityName.contains(query) || s.fileName.contains(query) || s.fileType.contains(query)) {
                 fd.add(s);
             }
         }
@@ -464,7 +464,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         return provJsonParsedEntities.get(entityName);
     }
     
-    public HashMap<String,UpdatesEntry> getProvenanceUpdates() {
+    public HashMap<String, UpdatesEntry> getProvenanceUpdates() {
         return provenanceUpdates;
     }
     

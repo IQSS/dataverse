@@ -16,7 +16,7 @@ public class Feedback {
     public Feedback(String fromEmail, String toEmail, String ccEmail, String subject, String body) {
         this.fromEmail = fromEmail;
         this.toEmail = toEmail;
-        this.ccEmail=ccEmail;
+        this.ccEmail = ccEmail;
         this.subject = subject;
         this.body = body;
     }

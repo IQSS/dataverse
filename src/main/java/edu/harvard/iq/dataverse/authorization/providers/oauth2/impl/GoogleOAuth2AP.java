@@ -34,27 +34,27 @@ public class GoogleOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 
     @Override
     protected ParsedUserResponse parseUserResponse(String responseBody) {
-        try ( StringReader rdr = new StringReader(responseBody);
-              JsonReader jrdr = Json.createReader(rdr) )  {
+        try (StringReader rdr = new StringReader(responseBody);
+              JsonReader jrdr = Json.createReader(rdr)) {
             JsonObject response = jrdr.readObject();
             
             AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
-                    response.getString("given_name",""),
-                    response.getString("family_name",""),
-                    response.getString("email",""),
+                    response.getString("given_name", ""),
+                    response.getString("family_name", ""),
+                    response.getString("email", ""),
                     "",
                     ""
             );
             String persistentUserId = response.getString("id");
             String username = response.getString("email");
-            if ( username != null ) {
+            if (username != null) {
                 username = username.split("@")[0].trim();
             } else {
                 // compose a username from given and family names
-                username = response.getString("given_name","") + "."
-                           + response.getString("family_name","");
+                username = response.getString("given_name", "") + "."
+                           + response.getString("family_name", "");
                 username = username.trim();
-                if ( username.isEmpty() ) {
+                if (username.isEmpty()) {
                     username = UUID.randomUUID().toString();
                 } else {
                     username = username.replaceAll(" ", "-");

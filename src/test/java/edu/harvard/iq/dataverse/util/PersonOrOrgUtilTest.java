@@ -94,7 +94,7 @@ public class PersonOrOrgUtilTest {
         private void verifyIsOrganization(String fullName) {
             JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization(fullName, false, false);
             System.out.println(JsonUtil.prettyPrint(obj));
-            assertEquals(obj.getString("fullName"),fullName);
+            assertEquals(obj.getString("fullName"), fullName);
             assertFalse(obj.getBoolean("isPerson"));
 
         }
@@ -106,15 +106,15 @@ public class PersonOrOrgUtilTest {
         private void verifyIsPerson(String fullName, String givenName, String familyName, boolean isPerson) {
             JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization(fullName, false, isPerson);
             System.out.println(JsonUtil.prettyPrint(obj));
-            assertEquals(obj.getString("fullName"),fullName);
+            assertEquals(obj.getString("fullName"), fullName);
             assertTrue(obj.getBoolean("isPerson"));
             assertEquals(obj.containsKey("givenName"), givenName != null);
-            if(obj.containsKey("givenName") && givenName != null) {
-                assertEquals(obj.getString("givenName"),givenName);
+            if (obj.containsKey("givenName") && givenName != null) {
+                assertEquals(obj.getString("givenName"), givenName);
             }
             assertEquals(obj.containsKey("familyName"), familyName != null);
-            if(obj.containsKey("familyName") && familyName != null) {
-                assertEquals(obj.getString("familyName"),familyName);
+            if (obj.containsKey("familyName") && familyName != null) {
+                assertEquals(obj.getString("familyName"), familyName);
             }
         }
 

@@ -82,7 +82,7 @@ public class UnmanagedPermaLinkPidProvider extends AbstractPidProvider {
          * If this is found to cause issues, users should be able to use a managed permalink provider as a work-around. The code here could 
          * be changed to allow default lengths for the authority, separator, and shoulder and/or to add a list of known (but unmanaged) authority, separator, shoulder combos.
          */
-        if(identifierString.length() < 4) {
+        if (identifierString.length() < 4) {
             logger.warning("A short unmanaged permalink was found - assuming the authority is empty: " + identifierString);
             return super.parsePersistentId(protocol, "", identifierString);
         }
@@ -99,7 +99,7 @@ public class UnmanagedPermaLinkPidProvider extends AbstractPidProvider {
 
     @Override
     public String getUrlPrefix() {
-        return SystemConfig.getDataverseSiteUrlStatic()+ "/citation?persistentId=" + PermaLinkPidProvider.PERMA_PROTOCOL + ":";
+        return SystemConfig.getDataverseSiteUrlStatic() + "/citation?persistentId=" + PermaLinkPidProvider.PERMA_PROTOCOL + ":";
     }
 
     @Override

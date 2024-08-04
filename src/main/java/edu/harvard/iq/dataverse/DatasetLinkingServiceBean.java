@@ -60,7 +60,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
     
     public DatasetLinkingDataverse findDatasetLinkingDataverse(Long datasetId, Long linkingDataverseId) {
         try {
-            return em.createNamedQuery("DatasetLinkingDataverse.findByDatasetIdAndLinkingDataverseId",DatasetLinkingDataverse.class)
+            return em.createNamedQuery("DatasetLinkingDataverse.findByDatasetIdAndLinkingDataverseId", DatasetLinkingDataverse.class)
                 .setParameter("datasetId", datasetId)
                 .setParameter("linkingDataverseId", linkingDataverseId)
                 .getSingleResult();            

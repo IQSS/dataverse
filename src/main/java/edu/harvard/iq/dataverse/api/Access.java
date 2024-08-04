@@ -208,7 +208,7 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafile/bundle/{fileId}")
     @Produces({"application/zip"})
-    public BundleDownloadInstance datafileBundle(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId,@QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public BundleDownloadInstance datafileBundle(@Context ContainerRequestContext crc, @PathParam("fileId") String fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
  
 
         GuestbookResponse gbr = null;
@@ -218,7 +218,7 @@ public class Access extends AbstractApiBean {
         // This will throw a ForbiddenException if access isn't authorized: 
         checkAuthorization(getRequestUser(crc), df);
         
-        if (gbrecs != true && df.isReleased()){
+        if (gbrecs != true && df.isReleased()) {
             // Write Guestbook record if not done previously and file is released
             //This calls findUserOrDie which will retrieve the key param or api token header, or the workflow token header.
             User apiTokenUser = findAPITokenUser(getRequestUser(crc));
@@ -268,14 +268,14 @@ public class Access extends AbstractApiBean {
     //Added a wrapper method since the original method throws a wrapped response 
     //the access methods return files instead of responses so we convert to a WebApplicationException
     
-    private DataFile findDataFileOrDieWrapper(String fileId){
+    private DataFile findDataFileOrDieWrapper(String fileId) {
         
         DataFile df = null;
         
         try {
             df = findDataFileOrDie(fileId);
         } catch (WrappedResponse ex) {
-            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+            logger.warning("Access: datafile service could not locate a DataFile object for id " + fileId + "!");
             logger.warning(ex.getWrappedMessageWhenJson());
             throw new NotFoundException();
         }
@@ -316,7 +316,7 @@ public class Access extends AbstractApiBean {
         // This will throw a ForbiddenException if access isn't authorized: 
         checkAuthorization(getRequestUser(crc), df);
 
-        if (gbrecs != true && df.isReleased()){
+        if (gbrecs != true && df.isReleased()) {
             // Write Guestbook record if not done previously and file is released
             User apiTokenUser = findAPITokenUser(getRequestUser(crc));
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
@@ -331,14 +331,14 @@ public class Access extends AbstractApiBean {
 
         if (df.isTabularData()) {
             String originalMimeType = df.getDataTable().getOriginalFileFormat();
-            dInfo.addServiceAvailable(new OptionalAccessService("original", originalMimeType, "format=original","Saved original (" + originalMimeType + ")"));
+            dInfo.addServiceAvailable(new OptionalAccessService("original", originalMimeType, "format=original", "Saved original (" + originalMimeType + ")"));
             dInfo.addServiceAvailable(new OptionalAccessService("tabular", "text/tab-separated-values", "format=tab", "Tabular file in native format"));
             dInfo.addServiceAvailable(new OptionalAccessService("R", "application/x-rlang-transport", "format=RData", "Data in R format"));
             dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
             dInfo.addServiceAvailable(new OptionalAccessService("subset", "text/tab-separated-values", "variables=&lt;LIST&gt;", "Column-wise Subsetting"));
         }
         String driverId = DataAccess.getStorageDriverFromIdentifier(df.getStorageIdentifier());
-        if(systemConfig.isGlobusFileDownload() && (GlobusAccessibleStore.acceptsGlobusTransfers(driverId) || GlobusAccessibleStore.allowsGlobusReferences(driverId))) {
+        if (systemConfig.isGlobusFileDownload() && (GlobusAccessibleStore.acceptsGlobusTransfers(driverId) || GlobusAccessibleStore.allowsGlobusReferences(driverId))) {
             dInfo.addServiceAvailable(new OptionalAccessService("GlobusTransfer", df.getContentType(), "format=GlobusTransfer", "Download via Globus"));
         }
         
@@ -346,7 +346,7 @@ public class Access extends AbstractApiBean {
         downloadInstance.setRequestUriInfo(uriInfo);
         downloadInstance.setRequestHttpHeaders(headers);
         
-        if (gbr != null){
+        if (gbr != null) {
             downloadInstance.setGbr(gbr);
             downloadInstance.setDataverseRequestService(dvRequestService);
             downloadInstance.setCommand(engineSvc);
@@ -365,7 +365,7 @@ public class Access extends AbstractApiBean {
                 //for download
                 // if the dataset has tabular files - it should not be applied to instances 
                 // where the file selected is not tabular see #6972
-                if("format".equals(key) && "original".equals(value) && !df.isTabularData()) {
+                if ("format".equals(key) && "original".equals(value) && !df.isTabularData()) {
                     serviceRequested = false;
                     break;
                 }
@@ -502,8 +502,8 @@ public class Access extends AbstractApiBean {
 
         String fileName = fm.getLabel().replaceAll("\\.tab$", "-ddi.xml");
 
-        response.setHeader("Content-disposition", "attachment; filename=\""+fileName+"\"");
-        response.setHeader("Content-Type", "application/xml; name=\""+fileName+"\"");
+        response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + "\"");
+        response.setHeader("Content-Type", "application/xml; name=\"" + fileName + "\"");
         
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();
@@ -567,7 +567,7 @@ public class Access extends AbstractApiBean {
         List<AuxiliaryFile> auxFileList = auxiliaryFileService.findAuxiliaryFiles(df, origin);
 
         if (auxFileList == null || auxFileList.isEmpty()) {
-            throw new NotFoundException("No Auxiliary files exist for datafile " + fileId + (origin==null ? "": " and the specified origin"));
+            throw new NotFoundException("No Auxiliary files exist for datafile " + fileId + (origin == null ? "" : " and the specified origin"));
         }
         boolean isAccessAllowed = isAccessAuthorized(user, df);
         JsonArrayBuilder jab = Json.createArrayBuilder();
@@ -670,7 +670,7 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafiles")
     @Consumes("text/plain")
-    @Produces({ "application/zip" })
+    @Produces({"application/zip"})
     public Response postDownloadDatafiles(@Context ContainerRequestContext crc, String fileIds, @QueryParam("gbrecs") boolean gbrecs, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         
 
@@ -802,10 +802,10 @@ public class Access extends AbstractApiBean {
         }
         
         final String fileIds;
-        if(rawFileIds.startsWith("fileIds=")) {
+        if (rawFileIds.startsWith("fileIds=")) {
             fileIds = rawFileIds.substring(8); // String "fileIds=" from the front
         } else {
-            fileIds=rawFileIds;
+            fileIds = rawFileIds;
         }
         /* Note - fileIds coming from the POST ends in '\n' and a ',' has been added after the last file id number and before a
          * final '\n' - this stops the last item from being parsed in the fileIds.split(","); line below.
@@ -819,7 +819,7 @@ public class Access extends AbstractApiBean {
         Boolean getOrig = false;
         for (String key : uriInfo.getQueryParameters().keySet()) {
             String value = uriInfo.getQueryParameters().getFirst(key);
-            if("format".equals(key) && "original".equals(value)) {
+            if ("format".equals(key) && "original".equals(value)) {
                 getOrig = true;
             }
         }
@@ -871,7 +871,7 @@ public class Access extends AbstractApiBean {
 
                                     logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                                     //downloadInstance.addDataFile(file);
-                                    if (donotwriteGBResponse != true && file.isReleased()){
+                                    if (donotwriteGBResponse != true && file.isReleased()) {
                                         GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
                                         guestbookResponseService.save(gbr);
                                         MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, file);                                        
@@ -915,7 +915,7 @@ public class Access extends AbstractApiBean {
                                             file.getDataTable().setOriginalFileSize(size);
                                             fileService.saveDataTable(file.getDataTable());
                                         }
-                                        if (size == 0L){
+                                        if (size == 0L) {
                                             throw new IOException("Invalid file size or accessObject when checking limits of zip file");
                                         }
                                     } else {
@@ -996,7 +996,7 @@ public class Access extends AbstractApiBean {
     // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
     @Path("fileCardImage/{fileId}")
     @GET
-    @Produces({ "image/png" })
+    @Produces({"image/png"})
     public InputStream fileCardImage(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
         
         
@@ -1004,7 +1004,7 @@ public class Access extends AbstractApiBean {
         DataFile df = dataFileService.find(fileId);
         
         if (df == null) {
-            logger.warning("Preview: datafile service could not locate a DataFile object for id "+fileId+"!");
+            logger.warning("Preview: datafile service could not locate a DataFile object for id " + fileId + "!");
             return null; 
         }
         
@@ -1036,14 +1036,14 @@ public class Access extends AbstractApiBean {
     // the Dataverse page is no longer using this method.
     @Path("dsCardImage/{versionId}")
     @GET
-    @Produces({ "image/png" })
+    @Produces({"image/png"})
     public InputStream dsCardImage(@PathParam("versionId") Long versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
         
         
         DatasetVersion datasetVersion = versionService.find(versionId);
         
         if (datasetVersion == null) {
-            logger.warning("Preview: Version service could not locate a DatasetVersion object for id "+versionId+"!");
+            logger.warning("Preview: Version service could not locate a DatasetVersion object for id " + versionId + "!");
             return null; 
         }
         
@@ -1089,14 +1089,14 @@ public class Access extends AbstractApiBean {
     
     @Path("dvCardImage/{dataverseId}")
     @GET
-    @Produces({ "image/png" })
+    @Produces({"image/png"})
     public InputStream dvCardImage(@PathParam("dataverseId") Long dataverseId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
         logger.fine("entering dvCardImage");
         
         Dataverse dataverse = dataverseService.find(dataverseId);
         
         if (dataverse == null) {
-            logger.warning("Preview: Version service could not locate a DatasetVersion object for id "+dataverseId+"!");
+            logger.warning("Preview: Version service could not locate a DatasetVersion object for id " + dataverseId + "!");
             return null; 
         }
         
@@ -1104,7 +1104,7 @@ public class Access extends AbstractApiBean {
         
         // First, check if the dataverse has a defined logo: 
         
-        if (dataverse.getDataverseTheme()!=null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
+        if (dataverse.getDataverseTheme() != null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
             File dataverseLogoFile = getLogo(dataverse);
             if (dataverseLogoFile != null) {
                 logger.fine("dvCardImage: logo file found");
@@ -1113,7 +1113,7 @@ public class Access extends AbstractApiBean {
 
                 try {
                     if (dataverseLogoFile.exists()) {
-                        logoThumbNailPath =  ImageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
+                        logoThumbNailPath = ImageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
                         if (logoThumbNailPath != null) {
                             in = new FileInputStream(logoThumbNailPath);
                         }
@@ -1302,7 +1302,7 @@ public class Access extends AbstractApiBean {
 
         AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic, type, mediaType);
 
-        if (saved!=null) {
+        if (saved != null) {
             return ok(json(saved));
         } else {
             return error(BAD_REQUEST, "Error saving Auxiliary file.");
@@ -1350,7 +1350,7 @@ public class Access extends AbstractApiBean {
             auxiliaryFileService.deleteAuxiliaryFile(dataFile, formatTag, formatVersion);
         } catch (FileNotFoundException e) {
             throw new NotFoundException();
-        } catch(IOException io) {
+        } catch (IOException io) {
             throw new ServerErrorException("IO Exception trying remove auxiliary file", Response.Status.INTERNAL_SERVER_ERROR, io);
         }
 
@@ -1557,7 +1557,7 @@ public class Access extends AbstractApiBean {
         try {
             engineSvc.submit(new AssignRoleCommand(ra, fileDownloaderRole, dataFile, dataverseRequest, null));
             FileAccessRequest far = dataFile.getAccessRequestForAssignee(ra);
-            if(far!=null) {
+            if (far != null) {
                 far.setStateGranted();
                 dataFileService.save(dataFile);
             }
@@ -1767,14 +1767,14 @@ public class Access extends AbstractApiBean {
         // access is also blocked for retention expired files
         boolean retentionExpired = FileUtil.isRetentionExpired(df);
         // No access ever if retention is expired
-        if(retentionExpired) return false;
+        if (retentionExpired) return false;
 
         /*
         SEK 7/26/2018 for 3661 relying on the version state of the dataset versions
             to which this file is attached check to see if at least one is  RELEASED
         */
-        for (FileMetadata fm : df.getFileMetadatas()){
-            if(fm.getDatasetVersion().isPublished()){
+        for (FileMetadata fm : df.getFileMetadatas()) {
+            if (fm.getDatasetVersion().isPublished()) {
                  published = true; 
                  break;
             }
@@ -1935,10 +1935,10 @@ public class Access extends AbstractApiBean {
          * happens when there is no key/token, and which we want if there's no session)
          * from overriding an authenticated session user.
          */
-        if(apiTokenUser instanceof GuestUser) {
-            if(session!=null && session.getUser()!=null) {
+        if (apiTokenUser instanceof GuestUser) {
+            if (session != null && session.getUser() != null) {
             //The apiTokenUser, if set, will override the sessionUser in permissions calcs, so set it to null if we have a session user
-            apiTokenUser=null;
+            apiTokenUser = null;
             }
         }
         return apiTokenUser;

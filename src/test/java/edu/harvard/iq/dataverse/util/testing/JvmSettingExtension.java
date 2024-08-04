@@ -85,7 +85,7 @@ public class JvmSettingExtension implements BeforeTestExecutionCallback, AfterTe
             // Retrieve value from static (!) test class method if no direct setting given
             if (setting.value().equals(PLACEHOLDER)) {
                 Optional<Method> valueMethod = ReflectionSupport.findMethod(testClass, setting.method());
-                if (valueMethod.isEmpty() || ! Modifier.isStatic(valueMethod.get().getModifiers())) {
+                if (valueMethod.isEmpty() || !Modifier.isStatic(valueMethod.get().getModifiers())) {
                     throw new IllegalStateException("Could not find a static method '" + setting.method() + "' in test class");
                 }
                 value = (String) ReflectionSupport.invokeMethod(valueMethod.get(), null);

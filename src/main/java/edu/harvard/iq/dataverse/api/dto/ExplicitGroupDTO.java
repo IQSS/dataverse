@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
  *
  * @author michael
  */
-public class ExplicitGroupDTO  {
+public class ExplicitGroupDTO {
     
     private String description;
     private String displayName;
@@ -21,11 +21,11 @@ public class ExplicitGroupDTO  {
      * @return {@code eg}, for call chaining.
      */
     
-    public ExplicitGroup apply( ExplicitGroup eg) {
+    public ExplicitGroup apply(ExplicitGroup eg) {
         
         eg.setDescription(description);
         eg.setDisplayName(displayName);
-        if ( eg.getGroupAliasInOwner() == null ) {
+        if (eg.getGroupAliasInOwner() == null) {
             eg.setGroupAliasInOwner(aliasInOwner);
         }
         

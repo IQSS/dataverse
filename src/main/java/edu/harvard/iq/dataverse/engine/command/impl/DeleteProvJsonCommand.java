@@ -44,7 +44,7 @@ public class DeleteProvJsonCommand extends AbstractCommand<DataFile> {
         }
         
         dataFile.setProvEntityName("");
-        if(saveContext) {
+        if (saveContext) {
             dataFile = ctxt.files().save(dataFile);
         }
         return dataFile;

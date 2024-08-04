@@ -13,7 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(indexes = {@Index(columnList="savedsearch_id")})
+@Table(indexes = {@Index(columnList = "savedsearch_id")})
 public class SavedSearchFilterQuery implements Serializable {
 
     @Id
