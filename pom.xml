@@ -975,6 +975,8 @@
                   <exportDatatables>true</exportDatatables>
                   <activeRecipes>
                     <recipe>org.openrewrite.java.format.Spaces</recipe>
+                    <recipe>org.openrewrite.java.format.RemoveTrailingWhitespace</recipe>
+                    <recipe>org.openrewrite.java.format.BlankLines</recipe>
                   </activeRecipes>
                 </configuration>
                 <dependencies>
