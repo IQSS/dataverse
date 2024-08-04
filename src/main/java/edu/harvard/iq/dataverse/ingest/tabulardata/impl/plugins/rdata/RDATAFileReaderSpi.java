@@ -49,7 +49,8 @@ public class RDATAFileReaderSpi extends TabularDataFileReaderSpi {
     LOG.fine(RDATAFileReaderSpi.class.getName() + " is called");
   }
 
-  public String getDescription(Locale locale) {
+    @Override
+    public String getDescription(Locale locale) {
     return "HU-IQSS-DVN-project RDATA";
   }
 

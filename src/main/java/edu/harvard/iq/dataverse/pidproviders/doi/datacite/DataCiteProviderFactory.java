@@ -36,6 +36,7 @@ public class DataCiteProviderFactory implements PidProviderFactory {
                 datafilePidFormat, managedList, excludedList, mdsUrl, apiUrl, username, password);
     }
 
+    @Override
     public String getType() {
         return DataCiteDOIProvider.TYPE;
     }

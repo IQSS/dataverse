@@ -76,10 +76,12 @@ public class TabularSubsetGenerator implements SubsetGenerator {
      * Please consult git history if you are interested in looking at that code. 
      */
         
+    @Override
     public void subsetFile(String infile, String outfile, List<Integer> columns, Long numCases) {
         subsetFile(infile, outfile, columns, numCases, "\t");
     }
 
+    @Override
     public void subsetFile(String infile, String outfile, List<Integer> columns, Long numCases,
         String delimiter) {
         try (FileInputStream fis = new FileInputStream(new File(infile))) {
@@ -90,6 +92,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
     }
 
 
+    @Override
     public void subsetFile(InputStream in, String outfile, List<Integer> columns, Long numCases,
         String delimiter) {
           try (Scanner scanner = new Scanner(in); BufferedWriter out = new BufferedWriter(new FileWriter(outfile))) {

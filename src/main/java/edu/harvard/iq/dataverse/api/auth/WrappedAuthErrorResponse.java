@@ -20,6 +20,7 @@ public class WrappedAuthErrorResponse extends Exception {
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 
+    @Override
     public String getMessage() {
         return this.message;
     }

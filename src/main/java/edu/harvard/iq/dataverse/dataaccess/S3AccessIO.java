@@ -867,6 +867,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return false;
     }
 
+    @Override
     public boolean downloadRedirectEnabled(String auxObjectTag) {
         return downloadRedirectEnabled();
     }
@@ -880,6 +881,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      * @return redirect url
      * @throws IOException.
      */
+    @Override
     public String generateTemporaryDownloadUrl(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName) throws IOException {
         //Questions:
         // Q. Should this work for private and public?

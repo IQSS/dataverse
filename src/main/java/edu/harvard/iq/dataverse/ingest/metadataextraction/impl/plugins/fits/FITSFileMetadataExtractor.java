@@ -224,6 +224,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         super(null);
     }
 
+    @Override
     public FileMetadataIngest ingest(BufferedInputStream stream) throws IOException {
         dbgLog.fine("Attempting to read FITS file;");
 

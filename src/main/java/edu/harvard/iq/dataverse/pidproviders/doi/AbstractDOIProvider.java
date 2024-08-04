@@ -70,6 +70,7 @@ public abstract class AbstractDOIProvider extends AbstractPidProvider {
         return super.parsePersistentId(protocol, authority, identifier);
     }
 
+    @Override
     public String getUrlPrefix() {
         return DOI_RESOLVER_URL;
     }
@@ -78,6 +79,7 @@ public abstract class AbstractDOIProvider extends AbstractPidProvider {
         return null;
     }
 
+    @Override
     public String getProtocol() {
         return DOI_PROTOCOL;
     }

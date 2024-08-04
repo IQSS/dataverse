@@ -118,6 +118,7 @@ public class OAIServlet extends HttpServlet {
     private Repository xoaiRepository;
     private DataProvider dataProvider;
 
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
 

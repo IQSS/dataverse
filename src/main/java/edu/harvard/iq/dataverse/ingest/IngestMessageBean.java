@@ -66,6 +66,7 @@ public class IngestMessageBean implements MessageListener {
     public IngestMessageBean() {
     }
 
+    @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void onMessage(Message message) {
         IngestMessage ingestMessage = null;

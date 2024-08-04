@@ -106,6 +106,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     public Thread startBagThread(DatasetVersion dv, PipedInputStream in, DigestInputStream digestInputStream2,
             String dataciteXml, ApiToken token) throws IOException, InterruptedException {
         Thread bagThread = new Thread(new Runnable() {
+            @Override
             public void run() {
                 try (PipedOutputStream out = new PipedOutputStream(in)) {
                     // Generate bag

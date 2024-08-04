@@ -214,6 +214,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
 
     /********/
 
+    @Override
     public String getDescription(Locale locale) {
         return "HU-IQSS-DataVerse-project SPSS/SAV File Ingest plugin";
     }

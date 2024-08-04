@@ -62,6 +62,7 @@ public class BagValidationJob implements Runnable {
      * 
      * @see java.lang.Runnable#run()
      */
+    @Override
     public void run() {
 
         String realHash = generateFileHash(basePath + "/" + name, zf);

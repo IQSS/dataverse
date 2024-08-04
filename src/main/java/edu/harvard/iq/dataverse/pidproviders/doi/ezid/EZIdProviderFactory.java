@@ -35,6 +35,7 @@ public class EZIdProviderFactory implements PidProviderFactory {
                 managedList, excludedList, baseUrl, username, password);
     }
 
+    @Override
     public String getType() {
         return EZIdDOIProvider.TYPE;
     }

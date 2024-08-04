@@ -59,6 +59,7 @@ public class DataCiteRESTfullClient implements Closeable {
         httpClient = HttpClients.createDefault();
     }
 
+    @Override
     public void close() {
         if (this.httpClient != null) {
             try {

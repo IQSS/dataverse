@@ -114,14 +114,17 @@ public class OpenAireExporterTest {
                 "http://www.w3.org/2001/XMLSchema");
         DocumentBuilder builder = factory.newDocumentBuilder();
         builder.setErrorHandler(new ErrorHandler() {
+            @Override
             public void warning(SAXParseException e) throws SAXException {
                 throw new RuntimeException(e);
             }
 
+            @Override
             public void error(SAXParseException e) throws SAXException {
                 throw new RuntimeException(e);
             }
 
+            @Override
             public void fatalError(SAXParseException e) throws SAXException {
                 throw new RuntimeException(e);
             }

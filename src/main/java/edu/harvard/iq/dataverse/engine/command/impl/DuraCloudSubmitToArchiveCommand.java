@@ -116,6 +116,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         // Add datacite.xml file
 
                         Thread dcThread = new Thread(new Runnable() {
+                            @Override
                             public void run() {
                                 try (PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn)) {
 

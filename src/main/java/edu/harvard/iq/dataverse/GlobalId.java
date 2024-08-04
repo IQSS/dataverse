@@ -69,6 +69,7 @@ public class GlobalId implements java.io.Serializable {
         return managingProviderId;
     }
 
+    @Override
     public String toString() {
         return asString();
     }

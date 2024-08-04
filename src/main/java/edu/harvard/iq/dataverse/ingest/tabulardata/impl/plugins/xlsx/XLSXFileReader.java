@@ -297,6 +297,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             columnCount = 0;
         }
 
+        @Override
         public void startElement(String uri, String localName, String name,
                 Attributes attributes) throws SAXException {
             dbglog.fine("entering startElement (" + name + ")");
@@ -410,6 +411,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             return new String(letterTag);
         }
 
+        @Override
         public void endElement(String uri, String localName, String name)
                 throws SAXException {
             dbglog.fine("entering endElement (" + name + ")");

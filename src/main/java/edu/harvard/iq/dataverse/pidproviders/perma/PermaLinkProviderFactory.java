@@ -36,6 +36,7 @@ public class PermaLinkProviderFactory implements PidProviderFactory {
                 datafilePidFormat, managedList, excludedList, baseUrl, separator);
     }
 
+    @Override
     public String getType() {
         return PermaLinkPidProvider.TYPE;
     }

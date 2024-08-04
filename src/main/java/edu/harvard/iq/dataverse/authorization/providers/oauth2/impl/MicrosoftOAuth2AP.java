@@ -53,6 +53,7 @@ public class MicrosoftOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         }
     }
 
+    @Override
     public boolean isDisplayIdentifier()
     {
         return false;

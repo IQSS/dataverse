@@ -47,7 +47,8 @@ public class CSVFileReaderSpi extends TabularDataFileReaderSpi {
     super("HU-IQSS-DVN-project", "0.1", formatNames, extensions, mimeType, CSVFileReaderSpi.class.getName());
   }
 
-  public String getDescription(Locale locale) {
+    @Override
+    public String getDescription(Locale locale) {
     return "HU-IQSS-Dataverse-project CSV";
   }
 

@@ -18,6 +18,7 @@ public class FakeDOIProvider extends AbstractDOIProvider {
     }
 
     //Only need to check locally
+    @Override
     public boolean isGlobalIdUnique(GlobalId globalId) {
         try {
             return !alreadyRegistered(globalId, false);

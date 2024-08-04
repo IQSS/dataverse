@@ -136,6 +136,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
      * that a new dataset exists. 
      * NB: Needs dataset id so has to be postDBFlush (vs postPersist())
      */
+    @Override
     protected void postDBFlush(Dataset theDataset, CommandContext ctxt) {
         if (ctxt.settings().isTrueForKey(SettingsServiceBean.Key.SendNotificationOnDatasetCreation, false)) {
         //QDR - alert curators that a dataset has been created

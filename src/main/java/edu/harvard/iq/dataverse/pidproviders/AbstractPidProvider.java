@@ -148,6 +148,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         return dvObjectIn.getYearPublishedCreated();
     }
 
+    @Override
     public Map<String, String> getMetadataForTargetURL(DvObject dvObject) {
         logger.log(Level.FINE, "getMetadataForTargetURL");
         HashMap<String, String> metadata = new HashMap<>();
@@ -168,6 +169,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         return alreadyRegistered(globalId, false);
     }
 
+    @Override
     public abstract boolean alreadyRegistered(GlobalId globalId, boolean noProviderDefault) throws Exception;
 
     /*
@@ -235,6 +237,7 @@ public abstract class AbstractPidProvider implements PidProvider {
      * @param dataset
      * @return {@code true} if the identifier is unique, {@code false} otherwise.
      */
+    @Override
     public boolean isGlobalIdUnique(GlobalId globalId) {
         if (!pidProviderService.isGlobalIdLocallyUnique(globalId)) {
             return false; // duplication found in local database
@@ -313,6 +316,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         return parsePersistentId(protocol, authority, identifier);
     }
 
+    @Override
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
         logger.fine("Parsing: " + protocol + ":" + authority + getSeparator() + identifier + " in " + getId());
         if (!PidProvider.isValidGlobalId(protocol, authority, identifier)) {
@@ -342,6 +346,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         return new GlobalId(protocol, authority, identifier, getSeparator(), getUrlPrefix(), getId());
     }
 
+    @Override
     public String getSeparator() {
         // The standard default
         return SEPARATOR;

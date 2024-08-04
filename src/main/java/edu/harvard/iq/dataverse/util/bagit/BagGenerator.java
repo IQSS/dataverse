@@ -672,6 +672,7 @@ public class BagGenerator {
         ZipArchiveEntry archiveEntry = new ZipArchiveEntry(bagName + "/" + name);
         archiveEntry.setMethod(ZipEntry.DEFLATED);
         InputStreamSupplier supp = new InputStreamSupplier() {
+            @Override
             public InputStream get() {
                 return new ByteArrayInputStream(("").getBytes());
             }
@@ -686,6 +687,7 @@ public class BagGenerator {
         ZipArchiveEntry archiveEntry = new ZipArchiveEntry(bagName + "/" + relPath);
         archiveEntry.setMethod(ZipEntry.DEFLATED);
         InputStreamSupplier supp = new InputStreamSupplier() {
+            @Override
             public InputStream get() {
                 try {
                     return new ByteArrayInputStream(content.getBytes("UTF-8"));
@@ -1017,6 +1019,7 @@ public class BagGenerator {
     InputStreamSupplier getInputStreamSupplier(final String uriString) {
 
         return new InputStreamSupplier() {
+            @Override
             public InputStream get() {
                 try {
                     URI uri = new URI(uriString);

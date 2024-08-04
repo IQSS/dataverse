@@ -225,6 +225,7 @@ public class Template implements Serializable {
 
         //sort via display order on dataset field
         Collections.sort(retList, new Comparator<DatasetField>() {
+            @Override
             public int compare(DatasetField d1, DatasetField d2) {
                 int a = d1.getDatasetFieldType().getDisplayOrder();
                 int b = d2.getDatasetFieldType().getDisplayOrder();
@@ -237,6 +238,7 @@ public class Template implements Serializable {
 
     private List<DatasetField> sortDatasetFields(List<DatasetField> dsfList) {
         Collections.sort(dsfList, new Comparator<DatasetField>() {
+            @Override
             public int compare(DatasetField d1, DatasetField d2) {
                 int a = d1.getDatasetFieldType().getDisplayOrder();
                 int b = d2.getDatasetFieldType().getDisplayOrder();

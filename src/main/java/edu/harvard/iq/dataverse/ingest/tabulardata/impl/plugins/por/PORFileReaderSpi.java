@@ -502,6 +502,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
         return false;
     }
 
+    @Override
     public String getDescription(Locale locale) {
         return "HU-IQSS-DataVerse-project SPSS/POR (\"portable\") File Ingest plugin";
     }

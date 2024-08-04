@@ -508,6 +508,7 @@ public class AuthenticatedUser implements User, Serializable {
         return "[AuthenticatedUser identifier:" + getIdentifier() + "]";
     }
 
+    @Override
     public String getSortByString() {
         return this.getLastName() + " " + this.getFirstName() + " " + this.getUserIdentifier();
     }

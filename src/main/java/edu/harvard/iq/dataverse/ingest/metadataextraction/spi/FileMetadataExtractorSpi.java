@@ -45,6 +45,7 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
         this.version = version;
     }
 
+    @Override
     public abstract String getDescription(Locale locale);
 
     protected String[] names = null;

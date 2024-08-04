@@ -95,6 +95,7 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi {
          dbgLog.fine("DTAFileReaderSpi is called");
     }
 
+    @Override
     public String getDescription(Locale locale) {
         return "HU-IQSS-DataVerse-project Stata File Ingest plugin";
     }

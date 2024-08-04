@@ -38,6 +38,7 @@ public class HandleProviderFactory implements PidProviderFactory {
                 passphrase);
     }
 
+    @Override
     public String getType() {
         return HandlePidProvider.TYPE;
     }

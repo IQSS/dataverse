@@ -31,6 +31,7 @@ public class FakeProviderFactory implements PidProviderFactory {
                 datafilePidFormat, managedList, excludedList);
     }
 
+    @Override
     public String getType() {
         return FakeDOIProvider.TYPE;
     }

@@ -22,6 +22,7 @@ public class MetadataBlockConverter implements Converter {
     //@EJB
     DataverseServiceBean dataverseService = CDI.current().select(DataverseServiceBean.class).get();
 
+    @Override
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
         return dataverseService.findMDB(Long.valueOf(submittedValue));
     }

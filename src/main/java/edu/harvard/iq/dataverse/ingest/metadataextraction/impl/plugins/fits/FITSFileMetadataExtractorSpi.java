@@ -46,6 +46,7 @@ public class FITSFileMetadataExtractorSpi extends FileMetadataExtractorSpi {
     }
 
 
+    @Override
     public String getDescription(Locale locale) {
         return "HU-IQSS-DVN-project FITS File Ingester";
     }

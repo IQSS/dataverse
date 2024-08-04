@@ -288,6 +288,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
         return false;
     }
 
+    @Override
     public boolean downloadRedirectEnabled(String auxObjectTag) {
         return baseStore.downloadRedirectEnabled(auxObjectTag);
     }

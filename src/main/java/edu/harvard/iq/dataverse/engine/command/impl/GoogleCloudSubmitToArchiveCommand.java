@@ -79,6 +79,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                         // Add datacite.xml file
 
                         Thread dcThread = new Thread(new Runnable() {
+                            @Override
                             public void run() {
                                 try (PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn)) {
 

@@ -22,6 +22,7 @@ public class FacetConverter implements Converter {
     //@EJB
     DatasetFieldServiceBean datasetFieldService = CDI.current().select(DatasetFieldServiceBean.class).get();
 
+    @Override
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
         return datasetFieldService.find(Long.valueOf(submittedValue));
     }
