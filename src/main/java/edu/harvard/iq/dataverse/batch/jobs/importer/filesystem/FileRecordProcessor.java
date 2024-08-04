@@ -59,7 +59,7 @@ public class FileRecordProcessor implements ItemProcessor {
     public void init() {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
-        dataset = datasetServiceBean.find(new Long(jobParams.getProperty("datasetId")));
+        dataset = datasetServiceBean.find(Long.valueOf(jobParams.getProperty("datasetId")));
     }
 
     // TODO: This method may be meaningles when used in the context of a "package file" 

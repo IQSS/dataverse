@@ -386,7 +386,7 @@ public class Access extends AbstractApiBean {
                                 String token = variableIdParams[i].replaceFirst("^v", "");
                                 Long variableId = null;
                                 try {
-                                    variableId = new Long(token);
+                                    variableId = Long.valueOf(token);
                                 } catch (NumberFormatException nfe) {
                                     variableId = null;
                                 }

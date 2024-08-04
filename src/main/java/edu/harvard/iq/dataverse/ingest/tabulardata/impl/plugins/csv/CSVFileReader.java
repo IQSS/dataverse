@@ -236,7 +236,7 @@ public class CSVFileReader extends TabularDataFileReader {
                                 continue;
                             } else {
                                 try {
-                                    Double testDoubleValue = new Double(varString);
+                                    Double testDoubleValue = Double.valueOf(varString);
                                     continue;
                                 } catch (NumberFormatException ex) {
                                     // the token failed to parse as a double

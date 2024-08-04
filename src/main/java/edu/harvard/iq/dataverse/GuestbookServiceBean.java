@@ -34,7 +34,7 @@ public class GuestbookServiceBean implements java.io.Serializable {
             Query query = em.createNativeQuery(queryString);
             return (Long) query.getSingleResult();
         } else {
-            return new Long(0);
+            return Long.valueOf(0);
         }
     }
 
@@ -45,7 +45,7 @@ public class GuestbookServiceBean implements java.io.Serializable {
             Query query = em.createNativeQuery(queryString);
             return (Long) query.getSingleResult();
         } else {
-            return new Long(0);
+            return Long.valueOf(0);
         }
     }
 

@@ -188,8 +188,8 @@ public class LoginPage implements java.io.Serializable {
 
         } catch (AuthenticationFailedException ex) {
             numFailedLoginAttempts++;
-            op1 = new Long(random.nextInt(10));
-            op2 = new Long(random.nextInt(10));
+            op1 = Long.valueOf(random.nextInt(10));
+            op2 = Long.valueOf(random.nextInt(10));
             AuthenticationResponse response = ex.getResponse();
             switch (response.getStatus()) {
                 case FAIL:

@@ -62,7 +62,7 @@ public class AlphaNumericComparator implements Comparator<String>, Serializable 
         }
 
         // they match up, so compare based on who stll has tokens
-        return new Integer(tokenizedList1.size()).compareTo(tokenizedList2.size());
+        return Integer.valueOf(tokenizedList1.size()).compareTo(tokenizedList2.size());
     }
 
     /* this method returns a list of the String as tokens of BigDecimals and Strings

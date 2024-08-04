@@ -2381,7 +2381,7 @@ public class Datasets extends AbstractApiBean {
 
                     ImportMode importMode = ImportMode.MERGE;
                     try {
-                        JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(getRequestUser(crc)), dataset, uploadFolder, new Long(totalSize), importMode));
+                        JsonObject jsonFromImportJobKickoff = execCommand(new ImportFromFileSystemCommand(createDataverseRequest(getRequestUser(crc)), dataset, uploadFolder, Long.valueOf(totalSize), importMode));
                         long jobId = jsonFromImportJobKickoff.getInt("executionId");
                         String message = jsonFromImportJobKickoff.getString("message");
                         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -2399,7 +2399,7 @@ public class Datasets extends AbstractApiBean {
 
                         //Where the lifting is actually done, moving the s3 files over and having dataverse know of the existance of the package
                         s3PackageImporter.copyFromS3(dataset, uploadFolder);
-                        DataFile packageFile = s3PackageImporter.createPackageDataFile(dataset, uploadFolder, new Long(totalSize));
+                        DataFile packageFile = s3PackageImporter.createPackageDataFile(dataset, uploadFolder, Long.valueOf(totalSize));
 
                         if (packageFile == null) {
                             logger.log(Level.SEVERE, "S3 File package import failed.");

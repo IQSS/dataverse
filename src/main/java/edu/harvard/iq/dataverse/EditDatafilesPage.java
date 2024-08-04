@@ -644,7 +644,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 for (String id : ids) {
                     Long test = null;
                     try {
-                        test = new Long(id);
+                        test = Long.valueOf(id);
                     } catch (NumberFormatException nfe) {
                         // do nothing...
                         test = null;

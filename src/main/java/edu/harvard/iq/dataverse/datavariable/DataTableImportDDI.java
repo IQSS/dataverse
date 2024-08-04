@@ -94,7 +94,7 @@ public class DataTableImportDDI {
         dv.setName(xmlr.getAttributeValue(null, "name"));
 
         try {
-            dv.setNumberOfDecimalPoints(new Long( xmlr.getAttributeValue(null, "dcml") ));
+            dv.setNumberOfDecimalPoints(Long.valueOf(xmlr.getAttributeValue(null, "dcml")));
         } catch (NumberFormatException nfe) {}
 
         // interval type (DB value may be different than DDI value)
@@ -154,13 +154,13 @@ public class DataTableImportDDI {
         // fileStartPos, FileEndPos, and RecSegNo
         // if these fields don't convert to Long, just leave blank
         try {
-            dv.setFileStartPosition(new Long( xmlr.getAttributeValue(null, "StartPos") ));
+            dv.setFileStartPosition(Long.valueOf(xmlr.getAttributeValue(null, "StartPos")));
         } catch (NumberFormatException ex) {}
         try {
-            dv.setFileEndPosition(new Long( xmlr.getAttributeValue(null, "EndPos") ));
+            dv.setFileEndPosition(Long.valueOf(xmlr.getAttributeValue(null, "EndPos")));
         } catch (NumberFormatException ex) {}
         try {
-            dv.setRecordSegmentNumber(new Long( xmlr.getAttributeValue(null, "RecSegNo") ));
+            dv.setRecordSegmentNumber(Long.valueOf(xmlr.getAttributeValue(null, "RecSegNo")));
         } catch (NumberFormatException ex) {}
 
 
@@ -312,7 +312,7 @@ public class DataTableImportDDI {
         Integer orderValue = null;
         if (order != null) {
             try {
-                orderValue = new Integer(order);
+                orderValue = Integer.valueOf(order);
             } catch (NumberFormatException ex) {
                 orderValue = null;
             }
@@ -347,7 +347,7 @@ public class DataTableImportDDI {
                     if (type == null || CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase(type)) {
                         String _freq = parseText(xmlr);
                         if (_freq != null && !_freq.isEmpty()) {
-                            cat.setFrequency(new Double( _freq ));
+                            cat.setFrequency(Double.valueOf(_freq));
                         }
                     }
                 }

@@ -1343,7 +1343,7 @@ public class Admin extends AbstractApiBean {
 		JsonReader jsonReader = Json.createReader(new StringReader(json));
 		JsonObject object = jsonReader.readObject();
 		jsonReader.close();
-		BuiltinUser builtinUser = builtinUserService.find(new Long(object.getInt("builtinUserId")));
+		BuiltinUser builtinUser = builtinUserService.find(Long.valueOf(object.getInt("builtinUserId")));
 		builtinUser.updateEncryptedPassword("4G7xxL9z11/JKN4jHPn4g9iIQck=", 0); // password is "sha-1Pass", 0 means
 																				// SHA-1
 		BuiltinUser savedUser = builtinUserService.save(builtinUser);

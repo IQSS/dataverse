@@ -505,7 +505,7 @@ public class MyDataFinder {
         // -----------------------------------------------
         for (Object[] ra : results) {
             dvIdAsInteger = (Integer) ra[0];     // ?? Why?
-            dvId = new Long(dvIdAsInteger);
+            dvId = Long.valueOf(dvIdAsInteger);
             dtype = (String) ra[1];
             parentId = (Long) ra[2];
 
@@ -583,7 +583,7 @@ public class MyDataFinder {
         //
         for (Object[] ra : results) {
             dvIdAsInteger = (Integer) ra[0];     // ?? Why?
-            dvId = new Long(dvIdAsInteger);
+            dvId = Long.valueOf(dvIdAsInteger);
             dtype = (String) ra[1];
             parentId = (Long) ra[2];
 

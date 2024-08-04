@@ -144,7 +144,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
             for (String idAsString : list) {
                 //DataFile df = datafileService.findCheapAndEasy(new Long(idAsString));
-                DataFile df = datafileService.find(new Long(idAsString));
+                DataFile df = datafileService.find(Long.valueOf(idAsString));
                 if (df != null) {
                     if (!doNotSaveGuestbookRecord) {
                         guestbookResponse.setDataFile(df);

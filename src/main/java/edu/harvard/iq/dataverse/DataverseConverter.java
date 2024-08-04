@@ -26,7 +26,7 @@ public class DataverseConverter implements Converter {
 
     @Override
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
-        return dataverseService.find(new Long(submittedValue));
+        return dataverseService.find(Long.valueOf(submittedValue));
         //return dataverseService.findByAlias(submittedValue);
     }
 

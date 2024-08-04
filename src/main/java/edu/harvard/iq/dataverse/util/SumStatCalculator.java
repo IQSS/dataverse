@@ -43,7 +43,7 @@ public class SumStatCalculator {
         double[] nx = new double[8];
         //("mean", "medn", "mode", "vald", "invd", "min", "max", "stdev");
 
-        Float testNanValue = new Float(Float.NaN);
+        Float testNanValue = Float.valueOf(Float.NaN);
         Number testNumberValue = testNanValue;
         if (Double.isNaN(testNumberValue.doubleValue())) {
             logger.fine("Float test NaN value is still recognized as a Double NaN.");
@@ -107,7 +107,7 @@ public class SumStatCalculator {
     private static Double[] numberToDouble(Number[] x) {
         Double[] z = new Double[x.length];
         for (int i = 0; i < x.length; i++) {
-            z[i] = x[i] != null ? new Double( x[i].doubleValue() ) : null;
+            z[i] = x[i] != null ? Double.valueOf(x[i].doubleValue()) : null;
         }
         return z;
     }

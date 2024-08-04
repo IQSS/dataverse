@@ -159,7 +159,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                         retVector[caseIndex] = null;
                     } else {
                         try {
-                            retVector[caseIndex] = new Double(line[column]);
+                            retVector[caseIndex] = Double.valueOf(line[column]);
                         } catch (NumberFormatException ex) {
                             retVector[caseIndex] = null; // missing value
                         }
@@ -214,7 +214,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                         retVector[caseIndex] = null;
                     } else {
                         try {
-                            retVector[caseIndex] = new Float(line[column]);
+                            retVector[caseIndex] = Float.valueOf(line[column]);
                         } catch (NumberFormatException ex) {
                             retVector[caseIndex] = null; // missing value
                         }
@@ -255,7 +255,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                 if (scanner.hasNext()) {
                     String[] line = (scanner.next()).split("\t", -1);
                     try {
-                        retVector[caseIndex] = new Long(line[column]);
+                        retVector[caseIndex] = Long.valueOf(line[column]);
                     } catch (NumberFormatException ex) {
                         retVector[caseIndex] = null; // assume missing value
                     }

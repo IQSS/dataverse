@@ -109,8 +109,8 @@ public class DataFileComparator implements Comparator<FileMetadata> {
             file2 = StringUtil.isEmpty(o2.getDataFile().getFriendlyType()) ? "" : o2.getDataFile().getContentType();
             break;
         case "size":
-            file1 = new Long(o1.getDataFile().getFilesize());
-            file2 = new Long(o2.getDataFile().getFilesize());
+            file1 = Long.valueOf(o1.getDataFile().getFilesize());
+            file2 = Long.valueOf(o2.getDataFile().getFilesize());
             break;
         default: // "name" or not recognized
             file1 = o1.getLabel().toUpperCase();

@@ -25,7 +25,7 @@ public class TemplateConverter implements Converter {
 
     @Override
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
-        return templateService.find(new Long(submittedValue));
+        return templateService.find(Long.valueOf(submittedValue));
     }
 
     public String getAsString(FacesContext facesContext, UIComponent component, Object value) {

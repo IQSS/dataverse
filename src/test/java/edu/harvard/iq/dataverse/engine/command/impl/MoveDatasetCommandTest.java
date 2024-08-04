@@ -221,9 +221,9 @@ public class MoveDatasetCommandTest {
                     public Long findCountResponsesForGivenDataset(Long guestbookId, Long datasetId) {
                         //We're going to fake a response for a dataset with responses
                         if (datasetId == 1) {
-                            return new Long(0);
+                            return Long.valueOf(0);
                         } else {
-                            return new Long(1);
+                            return Long.valueOf(1);
                         }
                     }
                 };

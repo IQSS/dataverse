@@ -39,7 +39,7 @@ public class PrivateUrlUtil {
         String[] parts = identifier.split(PrivateUrlUser.PREFIX);
         long datasetId;
         try {
-            datasetId = new Long(parts[1]);
+            datasetId = Long.valueOf(parts[1]);
         } catch (ArrayIndexOutOfBoundsException | NumberFormatException ex) {
             logger.fine("Could not find dataset id in '" + identifier + "': " + ex);
             return null;

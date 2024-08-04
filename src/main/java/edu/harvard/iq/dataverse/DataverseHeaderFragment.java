@@ -143,7 +143,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public Long getUnreadNotificationCount(Long userId) {
 
         if (userId == null) {
-            return new Long("0");
+            return Long.valueOf("0");
         }
 
         if (this.unreadNotificationCount != null) {

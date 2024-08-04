@@ -159,7 +159,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                         caseRow[i] = "0";
                     } else {
                         try {
-                            Double testDoubleValue = new Double(valueTokens[i]);
+                            Double testDoubleValue = Double.valueOf(valueTokens[i]);
                             caseRow[i] = testDoubleValue.toString();
                         } catch (Exception ex) {
                             throw new IOException("Failed to parse a value recognized as numeric in the first pass! column: " + i + ", value: " + valueTokens[i]);
@@ -319,7 +319,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                     dbglog.warning("Invalid spans attribute in the first row element: " + spansAttribute + "!");
                 }
                 try {
-                    varCount = new Long(spansAttribute.substring(colIndex + 1, spansAttribute.length()));
+                    varCount = Long.valueOf(spansAttribute.substring(colIndex + 1, spansAttribute.length()));
                 } catch (Exception ex) {
                     varCount = null;
                 }
@@ -504,7 +504,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                                     isNumeric = true;
                                 } else {
                                     try {
-                                        Double testDoubleValue = new Double(dataRow[i]);
+                                        Double testDoubleValue = Double.valueOf(dataRow[i]);
                                         isNumeric = true;
                                     } catch (Exception ex) {
                                         // the token failed to parse as a double number;
@@ -527,7 +527,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             }
 
             if (name.equals("sheetData")) {
-                dataTable.setCaseQuantity(new Long(caseCount));
+                dataTable.setCaseQuantity(Long.valueOf(caseCount));
 
                 // Re-type the variables that we've determined are numerics:
         

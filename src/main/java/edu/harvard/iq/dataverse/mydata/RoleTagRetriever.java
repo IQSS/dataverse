@@ -339,7 +339,7 @@ public class RoleTagRetriever {
         // -------------------------------------
         for (Object[] ra : results) {
             dvIdAsInteger = (Integer) ra[0];     // ?? Why, should be a Long
-            dvId = new Long(dvIdAsInteger);
+            dvId = Long.valueOf(dvIdAsInteger);
             dtype = (String) ra[1];
             parentId = (Long) ra[2];
 

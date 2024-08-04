@@ -24,7 +24,7 @@ public class FacetConverter implements Converter {
     DatasetFieldServiceBean datasetFieldService = CDI.current().select(DatasetFieldServiceBean.class).get();
 
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
-        return datasetFieldService.find(new Long(submittedValue));
+        return datasetFieldService.find(Long.valueOf(submittedValue));
     }
 
     public String getAsString(FacesContext facesContext, UIComponent component, Object value) {

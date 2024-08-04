@@ -433,7 +433,7 @@ public class DownloadFilesIT {
         int fileId = JsonPath.from(getDatasetJson.getBody().asString()).getInt("data.latestVersion.files[0].dataFile.id");
 
         // Download the file individually and assert READ–ME.md has an en-dash.
-        Response downloadFile = UtilIT.downloadFile(new Integer(fileId), apiToken);
+        Response downloadFile = UtilIT.downloadFile(Integer.valueOf(fileId), apiToken);
         downloadFile.then().assertThat()
                 .statusCode(OK.getStatusCode());
         Headers headers = downloadFile.getHeaders();

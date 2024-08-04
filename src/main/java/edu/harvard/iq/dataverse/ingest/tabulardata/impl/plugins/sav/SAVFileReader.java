@@ -829,7 +829,7 @@ public class SAVFileReader  extends TabularDataFileReader {
                 throw new RuntimeException("number of cases is not recorded in the header");
             } else {
                 dbgLog.fine("RT1: number of cases is recorded= " + numberOfCases);
-                dataTable.setCaseQuantity(new Long(numberOfCases));
+                dataTable.setCaseQuantity(Long.valueOf(numberOfCases));
                 ///caseQnty = numberOfCases;
                 ///smd.getFileInformation().put("caseQnty", numberOfCases);
             }
@@ -1430,7 +1430,7 @@ public class SAVFileReader  extends TabularDataFileReader {
 
         dbgLog.fine("RT2 metadata-related exit-chores");
         ///smd.getFileInformation().put("varQnty", variableCounter);
-        dataTable.setVarQuantity(new Long(variableCounter));
+        dataTable.setVarQuantity(Long.valueOf(variableCounter));
         dbgLog.fine("RT2: varQnty=" + variableCounter);
 
         // 4.0 Initialize variables: 

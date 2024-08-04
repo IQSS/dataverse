@@ -228,14 +228,14 @@ public class VariableMetadataDDIParser {
         if (type != null && CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase(type) && wgtd == null) {
                         String _freq = parseText(xmlr);
                         if (_freq != null && !_freq.isEmpty()) {
-                            cat.setFrequency(new Double(_freq));
+                            cat.setFrequency(Double.valueOf(_freq));
                         }
         } else if (wgtd != null && type != null && CAT_STAT_TYPE_FREQUENCY.equalsIgnoreCase(type) &&
                             CAT_STAT_WGTD_FREQUENCY.equalsIgnoreCase(wgtd)) {
                         cm = new CategoryMetadata();
                         String wfreq = parseText(xmlr);
                         if (wfreq != null && !wfreq.isEmpty()) {
-                            cm.setWfreq(new Double(wfreq));
+                            cm.setWfreq(Double.valueOf(wfreq));
                         }
         }
         return cm;

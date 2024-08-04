@@ -22,7 +22,7 @@ public class DataFileConverter implements Converter {
         if (submittedValue == null || submittedValue.equals("")) {
             return "";
         } else {
-            return dataFileService.find(new Long(submittedValue));
+            return dataFileService.find(Long.valueOf(submittedValue));
         }
     }
 

@@ -28,7 +28,7 @@ public class DatasetVersionConverter implements Converter {
                 if (value == null || value.equals("")) {
             return "";
         } else {
-            return datasetVersionService.find(new Long(value));
+            return datasetVersionService.find(Long.valueOf(value));
         }
     }
 

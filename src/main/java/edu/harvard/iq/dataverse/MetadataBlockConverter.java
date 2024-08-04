@@ -24,7 +24,7 @@ public class MetadataBlockConverter implements Converter {
     DataverseServiceBean dataverseService = CDI.current().select(DataverseServiceBean.class).get();
 
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
-        MetadataBlock mdb = dataverseService.findMDB(new Long(submittedValue));
+        MetadataBlock mdb = dataverseService.findMDB(Long.valueOf(submittedValue));
         return mdb;
     }
 

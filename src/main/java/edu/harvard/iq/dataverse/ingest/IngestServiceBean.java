@@ -857,7 +857,7 @@ public class IngestServiceBean {
                     for (VariableCategory cat : cats) {
                         Object catValue;
                         if (isNumeric) {
-                            catValue = new Float(cat.getValue());
+                            catValue = Float.valueOf(cat.getValue());
                         } else {
                             catValue = cat.getValue();
                         }
@@ -1923,7 +1923,7 @@ public class IngestServiceBean {
             SummaryStatistic ss = new SummaryStatistic();
             ss.setTypeByLabel(variableService.summaryStatisticTypes[j]);
             if (!ss.isTypeMode()) {
-                ss.setValue((new Double(sumStats[j])).toString());
+                ss.setValue((Double.valueOf(sumStats[j])).toString());
             } else {
                 ss.setValue(".");
             }

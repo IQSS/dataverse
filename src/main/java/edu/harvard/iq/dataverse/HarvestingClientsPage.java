@@ -1039,7 +1039,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         int i = 0;
         for (String weekDayString : weekDays) {
             if (weekDayString.equals(weekDayName)) {
-                return new Integer(i);
+                return Integer.valueOf(i);
             }
             i++;
         }
@@ -1061,7 +1061,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         Integer hour = null;
         if (getNewHarvestingScheduleTimeOfDay() != null) {
             try {
-                hour = new Integer(getNewHarvestingScheduleTimeOfDay());
+                hour = Integer.valueOf(getNewHarvestingScheduleTimeOfDay());
             } catch (Exception ex) {
                 hour = null;
             }

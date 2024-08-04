@@ -775,7 +775,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         for (int i = 0; i < childIds.size(); i++) {
             Integer childId = childIds.get(i);
-            Dataverse child = find(new Long(childId.longValue()));
+            Dataverse child = find(Long.valueOf(childId.longValue()));
             if (child != null) {
                 // Add to the list of Dataverses
                 children.add(child);

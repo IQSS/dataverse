@@ -617,7 +617,7 @@ public class DTAFileReader extends TabularDataFileReader {
         }
 
         short shrt_nvar = bbnvar.getShort();
-        dataTable.setVarQuantity(new Long(shrt_nvar));
+        dataTable.setVarQuantity(Long.valueOf(shrt_nvar));
         int nvar = shrt_nvar;
 
         if (dbgLog.isLoggable(Level.INFO)) {
@@ -656,7 +656,7 @@ public class DTAFileReader extends TabularDataFileReader {
         }
 
         // smd.getFileInformation().put("caseQnty", new Integer(int_nobs));
-        dataTable.setCaseQuantity(new Long(int_nobs));
+        dataTable.setCaseQuantity(Long.valueOf(int_nobs));
 
         /* 
          the "data label" - 
@@ -2022,7 +2022,7 @@ public class DTAFileReader extends TabularDataFileReader {
             // tc is a relatively new format
             // datum is millisecond-wise
 
-            milliSeconds = Math.round(new Double(rawDatum)) + STATA_BIAS_TO_EPOCH;
+            milliSeconds = Math.round(Double.valueOf(rawDatum)) + STATA_BIAS_TO_EPOCH;
             decodedDateTime = sdf_ymdhmsS.format(new Date(milliSeconds));
             format = sdf_ymdhmsS.toPattern();
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tc: result=" + decodedDateTime + ", format = " + format);
@@ -2037,7 +2037,7 @@ public class DTAFileReader extends TabularDataFileReader {
 
         } else if (FormatType.matches("^%t?w.*")) {
 
-            long weekYears = Math.round(new Double(rawDatum));
+            long weekYears = Math.round(Double.valueOf(rawDatum));
             long left = Math.abs(weekYears) % 52L;
             long years;
             if (weekYears < 0L) {
@@ -2068,7 +2068,7 @@ public class DTAFileReader extends TabularDataFileReader {
 
         } else if (FormatType.matches("^%t?m.*")) {
             // month 
-            long monthYears = Math.round(new Double(rawDatum));
+            long monthYears = Math.round(Double.valueOf(rawDatum));
             long left = Math.abs(monthYears) % 12L;
             long years;
             if (monthYears < 0L) {
@@ -2096,7 +2096,7 @@ public class DTAFileReader extends TabularDataFileReader {
 
         } else if (FormatType.matches("^%t?q.*")) {
             // quater
-            long quaterYears = Math.round(new Double(rawDatum));
+            long quaterYears = Math.round(Double.valueOf(rawDatum));
             long left = Math.abs(quaterYears) % 4L;
             long years;
             if (quaterYears < 0L) {

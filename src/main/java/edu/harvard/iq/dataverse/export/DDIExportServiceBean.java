@@ -431,7 +431,7 @@ public class DDIExportServiceBean {
                     writeAttribute(xmlw, "type", "freq");
                     // if frequency is actually a long value, we want to write "100" instead of "100.0"
                     if (Math.floor(cat.getFrequency()) == cat.getFrequency()) {
-                        xmlw.writeCharacters(new Long(cat.getFrequency().longValue()).toString());
+                        xmlw.writeCharacters(Long.valueOf(cat.getFrequency().longValue()).toString());
                     } else {
                         xmlw.writeCharacters(cat.getFrequency().toString());
                     }

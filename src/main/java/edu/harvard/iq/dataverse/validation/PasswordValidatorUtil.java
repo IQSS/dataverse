@@ -49,7 +49,7 @@ public class PasswordValidatorUtil {
             String type = configArray[0];
             String num = configArray[1];
             EnglishCharacterData typeData = EnglishCharacterData.valueOf(type);
-            characterRules.add(new CharacterRule(typeData, new Integer(num)));
+            characterRules.add(new CharacterRule(typeData, Integer.valueOf(num)));
         }
         return characterRules;
     }

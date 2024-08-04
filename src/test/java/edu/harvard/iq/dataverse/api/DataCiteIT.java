@@ -72,7 +72,7 @@ public class DataCiteIT {
                 .statusCode(201);
         Long datasetId = JsonPath.from(createDatasetResponse.body().asString()).getLong("data.id");
 
-        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(new Integer(datasetId.toString()), apiToken);
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(Integer.valueOf(datasetId.toString()), apiToken);
         getDatasetJsonBeforePublishing.prettyPrint();
         String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
         String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");

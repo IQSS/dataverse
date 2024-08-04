@@ -163,7 +163,7 @@ public class GuestbookPage implements java.io.Serializable {
             guestbook = sourceGB.copyGuestbook(sourceGB, dataverse);
             String name = BundleUtil.getStringFromBundle("page.copy") + " " + sourceGB.getName();
             guestbook.setName(name);
-            guestbook.setUsageCount(new Long(0));
+            guestbook.setUsageCount(Long.valueOf(0));
             guestbook.setCreateTime(new Timestamp(new Date().getTime()));
             if (guestbook.getCustomQuestions() == null || guestbook.getCustomQuestions().isEmpty()) {
                 guestbook.setCustomQuestions(new ArrayList<>());

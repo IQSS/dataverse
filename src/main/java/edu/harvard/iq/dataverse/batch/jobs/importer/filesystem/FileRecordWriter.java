@@ -115,7 +115,7 @@ public class FileRecordWriter extends AbstractItemWriter {
         uploadFolder = jobParams.getProperty("uploadFolder");
         if (jobParams.getProperty("totalSize") != null) {
             try {
-                suppliedSize = new Long(jobParams.getProperty("totalSize"));
+                suppliedSize = Long.valueOf(jobParams.getProperty("totalSize"));
                 getJobLogger().log(Level.INFO, "Size parameter supplied: " + suppliedSize);
             } catch (NumberFormatException ex) {
                 getJobLogger().log(Level.WARNING, "Invalid file size supplied (in FileRecordWriter.init()): " + jobParams.getProperty("totalSize"));

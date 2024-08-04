@@ -21,7 +21,7 @@ public class DatasetConverter implements Converter {
 
     @Override
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
-        return datasetService.find(new Long(submittedValue));
+        return datasetService.find(Long.valueOf(submittedValue));
     }
 
     @Override

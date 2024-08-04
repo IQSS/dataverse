@@ -1388,7 +1388,7 @@ public class PORFileReader  extends TabularDataFileReader {
         }
 
         ///smd.setDecimalVariables(decimalVariableSet);
-        dataTable.setCaseQuantity(new Long(caseQnty));
+        dataTable.setCaseQuantity(Long.valueOf(caseQnty));
 
         dbgLog.fine("decodeData(): end");
     }

@@ -1745,12 +1745,12 @@ public class DatasetsIT {
 
         //Try to delete Role with Id saved above
         //Fails for lack of perms
-        Response deleteGrantedAccess = UtilIT.revokeRoleOnDataset(datasetPersistentId, new Long(idToDelete), randomUserApiToken);
+        Response deleteGrantedAccess = UtilIT.revokeRoleOnDataset(datasetPersistentId, Long.valueOf(idToDelete), randomUserApiToken);
         deleteGrantedAccess.prettyPrint();
         assertEquals(401, deleteGrantedAccess.getStatusCode());
 
         //Should be able to delete with proper apiToken
-        deleteGrantedAccess = UtilIT.revokeRoleOnDataset(datasetPersistentId, new Long(idToDelete), apiToken);
+        deleteGrantedAccess = UtilIT.revokeRoleOnDataset(datasetPersistentId, Long.valueOf(idToDelete), apiToken);
         deleteGrantedAccess.prettyPrint();
         assertEquals(200, deleteGrantedAccess.getStatusCode());
 

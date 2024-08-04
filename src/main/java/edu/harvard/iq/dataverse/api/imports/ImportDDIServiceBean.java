@@ -2023,15 +2023,15 @@ public class ImportDDIServiceBean {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("caseQnty")) {
                     try {
-                        dtDTO.setCaseQuantity(new Long( parseText(xmlr) ));
+                        dtDTO.setCaseQuantity(Long.valueOf(parseText(xmlr)));
                     } catch (NumberFormatException ex) {}
                 } else if (xmlr.getLocalName().equals("varQnty")) {
                     try {
-                        dtDTO.setVarQuantity(new Long( parseText(xmlr) ));
+                        dtDTO.setVarQuantity(Long.valueOf(parseText(xmlr)));
                     } catch (NumberFormatException ex) {}
                 } else if (xmlr.getLocalName().equals("recPrCas")) {
                     try {
-                        dtDTO.setRecordsPerCase(new Long( parseText(xmlr) ));
+                        dtDTO.setRecordsPerCase(Long.valueOf(parseText(xmlr)));
                     } catch (NumberFormatException ex) {}
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {// </codeBook>
