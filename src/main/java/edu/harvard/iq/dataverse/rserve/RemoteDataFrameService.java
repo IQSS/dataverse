@@ -47,6 +47,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import org.rosuda.REngine.*;
+import org.rosuda.REngine.Rserve.*;
+
 /**
  * 
  * @author Leonid Andreev
