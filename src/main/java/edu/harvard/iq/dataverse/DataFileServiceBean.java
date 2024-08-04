@@ -201,8 +201,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         Query query = em.createQuery("select object(o) from DataFile as o where o.previousDataFileId = :previousFileId");
         query.setParameter("previousFileId", previousFileId);
         try {
-            DataFile retVal = (DataFile) query.getSingleResult();
-            return retVal;
+            return (DataFile) query.getSingleResult();
         } catch (Exception ex) {
             return null;
         }
@@ -213,8 +212,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         TypedQuery<DataFile> query = em.createQuery("select o from DataFile o" + " WHERE o.id = :dataFileId", DataFile.class);
         query.setParameter("dataFileId", df.getPreviousDataFileId());
         try {
-            DataFile retVal = query.getSingleResult();
-            return retVal;
+            return query.getSingleResult();
         } catch (Exception ex) {
             return null;
         }
@@ -375,8 +373,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         query.setParameter(DATASET_VERSION_ID, datasetVersionId);
         query.setParameter("dataFileId", dataFileId);
         try {
-            FileMetadata retVal = (FileMetadata) query.getSingleResult();
-            return retVal;
+            return (FileMetadata) query.getSingleResult();
         } catch (Exception ex) {
             return null;
         }
@@ -777,8 +774,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     public DataFile save(DataFile dataFile) {
 
         if (dataFile.isMergeable()) {
-            DataFile savedDataFile = em.merge(dataFile);
-            return savedDataFile;
+            return em.merge(dataFile);
         } else {
             throw new IllegalArgumentException("This DataFile object has been set to NOT MERGEABLE; please ensure a MERGEABLE object is passed to the save method.");
         }
@@ -788,8 +784,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     public DataFile saveInTransaction(DataFile dataFile) {
 
         if (dataFile.isMergeable()) {
-            DataFile savedDataFile = em.merge(dataFile);
-            return savedDataFile;
+            return em.merge(dataFile);
         } else {
             throw new IllegalArgumentException("This DataFile object has been set to NOT MERGEABLE; please ensure a MERGEABLE object is passed to the save method.");
         }

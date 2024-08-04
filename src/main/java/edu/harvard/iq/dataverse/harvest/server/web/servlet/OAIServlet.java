@@ -202,7 +202,7 @@ public class OAIServlet extends HttpServlet {
             systemEmailLabel = systemAddress.get().getAddress();
         }
 
-        RepositoryConfiguration configuration = new RepositoryConfiguration.RepositoryConfigurationBuilder()
+        return new RepositoryConfiguration.RepositoryConfigurationBuilder()
                 .withAdminEmail(systemEmailLabel)
                 .withCompression("gzip")
                 .withCompression("deflate")
@@ -218,8 +218,6 @@ public class OAIServlet extends HttpServlet {
                 .withEnableMetadataAttributes(true)
                 .withRequireFromAfterEarliest(false)
                 .build();
-
-        return configuration;
     }
 
     /**

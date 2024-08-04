@@ -915,13 +915,11 @@ public class IndexServiceBean {
              */
             return new IndexResponse("permissions indexing disabled for debugging");
         }
-        IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(dataset);
-        return indexResponse;
+        return solrIndexService.indexPermissionsOnSelfAndChildren(dataset);
     }
 
     private String addOrUpdateDataset(IndexableDataset indexableDataset) throws  SolrServerException, IOException {
-        String result = addOrUpdateDataset(indexableDataset, null);
-        return result;
+        return addOrUpdateDataset(indexableDataset, null);
     }
 
     public SolrInputDocuments toSolrDocs(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {
@@ -2101,8 +2099,7 @@ public class IndexServiceBean {
              * figure out the caching later.
              */
             try {
-                Dataverse rootDataverse = dataverseService.findRootDataverse();
-                return rootDataverse;
+                return dataverseService.findRootDataverse();
             } catch (EJBException ex) {
                 logger.info("caught " + ex);
                 Throwable cause = ex.getCause();

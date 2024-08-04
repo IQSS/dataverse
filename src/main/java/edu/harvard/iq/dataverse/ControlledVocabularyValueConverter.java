@@ -26,8 +26,7 @@ public class ControlledVocabularyValueConverter implements Converter {
         if (submittedValue == null || submittedValue.equals("")) {
             return "";
         } else {
-            ControlledVocabularyValue cvv = datasetFieldService.findControlledVocabularyValue(Long.valueOf(submittedValue));
-            return cvv;
+            return datasetFieldService.findControlledVocabularyValue(Long.valueOf(submittedValue));
         }
     }
 

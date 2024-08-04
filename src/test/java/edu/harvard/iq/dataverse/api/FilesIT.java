@@ -88,9 +88,7 @@ public class FilesIT {
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         //createDataverseResponse.prettyPrint();
         createDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-
-        return dataverseAlias;
+        return UtilIT.getAliasFromResponse(createDataverseResponse);
     }
 
 
@@ -98,9 +96,7 @@ public class FilesIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
 
         createDatasetResponse.then().assertThat().statusCode(CREATED.getStatusCode());
-        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-
-        return datasetId;
+        return JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
     }
 

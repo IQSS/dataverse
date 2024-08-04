@@ -382,30 +382,26 @@ public class BuiltinUsersIT {
     private Response createUser(String username, String firstName, String lastName, String email) {
         String userAsJson = getUserAsJsonString(username, firstName, lastName, email);
         String password = getPassword(userAsJson);
-        Response response = given()
+        return given()
                 .body(userAsJson)
                 .contentType(ContentType.JSON)
                 .post("/api/builtin-users?key=" + builtinUserKey + "&password=" + password);
-        return response;
     }
 
     private Response getApiTokenUsingEmail(String email, String password) {
-        Response response = given()
+        return given()
                 .contentType(ContentType.JSON)
                 .get("/api/builtin-users/" + email + "/api-token?username=" + email + "&password=" + password);
-        return response;
     }
 
     private Response getUserFromDatabase(String username) {
-        Response getUserResponse = given()
+        return given()
                 .get("/api/admin/authenticatedUsers/" + username + "/");
-        return getUserResponse;
     }
 
     private static Response deleteUser(String username) {
-        Response deleteUserResponse = given()
+        return given()
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
-        return deleteUserResponse;
     }
 
     private static String getRandomUsername() {
@@ -428,8 +424,7 @@ public class BuiltinUsersIT {
     }
 
     private static String getPassword(String jsonStr) {
-        String password = JsonPath.from(jsonStr).get(usernameKey);
-        return password;
+        return JsonPath.from(jsonStr).get(usernameKey);
     }
 
     private static String getEmailFromUserName(String username) {

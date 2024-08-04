@@ -88,8 +88,7 @@ public class DateUtil {
 
         try {
             SimpleDateFormat sdf = new SimpleDateFormat(format);
-            Date date = sdf.parse(dateString);
-            return date;
+            return sdf.parse(dateString);
         } catch (ParseException ex) {
             // ignore
         } catch (Exception ex) {

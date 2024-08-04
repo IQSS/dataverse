@@ -290,10 +290,8 @@ public class FileDownloadHelper implements java.io.Serializable {
             return false;
         }
 
-        boolean hasPermission = this.permissionService.userOn(this.session.getUser(), objectToCheck).has(permissionToCheck);
-
         // return true/false
-        return hasPermission;
+        return this.permissionService.userOn(this.session.getUser(), objectToCheck).has(permissionToCheck);
     }
 
 

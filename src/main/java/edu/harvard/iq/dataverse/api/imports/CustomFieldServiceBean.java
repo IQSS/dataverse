@@ -22,8 +22,7 @@ public class CustomFieldServiceBean {
 
     public CustomFieldMap findByTemplateField(String template, String field) {
         try {
-            CustomFieldMap map = (CustomFieldMap) em.createNamedQuery("CustomFieldMap.findByTemplateField").setParameter("template", template).setParameter("field", field).getSingleResult();
-            return map;
+            return (CustomFieldMap) em.createNamedQuery("CustomFieldMap.findByTemplateField").setParameter("template", template).setParameter("field", field).getSingleResult();
         } catch (Exception ex) {
             System.out.println("Exception " + ex + "template: " + template + " field: " + field);
             return null;

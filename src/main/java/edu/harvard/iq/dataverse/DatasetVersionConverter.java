@@ -36,8 +36,7 @@ public class DatasetVersionConverter implements Converter {
                 if (value == null || value.equals("")) {
             return "";
         } else {
-            String stringToReturn = ((DatasetVersion) value).getId().toString();
-            return stringToReturn;
+            return ((DatasetVersion) value).getId().toString();
         }
     }
 

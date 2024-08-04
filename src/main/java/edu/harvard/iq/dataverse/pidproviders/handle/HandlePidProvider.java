@@ -246,17 +246,14 @@ public class HandlePidProvider extends AbstractPidProvider {
         PrivateKey privkey = null;
         privkey = readPrivKey(key, adminCredFile);
         String authHandle = getAuthenticationHandle(handlePrefix);
-        PublicKeyAuthenticationInfo auth =
-                new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), handlenetIndex, privkey);
-        return auth;
+        return new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), handlenetIndex, privkey);
     }
 
     private String getRegistrationUrl(DvObject dvObject) {
         logger.log(Level.FINE, "getRegistrationUrl");
         String siteUrl = SystemConfig.getDataverseSiteUrlStatic();
-        String targetUrl = siteUrl + dvObject.getTargetUrl() + "hdl:" + dvObject.getAuthority()
+        return siteUrl + dvObject.getTargetUrl() + "hdl:" + dvObject.getAuthority()
                 + "/" + dvObject.getIdentifier();
-        return targetUrl;
     }
 
     public String getSiteUrl() {
@@ -302,8 +299,7 @@ public class HandlePidProvider extends AbstractPidProvider {
          * This is different from dataset.getGlobalId() in that we don't 
          * need the "hdl:" prefix.
          */
-        String handle = dvObject.getAuthority() + "/" + dvObject.getIdentifier();
-        return handle;
+        return dvObject.getAuthority() + "/" + dvObject.getIdentifier();
     }
 
     private String getAuthenticationHandle(DvObject dvObject) {
@@ -429,8 +425,7 @@ public class HandlePidProvider extends AbstractPidProvider {
         if (!HDL_PROTOCOL.equals(protocol)) {
             return null;
         }
-        GlobalId globalId = super.parsePersistentId(protocol, identifierString);
-        return globalId;
+        return super.parsePersistentId(protocol, identifierString);
     }
 
     @Override

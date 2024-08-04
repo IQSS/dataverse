@@ -97,8 +97,7 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
         if (getExisting != null) {
             em.remove(getExisting);
         }
-        DatasetExternalCitations savedDatasetExternalCitations = em.merge(datasetExternalCitations);
-        return savedDatasetExternalCitations;
+        return em.merge(datasetExternalCitations);
     }
 
     private DatasetExternalCitations getDatasetExternalCitationsByDatasetCitingPID(Dataset dataset, String PID) {

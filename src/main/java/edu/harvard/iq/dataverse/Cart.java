@@ -14,8 +14,7 @@ public class Cart {
     List<Entry<String, String>> contents = new ArrayList<>();
 
     private Entry<String, String> createEntry(String title, String persistentId) {
-        Entry<String, String> entry = new AbstractMap.SimpleEntry<>(title, persistentId);
-        return entry;
+        return new AbstractMap.SimpleEntry<>(title, persistentId);
     }
 
     public void addItem(String title, String persistentId) throws Exception {

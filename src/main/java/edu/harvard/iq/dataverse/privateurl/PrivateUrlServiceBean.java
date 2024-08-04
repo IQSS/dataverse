@@ -83,8 +83,7 @@ public class PrivateUrlServiceBean implements Serializable {
                 RoleAssignment.class);
         query.setParameter("privateUrlToken", privateUrlToken);
         try {
-            RoleAssignment roleAssignment = query.getSingleResult();
-            return roleAssignment;
+            return query.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
             return null;
         }

@@ -93,8 +93,7 @@ public class PrivateUrlUtil {
         }
         Dataset dataset = getDatasetFromRoleAssignment(roleAssignment);
         if (dataset != null) {
-            PrivateUrlUser privateUrlUser = new PrivateUrlUser(dataset.getId(), roleAssignment.isAnonymizedAccess());
-            return privateUrlUser;
+            return new PrivateUrlUser(dataset.getId(), roleAssignment.isAnonymizedAccess());
         }
         return null;
     }
@@ -132,8 +131,7 @@ public class PrivateUrlUtil {
             Dataset dataset = draft.getDataset();
             if (dataset != null && dataset.getGlobalId() != null) {
                 if (dataset.getGlobalId().isComplete()) {
-                    String relativeUrl = "/dataset.xhtml?persistentId=" + dataset.getGlobalId().toString() + "&version=DRAFT";
-                    return relativeUrl;
+                    return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().toString() + "&version=DRAFT";
                 }
             }
         }
@@ -147,8 +145,7 @@ public class PrivateUrlUtil {
         }
         Dataset dataset = PrivateUrlUtil.getDatasetFromRoleAssignment(roleAssignment);
         if (dataset != null) {
-            PrivateUrl privateUrl = new PrivateUrl(roleAssignment, dataset, dataverseSiteUrl);
-            return privateUrl;
+            return new PrivateUrl(roleAssignment, dataset, dataverseSiteUrl);
         } else {
             return null;
         }

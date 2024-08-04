@@ -207,8 +207,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
          */
         DvObject dvObjectToModify = findDvObject(dvObject.getId());
         dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
-        DvObject savedDvObject = em.merge(dvObjectToModify);
-        return savedDvObject;
+        return em.merge(dvObjectToModify);
     }
 
     /**
@@ -238,15 +237,13 @@ public class DvObjectServiceBean implements java.io.Serializable {
     @TransactionAttribute(REQUIRES_NEW)
     public int clearAllIndexTimes() {
         Query clearIndexTimes = em.createQuery("UPDATE DvObject o SET o.indexTime = NULL, o.permissionIndexTime = NULL");
-        int numRowsUpdated = clearIndexTimes.executeUpdate();
-        return numRowsUpdated;
+        return clearIndexTimes.executeUpdate();
     }
 
     public int clearIndexTimes(long dvObjectId) {
         Query clearIndexTimes = em.createQuery("UPDATE DvObject o SET o.indexTime = NULL, o.permissionIndexTime = NULL WHERE o.id =:dvObjectId");
         clearIndexTimes.setParameter("dvObjectId", dvObjectId);
-        int numRowsUpdated = clearIndexTimes.executeUpdate();
-        return numRowsUpdated;
+        return clearIndexTimes.executeUpdate();
     }
 
     private String getDvObjectIdListClause(List<Long> dvObjectIdList) {

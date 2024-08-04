@@ -528,8 +528,7 @@ public class JsonParser {
 
     public List<DatasetField> parseMultipleFields(JsonObject json) throws JsonParseException {
         JsonArray fieldsJson = json.getJsonArray(FIELDS);
-        List<DatasetField> fields = parseFieldsFromArray(fieldsJson, false);
-        return fields;
+        return parseFieldsFromArray(fieldsJson, false);
     }
 
     public List<DatasetField> parseMultipleFieldsForDelete(JsonObject json) throws JsonParseException {

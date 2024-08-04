@@ -128,8 +128,7 @@ public class ShibGroup implements Group, Serializable {
          */
 //        String email = "FIXME RoleAssigneeDisplayInfo email for shibgroup id " + getId();
         String email = null;
-        RoleAssigneeDisplayInfo roleAssigneeDisplayInfo = new RoleAssigneeDisplayInfo(title, email);
-        return roleAssigneeDisplayInfo;
+        return new RoleAssigneeDisplayInfo(title, email);
     }
 
     @Override

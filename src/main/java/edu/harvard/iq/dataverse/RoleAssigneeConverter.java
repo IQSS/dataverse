@@ -25,8 +25,7 @@ public class RoleAssigneeConverter implements Converter {
     RoleAssigneeServiceBean roleAssigneeService = CDI.current().select(RoleAssigneeServiceBean.class).get();
 
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
-        RoleAssignee mdb = roleAssigneeService.getRoleAssignee(submittedValue);
-        return mdb;
+        return roleAssigneeService.getRoleAssignee(submittedValue);
     }
 
     public String getAsString(FacesContext facesContext, UIComponent component, Object value) {

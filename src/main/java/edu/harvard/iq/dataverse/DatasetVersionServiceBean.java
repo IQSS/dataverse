@@ -777,9 +777,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
         String identifierClause = this.getIdClause(datasetId);
 
-        DatasetVersion ds = retrieveDatasetVersionByIdentifierClause(identifierClause, version);
-
-        return ds;
+        return retrieveDatasetVersionByIdentifierClause(identifierClause, version);
 
 
     } // end: getDatasetVersionById
@@ -1311,8 +1309,7 @@ w
     public List<DatasetVersion> getUnarchivedDatasetVersions() {
 
         try {
-            List<DatasetVersion> dsl = em.createNamedQuery("DatasetVersion.findUnarchivedReleasedVersion", DatasetVersion.class).getResultList();
-            return dsl;
+            return em.createNamedQuery("DatasetVersion.findUnarchivedReleasedVersion", DatasetVersion.class).getResultList();
         } catch (NoResultException e) {
             logger.log(Level.FINE, "No unarchived DatasetVersions found: {0}");
             return null;

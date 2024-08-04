@@ -630,8 +630,7 @@ public class GuestbookResponseServiceBean {
 
     public AuthenticatedUser getAuthenticatedUser(User user) {
         if (user.isAuthenticated()) {
-            AuthenticatedUser authUser = (AuthenticatedUser) user;
-            return authUser;
+            return (AuthenticatedUser) user;
         }
         return null;
     }

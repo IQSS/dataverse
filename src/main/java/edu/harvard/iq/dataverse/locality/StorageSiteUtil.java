@@ -34,8 +34,7 @@ public class StorageSiteUtil {
 
     private static String getRequiredString(JsonObject jsonObject, String key) {
         try {
-            String value = jsonObject.getString(key);
-            return value;
+            return jsonObject.getString(key);
         } catch (NullPointerException ex) {
             throw new IllegalArgumentException("String " + key + " is required!");
         }

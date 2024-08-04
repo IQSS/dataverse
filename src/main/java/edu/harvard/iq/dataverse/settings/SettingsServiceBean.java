@@ -738,8 +738,7 @@ public class SettingsServiceBean {
         }
 
         try {
-            long valAsInt = Long.parseLong(val);
-            return valAsInt;
+            return Long.parseLong(val);
         } catch (NumberFormatException ex) {
             logger.log(Level.WARNING, "Incorrect setting.  Could not convert \"{0}\" from setting {1} to long.", new Object[]{val, key.toString()});
             return null;

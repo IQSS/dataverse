@@ -501,11 +501,10 @@ public class UsersIT {
         JsonObjectBuilder data = Json.createObjectBuilder();
         data.add("builtinUserId", idOfBcryptUserToConvert);
         data.add("password", password);
-        Response response = given()
+        return given()
                 .contentType(ContentType.JSON)
                 .body(data.build().toString())
                 .post("/api/admin/convertUserFromBcryptToSha1");
-        return response;
     }
 
 }

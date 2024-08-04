@@ -230,8 +230,7 @@ public class ConfirmEmailServiceBean {
 
     public List<ConfirmEmailData> findAllConfirmEmailData() {
         TypedQuery<ConfirmEmailData> typedQuery = em.createNamedQuery("ConfirmEmailData.findAll", ConfirmEmailData.class);
-        List<ConfirmEmailData> confirmEmailDatas = typedQuery.getResultList();
-        return confirmEmailDatas;
+        return typedQuery.getResultList();
     }
 
     /**
@@ -286,8 +285,7 @@ public class ConfirmEmailServiceBean {
         String expTime = ConfirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
         String confirmEmailUrl = systemConfig.getDataverseSiteUrl() + "/confirmemail.xhtml?token=" + confirmEmailData.getToken();
         List<String> args = Arrays.asList(confirmEmailUrl, expTime);
-        String optionalConfirmEmailMsg = BundleUtil.getStringFromBundle("notification.email.welcomeConfirmEmailAddOn", args);
-        return optionalConfirmEmailMsg;
+        return BundleUtil.getStringFromBundle("notification.email.welcomeConfirmEmailAddOn", args);
     }
 
 }

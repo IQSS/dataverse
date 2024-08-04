@@ -55,8 +55,7 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
         service.setMaxUploadSize(config.getMaxUploadSize());
         String hostnamePlusBaseUrl = urlManager.getHostnamePlusBaseUrlPath(sdUri);
         if (hostnamePlusBaseUrl == null) {
-            ServiceDocument serviceDocument = new ServiceDocument();
-            return serviceDocument;
+            return new ServiceDocument();
         }
 
         /**

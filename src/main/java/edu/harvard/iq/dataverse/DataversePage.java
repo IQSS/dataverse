@@ -860,8 +860,7 @@ public class DataversePage implements java.io.Serializable {
          */
         String queryForCurrentDataverse = SearchFields.ID + ":" + IndexServiceBean.solrDocIdentifierDataverse + dataverse.getId();
         SavedSearch savedSearchToPersist = new SavedSearch(queryForCurrentDataverse, linkingDataverse, savedSearchCreator);
-        SavedSearch savedSearchCreated = savedSearchService.add(savedSearchToPersist);
-        return savedSearchCreated;
+        return savedSearchService.add(savedSearchToPersist);
     }
 
     private SavedSearch createSavedSearchForChildren(AuthenticatedUser savedSearchCreator) {
@@ -871,8 +870,7 @@ public class DataversePage implements java.io.Serializable {
         String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
         SavedSearchFilterQuery filterDownToSubtreeFilterQuery = new SavedSearchFilterQuery(filterDownToSubtree, savedSearchToPersist);
         savedSearchToPersist.setSavedSearchFilterQueries(Arrays.asList(filterDownToSubtreeFilterQuery));
-        SavedSearch savedSearchCreated = savedSearchService.add(savedSearchToPersist);
-        return savedSearchCreated;
+        return savedSearchService.add(savedSearchToPersist);
     }
 
      public String saveSavedSearch() {

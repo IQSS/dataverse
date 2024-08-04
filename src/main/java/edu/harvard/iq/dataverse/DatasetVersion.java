@@ -1508,8 +1508,7 @@ public class DatasetVersion implements Serializable {
         //todo get dist date from datasetfieldvalue table
         for (DatasetField dsf : this.getDatasetFields()) {
             if (DatasetFieldConstant.distributionDate.equals(dsf.getDatasetFieldType().getName())) {
-                String date = dsf.getValue();
-                return date;
+                return dsf.getValue();
             }
 
         }
@@ -1848,8 +1847,7 @@ public class DatasetVersion implements Serializable {
         }
         Date rel_date = this.getReleaseTime();
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-        String r = fmt.format(rel_date.getTime());
-        return r;
+        return fmt.format(rel_date.getTime());
     }
 
     // TODO: Consider moving this comment into the Exporter code.

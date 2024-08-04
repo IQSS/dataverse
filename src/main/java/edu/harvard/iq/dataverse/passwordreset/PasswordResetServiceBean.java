@@ -143,8 +143,7 @@ public class PasswordResetServiceBean {
                 // shouldn't reach here since tokens are being expired above
                 return tokenUnusable;
             } else {
-                PasswordResetExecResponse goodTokenCanProceed = new PasswordResetExecResponse(tokenQueried, passwordResetData);
-                return goodTokenCanProceed;
+                return new PasswordResetExecResponse(tokenQueried, passwordResetData);
             }
         } else {
             return tokenUnusable;
@@ -170,14 +169,12 @@ public class PasswordResetServiceBean {
     public List<PasswordResetData> findPasswordResetDataByDataverseUser(BuiltinUser user) {
         TypedQuery<PasswordResetData> typedQuery = em.createNamedQuery("PasswordResetData.findByUser", PasswordResetData.class);
         typedQuery.setParameter("user", user);
-        List<PasswordResetData> passwordResetDatas = typedQuery.getResultList();
-        return passwordResetDatas;
+        return typedQuery.getResultList();
     }
 
     public List<PasswordResetData> findAllPasswordResetData() {
         TypedQuery<PasswordResetData> typedQuery = em.createNamedQuery("PasswordResetData.findAll", PasswordResetData.class);
-        List<PasswordResetData> passwordResetDatas = typedQuery.getResultList();
-        return passwordResetDatas;
+        return typedQuery.getResultList();
     }
 
     /**

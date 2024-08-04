@@ -782,9 +782,7 @@ public class FilePage implements java.io.Serializable {
             versionId = dvPrevious.getId();
         }
 
-        FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionId, dfId);
-
-        return fmd;
+        return datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionId, dfId);
     }
 
     public List<FileMetadata> getFileMetadatasForTab() {
@@ -1230,8 +1228,7 @@ public class FilePage implements java.io.Serializable {
             return "";
         }
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken, getFileMetadata(), session.getLocaleCode());
-        String toolUrl = externalToolHandler.getToolUrlForPreviewMode();
-        return toolUrl;
+        return externalToolHandler.getToolUrlForPreviewMode();
     }
 
     //Provenance fragment bean calls this to show error dialogs after popup failure

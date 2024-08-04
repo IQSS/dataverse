@@ -130,13 +130,12 @@ public class HarvestingServerIT {
     }
 
     private String jsonForTestSpec(String name, String def) {
-        String r = String.format("{\"name\":\"%s\",\"definition\":\"%s\"}", name, def);//description is optional
-        return r;
+        //description is optional
+        return String.format("{\"name\":\"%s\",\"definition\":\"%s\"}", name, def);
     }
 
     private String jsonForEditSpec(String name, String def, String desc) {
-        String r = String.format("{\"name\":\"%s\",\"definition\":\"%s\",\"description\":\"%s\"}", name, def, desc);
-        return r;
+        return String.format("{\"name\":\"%s\",\"definition\":\"%s\",\"description\":\"%s\"}", name, def, desc);
     }
 
     private XmlPath validateOaiVerbResponse(Response oaiResponse, String verb) {

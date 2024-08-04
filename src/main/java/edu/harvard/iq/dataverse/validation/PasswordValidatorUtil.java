@@ -22,8 +22,7 @@ public class PasswordValidatorUtil {
         if (configString == null || configString.isEmpty()) {
             return getCharacterRulesDefault(); //sane default
         } else {
-            List<CharacterRule> rules = parseConfigString(configString);
-            return rules;
+            return parseConfigString(configString);
         }
     }
 
@@ -90,11 +89,9 @@ public class PasswordValidatorUtil {
         }
 
         if (errors.contains(errorState.toString())) {
-            String fail = "<span class=\"glyphicon glyphicon-ban-circle\" style=\"color:#a94442\"/> ";
-            return fail;
+            return "<span class=\"glyphicon glyphicon-ban-circle\" style=\"color:#a94442\"/> ";
         } else {
-            String ok = "<span class=\"glyphicon glyphicon-ok\" style=\"color:#3c763d\"/> ";
-            return ok;
+            return "<span class=\"glyphicon glyphicon-ok\" style=\"color:#3c763d\"/> ";
         }
     }
 

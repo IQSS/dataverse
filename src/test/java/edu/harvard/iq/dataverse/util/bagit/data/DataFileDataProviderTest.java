@@ -107,15 +107,13 @@ public class DataFileDataProviderTest {
     }
 
     private List<DataFile> createDataFiles(String driver, String dir, String... dataFileNames) {
-        List<DataFile> dataFiles = Arrays.stream(dataFileNames).map(fileName -> {
+        return Arrays.stream(dataFileNames).map(fileName -> {
             DataFile dataFile = Mockito.mock(DataFile.class);
             Mockito.when(dataFile.getDirectoryLabel()).thenReturn(dir);
             Mockito.when(dataFile.getCurrentName()).thenReturn(fileName);
             Mockito.when(dataFile.getStorageIdentifier()).thenReturn(driver + fileName);
             return dataFile;
         }).collect(Collectors.toList());
-
-        return dataFiles;
     }
 
 }

@@ -103,8 +103,7 @@ public class PidUtil {
             String id = data.getString("id");
             JsonObject attributes = data.getJsonObject("attributes");
             String state = attributes.getString("state");
-            JsonObjectBuilder ret = Json.createObjectBuilder().add("id", id).add("state", state);
-            return ret;
+            return Json.createObjectBuilder().add("id", id).add("state", state);
         } catch (IllegalArgumentException ex) {
             throw new BadRequestException(ex.getLocalizedMessage());
         }

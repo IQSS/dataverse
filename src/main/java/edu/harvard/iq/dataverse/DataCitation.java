@@ -414,8 +414,7 @@ public class DataCitation {
     public String toEndNoteString() {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         writeAsEndNoteCitation(outStream);
-        String xml = outStream.toString();
-        return xml;
+        return outStream.toString();
     }
 
     public void writeAsEndNoteCitation(OutputStream os) {

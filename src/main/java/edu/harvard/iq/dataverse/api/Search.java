@@ -265,8 +265,7 @@ public class Search extends AbstractApiBean {
          * @todo support Data Related To Me:
          * https://github.com/IQSS/dataverse/issues/1299
          */
-        boolean dataRelatedToMe = false;
-        return dataRelatedToMe;
+        return false;
     }
 
     private int getNumberOfResultsPerPage(int numResultsPerPage) {
@@ -278,8 +277,7 @@ public class Search extends AbstractApiBean {
             /**
              * @todo should defaultLimit be configurable?
              */
-            int defaultLimit = 10;
-            return defaultLimit;
+            return 10;
         } else if (numResultsPerPage < 0) {
             throw new IllegalArgumentException(numResultsPerPage + " results per page requested but can not be less than zero.");
         } else if (numResultsPerPage > maxLimit) {

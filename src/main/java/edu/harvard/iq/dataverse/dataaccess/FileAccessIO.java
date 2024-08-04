@@ -584,8 +584,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
 
     protected String getFilesRootDirectory() {
-        String filesRootDirectory = getConfigParam(DIRECTORY, "/tmp/files");
-        return filesRootDirectory;
+        return getConfigParam(DIRECTORY, "/tmp/files");
     }
 
     private List<Path> listCachedFiles() throws IOException {

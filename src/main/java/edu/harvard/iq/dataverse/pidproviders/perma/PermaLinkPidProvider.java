@@ -85,8 +85,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
 
     @Override
     public Map<String, String> getIdentifierMetadata(DvObject dvo) {
-        Map<String, String> map = new HashMap<>();
-        return map;
+        return new HashMap<>();
     }
 
     @Override

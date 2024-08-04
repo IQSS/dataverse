@@ -198,8 +198,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         typedQuery.setParameter(STRVALUE, strValue);
         typedQuery.setParameter("dsft", dsft);
         try {
-            ControlledVocabularyValue cvv = typedQuery.getSingleResult();
-            return cvv;
+            return typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
             if (lenient) {
                 // if the value isn't found, check in the list of alternate values for this datasetFieldType
@@ -224,8 +223,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         typedQuery.setParameter(STRVALUE, strValue);
         typedQuery.setParameter("cvv", cvv);
         try {
-            ControlledVocabAlternate alt = typedQuery.getSingleResult();
-            return alt;
+            return typedQuery.getSingleResult();
         } catch (NoResultException e) {
             return null;
         } catch (NonUniqueResultException ex) {
@@ -247,8 +245,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         typedQuery.setParameter("identifier", identifier);
         typedQuery.setParameter("dsft", dsft);
         try {
-            ControlledVocabularyValue cvv = typedQuery.getSingleResult();
-            return cvv;
+            return typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
                 return null;
         }

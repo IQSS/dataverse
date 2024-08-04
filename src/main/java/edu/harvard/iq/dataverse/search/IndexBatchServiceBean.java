@@ -330,7 +330,7 @@ public class IndexBatchServiceBean {
         for (String fileId : filesInSolrOnly) {
             filesInSolrButNotDatabase.add(fileId);
         }
-        JsonObjectBuilder contentInSolrButNotDatabase = Json.createObjectBuilder()
+        return Json.createObjectBuilder()
                 /**
                  * @todo What about files? Currently files are always indexed
                  * along with their parent dataset
@@ -338,8 +338,6 @@ public class IndexBatchServiceBean {
                 .add(DATAVERSES, dataversesInSolrButNotDatabase.build())
                 .add(DATASETS, datasetsInSolrButNotDatabase.build())
                 .add("files", filesInSolrButNotDatabase.build());
-
-        return contentInSolrButNotDatabase;
     }
 
     private JsonObjectBuilder getPermissionsInDatabaseButStaleInOrMissingFromSolr() {

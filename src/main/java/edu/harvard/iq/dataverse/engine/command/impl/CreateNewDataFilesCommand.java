@@ -626,8 +626,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 try {
                     Optional<BagItFileHandler> bagItFileHandler = CDI.current().select(BagItFileHandlerFactory.class).get().getBagItFileHandler();
                     if (bagItFileHandler.isPresent()) {
-                        CreateDataFileResult result = bagItFileHandler.get().handleBagItPackage(ctxt.systemConfig(), version, fileName, tempFile.toFile());
-                        return result;
+                        return bagItFileHandler.get().handleBagItPackage(ctxt.systemConfig(), version, fileName, tempFile.toFile());
                     }
                 } catch (IOException ioex) {
                     throw new CommandExecutionException("Failed to process uploaded BagIt file", ioex, this);

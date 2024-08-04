@@ -131,8 +131,7 @@ public class SolrIndexServiceBean {
             perms = searchPermissionsService.findDataversePerms(dataverse);
         }
         Long noDatasetVersionForDataverses = null;
-        DvObjectSolrDoc dvDoc = new DvObjectSolrDoc(dataverse.getId().toString(), IndexServiceBean.solrDocIdentifierDataverse + dataverse.getId(), noDatasetVersionForDataverses, dataverse.getName(), perms);
-        return dvDoc;
+        return new DvObjectSolrDoc(dataverse.getId().toString(), IndexServiceBean.solrDocIdentifierDataverse + dataverse.getId(), noDatasetVersionForDataverses, dataverse.getName(), perms);
     }
 
     private List<DvObjectSolrDoc> constructDatasetSolrDocs(Dataset dataset) {

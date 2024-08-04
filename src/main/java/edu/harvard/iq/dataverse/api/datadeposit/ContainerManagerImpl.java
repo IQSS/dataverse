@@ -172,8 +172,7 @@ public class ContainerManagerImpl implements ContainerManager {
                     }
                     ReceiptGenerator receiptGenerator = new ReceiptGenerator();
                     String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
-                    DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
-                    return depositReceipt;
+                    return receiptGenerator.createDatasetReceipt(baseUrl, dataset);
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset based on global id (" + globalId + IN_URL + uri);
                 }
@@ -364,8 +363,7 @@ public class ContainerManagerImpl implements ContainerManager {
                                 }
                                 ReceiptGenerator receiptGenerator = new ReceiptGenerator();
                                 String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
-                                DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
-                                return depositReceipt;
+                                return receiptGenerator.createDatasetReceipt(baseUrl, dataset);
                             } else {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Latest version of dataset " + globalId + " has already been published.");
                             }
@@ -394,8 +392,7 @@ public class ContainerManagerImpl implements ContainerManager {
                             engineSvc.submit(publishDataverseCommand);
                             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
                             String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
-                            DepositReceipt depositReceipt = receiptGenerator.createDataverseReceipt(baseUrl, dvToRelease);
-                            return depositReceipt;
+                            return receiptGenerator.createDataverseReceipt(baseUrl, dvToRelease);
                         } catch (CommandException ex) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Couldn't publish dataverse " + dvAlias + ": " + ex);
                         }

@@ -70,9 +70,7 @@ public class ShapefileHandlerTest {
             return null;
         }
 
-        FileInputStream file_input_stream = new FileInputStream(zip_file_obj);
-
-        return file_input_stream;
+        return new FileInputStream(zip_file_obj);
 
     }
 

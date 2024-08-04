@@ -90,8 +90,7 @@ public class UnmanagedHandlePidProvider extends AbstractPidProvider {
         if (!HandlePidProvider.HDL_PROTOCOL.equals(protocol)) {
             return null;
         }
-        GlobalId globalId = super.parsePersistentId(protocol, identifierString);
-        return globalId;
+        return super.parsePersistentId(protocol, identifierString);
     }
 
     @Override

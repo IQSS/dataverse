@@ -47,8 +47,7 @@ public class ShibGroupServiceBean {
         TypedQuery<ShibGroup> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ShibGroup o WHERE o.id = :id", ShibGroup.class);
         typedQuery.setParameter("id", id);
         try {
-            ShibGroup shibGroup = typedQuery.getSingleResult();
-            return shibGroup;
+            return typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
             return null;
         }

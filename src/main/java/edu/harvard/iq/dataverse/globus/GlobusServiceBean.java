@@ -484,8 +484,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                 connection.disconnect();
             }
         }
-        MakeRequestResponse r = new MakeRequestResponse(str, status);
-        return r;
+        return new MakeRequestResponse(str, status);
 
     }
 
@@ -515,8 +514,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             } else {
                 gson = new GsonBuilder().create();
             }
-            T jsonClass = gson.fromJson(sb, jsonParserClass);
-            return jsonClass;
+            return gson.fromJson(sb, jsonParserClass);
         } else {
             logger.severe("Bad respond from token rquest");
             return null;
@@ -888,9 +886,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             return null;
         });
 
-        String result = addFilesFuture.get();
-
-        return result;
+        return addFilesFuture.get();
     }
 
     private String addFiles(String curlCommand, Logger globusLogger) {
@@ -1112,9 +1108,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         JsonArrayBuilder filesObject = (JsonArrayBuilder) completableFuture.get();
 
-        JsonObject output = Json.createObjectBuilder().add(FILES, filesObject).build();
-
-        return output;
+        return Json.createObjectBuilder().add(FILES, filesObject).build();
 
     }
 

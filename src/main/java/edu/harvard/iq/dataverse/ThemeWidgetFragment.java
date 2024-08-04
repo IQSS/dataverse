@@ -292,8 +292,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
 
     public boolean getInheritCustomization() {
-        boolean inherit = editDv == null ? true : !editDv.getThemeRoot();
-         return inherit;
+        return editDv == null ? true : !editDv.getThemeRoot();
     }
 
     public void setInheritCustomization(boolean inherit) {

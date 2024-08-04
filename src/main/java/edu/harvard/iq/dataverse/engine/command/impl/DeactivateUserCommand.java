@@ -37,8 +37,7 @@ public class DeactivateUserCommand extends AbstractCommand<AuthenticatedUser> {
         ctxt.notifications().findByUser(userToDeactivate.getId()).forEach(ctxt.notifications()::delete);
         userToDeactivate.setDeactivated(true);
         userToDeactivate.setDeactivatedTime(new Timestamp(new Date().getTime()));
-        AuthenticatedUser deactivatedUser = ctxt.authentication().save(userToDeactivate);
-        return deactivatedUser;
+        return ctxt.authentication().save(userToDeactivate);
     }
 
 }

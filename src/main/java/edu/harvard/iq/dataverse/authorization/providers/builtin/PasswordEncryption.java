@@ -40,8 +40,7 @@ public final class PasswordEncryption implements java.io.Serializable {
                 md.update(plainText.getBytes("UTF-8"));
                 byte[] raw = md.digest();
                 //String hash = Base64.encodeToString(raw, true);
-                String hash = Base64.getEncoder().encodeToString(raw);
-                return hash;
+                return Base64.getEncoder().encodeToString(raw);
 
             } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
                 throw new RuntimeException(e);

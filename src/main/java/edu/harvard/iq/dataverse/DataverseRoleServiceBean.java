@@ -95,8 +95,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
          * @todo Do something with the index response. Was Solr down? Is
          * everything ok?
          */
-        IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(definitionPoint);
-        return indexResponse;
+        return solrIndexService.indexPermissionsOnSelfAndChildren(definitionPoint);
     }
 
     public DataverseRole find(Long id) {

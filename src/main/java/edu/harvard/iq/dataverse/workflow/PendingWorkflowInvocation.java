@@ -77,9 +77,8 @@ public class PendingWorkflowInvocation implements Serializable {
 
     public WorkflowContext reCreateContext(RoleAssigneeServiceBean roleAssignees) {
         DataverseRequest aRequest = new DataverseRequest((User) roleAssignees.getRoleAssignee(userId), IpAddress.valueOf(ipAddress));
-        final WorkflowContext workflowContext = new WorkflowContext(aRequest, dataset, nextVersionNumber,
+        return new WorkflowContext(aRequest, dataset, nextVersionNumber,
                 nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], null, null, datasetExternallyReleased, invocationId, lockid);
-        return workflowContext;
     }
 
     public String getInvocationId() {

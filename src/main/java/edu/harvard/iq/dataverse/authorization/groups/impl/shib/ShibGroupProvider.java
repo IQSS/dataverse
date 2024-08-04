@@ -81,18 +81,15 @@ public class ShibGroupProvider implements GroupProvider<ShibGroup> {
             logger.info("Could not convert \"" + groupAlias + "\" into a long.");
             return null;
         }
-        ShibGroup shibGroup = shibGroupService.findById(shibGroupPrimaryKey);
-        return shibGroup;
+        return shibGroupService.findById(shibGroupPrimaryKey);
     }
 
     public ShibGroup persist(ShibGroup shibGroup) {
-        ShibGroup persistedShibGroupOrNull = shibGroupService.save(shibGroup.getName(), shibGroup.getAttribute(), shibGroup.getPattern());
-        return persistedShibGroupOrNull;
+        return shibGroupService.save(shibGroup.getName(), shibGroup.getAttribute(), shibGroup.getPattern());
     }
 
     public boolean delete(ShibGroup doomed) throws Exception {
-        boolean response = shibGroupService.delete(doomed);
-        return response;
+        return shibGroupService.delete(doomed);
     }
 
 }

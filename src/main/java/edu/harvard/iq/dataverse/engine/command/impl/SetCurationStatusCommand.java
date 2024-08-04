@@ -56,9 +56,7 @@ public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.notallowed"), this);
             }
         }
-        Dataset updatedDataset = save(ctxt);
-
-        return updatedDataset;
+        return save(ctxt);
     }
 
     public Dataset save(CommandContext ctxt) throws CommandException {

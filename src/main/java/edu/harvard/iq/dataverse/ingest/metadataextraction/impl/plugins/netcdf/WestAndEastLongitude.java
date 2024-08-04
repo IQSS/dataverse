@@ -27,8 +27,7 @@ public class WestAndEastLongitude {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        return hash;
+        return 3;
     }
 
     @Override

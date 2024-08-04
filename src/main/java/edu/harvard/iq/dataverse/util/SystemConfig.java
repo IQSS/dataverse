@@ -307,8 +307,7 @@ public class SystemConfig {
     }
 
     private String getGuidesLanguage() {
-        String saneDefault = "en";
-        return saneDefault;
+        return "en";
     }
 
     public String getGuidesVersion() {
@@ -322,8 +321,7 @@ public class SystemConfig {
 
     public String getMetricsUrl() {
         String saneDefault = null;
-        String metricsUrl = settingsService.getValueForKey(SettingsServiceBean.Key.MetricsUrl, saneDefault);
-        return metricsUrl;
+        return settingsService.getValueForKey(SettingsServiceBean.Key.MetricsUrl, saneDefault);
     }
 
     public static long getLongLimitFromStringOrDefault(String limitSetting, Long defaultValue) {
@@ -450,8 +448,7 @@ public class SystemConfig {
 
     public String getApiTermsOfUse() {
         String saneDefaultForApiTermsOfUse = BundleUtil.getStringFromBundle("system.api.terms");
-        String apiTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApiTermsOfUse, saneDefaultForApiTermsOfUse);
-        return apiTermsOfUse;
+        return settingsService.getValueForKey(SettingsServiceBean.Key.ApiTermsOfUse, saneDefaultForApiTermsOfUse);
     }
 
     // TODO: 
@@ -459,8 +456,7 @@ public class SystemConfig {
     // pages should be using settingsWrapper.get(":ApplicationPrivacyPolicyUrl") instead. -- 4.2.1
     public String getApplicationPrivacyPolicyUrl() {
         String saneDefaultForPrivacyPolicyUrl = null;
-        String appPrivacyPolicyUrl = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationPrivacyPolicyUrl, saneDefaultForPrivacyPolicyUrl);
-        return appPrivacyPolicyUrl;
+        return settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationPrivacyPolicyUrl, saneDefaultForPrivacyPolicyUrl);
     }
 
     public boolean myDataDoesNotUsePermissionDocs() {
@@ -498,8 +494,7 @@ public class SystemConfig {
 
         if (limitEntry != null) {
             try {
-                Long sizeOption = Long.valueOf(limitEntry);
-                return sizeOption;
+                return Long.valueOf(limitEntry);
             } catch (NumberFormatException nfe) {
                 logger.warning("Invalid value for TabularIngestSizeLimit option? - " + limitEntry);
             }
@@ -523,8 +518,7 @@ public class SystemConfig {
 
         if (limitEntry != null) {
             try {
-                Long sizeOption = Long.valueOf(limitEntry);
-                return sizeOption;
+                return Long.valueOf(limitEntry);
             } catch (NumberFormatException nfe) {
                 logger.warning("Invalid value for TabularIngestSizeLimit:" + formatName + "? - " + limitEntry);
             }
@@ -562,8 +556,7 @@ public class SystemConfig {
         DataFile.ChecksumType saneDefault = DataFile.ChecksumType.MD5;
         String checksumStringFromDatabase = settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm, saneDefault.toString());
         try {
-            DataFile.ChecksumType checksumTypeFromDatabase = DataFile.ChecksumType.fromString(checksumStringFromDatabase);
-            return checksumTypeFromDatabase;
+            return DataFile.ChecksumType.fromString(checksumStringFromDatabase);
         } catch (IllegalArgumentException ex) {
             logger.info("The setting " + SettingsServiceBean.Key.FileFixityChecksumAlgorithm + " is misconfigured. " + ex.getMessage() + " Returning sane default: " + saneDefault + ".");
             return saneDefault;
@@ -592,8 +585,7 @@ public class SystemConfig {
         logger.fine("setting returned: " + settingReturned);
         if (settingReturned != null) {
             try {
-                AbstractOAuth2AuthenticationProvider.DevOAuthAccountType parsedValue = AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.valueOf(settingReturned);
-                return parsedValue;
+                return AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.valueOf(settingReturned);
             } catch (IllegalArgumentException ex) {
                 logger.info("Couldn't parse value: " + ex + " - returning a sane default: " + saneDefault);
                 return saneDefault;
@@ -1013,8 +1005,7 @@ public class SystemConfig {
 
 
     public String getMDCLogPath() {
-        String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
-        return mDCLogPath;
+        return settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
     }
 
     public boolean isDatafileValidationOnPublishEnabled() {
@@ -1070,8 +1061,7 @@ public class SystemConfig {
 
         if (limitEntry != null) {
             try {
-                Long sizeOption = Long.valueOf(limitEntry);
-                return sizeOption;
+                return Long.valueOf(limitEntry);
             } catch (NumberFormatException nfe) {
                 logger.warning("Invalid value for DatasetValidationSizeLimit option? - " + limitEntry);
             }
@@ -1085,8 +1075,7 @@ public class SystemConfig {
 
         if (limitEntry != null) {
             try {
-                Long sizeOption = Long.valueOf(limitEntry);
-                return sizeOption;
+                return Long.valueOf(limitEntry);
             } catch (NumberFormatException nfe) {
                 logger.warning("Invalid value for FileValidationSizeLimit option? - " + limitEntry);
             }

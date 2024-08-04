@@ -66,9 +66,8 @@ public class DatasetRelMaterial {
 
     @Override
      public int hashCode() {
-        int hash = 0;
         //hash += (this.id != null ? this.id.hashCode() : 0);
-        return hash;
+        return 0;
     }
 
     @Override

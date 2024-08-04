@@ -1258,12 +1258,11 @@ public class FileRecordJobIT {
      */
     private JsonPath getFaileJobJson() {
         System.out.println("JOB API: " + props.getProperty("filesystem.api") + "/" + dsDoi);
-        JsonPath jsonPath = given()
+        return given()
                 .header(API_TOKEN_HTTP_HEADER, token)
                 .post(props.getProperty("filesystem.api") + "/" + dsDoi)
                 .then().assertThat().statusCode(400)
                 .extract().jsonPath();
-        return jsonPath;
     }
 
     /**

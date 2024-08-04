@@ -55,8 +55,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
     }
 
     public AuxiliaryFile save(AuxiliaryFile auxiliaryFile) {
-        AuxiliaryFile savedFile = em.merge(auxiliaryFile);
-        return savedFile;
+        return em.merge(auxiliaryFile);
 
     }
 
@@ -163,8 +162,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         query.setParameter("formatTag", formatTag);
         query.setParameter("formatVersion", formatVersion);
         try {
-            AuxiliaryFile retVal = (AuxiliaryFile) query.getSingleResult();
-            return retVal;
+            return (AuxiliaryFile) query.getSingleResult();
         } catch (NoResultException nr) {
             return null;
         }
@@ -182,8 +180,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         }
         query.setParameter(DATA_FILE_ID, dataFile.getId());
 
-        List<AuxiliaryFile> retVal = query.getResultList();
-        return retVal;
+        return query.getResultList();
     }
 
     public void deleteAuxiliaryFile(DataFile dataFile, String formatTag, String formatVersion) throws IOException {

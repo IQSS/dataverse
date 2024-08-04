@@ -276,8 +276,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         int index1 = fullIdentifierString.indexOf(':');
         if (index1 > 0) { // ':' found with one or more characters before it
             String protocol = fullIdentifierString.substring(0, index1);
-            GlobalId globalId = parsePersistentId(protocol, fullIdentifierString.substring(index1 + 1));
-            return globalId;
+            return parsePersistentId(protocol, fullIdentifierString.substring(index1 + 1));
         }
         logger.log(Level.INFO, "Error parsing identifier: {0}: ''<protocol>:'' not found in string",
                 fullIdentifierString);

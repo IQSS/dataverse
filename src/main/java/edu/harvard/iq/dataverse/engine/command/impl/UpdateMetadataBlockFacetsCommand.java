@@ -35,8 +35,7 @@ public class UpdateMetadataBlockFacetsCommand extends AbstractCommand<Dataverse>
         }
 
         editedDv.setMetadataBlockFacets(metadataBlockFacets);
-        Dataverse updated = ctxt.dataverses().save(editedDv);
-        return updated;
+        return ctxt.dataverses().save(editedDv);
     }
 
     // Visible for testing

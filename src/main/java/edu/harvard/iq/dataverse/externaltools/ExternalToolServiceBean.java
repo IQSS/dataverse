@@ -107,8 +107,7 @@ public class ExternalToolServiceBean {
         TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.id = :id", ExternalTool.class);
         typedQuery.setParameter("id", id);
         try {
-            ExternalTool externalTool = typedQuery.getSingleResult();
-            return externalTool;
+            return typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
             return null;
         }

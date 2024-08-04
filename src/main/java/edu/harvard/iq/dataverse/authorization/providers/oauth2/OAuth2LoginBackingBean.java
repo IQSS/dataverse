@@ -246,8 +246,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                                   + redirectPage.map(page -> "~" + page).orElse("");
 
         String encrypted = StringUtil.encrypt(base, idp.clientSecret);
-        final String state = idp.getId() + "~" + encrypted;
-        return state;
+        return idp.getId() + "~" + encrypted;
     }
 
     /**

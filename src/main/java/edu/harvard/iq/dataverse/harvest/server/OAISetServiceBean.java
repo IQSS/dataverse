@@ -137,9 +137,7 @@ public class OAISetServiceBean implements java.io.Serializable {
                 + "group by o order by o.spec";
 
         Query query = em.createQuery(jpaQueryString);
-        List<OAISet> queryResults = query.getResultList();
-
-        return queryResults;
+        return query.getResultList();
     }
 
     @Asynchronous

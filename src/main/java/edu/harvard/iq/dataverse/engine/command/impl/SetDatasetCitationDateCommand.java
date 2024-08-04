@@ -36,8 +36,7 @@ public class SetDatasetCitationDateCommand extends AbstractCommand<Dataset> {
                 throw new IllegalCommandException("Provided DatasetFieldtype is not a Date", this);
             }
 
-            Dataset savedDataset = ctxt.datasets().merge(dataset);
-            return savedDataset;
+            return ctxt.datasets().merge(dataset);
 	}
 
     @Override

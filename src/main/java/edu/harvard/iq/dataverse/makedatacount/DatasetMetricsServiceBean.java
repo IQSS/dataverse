@@ -317,8 +317,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         if (getExisting != null) {
             em.remove(getExisting);
         }
-        DatasetMetrics savedDatasetMetrics = em.merge(datasetMetrics);
-        return savedDatasetMetrics;
+        return em.merge(datasetMetrics);
     }
 
 }

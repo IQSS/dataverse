@@ -73,9 +73,7 @@ public class IngestableDataCheckerTest {
         FileChannel srcChannel = new FileInputStream(fh).getChannel();
 
         // create a read-only MappedByteBuffer
-        MappedByteBuffer buff = srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, fh.length());
-
-        return buff;
+        return srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, fh.length());
     }
 
     /**

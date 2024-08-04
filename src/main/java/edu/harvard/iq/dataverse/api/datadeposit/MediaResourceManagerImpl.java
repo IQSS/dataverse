@@ -112,8 +112,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         String contentType = "application/zip";
                         String packaging = UriRegistry.PACKAGE_SIMPLE_ZIP;
                         boolean isPackaged = true;
-                        MediaResource mediaResource = new MediaResource(fixmeInputStream, contentType, packaging, isPackaged);
-                        return mediaResource;
+                        return new MediaResource(fixmeInputStream, contentType, packaging, isPackaged);
                     } else {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to get a media resource representation of the dataset with global ID " + dataset.getGlobalId().asString());
                     }
@@ -385,8 +384,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 
             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
             String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
-            DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
-            return depositReceipt;
+            return receiptGenerator.createDatasetReceipt(baseUrl, dataset);
         } else {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to determine target type or identifier from URL: " + uri);
         }

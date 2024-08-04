@@ -159,8 +159,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                     if (createdDataset != null) {
                         ReceiptGenerator receiptGenerator = new ReceiptGenerator();
                         String baseUrl = urlManager.getHostnamePlusBaseUrlPath(collectionUri);
-                        DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, createdDataset);
-                        return depositReceipt;
+                        return receiptGenerator.createDatasetReceipt(baseUrl, createdDataset);
                     } else {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Problem creating dataset. Null returned.");
                     }

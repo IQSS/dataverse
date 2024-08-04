@@ -318,7 +318,7 @@ public class OREMap {
                     .add(JsonLDTerm.schemaOrg("url").getLabel(), DATAVERSE_SOFTWARE_URL);
 
             //Now the OREMAP object itself
-            JsonObjectBuilder oremapBuilder = Json.createObjectBuilder()
+            return Json.createObjectBuilder()
                     .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
                     .add(JsonLDTerm.dcTerms("creator").getLabel(), BrandingUtil.getInstallationBrandName())
                     .add(TYPE, JsonLDTerm.ore("ResourceMap").getLabel())
@@ -337,7 +337,6 @@ public class OREMap {
                                     .add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build()).build())
                     // and finally add the context
                     .add(CONTEXT, contextBuilder.build());
-            return oremapBuilder;
         }
     }
 

@@ -101,8 +101,7 @@ public class BagValidator {
     }
 
     private Path getBagItRoot(Path bagItFile) {
-        Path bagRoot = Optional.ofNullable(bagItFile.getParent()).filter(path -> path != null).orElse(Path.of(""));
-        return bagRoot;
+        return Optional.ofNullable(bagItFile.getParent()).filter(path -> path != null).orElse(Path.of(""));
     }
 
     private BagValidation validateChecksums(FileDataProvider fileDataProvider, ManifestChecksum manifestChecksums) {

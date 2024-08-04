@@ -54,8 +54,7 @@ public class DataCaptureModuleUtil {
         String script = body.getObject().getString("script");
         String datasetIdentifier = body.getObject().getString("datasetIdentifier");
         long userId = body.getObject().getLong("userId");
-        ScriptRequestResponse scriptRequestResponse = new ScriptRequestResponse(httpStatusCode, datasetIdentifier, userId, script);
-        return scriptRequestResponse;
+        return new ScriptRequestResponse(httpStatusCode, datasetIdentifier, userId, script);
     }
 
     @Deprecated(forRemoval = true, since = "2024-07-07")

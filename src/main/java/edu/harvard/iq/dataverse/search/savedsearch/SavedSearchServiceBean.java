@@ -255,7 +255,7 @@ public class SavedSearchServiceBean {
         searchFilterQueries.add("dvObjectType:(dataverses OR datasets)");
 
         // run the search as GuestUser to only link published objects
-        SolrQueryResponse solrQueryResponse = searchService.search(
+        return searchService.search(
                 new DataverseRequest(GuestUser.get(), getHttpServletRequest()),
                 dataverses,
                 savedSearch.getQuery(),
@@ -269,7 +269,6 @@ public class SavedSearchServiceBean {
                 null,
                 null
         );
-        return solrQueryResponse;
     }
 
     private JsonObjectBuilder getInfo(SavedSearch savedSearch, JsonArrayBuilder infoPerHit) {

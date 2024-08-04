@@ -812,13 +812,11 @@ public class Dataset extends DvObjectContainer {
 
                 nServerURLencoded = nServerURLencoded.replace(":", "%3A").replace("/", "%2F");
                 //SEK 09/13/18
-                String NesstarWebviewPage = nServerURL
+                return nServerURL
                         + "/webview/?mode=documentation&submode=abstract&studydoc="
                         + nServerURLencoded + "%2Fobj%2FfStudy%2F"
                         + this.getIdentifier()
                         + "&top=yes";
-
-                return NesstarWebviewPage;
             } else if (HarvestingClient.HARVEST_STYLE_ROPER.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 return this.getHarvestedFrom().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + this.getIdentifier();
             } else if (HarvestingClient.HARVEST_STYLE_HGL.equals(this.getHarvestedFrom().getHarvestStyle())) {

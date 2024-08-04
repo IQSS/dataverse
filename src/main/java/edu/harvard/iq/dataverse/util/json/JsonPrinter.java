@@ -133,7 +133,7 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(AuthenticatedUser authenticatedUser) {
-        NullSafeJsonBuilder builder = jsonObjectBuilder()
+        return jsonObjectBuilder()
             .add("id", authenticatedUser.getId())
             .add(IDENTIFIER, authenticatedUser.getIdentifier())
             .add(DISPLAY_NAME, authenticatedUser.getDisplayInfo().getTitle())
@@ -151,7 +151,6 @@ public class JsonPrinter {
             .add("lastLoginTime", authenticatedUser.getLastLoginTime())
             .add("lastApiUseTime", authenticatedUser.getLastApiUseTime())
             .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
-        return builder;
     }
 
     public static JsonObjectBuilder json(RoleAssignment ra) {
@@ -225,14 +224,13 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(MailDomainGroup grp) {
-        JsonObjectBuilder bld = jsonObjectBuilder()
+        return jsonObjectBuilder()
             .add(ALIAS, grp.getPersistedGroupAlias())
             .add("id", grp.getId())
             .add("name", grp.getDisplayName())
             .add(DESCRIPTION, grp.getDescription())
             .add("domains", asJsonArray(grp.getEmailDomainsAsList()))
             .add("regex", grp.isRegEx());
-        return bld;
     }
 
     public static JsonArrayBuilder rolesToJson(List<DataverseRole> role) {

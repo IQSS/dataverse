@@ -32,8 +32,7 @@ public class VariableServiceBean {
     private EntityManager em;
 
     public DataVariable save(DataVariable variable) {
-        DataVariable savedVariable = em.merge(variable);
-        return savedVariable;
+        return em.merge(variable);
     }
 
     public DataVariable find(Object pk) {

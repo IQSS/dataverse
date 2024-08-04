@@ -65,8 +65,7 @@ public class ShibUtil {
                             if (friendlyNameObject != null) {
                                 JsonElement friendlyNameElement = friendlyNameObject.get("value");
                                 if (friendlyNameElement != null) {
-                                    String friendlyName = friendlyNameElement.getAsString();
-                                    return friendlyName;
+                                    return friendlyNameElement.getAsString();
                                 }
                             }
                         }
@@ -162,8 +161,7 @@ public class ShibUtil {
             if (email.contains("@")) {
                 String[] parts = email.split("@");
                 try {
-                    String firstPart = parts[0];
-                    return firstPart;
+                    return parts[0];
                 } catch (ArrayIndexOutOfBoundsException ex) {
                     /**
                      * @todo Is it possible to reach this line via a test? If

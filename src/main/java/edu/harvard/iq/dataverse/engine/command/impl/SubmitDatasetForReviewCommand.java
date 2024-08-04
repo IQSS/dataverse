@@ -38,9 +38,7 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
         //SEK 9-1 Add Lock before saving dataset
         DatasetLock inReviewLock = new DatasetLock(DatasetLock.Reason.InReview, getRequest().getAuthenticatedUser());
         ctxt.engine().submit(new AddLockCommand(getRequest(), getDataset(), inReviewLock));
-        Dataset updatedDataset = save(ctxt);
-
-        return updatedDataset;
+        return save(ctxt);
     }
 
     private Dataset save(CommandContext ctxt) throws CommandException {

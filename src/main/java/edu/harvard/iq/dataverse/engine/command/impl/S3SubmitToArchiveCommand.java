@@ -262,8 +262,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
         s3CB.setCredentials(providerChain);
 
         // let's build the client :-)
-        AmazonS3 client = s3CB.build();
-        return client;
+        return s3CB.build();
     }
 
 }

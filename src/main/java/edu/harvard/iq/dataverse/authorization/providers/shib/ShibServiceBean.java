@@ -67,8 +67,7 @@ public class ShibServiceBean {
         logger.fine("setting returned: " + settingReturned);
         if (settingReturned != null) {
             try {
-                DevShibAccountType parsedValue = DevShibAccountType.valueOf(settingReturned);
-                return parsedValue;
+                return DevShibAccountType.valueOf(settingReturned);
             } catch (IllegalArgumentException ex) {
                 logger.info("Couldn't parse value: " + ex + " - returning a sane default: " + saneDefault);
                 return saneDefault;

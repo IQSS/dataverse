@@ -2562,8 +2562,7 @@ public class DatasetPage implements java.io.Serializable {
         // in each folder next to the name), we will have to define a custom class
         // and use it instead of the string in the DefaultTreeNode constructor
         // below:
-        DefaultTreeNode folderNode = new DefaultTreeNode(name, parent);
-        return folderNode;
+        return new DefaultTreeNode(name, parent);
     }
 
     private DefaultTreeNode createFileTreeNode(FileMetadata fileMetadata, TreeNode parent) {
@@ -2575,9 +2574,7 @@ public class DatasetPage implements java.io.Serializable {
         // of information for different types of files (tab. files would be a
         // natural case), more custom nodes could be defined.
 
-        DefaultTreeNode fileNode = new DefaultTreeNode("customFileNode", fileMetadata, parent);
-
-        return fileNode;
+        return new DefaultTreeNode("customFileNode", fileMetadata, parent);
     }
 
     /*public boolean isHasTabular() {
@@ -4738,16 +4735,12 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getVariableMetadataURL(Long fileid) {
         String myHostURL = getDataverseSiteUrl();
-        String metaURL = myHostURL + "/api/meta/datafile/" + fileid;
-
-        return metaURL;
+        return myHostURL + "/api/meta/datafile/" + fileid;
     }
 
     public String getTabularDataFileURL(Long fileid) {
         String myHostURL = getDataverseSiteUrl();
-        String dataURL = myHostURL + "/api/access/datafile/" + fileid;
-
-        return dataURL;
+        return myHostURL + "/api/access/datafile/" + fileid;
     }
 
     public List<String[]> getExporters() {

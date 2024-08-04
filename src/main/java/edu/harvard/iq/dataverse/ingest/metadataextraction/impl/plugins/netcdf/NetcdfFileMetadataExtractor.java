@@ -155,8 +155,7 @@ public class NetcdfFileMetadataExtractor extends FileMetadataExtractor {
         if (westAsFloat > 180 && eastAsFloat > 180) {
             Float westStandard = westAsFloat - 360;
             Float eastStandard = eastAsFloat - 360;
-            WestAndEastLongitude updatedWeLong = new WestAndEastLongitude(westStandard.toString(), eastStandard.toString());
-            return updatedWeLong;
+            return new WestAndEastLongitude(westStandard.toString(), eastStandard.toString());
         }
         // "If one of them is <0, the domain is -180:180."
         // 180:180 is what Solr wants. Return it.

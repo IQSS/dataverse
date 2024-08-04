@@ -266,8 +266,7 @@ public class URLTokenUtil {
         String msg = BundleUtil.getStringFromBundle("externaltools.enable.browser.popups");
         String newWin = "newWin" + (new Random()).nextInt(1000000000);
         //Always use a unique identifier so that more than one script can run (or one can be rerun) without conflicts
-        String script = String.format("const %1$s = window.open('" + url + "', target='_blank'); if (!%1$s || %1$s.closed || typeof %1$s.closed == \"undefined\") {alert(\"" + msg + "\");}", newWin);
-        return script;
+        return String.format("const %1$s = window.open('" + url + "', target='_blank'); if (!%1$s || %1$s.closed || typeof %1$s.closed == \"undefined\") {alert(\"" + msg + "\");}", newWin);
    }
 
     public enum ReservedWord {

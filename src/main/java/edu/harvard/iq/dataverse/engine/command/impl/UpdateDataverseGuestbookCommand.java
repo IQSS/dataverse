@@ -41,8 +41,7 @@ public class UpdateDataverseGuestbookCommand extends AbstractCommand<Dataverse> 
         }
 
         ctxt.em().merge(this.guestbook);
-        Dataverse result = ctxt.dataverses().save(editedDv);
-        return result;
+        return ctxt.dataverses().save(editedDv);
     }
 
 }

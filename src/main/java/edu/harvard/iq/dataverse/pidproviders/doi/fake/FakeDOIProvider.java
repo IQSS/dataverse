@@ -50,8 +50,7 @@ public class FakeDOIProvider extends AbstractDOIProvider {
 
     @Override
     public Map<String, String> getIdentifierMetadata(DvObject dvo) {
-        Map<String, String> map = new HashMap<>();
-        return map;
+        return new HashMap<>();
     }
 
     @Override

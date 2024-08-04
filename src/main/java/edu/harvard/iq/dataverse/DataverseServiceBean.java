@@ -115,8 +115,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     public Dataverse save(Dataverse dataverse) {
 
         dataverse.setModificationTime(new Timestamp(new Date().getTime()));
-        Dataverse savedDataverse = em.merge(dataverse);
-        return savedDataverse;
+        return em.merge(dataverse);
     }
 
     public boolean index(Dataverse dataverse) {
@@ -1054,8 +1053,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     static String getBaseSchemaStringFromFile(String pathToJsonFile) {
         File datasetSchemaJson = new File(pathToJsonFile);
         try {
-            String datasetSchemaAsJson = new String(Files.readAllBytes(Paths.get(datasetSchemaJson.getAbsolutePath())));
-            return datasetSchemaAsJson;
+            return new String(Files.readAllBytes(Paths.get(datasetSchemaJson.getAbsolutePath())));
         } catch (IOException ex) {
             logger.info("IO - failed to get schema file  - will build on fly " + ex.getMessage());
             return null;

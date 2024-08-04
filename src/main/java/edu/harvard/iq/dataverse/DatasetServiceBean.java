@@ -837,8 +837,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public int clearAllExportTimes() {
         Query clearExportTimes = em.createQuery("UPDATE Dataset SET lastExportTime = NULL");
-        int numRowsUpdated = clearExportTimes.executeUpdate();
-        return numRowsUpdated;
+        return clearExportTimes.executeUpdate();
     }
 
     public Dataset setNonDatasetFileAsThumbnail(Dataset dataset, InputStream inputStream) {

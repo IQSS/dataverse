@@ -333,8 +333,7 @@ public abstract class AbstractApiBean {
     \* ========= */
     protected RoleAssignee findAssignee(String identifier) {
         try {
-            RoleAssignee roleAssignee = roleAssigneeSvc.getRoleAssignee(identifier);
-            return roleAssignee;
+            return roleAssigneeSvc.getRoleAssignee(identifier);
         } catch (EJBException ex) {
             Throwable cause = ex;
             while (cause.getCause() != null) {
@@ -425,7 +424,7 @@ public abstract class AbstractApiBean {
     }
 
     protected DatasetVersion findDatasetVersionOrDie(final DataverseRequest req, String versionNumber, final Dataset ds, boolean includeDeaccessioned, boolean checkPermsWhenDeaccessioned) throws WrappedResponse {
-        DatasetVersion dsv = execCommand(handleVersion(versionNumber, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
+        return execCommand(handleVersion(versionNumber, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
 
             @Override
             public Command<DatasetVersion> handleLatest() {
@@ -447,7 +446,6 @@ public abstract class AbstractApiBean {
                 return new GetLatestPublishedDatasetVersionCommand(req, ds, includeDeaccessioned, checkPermsWhenDeaccessioned);
             }
         }));
-        return dsv;
     }
 
     protected DataFile findDataFileOrDie(String id) throws WrappedResponse {

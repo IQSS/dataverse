@@ -52,8 +52,7 @@ public class RequestRsyncScriptCommandTest {
                         int httpStatusCode = 200;
                         long userId = 123l;
                         String script = "theScript";
-                        ScriptRequestResponse scriptRequestResponse = new ScriptRequestResponse(httpStatusCode, datasetIdentifier, userId, script);
-                        return scriptRequestResponse;
+                        return new ScriptRequestResponse(httpStatusCode, datasetIdentifier, userId, script);
                     }
                 };
 

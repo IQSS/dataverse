@@ -68,9 +68,7 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
 
         dataverse.setPublicationDate(new Timestamp(new Date().getTime()));
         dataverse.setReleaseUser((AuthenticatedUser) getUser());
-        Dataverse savedDataverse = ctxt.dataverses().save(dataverse);
-
-        return savedDataverse;
+        return ctxt.dataverses().save(dataverse);
 
     }
 

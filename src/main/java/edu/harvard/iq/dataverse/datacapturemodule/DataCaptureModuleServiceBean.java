@@ -34,8 +34,7 @@ public class DataCaptureModuleServiceBean implements Serializable {
             HttpResponse<String> uploadRequest = Unirest.post(uploadRequestUrl)
                                                  .body(jsonString)
                                                  .asString();
-            UploadRequestResponse uploadRequestResponse = DataCaptureModuleUtil.makeUploadRequest(uploadRequest);
-            return uploadRequestResponse;
+            return DataCaptureModuleUtil.makeUploadRequest(uploadRequest);
         } catch (UnirestException ex) {
             String error = "Error calling " + uploadRequestUrl + ": " + ex;
             logger.info(error);
