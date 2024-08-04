@@ -79,6 +79,10 @@ import org.primefaces.event.TabChangeEvent;
 @Named("FilePage")
 public class FilePage implements java.io.Serializable {
 
+    private static final String FILE_FORM_EMBARGO_INPUTS = "fileForm:embargoInputs";
+
+    private static final String FILE_FORM_RETENTION_INPUTS = "fileForm:retentionInputs";
+
     private FileMetadata fileMetadata;
     private Long fileId;
     private String version;
@@ -1322,7 +1326,7 @@ public class FilePage implements java.io.Serializable {
                 selectionEmbargo = new Embargo(null, null);
             }
         }
-        PrimeFaces.current().resetInputs("fileForm:embargoInputs");
+        PrimeFaces.current().resetInputs(FILE_FORM_EMBARGO_INPUTS);
     }
 
     public String saveEmbargo() {
@@ -1375,12 +1379,12 @@ public class FilePage implements java.io.Serializable {
     public void clearEmbargoPopup() {
         setRemoveEmbargo(false);
         selectionEmbargo = new Embargo();
-        PrimeFaces.current().resetInputs("fileForm:embargoInputs");
+        PrimeFaces.current().resetInputs(FILE_FORM_EMBARGO_INPUTS);
     }
 
     public void clearSelectionEmbargo() {
         selectionEmbargo = new Embargo();
-        PrimeFaces.current().resetInputs("fileForm:embargoInputs");
+        PrimeFaces.current().resetInputs(FILE_FORM_EMBARGO_INPUTS);
     }
 
     public boolean isCantRequestDueToEmbargo() {
@@ -1444,7 +1448,7 @@ public class FilePage implements java.io.Serializable {
                 selectionRetention = new Retention(null, null);
             }
         }
-        PrimeFaces.current().resetInputs("fileForm:retentionInputs");
+        PrimeFaces.current().resetInputs(FILE_FORM_RETENTION_INPUTS);
     }
 
     public String saveRetention() {
@@ -1497,12 +1501,12 @@ public class FilePage implements java.io.Serializable {
     public void clearRetentionPopup() {
         setRemoveRetention(false);
         selectionRetention = new Retention();
-        PrimeFaces.current().resetInputs("fileForm:retentionInputs");
+        PrimeFaces.current().resetInputs(FILE_FORM_RETENTION_INPUTS);
     }
 
     public void clearSelectionRetention() {
         selectionRetention = new Retention();
-        PrimeFaces.current().resetInputs("fileForm:retentionInputs");
+        PrimeFaces.current().resetInputs(FILE_FORM_RETENTION_INPUTS);
     }
 
     public boolean isCantRequestDueToRetention() {

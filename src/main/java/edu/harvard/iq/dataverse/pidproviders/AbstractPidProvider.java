@@ -19,6 +19,8 @@ import com.beust.jcommander.Strings;
 
 public abstract class AbstractPidProvider implements PidProvider {
 
+    private static final String DATACITE_PUBLICATIONYEAR = "datacite.publicationyear";
+
     private static final Logger logger = Logger.getLogger(AbstractPidProvider.class.getCanonicalName());
 
     public static String UNAVAILABLE = ":unav";
@@ -79,7 +81,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         logger.log(Level.FINE, "getMetadataForCreateIndicator(DvObject)");
         Map<String, String> metadata = new HashMap<>();
         metadata = addBasicMetadata(dvObjectIn, metadata);
-        metadata.put("datacite.publicationyear", generateYear(dvObjectIn));
+        metadata.put(DATACITE_PUBLICATIONYEAR, generateYear(dvObjectIn));
         metadata.put("_target", getTargetUrl(dvObjectIn));
         return metadata;
     }
@@ -113,7 +115,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         metadata.put("datacite.creator", authorString);
         metadata.put("datacite.title", titleString);
         metadata.put("datacite.publisher", producerString);
-        metadata.put("datacite.publicationyear", generateYear(dvObjectIn));
+        metadata.put(DATACITE_PUBLICATIONYEAR, generateYear(dvObjectIn));
         return metadata;
     }
 
@@ -126,7 +128,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         metadata.put("datacite.creator", authorString);
         metadata.put("datacite.title", titleString);
         metadata.put("datacite.publisher", producerString);
-        metadata.put("datacite.publicationyear", "9999");
+        metadata.put(DATACITE_PUBLICATIONYEAR, "9999");
         return metadata;
     }
 

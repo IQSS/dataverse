@@ -73,6 +73,22 @@ import edu.harvard.iq.dataverse.util.json.JsonUtil;
 @Named("GlobusServiceBean")
 public class GlobusServiceBean implements java.io.Serializable {
 
+    private static final String BEARER = "Bearer";
+
+    private static final String FAILED = "FAILED";
+
+    private static final String IDSPLIT = "IDsplit";
+
+    private static final String INACTIVE = "INACTIVE";
+
+    private static final String FILES = "files";
+
+    private static final String HTTPS_TRANSFER_API_GLOBUSONLINE_ORG_V0_10_ENDPOINT = "https://transfer.api.globusonline.org/v0.10/endpoint/";
+
+    private static final String IDENTITY = "identity";
+
+    private static final String STATUS = "status";
+
     @EJB
     protected DatasetServiceBean datasetSvc;
     @EJB
@@ -98,10 +114,10 @@ public class GlobusServiceBean implements java.io.Serializable {
     private String getRuleId(GlobusEndpoint endpoint, String principal, String permissions)
             throws MalformedURLException {
 
-        String principalType = "identity";
+        String principalType = IDENTITY;
 
-        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access_list");
-        MakeRequestResponse result = makeRequest(url, "Bearer", endpoint.getClientToken(), "GET", null);
+        URL url = new URL(HTTPS_TRANSFER_API_GLOBUSONLINE_ORG_V0_10_ENDPOINT + endpoint.getId() + "/access_list");
+        MakeRequestResponse result = makeRequest(url, BEARER, endpoint.getClientToken(), "GET", null);
         if (result.status == 200) {
             AccessList al = parseJson(result.jsonResponse, AccessList.class, false);
 
@@ -140,9 +156,9 @@ public class GlobusServiceBean implements java.io.Serializable {
                     String accessToken = endpoint.getClientToken();
                     globusLogger.info("Start deleting permissions.");
                     try {
-                        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId()
+                        URL url = new URL(HTTPS_TRANSFER_API_GLOBUSONLINE_ORG_V0_10_ENDPOINT + endpoint.getId()
                                 + "/access/" + ruleId);
-                        MakeRequestResponse result = makeRequest(url, "Bearer", accessToken, "DELETE", null);
+                        MakeRequestResponse result = makeRequest(url, BEARER, accessToken, "DELETE", null);
                         if (result.status != 200) {
                             globusLogger.warning("Cannot delete access rule " + ruleId);
                         } else {
@@ -169,7 +185,7 @@ public class GlobusServiceBean implements java.io.Serializable {
     public JsonObject requestAccessiblePaths(String principal, Dataset dataset, int numberOfPaths) {
 
         GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
-        String principalType = "identity";
+        String principalType = IDENTITY;
 
         Permissions permissions = new Permissions();
         permissions.setDATA_TYPE("access");
@@ -182,11 +198,11 @@ public class GlobusServiceBean implements java.io.Serializable {
         //Try to create the directory (202 status) if it does not exist (502-already exists)
         int mkDirStatus = makeDirs(endpoint, dataset);
         if (!(mkDirStatus == 202 || mkDirStatus == 502)) {
-            return response.add("status", mkDirStatus).build();
+            return response.add(STATUS, mkDirStatus).build();
         }
         //The dir for the dataset's data exists, so try to request permission for the principal
         int requestPermStatus = requestPermission(endpoint, dataset, permissions);
-        response.add("status", requestPermStatus);
+        response.add(STATUS, requestPermStatus);
         if (requestPermStatus == 201) {
             String driverId = dataset.getEffectiveStorageDriverId();
             JsonObjectBuilder paths = Json.createObjectBuilder();
@@ -241,7 +257,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             logger.fine(body);
             URL url = new URL(
                     "https://transfer.api.globusonline.org/v0.10/operation/endpoint/" + endpoint.getId() + "/mkdir");
-            result = makeRequest(url, "Bearer", endpoint.getClientToken(), "POST", body);
+            result = makeRequest(url, BEARER, endpoint.getClientToken(), "POST", body);
 
             switch (result.status) {
             case 202:
@@ -268,8 +284,8 @@ public class GlobusServiceBean implements java.io.Serializable {
         logger.fine("Start creating the rule");
 
         try {
-            URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + endpoint.getId() + "/access");
-            result = makeRequest(url, "Bearer", endpoint.getClientToken(), "POST", gson.toJson(permissions));
+            URL url = new URL(HTTPS_TRANSFER_API_GLOBUSONLINE_ORG_V0_10_ENDPOINT + endpoint.getId() + "/access");
+            result = makeRequest(url, BEARER, endpoint.getClientToken(), "POST", gson.toJson(permissions));
 
             switch (result.status) {
             case 404:
@@ -381,7 +397,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint_manager/task/" + taskId);
 
-        MakeRequestResponse result = makeRequest(url, "Bearer", accessToken, "GET", null);
+        MakeRequestResponse result = makeRequest(url, BEARER, accessToken, "GET", null);
 
         GlobusTask task = null;
 
@@ -547,7 +563,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
     public int setPermissionForDownload(Dataset dataset, String principal) {
         GlobusEndpoint endpoint = getGlobusEndpoint(dataset);
-        String principalType = "identity";
+        String principalType = IDENTITY;
 
         Permissions permissions = new Permissions();
         permissions.setDATA_TYPE("access");
@@ -693,7 +709,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         // GlobusUpload lock
         // Keeping a lock through the add datafiles API call avoids a conflicting edit
         // and keeps any open dataset page refreshing until the datafile appears
-        if (!(taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE"))) {
+        if (!(taskStatus.startsWith(FAILED) || taskStatus.startsWith(INACTIVE))) {
             datasetSvc.addDatasetLock(dataset,
                     new DatasetLock(DatasetLock.Reason.EditInProgress, authUser, "Completing Globus Upload"));
         }
@@ -716,7 +732,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             datasetSvc.removeDatasetLocks(dataset, DatasetLock.Reason.GlobusUpload);
         }
 
-        if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
+        if (taskStatus.startsWith(FAILED) || taskStatus.startsWith(INACTIVE)) {
             String comment = "Reason : " + taskStatus.split("#")[1] + "<br> Short Description : "
                     + taskStatus.split("#")[2];
             userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()),
@@ -728,7 +744,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                 //
 
                 List<String> inputList = new ArrayList<>();
-                JsonArray filesJsonArray = jsonData.getJsonArray("files");
+                JsonArray filesJsonArray = jsonData.getJsonArray(FILES);
 
                 if (filesJsonArray != null) {
                     String datasetIdentifier = dataset.getAuthorityForFileStorage() + "/"
@@ -754,12 +770,12 @@ public class GlobusServiceBean implements java.io.Serializable {
                         String fullPath = storeId + "://" + bucketName + "/" + datasetIdentifier + "/" + fileId;
                         String fileName = fileJsonObject.getString("fileName");
 
-                        inputList.add(fileId + "IDsplit" + fullPath + "IDsplit" + fileName);
+                        inputList.add(fileId + IDSPLIT + fullPath + IDSPLIT + fileName);
                     }
 
                     // calculateMissingMetadataFields: checksum, mimetype
                     JsonObject newfilesJsonObject = calculateMissingMetadataFields(inputList, globusLogger);
-                    JsonArray newfilesJsonArray = newfilesJsonObject.getJsonArray("files");
+                    JsonArray newfilesJsonArray = newfilesJsonObject.getJsonArray(FILES);
                     logger.fine("Size: " + newfilesJsonArray.size());
                     logger.fine("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
                     JsonArrayBuilder jsonDataSecondAPI = Json.createArrayBuilder();
@@ -898,7 +914,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             JsonObject jsonObject = null;
             jsonObject = JsonUtil.getJsonObject(sb.toString());
 
-            status = jsonObject.getString("status");
+            status = jsonObject.getString(STATUS);
         } catch (Exception ex) {
             if (ex instanceof JsonParsingException) {
                 globusLogger.log(Level.SEVERE, "Error parsing dataset json.");
@@ -980,7 +996,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             deletePermission(ruleId, dataset, globusLogger);
         }
 
-        if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
+        if (taskStatus.startsWith(FAILED) || taskStatus.startsWith(INACTIVE)) {
             String comment = "Reason : " + taskStatus.split("#")[1] + "<br> Short Description : "
                     + taskStatus.split("#")[2];
             if (authUser != null && authUser instanceof AuthenticatedUser) {
@@ -1096,7 +1112,7 @@ public class GlobusServiceBean implements java.io.Serializable {
 
         JsonArrayBuilder filesObject = (JsonArrayBuilder) completableFuture.get();
 
-        JsonObject output = Json.createObjectBuilder().add("files", filesObject).build();
+        JsonObject output = Json.createObjectBuilder().add(FILES, filesObject).build();
 
         return output;
 
@@ -1126,9 +1142,9 @@ public class GlobusServiceBean implements java.io.Serializable {
         int count = 0;
         String checksumVal = "";
         InputStream in = null;
-        String fileId = id.split("IDsplit")[0];
-        String fullPath = id.split("IDsplit")[1];
-        String fileName = id.split("IDsplit")[2];
+        String fileId = id.split(IDSPLIT)[0];
+        String fullPath = id.split(IDSPLIT)[1];
+        String fileName = id.split(IDSPLIT)[2];
 
         // ToDo: what if the file does not exist in s3
         // ToDo: what if checksum calculation failed

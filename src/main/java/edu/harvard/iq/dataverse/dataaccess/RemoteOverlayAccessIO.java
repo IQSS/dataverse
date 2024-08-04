@@ -41,6 +41,8 @@ import org.apache.http.util.EntityUtils;
  */
 public class RemoteOverlayAccessIO<T extends DvObject> extends AbstractRemoteOverlayAccessIO<T> {
 
+    private static final String WAS = " was ";
+
     // A single baseUrl of the form http(s)://<host(:port)/basePath> where this store can reference data
     static final String BASE_URL = "base-url";
     String baseUrl = null;
@@ -174,7 +176,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                     logger.fine("Found file size: " + size);
                     break;
                 default:
-                    logger.warning("Response from " + head.getURI().toString() + " was " + code);
+                    logger.warning("Response from " + head.getURI().toString() + WAS + code);
                 }
             } finally {
                 EntityUtils.consume(response.getEntity());
@@ -198,7 +200,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                     setInputStream(response.getEntity().getContent());
                     break;
                 default:
-                    logger.warning("Response from " + get.getURI().toString() + " was " + code);
+                    logger.warning("Response from " + get.getURI().toString() + WAS + code);
                     throw new IOException("Cannot retrieve: " + baseUrl + "/" + path + " code: " + code);
                 }
             } catch (Exception e) {
@@ -243,7 +245,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                 case 200:
                     logger.fine("Sent DELETE for " + baseUrl + "/" + path);
                 default:
-                    logger.fine("Response from DELETE on " + del.getURI().toString() + " was " + code);
+                    logger.fine("Response from DELETE on " + del.getURI().toString() + WAS + code);
                 }
             } finally {
                 EntityUtils.consume(response.getEntity());

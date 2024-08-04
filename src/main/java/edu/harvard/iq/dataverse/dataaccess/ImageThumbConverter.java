@@ -59,6 +59,8 @@ import java.util.Base64;
  * @author Leonid Andreev
  */
 public class ImageThumbConverter {
+    private static final String THUMB = ".thumb";
+    private static final String CAUGHT_EXCEPTION_TRYING_TO_GENERATE_THUMBNAIL = "Caught exception trying to generate thumbnail: ";
     public static String THUMBNAIL_SUFFIX = "thumb";
     public static String THUMBNAIL_MIME_TYPE = "image/png";
     public static String THUMBNAIL_FILE_EXTENSION = ".png";
@@ -596,7 +598,7 @@ public class ImageThumbConverter {
      */
     public static String generateImageThumbnailFromFile(String fileLocation, int size) {
 
-        String thumbFileLocation = fileLocation + ".thumb" + size;
+        String thumbFileLocation = fileLocation + THUMB + size;
 
         // see if the thumb is already generated and saved:
         if (new File(thumbFileLocation).exists()) {
@@ -749,7 +751,7 @@ public class ImageThumbConverter {
             g2.dispose();
         } catch (Exception ex) {
             logger.warning("Failed to create LoRes Image: " + ex.getMessage());
-            throw new IOException("Caught exception trying to generate thumbnail: " + ex.getMessage());
+            throw new IOException(CAUGHT_EXCEPTION_TRYING_TO_GENERATE_THUMBNAIL + ex.getMessage());
         }
 
         try (ImageOutputStream ios = ImageIO.createImageOutputStream(outputStream);) {
@@ -764,15 +766,15 @@ public class ImageThumbConverter {
             //fullSizeImage.flush();
             lowRes.flush();
         } catch (Exception ex) {
-            logger.warning("Caught exception trying to generate thumbnail: " + ex.getMessage());
-            throw new IOException("Caught exception trying to generate thumbnail: " + ex.getMessage());
+            logger.warning(CAUGHT_EXCEPTION_TRYING_TO_GENERATE_THUMBNAIL + ex.getMessage());
+            throw new IOException(CAUGHT_EXCEPTION_TRYING_TO_GENERATE_THUMBNAIL + ex.getMessage());
         }
     }
 
     public static String generatePDFThumbnailFromFile(String fileLocation, int size) {
         logger.fine("entering generatePDFThumb");
 
-        String thumbFileLocation = fileLocation + ".thumb" + size;
+        String thumbFileLocation = fileLocation + THUMB + size;
 
         // see if the thumb is already generated and saved:
         if (new File(thumbFileLocation).exists()) {
@@ -900,7 +902,7 @@ public class ImageThumbConverter {
         return new File(thumbFileLocation).exists();
     }*/
     private static String runImageMagick(String imageMagickExec, String fileLocation, int size, String format) {
-        String thumbFileLocation = fileLocation + ".thumb" + size;
+        String thumbFileLocation = fileLocation + THUMB + size;
         return runImageMagick(imageMagickExec, fileLocation, thumbFileLocation, size, format);
     }
 

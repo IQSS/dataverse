@@ -47,6 +47,8 @@ import edu.harvard.iq.dataverse.pidproviders.perma.UnmanagedPermaLinkPidProvider
 @Singleton
 public class PidProviderFactoryBean {
 
+    private static final String LEGACY = "legacy";
+
     private static final Logger logger = Logger.getLogger(PidProviderFactoryBean.class.getCanonicalName());
 
     @Inject
@@ -166,7 +168,7 @@ public class PidProviderFactoryBean {
                         String baseUrl = JvmSettings.LEGACY_EZID_API_URL.lookup();
                         String username = JvmSettings.LEGACY_EZID_USERNAME.lookup();
                         String password = JvmSettings.LEGACY_EZID_PASSWORD.lookup();
-                        PidUtil.addToProviderList(new EZIdDOIProvider("legacy", "legacy", authority, shoulder,
+                        PidUtil.addToProviderList(new EZIdDOIProvider(LEGACY, LEGACY, authority, shoulder,
                                 identifierGenerationStyle, dataFilePidFormat, "", "", baseUrl, username, password));
 
                         break;
@@ -177,14 +179,14 @@ public class PidProviderFactoryBean {
                         String dcUsername = JvmSettings.LEGACY_DATACITE_USERNAME.lookup();
                         String dcPassword = JvmSettings.LEGACY_DATACITE_PASSWORD.lookup();
                         if (mdsUrl != null && restUrl != null && dcUsername != null && dcPassword != null) {
-                            legacy = new DataCiteDOIProvider("legacy", "legacy", authority, shoulder,
+                            legacy = new DataCiteDOIProvider(LEGACY, LEGACY, authority, shoulder,
                                     identifierGenerationStyle, dataFilePidFormat, "", "", mdsUrl, restUrl, dcUsername,
                                     dcPassword);
                         }
                         break;
                     case "FAKE":
                         logger.warning("Adding FAKE provider");
-                        legacy = new FakeDOIProvider("legacy", "legacy", authority, shoulder, identifierGenerationStyle,
+                        legacy = new FakeDOIProvider(LEGACY, LEGACY, authority, shoulder, identifierGenerationStyle,
                                 dataFilePidFormat, "", "");
                         break;
                     }
@@ -197,13 +199,13 @@ public class PidProviderFactoryBean {
                             .isTrueForKey(SettingsServiceBean.Key.IndependentHandleService, false);
                     String handleAuthHandle = settingsService.getValueForKey(SettingsServiceBean.Key.HandleAuthHandle);
 
-                    legacy = new HandlePidProvider("legacy", "legacy", authority, shoulder, identifierGenerationStyle,
+                    legacy = new HandlePidProvider(LEGACY, LEGACY, authority, shoulder, identifierGenerationStyle,
                             dataFilePidFormat, "", "", index, independentHandleService, handleAuthHandle, path,
                             passphrase);
                     break;
                 case "perma":
                     String baseUrl = JvmSettings.LEGACY_PERMALINK_BASEURL.lookup();
-                    legacy = new PermaLinkPidProvider("legacy", "legacy", authority, shoulder,
+                    legacy = new PermaLinkPidProvider(LEGACY, LEGACY, authority, shoulder,
                             identifierGenerationStyle, dataFilePidFormat, "", "", baseUrl,
                             PermaLinkPidProvider.SEPARATOR);
                 }

@@ -52,6 +52,10 @@ import java.util.ArrayList;
 
 public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
+    private static final String DATA_ACCESS_NO_LOCAL_STORAGE_IDENTIFIER_DEFINED_FOR_THIS_DATAFILE = "Data Access: No local storage identifier defined for this datafile.";
+
+    private static final String THIS_FILE_ACCESS_IO_OBJECT_HASN_T_BEEN_PROPERLY_INITIALIZED = "This FileAccessIO object hasn't been properly initialized.";
+
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.FileAccessIO");
     public static final String DIRECTORY = "directory";
 
@@ -102,7 +106,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             }
 
             if (storageIdentifier == null || "".equals(storageIdentifier)) {
-                throw new IOException("Data Access: No local storage identifier defined for this datafile.");
+                throw new IOException(DATA_ACCESS_NO_LOCAL_STORAGE_IDENTIFIER_DEFINED_FOR_THIS_DATAFILE);
             }
 
             if (isReadAccess) {
@@ -314,7 +318,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         String datasetDirectory = getDatasetDirectory();
 
         if (dvObject.getStorageIdentifier() == null || "".equals(dvObject.getStorageIdentifier())) {
-            throw new IOException("Data Access: No local storage identifier defined for this datafile.");
+            throw new IOException(DATA_ACCESS_NO_LOCAL_STORAGE_IDENTIFIER_DEFINED_FOR_THIS_DATAFILE);
         }
         Path auxPath = null;
         if (dvObject instanceof DataFile) {
@@ -395,7 +399,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public List<String>listAuxObjects() throws IOException {
         if (this.getDataFile() == null) {
-            throw new IOException("This FileAccessIO object hasn't been properly initialized.");
+            throw new IOException(THIS_FILE_ACCESS_IO_OBJECT_HASN_T_BEEN_PROPERLY_INITIALIZED);
         }
 
         List<Path> cachedFiles = listCachedFiles();
@@ -460,7 +464,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         String datasetDirectory = getDatasetDirectory();
 
         if (dvObject.getStorageIdentifier() == null || "".equals(dvObject.getStorageIdentifier())) {
-            throw new IOException("Data Access: No local storage identifier defined for this datafile.");
+            throw new IOException(DATA_ACCESS_NO_LOCAL_STORAGE_IDENTIFIER_DEFINED_FOR_THIS_DATAFILE);
         }
 
         physicalPath = Paths.get(datasetDirectory, stripDriverId(dvObject.getStorageIdentifier()));
@@ -572,7 +576,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         String datasetDirectory = Paths.get(getFilesRootDirectory(), authorityForFS, identifierForFS).toString();
 
         if (dvObject.getStorageIdentifier() == null || dvObject.getStorageIdentifier().isEmpty()) {
-            throw new IOException("Data Access: No local storage identifier defined for this datafile.");
+            throw new IOException(DATA_ACCESS_NO_LOCAL_STORAGE_IDENTIFIER_DEFINED_FOR_THIS_DATAFILE);
         }
 
         return datasetDirectory;
@@ -680,7 +684,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     private List<String> listAllFiles() throws IOException {
         Dataset dataset = this.getDataset();
         if (dataset == null) {
-            throw new IOException("This FileAccessIO object hasn't been properly initialized.");
+            throw new IOException(THIS_FILE_ACCESS_IO_OBJECT_HASN_T_BEEN_PROPERLY_INITIALIZED);
         }
 
         Path datasetDirectoryPath = Paths.get(dataset.getAuthorityForFileStorage(), dataset.getIdentifierForFileStorage());
@@ -704,7 +708,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     private void deleteFile(String fileName) throws IOException {
         Dataset dataset = this.getDataset();
         if (dataset == null) {
-            throw new IOException("This FileAccessIO object hasn't been properly initialized.");
+            throw new IOException(THIS_FILE_ACCESS_IO_OBJECT_HASN_T_BEEN_PROPERLY_INITIALIZED);
         }
 
         Path datasetDirectoryPath = Paths.get(dataset.getAuthorityForFileStorage(), dataset.getIdentifierForFileStorage());

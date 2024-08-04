@@ -30,6 +30,8 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 @RequiredPermissions(Permission.EditDataset)
 public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {
 
+    private static final String ERROR_CREATING_FILESYSTEM_IMPORT_JOB_WITH_DATASET_WITH_ID = "Error creating FilesystemImportJob with dataset with ID: ";
+
     private static final Logger logger = Logger.getLogger(ImportFromFileSystemCommand.class.getName());
 
     final Dataset dataset;
@@ -109,13 +111,13 @@ public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {
             }
 
             if (dataset.getVersions().size() != 1) {
-                String error = "Error creating FilesystemImportJob with dataset with ID: " + dataset.getId() + " - Dataset has more than one version.";
+                String error = ERROR_CREATING_FILESYSTEM_IMPORT_JOB_WITH_DATASET_WITH_ID + dataset.getId() + " - Dataset has more than one version.";
                 logger.info(error);
                 throw new IllegalCommandException(error, this);
             }
 
             if (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) {
-                String error = "Error creating FilesystemImportJob with dataset with ID: " + dataset.getId() + " - Dataset isn't in DRAFT mode.";
+                String error = ERROR_CREATING_FILESYSTEM_IMPORT_JOB_WITH_DATASET_WITH_ID + dataset.getId() + " - Dataset isn't in DRAFT mode.";
                 logger.info(error);
                 throw new IllegalCommandException(error, this);
             }
@@ -137,13 +139,13 @@ public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {
                     bld.add("executionId", jid).add("message", "FileSystemImportJob in progress");
                     return bld.build();
                 } else {
-                    String error = "Error creating FilesystemImportJob with dataset with ID: " + dataset.getId();
+                    String error = ERROR_CREATING_FILESYSTEM_IMPORT_JOB_WITH_DATASET_WITH_ID + dataset.getId();
                     logger.info(error);
                     throw new CommandException(error, this);
                 }
 
             } catch (JobStartException | JobSecurityException ex) {
-                String error = "Error creating FilesystemImportJob with dataset with ID: " + dataset.getId() + " - " + ex.getMessage();
+                String error = ERROR_CREATING_FILESYSTEM_IMPORT_JOB_WITH_DATASET_WITH_ID + dataset.getId() + " - " + ex.getMessage();
                 logger.info(error);
                 throw new IllegalCommandException(error, this);
             }

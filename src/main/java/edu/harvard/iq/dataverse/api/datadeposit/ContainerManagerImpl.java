@@ -45,6 +45,20 @@ import org.swordapp.server.UriRegistry;
 
 public class ContainerManagerImpl implements ContainerManager {
 
+    private static final String IS_NOT_AUTHORIZED_TO_MODIFY_DATAVERSE = " is not authorized to modify dataverse ";
+
+    private static final String IN_URL = ") in URL: ";
+
+    private static final String NOT_SUPPORTED_YET = "Not supported yet.";
+
+    private static final String USER = "User ";
+
+    private static final String DATAVERSE = "dataverse";
+
+    private static final String OPERATING_ON_TARGET_TYPE = "operating on target type: ";
+
+    private static final String STUDY = "study";
+
     private static final Logger logger = Logger.getLogger(ContainerManagerImpl.class.getCanonicalName());
 
     @EJB
@@ -80,13 +94,13 @@ public class ContainerManagerImpl implements ContainerManager {
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
-            logger.fine("operating on target type: " + urlManager.getTargetType());
-            if ("study".equals(targetType)) {
+            logger.fine(OPERATING_ON_TARGET_TYPE + urlManager.getTargetType());
+            if (STUDY.equals(targetType)) {
                 String globalId = urlManager.getTargetIdentifier();
                 Dataset dataset = datasetService.findByGlobalId(globalId);
                 if (dataset != null) {
                     if (!permissionService.isUserAllowedOn(user, new GetDraftDatasetVersionCommand(dvReq, dataset), dataset)) {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to retrieve entry for " + dataset.getGlobalId().asString());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, USER + user.getDisplayInfo().getTitle() + " is not authorized to retrieve entry for " + dataset.getGlobalId().asString());
                     }
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
                     ReceiptGenerator receiptGenerator = new ReceiptGenerator();
@@ -101,7 +115,7 @@ public class ContainerManagerImpl implements ContainerManager {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset based on URL: " + uri);
                 }
             } else {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unsupported target type (" + targetType + ") in URL: " + uri);
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unsupported target type (" + targetType + IN_URL + uri);
             }
         } else {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to determine target type from URL: " + uri);
@@ -116,10 +130,10 @@ public class ContainerManagerImpl implements ContainerManager {
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
-            logger.fine("operating on target type: " + urlManager.getTargetType());
-            if ("dataverse".equals(targetType)) {
+            logger.fine(OPERATING_ON_TARGET_TYPE + urlManager.getTargetType());
+            if (DATAVERSE.equals(targetType)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Metadata replace of dataverse is not supported.");
-            } else if ("study".equals(targetType)) {
+            } else if (STUDY.equals(targetType)) {
                 logger.fine("replacing metadata for dataset");
                 // do a sanity check on the XML received
                 try {
@@ -135,7 +149,7 @@ public class ContainerManagerImpl implements ContainerManager {
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
                     UpdateDatasetVersionCommand updateDatasetCommand = new UpdateDatasetVersionCommand(dataset, dvReq);
                     if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, USER + user.getDisplayInfo().getTitle() + IS_NOT_AUTHORIZED_TO_MODIFY_DATAVERSE + dvThatOwnsDataset.getAlias());
                     }
                     DatasetVersion datasetVersion = dataset.getOrCreateEditVersion();
                     // erase all metadata before creating populating dataset version
@@ -161,7 +175,7 @@ public class ContainerManagerImpl implements ContainerManager {
                     DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
                     return depositReceipt;
                 } else {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset based on global id (" + globalId + ") in URL: " + uri);
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset based on global id (" + globalId + IN_URL + uri);
                 }
             } else {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unknown target type specified on which to replace metadata: " + uri);
@@ -173,22 +187,22 @@ public class ContainerManagerImpl implements ContainerManager {
 
     @Override
     public DepositReceipt replaceMetadataAndMediaResource(String string, Deposit dpst, AuthCredentials ac, SwordConfiguration sc) throws SwordError, SwordServerException, SwordAuthException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
     public DepositReceipt addMetadataAndResources(String string, Deposit dpst, AuthCredentials ac, SwordConfiguration sc) throws SwordError, SwordServerException, SwordAuthException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
     public DepositReceipt addMetadata(String string, Deposit dpst, AuthCredentials ac, SwordConfiguration sc) throws SwordError, SwordServerException, SwordAuthException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
     public DepositReceipt addResources(String string, Deposit dpst, AuthCredentials ac, SwordConfiguration sc) throws SwordError, SwordServerException, SwordAuthException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
@@ -203,11 +217,11 @@ public class ContainerManagerImpl implements ContainerManager {
         }
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
-            logger.fine("operating on target type: " + urlManager.getTargetType());
+            logger.fine(OPERATING_ON_TARGET_TYPE + urlManager.getTargetType());
 
-            if ("dataverse".equals(targetType)) {
+            if (DATAVERSE.equals(targetType)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Dataverses can not be deleted via the Data Deposit API but other Dataverse APIs may support this operation.");
-            } else if ("study".equals(targetType)) {
+            } else if (STUDY.equals(targetType)) {
                 String globalId = urlManager.getTargetIdentifier();
                 logger.fine("globalId: " + globalId);
                 if (globalId != null) {
@@ -222,7 +236,7 @@ public class ContainerManagerImpl implements ContainerManager {
                          */
                         DeleteDatasetVersionCommand deleteDatasetVersionCommand = new DeleteDatasetVersionCommand(dvRequest, dataset);
                         if (!permissionService.isUserAllowedOn(user, deleteDatasetVersionCommand, dataset)) {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dvThatOwnsDataset.getAlias());
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, USER + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dvThatOwnsDataset.getAlias());
                         }
                         Map<Long, String> deleteStorageLocations = datafileService.getPhysicalFilesToDelete(dataset.getLatestVersion());
                         DatasetVersion.VersionState datasetVersionState = dataset.getLatestVersion().getVersionState();
@@ -299,15 +313,15 @@ public class ContainerManagerImpl implements ContainerManager {
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
-            logger.fine("operating on target type: " + urlManager.getTargetType());
-            if ("study".equals(targetType)) {
+            logger.fine(OPERATING_ON_TARGET_TYPE + urlManager.getTargetType());
+            if (STUDY.equals(targetType)) {
                 String globalId = urlManager.getTargetIdentifier();
                 if (globalId != null) {
                     Dataset dataset = null;
                     try {
                         dataset = datasetService.findByGlobalId(globalId);
                     } catch (EJBException ex) {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset based on global id (" + globalId + ") in URL: " + uri);
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset based on global id (" + globalId + IN_URL + uri);
                     }
                     if (dataset != null) {
                         Dataverse dvThatOwnsDataset = dataset.getOwner();
@@ -318,7 +332,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         }
                         PublishDatasetCommand publishDatasetCommand = new PublishDatasetCommand(dataset, dvRequest, doMinorVersionBump);
                         if (!permissionService.isUserAllowedOn(user, publishDatasetCommand, dataset)) {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, USER + user.getDisplayInfo().getTitle() + IS_NOT_AUTHORIZED_TO_MODIFY_DATAVERSE + dvThatOwnsDataset.getAlias());
                         }
                         if (!deposit.isInProgress()) {
                             /**
@@ -364,14 +378,14 @@ public class ContainerManagerImpl implements ContainerManager {
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find globalId for dataset in URL:" + uri);
                 }
-            } else if ("dataverse".equals(targetType)) {
+            } else if (DATAVERSE.equals(targetType)) {
                 String dvAlias = urlManager.getTargetIdentifier();
                 if (dvAlias != null) {
                     Dataverse dvToRelease = dataverseService.findByAlias(dvAlias);
                     if (dvToRelease != null) {
                         PublishDataverseCommand publishDataverseCommand = new PublishDataverseCommand(dvRequest, dvToRelease);
                         if (!permissionService.isUserAllowedOn(user, publishDataverseCommand, dvToRelease)) {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvAlias);
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, USER + user.getDisplayInfo().getTitle() + IS_NOT_AUTHORIZED_TO_MODIFY_DATAVERSE + dvAlias);
                         }
                         if (deposit.isInProgress()) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unpublishing a dataverse is not supported.");

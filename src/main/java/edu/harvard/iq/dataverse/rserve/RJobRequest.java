@@ -38,6 +38,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class RJobRequest {
 
+    private static final String YYYY_MM_DD = "yyyy-MM-dd";
+
     private static final Logger dbgLog = Logger.getLogger(RJobRequest.class.getCanonicalName());
 
 
@@ -203,7 +205,7 @@ public class RJobRequest {
                         // add this var to this map value D
                         // (but only if it's a full date format! - partial dates, like "year only" 
                         // are not going to be treated as dates)
-                        if ("yyyy-MM-dd".equals(dv.getFormat())) {
+                        if (YYYY_MM_DD.equals(dv.getFormat())) {
                             variableFormats.put(getSafeVariableName(dv.getName()), "D");
                         }
                     } else if (dv.getFormatCategory().toLowerCase().equals("time")) {
@@ -226,7 +228,7 @@ public class RJobRequest {
                   if (dv.getFormatCategory().toLowerCase().equals("date")) {
                       // (but only if it's a full date format! - partial dates, like "year only" 
                       // are not going to be treated as dates)
-                      if ("yyyy-MM-dd".equals(dv.getFormat())) {
+                      if (YYYY_MM_DD.equals(dv.getFormat())) {
                         variableFormats.put(getSafeVariableName(dv.getName()), "D");
                       }
                   }
@@ -255,7 +257,7 @@ public class RJobRequest {
                     // value = D
                     // (but only if it's a full date format! - partial dates, like "year only" 
                     // are not going to be treated as dates)
-                    if ("yyyy-MM-dd".equals(dv.getFormat())) {
+                    if (YYYY_MM_DD.equals(dv.getFormat())) {
                         variableFormats.put(getSafeVariableName(dv.getName()), "D");
                     }
                   }

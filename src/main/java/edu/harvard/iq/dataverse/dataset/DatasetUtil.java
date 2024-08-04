@@ -42,6 +42,10 @@ import org.apache.commons.lang3.EnumUtils;
 
 public class DatasetUtil {
 
+    private static final String TO_ITS_DATA_ACCESS_LOCATION = " to its DataAccess location";
+
+    private static final String DATASET_ID = "Dataset (id :";
+
     private static final Logger logger = Logger.getLogger(DatasetUtil.class.getCanonicalName());
     public static final String datasetDefaultSummaryFieldNames = "dsDescription,subject,keyword,publication,notesText";
     public static String datasetLogoFilenameFinal = "dataset_logo_original";
@@ -161,17 +165,17 @@ public class DatasetUtil {
             DataFile thumbnailFile = dataset.getThumbnailFile();
 
             if (thumbnailFile != null && (thumbnailFile.isRestricted() || FileUtil.isActivelyEmbargoed(thumbnailFile))) {
-                logger.fine("Dataset (id :" + dataset.getId() + ") has a thumbnail (user selected or automatically chosen) but the file must have later been restricted or embargoed. Returning null.");
+                logger.fine(DATASET_ID + dataset.getId() + ") has a thumbnail (user selected or automatically chosen) but the file must have later been restricted or embargoed. Returning null.");
                 thumbnailFile = null;
             }
             if (thumbnailFile == null) {
                 if (dataset.isUseGenericThumbnail()) {
-                    logger.fine("Dataset (id :" + dataset.getId() + ") does not have a thumbnail and is 'Use Generic'.");
+                    logger.fine(DATASET_ID + dataset.getId() + ") does not have a thumbnail and is 'Use Generic'.");
                     return null;
                 } else {
                     thumbnailFile = attemptToAutomaticallySelectThumbnailFromDataFiles(dataset, datasetVersion);
                     if (thumbnailFile == null) {
-                        logger.fine("Dataset (id :" + dataset.getId() + ") does not have a thumbnail available that could be selected automatically.");
+                        logger.fine(DATASET_ID + dataset.getId() + ") does not have a thumbnail available that could be selected automatically.");
                         return null;
                     } else {
                         String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, size);
@@ -183,7 +187,7 @@ public class DatasetUtil {
             } else {
                 String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, size);
                 DatasetThumbnail userSpecifiedDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
-                logger.fine("Dataset (id :" + dataset.getId() + ")  will get thumbnail the user specified from DataFile id " + thumbnailFile.getId());
+                logger.fine(DATASET_ID + dataset.getId() + ")  will get thumbnail the user specified from DataFile id " + thumbnailFile.getId());
                 return userSpecifiedDatasetThumbnail;
 
             }
@@ -299,7 +303,7 @@ public class DatasetUtil {
             //this goes through Swift API/local storage/s3 to write the dataset thumbnail into a container
             dataAccess.savePathAsAux(tmpFile.toPath(), datasetLogoFilenameFinal);
         } catch (IOException ex) {
-            logger.severe("Failed to move original file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+            logger.severe("Failed to move original file from " + tmpFile.getAbsolutePath() + TO_ITS_DATA_ACCESS_LOCATION + ": " + ex);
         }
 
         BufferedImage fullSizeImage = null;
@@ -363,7 +367,7 @@ public class DatasetUtil {
             try {
                 dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail + thumbExtension + ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
             } catch (IOException ex) {
-                logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+                logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + TO_ITS_DATA_ACCESS_LOCATION + ": " + ex);
             }
         }
 
@@ -379,7 +383,7 @@ public class DatasetUtil {
             try {
                 dataAccess.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail + thumbExtension + ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
             } catch (IOException ex) {
-                logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+                logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + TO_ITS_DATA_ACCESS_LOCATION + ": " + ex);
             }
         }
 
@@ -454,12 +458,12 @@ public class DatasetUtil {
 
             if (thumbnailFile == null) {
                 if (dataset.isUseGenericThumbnail()) {
-                    logger.fine("Dataset (id :" + dataset.getId() + ") does not have a logo and is 'Use Generic'.");
+                    logger.fine(DATASET_ID + dataset.getId() + ") does not have a logo and is 'Use Generic'.");
                     return null;
                 } else {
                     thumbnailFile = attemptToAutomaticallySelectThumbnailFromDataFiles(dataset, null);
                     if (thumbnailFile == null) {
-                        logger.fine("Dataset (id :" + dataset.getId()
+                        logger.fine(DATASET_ID + dataset.getId()
                                 + ") does not have a logo available that could be selected automatically.");
                         return null;
                     } else {
@@ -468,7 +472,7 @@ public class DatasetUtil {
                 }
             }
             if (thumbnailFile.isRestricted()) {
-                logger.fine("Dataset (id :" + dataset.getId()
+                logger.fine(DATASET_ID + dataset.getId()
                         + ") has a logo the user selected but the file must have later been restricted. Returning null.");
                 return null;
             }

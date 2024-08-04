@@ -38,12 +38,16 @@ import org.apache.http.util.EntityUtils;
  */
 public class DataCiteRESTfullClient implements Closeable {
 
+    private static final String METADATA = "/metadata/";
+
+    private static final String UTF_8 = "utf-8";
+
     private static final Logger logger = Logger.getLogger(DataCiteRESTfullClient.class.getCanonicalName());
 
     private String url;
     private CloseableHttpClient httpClient;
     private HttpClientContext context;
-    private String encoding = "utf-8";
+    private String encoding = UTF_8;
 
     public DataCiteRESTfullClient(String url, String username, String password) {
         this.url = url;
@@ -96,7 +100,7 @@ public class DataCiteRESTfullClient implements Closeable {
     public String postUrl(String doi, String url) throws IOException {
         HttpPost httpPost = new HttpPost(this.url + "/doi");
         httpPost.setHeader("Content-Type", "text/plain;charset=UTF-8");
-        httpPost.setEntity(new StringEntity("doi=" + doi + "\nurl=" + url, "utf-8"));
+        httpPost.setEntity(new StringEntity("doi=" + doi + "\nurl=" + url, UTF_8));
 
         HttpResponse response = httpClient.execute(httpPost, context);
         String data = EntityUtils.toString(response.getEntity(), encoding);
@@ -115,7 +119,7 @@ public class DataCiteRESTfullClient implements Closeable {
      * @return
      */
     public String getMetadata(String doi) {
-        HttpGet httpGet = new HttpGet(this.url + "/metadata/" + doi);
+        HttpGet httpGet = new HttpGet(this.url + METADATA + doi);
         httpGet.setHeader("Accept", "application/xml");
         try {
             HttpResponse response = httpClient.execute(httpGet, context);
@@ -139,7 +143,7 @@ public class DataCiteRESTfullClient implements Closeable {
      * @return boolean true if identifier already exists on DataCite site
      */
     public boolean testDOIExists(String doi) throws IOException {
-        HttpGet httpGet = new HttpGet(this.url + "/metadata/" + doi);
+        HttpGet httpGet = new HttpGet(this.url + METADATA + doi);
         httpGet.setHeader("Accept", "application/xml");
         HttpResponse response = httpClient.execute(httpGet, context);
         if (response.getStatusLine().getStatusCode() != 200) {
@@ -159,7 +163,7 @@ public class DataCiteRESTfullClient implements Closeable {
     public String postMetadata(String metadata) throws IOException {
         HttpPost httpPost = new HttpPost(this.url + "/metadata");
         httpPost.setHeader("Content-Type", "application/xml;charset=UTF-8");
-        httpPost.setEntity(new StringEntity(metadata, "utf-8"));
+        httpPost.setEntity(new StringEntity(metadata, UTF_8));
         HttpResponse response = httpClient.execute(httpPost, context);
         String data = EntityUtils.toString(response.getEntity(), encoding);
         if (response.getStatusLine().getStatusCode() != 201) {
@@ -177,7 +181,7 @@ public class DataCiteRESTfullClient implements Closeable {
      * @return
      */
     public String inactiveDataset(String doi) {
-        HttpDelete httpDelete = new HttpDelete(this.url + "/metadata/" + doi);
+        HttpDelete httpDelete = new HttpDelete(this.url + METADATA + doi);
         try {
             HttpResponse response = httpClient.execute(httpDelete, context);
             String data = EntityUtils.toString(response.getEntity(), encoding);

@@ -29,6 +29,8 @@ import jakarta.persistence.Query;
 @Stateless
 public class DatasetExternalCitationsServiceBean implements java.io.Serializable {
 
+    private static final String ATTRIBUTES = "attributes";
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
 
@@ -52,10 +54,10 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
         for (JsonValue citationValue : citations) {
             DatasetExternalCitations exCit = new DatasetExternalCitations();
             JsonObject citation = (JsonObject) citationValue;
-            String subjectUri = citation.getJsonObject("attributes").getString("subj-id");
+            String subjectUri = citation.getJsonObject(ATTRIBUTES).getString("subj-id");
 
-            String objectUri = citation.getJsonObject("attributes").getString("obj-id");
-            String relationship = citation.getJsonObject("attributes").getString("relation-type-id");
+            String objectUri = citation.getJsonObject(ATTRIBUTES).getString("obj-id");
+            String relationship = citation.getJsonObject(ATTRIBUTES).getString("relation-type-id");
             if (inboundRelationships.contains(relationship)) {
                 Dataset localDs = null;
                 if (objectUri.contains("doi")) {

@@ -27,6 +27,8 @@ import java.util.logging.Logger;
 @DependsOn({"StartupFlywayMigrator", "PidProviderFactoryBean"})
 public class ConfigCheckService {
 
+    private static final String FOR = " for ";
+
     private static final Logger logger = Logger.getLogger(ConfigCheckService.class.getCanonicalName());
 
     @Inject
@@ -69,7 +71,7 @@ public class ConfigCheckService {
         for (Path path : paths.keySet()) {
             // Check if the configured path is absolute - avoid potential problems with relative paths this way
             if (!path.isAbsolute()) {
-                logger.log(Level.SEVERE, () -> "Configured directory " + path + " for " + paths.get(path) + " is not absolute");
+                logger.log(Level.SEVERE, () -> "Configured directory " + path + FOR + paths.get(path) + " is not absolute");
                 success = false;
                 continue;
             }
@@ -85,11 +87,11 @@ public class ConfigCheckService {
                         details = "";
                     }
 
-                    logger.log(Level.SEVERE, () -> "Could not create directory " + path + " for " + paths.get(path) + details);
+                    logger.log(Level.SEVERE, () -> "Could not create directory " + path + FOR + paths.get(path) + details);
                     success = false;
                 }
             } else if (!Files.isWritable(path)) {
-                logger.log(Level.SEVERE, () -> "Directory " + path + " for " + paths.get(path) + " exists, but is not writeable");
+                logger.log(Level.SEVERE, () -> "Directory " + path + FOR + paths.get(path) + " exists, but is not writeable");
                 success = false;
             }
         }

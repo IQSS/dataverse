@@ -61,6 +61,8 @@ import jakarta.persistence.PersistenceContext;
 @Stateless(name = "harvesterService")
 @Named
 public class HarvesterServiceBean {
+    private static final String METADATA_PREFIX = ", metadataPrefix=";
+    private static final String COM_SUN_AAS_INSTANCE_ROOT = "com.sun.aas.instanceRoot";
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -147,12 +149,12 @@ public class HarvesterServiceBean {
 
         String logTimestamp = logFormatter.format(new Date());
         Logger hdLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean." + harvestingClientConfig.getName() + logTimestamp);
-        String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "harvest_" + harvestingClientConfig.getName() + "_" + logTimestamp + ".log";
+        String logFileName = System.getProperty(COM_SUN_AAS_INSTANCE_ROOT) + File.separator + "logs" + File.separator + "harvest_" + harvestingClientConfig.getName() + "_" + logTimestamp + ".log";
         FileHandler fileHandler = new FileHandler(logFileName);
         hdLogger.setUseParentHandlers(false);
         hdLogger.addHandler(fileHandler);
 
-        PrintWriter importCleanupLog = new PrintWriter(new FileWriter(System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs/harvest_cleanup_" + harvestingClientConfig.getName() + "_" + logTimestamp + ".txt"));
+        PrintWriter importCleanupLog = new PrintWriter(new FileWriter(System.getProperty(COM_SUN_AAS_INSTANCE_ROOT) + File.separator + "logs/harvest_cleanup_" + harvestingClientConfig.getName() + "_" + logTimestamp + ".txt"));
 
 
         List<Long> harvestedDatasetIds = new ArrayList<>();
@@ -177,7 +179,7 @@ public class HarvesterServiceBean {
                     throw new IOException("Unsupported harvest type");
                 }
                harvestingClientService.setHarvestSuccess(harvestingClientId, new Date(), harvestedDatasetIds.size(), failedIdentifiers.size(), deletedIdentifiers.size());
-               hdLogger.log(Level.INFO, "COMPLETED HARVEST, server=" + harvestingClientConfig.getArchiveUrl() + ", metadataPrefix=" + harvestingClientConfig.getMetadataPrefix());
+               hdLogger.log(Level.INFO, "COMPLETED HARVEST, server=" + harvestingClientConfig.getArchiveUrl() + METADATA_PREFIX + harvestingClientConfig.getMetadataPrefix());
                hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: " + deletedIdentifiers.size() + ", datasets failed: " + failedIdentifiers.size());
 
             }
@@ -398,7 +400,7 @@ public class HarvesterServiceBean {
 
     private boolean checkIfStoppingJob(HarvestingClient harvestingClient) {
         Long pid = ProcessHandle.current().pid();
-        String stopFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "stopharvest_" + harvestingClient.getName() + "." + pid;
+        String stopFileName = System.getProperty(COM_SUN_AAS_INSTANCE_ROOT) + File.separator + "logs" + File.separator + "stopharvest_" + harvestingClient.getName() + "." + pid;
         Path stopFilePath = Paths.get(stopFileName);
 
         if (Files.exists(stopFilePath)) {
@@ -421,7 +423,7 @@ public class HarvesterServiceBean {
                 + harvestingClient.getHarvestingUrl()
                 + ",set="
                 + harvestingClient.getHarvestingSet()
-                + ", metadataPrefix="
+                + METADATA_PREFIX
                 + harvestingClient.getMetadataPrefix()
                 + harvestingClient.getLastNonEmptyHarvestTime() == null ? "" : "from=" + harvestingClient.getLastNonEmptyHarvestTime());
     }
@@ -431,7 +433,7 @@ public class HarvesterServiceBean {
                 + harvestingClient.getHarvestingUrl()
                 + ",set="
                 + harvestingClient.getHarvestingSet()
-                + ", metadataPrefix="
+                + METADATA_PREFIX
                 + harvestingClient.getMetadataPrefix()
                 + harvestingClient.getLastNonEmptyHarvestTime() == null ? "" : "from=" + harvestingClient.getLastNonEmptyHarvestTime());
     }

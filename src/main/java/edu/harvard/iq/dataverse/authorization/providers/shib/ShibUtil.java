@@ -16,6 +16,10 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public class ShibUtil {
 
+    private static final String HTTPS_FAKE_EXAMPLE_COM_IDP_SHIBBOLETH = "https://fake.example.com/idp/shibboleth";
+
+    private static final String LEADING_WHITESPACE = "leadingWhitespace";
+
     private static final Logger logger = Logger.getLogger(ShibUtil.class.getCanonicalName());
 
     /**
@@ -218,7 +222,7 @@ public class ShibUtil {
     }
 
     static void mutateRequestForDevConstantTwoEmails(HttpServletRequest request) {
-        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.shibIdpAttribute, HTTPS_FAKE_EXAMPLE_COM_IDP_SHIBBOLETH);
         request.setAttribute(ShibUtil.uniquePersistentIdentifier, "twoEmails");
         request.setAttribute(ShibUtil.firstNameAttribute, "Eric");
         request.setAttribute(ShibUtil.lastNameAttribute, "Allman");
@@ -227,7 +231,7 @@ public class ShibUtil {
     }
 
     static void mutateRequestForDevConstantInvalidEmail(HttpServletRequest request) {
-        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.shibIdpAttribute, HTTPS_FAKE_EXAMPLE_COM_IDP_SHIBBOLETH);
         request.setAttribute(ShibUtil.uniquePersistentIdentifier, "invalidEmail");
         request.setAttribute(ShibUtil.firstNameAttribute, "Invalid");
         request.setAttribute(ShibUtil.lastNameAttribute, "Email");
@@ -236,19 +240,19 @@ public class ShibUtil {
     }
 
     static void mutateRequestForDevConstantEmailWithLeadingSpace(HttpServletRequest request) {
-        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
-        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "leadingWhitespace");
-        request.setAttribute(ShibUtil.firstNameAttribute, "leadingWhitespace");
-        request.setAttribute(ShibUtil.lastNameAttribute, "leadingWhitespace");
+        request.setAttribute(ShibUtil.shibIdpAttribute, HTTPS_FAKE_EXAMPLE_COM_IDP_SHIBBOLETH);
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, LEADING_WHITESPACE);
+        request.setAttribute(ShibUtil.firstNameAttribute, LEADING_WHITESPACE);
+        request.setAttribute(ShibUtil.lastNameAttribute, LEADING_WHITESPACE);
         request.setAttribute(ShibUtil.emailAttribute, " leadingWhitespace@mailinator.com");
-        request.setAttribute(ShibUtil.usernameAttribute, "leadingWhitespace");
+        request.setAttribute(ShibUtil.usernameAttribute, LEADING_WHITESPACE);
     }
 
     static void mutateRequestForDevConstantUidWithLeadingSpace(HttpServletRequest request) {
-        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
-        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "leadingWhitespace");
-        request.setAttribute(ShibUtil.firstNameAttribute, "leadingWhitespace");
-        request.setAttribute(ShibUtil.lastNameAttribute, "leadingWhitespace");
+        request.setAttribute(ShibUtil.shibIdpAttribute, HTTPS_FAKE_EXAMPLE_COM_IDP_SHIBBOLETH);
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, LEADING_WHITESPACE);
+        request.setAttribute(ShibUtil.firstNameAttribute, LEADING_WHITESPACE);
+        request.setAttribute(ShibUtil.lastNameAttribute, LEADING_WHITESPACE);
         request.setAttribute(ShibUtil.emailAttribute, "leadingWhitespace@mailinator.com");
         request.setAttribute(ShibUtil.usernameAttribute, " leadingWhitespace");
     }
@@ -256,15 +260,15 @@ public class ShibUtil {
     // the identifier is the IdP plus the eppn separated by a |
     static void mutateRequestForDevConstantIdentifierWithLeadingSpace(HttpServletRequest request) {
         request.setAttribute(ShibUtil.shibIdpAttribute, " https://fake.example.com/idp/shibboleth");
-        request.setAttribute(ShibUtil.uniquePersistentIdentifier, "leadingWhitespace");
-        request.setAttribute(ShibUtil.firstNameAttribute, "leadingWhitespace");
-        request.setAttribute(ShibUtil.lastNameAttribute, "leadingWhitespace");
+        request.setAttribute(ShibUtil.uniquePersistentIdentifier, LEADING_WHITESPACE);
+        request.setAttribute(ShibUtil.firstNameAttribute, LEADING_WHITESPACE);
+        request.setAttribute(ShibUtil.lastNameAttribute, LEADING_WHITESPACE);
         request.setAttribute(ShibUtil.emailAttribute, "leadingWhitespace@mailinator.com");
-        request.setAttribute(ShibUtil.usernameAttribute, "leadingWhitespace");
+        request.setAttribute(ShibUtil.usernameAttribute, LEADING_WHITESPACE);
     }
 
     static void mutateRequestForDevConstantMissingRequiredAttributes(HttpServletRequest request) {
-        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.shibIdpAttribute, HTTPS_FAKE_EXAMPLE_COM_IDP_SHIBBOLETH);
         /**
          * @todo When shibIdpAttribute is set to null why don't we see the error
          * in the GUI?
@@ -279,7 +283,7 @@ public class ShibUtil {
     }
 
     static void mutateRequestForDevConstantOneAffiliation(HttpServletRequest request) {
-        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.shibIdpAttribute, HTTPS_FAKE_EXAMPLE_COM_IDP_SHIBBOLETH);
         request.setAttribute(ShibUtil.uniquePersistentIdentifier, "oneAffiliation");
         request.setAttribute(ShibUtil.firstNameAttribute, "Lurneen");
         request.setAttribute(ShibUtil.lastNameAttribute, "Lumpkin");
@@ -290,7 +294,7 @@ public class ShibUtil {
     }
 
     static void mutateRequestForDevConstantTwoAffiliations(HttpServletRequest request) {
-        request.setAttribute(ShibUtil.shibIdpAttribute, "https://fake.example.com/idp/shibboleth");
+        request.setAttribute(ShibUtil.shibIdpAttribute, HTTPS_FAKE_EXAMPLE_COM_IDP_SHIBBOLETH);
         request.setAttribute(ShibUtil.uniquePersistentIdentifier, "twoAffiliatons");
         request.setAttribute(ShibUtil.firstNameAttribute, "Lenny");
         request.setAttribute(ShibUtil.lastNameAttribute, "Leonard");

@@ -26,6 +26,8 @@ import jakarta.ws.rs.ServiceUnavailableException;
 
 public class PidUtil {
 
+    private static final String CHECKING = " Checking ";
+
     private static final Logger logger = Logger.getLogger(PidUtil.class.getCanonicalName());
 
     /**
@@ -140,7 +142,7 @@ public class PidUtil {
     public static GlobalId parseAsGlobalID(String identifier) {
         logger.fine("In parseAsGlobalId: " + providerMap.size());
         for (PidProvider pidProvider : providerMap.values()) {
-            logger.fine(" Checking " + String.join(",", pidProvider.getProviderInformation()));
+            logger.fine(CHECKING + String.join(",", pidProvider.getProviderInformation()));
             GlobalId globalId = pidProvider.parsePersistentId(identifier);
             if (globalId != null) {
                 return globalId;
@@ -148,7 +150,7 @@ public class PidUtil {
         }
         // If no providers can managed this PID, at least allow it to be recognized
         for (PidProvider pidProvider : unmanagedProviderMap.values()) {
-            logger.fine(" Checking " + String.join(",", pidProvider.getProviderInformation()));
+            logger.fine(CHECKING + String.join(",", pidProvider.getProviderInformation()));
             GlobalId globalId = pidProvider.parsePersistentId(identifier);
             if (globalId != null) {
                 return globalId;
@@ -166,14 +168,14 @@ public class PidUtil {
         logger.fine("Looking for " + protocol + " " + authority + " " + identifier);
         logger.fine("In parseAsGlobalId: " + providerMap.size());
         for (PidProvider pidProvider : providerMap.values()) {
-            logger.fine(" Checking " + String.join(",", pidProvider.getProviderInformation()));
+            logger.fine(CHECKING + String.join(",", pidProvider.getProviderInformation()));
             GlobalId globalId = pidProvider.parsePersistentId(protocol, authority, identifier);
             if (globalId != null) {
                 return globalId;
             }
         }
         for (PidProvider pidProvider : unmanagedProviderMap.values()) {
-            logger.fine(" Checking " + String.join(",", pidProvider.getProviderInformation()));
+            logger.fine(CHECKING + String.join(",", pidProvider.getProviderInformation()));
             GlobalId globalId = pidProvider.parsePersistentId(protocol, authority, identifier);
             if (globalId != null) {
                 return globalId;

@@ -49,9 +49,19 @@ import javax.xml.xpath.XPathExpression;
  */
 public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 
+    private static final String ACTIVITIES_EMPLOYMENTS = "activities:employments";
+
+    private static final String EMPLOYMENT_EMPLOYMENT_SUMMARY = "employment:employment-summary";
+
+    private static final String ORCID = "orcid";
+
+    private static final String PERSON_NAME = "person:name";
+
+    private static final String PERSON_PERSON = "person:person";
+
     final static Logger logger = Logger.getLogger(OrcidOAuth2AP.class.getName());
 
-    public static final String PROVIDER_ID_PRODUCTION = "orcid";
+    public static final String PROVIDER_ID_PRODUCTION = ORCID;
     public static final String PROVIDER_ID_SANDBOX = "orcid-sandbox";
 
     public OrcidOAuth2AP(String clientId, String clientSecret, String userEndpoint) {
@@ -71,7 +81,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     public String getUserEndpoint(OAuth2AccessToken token) {
         try (StringReader sRdr = new StringReader(token.getRawResponse());
                 JsonReader jRdr = Json.createReader(sRdr)) {
-            String orcid = jRdr.readObject().getString("orcid");
+            String orcid = jRdr.readObject().getString(ORCID);
             return baseUserEndpoint.replace("{ORCID}", orcid);
         }
     }
@@ -116,16 +126,16 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             DocumentBuilder db = dbFact.newDocumentBuilder();
             Document doc = db.parse(new InputSource(reader));
 
-            String firstName = getNodes(doc, "person:person", "person:name", "personal-details:given-names")
+            String firstName = getNodes(doc, PERSON_PERSON, PERSON_NAME, "personal-details:given-names")
                                 .stream().findFirst().map(Node::getTextContent)
                                     .map(String::trim).orElse("");
-            String familyName = getNodes(doc, "person:person", "person:name", "personal-details:family-name")
+            String familyName = getNodes(doc, PERSON_PERSON, PERSON_NAME, "personal-details:family-name")
                                 .stream().findFirst().map(Node::getTextContent)
                                     .map(String::trim).orElse("");
 
             // fallback - try to use the credit-name
             if ((firstName + familyName).equals("")) {
-                firstName = getNodes(doc, "person:person", "person:name", "personal-details:credit-name")
+                firstName = getNodes(doc, PERSON_PERSON, PERSON_NAME, "personal-details:credit-name")
                                 .stream().findFirst().map(Node::getTextContent)
                                     .map(String::trim).orElse("");
             }
@@ -267,7 +277,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     protected String extractOrcidNumber(String rawResponse) throws OAuth2Exception {
         try (JsonReader rdr = Json.createReader(new StringReader(rawResponse))) {
             JsonObject tokenData = rdr.readObject();
-            return tokenData.getString("orcid");
+            return tokenData.getString(ORCID);
         } catch (Exception e) {
             throw new OAuth2Exception(0, rawResponse, "Cannot find ORCiD id in access token response.");
         }
@@ -305,14 +315,14 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         try (StringReader reader = new StringReader(responseBody)) {
             DocumentBuilder db = dbFact.newDocumentBuilder();
             Document doc = db.parse(new InputSource(reader));
-            String organization = getNodes(doc, "activities:employments",
-                                  "employment:employment-summary", "employment:organization", "common:name")
+            String organization = getNodes(doc, ACTIVITIES_EMPLOYMENTS,
+                                  EMPLOYMENT_EMPLOYMENT_SUMMARY, "employment:organization", "common:name")
                     .stream().findFirst().map(Node::getTextContent)
                     .map(String::trim).orElse(null);
 
-            String department = getNodes(doc, "activities:employments", "employment:employment-summary", "employment:department-name").stream()
+            String department = getNodes(doc, ACTIVITIES_EMPLOYMENTS, EMPLOYMENT_EMPLOYMENT_SUMMARY, "employment:department-name").stream()
                                     .findFirst().map(Node::getTextContent).map(String::trim).orElse(null);
-            String role = getNodes(doc, "activities:employments", "employment:employment-summary", "employment:role-title").stream()
+            String role = getNodes(doc, ACTIVITIES_EMPLOYMENTS, EMPLOYMENT_EMPLOYMENT_SUMMARY, "employment:role-title").stream()
                                     .findFirst().map(Node::getTextContent).map(String::trim).orElse(null);
 
             String position = Stream.of(role, department).filter(Objects::nonNull).collect(joining(", "));

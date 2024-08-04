@@ -49,6 +49,10 @@ import jakarta.mail.internet.InternetAddress;
 @Named
 public class SettingsWrapper implements java.io.Serializable {
 
+    private static final String S_S = "\\s*,\\s*";
+
+    private static final String YYYY_MM_DD = "yyyy-MM-dd";
+
     static final Logger logger = Logger.getLogger(SettingsWrapper.class.getCanonicalName());
 
     @EJB
@@ -395,7 +399,7 @@ public class SettingsWrapper implements java.io.Serializable {
                 if (uploadMethods == null) {
                     rsyncOnly = false;
                 } else {
-                    rsyncOnly = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+                    rsyncOnly = Arrays.asList(uploadMethods.toLowerCase().split(S_S)).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
                 }
             }
         }
@@ -427,7 +431,7 @@ public class SettingsWrapper implements java.io.Serializable {
             if (uploadMethods == null) {
                 uploadMethodsCount = 0;
             } else {
-                uploadMethodsCount = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
+                uploadMethodsCount = Arrays.asList(uploadMethods.toLowerCase().split(S_S)).size();
             }
         }
         return uploadMethodsCount;
@@ -571,8 +575,8 @@ public class SettingsWrapper implements java.io.Serializable {
             }
             Embargo newE = new Embargo(((LocalDate) value), null);
             if (!isValidEmbargoDate(newE)) {
-                String minDate = getMinEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                String maxDate = getMaxEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                String minDate = getMinEmbargoDate().format(DateTimeFormatter.ofPattern(YYYY_MM_DD));
+                String maxDate = getMaxEmbargoDate().format(DateTimeFormatter.ofPattern(YYYY_MM_DD));
                 String msgString = BundleUtil.getStringFromBundle("embargo.date.invalid",
                         Arrays.asList(minDate, maxDate));
                 // If we don't throw an exception here, the datePicker will use it's own
@@ -654,8 +658,8 @@ public class SettingsWrapper implements java.io.Serializable {
             }
             Retention newR = new Retention(((LocalDate) value), null);
             if (!isValidRetentionDate(newR)) {
-                String minDate = getMinRetentionDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                String maxDate = getMaxRetentionDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                String minDate = getMinRetentionDate().format(DateTimeFormatter.ofPattern(YYYY_MM_DD));
+                String maxDate = getMaxRetentionDate().format(DateTimeFormatter.ofPattern(YYYY_MM_DD));
                 String msgString = BundleUtil.getStringFromBundle("retention.date.invalid",
                         Arrays.asList(minDate, maxDate));
                 // If we don't throw an exception here, the datePicker will use it's own
@@ -818,7 +822,7 @@ public class SettingsWrapper implements java.io.Serializable {
         if (uploadMethods == null) {
             return false;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+           return  Arrays.asList(uploadMethods.toLowerCase().split(S_S)).contains(method);
         }
     }
 

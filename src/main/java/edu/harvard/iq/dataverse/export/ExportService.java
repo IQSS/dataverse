@@ -56,6 +56,12 @@ import org.apache.commons.io.IOUtils;
  */
 public class ExportService {
 
+    private static final String CACHED = ".cached";
+
+    private static final String IO_EXCEPTION_THROWN_EXPORTING_AS = "IO Exception thrown exporting as ";
+
+    private static final String EXPORT = "export_";
+
     private static ExportService service;
     private ServiceLoader<Exporter> loader;
     private Map<String, Exporter> exporterMap = new HashMap<>();
@@ -370,7 +376,7 @@ public class ExportService {
             // permanent storage using the IO "save" command:
             try {
                 storageIO = DataAccess.getStorageIO(dataset);
-                Channel outputChannel = storageIO.openAuxChannel("export_" + format + ".cached",
+                Channel outputChannel = storageIO.openAuxChannel(EXPORT + format + CACHED,
                         DataAccessOption.WRITE_ACCESS);
                 outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             } catch (IOException ioex) {
@@ -390,7 +396,7 @@ public class ExportService {
                 if (tempFileUsed) {
                     logger.fine("Saving export_" + format + ".cached aux file from temp file: "
                             + Paths.get(tempFile.getAbsolutePath()));
-                    storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
+                    storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), EXPORT + format + CACHED);
                     boolean tempFileDeleted = tempFile.delete();
                     logger.fine("tempFileDeleted: " + tempFileDeleted);
                 }
@@ -405,12 +411,12 @@ public class ExportService {
                  */
                 logger.warning("Exception thrown while creating export_" + format + ".cached : " + exex.getMessage());
             } catch (IOException ioex) {
-                throw new ExportException("IO Exception thrown exporting as " + "export_" + format + ".cached");
+                throw new ExportException(IO_EXCEPTION_THROWN_EXPORTING_AS + EXPORT + format + CACHED);
             }
 
         } catch (IOException ioex) {
             // This catches any problem creating a local temp file in the catch clause above
-            throw new ExportException("IO Exception thrown before exporting as " + "export_" + format + ".cached");
+            throw new ExportException("IO Exception thrown before exporting as " + EXPORT + format + CACHED);
         } finally {
             IOUtils.closeQuietly(outputStream);
         }
@@ -420,10 +426,10 @@ public class ExportService {
     private void clearCachedExport(Dataset dataset, String format) throws IOException {
         try {
             StorageIO<Dataset> storageIO = getStorageIO(dataset);
-            storageIO.deleteAuxObject("export_" + format + ".cached");
+            storageIO.deleteAuxObject(EXPORT + format + CACHED);
 
         } catch (IOException ex) {
-            throw new IOException("IO Exception thrown exporting as " + "export_" + format + ".cached");
+            throw new IOException(IO_EXCEPTION_THROWN_EXPORTING_AS + EXPORT + format + CACHED);
         }
 
     }
@@ -438,16 +444,16 @@ public class ExportService {
         try {
             dataAccess = DataAccess.getStorageIO(dataset);
         } catch (IOException ioex) {
-            throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached", ioex);
+            throw new IOException(IO_EXCEPTION_THROWN_EXPORTING_AS + EXPORT + formatName + CACHED, ioex);
         }
 
         InputStream cachedExportInputStream = null;
 
         try {
-            cachedExportInputStream = dataAccess.getAuxFileAsInputStream("export_" + formatName + ".cached");
+            cachedExportInputStream = dataAccess.getAuxFileAsInputStream(EXPORT + formatName + CACHED);
             return cachedExportInputStream;
         } catch (IOException ioex) {
-            throw new IOException("IO Exception thrown exporting as " + "export_" + formatName + ".cached", ioex);
+            throw new IOException(IO_EXCEPTION_THROWN_EXPORTING_AS + EXPORT + formatName + CACHED, ioex);
         }
 
     }

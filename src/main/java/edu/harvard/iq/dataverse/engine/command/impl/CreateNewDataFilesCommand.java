@@ -68,6 +68,8 @@ import org.apache.commons.lang3.StringUtils;
 // via the Add Dataset page. 
 //@RequiredPermissions( Permission.EditDataset )
 public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileResult> {
+    private static final String COULD_NOT_REMOVE_TEMP_FILE = "Could not remove temp file ";
+    private static final String FILE_ADDREPLACE_ERROR_FILE_EXCEEDS_LIMIT = "file.addreplace.error.file_exceeds_limit";
     private static final Logger logger = Logger.getLogger(CreateNewDataFilesCommand.class.getCanonicalName());
 
     private final DatasetVersion version;
@@ -163,9 +165,9 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                         tempFile.toFile().delete();
                     } catch (Exception ex) {
                         // ignore - but log a warning
-                        logger.warning("Could not remove temp file " + tempFile.getFileName());
+                        logger.warning(COULD_NOT_REMOVE_TEMP_FILE + tempFile.getFileName());
                     }
-                    throw new CommandExecutionException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)), this);
+                    throw new CommandExecutionException(MessageFormat.format(BundleUtil.getStringFromBundle(FILE_ADDREPLACE_ERROR_FILE_EXCEEDS_LIMIT), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)), this);
                 }
 
             } else {
@@ -346,7 +348,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                                 // file is above the individual size limit, unzipped,
                                 // we give up on unpacking this zip archive as well: 
                                 if (fileSizeLimit != null && entry.getSize() > fileSizeLimit) {
-                                    throw new FileExceedsMaxSizeException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(entry.getSize()), bytesToHumanReadable(fileSizeLimit)));
+                                    throw new FileExceedsMaxSizeException(MessageFormat.format(BundleUtil.getStringFromBundle(FILE_ADDREPLACE_ERROR_FILE_EXCEEDS_LIMIT), bytesToHumanReadable(entry.getSize()), bytesToHumanReadable(fileSizeLimit)));
                                 }
                                 // Similarly, we want to check if saving all these unpacked 
                                 // files is going to push the disk usage over the 
@@ -512,7 +514,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                         Files.delete(tempFile);
                     } catch (IOException ioex) {
                         // do nothing - it's just a temp file.
-                        logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
+                        logger.warning(COULD_NOT_REMOVE_TEMP_FILE + tempFile.getFileName().toString());
                     }
                     // update the quota object: 
                     if (quota != null) {
@@ -603,7 +605,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                         Files.delete(tempFile);
                     } catch (IOException ioex) {
                         // ignore - it's just a temp file - but let's log a warning
-                        logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
+                        logger.warning(COULD_NOT_REMOVE_TEMP_FILE + tempFile.getFileName().toString());
                     } catch (SecurityException se) {
                         // same
                         logger.warning("Unable to delete: " + tempFile.toString() + "due to Security Exception: "
@@ -656,7 +658,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                 // if the size is specified, and it's above the individual size 
                 // limit for this store, we can reject it now:
                 if (fileSizeLimit != null && fileSize > fileSizeLimit) {
-                    throw new CommandExecutionException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)), this);
+                    throw new CommandExecutionException(MessageFormat.format(BundleUtil.getStringFromBundle(FILE_ADDREPLACE_ERROR_FILE_EXCEEDS_LIMIT), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)), this);
                 }
             }
 
@@ -693,7 +695,7 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
                     newFile.delete();
                 } catch (Exception ex) {
                     // ignore - but log a warning
-                    logger.warning("Could not remove temp file " + tempFile.getFileName());
+                    logger.warning(COULD_NOT_REMOVE_TEMP_FILE + tempFile.getFileName());
                 }
             }
             throw new CommandExecutionException(MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.quota_exceeded"), bytesToHumanReadable(fileSize), bytesToHumanReadable(storageQuotaLimit)), this);

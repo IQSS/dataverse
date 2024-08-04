@@ -87,6 +87,12 @@ import org.xml.sax.ContentHandler;
 @Named
 public class IndexServiceBean {
 
+    private static final String FILE_ID = " (file id ";
+
+    private static final String RESULT = ". Result: ";
+
+    private static final String FILES = "files";
+
     private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
     private static final Config config = ConfigProvider.getConfig();
 
@@ -756,7 +762,7 @@ public class IndexServiceBean {
                 desiredCards.put(DatasetVersion.VersionState.RELEASED, true);
                 IndexableDataset indexableReleasedVersion = new IndexableDataset(releasedVersion);
                 String indexReleasedVersionResult = addOrUpdateDataset(indexableReleasedVersion);
-                results.append("Attempted to index " + solrIdPublished).append(". Result: ").append(indexReleasedVersionResult).append("\n");
+                results.append("Attempted to index " + solrIdPublished).append(RESULT).append(indexReleasedVersionResult).append("\n");
 
                 desiredCards.put(DatasetVersion.VersionState.DRAFT, false);
                 if (!reduceSolrDeletes && doNormalSolrDocCleanUp) {
@@ -771,7 +777,7 @@ public class IndexServiceBean {
                 if (!reduceSolrDeletes && doNormalSolrDocCleanUp) {
                     String deleteDeaccessionedResult = removeDeaccessioned(dataset);
                     results.append("No need for deaccessioned version. Deletion attempted for ")
-                            .append(solrIdDeaccessioned).append(". Result: ").append(deleteDeaccessionedResult);
+                            .append(solrIdDeaccessioned).append(RESULT).append(deleteDeaccessionedResult);
                 }
 
                 /**
@@ -822,7 +828,7 @@ public class IndexServiceBean {
                 if (!reduceSolrDeletes && doNormalSolrDocCleanUp) {
                     String deleteDeaccessionedResult = removeDeaccessioned(dataset);
                     results.append("No need for deaccessioned version. Deletion attempted for ")
-                            .append(solrIdDeaccessioned).append(". Result: ").append(deleteDeaccessionedResult);
+                            .append(solrIdDeaccessioned).append(RESULT).append(deleteDeaccessionedResult);
                 }
 
                 /**
@@ -1362,7 +1368,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.DATAVERSE_VERSION_INDEXED_BY, dataverseVersion);
                     datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
                     datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
-                    datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
+                    datafileSolrInputDocument.addField(SearchFields.TYPE, FILES);
                     datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dvIndexableCategoryName);
                     if (end != null) {
                         datafileSolrInputDocument.addField(SearchFields.EMBARGO_END_DATE, end.toEpochDay());
@@ -1468,12 +1474,12 @@ public class IndexServiceBean {
                     if (datafile != null) {
                         boolean fileHasBeenReleased = datafile.isReleased();
                         if (fileHasBeenReleased) {
-                            logger.fine("indexing file with filePublicationTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
+                            logger.fine("indexing file with filePublicationTimestamp. " + fileMetadata.getId() + FILE_ID + datafile.getId() + ")");
                             Timestamp filePublicationTimestamp = datafile.getPublicationDate();
                             if (filePublicationTimestamp != null) {
                                 fileSortByDate = filePublicationTimestamp;
                             } else {
-                                String msg = "filePublicationTimestamp was null for fileMetadata id " + fileMetadata.getId() + " (file id " + datafile.getId() + ")";
+                                String msg = "filePublicationTimestamp was null for fileMetadata id " + fileMetadata.getId() + FILE_ID + datafile.getId() + ")";
                                 logger.info(msg);
                             }
                             datafileSolrInputDocument.addField(SearchFields.ACCESS,
@@ -1485,12 +1491,12 @@ public class IndexServiceBean {
                                                 : (fileMetadata.isRestricted() ? SearchConstants.RESTRICTED
                                                         : SearchConstants.PUBLIC));
                         } else {
-                            logger.fine("indexing file with fileCreateTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
+                            logger.fine("indexing file with fileCreateTimestamp. " + fileMetadata.getId() + FILE_ID + datafile.getId() + ")");
                             Timestamp fileCreateTimestamp = datafile.getCreateDate();
                             if (fileCreateTimestamp != null) {
                                 fileSortByDate = fileCreateTimestamp;
                             } else {
-                                String msg = "fileCreateTimestamp was null for fileMetadata id " + fileMetadata.getId() + " (file id " + datafile.getId() + ")";
+                                String msg = "fileCreateTimestamp was null for fileMetadata id " + fileMetadata.getId() + FILE_ID + datafile.getId() + ")";
                                 logger.info(msg);
                             }
                             datafileSolrInputDocument.addField(SearchFields.ACCESS,
@@ -2191,7 +2197,7 @@ public class IndexServiceBean {
             /**
              * @todo define this centrally and statically
              */
-            return findDvObjectInSolrOnly("files");
+            return findDvObjectInSolrOnly(FILES);
         } catch (SearchException ex) {
             throw ex;
         }
@@ -2326,7 +2332,7 @@ public class IndexServiceBean {
         /**
          * @todo "files" should be a constant
          */
-        solrQuery.addFilterQuery(SearchFields.TYPE + ":" + "files");
+        solrQuery.addFilterQuery(SearchFields.TYPE + ":" + FILES);
         List<String> dvObjectInSolrOnly = new ArrayList<>();
         QueryResponse queryResponse = null;
         try {

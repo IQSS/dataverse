@@ -39,6 +39,9 @@ import jakarta.persistence.TemporalType;
 @Stateless
 @Named
 public class OAIRecordServiceBean implements java.io.Serializable {
+    private static final String CAUGHT_EXCEPTION_RETURNING_NULL = "Caught exception; returning null.";
+    private static final String QUERY = "Query: ";
+    private static final String SET_NAME = "setName";
     @EJB
     DatasetServiceBean datasetService;
     @EJB
@@ -278,7 +281,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
 
 
         TypedQuery query = em.createQuery(queryString, OAIRecord.class).setParameter("globalId", globalId);
-        if (setName != null) { query.setParameter("setName", setName); }
+        if (setName != null) { query.setParameter(SET_NAME, setName); }
 
         try {
            oaiRecord = (OAIRecord) query.setMaxResults(1).getSingleResult();
@@ -329,11 +332,11 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         queryString += until != null ? " and h.lastUpdateTime<=:until" : "";
         queryString += " order by h.globalId";
 
-        logger.fine("Query: " + queryString);
+        logger.fine(QUERY + queryString);
 
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
         if (setName != null) {
-            query.setParameter("setName", setName);
+            query.setParameter(SET_NAME, setName);
         }
         // TODO: review and phase out the use of java.util.Date throughout this service.
         
@@ -349,7 +352,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         try {
             return query.getResultList();
         } catch (Exception ex) {
-            logger.fine("Caught exception; returning null.");
+            logger.fine(CAUGHT_EXCEPTION_RETURNING_NULL);
             return null;
         }
     }
@@ -360,15 +363,15 @@ public class OAIRecordServiceBean implements java.io.Serializable {
 
         String queryString = "SELECT object(h) from OAIRecord as h WHERE (h.removed != true)";
         queryString += setName != null ? " and (h.setName = :setName)" : "and (h.setName is null)";
-        logger.fine("Query: " + queryString);
+        logger.fine(QUERY + queryString);
 
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
-        if (setName != null) { query.setParameter("setName", setName); }
+        if (setName != null) { query.setParameter(SET_NAME, setName); }
 
         try {
             return query.getResultList();
         } catch (Exception ex) {
-            logger.fine("Caught exception; returning null.");
+            logger.fine(CAUGHT_EXCEPTION_RETURNING_NULL);
             return null;
         }
     }
@@ -379,15 +382,15 @@ public class OAIRecordServiceBean implements java.io.Serializable {
 
         String queryString = "SELECT object(h) from OAIRecord as h WHERE (h.removed = true)";
         queryString += setName != null ? " and (h.setName = :setName)" : "and (h.setName is null)";
-        logger.fine("Query: " + queryString);
+        logger.fine(QUERY + queryString);
 
         TypedQuery<OAIRecord> query = em.createQuery(queryString, OAIRecord.class);
-        if (setName != null) { query.setParameter("setName", setName); }
+        if (setName != null) { query.setParameter(SET_NAME, setName); }
 
         try {
             return query.getResultList();
         } catch (Exception ex) {
-            logger.fine("Caught exception; returning null.");
+            logger.fine(CAUGHT_EXCEPTION_RETURNING_NULL);
             return null;
         }
     }

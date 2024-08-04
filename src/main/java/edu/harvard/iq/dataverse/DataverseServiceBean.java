@@ -62,6 +62,10 @@ import org.json.JSONTokener;
 @Named
 public class DataverseServiceBean implements java.io.Serializable {
 
+    private static final String DATAVERSES_API_VALIDATE_JSON_FAILED = "dataverses.api.validate.json.failed";
+
+    private static final String OWNER_ID = "ownerId";
+
     private static final Logger logger = Logger.getLogger(DataverseServiceBean.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
@@ -202,17 +206,17 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public List<Dataverse> findByOwnerId(Long ownerId) {
-        return em.createNamedQuery("Dataverse.findByOwnerId").setParameter("ownerId", ownerId).getResultList();
+        return em.createNamedQuery("Dataverse.findByOwnerId").setParameter(OWNER_ID, ownerId).getResultList();
     }
 
     public List<Long> findIdsByOwnerId(Long ownerId) {
         String qr = "select o.id from Dataverse as o where o.owner.id =:ownerId order by o.id";
-        return em.createQuery(qr, Long.class).setParameter("ownerId", ownerId).getResultList();
+        return em.createQuery(qr, Long.class).setParameter(OWNER_ID, ownerId).getResultList();
     }
 
     public List<Dataverse> findPublishedByOwnerId(Long ownerId) {
         String qr = "select object(o) from Dataverse as o where o.owner.id =:ownerId and o.publicationDate is not null order by o.name";
-        return em.createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
+        return em.createQuery(qr, Dataverse.class).setParameter(OWNER_ID, ownerId).getResultList();
     }
 
     /**
@@ -1027,16 +1031,16 @@ public class DataverseServiceBean implements java.io.Serializable {
             Schema schema = SchemaLoader.load(rawSchema);
             schema.validate(new JSONObject(jsonInput)); // throws a ValidationException if this object is invalid
         } catch (ValidationException vx) {
-            logger.info(BundleUtil.getStringFromBundle("dataverses.api.validate.json.failed") + " " + vx.getErrorMessage());
+            logger.info(BundleUtil.getStringFromBundle(DATAVERSES_API_VALIDATE_JSON_FAILED) + " " + vx.getErrorMessage());
             String accumulatedexceptions = "";
             for (ValidationException va : vx.getCausingExceptions()) {
                 accumulatedexceptions = accumulatedexceptions + va;
                 accumulatedexceptions = accumulatedexceptions.replace("org.everit.json.schema.ValidationException:", " ");
             }
             if (!accumulatedexceptions.isEmpty()) {
-                return BundleUtil.getStringFromBundle("dataverses.api.validate.json.failed") + " " + accumulatedexceptions;
+                return BundleUtil.getStringFromBundle(DATAVERSES_API_VALIDATE_JSON_FAILED) + " " + accumulatedexceptions;
             } else {
-                return BundleUtil.getStringFromBundle("dataverses.api.validate.json.failed") + " " + vx.getErrorMessage();
+                return BundleUtil.getStringFromBundle(DATAVERSES_API_VALIDATE_JSON_FAILED) + " " + vx.getErrorMessage();
             }
 
         } catch (Exception ex) {

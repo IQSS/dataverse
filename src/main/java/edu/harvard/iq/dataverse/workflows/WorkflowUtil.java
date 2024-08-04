@@ -21,6 +21,8 @@ import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
 public class WorkflowUtil {
 
+    private static final String MESSAGE = "message";
+
     private static final Logger logger = Logger.getLogger(WorkflowUtil.class.getName());
 
     public static JsonArrayBuilder getAllWorkflowComments(DatasetVersion datasetVersion) {
@@ -29,7 +31,7 @@ public class WorkflowUtil {
         for (WorkflowComment workflowComment : workflowComments) {
             NullSafeJsonBuilder workflowCommentAsJson = jsonObjectBuilder();
             workflowCommentAsJson.add("workflowCommentId", workflowComment.getId());
-            workflowCommentAsJson.add("message", workflowComment.getMessage());
+            workflowCommentAsJson.add(MESSAGE, workflowComment.getMessage());
             workflowCommentAsJson.add("createTime", Util.getDateTimeFormat().format(workflowComment.getCreated()));
             workflowCommentAsJson.add("commentBy", workflowComment.getAuthenticatedUser().getIdentifier());
             workflowCommentAsJson.add("datasetId", datasetVersion.getDataset().getId());
@@ -57,8 +59,8 @@ public class WorkflowUtil {
             } else if (response.containsKey("Reason")) {
                 reason = response.getString("Reason");
             }
-            if (response.containsKey("message")) {
-                message = response.getString("message");
+            if (response.containsKey(MESSAGE)) {
+                message = response.getString(MESSAGE);
             } else if (response.containsKey("Message")) {
                 message = response.getString("Message");
             }

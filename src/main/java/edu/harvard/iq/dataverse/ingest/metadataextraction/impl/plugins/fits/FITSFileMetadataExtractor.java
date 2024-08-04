@@ -42,6 +42,11 @@ import nom.tam.fits.UndefinedHDU;
  * @author Leonid Andreev
  */
 public class FITSFileMetadataExtractor extends FileMetadataExtractor {
+    private static final String FORMAT = ", format: ";
+    private static final String FORMATTED_RESULTING_DATE = ", formatted resulting date: ";
+    private static final String RESULTING_DATE = ", resulting date: ";
+    private static final String EXPTIME = "EXPTIME";
+    private static final String NAXIS = "NAXIS";
     private static Logger dbgLog = Logger.getLogger(FITSFileMetadataExtractor.class.getPackage().getName());
 
     private Map<String, Integer> recognizedFitsMetadataKeys = null;
@@ -137,7 +142,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             defaultIndexableFitsMetaKeys.put("FILTER", "coverage.Spectral.Bandpass");
             defaultIndexableFitsMetaKeys.put("CD1_1", "resolution.Spatial");
             defaultIndexableFitsMetaKeys.put("CDELT", "resolution.Spatial");
-            defaultIndexableFitsMetaKeys.put("EXPTIME", "resolution.Temporal");
+            defaultIndexableFitsMetaKeys.put(EXPTIME, "resolution.Temporal");
 
 
             // The following fields have been dropped from the configuration 
@@ -274,11 +279,11 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                 if (hdu instanceof ImageHDU) {
                     dbgLog.fine("this is an image HDU");
 
-                    nAxis = hduHeader.getIntValue("NAXIS");
+                    nAxis = hduHeader.getIntValue(NAXIS);
                     dbgLog.fine("NAXIS (directly from header): " + nAxis);
 
                     if (nAxis > 0) {
-                        metadataKeys.add("NAXIS");
+                        metadataKeys.add(NAXIS);
 
                         if (nAxis > 1) {
 
@@ -424,7 +429,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
 
                         try {
                             startDate = format.parse(obsDateString);
-                            dbgLog.fine("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: " + startDate + ", formatted resulting date: " + TIME_FORMATS[0].format(startDate));
+                            dbgLog.fine("Valid date string: " + obsDateString + FORMAT + format.toPattern() + RESULTING_DATE + startDate + FORMATTED_RESULTING_DATE + TIME_FORMATS[0].format(startDate));
                             startDateFormatted = format.format(startDate);
                             //startDateFormatted = obsDateString;
                             break;
@@ -459,7 +464,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
 
                             try {
                                 startDate = format.parse(obsDateString);
-                                dbgLog.info("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: " + startDate + ", formatted resulting date: " + DATE_FORMATS[0].format(startDate));
+                                dbgLog.info("Valid date string: " + obsDateString + FORMAT + format.toPattern() + RESULTING_DATE + startDate + FORMATTED_RESULTING_DATE + DATE_FORMATS[0].format(startDate));
                                 //startDateFormatted = format.format(startDate);
                                 startDateFormatted = DATE_FORMATS[0].format(startDate);
                                 break;
@@ -481,7 +486,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
 
                                     try {
                                         startDateTime = format.parse(newObsDateString);
-                                        dbgLog.fine("Valid date obtained by combining obs date and time: " + newObsDateString + ", format: " + format.toPattern() + ", resulting date: " + startDateTime + ", formatted resulting date: " + TIME_FORMATS[0].format(startDateTime));
+                                        dbgLog.fine("Valid date obtained by combining obs date and time: " + newObsDateString + FORMAT + format.toPattern() + RESULTING_DATE + startDateTime + FORMATTED_RESULTING_DATE + TIME_FORMATS[0].format(startDateTime));
                                         //startDateFormatted = TIME_FORMATS[0].format(startDateTime);
                                         //startDateFormatted = newObsDateString;
                                         startDateFormatted = format.format(startDateTime);
@@ -522,7 +527,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                         // is not a valid double. (their document does say that 
                         // it returns 0.0 "if not found"; but what does it return
                         // if the value of the header is "foo"?")
-                        double expTimeValue = hduHeader.getDoubleValue("EXPTIME");
+                        double expTimeValue = hduHeader.getDoubleValue(EXPTIME);
                         if (expTimeValue != 0.0) {
                             long expTimeInMillis = (long) (expTimeValue * 1000);
                             dbgLog.fine("EXPTIME in MILLISECONDS: " + expTimeInMillis);
@@ -542,12 +547,12 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                             // While we are at it, we will also populate the 
                             // Resolution.Temporal field, where EXPTIME 
                             // maps in the Astro metadata block: 
-                            String indexableKeyExpTime = getIndexableMetaKey("EXPTIME");
+                            String indexableKeyExpTime = getIndexableMetaKey(EXPTIME);
                             if (fitsMetaMap.get(indexableKeyExpTime) == null) {
                                 fitsMetaMap.put(indexableKeyExpTime, new HashSet<String>());
                             }
                             fitsMetaMap.get(indexableKeyExpTime).add(Double.toString(expTimeValue));
-                            metadataKeys.add("EXPTIME");
+                            metadataKeys.add(EXPTIME);
                         }
 
                         // Check if it's the max. end date value so far: 
@@ -572,8 +577,8 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                 if (hdu.getAxes() != null) {
                     for (int j = 0; j < hdu.getAxes().length; j++) {
                         int nAxisN = hdu.getAxes()[j];
-                        metadataKeys.add("NAXIS" + j);
-                        dbgLog.fine("NAXIS" + j + " value: " + nAxisN);
+                        metadataKeys.add(NAXIS + j);
+                        dbgLog.fine(NAXIS + j + " value: " + nAxisN);
                     }
                 } else {
                         dbgLog.fine("NULL Axes array.");

@@ -28,6 +28,20 @@ import org.apache.solr.client.solrj.SolrServerException;
 @Stateless
 public class IndexBatchServiceBean {
 
+    private static final String ID = " (id=";
+
+    private static final String EXCEPTION_INFO = ") Exception info: ";
+
+    private static final String PERSISTENT_ID = ", persistentId=";
+
+    private static final String FAILURE_INDEXING_DATAVERSE = "FAILURE indexing dataverse ";
+
+    private static final String DATASETS = "datasets";
+
+    private static final String DATAVERSES = "dataverses";
+
+    private static final String INDEXING_DATAVERSE = "indexing dataverse ";
+
     private static final Logger logger = Logger.getLogger(IndexBatchServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -135,8 +149,8 @@ public class IndexBatchServiceBean {
         for (Long id : datasetIds) {
             datasetIdsJson.add(id);
         }
-        dvContainerIds.add("dataverses", dataverseIdsJson);
-        dvContainerIds.add("datasets", datasetIdsJson);
+        dvContainerIds.add(DATAVERSES, dataverseIdsJson);
+        dvContainerIds.add(DATASETS, datasetIdsJson);
         previewOfWorkload.add("dvContainerIds", dvContainerIds);
         previewOfWorkload.add("dataverseCount", dataverseIds.size());
         previewOfWorkload.add("datasetCount", datasetIds.size());
@@ -189,13 +203,13 @@ public class IndexBatchServiceBean {
             try {
                 dataverseIndexCount++;
                 Dataverse dataverse = dataverseService.find(id);
-                logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverseIds.size() + " (id=" + id + ", persistentId=" + dataverse.getAlias() + ")");
+                logger.info(INDEXING_DATAVERSE + dataverseIndexCount + " of " + dataverseIds.size() + ID + id + PERSISTENT_ID + dataverse.getAlias() + ")");
                 Future<String> result = indexService.indexDataverseInNewTransaction(dataverse);
                 dataverse = null;
             } catch (Exception e) {
                 //We want to keep running even after an exception so throw some more info into the log
                 dataverseFailureCount++;
-                logger.info("FAILURE indexing dataverse " + dataverseIndexCount + " of " + dataverseIds.size() + " (id=" + id + ") Exception info: " + e.getMessage());
+                logger.info(FAILURE_INDEXING_DATAVERSE + dataverseIndexCount + " of " + dataverseIds.size() + ID + id + EXCEPTION_INFO + e.getMessage());
             }
         }
 
@@ -204,7 +218,7 @@ public class IndexBatchServiceBean {
         List<Long> datasetIds = datasetService.findAllOrSubsetOrderByFilesOwned(skipIndexed);
         for (Long id : datasetIds) {
             datasetIndexCount++;
-            logger.info("indexing dataset " + datasetIndexCount + " of " + datasetIds.size() + " (id=" + id + ")");
+            logger.info("indexing dataset " + datasetIndexCount + " of " + datasetIds.size() + ID + id + ")");
             indexService.indexDatasetInNewTransaction(id);
         }
         logger.info("done iterating through all datasets");
@@ -236,12 +250,12 @@ public class IndexBatchServiceBean {
         // first we have to index the root dataverse or it will not index properly
         try {
             dataverseIndexCount++;
-            logger.info("indexing dataverse " + dataverseIndexCount + " of " + (dataverseChildren.size() + 1) + " (id=" + dataverse.getId() + ", persistentId=" + dataverse.getAlias() + ")");
+            logger.info(INDEXING_DATAVERSE + dataverseIndexCount + " of " + (dataverseChildren.size() + 1) + ID + dataverse.getId() + PERSISTENT_ID + dataverse.getAlias() + ")");
             indexService.indexDataverseInNewTransaction(dataverse);
         } catch (Exception e) {
             //We want to keep running even after an exception so throw some more info into the log
             dataverseFailureCount++;
-            logger.info("FAILURE indexing dataverse " + dataverseIndexCount + " of " + (dataverseChildren.size() + 1) + " (id=" + dataverse.getId() + ") Exception info: " + e.getMessage());
+            logger.info(FAILURE_INDEXING_DATAVERSE + dataverseIndexCount + " of " + (dataverseChildren.size() + 1) + ID + dataverse.getId() + EXCEPTION_INFO + e.getMessage());
         }
 
         // index the Dataverse children
@@ -249,20 +263,20 @@ public class IndexBatchServiceBean {
             try {
                 dataverseIndexCount++;
                 Dataverse dv = dataverseService.find(childId);
-                logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverseChildren.size() + " (id=" + childId + ", persistentId=" + dv.getAlias() + ")");
+                logger.info(INDEXING_DATAVERSE + dataverseIndexCount + " of " + dataverseChildren.size() + ID + childId + PERSISTENT_ID + dv.getAlias() + ")");
                 Future<String> result = indexService.indexDataverseInNewTransaction(dv);
                 dv = null;
             } catch (Exception e) {
                 //We want to keep running even after an exception so throw some more info into the log
                 dataverseFailureCount++;
-                logger.info("FAILURE indexing dataverse " + dataverseIndexCount + " of " + dataverseChildren.size() + " (id=" + childId + ") Exception info: " + e.getMessage());
+                logger.info(FAILURE_INDEXING_DATAVERSE + dataverseIndexCount + " of " + dataverseChildren.size() + ID + childId + EXCEPTION_INFO + e.getMessage());
             }
         }
 
         // index the Dataset children
         for (Long childId : datasetChildren) {
             datasetIndexCount++;
-            logger.info("indexing dataset " + datasetIndexCount + " of " + datasetChildren.size() + " (id=" + childId + ")");
+            logger.info("indexing dataset " + datasetIndexCount + " of " + datasetChildren.size() + ID + childId + ")");
             indexService.indexDatasetInNewTransaction(childId);
         }
         long end = System.currentTimeMillis();
@@ -290,8 +304,8 @@ public class IndexBatchServiceBean {
                  * @todo What about files? Currently files are always indexed
                  * along with their parent dataset
                  */
-                .add("dataverses", jsonStaleOrMissingDataverses.build())
-                .add("datasets", datasetsInDatabaseButNotSolr.build());
+                .add(DATAVERSES, jsonStaleOrMissingDataverses.build())
+                .add(DATASETS, datasetsInDatabaseButNotSolr.build());
         logger.info("completed check for stale or missing content.");
         return contentInDatabaseButStaleInOrMissingFromSolr;
     }
@@ -321,8 +335,8 @@ public class IndexBatchServiceBean {
                  * @todo What about files? Currently files are always indexed
                  * along with their parent dataset
                  */
-                .add("dataverses", dataversesInSolrButNotDatabase.build())
-                .add("datasets", datasetsInSolrButNotDatabase.build())
+                .add(DATAVERSES, dataversesInSolrButNotDatabase.build())
+                .add(DATASETS, datasetsInSolrButNotDatabase.build())
                 .add("files", filesInSolrButNotDatabase.build());
 
         return contentInSolrButNotDatabase;

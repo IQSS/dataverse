@@ -36,6 +36,8 @@ import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 @Path("files")
 public class Prov extends AbstractApiBean {
 
+    private static final String API_PROV_ERROR_PROV_DISABLED = "api.prov.error.provDisabled";
+
     private static final Logger logger = Logger.getLogger(Prov.class.getCanonicalName());
 
     ProvInvestigator provUtil = ProvInvestigator.getInstance();
@@ -47,7 +49,7 @@ public class Prov extends AbstractApiBean {
     @Consumes("application/json")
     public Response addProvJson(@Context ContainerRequestContext crc, String body, @PathParam("id") String idSupplied, @QueryParam("entityName") String entityName) {
         if (!systemConfig.isProvCollectionEnabled()) {
-            return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle(API_PROV_ERROR_PROV_DISABLED));
         }
         try {
             DataFile dataFile = findDataFileOrDie(idSupplied);
@@ -86,7 +88,7 @@ public class Prov extends AbstractApiBean {
     @Path("{id}/prov-json")
     public Response deleteProvJson(@Context ContainerRequestContext crc, String body, @PathParam("id") String idSupplied) {
         if (!systemConfig.isProvCollectionEnabled()) {
-            return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle(API_PROV_ERROR_PROV_DISABLED));
         }
         try {
             DataFile dataFile = findDataFileOrDie(idSupplied);
@@ -107,7 +109,7 @@ public class Prov extends AbstractApiBean {
     @Consumes("application/json")
     public Response addProvFreeForm(@Context ContainerRequestContext crc, String body, @PathParam("id") String idSupplied) {
         if (!systemConfig.isProvCollectionEnabled()) {
-            return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle(API_PROV_ERROR_PROV_DISABLED));
         }
         JsonObject jsonObj = null;
 
@@ -145,7 +147,7 @@ public class Prov extends AbstractApiBean {
     @Path("{id}/prov-freeform")
     public Response getProvFreeForm(@Context ContainerRequestContext crc, String body, @PathParam("id") String idSupplied) {
         if (!systemConfig.isProvCollectionEnabled()) {
-            return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle(API_PROV_ERROR_PROV_DISABLED));
         }
         try {
             String freeFormText = execCommand(new GetProvFreeFormCommand(createDataverseRequest(getRequestUser(crc)), findDataFileOrDie(idSupplied)));
@@ -165,7 +167,7 @@ public class Prov extends AbstractApiBean {
     @Path("{id}/prov-json")
     public Response getProvJson(@Context ContainerRequestContext crc, String body, @PathParam("id") String idSupplied) {
         if (!systemConfig.isProvCollectionEnabled()) {
-            return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
+            return error(FORBIDDEN, BundleUtil.getStringFromBundle(API_PROV_ERROR_PROV_DISABLED));
         }
         try {
             JsonObject jsonText = execCommand(new GetProvJsonCommand(createDataverseRequest(getRequestUser(crc)), findDataFileOrDie(idSupplied)));

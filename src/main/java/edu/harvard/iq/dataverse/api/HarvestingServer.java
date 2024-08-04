@@ -43,6 +43,11 @@ import org.apache.commons.lang3.StringUtils;
 @Stateless
 @Path("harvest/server/oaisets")
 public class HarvestingServer extends AbstractApiBean {
+    private static final String EXCEPTION_CAUGHT_LOOKING_UP_OAI_SET = "Exception caught looking up OAI set ";
+    private static final String INTERNAL_ERROR_FAILED_TO_LOOK_UP_OAI_SET = "Internal error: failed to look up OAI set ";
+    private static final String DEFINITION = "definition";
+    private static final String DESCRIPTION = "description";
+    private static final String HARVESTSERVER_NEW_SET_DIALOG_SETSPEC_REQUIRED = "harvestserver.newSetDialog.setspec.required";
     @EJB
     OAISetServiceBean oaiSetService;
 
@@ -84,8 +89,8 @@ public class HarvestingServer extends AbstractApiBean {
         try {
             set = oaiSetService.findBySpec(spec);
         } catch (Exception ex) {
-            logger.warning("Exception caught looking up OAI set " + spec + ": " + ex.getMessage());
-            return error(Response.Status.BAD_REQUEST, "Internal error: failed to look up OAI set " + spec + ".");
+            logger.warning(EXCEPTION_CAUGHT_LOOKING_UP_OAI_SET + spec + ": " + ex.getMessage());
+            return error(Response.Status.BAD_REQUEST, INTERNAL_ERROR_FAILED_TO_LOOK_UP_OAI_SET + spec + ".");
         }
 
         if (set == null) {
@@ -137,7 +142,7 @@ public class HarvestingServer extends AbstractApiBean {
 		try {
 			name = json.getString("name");
 		} catch (NullPointerException npe_name) {
-			return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
+			return badRequest(BundleUtil.getStringFromBundle(HARVESTSERVER_NEW_SET_DIALOG_SETSPEC_REQUIRED));
 		}
                 		//Validating spec 
 		if (!StringUtils.isEmpty(name)) {
@@ -153,17 +158,17 @@ public class HarvestingServer extends AbstractApiBean {
 			}
 
 		} else {
-			return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
+			return badRequest(BundleUtil.getStringFromBundle(HARVESTSERVER_NEW_SET_DIALOG_SETSPEC_REQUIRED));
 		}
 
                 set.setSpec(name);
 		try {
-			defn = json.getString("definition");
+			defn = json.getString(DEFINITION);
 		} catch (NullPointerException npe_defn) {
 			throw new JsonParseException("definition unspecified");
 		}
 		try {
-			desc = json.getString("description");
+			desc = json.getString(DESCRIPTION);
 		} catch (NullPointerException npe_desc) {
 			desc = ""; //treating description as optional
 		}
@@ -204,23 +209,23 @@ public class HarvestingServer extends AbstractApiBean {
                 }
 
             } else {
-                return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
+                return badRequest(BundleUtil.getStringFromBundle(HARVESTSERVER_NEW_SET_DIALOG_SETSPEC_REQUIRED));
             }
 
             String desc, defn;
 
             try {
-                defn = json.getString("definition");
+                defn = json.getString(DEFINITION);
             } catch (NullPointerException npe_defn) {
                 defn = ""; // if they're updating description but not definition;
             }
             try {
-                desc = json.getString("description");
+                desc = json.getString(DESCRIPTION);
             } catch (NullPointerException npe_desc) {
                 desc = ""; //treating description as optional
             }
             if (defn.isEmpty() && desc.isEmpty()) {
-                return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
+                return badRequest(BundleUtil.getStringFromBundle(HARVESTSERVER_NEW_SET_DIALOG_SETSPEC_REQUIRED));
             }
             update.setDescription(desc);
             update.setDefinition(defn);
@@ -248,8 +253,8 @@ public class HarvestingServer extends AbstractApiBean {
         try {
             set = oaiSetService.findBySpec(spec);
         } catch (Exception ex) {
-            logger.warning("Exception caught looking up OAI set " + spec + ": " + ex.getMessage());
-            return error(Response.Status.BAD_REQUEST, "Internal error: failed to look up OAI set " + spec + ".");
+            logger.warning(EXCEPTION_CAUGHT_LOOKING_UP_OAI_SET + spec + ": " + ex.getMessage());
+            return error(Response.Status.BAD_REQUEST, INTERNAL_ERROR_FAILED_TO_LOOK_UP_OAI_SET + spec + ".");
         }
 
         if (set == null) {
@@ -274,8 +279,8 @@ public class HarvestingServer extends AbstractApiBean {
         try {
             set = oaiSetService.findBySpec(spec);
         } catch (Exception ex) {
-            logger.warning("Exception caught looking up OAI set " + spec + ": " + ex.getMessage());
-            return error(Response.Status.BAD_REQUEST, "Internal error: failed to look up OAI set " + spec + ".");
+            logger.warning(EXCEPTION_CAUGHT_LOOKING_UP_OAI_SET + spec + ": " + ex.getMessage());
+            return error(Response.Status.BAD_REQUEST, INTERNAL_ERROR_FAILED_TO_LOOK_UP_OAI_SET + spec + ".");
         }
 
         return ok("");
@@ -299,8 +304,8 @@ public class HarvestingServer extends AbstractApiBean {
 
         return jsonObjectBuilder().add("name", set.getName()).
                 add("spec", set.getSpec()).
-                add("description", set.getDescription()).
-                add("definition", set.getDefinition()).
+                add(DESCRIPTION, set.getDescription()).
+                add(DEFINITION, set.getDefinition()).
                 add("version", set.getVersion());
     }
 

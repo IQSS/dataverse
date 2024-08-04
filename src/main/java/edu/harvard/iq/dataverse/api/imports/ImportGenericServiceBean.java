@@ -60,6 +60,8 @@ import net.handle.hdllib.HandleResolver;
 @Stateless
 @Named
 public class ImportGenericServiceBean {
+    private static final String EXT_LINK = "ExtLink";
+    private static final String CITATION = "citation";
     private static final Logger logger = Logger.getLogger(ImportGenericServiceBean.class.getCanonicalName());
 
     @EJB
@@ -337,7 +339,7 @@ public class ImportGenericServiceBean {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.otherId.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
@@ -573,7 +575,7 @@ public class ImportGenericServiceBean {
         // make sure we have a codeBook
         //while ( xmlr.next() == XMLStreamConstants.COMMENT ); // skip pre root comments
         xmlr.nextTag();
-        MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get("citation");
+        MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get(CITATION);
 
 /*         if (codeBookLevelId != null && !codeBookLevelId.equals("")) {
             if (citationBlock.getField("otherId")==null) {
@@ -598,8 +600,8 @@ public class ImportGenericServiceBean {
         HashMap<String, MetadataBlockDTO> metadataBlocks = new HashMap<>();
         datasetVersionDTO.setMetadataBlocks(metadataBlocks);
 
-        datasetVersionDTO.getMetadataBlocks().put("citation", new MetadataBlockDTO());
-        datasetVersionDTO.getMetadataBlocks().get("citation").setFields(new ArrayList<>());
+        datasetVersionDTO.getMetadataBlocks().put(CITATION, new MetadataBlockDTO());
+        datasetVersionDTO.getMetadataBlocks().get(CITATION).setFields(new ArrayList<>());
         datasetVersionDTO.getMetadataBlocks().put("geospatial", new MetadataBlockDTO());
         datasetVersionDTO.getMetadataBlocks().get("geospatial").setFields(new ArrayList<>());
         datasetVersionDTO.getMetadataBlocks().put("social_science", new MetadataBlockDTO());
@@ -677,10 +679,10 @@ public class ImportGenericServiceBean {
                 }
                 text += xmlr.getText().trim().replace('\n', ' ');
             } else if (event == XMLStreamConstants.START_ELEMENT) {
-                if (xmlr.getLocalName().equals("ExtLink")) {
+                if (xmlr.getLocalName().equals(EXT_LINK)) {
                     String mapKey = ("image".equalsIgnoreCase(xmlr.getAttributeValue(null, "role")) || "logo".equalsIgnoreCase(xmlr.getAttributeValue(null, "title"))) ? "logo" : "url";
                     returnMap.put(mapKey, xmlr.getAttributeValue(null, "URI"));
-                    parseText(xmlr, "ExtLink"); // this line effectively just skips though until the end of the tag
+                    parseText(xmlr, EXT_LINK); // this line effectively just skips though until the end of the tag
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals(endTag)) break;
@@ -714,13 +716,13 @@ public class ImportGenericServiceBean {
                     returnString += "<em>" + parseText(xmlr, "emph") + "</em>";
                 } else if (xmlr.getLocalName().equals("hi")) {
                     returnString += "<strong>" + parseText(xmlr, "hi") + "</strong>";
-                } else if (xmlr.getLocalName().equals("ExtLink")) {
+                } else if (xmlr.getLocalName().equals(EXT_LINK)) {
                     String uri = xmlr.getAttributeValue(null, "URI");
-                    String text = parseText(xmlr, "ExtLink").trim();
+                    String text = parseText(xmlr, EXT_LINK).trim();
                     returnString += "<a href=\"" + uri + "\">" + (StringUtil.isEmpty(text) ? uri : text) + "</a>";
                 } else if (xmlr.getLocalName().equals("list")) {
                     returnString += parseText_list(xmlr);
-                } else if (xmlr.getLocalName().equals("citation")) {
+                } else if (xmlr.getLocalName().equals(CITATION)) {
                     if (SOURCE_DVN_3_0.equals(xmlr.getAttributeValue(null, "source"))) {
                         returnMap = parseDVNCitation(xmlr);
                     } else {
@@ -822,7 +824,7 @@ public class ImportGenericServiceBean {
                     }
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
-                if (xmlr.getLocalName().equals("citation")) break;
+                if (xmlr.getLocalName().equals(CITATION)) break;
             }
         }
 
@@ -863,7 +865,7 @@ public class ImportGenericServiceBean {
                     }
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
-                if (xmlr.getLocalName().equals("citation")) break;
+                if (xmlr.getLocalName().equals(CITATION)) break;
             }
         }
 

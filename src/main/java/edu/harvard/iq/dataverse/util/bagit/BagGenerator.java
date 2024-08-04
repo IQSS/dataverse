@@ -79,6 +79,8 @@ import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
 public class BagGenerator {
 
+    private static final String TYPE = "@type";
+
     private static final Logger logger = Logger.getLogger(BagGenerator.class.getCanonicalName());
 
     private ParallelScatterZipCreator scatterZipCreator = null;
@@ -547,7 +549,7 @@ public class BagGenerator {
                 String childHash = null;
                 if (child.has(JsonLDTerm.checksum.getLabel())) {
                     ChecksumType childHashType = ChecksumType.fromString(
-                            child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@type").getAsString());
+                            child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get(TYPE).getAsString());
                     if (hashtype == null) {
                     	//If one wasn't set as a default, pick up what the first child with one uses
                         hashtype = childHashType;
@@ -597,7 +599,7 @@ public class BagGenerator {
                         }
                         if (childHash != null) {
                             JsonObject childHashObject = new JsonObject();
-                            childHashObject.addProperty("@type", hashtype.toString());
+                            childHashObject.addProperty(TYPE, hashtype.toString());
                             childHashObject.addProperty("@value", childHash);
                             child.add(JsonLDTerm.checksum.getLabel(), (JsonElement) childHashObject);
 
@@ -957,7 +959,7 @@ public class BagGenerator {
             return true;
         }
         // Also check for any indicative type
-        Object o = item.get("@type");
+        Object o = item.get(TYPE);
         if (o != null) {
             if (o instanceof JSONArray) {
                 // As part of an array

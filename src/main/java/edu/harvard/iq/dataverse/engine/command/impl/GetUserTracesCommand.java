@@ -30,6 +30,12 @@ import jakarta.json.JsonObjectBuilder;
 @RequiredPermissions({})
 public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
 
+    private static final String COUNT = "count";
+
+    private static final String FILENAME = "filename";
+
+    private static final String ITEMS = "items";
+
     private static final Logger logger = Logger.getLogger(GetUserTracesCommand.class.getCanonicalName());
 
     private DataverseRequest request;
@@ -69,8 +75,8 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                             .add("roleAlias", roleAssignment.getRole().getAlias())
                             .add("roleName", roleAssignment.getRole().getName()));
                 }
-                job.add("count", roleAssignments.size());
-                job.add("items", jab);
+                job.add(COUNT, roleAssignments.size());
+                job.add(ITEMS, jab);
                 traces.add("roleAssignments", job);
             }
         }
@@ -84,8 +90,8 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                             .add("id", dataverse.getId())
                             .add("alias", dataverse.getAlias()));
                 }
-                job.add("count", dataversesCreated.size());
-                job.add("items", jab);
+                job.add(COUNT, dataversesCreated.size());
+                job.add(ITEMS, jab);
                 traces.add("dataverseCreator", job);
             }
         }
@@ -99,8 +105,8 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                             .add("id", dataverse.getId())
                             .add("alias", dataverse.getAlias()));
                 }
-                job.add("count", dataversesPublished.size());
-                job.add("items", jab);
+                job.add(COUNT, dataversesPublished.size());
+                job.add(ITEMS, jab);
                 traces.add("dataversePublisher", job);
             }
         }
@@ -114,8 +120,8 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                             .add("id", dataset.getId())
                             .add("pid", dataset.getGlobalId().asString()));
                 }
-                job.add("count", datasetsCreated.size());
-                job.add("items", jab);
+                job.add(COUNT, datasetsCreated.size());
+                job.add(ITEMS, jab);
                 traces.add("datasetCreator", job);
             }
         }
@@ -129,8 +135,8 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                             .add("id", dataset.getId())
                             .add("pid", dataset.getGlobalId().asString()));
                 }
-                job.add("count", datasetsPublished.size());
-                job.add("items", jab);
+                job.add(COUNT, datasetsPublished.size());
+                job.add(ITEMS, jab);
                 traces.add("datasetPublisher", job);
             }
         }
@@ -142,11 +148,11 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                 for (DataFile dataFile : dataFilesCreated) {
                     jab.add(Json.createObjectBuilder()
                             .add("id", dataFile.getId())
-                            .add("filename", dataFile.getCurrentName())
+                            .add(FILENAME, dataFile.getCurrentName())
                             .add("datasetPid", dataFile.getOwner().getGlobalId().asString()));
                 }
-                job.add("count", dataFilesCreated.size());
-                job.add("items", jab);
+                job.add(COUNT, dataFilesCreated.size());
+                job.add(ITEMS, jab);
                 traces.add("dataFileCreator", job);
             }
         }
@@ -160,11 +166,11 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                 for (DataFile dataFile : dataFilesPublished) {
                     jab.add(Json.createObjectBuilder()
                             .add("id", dataFile.getId())
-                            .add("filename", dataFile.getCurrentName())
+                            .add(FILENAME, dataFile.getCurrentName())
                             .add("datasetPid", dataFile.getOwner().getGlobalId().asString()));
                 }
-                job.add("count", dataFilesPublished.size());
-                job.add("items", jab);
+                job.add(COUNT, dataFilesPublished.size());
+                job.add(ITEMS, jab);
                 traces.add("dataFilePublisher", job);
             }
         }
@@ -180,8 +186,8 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                             .add("dataset", datasetVersionUser.getDatasetVersion().getDataset().getGlobalId().asString())
                             .add("version", datasetVersionUser.getDatasetVersion().getSemanticVersion()));
                 }
-                job.add("count", datasetVersionUsers.size());
-                job.add("items", jab);
+                job.add(COUNT, datasetVersionUsers.size());
+                job.add(ITEMS, jab);
                 traces.add("datasetVersionUsers", job);
             }
         }
@@ -195,8 +201,8 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                             .add("id", explicitGroup.getId())
                             .add("name", explicitGroup.getDisplayName()));
                 }
-                job.add("count", explicitGroups.size());
-                job.add("items", jab);
+                job.add(COUNT, explicitGroups.size());
+                job.add(ITEMS, jab);
                 traces.add("explicitGroups", job);
             }
         }
@@ -213,7 +219,7 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                             JsonObjectBuilder gbe = Json.createObjectBuilder()
                                     .add("id", guestbookResponse.getId())
                                     .add("eventType", guestbookResponse.getEventType())
-                                    .add("filename", guestbookResponse.getDataFile().getCurrentName())
+                                    .add(FILENAME, guestbookResponse.getDataFile().getCurrentName())
                                     .add("date", guestbookResponse.getResponseDate())
                                     .add("guestbookName", guestbookResponse.getGuestbook().getName());
                             if (guestbookResponse.getDataset().getGlobalId() != null) {
@@ -228,9 +234,9 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                             logger.warning("Guestbook id:" + guestbookResponse.getId() + " does not have required info.");
                         }
                     }
-                    job.add("items", jab);
+                    job.add(ITEMS, jab);
                 }
-                job.add("count", guestbookResponses.size());
+                job.add(COUNT, guestbookResponses.size());
                 // job.add("items", jab);
                 traces.add("guestbookEntries", job);
             }
@@ -244,8 +250,8 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                     jab.add(Json.createObjectBuilder()
                             .add("id", savedSearch.getId()));
                 }
-                job.add("count", savedSearchs.size());
-                job.add("items", jab);
+                job.add(COUNT, savedSearchs.size());
+                job.add(ITEMS, jab);
                 traces.add("savedSearches", job);
             }
         }

@@ -60,6 +60,22 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 @Named
 public class DatasetFieldServiceBean implements java.io.Serializable {
 
+    private static final String FOR = " for ";
+
+    private static final String ADDING = "adding ";
+
+    private static final String CONTENT = "content";
+
+    private static final String MANAGED_FIELDS = "managed-fields";
+
+    private static final String STRVALUE = "strvalue";
+
+    private static final String TERM_URI_FIELD = "term-uri-field";
+
+    private static final String URI_SPACE = "uriSpace";
+
+    private static final String VALUE = "value";
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -179,7 +195,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      */
     public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue, boolean lenient) {
         TypedQuery<ControlledVocabularyValue> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabularyValue.class);
-        typedQuery.setParameter("strvalue", strValue);
+        typedQuery.setParameter(STRVALUE, strValue);
         typedQuery.setParameter("dsft", dsft);
         try {
             ControlledVocabularyValue cvv = typedQuery.getSingleResult();
@@ -188,7 +204,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             if (lenient) {
                 // if the value isn't found, check in the list of alternate values for this datasetFieldType
                 TypedQuery<ControlledVocabAlternate> alternateQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabAlternate as o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabAlternate.class);
-                alternateQuery.setParameter("strvalue", strValue);
+                alternateQuery.setParameter(STRVALUE, strValue);
                 alternateQuery.setParameter("dsft", dsft);
                 try {
                     ControlledVocabAlternate alternateValue = alternateQuery.getSingleResult();
@@ -205,7 +221,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
     public ControlledVocabAlternate findControlledVocabAlternateByControlledVocabularyValueAndStrValue(ControlledVocabularyValue cvv, String strValue) {
         TypedQuery<ControlledVocabAlternate> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabAlternate AS o WHERE o.strValue = :strvalue AND o.controlledVocabularyValue = :cvv", ControlledVocabAlternate.class);
-        typedQuery.setParameter("strvalue", strValue);
+        typedQuery.setParameter(STRVALUE, strValue);
         typedQuery.setParameter("cvv", cvv);
         try {
             ControlledVocabAlternate alt = typedQuery.getSingleResult();
@@ -241,7 +257,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     // return singleton NA Controled Vocabulary Value
     public ControlledVocabularyValue findNAControlledVocabularyValue() {
         TypedQuery<ControlledVocabularyValue> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.datasetFieldType is null AND o.strValue = :strvalue", ControlledVocabularyValue.class);
-        typedQuery.setParameter("strvalue", DatasetField.NA_VALUE);
+        typedQuery.setParameter(STRVALUE, DatasetField.NA_VALUE);
         return typedQuery.getSingleResult();
     }
 
@@ -301,15 +317,15 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                       + jo.getString("field-name"));
                 } else {
                     cvocMap.put(dft.getId(), jo);
-                    if (jo.containsKey("term-uri-field")) {
-                        String termUriField = jo.getString("term-uri-field");
+                    if (jo.containsKey(TERM_URI_FIELD)) {
+                        String termUriField = jo.getString(TERM_URI_FIELD);
                         if (!dft.isHasChildren()) {
                             if (termUriField.equals(dft.getName())) {
                                 logger.fine("Found primitive field for term uri : " + dft.getName() + ": " + dft.getId());
                                 cvocMapByTermUri.put(dft.getId(), jo);
                             }
                         } else {
-                            DatasetFieldType childdft = findByNameOpt(jo.getString("term-uri-field"));
+                            DatasetFieldType childdft = findByNameOpt(jo.getString(TERM_URI_FIELD));
                             logger.fine("Found term child field: " + childdft.getName() + ": " + childdft.getId());
                             cvocMapByTermUri.put(childdft.getId(), jo);
                             if (childdft.getParentDatasetFieldType() != dft) {
@@ -319,11 +335,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         }
                         if (dft == null) {
                             logger.warning("Ignoring External Vocabulary setting for non-existent child field: "
-                              + jo.getString("term-uri-field"));
+                              + jo.getString(TERM_URI_FIELD));
                         }
                     }
-                    if (jo.containsKey("managed-fields")) {
-                        JsonObject managedFields = jo.getJsonObject("managed-fields");
+                    if (jo.containsKey(MANAGED_FIELDS)) {
+                        JsonObject managedFields = jo.getJsonObject(MANAGED_FIELDS);
                         for (String s : managedFields.keySet()) {
                             dft = findByNameOpt(managedFields.getString(s));
                             if (dft == null) {
@@ -360,7 +376,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             }
         } else {
             if (df.getDatasetFieldType().isCompound()) {
-                DatasetFieldType termdft = findByNameOpt(cvocEntry.getString("term-uri-field"));
+                DatasetFieldType termdft = findByNameOpt(cvocEntry.getString(TERM_URI_FIELD));
                 for (DatasetFieldCompoundValue cv : df.getDatasetFieldCompoundValues()) {
                     for (DatasetField cdf : cv.getChildDatasetFields()) {
                         logger.fine("Found term uri field type id: " + cdf.getDatasetFieldType().getId());
@@ -394,7 +410,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         Set<String> strings = new HashSet<>();
         JsonObject jo = getExternalVocabularyValue(termUri);
         JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
-        String termUriField = cvocEntry.getJsonString("term-uri-field").getString();
+        String termUriField = cvocEntry.getJsonString(TERM_URI_FIELD).getString();
 
         if (jo != null) {
             try {
@@ -406,7 +422,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             (indexIn == null && termUriField.equals(indexingField) && (key.equals("termName")) || key.equals("personName"))) {
                         JsonValue jv = jo.get(key);
                         if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
-                            logger.fine("adding " + jo.getString(key) + " for " + termUri);
+                            logger.fine(ADDING + jo.getString(key) + FOR + termUri);
                             strings.add(jo.getString(key));
                         } else if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
                             JsonArray jarr = jv.asJsonArray();
@@ -415,12 +431,12 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                                     strings.add(jarr.getString(i));
                                 } else if (jarr.get(i).getValueType().equals(ValueType.OBJECT)) { // This condition handles SKOMOS format like [{"lang": "en","value": "non-apis bee"},{"lang": "fr","value": "abeille non apis"}]
                                     JsonObject entry = jarr.getJsonObject(i);
-                                    if (entry.containsKey("value")) {
-                                        logger.fine("adding " + entry.getString("value") + " for " + termUri);
-                                        strings.add(entry.getString("value"));
-                                    } else if (entry.containsKey("content")) {
-                                        logger.fine("adding " + entry.getString("content") + " for " + termUri);
-                                        strings.add(entry.getString("content"));
+                                    if (entry.containsKey(VALUE)) {
+                                        logger.fine(ADDING + entry.getString(VALUE) + FOR + termUri);
+                                        strings.add(entry.getString(VALUE));
+                                    } else if (entry.containsKey(CONTENT)) {
+                                        logger.fine(ADDING + entry.getString(CONTENT) + FOR + termUri);
+                                        strings.add(entry.getString(CONTENT));
 
                                     }
                                 }
@@ -429,13 +445,13 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             JsonObject joo = jv.asJsonObject();
                             for (Map.Entry<String, JsonValue> entry : joo.entrySet()) {
                                 if (entry.getValue().getValueType().equals(JsonValue.ValueType.STRING)) { // This condition handles format like { "fr": "association de quartier", "en": "neighborhood associations"}
-                                    logger.fine("adding " + joo.getString(entry.getKey()) + " for " + termUri);
+                                    logger.fine(ADDING + joo.getString(entry.getKey()) + FOR + termUri);
                                     strings.add(joo.getString(entry.getKey()));
                                 } else if (entry.getValue().getValueType().equals(ValueType.ARRAY)) { // This condition handles format like {"en": ["neighbourhood societies"]}
                                     JsonArray jarr = entry.getValue().asJsonArray();
                                     for (int i = 0; i < jarr.size(); i++) {
                                         if (jarr.get(i).getValueType().equals(JsonValue.ValueType.STRING)) {
-                                            logger.fine("adding " + jarr.getString(i) + " for " + termUri);
+                                            logger.fine(ADDING + jarr.getString(i) + FOR + termUri);
                                             strings.add(jarr.getString(i));
                                         }
                                     }
@@ -450,7 +466,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 return new HashSet<>();
             }
         }
-        logger.fine("Returning " + String.join(",", strings) + " for " + termUri);
+        logger.fine("Returning " + String.join(",", strings) + FOR + termUri);
         return strings;
     }
 
@@ -486,7 +502,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      */
     public void registerExternalTerm(JsonObject cvocEntry, String term, List<DatasetField> relatedDatasetFields) {
         String retrievalUri = cvocEntry.getString("retrieval-uri");
-        String termUriFieldName = cvocEntry.getString("term-uri-field");
+        String termUriFieldName = cvocEntry.getString(TERM_URI_FIELD);
         String prefix = cvocEntry.getString("prefix", null);
         if (StringUtils.isBlank(term)) {
             logger.fine("Ignoring blank term");
@@ -497,8 +513,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         JsonObject vocabs = cvocEntry.getJsonObject("vocabs");
         for (String key : vocabs.keySet()) {
             JsonObject vocab = vocabs.getJsonObject(key);
-            if (vocab.containsKey("uriSpace")) {
-                if (term.startsWith(vocab.getString("uriSpace"))) {
+            if (vocab.containsKey(URI_SPACE)) {
+                if (term.startsWith(vocab.getString(URI_SPACE))) {
                     isExternal = true;
                     break;
                 }
@@ -634,7 +650,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         JsonObjectBuilder job = Json.createObjectBuilder();
         JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
         logger.fine("RF: " + filtering.toString());
-        JsonObject managedFields = cvocEntry.getJsonObject("managed-fields");
+        JsonObject managedFields = cvocEntry.getJsonObject(MANAGED_FIELDS);
         logger.fine("MF: " + managedFields.toString());
         for (String filterKey : filtering.keySet()) {
             if (!filterKey.equals("@context")) {
@@ -792,7 +808,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         boolean freeTextAllowed = jo.getBoolean("allow-free-text", false);
         for (String vocabName : vocabs.keySet()) {
             JsonObject vocab = vocabs.getJsonObject(vocabName);
-            String baseUri = vocab.getString("uriSpace");
+            String baseUri = vocab.getString(URI_SPACE);
             if (value.startsWith(baseUri)) {
                 valid = true;
                 break;

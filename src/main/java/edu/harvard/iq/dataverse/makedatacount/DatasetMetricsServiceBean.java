@@ -29,6 +29,8 @@ import jakarta.persistence.Query;
 @Stateless
 public class DatasetMetricsServiceBean implements java.io.Serializable {
 
+    private static final String REGULAR = "regular";
+
     private static final Logger logger = Logger.getLogger(DatasetMetricsServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -202,7 +204,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
 
     private DatasetMetrics loadMetrics(DatasetMetrics dmIn, Long count, String accessMethod, String metricType) {
 
-        if (accessMethod.equals("regular")) {
+        if (accessMethod.equals(REGULAR)) {
             switch (metricType) {
                 case "total-dataset-investigations":
                     dmIn.setViewsTotalRegular(count);
@@ -259,28 +261,28 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                 if (next.getCountryCode().equals(testMetric.getCountryCode())) {
                     //Replace element      
                     if (countField.equals("total-dataset-investigations")) {
-                        if (accessMethod.equals("regular")) {
+                        if (accessMethod.equals(REGULAR)) {
                             next.setViewsTotalRegular(testMetric.getViewsTotalRegular());
                         } else {
                             next.setViewsTotalMachine(testMetric.getViewsTotalMachine());
                         }
                     }
                     if (countField.equals("unique-dataset-investigations")) {
-                        if (accessMethod.equals("regular")) {
+                        if (accessMethod.equals(REGULAR)) {
                             next.setViewsUniqueRegular(testMetric.getViewsUniqueRegular());
                         } else {
                             next.setViewsUniqueMachine(testMetric.getViewsUniqueMachine());
                         }
                     }
                     if (countField.equals("total-dataset-requests")) {
-                        if (accessMethod.equals("regular")) {
+                        if (accessMethod.equals(REGULAR)) {
                             next.setDownloadsTotalRegular(testMetric.getDownloadsTotalRegular());
                         } else {
                             next.setDownloadsTotalMachine(testMetric.getDownloadsTotalMachine());
                         }
                     }
                     if (countField.equals("unique-dataset-requests")) {
-                        if (accessMethod.equals("regular")) {
+                        if (accessMethod.equals(REGULAR)) {
                             next.setDownloadsUniqueRegular(testMetric.getDownloadsUniqueRegular());
                         } else {
                             next.setDownloadsUniqueMachine(testMetric.getDownloadsUniqueMachine());

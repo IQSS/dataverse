@@ -26,6 +26,8 @@ import java.util.List;
  */
 public class FileReplacePageHelper {
 
+    private static final String DO_NOT_CALL_IF_PHASE_1_UNSUCCESSFUL = "Do not call if Phase 1 unsuccessful!";
+
     AddReplaceFileHelper replaceFileHelper;
 
     Dataset dataset;
@@ -64,7 +66,7 @@ public class FileReplacePageHelper {
         if (!wasPhase1Successful()) {
             // not really a NullPointerException but want to blow up here without adding try/catch everywhere
             //
-            throw new NullPointerException("Do not call if Phase 1 unsuccessful!");
+            throw new NullPointerException(DO_NOT_CALL_IF_PHASE_1_UNSUCCESSFUL);
         }
 
         return replaceFileHelper.hasContentTypeWarning();
@@ -143,7 +145,7 @@ public class FileReplacePageHelper {
     public boolean runSaveReplacementFile_Phase2() throws FileReplaceException {
 
         if (!wasPhase1Successful()) {
-            throw new FileReplaceException("Do not call if Phase 1 unsuccessful!");
+            throw new FileReplaceException(DO_NOT_CALL_IF_PHASE_1_UNSUCCESSFUL);
         }
         if (replaceFileHelper == null) {
             throw new NullPointerException("replaceFileHelper cannot be null!");
@@ -173,7 +175,7 @@ public class FileReplacePageHelper {
     public DataFile getFirstNewlyAddedFile() throws FileReplaceException {
 
         if (!wasPhase1Successful()) {
-            throw new FileReplaceException("Do not call if Phase 1 unsuccessful!");
+            throw new FileReplaceException(DO_NOT_CALL_IF_PHASE_1_UNSUCCESSFUL);
         }
         if (replaceFileHelper == null) {
             throw new NullPointerException("replaceFileHelper cannot be null!");

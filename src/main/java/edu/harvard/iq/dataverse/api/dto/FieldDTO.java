@@ -20,6 +20,8 @@ import java.util.Set;
  */
 public class FieldDTO {
 
+    private static final String CONTROLLED_VOCABULARY = "controlledVocabulary";
+
     public FieldDTO() {
     }
 
@@ -281,7 +283,7 @@ public class FieldDTO {
         if (multiple) {
             if (typeClass.equals("compound")) {
                 return getMultipleCompound();
-            } else if (typeClass.equals("controlledVocabulary")) {
+            } else if (typeClass.equals(CONTROLLED_VOCABULARY)) {
                 return getMultipleVocab();
             } else return getMultiplePrimitive();
 
@@ -289,7 +291,7 @@ public class FieldDTO {
         } else {
             if (typeClass.equals("compound")) {
                 return getSingleCompound();
-            } else if (typeClass.equals("controlledVocabulary")) {
+            } else if (typeClass.equals(CONTROLLED_VOCABULARY)) {
                 return getSingleVocab();
             } else {
                 return getSinglePrimitive();
@@ -298,7 +300,7 @@ public class FieldDTO {
     }
 
     public boolean isControlledVocabularyField() {
-        return getTypeClass().equals("controlledVocabulary");
+        return getTypeClass().equals(CONTROLLED_VOCABULARY);
     }
 
     @Override

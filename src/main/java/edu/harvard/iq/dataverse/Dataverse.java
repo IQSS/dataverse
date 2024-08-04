@@ -70,6 +70,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 		, @Index(columnList = "themeroot")})
 public class Dataverse extends DvObjectContainer {
 
+    private static final String PARENT = "Parent";
+
     public enum DataverseType {
         RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED, LABORATORY, RESEARCH_GROUP, DEPARTMENT
     }
@@ -514,7 +516,7 @@ public class Dataverse extends DvObjectContainer {
 
     public String getGuestbookRootDataverseName() {
         Dataverse testDV = this;
-        String retName = "Parent";
+        String retName = PARENT;
         while (testDV.getOwner() != null) {
             retName = testDV.getOwner().getDisplayName();
             if (testDV.getOwner().guestbookRoot) {
@@ -527,7 +529,7 @@ public class Dataverse extends DvObjectContainer {
 
     public String getTemplateRootDataverseName() {
         Dataverse testDV = this;
-        String retName = "Parent";
+        String retName = PARENT;
         while (testDV.getOwner() != null) {
             retName = testDV.getOwner().getDisplayName();
             if (testDV.getOwner().templateRoot) {
@@ -540,7 +542,7 @@ public class Dataverse extends DvObjectContainer {
 
     public String getThemeRootDataverseName() {
         Dataverse testDV = this;
-        String retName = "Parent";
+        String retName = PARENT;
         while (testDV.getOwner() != null) {
             retName = testDV.getOwner().getDisplayName();
             if (testDV.getOwner().themeRoot) {
@@ -553,7 +555,7 @@ public class Dataverse extends DvObjectContainer {
 
     public String getMetadataRootDataverseName() {
         Dataverse testDV = this;
-        String retName = "Parent";
+        String retName = PARENT;
         while (testDV.getOwner() != null) {
             retName = testDV.getOwner().getDisplayName();
             if (testDV.getOwner().metadataBlockRoot) {
@@ -566,7 +568,7 @@ public class Dataverse extends DvObjectContainer {
 
     public String getFacetRootDataverseName() {
         Dataverse testDV = this;
-        String retName = "Parent";
+        String retName = PARENT;
         while (testDV.getOwner() != null) {
             retName = testDV.getOwner().getDisplayName();
             if (testDV.getOwner().facetRoot) {

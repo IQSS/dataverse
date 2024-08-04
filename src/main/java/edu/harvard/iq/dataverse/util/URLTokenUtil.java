@@ -25,6 +25,8 @@ import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_DRAFT;
 
 public class URLTokenUtil {
 
+    private static final String ERROR_IN_URLTOKEN_UTIL_CONSTRUCTOR = "Error in URLTokenUtil constructor: ";
+
     protected static final Logger logger = Logger.getLogger(URLTokenUtil.class.getCanonicalName());
     protected final DataFile dataFile;
     protected final Dataset dataset;
@@ -52,12 +54,12 @@ public class URLTokenUtil {
             throws IllegalArgumentException {
         if (dataFile == null) {
             String error = "A DataFile is required.";
-            logger.warning("Error in URLTokenUtil constructor: " + error);
+            logger.warning(ERROR_IN_URLTOKEN_UTIL_CONSTRUCTOR + error);
             throw new IllegalArgumentException(error);
         }
         if (fileMetadata == null) {
             String error = "A FileMetadata is required.";
-            logger.warning("Error in URLTokenUtil constructor: " + error);
+            logger.warning(ERROR_IN_URLTOKEN_UTIL_CONSTRUCTOR + error);
             throw new IllegalArgumentException(error);
         }
         this.dataFile = dataFile;
@@ -89,7 +91,7 @@ public class URLTokenUtil {
     public URLTokenUtil(Dataset dataset, DataFile datafile, ApiToken apiToken, String localeCode) {
         if (dataset == null) {
             String error = "A Dataset is required.";
-            logger.warning("Error in URLTokenUtil constructor: " + error);
+            logger.warning(ERROR_IN_URLTOKEN_UTIL_CONSTRUCTOR + error);
             throw new IllegalArgumentException(error);
         }
         this.dataset = dataset;

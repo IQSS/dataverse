@@ -247,6 +247,7 @@ public enum JvmSettings {
     SCOPE_STORAGEUSE(PREFIX, "storageuse"),
     STORAGEUSE_DISABLE_UPDATES(SCOPE_STORAGEUSE, "disable-storageuse-increments"),
     ;
+    private static final String JVM_SETTINGS = "JvmSettings.";
 
     private static final String SCOPE_SEPARATOR = ".";
     public static final String PLACEHOLDER_KEY = "%s";
@@ -361,15 +362,15 @@ public enum JvmSettings {
                 long matches = OLD_NAME_PLACEHOLDER_PATTERN.matcher(name).results().count();
 
                 if (matches == 0) {
-                    throw new IllegalArgumentException("JvmSettings." + this.name() + "'s old name '" +
+                    throw new IllegalArgumentException(JVM_SETTINGS + this.name() + "'s old name '" +
                         name + "' needs at least one placeholder");
                 } else if (matches > this.placeholders) {
-                    throw new IllegalArgumentException("JvmSettings." + this.name() + "'s old name '" +
+                    throw new IllegalArgumentException(JVM_SETTINGS + this.name() + "'s old name '" +
                         name + "' has more placeholders than the current name");
                 }
             }
         } else if (!this.oldNames.stream().noneMatch(OLD_NAME_PLACEHOLDER_PATTERN.asPredicate())) {
-            throw new IllegalArgumentException("JvmSettings." + this.name() + " has no placeholder but old name requires it");
+            throw new IllegalArgumentException(JVM_SETTINGS + this.name() + " has no placeholder but old name requires it");
         }
 
         return oldNames;

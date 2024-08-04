@@ -20,6 +20,10 @@ import java.util.stream.Collectors;
  */
 public class OAuth2AuthenticationProviderFactory implements AuthenticationProviderFactory {
 
+    private static final String CLIENT_ID = "clientId";
+
+    private static final String CLIENT_SECRET = "clientSecret";
+
     private static interface ProviderBuilder {
 
         AbstractOAuth2AuthenticationProvider build(AuthenticationProviderRow aRow, Map<String, String> factoryData);
@@ -29,10 +33,10 @@ public class OAuth2AuthenticationProviderFactory implements AuthenticationProvid
     private final Map<String, ProviderBuilder> builders = new HashMap<>();
 
     public OAuth2AuthenticationProviderFactory() {
-        builders.put("github", (row, data) -> readRow(row, new GitHubOAuth2AP(data.get("clientId"), data.get("clientSecret"))));
-        builders.put("google", (row, data) -> readRow(row, new GoogleOAuth2AP(data.get("clientId"), data.get("clientSecret"))));
-        builders.put("orcid", (row, data) -> readRow(row, new OrcidOAuth2AP(data.get("clientId"), data.get("clientSecret"), data.get("userEndpoint"))));
-        builders.put("microsoft", (row, data) -> readRow(row, new MicrosoftOAuth2AP(data.get("clientId"), data.get("clientSecret"))));
+        builders.put("github", (row, data) -> readRow(row, new GitHubOAuth2AP(data.get(CLIENT_ID), data.get(CLIENT_SECRET))));
+        builders.put("google", (row, data) -> readRow(row, new GoogleOAuth2AP(data.get(CLIENT_ID), data.get(CLIENT_SECRET))));
+        builders.put("orcid", (row, data) -> readRow(row, new OrcidOAuth2AP(data.get(CLIENT_ID), data.get(CLIENT_SECRET), data.get("userEndpoint"))));
+        builders.put("microsoft", (row, data) -> readRow(row, new MicrosoftOAuth2AP(data.get(CLIENT_ID), data.get(CLIENT_SECRET))));
     }
 
     @Override

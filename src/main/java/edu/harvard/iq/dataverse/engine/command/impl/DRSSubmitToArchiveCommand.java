@@ -60,6 +60,12 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 @RequiredPermissions(Permission.PublishDataset)
 public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implements Command<DatasetVersion> {
 
+    private static final String SETTING_AS_A_JSON_OBJECT = " setting as a Json object";
+
+    private static final String DRS_INGEST_FAILED_FOR = "DRS Ingest Failed for: ";
+
+    private static final String UNABLE_TO_PARSE = "Unable to parse ";
+
     private static final Logger logger = Logger.getLogger(DRSSubmitToArchiveCommand.class.getName());
     private static final String DRS_CONFIG = ":DRSArchiverConfig";
     private static final String ADMIN_METADATA = "admin_metadata";
@@ -89,7 +95,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
         try {
             drsConfigObject = JsonUtil.getJsonObject(requestedSettings.get(DRS_CONFIG));
         } catch (Exception e) {
-            logger.warning("Unable to parse " + DRS_CONFIG + " setting as a Json object");
+            logger.warning(UNABLE_TO_PARSE + DRS_CONFIG + SETTING_AS_A_JSON_OBJECT);
         }
         if (drsConfigObject != null) {
             JsonObject adminMetadata = drsConfigObject.getJsonObject(ADMIN_METADATA);
@@ -224,7 +230,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                                                     + responseObject.toString());
                                             break;
                                         case DatasetVersion.ARCHIVAL_STATUS_FAILURE:
-                                            logger.severe("DRS Ingest Failed for: " + packageId + " : "
+                                            logger.severe(DRS_INGEST_FAILED_FOR + packageId + " : "
                                                     + responseObject.toString());
                                             return new Failure("DRS Archiver fail in Ingest call");
                                         case DatasetVersion.ARCHIVAL_STATUS_SUCCESS:
@@ -232,19 +238,19 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                                             logger.warning("Unexpected Status: " + status);
                                         }
                                     } else {
-                                        logger.severe("DRS Ingest Failed for: " + packageId + " with returned status: "
+                                        logger.severe(DRS_INGEST_FAILED_FOR + packageId + " with returned status: "
                                                 + status);
                                         return new Failure(
                                                 "DRS Archiver fail in Ingest call with returned status: " + status);
                                     }
                                 } else {
-                                    logger.severe("DRS Ingest Failed for: " + packageId
+                                    logger.severe(DRS_INGEST_FAILED_FOR + packageId
                                             + " - response does not include status and message");
                                     return new Failure(
                                             "DRS Archiver fail in Ingest call \" - response does not include status and message");
                                 }
                             } else {
-                                logger.severe("DRS Ingest Failed for: " + packageId + " with status code: " + code);
+                                logger.severe(DRS_INGEST_FAILED_FOR + packageId + " with status code: " + code);
                                 logger.fine("Response" + responseBody);
                                 return new Failure("DRS Archiver fail in Ingest call with status code: " + code);
                             }
@@ -336,7 +342,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                 drsConfigObject = JsonUtil.getJsonObject(config);
             }
         } catch (Exception e) {
-            logger.warning("Unable to parse " + DRS_CONFIG + " setting as a Json object");
+            logger.warning(UNABLE_TO_PARSE + DRS_CONFIG + SETTING_AS_A_JSON_OBJECT);
         }
         if (drsConfigObject != null) {
             JsonObject adminMetadata = drsConfigObject.getJsonObject(ADMIN_METADATA);
@@ -374,7 +380,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                 drsConfigObject = JsonUtil.getJsonObject(config);
             }
         } catch (Exception e) {
-            logger.warning("Unable to parse " + DRS_CONFIG + " setting as a Json object");
+            logger.warning(UNABLE_TO_PARSE + DRS_CONFIG + SETTING_AS_A_JSON_OBJECT);
         }
         if (drsConfigObject != null) {
             return drsConfigObject.getBoolean(SINGLE_VERSION, false);

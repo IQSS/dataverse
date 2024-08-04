@@ -136,6 +136,48 @@ import java.nio.file.Paths;
 @Path("admin")
 public class Admin extends AbstractApiBean {
 
+    private static final String DELETED = " deleted.";
+
+    private static final String FILES = " files. ";
+
+    private static final String NOT_FOUND = " not found.";
+
+    private static final String OF = " of  ";
+
+    private static final String OUT_OF = " out of ";
+
+    private static final String COULD_NOT_FIND_ARCHIVER_CLASS = "Could not find Archiver class: ";
+
+    private static final String COULD_NOT_FIND_DATAVERSE_BASED_ON_ALIAS_SUPPLIED = "Could not find dataverse based on alias supplied: ";
+
+    private static final String COULD_NOT_FIND_FILE_WITH_THE_ID = "Could not find file with the id: ";
+
+    private static final String FAILED_TO_REGISTER_FILE_ID = "Failed to register file id: ";
+
+    private static final String SETTING = "Setting ";
+
+    private static final String SUPERUSERS_ONLY = "Superusers only.";
+
+    private static final String UNEXPECTED_EXCEPTION = "Unexpected Exception: ";
+
+    private static final String USER = "User ";
+
+    private static final String USER_ID = "User id ";
+
+    private static final String API_KEY_REQUIRED = "api key required";
+
+    private static final String EMAIL = "email";
+
+    private static final String FIRST_NAME = "firstName";
+
+    private static final String LAST_NAME = "lastName";
+
+    private static final String MESSAGE = "message";
+
+    private static final String MUST_BE_SUPERUSER = "must be superuser";
+
+    private static final String STATUS = "status";
+
 	private static final Logger logger = Logger.getLogger(Admin.class.getName());
 
     @EJB
@@ -203,7 +245,7 @@ public class Admin extends AbstractApiBean {
 	@PUT
 	public Response putSettingLang(@PathParam("name") String name, @PathParam("lang") String lang, String content) {
 		Setting s = settingsSvc.set(name, lang, content);
-		return ok("Setting " + name + " - " + lang + " - added.");
+		return ok(SETTING + name + " - " + lang + " - added.");
 	}
 
 	@Path("settings/{name}")
@@ -211,7 +253,7 @@ public class Admin extends AbstractApiBean {
 	public Response getSetting(@PathParam("name") String name) {
 		String s = settingsSvc.get(name);
 
-		return (s != null) ? ok(s) : notFound("Setting " + name + " not found");
+		return (s != null) ? ok(s) : notFound(SETTING + name + " not found");
 	}
 
 	@Path("settings/{name}")
@@ -219,14 +261,14 @@ public class Admin extends AbstractApiBean {
 	public Response deleteSetting(@PathParam("name") String name) {
 		settingsSvc.delete(name);
 
-		return ok("Setting " + name + " deleted.");
+		return ok(SETTING + name + DELETED);
 	}
 
 	@Path("settings/{name}/lang/{lang}")
 	@DELETE
 	public Response deleteSettingLang(@PathParam("name") String name, @PathParam("lang") String lang) {
 		settingsSvc.delete(name, lang);
-		return ok("Setting " + name + " - " + lang + " deleted.");
+		return ok(SETTING + name + " - " + lang + DELETED);
 	}
 
     @Path("template/{id}")
@@ -253,7 +295,7 @@ public class Admin extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
         }
 
-        return ok("Template " + doomed.getName() + " deleted.");
+        return ok("Template " + doomed.getName() + DELETED);
     }
 
 
@@ -430,7 +472,7 @@ public class Admin extends AbstractApiBean {
         if (authenticatedUser != null) {
             return ok(json(authenticatedUser));
         }
-        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+        return error(Response.Status.BAD_REQUEST, USER + identifier + NOT_FOUND);
     }
 
     @DELETE
@@ -440,7 +482,7 @@ public class Admin extends AbstractApiBean {
         if (user != null) {
             return deleteAuthenticatedUser(user);
         }
-        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+        return error(Response.Status.BAD_REQUEST, USER + identifier + NOT_FOUND);
     }
 
     @DELETE
@@ -450,7 +492,7 @@ public class Admin extends AbstractApiBean {
         if (user != null) {
             return deleteAuthenticatedUser(user);
         }
-        return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
+        return error(Response.Status.BAD_REQUEST, USER + id + NOT_FOUND);
     }
 
     private Response deleteAuthenticatedUser(AuthenticatedUser au) {
@@ -470,7 +512,7 @@ public class Admin extends AbstractApiBean {
         authSvc.removeAuthentictedUserItems(au);
 
         authSvc.deleteAuthenticatedUser(au.getId());
-        return ok("AuthenticatedUser " + au.getIdentifier() + " deleted.");
+        return ok("AuthenticatedUser " + au.getIdentifier() + DELETED);
     }
 
     @POST
@@ -480,7 +522,7 @@ public class Admin extends AbstractApiBean {
         if (user != null) {
             return deactivateAuthenticatedUser(user);
         }
-        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+        return error(Response.Status.BAD_REQUEST, USER + identifier + NOT_FOUND);
     }
 
     @POST
@@ -490,7 +532,7 @@ public class Admin extends AbstractApiBean {
         if (user != null) {
             return deactivateAuthenticatedUser(user);
         }
-        return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
+        return error(Response.Status.BAD_REQUEST, USER + id + NOT_FOUND);
     }
 
     private Response deactivateAuthenticatedUser(AuthenticatedUser userToDisable) {
@@ -500,7 +542,7 @@ public class Admin extends AbstractApiBean {
         }
         try {
             execCommand(new DeactivateUserCommand(createDataverseRequest(superuser), userToDisable));
-            return ok("User " + userToDisable.getIdentifier() + " deactivated.");
+            return ok(USER + userToDisable.getIdentifier() + " deactivated.");
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -531,10 +573,10 @@ public class Admin extends AbstractApiBean {
 		try {
 			AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
 			if (!user.isSuperuser()) {
-				return error(Response.Status.FORBIDDEN, "Superusers only.");
+				return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
 			}
 		} catch (WrappedResponse ex) {
-			return error(Response.Status.FORBIDDEN, "Superusers only.");
+			return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
 		}
 		JsonArrayBuilder userArray = Json.createArrayBuilder();
 		authSvc.findAllAuthenticatedUsers().stream().forEach((user) -> {
@@ -582,9 +624,9 @@ public class Admin extends AbstractApiBean {
 		String persistentUserId = jsonObject.getString("persistentUserId");
 		String identifier = jsonObject.getString("identifier");
 		String proposedAuthenticatedUserIdentifier = identifier.replaceFirst("@", "");
-		String firstName = jsonObject.getString("firstName");
-		String lastName = jsonObject.getString("lastName");
-		String emailAddress = jsonObject.getString("email");
+		String firstName = jsonObject.getString(FIRST_NAME);
+		String lastName = jsonObject.getString(LAST_NAME);
+		String emailAddress = jsonObject.getString(EMAIL);
 		String position = null;
 		String affiliation = null;
 		UserRecordIdentifier userRecordId = new UserRecordIdentifier(jsonObject.getString("authenticationProviderId"),
@@ -615,20 +657,20 @@ public class Admin extends AbstractApiBean {
 		try {
 			AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
 			if (!user.isSuperuser()) {
-				return error(Response.Status.FORBIDDEN, "Superusers only.");
+				return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
 			}
 		} catch (WrappedResponse ex) {
-			return error(Response.Status.FORBIDDEN, "Superusers only.");
+			return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
 		}
 		try {
 			BuiltinUser builtinUser = authSvc.convertRemoteToBuiltIn(id, newEmailAddress);
 			if (builtinUser == null) {
-				return error(Response.Status.BAD_REQUEST, "User id " + id
+				return error(Response.Status.BAD_REQUEST, USER_ID + id
 						+ " could not be converted from Shibboleth to BuiltIn. An Exception was not thrown.");
 			}
                         AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
 			JsonObjectBuilder output = Json.createObjectBuilder();
-			output.add("email", authUser.getEmail());
+			output.add(EMAIL, authUser.getEmail());
 			output.add("username", builtinUser.getUserName());
 			return ok(output);
 		} catch (Throwable ex) {
@@ -638,7 +680,7 @@ public class Admin extends AbstractApiBean {
 				ex = ex.getCause();
 				sb.append(ex + " ");
 			}
-			String msg = "User id " + id
+			String msg = USER_ID + id
 					+ " could not be converted from Shibboleth to BuiltIn. Details from Exception: " + sb;
 			logger.info(msg);
 			return error(Response.Status.BAD_REQUEST, msg);
@@ -652,21 +694,21 @@ public class Admin extends AbstractApiBean {
 		try {
 			AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
 			if (!user.isSuperuser()) {
-				return error(Response.Status.FORBIDDEN, "Superusers only.");
+				return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
 			}
 		} catch (WrappedResponse ex) {
-			return error(Response.Status.FORBIDDEN, "Superusers only.");
+			return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
 		}
 		try {
 			BuiltinUser builtinUser = authSvc.convertRemoteToBuiltIn(id, newEmailAddress);
                         //AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
 			if (builtinUser == null) {
-				return error(Response.Status.BAD_REQUEST, "User id " + id
+				return error(Response.Status.BAD_REQUEST, USER_ID + id
 						+ " could not be converted from remote to BuiltIn. An Exception was not thrown.");
 			}
                         AuthenticatedUser authUser = authSvc.getAuthenticatedUser(builtinUser.getUserName());
 			JsonObjectBuilder output = Json.createObjectBuilder();
-			output.add("email", authUser.getEmail());
+			output.add(EMAIL, authUser.getEmail());
 			output.add("username", builtinUser.getUserName());
 			return ok(output);
 		} catch (Throwable ex) {
@@ -676,7 +718,7 @@ public class Admin extends AbstractApiBean {
 				ex = ex.getCause();
 				sb.append(ex + " ");
 			}
-			String msg = "User id " + id + " could not be converted from remote to BuiltIn. Details from Exception: "
+			String msg = USER_ID + id + " could not be converted from remote to BuiltIn. Details from Exception: "
 					+ sb;
 			logger.info(msg);
 			return error(Response.Status.BAD_REQUEST, msg);
@@ -695,10 +737,10 @@ public class Admin extends AbstractApiBean {
 		try {
 			AuthenticatedUser userToRunThisMethod = getRequestAuthenticatedUserOrDie(crc);
 			if (!userToRunThisMethod.isSuperuser()) {
-				return error(Response.Status.FORBIDDEN, "Superusers only.");
+				return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
 			}
 		} catch (WrappedResponse ex) {
-			return error(Response.Status.FORBIDDEN, "Superusers only.");
+			return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
 		}
 		boolean disabled = false;
 		if (disabled) {
@@ -743,9 +785,9 @@ public class Admin extends AbstractApiBean {
 		String notUsed = null;
 		String separator = "|";
 		UserIdentifier newUserIdentifierInLookupTable = new UserIdentifier(idPEntityId + separator + eppn, notUsed);
-		String overwriteFirstName = randomUser.get("firstName");
-		String overwriteLastName = randomUser.get("lastName");
-		String overwriteEmail = randomUser.get("email");
+		String overwriteFirstName = randomUser.get(FIRST_NAME);
+		String overwriteLastName = randomUser.get(LAST_NAME);
+		String overwriteEmail = randomUser.get(EMAIL);
 		overwriteEmail = newEmailAddressToUse;
 		logger.info("overwriteEmail: " + overwriteEmail);
 		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail);
@@ -846,10 +888,10 @@ public class Admin extends AbstractApiBean {
 		try {
 			AuthenticatedUser userToRunThisMethod = getRequestAuthenticatedUserOrDie(crc);
 			if (!userToRunThisMethod.isSuperuser()) {
-				return error(Response.Status.FORBIDDEN, "Superusers only.");
+				return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
 			}
 		} catch (WrappedResponse ex) {
-			return error(Response.Status.FORBIDDEN, "Superusers only.");
+			return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
 		}
 		boolean disabled = false;
 		if (disabled) {
@@ -901,9 +943,9 @@ public class Admin extends AbstractApiBean {
 		// UserIdentifier newUserIdentifierInLookupTable = new
 		// UserIdentifier(idPEntityId + separator + eppn, notUsed);
 		UserIdentifier newUserIdentifierInLookupTable = new UserIdentifier(newPersistentUserIdInLookupTable, notUsed);
-		String overwriteFirstName = randomUser.get("firstName");
-		String overwriteLastName = randomUser.get("lastName");
-		String overwriteEmail = randomUser.get("email");
+		String overwriteFirstName = randomUser.get(FIRST_NAME);
+		String overwriteLastName = randomUser.get(LAST_NAME);
+		String overwriteEmail = randomUser.get(EMAIL);
 		overwriteEmail = newEmailAddressToUse;
 		logger.info("overwriteEmail: " + overwriteEmail);
 		boolean validEmail = EMailValidator.isEmailValid(overwriteEmail);
@@ -1024,7 +1066,7 @@ public class Admin extends AbstractApiBean {
         return response(req -> {
             DataverseRole doomed = findRoleOrDie(id);
             execCommand(new DeleteRoleCommand(req, doomed));
-            return ok("role " + doomed.getName() + " deleted.");
+            return ok("role " + doomed.getName() + DELETED);
         }, getRequestUser(crc));
     }
 
@@ -1051,7 +1093,7 @@ public class Admin extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
         }
         user.setSuperuser(isSuperuser);
-        return ok("User " + user.getIdentifier() + " " + (user.isSuperuser() ? "set" : "removed")
+        return ok(USER + user.getIdentifier() + " " + (user.isSuperuser() ? "set" : "removed")
                 + " as a superuser.");
     }
 
@@ -1123,7 +1165,7 @@ public class Admin extends AbstractApiBean {
                                     if (constraintViolation.getInvalidValue() != null) {
                                         invalidValue = constraintViolation.getInvalidValue().toString();
                                     }
-                                    output.add("status", "invalid");
+                                    output.add(STATUS, "invalid");
                                     output.add("entityClassDatabaseTableRowId", databaseRow);
                                     output.add("field", field);
                                     output.add("invalidValue", invalidValue == null ? "NULL" : invalidValue);
@@ -1140,9 +1182,9 @@ public class Admin extends AbstractApiBean {
 
 
                     if (success) {
-                        output.add("status", "valid");
+                        output.add(STATUS, "valid");
                     } else if (!constraintViolationDetected) {
-                        output.add("status", "unknown");
+                        output.add(STATUS, "unknown");
                     }
 
                     // write it out:
@@ -1251,12 +1293,12 @@ public class Admin extends AbstractApiBean {
                         FileUtil.validateDataFileChecksum(dataFile);
                         success = true;
                     } catch (IOException ex) {
-                        output.add("status", "invalid");
+                        output.add(STATUS, "invalid");
                         output.add("errorMessage", ex.getMessage());
                     }
 
                     if (success) {
-                        output.add("status", "valid");
+                        output.add(STATUS, "valid");
                     }
 
                     // write it out:
@@ -1393,13 +1435,13 @@ public class Admin extends AbstractApiBean {
 		List<Long> affectedFileIds = fileService.selectFilesWithMissingOriginalTypes();
 
 		if (affectedFileIds.isEmpty()) {
-			info.add("message",
+			info.add(MESSAGE,
 					"All the tabular files in the database already have the original types set correctly; exiting.");
 		} else {
 			for (Long fileid : affectedFileIds) {
 				logger.fine("found file id: " + fileid);
 			}
-			info.add("message", "Found " + affectedFileIds.size()
+			info.add(MESSAGE, "Found " + affectedFileIds.size()
 					+ " tabular files with missing original types. Kicking off an async job that will repair the files in the background.");
 		}
 
@@ -1416,7 +1458,7 @@ public class Admin extends AbstractApiBean {
         List<Long> affectedFileIds = fileService.selectFilesWithMissingOriginalSizes();
 
         if (affectedFileIds.isEmpty()) {
-            info.add("message",
+            info.add(MESSAGE,
                     "All the tabular files in the database already have the original sizes set correctly; exiting.");
         } else {
 
@@ -1429,7 +1471,7 @@ public class Admin extends AbstractApiBean {
                 affectedFileIds.subList(limit, howmany - 1).clear();
                 message = message.concat(" Kicking off an async job that will repair the " + limit + " files in the background.");
             }
-            info.add("message", message);
+            info.add(MESSAGE, message);
         }
 
         ingestService.fixMissingOriginalSizes(affectedFileIds);
@@ -1547,9 +1589,9 @@ public class Admin extends AbstractApiBean {
             }
 
         } catch (WrappedResponse r) {
-            logger.info("Failed to register file id: " + id);
+            logger.info(FAILED_TO_REGISTER_FILE_ID + id);
         } catch (Exception e) {
-            logger.info("Failed to register file id: " + id + " Unexpecgted Exception " + e.getMessage());
+            logger.info(FAILED_TO_REGISTER_FILE_ID + id + " Unexpecgted Exception " + e.getMessage());
         }
         return ok("Datafile registration complete. File registered successfully.");
     }
@@ -1564,13 +1606,13 @@ public class Admin extends AbstractApiBean {
         Integer released = 0;
         Integer draft = 0;
         Integer skipped = 0;
-        logger.info("Starting to register: analyzing " + count + " files. " + new Date());
+        logger.info("Starting to register: analyzing " + count + FILES + new Date());
         logger.info("Only unregistered, published files will be registered.");
         User u = null;
         try {
             u = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
+            return error(Status.UNAUTHORIZED, API_KEY_REQUIRED);
         }
         DataverseRequest r = createDataverseRequest(u);
         for (DataFile df : fileService.findAll()) {
@@ -1579,14 +1621,14 @@ public class Admin extends AbstractApiBean {
                     if (!systemConfig.isFilePIDsEnabledForCollection(df.getOwner().getOwner())) {
                         skipped++;
                         if (skipped % 100 == 0) {
-                            logger.info(skipped + " of  " + count + " files not in collections that allow file PIDs. " + new Date());
+                            logger.info(skipped + OF + count + " files not in collections that allow file PIDs. " + new Date());
                         }
                     } else if (df.isReleased()) {
                         released++;
                         execCommand(new RegisterDvObjectCommand(r, df));
                         successes++;
                         if (successes % 100 == 0) {
-                            logger.info(successes + " of  " + count + " files registered successfully. " + new Date());
+                            logger.info(successes + OF + count + " files registered successfully. " + new Date());
                         }
                         try {
                             Thread.sleep(1000);
@@ -1596,33 +1638,33 @@ public class Admin extends AbstractApiBean {
                     } else {
                         draft++;
                         if (draft % 100 == 0) {
-                          logger.info(draft + " of  " + count + " files not yet published");
+                          logger.info(draft + OF + count + " files not yet published");
                         }
                     }
                 } else {
                     alreadyRegistered++;
                     if (alreadyRegistered % 100 == 0) {
-                      logger.info(alreadyRegistered + " of  " + count + " files are already registered. " + new Date());
+                      logger.info(alreadyRegistered + OF + count + " files are already registered. " + new Date());
                     }
                 }
             } catch (WrappedResponse ex) {
-                logger.info("Failed to register file id: " + df.getId());
+                logger.info(FAILED_TO_REGISTER_FILE_ID + df.getId());
                 Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception e) {
-                logger.info("Unexpected Exception: " + e.getMessage());
+                logger.info(UNEXPECTED_EXCEPTION + e.getMessage());
             }
 
 
         }
         logger.info("Final Results:");
-        logger.info(alreadyRegistered + " of  " + count + " files were already registered. " + new Date());
-        logger.info(draft + " of  " + count + " files are not yet published. " + new Date());
-        logger.info(released + " of  " + count + " unregistered, published files to register. " + new Date());
-        logger.info(successes + " of  " + released + " unregistered, published files registered successfully. "
+        logger.info(alreadyRegistered + OF + count + " files were already registered. " + new Date());
+        logger.info(draft + OF + count + " files are not yet published. " + new Date());
+        logger.info(released + OF + count + " unregistered, published files to register. " + new Date());
+        logger.info(successes + OF + released + " unregistered, published files registered successfully. "
                 + new Date());
-        logger.info(skipped + " of  " + count + " files not in collections that allow file PIDs. " + new Date());
+        logger.info(skipped + OF + count + " files not in collections that allow file PIDs. " + new Date());
 
-        return ok("Datafile registration complete." + successes + " of  " + released
+        return ok("Datafile registration complete." + successes + OF + released
                 + " unregistered, published files registered successfully.");
     }
 
@@ -1659,7 +1701,7 @@ public class Admin extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "Invalid sleep interval: " + sleepInterval);
         }
 
-        logger.info("Starting to register: analyzing " + count + " files. " + new Date());
+        logger.info("Starting to register: analyzing " + count + FILES + new Date());
         logger.info("Only unregistered, published files will be registered.");
 
 
@@ -1672,7 +1714,7 @@ public class Admin extends AbstractApiBean {
                         execCommand(new RegisterDvObjectCommand(r, df));
                         countSuccesses++;
                         if (countSuccesses % 100 == 0) {
-                            logger.info(countSuccesses + " out of " + count + " files registered successfully. " + new Date());
+                            logger.info(countSuccesses + OUT_OF + count + " files registered successfully. " + new Date());
                         }
                         try {
                             Thread.sleep(sleepInterval * 1000);
@@ -1681,28 +1723,28 @@ public class Admin extends AbstractApiBean {
                         }
                     } else {
                         countDrafts++;
-                        logger.fine(countDrafts + " out of " + count + " files not yet published");
+                        logger.fine(countDrafts + OUT_OF + count + " files not yet published");
                     }
                 } else {
                     countAlreadyRegistered++;
-                    logger.fine(countAlreadyRegistered + " out of " + count + " files are already registered. " + new Date());
+                    logger.fine(countAlreadyRegistered + OUT_OF + count + " files are already registered. " + new Date());
                 }
             } catch (WrappedResponse ex) {
                 countReleased++;
-                logger.info("Failed to register file id: " + df.getId());
+                logger.info(FAILED_TO_REGISTER_FILE_ID + df.getId());
                 Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception e) {
-                logger.info("Unexpected Exception: " + e.getMessage());
+                logger.info(UNEXPECTED_EXCEPTION + e.getMessage());
             }
         }
 
-        logger.info(countAlreadyRegistered + " out of " + count + " files were already registered. " + new Date());
-        logger.info(countDrafts + " out of " + count + " files are not yet published. " + new Date());
-        logger.info(countReleased + " out of " + count + " unregistered, published files to register. " + new Date());
-        logger.info(countSuccesses + " out of " + countReleased + " unregistered, published files registered successfully. "
+        logger.info(countAlreadyRegistered + OUT_OF + count + " files were already registered. " + new Date());
+        logger.info(countDrafts + OUT_OF + count + " files are not yet published. " + new Date());
+        logger.info(countReleased + OUT_OF + count + " unregistered, published files to register. " + new Date());
+        logger.info(countSuccesses + OUT_OF + countReleased + " unregistered, published files registered successfully. "
                 + new Date());
 
-        return ok("Datafile registration complete. " + countSuccesses + " out of " + countReleased
+        return ok("Datafile registration complete. " + countSuccesses + OUT_OF + countReleased
                 + " unregistered, published files registered successfully.");
     }
 
@@ -1724,15 +1766,15 @@ public class Admin extends AbstractApiBean {
         } catch (IllegalArgumentException iae) {
             return error(Status.BAD_REQUEST, "Unknown algorithm");
         }
-        logger.info("Starting to rehash: analyzing " + count + " files. " + new Date());
+        logger.info("Starting to rehash: analyzing " + count + FILES + new Date());
         logger.info("Hashes not created with " + alg + " will be verified, and, if valid, replaced with a hash using "
                 + alg);
         try {
             User u = getRequestAuthenticatedUserOrDie(crc);
             if (!u.isSuperuser())
-                return error(Status.UNAUTHORIZED, "must be superuser");
+                return error(Status.UNAUTHORIZED, MUST_BE_SUPERUSER);
         } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
+            return error(Status.UNAUTHORIZED, API_KEY_REQUIRED);
         }
 
         for (DataFile df : fileService.findAll()) {
@@ -1785,7 +1827,7 @@ public class Admin extends AbstractApiBean {
                             successes++;
                             if (successes % 100 == 0) {
                                 logger.info(
-                                        successes + " of  " + count + " files rehashed successfully. " + new Date());
+                                        successes + OF + count + " files rehashed successfully. " + new Date());
                             }
                         } else {
                             logger.warning("Problem: Current checksum for datafile: " + df.getFileMetadata().getLabel()
@@ -1794,13 +1836,13 @@ public class Admin extends AbstractApiBean {
                     } else {
                         alreadyUpdated++;
                         if (alreadyUpdated % 100 == 0) {
-                            logger.info(alreadyUpdated + " of  " + count
+                            logger.info(alreadyUpdated + OF + count
                                     + " files are already have hashes with the new algorithm. " + new Date());
                         }
                     }
                 }
             } catch (Exception e) {
-                logger.warning("Unexpected Exception: " + e.getMessage());
+                logger.warning(UNEXPECTED_EXCEPTION + e.getMessage());
 
             } finally {
                 IOUtils.closeQuietly(in);
@@ -1810,12 +1852,12 @@ public class Admin extends AbstractApiBean {
         logger.info("Final Results:");
         logger.info(harvested + " harvested files skipped.");
         logger.info(
-                alreadyUpdated + " of  " + count + " files already had hashes with the new algorithm. " + new Date());
-        logger.info(rehashed + " of  " + count + " files to rehash. " + new Date());
+                alreadyUpdated + OF + count + " files already had hashes with the new algorithm. " + new Date());
+        logger.info(rehashed + OF + count + " files to rehash. " + new Date());
         logger.info(
-                successes + " of  " + rehashed + " files successfully rehashed with the new algorithm. " + new Date());
+                successes + OF + rehashed + " files successfully rehashed with the new algorithm. " + new Date());
 
-        return ok("Datafile rehashing complete." + successes + " of  " + rehashed + " files successfully rehashed.");
+        return ok("Datafile rehashing complete." + successes + OF + rehashed + " files successfully rehashed.");
     }
 
     @POST
@@ -1826,18 +1868,18 @@ public class Admin extends AbstractApiBean {
         try {
             User u = getRequestAuthenticatedUserOrDie(crc);
             if (!u.isSuperuser()) {
-                return error(Status.UNAUTHORIZED, "must be superuser");
+                return error(Status.UNAUTHORIZED, MUST_BE_SUPERUSER);
             }
         } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
+            return error(Status.UNAUTHORIZED, API_KEY_REQUIRED);
         }
 
         DataFile fileToUpdate = null;
         try {
             fileToUpdate = findDataFileOrDie(fileId);
         } catch (WrappedResponse r) {
-            logger.info("Could not find file with the id: " + fileId);
-            return error(Status.BAD_REQUEST, "Could not find file with the id: " + fileId);
+            logger.info(COULD_NOT_FIND_FILE_WITH_THE_ID + fileId);
+            return error(Status.BAD_REQUEST, COULD_NOT_FIND_FILE_WITH_THE_ID + fileId);
         }
 
         if (fileToUpdate.isHarvested()) {
@@ -1871,7 +1913,7 @@ public class Admin extends AbstractApiBean {
             fileToUpdate.setChecksumValue(newChecksum);
 
         } catch (Exception e) {
-            logger.warning("Unexpected Exception: " + e.getMessage());
+            logger.warning(UNEXPECTED_EXCEPTION + e.getMessage());
 
         } finally {
             IOUtils.closeQuietly(in);
@@ -1888,18 +1930,18 @@ public class Admin extends AbstractApiBean {
         try {
             User u = getRequestAuthenticatedUserOrDie(crc);
             if (!u.isSuperuser()) {
-                return error(Status.UNAUTHORIZED, "must be superuser");
+                return error(Status.UNAUTHORIZED, MUST_BE_SUPERUSER);
             }
         } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
+            return error(Status.UNAUTHORIZED, API_KEY_REQUIRED);
         }
 
         DataFile fileToValidate = null;
         try {
             fileToValidate = findDataFileOrDie(fileId);
         } catch (WrappedResponse r) {
-            logger.info("Could not find file with the id: " + fileId);
-            return error(Status.BAD_REQUEST, "Could not find file with the id: " + fileId);
+            logger.info(COULD_NOT_FIND_FILE_WITH_THE_ID + fileId);
+            return error(Status.BAD_REQUEST, COULD_NOT_FIND_FILE_WITH_THE_ID + fileId);
         }
 
         if (fileToValidate.isHarvested()) {
@@ -1932,7 +1974,7 @@ public class Admin extends AbstractApiBean {
             calculatedChecksum = FileUtil.calculateChecksum(in, cType);
 
         } catch (Exception e) {
-            logger.warning("Unexpected Exception: " + e.getMessage());
+            logger.warning(UNEXPECTED_EXCEPTION + e.getMessage());
             return error(Status.BAD_REQUEST, "Checksum Validation Unexpected Exception: " + e.getMessage());
         } finally {
             IOUtils.closeQuietly(in);
@@ -2000,8 +2042,8 @@ public class Admin extends AbstractApiBean {
                     return ok("Archive submission using " + cmd.getClass().getCanonicalName()
                             + " started. Processing can take significant time for large datasets and requires that the user have permission to publish the dataset. View log and/or check archive for results.");
                 } else {
-                    logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
-                    return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
+                    logger.log(Level.SEVERE, COULD_NOT_FIND_ARCHIVER_CLASS + className);
+                    return error(Status.INTERNAL_SERVER_ERROR, COULD_NOT_FIND_ARCHIVER_CLASS + className);
                 }
             } else {
                 return error(Status.BAD_REQUEST, "Version was already submitted for archiving.");
@@ -2092,8 +2134,8 @@ public class Admin extends AbstractApiBean {
                     }).start();
                     return ok("Starting to archive all unarchived published dataset versions using " + cmd.getClass().getCanonicalName() + ". Processing can take significant time for large datasets/ large numbers of dataset versions  and requires that the user have permission to publish the dataset(s). View log and/or check archive for results.");
                 } else {
-                    logger.log(Level.SEVERE, "Could not find Archiver class: " + className);
-                    return error(Status.INTERNAL_SERVER_ERROR, "Could not find Archiver class: " + className);
+                    logger.log(Level.SEVERE, COULD_NOT_FIND_ARCHIVER_CLASS + className);
+                    return error(Status.INTERNAL_SERVER_ERROR, COULD_NOT_FIND_ARCHIVER_CLASS + className);
                 }
             } else {
                 return error(Status.BAD_REQUEST, "No unarchived published dataset versions found");
@@ -2125,12 +2167,12 @@ public class Admin extends AbstractApiBean {
     public Response addRoleAssignementsToChildren(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse owner = dataverseSvc.findByAlias(alias);
         if (owner == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+            return error(Response.Status.NOT_FOUND, COULD_NOT_FIND_DATAVERSE_BASED_ON_ALIAS_SUPPLIED + alias + ".");
         }
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
+                return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -2156,12 +2198,12 @@ public class Admin extends AbstractApiBean {
     public Response getStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
     	Dataverse dataverse = dataverseSvc.findByAlias(alias);
     	if (dataverse == null) {
-    		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+    		return error(Response.Status.NOT_FOUND, COULD_NOT_FIND_DATAVERSE_BASED_ON_ALIAS_SUPPLIED + alias + ".");
     	}
     	try {
     		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
     		if (!user.isSuperuser()) {
-    			return error(Response.Status.FORBIDDEN, "Superusers only.");
+    			return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
     		}
     	} catch (WrappedResponse wr) {
     		return wr.getResponse();
@@ -2176,12 +2218,12 @@ public class Admin extends AbstractApiBean {
     public Response setStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias, String label) throws WrappedResponse {
     	Dataverse dataverse = dataverseSvc.findByAlias(alias);
     	if (dataverse == null) {
-    		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+    		return error(Response.Status.NOT_FOUND, COULD_NOT_FIND_DATAVERSE_BASED_ON_ALIAS_SUPPLIED + alias + ".");
     	}
     	try {
     		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
     		if (!user.isSuperuser()) {
-    			return error(Response.Status.FORBIDDEN, "Superusers only.");
+    			return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
     		}
     	} catch (WrappedResponse wr) {
     		return wr.getResponse();
@@ -2202,12 +2244,12 @@ public class Admin extends AbstractApiBean {
     public Response resetStorageDriver(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
     	Dataverse dataverse = dataverseSvc.findByAlias(alias);
     	if (dataverse == null) {
-    		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+    		return error(Response.Status.NOT_FOUND, COULD_NOT_FIND_DATAVERSE_BASED_ON_ALIAS_SUPPLIED + alias + ".");
     	}
     	try {
     		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
     		if (!user.isSuperuser()) {
-    			return error(Response.Status.FORBIDDEN, "Superusers only.");
+    			return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
     		}
     	} catch (WrappedResponse wr) {
     		return wr.getResponse();
@@ -2223,7 +2265,7 @@ public class Admin extends AbstractApiBean {
     	try {
     		AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
     		if (!user.isSuperuser()) {
-    			return error(Response.Status.FORBIDDEN, "Superusers only.");
+    			return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
     		}
     	} catch (WrappedResponse wr) {
     		return wr.getResponse();
@@ -2239,12 +2281,12 @@ public class Admin extends AbstractApiBean {
     public Response getCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+            return error(Response.Status.NOT_FOUND, COULD_NOT_FIND_DATAVERSE_BASED_ON_ALIAS_SUPPLIED + alias + ".");
         }
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
+                return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -2261,12 +2303,12 @@ public class Admin extends AbstractApiBean {
     public Response setCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias, @QueryParam("name") String name) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+            return error(Response.Status.NOT_FOUND, COULD_NOT_FIND_DATAVERSE_BASED_ON_ALIAS_SUPPLIED + alias + ".");
         }
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
+                return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -2292,12 +2334,12 @@ public class Admin extends AbstractApiBean {
     public Response resetCurationLabelSet(@Context ContainerRequestContext crc, @PathParam("alias") String alias) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+            return error(Response.Status.NOT_FOUND, COULD_NOT_FIND_DATAVERSE_BASED_ON_ALIAS_SUPPLIED + alias + ".");
         }
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
+                return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -2313,7 +2355,7 @@ public class Admin extends AbstractApiBean {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
+                return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -2347,7 +2389,7 @@ public class Admin extends AbstractApiBean {
             JsonArray jsonArray = jsonObject.getJsonArray("messageTexts");
             for (int i = 0; i < jsonArray.size(); i++) {
                 JsonObject obj = (JsonObject) jsonArray.get(i);
-                String message = obj.getString("message");
+                String message = obj.getString(MESSAGE);
                 String lang = obj.getString("lang");
                 BannerMessageText messageText = new BannerMessageText();
                 messageText.setMessage(message);
@@ -2358,13 +2400,13 @@ public class Admin extends AbstractApiBean {
             bannerMessageService.save(toAdd);
 
             JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder()
-                .add("message", "Banner Message added successfully.")
+                .add(MESSAGE, "Banner Message added successfully.")
                 .add("id", toAdd.getId());
 
             return ok(jsonObjectBuilder);
 
         } catch (Exception e) {
-            logger.warning("Unexpected Exception: " + e.getMessage());
+            logger.warning(UNEXPECTED_EXCEPTION + e.getMessage());
             return error(Status.BAD_REQUEST, "Add Banner Message unexpected exception: invalid or missing JSON object.");
         }
 
@@ -2376,11 +2418,11 @@ public class Admin extends AbstractApiBean {
 
         BannerMessage message = em.find(BannerMessage.class, id);
         if (message == null) {
-            return error(Response.Status.NOT_FOUND, "Message id = " + id + " not found.");
+            return error(Response.Status.NOT_FOUND, "Message id = " + id + NOT_FOUND);
         }
         bannerMessageService.deleteBannerMessage(id);
 
-        return ok("Message id =  " + id + " deleted.");
+        return ok("Message id =  " + id + DELETED);
 
     }
 
@@ -2389,7 +2431,7 @@ public class Admin extends AbstractApiBean {
     public Response deactivateBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
         BannerMessage message = em.find(BannerMessage.class, id);
         if (message == null) {
-            return error(Response.Status.NOT_FOUND, "Message id = " + id + " not found.");
+            return error(Response.Status.NOT_FOUND, "Message id = " + id + NOT_FOUND);
         }
         bannerMessageService.deactivateBannerMessage(id);
 
@@ -2481,8 +2523,8 @@ public class Admin extends AbstractApiBean {
             deleteQuery.executeUpdate();
             return ok("Thumbnail Failure Flag cleared for file id=: " + df.getId() + ".");
         } catch (WrappedResponse r) {
-            logger.info("Could not find file with the id: " + fileId);
-            return error(Status.BAD_REQUEST, "Could not find file with the id: " + fileId);
+            logger.info(COULD_NOT_FIND_FILE_WITH_THE_ID + fileId);
+            return error(Status.BAD_REQUEST, COULD_NOT_FIND_FILE_WITH_THE_ID + fileId);
         }
     }
 
@@ -2496,7 +2538,7 @@ public class Admin extends AbstractApiBean {
         try {
             AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
             if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
+                return error(Response.Status.FORBIDDEN, SUPERUSERS_ONLY);
             }
         } catch (WrappedResponse wr) {
             return wr.getResponse();

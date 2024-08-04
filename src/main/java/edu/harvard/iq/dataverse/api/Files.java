@@ -78,6 +78,14 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 @Path("files")
 public class Files extends AbstractApiBean {
 
+    private static final String DATAFILE = "Datafile ";
+
+    private static final String FILE_NOT_FOUND_FOR_GIVEN_ID = "File not found for given id.";
+
+    private static final String FORCE_REPLACE = "forceReplace";
+
+    private static final String RESTRICT = "restrict";
+
     @EJB
     DatasetServiceBean datasetService;
     @EJB
@@ -215,8 +223,8 @@ public class Files extends AbstractApiBean {
             try {
                 jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
                 // (2a) Check for optional "forceReplace"
-                if ((jsonObj.has("forceReplace")) && (!jsonObj.get("forceReplace").isJsonNull())) {
-                    forceReplace = jsonObj.get("forceReplace").getAsBoolean();
+                if ((jsonObj.has(FORCE_REPLACE)) && (!jsonObj.get(FORCE_REPLACE).isJsonNull())) {
+                    forceReplace = jsonObj.get(FORCE_REPLACE).getAsBoolean();
                     if (forceReplace == null) {
                         forceReplace = false;
                     }
@@ -418,8 +426,8 @@ public class Files extends AbstractApiBean {
                 JsonObject jsonObj = null;
                 try {
                     jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
-                    if ((jsonObj.has("restrict")) && (!jsonObj.get("restrict").isJsonNull())) {
-                        Boolean restrict = jsonObj.get("restrict").getAsBoolean();
+                    if ((jsonObj.has(RESTRICT)) && (!jsonObj.get(RESTRICT).isJsonNull())) {
+                        Boolean restrict = jsonObj.get(RESTRICT).getAsBoolean();
 
                         if (restrict != df.getFileMetadata().isRestricted()) {
                             commandEngine.submit(new RestrictFileCommand(df, req, restrict));
@@ -634,7 +642,7 @@ public class Files extends AbstractApiBean {
             return error(BAD_REQUEST, "Could not find datafile with id " + id);
         }
         if (dataFile == null) {
-            return error(Response.Status.NOT_FOUND, "File not found for given id.");
+            return error(Response.Status.NOT_FOUND, FILE_NOT_FOUND_FOR_GIVEN_ID);
         }
         if (!dataFile.isTabularData()) {
             // Ingest never succeeded, either there was a failure or this is not a tabular
@@ -653,7 +661,7 @@ public class Files extends AbstractApiBean {
                 dataFile.setIngestDone();
                 dataFile.setIngestReport(null);
                 fileService.save(dataFile);
-                return ok("Datafile " + dataFile.getId() + " uningested.");
+                return ok(DATAFILE + dataFile.getId() + " uningested.");
             } else {
                 return error(BAD_REQUEST,
                         BundleUtil.getStringFromBundle("Cannot uningest non-tabular file."));
@@ -666,7 +674,7 @@ public class Files extends AbstractApiBean {
                 dataFile = fileService.find(dataFileId);
                 Dataset theDataset = dataFile.getOwner();
                 exportDatasetMetadata(settingsService, theDataset);
-                return ok("Datafile " + dataFileId + " uningested.");
+                return ok(DATAFILE + dataFileId + " uningested.");
             } catch (WrappedResponse wr) {
                 return wr.getResponse();
             }
@@ -699,7 +707,7 @@ public class Files extends AbstractApiBean {
         try {
             dataFile = findDataFileOrDie(id);
         } catch (WrappedResponse ex) {
-            return error(Response.Status.NOT_FOUND, "File not found for given id.");
+            return error(Response.Status.NOT_FOUND, FILE_NOT_FOUND_FOR_GIVEN_ID);
         }
 
         Dataset dataset = dataFile.getOwner();
@@ -746,7 +754,7 @@ public class Files extends AbstractApiBean {
             
             return ok(status);
         }
-        return ok("Datafile " + id + " queued for ingest");
+        return ok(DATAFILE + id + " queued for ingest");
 
     }
 
@@ -870,7 +878,7 @@ public class Files extends AbstractApiBean {
         try {
             dataFile = findDataFileOrDie(dataFileId);
         } catch (WrappedResponse e) {
-            return notFound("File not found for given id.");
+            return notFound(FILE_NOT_FOUND_FOR_GIVEN_ID);
         }
         if (dataFile.isRestricted() || FileUtil.isActivelyEmbargoed(dataFile)) {
             DataverseRequest dataverseRequest = createDataverseRequest(getRequestUser(crc));

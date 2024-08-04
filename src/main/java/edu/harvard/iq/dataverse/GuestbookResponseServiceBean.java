@@ -41,6 +41,8 @@ import org.apache.commons.text.StringEscapeUtils;
 @Stateless
 @Named
 public class GuestbookResponseServiceBean {
+    private static final String ORDER_BY_O_RESPONSE_TIME_DESC = " order by o.responseTime desc";
+    private static final String YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
     private static final Logger logger = Logger.getLogger(GuestbookResponseServiceBean.class.getCanonicalName());
 
     @EJB
@@ -114,14 +116,14 @@ public class GuestbookResponseServiceBean {
         if (dataverseId == null) {
             return em.createQuery("select o.id from GuestbookResponse as o order by o.responseTime desc", Long.class).getResultList();
         }
-        return em.createQuery("select o.id from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc", Long.class).getResultList();
+        return em.createQuery("select o.id from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + ORDER_BY_O_RESPONSE_TIME_DESC, Long.class).getResultList();
     }
 
     public List<GuestbookResponse> findAllByGuestbookId(Long guestbookId) {
 
         if (guestbookId == null) {
         } else {
-            return em.createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + " order by o.responseTime desc", GuestbookResponse.class).getResultList();
+            return em.createQuery("select o from GuestbookResponse as o where o.guestbook.id = " + guestbookId + ORDER_BY_O_RESPONSE_TIME_DESC, GuestbookResponse.class).getResultList();
         }
         return null;
     }
@@ -450,9 +452,9 @@ public class GuestbookResponseServiceBean {
         String endTime;
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_YEAR, -30);
-        beginTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cal.getTime());  // Use yesterday as default value
+        beginTime = new SimpleDateFormat(YYYY_MM_DD_HH_MM_SS).format(cal.getTime());  // Use yesterday as default value
         cal.add(Calendar.DAY_OF_YEAR, 31);
-        endTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cal.getTime());
+        endTime = new SimpleDateFormat(YYYY_MM_DD_HH_MM_SS).format(cal.getTime());
         String queryString = "select o.id from GuestbookResponse as o  ";
         if (dataverseId != null) {
             queryString += ", Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " and ";
@@ -475,9 +477,9 @@ public class GuestbookResponseServiceBean {
         String endTime;
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_YEAR, -30);
-        beginTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cal.getTime());  // Use yesterday as default value
+        beginTime = new SimpleDateFormat(YYYY_MM_DD_HH_MM_SS).format(cal.getTime());  // Use yesterday as default value
         cal.add(Calendar.DAY_OF_YEAR, 31);
-        endTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cal.getTime());
+        endTime = new SimpleDateFormat(YYYY_MM_DD_HH_MM_SS).format(cal.getTime());
         String queryString = "select count(o.id) from GuestbookResponse as o  ";
         if (dataverseId != null) {
             queryString += ", DvObject v where o.dataset_id = v.id and v.owner_id = " + dataverseId + " and ";
@@ -507,7 +509,7 @@ public class GuestbookResponseServiceBean {
     }
 
     public List<GuestbookResponse> findAllByDataverse(Long dataverseId) {
-        return em.createQuery("select object(o) from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " order by o.responseTime desc", GuestbookResponse.class).getResultList();
+        return em.createQuery("select object(o) from GuestbookResponse  o, Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + ORDER_BY_O_RESPONSE_TIME_DESC, GuestbookResponse.class).getResultList();
     }
 
     public List<GuestbookResponse> findAllWithin30Days() {
@@ -519,9 +521,9 @@ public class GuestbookResponseServiceBean {
         String endTime;
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_YEAR, -30);
-        beginTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cal.getTime());  // Use yesterday as default value
+        beginTime = new SimpleDateFormat(YYYY_MM_DD_HH_MM_SS).format(cal.getTime());  // Use yesterday as default value
         cal.add(Calendar.DAY_OF_YEAR, 31);
-        endTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cal.getTime());
+        endTime = new SimpleDateFormat(YYYY_MM_DD_HH_MM_SS).format(cal.getTime());
         String queryString = "select object(o) from GuestbookResponse as o  ";
         if (dataverseId != null) {
             queryString += ", Dataset d where o.dataset.id = d.id and d.owner.id = " + dataverseId + " and ";

@@ -49,6 +49,8 @@ import org.apache.commons.text.StringEscapeUtils;
 @Named
 public class ManagePermissionsPage implements java.io.Serializable {
 
+    private static final String PERMISSION_PERMISSIONS_MISSING = "permission.permissionsMissing";
+
     private static final Logger logger = Logger.getLogger(ManagePermissionsPage.class.getCanonicalName());
 
     @EJB
@@ -194,7 +196,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             RoleAssignee assignee = roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier());
             notifyRoleChange(assignee, UserNotification.Type.REVOKEROLE);
         } catch (PermissionException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"), BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(ex.getRequiredPermissions().toString())));
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"), BundleUtil.getStringFromBundle(PERMISSION_PERMISSIONS_MISSING, Arrays.asList(ex.getRequiredPermissions().toString())));
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"));
             logger.log(Level.SEVERE, "Error removing role assignment: " + ex.getMessage(), ex);
@@ -354,7 +356,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                     JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.defaultPermissionDataverseUpdated"));
                 } catch (PermissionException ex) {
                     JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"),
-                            BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(ex.getRequiredPermissions().toString())));
+                            BundleUtil.getStringFromBundle(PERMISSION_PERMISSIONS_MISSING, Arrays.asList(ex.getRequiredPermissions().toString())));
 
                 } catch (CommandException ex) {
                     JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"));
@@ -535,7 +537,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             }
 
         } catch (PermissionException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeAssigned"), BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(ex.getRequiredPermissions().toString())));
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeAssigned"), BundleUtil.getStringFromBundle(PERMISSION_PERMISSIONS_MISSING, Arrays.asList(ex.getRequiredPermissions().toString())));
         } catch (CommandException ex) {
             List<String> args = Arrays.asList(
                     r.getName(),
@@ -598,7 +600,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 setRole(commandEngine.submit(new CreateRoleCommand(role, dvRequestService.getDataverseRequest(), (Dataverse) role.getOwner())));
                 JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.roleWas", Arrays.asList(roleState)));
             } catch (PermissionException ex) {
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotSaved"), BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(ex.getRequiredPermissions().toString())));
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotSaved"), BundleUtil.getStringFromBundle(PERMISSION_PERMISSIONS_MISSING, Arrays.asList(ex.getRequiredPermissions().toString())));
             } catch (CommandException ex) {
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotSaved").concat(" " + ex.getMessage()));
                 logger.log(Level.SEVERE, "Error saving role: " + ex.getMessage(), ex);

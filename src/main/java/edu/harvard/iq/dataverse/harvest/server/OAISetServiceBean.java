@@ -43,6 +43,7 @@ import org.apache.solr.common.SolrDocumentList;
 @Stateless
 @Named
 public class OAISetServiceBean implements java.io.Serializable {
+    private static final String AND = " AND ";
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -258,13 +259,13 @@ public class OAISetServiceBean implements java.io.Serializable {
         // to search on global ids; which we will most likely need. 
         query = SearchUtil.sanitizeQuery(query);
         // fix case in "and" and "or" operators: 
-        query = query.replaceAll(" [Aa][Nn][Dd] ", " AND ");
+        query = query.replaceAll(" [Aa][Nn][Dd] ", AND);
         query = query.replaceAll(" [Oo][Rr] ", " OR ");
         query = "(" + query + ")";
         // append the search clauses that limit the search to a) datasets
         // b) published and c) local: 
         // SearchFields.TYPE
-        query = query.concat(" AND " + SearchFields.TYPE + ":" + SearchConstants.DATASETS + " AND " + SearchFields.IS_HARVESTED + ":" + false + " AND " + SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.PUBLISHED_STRING);
+        query = query.concat(AND + SearchFields.TYPE + ":" + SearchConstants.DATASETS + AND + SearchFields.IS_HARVESTED + ":" + false + AND + SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.PUBLISHED_STRING);
 
         return query;
     }

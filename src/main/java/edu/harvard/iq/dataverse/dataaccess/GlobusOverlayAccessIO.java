@@ -63,6 +63,11 @@ import jakarta.json.JsonObjectBuilder;
  * 
  */
 public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOverlayAccessIO<T> implements GlobusAccessibleStore {
+    private static final String WAS = " was ";
+    private static final String SAVE_PATH_NOT_IMPLEMENTED_IN_THIS_STORAGE_DRIVER = ": savePath() not implemented in this storage driver.";
+    private static final String AUTHORIZATION = "Authorization";
+    private static final String BEARER = "Bearer ";
+    private static final String RESPONSE_FROM = "Response from ";
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.GlobusOverlayAccessIO");
 
     /*
@@ -205,12 +210,12 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                     + "/ls?path=" + endpointPath + relativeDirectoryPath + "&filter=name:" + filename);
             HttpGet get = new HttpGet(absoluteURI);
 
-            get.addHeader("Authorization", "Bearer " + globusAccessToken);
+            get.addHeader(AUTHORIZATION, BEARER + globusAccessToken);
             CloseableHttpResponse response = getSharedHttpClient().execute(get, localContext);
             if (response.getStatusLine().getStatusCode() == 200) {
                 // Get reponse as string
                 String responseString = EntityUtils.toString(response.getEntity());
-                logger.fine("Response from " + get.getURI().toString() + " is: " + responseString);
+                logger.fine(RESPONSE_FROM + get.getURI().toString() + " is: " + responseString);
                 JsonObject responseJson = JsonUtil.getJsonObject(responseString);
                 JsonArray dataArray = responseJson.getJsonArray("DATA");
                 if (dataArray != null && dataArray.size() != 0) {
@@ -218,7 +223,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                     return (long) responseJson.getJsonArray("DATA").getJsonObject(0).getJsonNumber("size").longValueExact();
                 }
             } else {
-                logger.warning("Response from " + get.getURI().toString() + " was "
+                logger.warning(RESPONSE_FROM + get.getURI().toString() + WAS
                         + response.getStatusLine().getStatusCode());
                 logger.fine(EntityUtils.toString(response.getEntity()));
             }
@@ -264,12 +269,12 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
             absoluteURI = new URI("https://transfer.api.globusonline.org/v0.10/submission_id");
             HttpGet get = new HttpGet(absoluteURI);
 
-            get.addHeader("Authorization", "Bearer " + globusAccessToken);
+            get.addHeader(AUTHORIZATION, BEARER + globusAccessToken);
             CloseableHttpResponse response = getSharedHttpClient().execute(get, localContext);
             if (response.getStatusLine().getStatusCode() == 200) {
                 // Get reponse as string
                 String responseString = EntityUtils.toString(response.getEntity());
-                logger.fine("Response from " + get.getURI().toString() + " is: " + responseString);
+                logger.fine(RESPONSE_FROM + get.getURI().toString() + " is: " + responseString);
                 JsonObject responseJson = JsonUtil.getJsonObject(responseString);
                 String submissionId = responseJson.getString("value");
                 logger.fine("submission_id for delete is: " + submissionId);
@@ -280,7 +285,7 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                         .add("DATA", Json.createArrayBuilder().add(Json.createObjectBuilder().add("DATA_TYPE", "delete_item").add("path",
                                 endpointPath + relativeDirectoryPath + "/" + filename)));
                 post.setHeader("Content-Type", "application/json");
-                post.addHeader("Authorization", "Bearer " + globusAccessToken);
+                post.addHeader(AUTHORIZATION, BEARER + globusAccessToken);
                 String taskJson = JsonUtil.prettyPrint(taskJsonBuilder.build());
                 logger.fine("Sending: " + taskJson);
                 post.setEntity(new StringEntity(taskJson, "utf-8"));
@@ -297,13 +302,13 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                     logger.warning("Duplicate Globus delete: " + EntityUtils.toString(postResponse.getEntity()));
                     break;
                 default:
-                    logger.warning("Response from " + post.getURI().toString() + " was "
+                    logger.warning(RESPONSE_FROM + post.getURI().toString() + WAS
                             + postResponse.getStatusLine().getStatusCode());
                     logger.fine(EntityUtils.toString(postResponse.getEntity()));
                 }
 
             } else {
-                logger.warning("Response from " + get.getURI().toString() + " was "
+                logger.warning(RESPONSE_FROM + get.getURI().toString() + WAS
                         + response.getStatusLine().getStatusCode());
                 logger.fine(EntityUtils.toString(response.getEntity()));
             }
@@ -484,25 +489,25 @@ public class GlobusOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     @Override
     public Path getFileSystemPath() throws IOException {
         throw new UnsupportedDataAccessOperationException(
-                this.getClass().getName() + ": savePath() not implemented in this storage driver.");
+                this.getClass().getName() + SAVE_PATH_NOT_IMPLEMENTED_IN_THIS_STORAGE_DRIVER);
     }
 
     @Override
     public void savePath(Path fileSystemPath) throws IOException {
         throw new UnsupportedDataAccessOperationException(
-                this.getClass().getName() + ": savePath() not implemented in this storage driver.");
+                this.getClass().getName() + SAVE_PATH_NOT_IMPLEMENTED_IN_THIS_STORAGE_DRIVER);
     }
 
     @Override
     public void saveInputStream(InputStream inputStream) throws IOException {
         throw new UnsupportedDataAccessOperationException(
-                this.getClass().getName() + ": savePath() not implemented in this storage driver.");
+                this.getClass().getName() + SAVE_PATH_NOT_IMPLEMENTED_IN_THIS_STORAGE_DRIVER);
     }
 
     @Override
     public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
         throw new UnsupportedDataAccessOperationException(
-                this.getClass().getName() + ": savePath() not implemented in this storage driver.");
+                this.getClass().getName() + SAVE_PATH_NOT_IMPLEMENTED_IN_THIS_STORAGE_DRIVER);
     }
 
 }

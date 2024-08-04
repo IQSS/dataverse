@@ -38,6 +38,12 @@ import org.apache.commons.lang3.StringUtils;
 @Named
 public class DvObjectServiceBean implements java.io.Serializable {
 
+    private static final String AUTHORITY = "authority";
+
+    private static final String IDENTIFIER = "identifier";
+
+    private static final String PROTOCOL = "protocol";
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -135,9 +141,9 @@ public class DvObjectServiceBean implements java.io.Serializable {
     private DvObject runFindByGlobalId(Query query, GlobalId gid, DvObject.DType dtype) {
         DvObject foundDvObject = null;
         try {
-            query.setParameter("identifier", gid.getIdentifier());
-            query.setParameter("protocol", gid.getProtocol());
-            query.setParameter("authority", gid.getAuthority());
+            query.setParameter(IDENTIFIER, gid.getIdentifier());
+            query.setParameter(PROTOCOL, gid.getProtocol());
+            query.setParameter(AUTHORITY, gid.getAuthority());
             query.setParameter("dtype", dtype.getDType());
             foundDvObject = (DvObject) query.getSingleResult();
         } catch (NoResultException e) {
@@ -156,9 +162,9 @@ public class DvObjectServiceBean implements java.io.Serializable {
     private Long runFindIdByGlobalId(Query query, GlobalId gid, DvObject.DType dtype) {
         Long foundDvObject = null;
         try {
-            query.setParameter("identifier", gid.getIdentifier());
-            query.setParameter("protocol", gid.getProtocol());
-            query.setParameter("authority", gid.getAuthority());
+            query.setParameter(IDENTIFIER, gid.getIdentifier());
+            query.setParameter(PROTOCOL, gid.getProtocol());
+            query.setParameter(AUTHORITY, gid.getAuthority());
             query.setParameter("dtype", dtype.getDType());
             foundDvObject = (Long) query.getSingleResult();
         } catch (NoResultException e) {
@@ -177,8 +183,8 @@ public class DvObjectServiceBean implements java.io.Serializable {
     public DvObject findByGlobalId(GlobalId globalId) {
         try {
             return (DvObject) em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
-                    .setParameter("identifier", globalId.getIdentifier())
-                    .setParameter("authority", globalId.getAuthority()).setParameter("protocol", globalId.getProtocol())
+                    .setParameter(IDENTIFIER, globalId.getIdentifier())
+                    .setParameter(AUTHORITY, globalId.getAuthority()).setParameter(PROTOCOL, globalId.getProtocol())
                     .getSingleResult();
         } catch (NoResultException nre) {
             return null;
@@ -187,9 +193,9 @@ public class DvObjectServiceBean implements java.io.Serializable {
 
     public boolean isGlobalIdLocallyUnique(GlobalId globalId) {
         return em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
-            .setParameter("identifier", globalId.getIdentifier())
-            .setParameter("authority", globalId.getAuthority())
-            .setParameter("protocol", globalId.getProtocol())
+            .setParameter(IDENTIFIER, globalId.getIdentifier())
+            .setParameter(AUTHORITY, globalId.getAuthority())
+            .setParameter(PROTOCOL, globalId.getProtocol())
             .getResultList().isEmpty();
     }
 

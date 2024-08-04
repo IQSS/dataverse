@@ -23,6 +23,8 @@ import jakarta.persistence.Query;
 @Named
 public class DataverseFieldTypeInputLevelServiceBean {
 
+    private static final String DATAVERSE_ID = "dataverseId";
+
 //    private static final Logger logger = Logger.getLogger(DataverseFieldTypeInputLevelServiceBean.class.getCanonicalName());
     public static final LruCache<Long, List<DataverseFieldTypeInputLevel>> cache = new LruCache<>();
 
@@ -34,7 +36,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
 
         if (res == null) {
             res = em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseId", DataverseFieldTypeInputLevel.class)
-                .setParameter("dataverseId", dataverseId)
+                .setParameter(DATAVERSE_ID, dataverseId)
                 .getResultList();
             cache.put(dataverseId, res);
         }
@@ -68,7 +70,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
         try {
             return em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdAndDatasetFieldTypeIdList", DataverseFieldTypeInputLevel.class)
                     .setParameter("datasetFieldIdList", datasetFieldIdList)
-                    .setParameter("dataverseId", dataverseId)
+                    .setParameter(DATAVERSE_ID, dataverseId)
                     .getResultList();
             /*List res = query.getResultList();
             msg("Number of results: " + res.size());
@@ -80,7 +82,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
 
     public DataverseFieldTypeInputLevel findByDataverseIdDatasetFieldTypeId(Long dataverseId, Long datasetFieldTypeId) {
         Query query = em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdDatasetFieldTypeId", DataverseFieldTypeInputLevel.class);
-        query.setParameter("dataverseId", dataverseId);
+        query.setParameter(DATAVERSE_ID, dataverseId);
         query.setParameter("datasetFieldTypeId", datasetFieldTypeId);
         try {
             return (DataverseFieldTypeInputLevel) query.getSingleResult();
@@ -91,7 +93,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
 
     public List<DataverseFieldTypeInputLevel> findRequiredByDataverseId(Long dataverseId) {
         Query query = em.createNamedQuery("DataverseFieldTypeInputLevel.findRequiredByDataverseId", DataverseFieldTypeInputLevel.class);
-        query.setParameter("dataverseId", dataverseId);
+        query.setParameter(DATAVERSE_ID, dataverseId);
         try {
             return query.getResultList();
         } catch (NoResultException nre) {

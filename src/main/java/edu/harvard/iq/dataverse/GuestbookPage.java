@@ -34,6 +34,10 @@ import org.apache.commons.lang3.StringUtils;
 @Named("GuestbookPage")
 public class GuestbookPage implements java.io.Serializable {
 
+    private static final String GUESTBOOK_SAVE_FAIL = "guestbook.save.fail";
+
+    private static final String OPTIONS = "options";
+
     private static final Logger logger = Logger.getLogger(GuestbookPage.class.getCanonicalName());
 
     @EJB
@@ -217,7 +221,7 @@ public class GuestbookPage implements java.io.Serializable {
 
     public void toggleQuestionType(CustomQuestion questionIn) {
         if (questionIn.getCustomQuestionValues() != null && questionIn.getCustomQuestionValues().isEmpty()
-                && questionIn.getQuestionType() != null && questionIn.getQuestionType().equals("options")) {
+                && questionIn.getQuestionType() != null && questionIn.getQuestionType().equals(OPTIONS)) {
             questionIn.setCustomQuestionValues(new ArrayList<>());
             CustomQuestionValue addCQV = new CustomQuestionValue();
             addCQV.setCustomQuestion(questionIn);
@@ -248,7 +252,7 @@ public class GuestbookPage implements java.io.Serializable {
             }
 
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
-                if (cq != null && cq.getQuestionType().equals("options")) {
+                if (cq != null && cq.getQuestionType().equals(OPTIONS)) {
                     Iterator<CustomQuestionValue> cqvIt = cq.getCustomQuestionValues().iterator();
                     while (cqvIt.hasNext()) {
                         CustomQuestionValue cqv = cqvIt.next();
@@ -260,13 +264,13 @@ public class GuestbookPage implements java.io.Serializable {
             }
 
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
-                if (cq != null && cq.getQuestionType().equals("options")) {
+                if (cq != null && cq.getQuestionType().equals(OPTIONS)) {
                     if (cq.getCustomQuestionValues() == null || cq.getCustomQuestionValues().isEmpty()) {
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("guestbook.save.fail"), BundleUtil.getStringFromBundle("guestbook.option.msg") ));
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle(GUESTBOOK_SAVE_FAIL), BundleUtil.getStringFromBundle("guestbook.option.msg") ));
                         return null;
                     }
                     if (cq.getCustomQuestionValues().size() == 1) {
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("guestbook.save.fail"), BundleUtil.getStringFromBundle("guestbook.option.msg") ));
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle(GUESTBOOK_SAVE_FAIL), BundleUtil.getStringFromBundle("guestbook.option.msg") ));
                         return null;
                     }
                 }
@@ -313,14 +317,14 @@ public class GuestbookPage implements java.io.Serializable {
                 error.append(cause.getMessage()).append(" ");
             }
             //
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("guestbook.save.fail"), " - " + error.toString()));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle(GUESTBOOK_SAVE_FAIL), " - " + error.toString()));
             logger.info("Guestbook Page EJB Exception. Dataverse: " + dataverse.getName());
             logger.info(error.toString());
             return null;
         } catch (CommandException ex) {
             logger.info("Guestbook Page Command Exception. Dataverse: " + dataverse.getName());
             logger.info(ex.toString());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("guestbook.save.fail"), " - " + ex.toString()));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle(GUESTBOOK_SAVE_FAIL), " - " + ex.toString()));
             //logger.severe(ex.getMessage());
         }
         editMode = null;

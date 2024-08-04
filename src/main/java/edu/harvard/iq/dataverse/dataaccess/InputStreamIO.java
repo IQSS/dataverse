@@ -23,6 +23,10 @@ import java.util.logging.Logger;
  */
 public class InputStreamIO extends StorageIO<DataFile> {
 
+    private static final String INPUT_STREAM_IO_THIS_IS_A_STREAM_ONLY_DATA_ACCESS_IO_OBJECT_IT_HAS_NO_AUXILIARY_OBJECTS_ASSOCIATED_WITH_IT = "InputStreamIO: this is a stream-only DataAccess IO object, it has no auxiliary objects associated with it.";
+
+    private static final String INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER = "InputStreamIO: this method is not supported in this DataAccess driver.";
+
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.InputStreamIO");
 
     public InputStreamIO(InputStream inputStream, long size) throws IOException {
@@ -46,82 +50,82 @@ public class InputStreamIO extends StorageIO<DataFile> {
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
     public void savePath(Path fileSystemPath) throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
     public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
-        throw new UnsupportedOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
     public void saveInputStream(InputStream inputStream) throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
     public void delete() throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
     public Channel openAuxChannel(String auxItemTag, DataAccessOption... options) throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
     public boolean isAuxObjectCached(String auxItemTag) throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
     public long getAuxObjectSize(String auxItemTag) throws IOException {
-       throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+       throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override public Path getAuxObjectAsPath(String auxItemTag) throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
     public void backupAsAux(String auxItemTag) throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
     public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException {
-        throw new UnsupportedOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
     public List<String>listAuxObjects() throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this is a stream-only DataAccess IO object, it has no auxiliary objects associated with it.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_IS_A_STREAM_ONLY_DATA_ACCESS_IO_OBJECT_IT_HAS_NO_AUXILIARY_OBJECTS_ASSOCIATED_WITH_IT);
     }
 
 
     @Override
     public void deleteAuxObject(String auxItemTag) throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this is a stream-only DataAccess IO object, it has no auxiliary objects associated with it.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_IS_A_STREAM_ONLY_DATA_ACCESS_IO_OBJECT_IT_HAS_NO_AUXILIARY_OBJECTS_ASSOCIATED_WITH_IT);
     }
 
     @Override
     public void deleteAllAuxObjects() throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this is a stream-only DataAccess IO object, it has no auxiliary objects associated with it.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_IS_A_STREAM_ONLY_DATA_ACCESS_IO_OBJECT_IT_HAS_NO_AUXILIARY_OBJECTS_ASSOCIATED_WITH_IT);
     }
 
 
@@ -137,7 +141,7 @@ public class InputStreamIO extends StorageIO<DataFile> {
 
     @Override
     public boolean exists() throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
@@ -152,12 +156,12 @@ public class InputStreamIO extends StorageIO<DataFile> {
 
     @Override
     public InputStream getAuxFileAsInputStream(String auxItemTag) {
-        throw new UnsupportedOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
     public void revertBackupAsAux(String auxItemTag) throws IOException {
-                throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+                throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
     @Override
@@ -167,7 +171,7 @@ public class InputStreamIO extends StorageIO<DataFile> {
 
     @Override
     public long retrieveSizeFromMedia() throws UnsupportedDataAccessOperationException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+        throw new UnsupportedDataAccessOperationException(INPUT_STREAM_IO_THIS_METHOD_IS_NOT_SUPPORTED_IN_THIS_DATA_ACCESS_DRIVER);
     }
 
 }

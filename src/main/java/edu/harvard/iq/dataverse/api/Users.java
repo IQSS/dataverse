@@ -46,6 +46,12 @@ import jakarta.ws.rs.core.Variant;
 @Path("users")
 public class Users extends AbstractApiBean {
 
+    private static final String NOT_FOUND_IN_AUTHENTICATED_USER = " not found in AuthenticatedUser";
+
+    private static final String TOKEN_FOR = "Token for ";
+
+    private static final String USER = "User ";
+
     private static final Logger logger = Logger.getLogger(Users.class.getName());
 
     @POST
@@ -70,12 +76,12 @@ public class Users extends AbstractApiBean {
 
         AuthenticatedUser baseAuthenticatedUser = authSvc.getAuthenticatedUser(baseIdentifier);
         if (baseAuthenticatedUser == null) {
-            return error(Response.Status.BAD_REQUEST, "User " + baseIdentifier + " not found in AuthenticatedUser");
+            return error(Response.Status.BAD_REQUEST, USER + baseIdentifier + NOT_FOUND_IN_AUTHENTICATED_USER);
         }
 
         AuthenticatedUser consumedAuthenticatedUser = authSvc.getAuthenticatedUser(consumedIdentifier);
         if (consumedAuthenticatedUser == null) {
-            return error(Response.Status.BAD_REQUEST, "User " + consumedIdentifier + " not found in AuthenticatedUser");
+            return error(Response.Status.BAD_REQUEST, USER + consumedIdentifier + NOT_FOUND_IN_AUTHENTICATED_USER);
         }
 
         try {
@@ -109,7 +115,7 @@ public class Users extends AbstractApiBean {
 
         AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(oldIdentifier);
         if (authenticatedUser == null) {
-            return error(Response.Status.BAD_REQUEST, "User " + oldIdentifier + " not found in AuthenticatedUser");
+            return error(Response.Status.BAD_REQUEST, USER + oldIdentifier + NOT_FOUND_IN_AUTHENTICATED_USER);
         }
 
         try {
@@ -132,11 +138,11 @@ public class Users extends AbstractApiBean {
              au = (AuthenticatedUser) u;
         } catch (ClassCastException e) {
             //if we have a non-authenticated user we stop here.
-            return notFound("Token for " + u.getIdentifier() + " not eligible for deletion.");
+            return notFound(TOKEN_FOR + u.getIdentifier() + " not eligible for deletion.");
         }
 
         authSvc.removeApiToken(au);
-        return ok("Token for " + au.getUserIdentifier() + " deleted.");
+        return ok(TOKEN_FOR + au.getUserIdentifier() + " deleted.");
 
     }
 
@@ -165,7 +171,7 @@ public class Users extends AbstractApiBean {
              au = (AuthenticatedUser) u;
         } catch (ClassCastException e) {
             //if we have a non-authenticated user we stop here.
-            return notFound("Token for " + u.getIdentifier() + " is not eligible for recreation.");
+            return notFound(TOKEN_FOR + u.getIdentifier() + " is not eligible for recreation.");
         }
 
 

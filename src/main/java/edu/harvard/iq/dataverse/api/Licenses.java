@@ -32,6 +32,18 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 @Path("licenses")
 public class Licenses extends AbstractApiBean {
 
+    private static final String NOT_FOUND = " not found";
+
+    private static final String AS_ID = ") as id: ";
+
+    private static final String LICENSE = "License ";
+
+    private static final String LICENSE_WITH_ID = "License with ID ";
+
+    private static final String API_KEY_REQUIRED = "api key required";
+
+    private static final String MUST_BE_SUPERUSER = "must be superuser";
+
     private static final Logger logger = Logger.getLogger(Licenses.class.getName());
 
     @GET
@@ -49,7 +61,7 @@ public class Licenses extends AbstractApiBean {
     public Response getLicenseById(@PathParam("id") long id) {
         License license = licenseSvc.getById(id);
         if (license == null)
-            return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
+            return error(Response.Status.NOT_FOUND, LICENSE_WITH_ID + id + NOT_FOUND);
         return ok(json(license));
     }
 
@@ -61,15 +73,15 @@ public class Licenses extends AbstractApiBean {
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (!authenticatedUser.isSuperuser()) {
-                return error(Status.FORBIDDEN, "must be superuser");
+                return error(Status.FORBIDDEN, MUST_BE_SUPERUSER);
             }
         } catch (WrappedResponse e) {
-            return error(Status.UNAUTHORIZED, "api key required");
+            return error(Status.UNAUTHORIZED, API_KEY_REQUIRED);
         }
         try {
             License l = licenseSvc.save(license);
             actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "licenseAdded")
-                    .setInfo("License " + l.getName() + "(" + l.getUri() + ") as id: " + l.getId() + ".")
+                    .setInfo(LICENSE + l.getName() + "(" + l.getUri() + AS_ID + l.getId() + ".")
                     .setUserIdentifier(authenticatedUser.getIdentifier()));
             return created("/api/licenses/" + l.getId(), Json.createObjectBuilder().add("message", "License created"));
         } catch (WrappedResponse e) {
@@ -97,19 +109,19 @@ public class Licenses extends AbstractApiBean {
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (!authenticatedUser.isSuperuser()) {
-                return error(Status.FORBIDDEN, "must be superuser");
+                return error(Status.FORBIDDEN, MUST_BE_SUPERUSER);
             }
         } catch (WrappedResponse e) {
-            return error(Status.UNAUTHORIZED, "api key required");
+            return error(Status.UNAUTHORIZED, API_KEY_REQUIRED);
         }
         try {
             if (licenseSvc.setDefault(id) == 0) {
-                return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
+                return error(Response.Status.NOT_FOUND, LICENSE_WITH_ID + id + NOT_FOUND);
             }
             License license = licenseSvc.getById(id);
             actionLogSvc
                     .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "defaultLicenseChanged")
-                            .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id
+                            .setInfo(LICENSE + license.getName() + "(" + license.getUri() + AS_ID + id
                                     + "is now the default license.")
                             .setUserIdentifier(authenticatedUser.getIdentifier()));
             return ok("Default license ID set to " + id);
@@ -129,18 +141,18 @@ public class Licenses extends AbstractApiBean {
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (!authenticatedUser.isSuperuser()) {
-                return error(Status.FORBIDDEN, "must be superuser");
+                return error(Status.FORBIDDEN, MUST_BE_SUPERUSER);
             }
         } catch (WrappedResponse e) {
-            return error(Status.UNAUTHORIZED, "api key required");
+            return error(Status.UNAUTHORIZED, API_KEY_REQUIRED);
         }
         try {
             if (licenseSvc.setActive(id, active) == 0) {
-                return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
+                return error(Response.Status.NOT_FOUND, LICENSE_WITH_ID + id + NOT_FOUND);
             }
             License license = licenseSvc.getById(id);
             actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "licenseStateChanged")
-                    .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id
+                    .setInfo(LICENSE + license.getName() + "(" + license.getUri() + AS_ID + id
                             + "has been made " + (active ? "active" : "inactive"))
                     .setUserIdentifier(authenticatedUser.getIdentifier()));
             return ok("License ID " + id + " set to " + (active ? "active" : "inactive"));
@@ -160,19 +172,19 @@ public class Licenses extends AbstractApiBean {
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (!authenticatedUser.isSuperuser()) {
-                return error(Status.FORBIDDEN, "must be superuser");
+                return error(Status.FORBIDDEN, MUST_BE_SUPERUSER);
             }
         } catch (WrappedResponse e) {
-            return error(Status.UNAUTHORIZED, "api key required");
+            return error(Status.UNAUTHORIZED, API_KEY_REQUIRED);
         }
         try {
             if (licenseSvc.setSortOrder(id, sortOrder) == 0) {
-                return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
+                return error(Response.Status.NOT_FOUND, LICENSE_WITH_ID + id + NOT_FOUND);
             }
             License license = licenseSvc.getById(id);
             actionLogSvc
                     .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "sortOrderLicenseChanged")
-                            .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id
+                            .setInfo(LICENSE + license.getName() + "(" + license.getUri() + AS_ID + id
                                     + "has now sort order " + sortOrder + ".")
                             .setUserIdentifier(authenticatedUser.getIdentifier()));
             return ok("License ID " + id + " sort order set to " + sortOrder);
@@ -192,22 +204,22 @@ public class Licenses extends AbstractApiBean {
         try {
             authenticatedUser = getRequestAuthenticatedUserOrDie(crc);
             if (!authenticatedUser.isSuperuser()) {
-                return error(Status.FORBIDDEN, "must be superuser");
+                return error(Status.FORBIDDEN, MUST_BE_SUPERUSER);
             }
         } catch (WrappedResponse e) {
-            return error(Status.UNAUTHORIZED, "api key required");
+            return error(Status.UNAUTHORIZED, API_KEY_REQUIRED);
         }
         try {
             License license = licenseSvc.getById(id);
             if (license == null) {
-                return error(Status.NOT_FOUND, "License with ID " + id + " not found.");
+                return error(Status.NOT_FOUND, LICENSE_WITH_ID + id + " not found.");
             } else if (license.isDefault()) {
                 return error(Status.CONFLICT, "Please make sure the license is not the default before deleting it.");
             } else {
                 if (licenseSvc.deleteById(id) == 1) {
                     actionLogSvc
                             .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "licenseDeleted")
-                                    .setInfo("License " + license.getName() + "(" + license.getUri() + ") as id: " + id
+                                    .setInfo(LICENSE + license.getName() + "(" + license.getUri() + AS_ID + id
                                             + " has been deleted.")
                                     .setUserIdentifier(authenticatedUser.getIdentifier()));
                     return ok("OK. License with ID " + id + " was deleted.");

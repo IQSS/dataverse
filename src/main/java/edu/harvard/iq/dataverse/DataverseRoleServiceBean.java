@@ -34,6 +34,10 @@ import jakarta.persistence.TypedQuery;
 @Named
 public class DataverseRoleServiceBean implements java.io.Serializable {
 
+    private static final String ROLE_ASSIGNMENT_LIST_BY_DEFINITION_POINT_ID = "RoleAssignment.listByDefinitionPointId";
+
+    private static final String DEFINITION_POINT_ID = "definitionPointId";
+
     private static final Logger logger = Logger.getLogger(DataverseRoleServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -138,7 +142,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             em.createNamedQuery("RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId")
                 .setParameter("assigneeIdentifier", assignee.getIdentifier())
                 .setParameter("roleId", role.getId())
-                .setParameter("definitionPointId", defPoint.getId())
+                .setParameter(DEFINITION_POINT_ID, defPoint.getId())
                 .executeUpdate();
             em.refresh(role);
         }
@@ -220,13 +224,13 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     public Set<RoleAssignment> rolesAssignments(DvObject dv) {
         Set<RoleAssignment> ras = new HashSet<>();
         while (!dv.isEffectivelyPermissionRoot()) {
-            ras.addAll(em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
-                .setParameter("definitionPointId", dv.getId()).getResultList());
+            ras.addAll(em.createNamedQuery(ROLE_ASSIGNMENT_LIST_BY_DEFINITION_POINT_ID, RoleAssignment.class)
+                .setParameter(DEFINITION_POINT_ID, dv.getId()).getResultList());
             dv = dv.getOwner();
         }
 
-        ras.addAll(em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
-            .setParameter("definitionPointId", dv.getId()).getResultList());
+        ras.addAll(em.createNamedQuery(ROLE_ASSIGNMENT_LIST_BY_DEFINITION_POINT_ID, RoleAssignment.class)
+            .setParameter(DEFINITION_POINT_ID, dv.getId()).getResultList());
 
         return ras;
     }
@@ -285,9 +289,9 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      */
     public List<RoleAssignment> directRoleAssignments(DvObject dvo) {
         TypedQuery<RoleAssignment> query = em.createNamedQuery(
-            "RoleAssignment.listByDefinitionPointId",
+            ROLE_ASSIGNMENT_LIST_BY_DEFINITION_POINT_ID,
             RoleAssignment.class);
-        query.setParameter("definitionPointId", dvo.getId());
+        query.setParameter(DEFINITION_POINT_ID, dvo.getId());
         return query.getResultList();
     }
 

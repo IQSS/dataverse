@@ -34,6 +34,8 @@ import java.util.zip.ZipOutputStream;
 @Provider
 public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDownloadInstance> {
 
+    private static final String TAB = "\\.tab$";
+
     private static final Logger logger = Logger.getLogger(BundleDownloadInstanceWriter.class.getCanonicalName());
 
 
@@ -64,7 +66,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
 
                     /* First, the tab file itself: */
                     String fileName = accessObject.getFileName();
-                    String zipFileName = fileName.replaceAll("\\.tab$", "-bundle.zip");
+                    String zipFileName = fileName.replaceAll(TAB, "-bundle.zip");
 
                     httpHeaders.add("Content-disposition", "attachment; filename=\"" + zipFileName + "\"");
                     httpHeaders.add("Content-Type", "application/zip; name=\"" + zipFileName + "\"");
@@ -157,7 +159,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
 
                     // And the variable metadata (DDI/XML), if available: 
                     if (di.getFileDDIXML() != null) {
-                        e = new ZipEntry(fileName.replaceAll("\\.tab$", "-ddi.xml"));
+                        e = new ZipEntry(fileName.replaceAll(TAB, "-ddi.xml"));
 
                         zout.putNextEntry(e);
                         zout.write(di.getFileDDIXML().getBytes());
@@ -166,7 +168,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
 
                     // And now the citations: 
                     if (di.getFileCitationEndNote() != null) {
-                        e = new ZipEntry(fileName.replaceAll("\\.tab$", "citation-endnote.xml"));
+                        e = new ZipEntry(fileName.replaceAll(TAB, "citation-endnote.xml"));
 
                         zout.putNextEntry(e);
                         zout.write(di.getFileCitationEndNote().getBytes());
@@ -175,7 +177,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     }
 
                     if (di.getFileCitationRIS() != null) {
-                        e = new ZipEntry(fileName.replaceAll("\\.tab$", "citation-ris.ris"));
+                        e = new ZipEntry(fileName.replaceAll(TAB, "citation-ris.ris"));
 
                         zout.putNextEntry(e);
                         zout.write(di.getFileCitationRIS().getBytes());
@@ -183,7 +185,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     }
 
                     if (di.getFileCitationBibtex() != null) {
-                        e = new ZipEntry(fileName.replaceAll("\\.tab$", "citation-bib.bib"));
+                        e = new ZipEntry(fileName.replaceAll(TAB, "citation-bib.bib"));
 
                         zout.putNextEntry(e);
                         zout.write(di.getFileCitationBibtex().getBytes());

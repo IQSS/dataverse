@@ -69,6 +69,8 @@ import org.apache.solr.client.solrj.SolrServerException;
 @Path("admin/index")
 public class Index extends AbstractApiBean {
 
+    private static final String MESSAGE = "message";
+
     private static final Logger logger = Logger.getLogger(Index.class.getCanonicalName());
 
     @EJB
@@ -171,7 +173,7 @@ public class Index extends AbstractApiBean {
             int dataverseCount = workloadPreview.getInt("dataverseCount");
             int datasetCount = workloadPreview.getInt("datasetCount");
             String status = "indexAllOrSubset has begun of " + dataverseCount + " dataverses and " + datasetCount + " datasets.";
-            response.add("message", status);
+            response.add(MESSAGE, status);
             return ok(response);
         } catch (EJBException ex) {
             Throwable cause = ex;
@@ -308,7 +310,7 @@ public class Index extends AbstractApiBean {
             boolean doNormalSolrDocCleanUp = true;
             indexService.asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
             JsonObjectBuilder data = Json.createObjectBuilder();
-            data.add("message", "Reindexed dataset " + persistentId);
+            data.add(MESSAGE, "Reindexed dataset " + persistentId);
             data.add("id", dataset.getId());
             data.add("persistentId", dataset.getGlobalId().asString());
             JsonArrayBuilder versions = Json.createArrayBuilder();
@@ -534,7 +536,7 @@ public class Index extends AbstractApiBean {
     static String error(String message) {
         JsonObjectBuilder response = Json.createObjectBuilder();
         response.add("status", "ERROR");
-        response.add("message", message);
+        response.add(MESSAGE, message);
 
         return "{\n\t\"status\":\"ERROR\"\n\t\"message\":\"" + message.replaceAll("\"", "\\\\\"").replaceAll("\n", "\\\\n") + "\"\n}";
     }

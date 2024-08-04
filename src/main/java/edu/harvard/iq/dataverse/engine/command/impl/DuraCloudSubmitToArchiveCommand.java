@@ -34,6 +34,8 @@ import org.duracloud.error.ContentStoreException;
 @RequiredPermissions(Permission.PublishDataset)
 public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand implements Command<DatasetVersion> {
 
+    private static final String DATACITE_XML = "_datacite.xml";
+
     private static final Logger logger = Logger.getLogger(DuraCloudSubmitToArchiveCommand.class.getName());
     private static final String DEFAULT_PORT = "443";
     private static final String DEFAULT_CONTEXT = "durastore";
@@ -135,7 +137,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                             Thread.sleep(10);
                             i++;
                         }
-                        String checksum = store.addContent(spaceName, baseFileName + "_datacite.xml", digestInputStream,
+                        String checksum = store.addContent(spaceName, baseFileName + DATACITE_XML, digestInputStream,
                                 -1l, null, null, null);
                         logger.fine("Content: datacite.xml added with checksum: " + checksum);
                         dcThread.join();
@@ -144,7 +146,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                             logger.severe("Failure on " + baseFileName);
                             logger.severe(success ? checksum + " not equal to " + localchecksum : "failed to transfer to DuraCloud");
                             try {
-                                store.deleteContent(spaceName, baseFileName + "_datacite.xml");
+                                store.deleteContent(spaceName, baseFileName + DATACITE_XML);
                             } catch (ContentStoreException cse) {
                                 logger.warning(cse.getMessage());
                             }
@@ -175,7 +177,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                                 logger.severe(success ? checksum + " not equal to " + localchecksum : "failed to transfer to DuraCloud");
                                 try {
                                     store.deleteContent(spaceName, fileName);
-                                    store.deleteContent(spaceName, baseFileName + "_datacite.xml");
+                                    store.deleteContent(spaceName, baseFileName + DATACITE_XML);
                                 } catch (ContentStoreException cse) {
                                     logger.warning(cse.getMessage());
                                 }

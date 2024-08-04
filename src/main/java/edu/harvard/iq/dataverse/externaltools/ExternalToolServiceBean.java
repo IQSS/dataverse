@@ -36,6 +36,8 @@ import jakarta.json.JsonValue;
 @Named
 public class ExternalToolServiceBean {
 
+    private static final String DATA_FILE_ID = "Data file id";
+
     private static final Logger logger = Logger.getLogger(ExternalToolServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -155,7 +157,7 @@ public class ExternalToolServiceBean {
     public boolean meetsRequirements(ExternalTool externalTool, DataFile dataFile) {
         String requirements = externalTool.getRequirements();
         if (requirements == null) {
-            logger.fine("Data file id" + dataFile.getId() + ": no requirements for tool id " + externalTool.getId());
+            logger.fine(DATA_FILE_ID + dataFile.getId() + ": no requirements for tool id " + externalTool.getId());
             return true;
         }
         boolean meetsRequirements = true;
@@ -166,11 +168,11 @@ public class ExternalToolServiceBean {
             String formatVersion = jsonValue.asJsonObject().getString("formatVersion");
             AuxiliaryFile auxFile = auxiliaryFileService.lookupAuxiliaryFile(dataFile, formatTag, formatVersion);
             if (auxFile == null) {
-                logger.fine("Data file id" + dataFile.getId() + ": cannot find required aux file. formatTag=" + formatTag + ". formatVersion=" + formatVersion);
+                logger.fine(DATA_FILE_ID + dataFile.getId() + ": cannot find required aux file. formatTag=" + formatTag + ". formatVersion=" + formatVersion);
                 meetsRequirements = false;
                 break;
             } else {
-                logger.fine("Data file id" + dataFile.getId() + ": found required aux file. formatTag=" + formatTag + ". formatVersion=" + formatVersion);
+                logger.fine(DATA_FILE_ID + dataFile.getId() + ": found required aux file. formatTag=" + formatTag + ". formatVersion=" + formatVersion);
                 meetsRequirements = true;
             }
         }

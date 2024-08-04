@@ -56,6 +56,10 @@ import org.apache.commons.lang3.StringUtils;
 @Named
 public class DatasetServiceBean implements java.io.Serializable {
 
+    private static final String ECLIPSELINK_LEFT_JOIN_FETCH = "eclipselink.left-join-fetch";
+
+    private static final String OWNER_ID = "ownerId";
+
     private static final Logger logger = Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
@@ -116,24 +120,24 @@ public class DatasetServiceBean implements java.io.Serializable {
             return (Dataset) em.createNamedQuery("Dataset.findById")
                     .setParameter("id", pk)
                     // Optimization hints: retrieve all data in one query; this prevents point queries when iterating over the files
-                    .setHint("eclipselink.left-join-fetch", "o.files.ingestRequest")
-                    .setHint("eclipselink.left-join-fetch", "o.files.thumbnailForDataset")
-                    .setHint("eclipselink.left-join-fetch", "o.files.dataTables")
-                    .setHint("eclipselink.left-join-fetch", "o.files.auxiliaryFiles")
-                    .setHint("eclipselink.left-join-fetch", "o.files.ingestReports")
-                    .setHint("eclipselink.left-join-fetch", "o.files.dataFileTags")
-                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas")
-                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.fileCategories")
-                    .setHint("eclipselink.left-join-fetch", "o.files.fileMetadatas.varGroups")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.ingestRequest")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.thumbnailForDataset")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.dataTables")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.auxiliaryFiles")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.ingestReports")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.dataFileTags")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.fileMetadatas")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.fileMetadatas.fileCategories")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.fileMetadatas.varGroups")
                     //.setHint("eclipselink.left-join-fetch", "o.files.guestbookResponses
-                    .setHint("eclipselink.left-join-fetch", "o.files.embargo")
-                    .setHint("eclipselink.left-join-fetch", "o.files.retention")
-                    .setHint("eclipselink.left-join-fetch", "o.files.fileAccessRequests")
-                    .setHint("eclipselink.left-join-fetch", "o.files.owner")
-                    .setHint("eclipselink.left-join-fetch", "o.files.releaseUser")
-                    .setHint("eclipselink.left-join-fetch", "o.files.creator")
-                    .setHint("eclipselink.left-join-fetch", "o.files.alternativePersistentIndentifiers")
-                    .setHint("eclipselink.left-join-fetch", "o.files.roleAssignments")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.embargo")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.retention")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.fileAccessRequests")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.owner")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.releaseUser")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.creator")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.alternativePersistentIndentifiers")
+                    .setHint(ECLIPSELINK_LEFT_JOIN_FETCH, "o.files.roleAssignments")
                     .getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
             return null;
@@ -151,7 +155,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     private List<Dataset> findByOwnerId(Long ownerId, boolean onlyPublished) {
         List<Dataset> retList = new ArrayList<>();
         TypedQuery<Dataset>  query = em.createNamedQuery("Dataset.findByOwnerId", Dataset.class);
-        query.setParameter("ownerId", ownerId);
+        query.setParameter(OWNER_ID, ownerId);
         if (!onlyPublished) {
             return query.getResultList();
         } else {
@@ -172,11 +176,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         List<Long> retList = new ArrayList<>();
         if (!onlyPublished) {
             return em.createNamedQuery("Dataset.findIdByOwnerId")
-                    .setParameter("ownerId", ownerId)
+                    .setParameter(OWNER_ID, ownerId)
                     .getResultList();
         } else {
             List<Dataset> results = em.createNamedQuery("Dataset.findByOwnerId")
-                    .setParameter("ownerId", ownerId).getResultList();
+                    .setParameter(OWNER_ID, ownerId).getResultList();
             for (Dataset ds : results) {
                 if (ds.isReleased() && !ds.isDeaccessioned()) {
                     retList.add(ds.getId());
@@ -364,7 +368,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         if (dsId != null) {
             try {
                 idResults = em.createNamedQuery("Dataset.findIdentifierByOwnerId")
-                                .setParameter("ownerId", dsId).getResultList();
+                                .setParameter(OWNER_ID, dsId).getResultList();
             } catch (NoResultException ex) {
                 logger.log(Level.FINE, "No files found in dataset id {0}. Returning a count of zero.", dsId);
                 return zeroFiles;

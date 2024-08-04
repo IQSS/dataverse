@@ -51,6 +51,18 @@ import org.apache.commons.codec.binary.Hex;
  */
 public class DTAFileReaderSpi extends TabularDataFileReaderSpi {
 
+    private static final String A_1ST_BYTE = "1st byte (";
+
+    private static final String A_2ND_BYTE_IS_NEITHER_0_NOR_1_THIS_FILE_IS_NOT_STATA_DTA_TYPE = "2nd byte is neither 0 nor 1: this file is not stata-dta type";
+
+    private static final String A_3RD_BYTE_IS_NOT_1_GIVEN_FILE_IS_NOT_STATA_DTA_TYPE = "3rd byte is not 1: given file is not stata-dta type";
+
+    private static final String APPLYING_THE_DTA_TEST = "applying the dta test\n";
+
+    private static final String HEX_DUMP_1ST_4BYTES = "hex dump: 1st 4bytes =>";
+
+    private static final String THIS_FILE_IS_STATA_DTA_TYPE = "this file is stata-dta type: ";
+
     private static Map<Byte, String> stataReleaseNumber = new HashMap<>();
 
     static {
@@ -96,7 +108,7 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi {
             throw new IllegalArgumentException("stream == null!");
         }
         BufferedInputStream stream = (BufferedInputStream) source;
-        dbgLog.fine("applying the dta test\n");
+        dbgLog.fine(APPLYING_THE_DTA_TEST);
 
         byte[] b = new byte[DTA_HEADER_SIZE];
 
@@ -113,22 +125,22 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi {
             stream.reset();
         }
 
-       dbgLog.info("hex dump: 1st 4bytes =>" +
+       dbgLog.info(HEX_DUMP_1ST_4BYTES +
                 new String(Hex.encodeHex(b)) + "<-");
 
         if (b[2] != 1) {
-            dbgLog.fine("3rd byte is not 1: given file is not stata-dta type");
+            dbgLog.fine(A_3RD_BYTE_IS_NOT_1_GIVEN_FILE_IS_NOT_STATA_DTA_TYPE);
             return false;
         } else if ((b[1] != 1) && (b[1] != 2)) {
-            dbgLog.fine("2nd byte is neither 0 nor 1: this file is not stata-dta type");
+            dbgLog.fine(A_2ND_BYTE_IS_NEITHER_0_NOR_1_THIS_FILE_IS_NOT_STATA_DTA_TYPE);
             return false;
         } else if (!DTAFileReaderSpi.stataReleaseNumber.containsKey(b[0])) {
-            dbgLog.fine("1st byte (" + b[0] +
+            dbgLog.fine(A_1ST_BYTE + b[0] +
                     ") is not within the ingestable range [rel. 3-10]:" +
                     "this file is NOT stata-dta type");
             return false;
         } else {
-            dbgLog.fine("this file is stata-dta type: " +
+            dbgLog.fine(THIS_FILE_IS_STATA_DTA_TYPE +
                     DTAFileReaderSpi.stataReleaseNumber.get(b[0]) +
                     "(No in byte=" + b[0] + ")");
             return true;
@@ -142,7 +154,7 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi {
             throw new IllegalArgumentException("stream == null!");
         }
 
-        dbgLog.fine("applying the dta test\n");
+        dbgLog.fine(APPLYING_THE_DTA_TEST);
 
         byte[] b = new byte[DTA_HEADER_SIZE];
 
@@ -159,22 +171,22 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi {
             stream.reset();
         }
 
-       dbgLog.info("hex dump: 1st 4bytes =>" +
+       dbgLog.info(HEX_DUMP_1ST_4BYTES +
                 new String(Hex.encodeHex(b)) + "<-");
 
         if (b[2] != 1) {
-            dbgLog.fine("3rd byte is not 1: given file is not stata-dta type");
+            dbgLog.fine(A_3RD_BYTE_IS_NOT_1_GIVEN_FILE_IS_NOT_STATA_DTA_TYPE);
             return false;
         } else if ((b[1] != 1) && (b[1] != 2)) {
-            dbgLog.fine("2nd byte is neither 0 nor 1: this file is not stata-dta type");
+            dbgLog.fine(A_2ND_BYTE_IS_NEITHER_0_NOR_1_THIS_FILE_IS_NOT_STATA_DTA_TYPE);
             return false;
         } else if (!DTAFileReaderSpi.stataReleaseNumber.containsKey(b[0])) {
-            dbgLog.fine("1st byte (" + b[0] +
+            dbgLog.fine(A_1ST_BYTE + b[0] +
                     ") is not within the ingestable range [rel. 3-10]:" +
                     "this file is NOT stata-dta type");
             return false;
         } else {
-            dbgLog.fine("this file is stata-dta type: " +
+            dbgLog.fine(THIS_FILE_IS_STATA_DTA_TYPE +
                     DTAFileReaderSpi.stataReleaseNumber.get(b[0]) +
                     "(No in HEX=" + b[0] + ")");
             return true;
@@ -203,25 +215,25 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi {
 
 			buff.rewind();
 
-			dbgLog.fine("applying the dta test\n");
+			dbgLog.fine(APPLYING_THE_DTA_TEST);
 
 			buff.get(hdr4, 0, 4);
 		}
-       dbgLog.fine("hex dump: 1st 4bytes =>" +
+       dbgLog.fine(HEX_DUMP_1ST_4BYTES +
                 new String(Hex.encodeHex(hdr4)) + "<-");
 
         if (hdr4[2] != 1) {
-            dbgLog.fine("3rd byte is not 1: given file is not stata-dta type");
+            dbgLog.fine(A_3RD_BYTE_IS_NOT_1_GIVEN_FILE_IS_NOT_STATA_DTA_TYPE);
             return false;
         } else if ((hdr4[1] != 1) && (hdr4[1] != 2)) {
-            dbgLog.fine("2nd byte is neither 0 nor 1: this file is not stata-dta type");
+            dbgLog.fine(A_2ND_BYTE_IS_NEITHER_0_NOR_1_THIS_FILE_IS_NOT_STATA_DTA_TYPE);
             return false;
         } else if (!stataReleaseNumber.containsKey(hdr4[0])) {
-            dbgLog.fine("1st byte (" + hdr4[0] +
+            dbgLog.fine(A_1ST_BYTE + hdr4[0] +
             ") is not within the ingestable range [rel. 3-10]: this file is NOT stata-dta type");
             return false;
         } else {
-            dbgLog.fine("this file is stata-dta type: " +
+            dbgLog.fine(THIS_FILE_IS_STATA_DTA_TYPE +
                     stataReleaseNumber.get(hdr4[0]) +
                     "(No in HEX=" + hdr4[0] + ")");
             return true;

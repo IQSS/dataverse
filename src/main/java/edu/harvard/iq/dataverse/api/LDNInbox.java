@@ -46,6 +46,8 @@ import jakarta.ws.rs.core.Response;
 @Path("inbox")
 public class LDNInbox extends AbstractApiBean {
 
+    private static final String TYPE = "@type";
+
     private static final Logger logger = Logger.getLogger(LDNInbox.class.getName());
 
     @EJB
@@ -112,8 +114,8 @@ public class LDNInbox extends AbstractApiBean {
 
                 citingPID = msgObject.getJsonObject(new JsonLDTerm(ietf, "cite-as").getUrl()).getString("@id");
                 logger.fine("Citing PID: " + citingPID);
-                if (msgObject.containsKey("@type")) {
-                    citingType = msgObject.getString("@type");
+                if (msgObject.containsKey(TYPE)) {
+                    citingType = msgObject.getString(TYPE);
                     if (citingType.startsWith(JsonLDNamespace.schema.getUrl())) {
                         citingType = citingType.replace(JsonLDNamespace.schema.getUrl(), "");
                     }
@@ -132,7 +134,7 @@ public class LDNInbox extends AbstractApiBean {
                             JsonObject citedResource = (JsonObject) entry.getValue();
                             String pid = citedResource.getJsonObject(new JsonLDTerm(ietf, "cite-as").getUrl())
                                     .getString("@id");
-                            if (citedResource.getString("@type").equals(JsonLDTerm.schemaOrg("Dataset").getUrl())) {
+                            if (citedResource.getString(TYPE).equals(JsonLDTerm.schemaOrg("Dataset").getUrl())) {
                                 logger.fine("Raw PID: " + pid);
                                 if (pid.startsWith(AbstractDOIProvider.DOI_RESOLVER_URL)) {
                                     pid = pid.replace(AbstractDOIProvider.DOI_RESOLVER_URL, AbstractDOIProvider.DOI_PROTOCOL + ":");
@@ -144,7 +146,7 @@ public class LDNInbox extends AbstractApiBean {
                                 Dataset dataset = datasetSvc.findByGlobalId(pid);
                                 if (dataset != null) {
                                     JsonObject citingResource = Json.createObjectBuilder().add("@id", citingPID)
-                                            .add("@type", citingType).add("relationship", relationship)
+                                            .add(TYPE, citingType).add("relationship", relationship)
                                             .add("name", name).build();
                                     StringWriter sw = new StringWriter(128);
                                     try (JsonWriter jw = Json.createWriter(sw)) {

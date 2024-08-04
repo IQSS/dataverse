@@ -74,6 +74,8 @@ import jakarta.validation.ValidatorFactory;
 @Named
 @Stateless
 public class AuthenticationServiceBean {
+    private static final String USER_ID = "User id ";
+    private static final String IDENTIFIER = "identifier";
     private static final Logger logger = Logger.getLogger(AuthenticationServiceBean.class.getName());
 
     @EJB
@@ -232,7 +234,7 @@ public class AuthenticationServiceBean {
     public AuthenticatedUser getAuthenticatedUser(String identifier) {
         try {
             return em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)
-                    .setParameter("identifier", identifier)
+                    .setParameter(IDENTIFIER, identifier)
                     .getSingleResult();
         } catch (NoResultException nre) {
             return null;
@@ -242,7 +244,7 @@ public class AuthenticationServiceBean {
     public AuthenticatedUser getAuthenticatedUserWithProvider(String identifier) {
         try {
             AuthenticatedUser authenticatedUser = em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)
-                    .setParameter("identifier", identifier)
+                    .setParameter(IDENTIFIER, identifier)
                     .getSingleResult();
             AuthenticatedUserLookup aul = em.createNamedQuery("AuthenticatedUserLookup.findByAuthUser", AuthenticatedUserLookup.class)
                     .setParameter("authUser", authenticatedUser)
@@ -655,7 +657,7 @@ public class AuthenticationServiceBean {
      */
     public boolean identifierExists(String idtf) {
         return em.createNamedQuery("AuthenticatedUser.countOfIdentifier", Number.class)
-                .setParameter("identifier", idtf)
+                .setParameter(IDENTIFIER, idtf)
                 .getSingleResult().intValue() > 0;
     }
 
@@ -801,11 +803,11 @@ public class AuthenticationServiceBean {
     public BuiltinUser convertRemoteToBuiltIn(Long idOfAuthUserToConvert, String newEmailAddress) throws Exception {
         AuthenticatedUser authenticatedUser = findByID(idOfAuthUserToConvert);
         if (authenticatedUser == null) {
-            throw new Exception("User id " + idOfAuthUserToConvert + " not found.");
+            throw new Exception(USER_ID + idOfAuthUserToConvert + " not found.");
         }
         AuthenticatedUser existingUserWithSameEmail = getAuthenticatedUserByEmail(newEmailAddress);
         if (existingUserWithSameEmail != null) {
-            throw new Exception("User id " + idOfAuthUserToConvert + " (" + authenticatedUser.getIdentifier() + ") cannot be converted from remote to BuiltIn because the email address " + newEmailAddress + " is already in use by user id " + existingUserWithSameEmail.getId() + " (" + existingUserWithSameEmail.getIdentifier() + ").");
+            throw new Exception(USER_ID + idOfAuthUserToConvert + " (" + authenticatedUser.getIdentifier() + ") cannot be converted from remote to BuiltIn because the email address " + newEmailAddress + " is already in use by user id " + existingUserWithSameEmail.getId() + " (" + existingUserWithSameEmail.getIdentifier() + ").");
         }
         BuiltinUser builtinUser = new BuiltinUser();
         builtinUser.setUserName(authenticatedUser.getUserIdentifier());
@@ -818,24 +820,24 @@ public class AuthenticationServiceBean {
             for (ConstraintViolation<?> violation : violations) {
                 logMsg.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage());
             }
-            throw new Exception("User id " + idOfAuthUserToConvert + " cannot be converted from remote to BuiltIn because of constraint violations on the BuiltIn user that would be created: " + numViolations + ". Details: " + logMsg);
+            throw new Exception(USER_ID + idOfAuthUserToConvert + " cannot be converted from remote to BuiltIn because of constraint violations on the BuiltIn user that would be created: " + numViolations + ". Details: " + logMsg);
         }
         try {
             builtinUser = builtinUserServiceBean.save(builtinUser);
         } catch (IllegalArgumentException ex) {
-            throw new Exception("User id " + idOfAuthUserToConvert + " cannot be converted from remote to BuiltIn because of an IllegalArgumentException creating the row in the builtinuser table: " + ex);
+            throw new Exception(USER_ID + idOfAuthUserToConvert + " cannot be converted from remote to BuiltIn because of an IllegalArgumentException creating the row in the builtinuser table: " + ex);
         }
         AuthenticatedUserLookup lookup = authenticatedUser.getAuthenticatedUserLookup();
         if (lookup == null) {
-            throw new Exception("User id " + idOfAuthUserToConvert + " does not have an 'authenticateduserlookup' row");
+            throw new Exception(USER_ID + idOfAuthUserToConvert + " does not have an 'authenticateduserlookup' row");
         }
         String providerId = lookup.getAuthenticationProviderId();
         if (providerId == null) {
-            throw new Exception("User id " + idOfAuthUserToConvert + " provider id is null.");
+            throw new Exception(USER_ID + idOfAuthUserToConvert + " provider id is null.");
         }
         String builtinProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
         if (providerId.equals(builtinProviderId)) {
-            throw new Exception("User id " + idOfAuthUserToConvert + " cannot be converted from remote to BuiltIn because current provider id is '" + providerId + "' which is the same as '" + builtinProviderId + "'. This user is already a BuiltIn user.");
+            throw new Exception(USER_ID + idOfAuthUserToConvert + " cannot be converted from remote to BuiltIn because current provider id is '" + providerId + "' which is the same as '" + builtinProviderId + "'. This user is already a BuiltIn user.");
         }
         lookup.setAuthenticationProviderId(BuiltinAuthenticationProvider.PROVIDER_ID);
         lookup.setPersistentUserId(authenticatedUser.getUserIdentifier());

@@ -50,6 +50,8 @@ import org.swordapp.server.UriRegistry;
 
 public class MediaResourceManagerImpl implements MediaResourceManager {
 
+    private static final String UNABLE_TO_ADD_FILE_S_TO_DATASET = "Unable to add file(s) to dataset: ";
+
     private static final Logger logger = Logger.getLogger(MediaResourceManagerImpl.class.getCanonicalName());
     @EJB
     EjbDataverseEngine commandEngine;
@@ -328,10 +330,10 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                          */
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset. Problem with zip file, perhaps: " + cause);
                     } else {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + cause);
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, UNABLE_TO_ADD_FILE_S_TO_DATASET + cause);
                     }
                 } else {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + ex.getMessage());
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, UNABLE_TO_ADD_FILE_S_TO_DATASET + ex.getMessage());
                 }
             }
             /*TODO: L.A. 4.6! catch (FileExceedsMaxSizeException ex) {
@@ -343,7 +345,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 Set<ConstraintViolation> constraintViolations = editVersion.validate();
                 if (constraintViolations.size() > 0) {
                     ConstraintViolation violation = constraintViolations.iterator().next();
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, UNABLE_TO_ADD_FILE_S_TO_DATASET + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
                 } else {
 
                     ingestService.saveAndAddFilesToDataset(editVersion, dataFiles, null, true);

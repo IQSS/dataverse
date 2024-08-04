@@ -25,6 +25,14 @@ import org.apache.commons.lang3.StringUtils;
 @MappedSuperclass
 public abstract class DvObjectContainer extends DvObject {
 
+    private static final String AUTHORITY = "authority";
+
+    private static final String PROTOCOL = "protocol";
+
+    private static final String SEPARATOR = "separator";
+
+    private static final String SHOULDER = "shoulder";
+
     public static final String UNDEFINED_CODE = "undefined"; //Used in dataverse.xhtml as a non-null selection option value (indicating inheriting the default)
     
     public void setOwner(Dataverse owner) {
@@ -221,9 +229,9 @@ public abstract class DvObjectContainer extends DvObject {
         this.pidGenerator = pidGenerator;
         if (pidGenerator != null) {
             JsonObjectBuilder job = jakarta.json.Json.createObjectBuilder();
-            this.pidGeneratorSpecs = job.add("protocol", pidGenerator.getProtocol())
-                    .add("authority", pidGenerator.getAuthority()).add("shoulder", pidGenerator.getShoulder())
-                    .add("separator", pidGenerator.getSeparator()).build().toString();
+            this.pidGeneratorSpecs = job.add(PROTOCOL, pidGenerator.getProtocol())
+                    .add(AUTHORITY, pidGenerator.getAuthority()).add(SHOULDER, pidGenerator.getShoulder())
+                    .add(SEPARATOR, pidGenerator.getSeparator()).build().toString();
         } else {
             this.pidGeneratorSpecs = null;
         }
@@ -243,13 +251,13 @@ public abstract class DvObjectContainer extends DvObject {
                 }
             } else {
                 JsonObject providerSpecs = JsonUtil.getJsonObject(specs);
-                if (providerSpecs.containsKey("separator")) {
-                    pidGenerator = PidUtil.getPidProvider(providerSpecs.getString("protocol"),
-                            providerSpecs.getString("authority"), providerSpecs.getString("shoulder"),
-                            providerSpecs.getString("separator"));
+                if (providerSpecs.containsKey(SEPARATOR)) {
+                    pidGenerator = PidUtil.getPidProvider(providerSpecs.getString(PROTOCOL),
+                            providerSpecs.getString(AUTHORITY), providerSpecs.getString(SHOULDER),
+                            providerSpecs.getString(SEPARATOR));
                 } else {
-                    pidGenerator = PidUtil.getPidProvider(providerSpecs.getString("protocol"),
-                            providerSpecs.getString("authority"), providerSpecs.getString("shoulder"));
+                    pidGenerator = PidUtil.getPidProvider(providerSpecs.getString(PROTOCOL),
+                            providerSpecs.getString(AUTHORITY), providerSpecs.getString(SHOULDER));
                 }
             }
             if (pidGenerator != null && pidGenerator.canManagePID()) {

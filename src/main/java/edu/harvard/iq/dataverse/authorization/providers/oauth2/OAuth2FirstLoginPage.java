@@ -50,6 +50,8 @@ import org.hibernate.validator.constraints.NotBlank;
 @SessionScoped
 public class OAuth2FirstLoginPage implements java.io.Serializable {
 
+    private static final String EMAIL = "email";
+
     private static final Logger logger = Logger.getLogger(OAuth2FirstLoginPage.class.getCanonicalName());
 
     @EJB
@@ -120,17 +122,17 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                         firstName = null;
                         lastName = null;
                         authProviderId = "google";
-                        email = randomUser.get("email");
+                        email = randomUser.get(EMAIL);
                         break;
                     case RANDOM_EMAIL2:
                         firstName = null;
-                        email = randomUser.get("email");
+                        email = randomUser.get(EMAIL);
                         extraEmails = new ArrayList<>();
                         extraEmails.add("extra1@example.com");
                         break;
                     case RANDOM_EMAIL3:
                         lastName = null;
-                        email = randomUser.get("email");
+                        email = randomUser.get(EMAIL);
                         extraEmails = new ArrayList<>();
                         extraEmails.add("extra1@example.com");
                         extraEmails.add("extra2@example.com");

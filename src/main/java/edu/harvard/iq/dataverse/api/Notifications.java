@@ -33,6 +33,12 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 @Path("notifications")
 public class Notifications extends AbstractApiBean {
 
+    private static final String NOT_FOUND = " not found.";
+
+    private static final String NOTIFICATION_TYPE = "Notification type ";
+
+    private static final String ONLY_AN_AUTHENTICATED_USER_CAN_HAVE_NOTIFICATIONS = "Only an AuthenticatedUser can have notifications.";
+
     @EJB
     MailServiceBean mailService;
 
@@ -43,7 +49,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, ONLY_AN_AUTHENTICATED_USER_CAN_HAVE_NOTIFICATIONS);
         }
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
@@ -89,7 +95,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, ONLY_AN_AUTHENTICATED_USER_CAN_HAVE_NOTIFICATIONS);
         }
 
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
@@ -101,7 +107,7 @@ public class Notifications extends AbstractApiBean {
             return ok("Notification " + id + " deleted.");
         }
 
-        return notFound("Notification " + id + " not found.");
+        return notFound("Notification " + id + NOT_FOUND);
     }
 
     @GET
@@ -111,7 +117,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, ONLY_AN_AUTHENTICATED_USER_CAN_HAVE_NOTIFICATIONS);
         }
 
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
@@ -130,14 +136,14 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, ONLY_AN_AUTHENTICATED_USER_CAN_HAVE_NOTIFICATIONS);
         }
 
         UserNotification.Type notificationType;
         try {
             notificationType = UserNotification.Type.valueOf(typeName);
         } catch (Exception ignore) {
-            return notFound("Notification type " + typeName + " not found.");
+            return notFound(NOTIFICATION_TYPE + typeName + NOT_FOUND);
         }
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
         Set<UserNotification.Type> mutedEmails = authenticatedUser.getMutedEmails();
@@ -154,14 +160,14 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, ONLY_AN_AUTHENTICATED_USER_CAN_HAVE_NOTIFICATIONS);
         }
 
         UserNotification.Type notificationType;
         try {
             notificationType = UserNotification.Type.valueOf(typeName);
         } catch (Exception ignore) {
-            return notFound("Notification type " + typeName + " not found.");
+            return notFound(NOTIFICATION_TYPE + typeName + NOT_FOUND);
         }
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
         Set<UserNotification.Type> mutedEmails = authenticatedUser.getMutedEmails();
@@ -178,7 +184,7 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, ONLY_AN_AUTHENTICATED_USER_CAN_HAVE_NOTIFICATIONS);
         }
 
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
@@ -197,14 +203,14 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, ONLY_AN_AUTHENTICATED_USER_CAN_HAVE_NOTIFICATIONS);
         }
 
         UserNotification.Type notificationType;
         try {
             notificationType = UserNotification.Type.valueOf(typeName);
         } catch (Exception ignore) {
-            return notFound("Notification type " + typeName + " not found.");
+            return notFound(NOTIFICATION_TYPE + typeName + NOT_FOUND);
         }
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
         Set<UserNotification.Type> mutedNotifications = authenticatedUser.getMutedNotifications();
@@ -221,14 +227,14 @@ public class Notifications extends AbstractApiBean {
         User user = getRequestUser(crc);
         if (!(user instanceof AuthenticatedUser)) {
             // It's unlikely we'll reach this error. A Guest doesn't have an API token and would have been blocked above.
-            return error(Response.Status.BAD_REQUEST, "Only an AuthenticatedUser can have notifications.");
+            return error(Response.Status.BAD_REQUEST, ONLY_AN_AUTHENTICATED_USER_CAN_HAVE_NOTIFICATIONS);
         }
 
         UserNotification.Type notificationType;
         try {
             notificationType = UserNotification.Type.valueOf(typeName);
         } catch (Exception ignore) {
-            return notFound("Notification type " + typeName + " not found.");
+            return notFound(NOTIFICATION_TYPE + typeName + NOT_FOUND);
         }
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
         Set<UserNotification.Type> mutedNotifications = authenticatedUser.getMutedNotifications();

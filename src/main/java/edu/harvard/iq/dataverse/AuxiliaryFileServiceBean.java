@@ -38,6 +38,7 @@ import org.apache.tika.Tika;
 @Stateless
 @Named
 public class AuxiliaryFileServiceBean implements java.io.Serializable {
+    private static final String DATA_FILE_ID = "dataFileId";
    private static final Logger logger = Logger.getLogger(AuxiliaryFileServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -158,7 +159,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
 
         Query query = em.createNamedQuery("AuxiliaryFile.lookupAuxiliaryFile");
 
-        query.setParameter("dataFileId", dataFile.getId());
+        query.setParameter(DATA_FILE_ID, dataFile.getId());
         query.setParameter("formatTag", formatTag);
         query.setParameter("formatVersion", formatVersion);
         try {
@@ -179,7 +180,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByOrigin", AuxiliaryFile.class);
             query.setParameter("origin", origin);
         }
-        query.setParameter("dataFileId", dataFile.getId());
+        query.setParameter(DATA_FILE_ID, dataFile.getId());
 
         List<AuxiliaryFile> retVal = query.getResultList();
         return retVal;
@@ -210,7 +211,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
 
     public List<AuxiliaryFile> findAuxiliaryFiles(DataFile dataFile) {
         TypedQuery<AuxiliaryFile> query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFiles", AuxiliaryFile.class);
-        query.setParameter("dataFileId", dataFile.getId());
+        query.setParameter(DATA_FILE_ID, dataFile.getId());
         return query.getResultList();
     }
 
@@ -246,7 +247,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
 
     public List<AuxiliaryFile> findAuxiliaryFilesByType(DataFile dataFile, String typeString) {
         TypedQuery<AuxiliaryFile> query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByType", AuxiliaryFile.class);
-        query.setParameter("dataFileId", dataFile.getId());
+        query.setParameter(DATA_FILE_ID, dataFile.getId());
         query.setParameter("type", typeString);
         return query.getResultList();
     }
@@ -256,7 +257,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         List<String> otherTypes = findAuxiliaryFileTypes(dataFile, false);
         for (String typeString : otherTypes) {
             TypedQuery<AuxiliaryFile> query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByType", AuxiliaryFile.class);
-            query.setParameter("dataFileId", dataFile.getId());
+            query.setParameter(DATA_FILE_ID, dataFile.getId());
             query.setParameter("type", typeString);
             List<AuxiliaryFile> auxFiles = query.getResultList();
             otherAuxFiles.addAll(auxFiles);
@@ -267,7 +268,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
 
     public List<AuxiliaryFile> findAuxiliaryFilesWithoutType(DataFile dataFile) {
         TypedQuery<AuxiliaryFile> query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesWithoutType", AuxiliaryFile.class);
-        query.setParameter("dataFileId", dataFile.getId());
+        query.setParameter(DATA_FILE_ID, dataFile.getId());
         return query.getResultList();
     }
 

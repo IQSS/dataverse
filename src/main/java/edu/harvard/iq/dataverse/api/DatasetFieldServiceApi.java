@@ -56,6 +56,10 @@ import java.util.zip.ZipFile;
 @Path("admin/datasetfield")
 public class DatasetFieldServiceApi extends AbstractApiBean {
 
+    private static final String ALLOWS_MULTIPLES = "allowsMultiples";
+
+    private static final String DISPLAY_ORDER = "displayOrder";
+
     @EJB
     DatasetFieldServiceBean datasetFieldService;
 
@@ -93,8 +97,8 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             }
             return ok(Json.createObjectBuilder().add("haveParents", asJsonArray(listOfIsHasParentsTrue))
                     .add("noParents", asJsonArray(listOfIsHasParentsFalse))
-                    .add("allowsMultiples", asJsonArray(listOfIsAllowsMultiplesTrue))
-                    .add("allowsMultiples", asJsonArray(listOfIsAllowsMultiplesTrue))
+                    .add(ALLOWS_MULTIPLES, asJsonArray(listOfIsAllowsMultiplesTrue))
+                    .add(ALLOWS_MULTIPLES, asJsonArray(listOfIsAllowsMultiplesTrue))
                     .add("doesNotAllowMultiples", asJsonArray(listOfIsAllowsMultiplesFalse))
                     .add("required", asJsonArray(requiredFieldNames))
             );
@@ -142,7 +146,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                 controlledVocabularyValues.add(NullSafeJsonBuilder.jsonObjectBuilder()
                         .add("id", controlledVocabularyValue.getId())
                         .add("strValue", controlledVocabularyValue.getStrValue())
-                        .add("displayOrder", controlledVocabularyValue.getDisplayOrder())
+                        .add(DISPLAY_ORDER, controlledVocabularyValue.getDisplayOrder())
                         .add("identifier", controlledVocabularyValue.getIdentifier())
                 );
             }
@@ -152,7 +156,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                     .add("title", title)
                     .add("metadataBlock", metadataBlock)
                     .add("fieldType", fieldType.name())
-                    .add("allowsMultiples", allowsMultiples)
+                    .add(ALLOWS_MULTIPLES, allowsMultiples)
                     .add("hasParent", hasParent)
                     .add("controlledVocabularyValues", controlledVocabularyValues)
                     .add("parentAllowsMultiples", parentAllowsMultiplesDisplay)
@@ -368,11 +372,11 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             columns = Arrays.asList("name", "dataverseAlias", "displayName");
         } else if (header.equals(HeaderType.DATASETFIELD)) {
             columns = Arrays.asList("name", "title", "description", "watermark",
-              "fieldType", "displayOrder", "displayFormat", "advancedSearchField",
+              "fieldType", DISPLAY_ORDER, "displayFormat", "advancedSearchField",
               "allowControlledVocabulary", "allowmultiples", "facetable",
               "displayoncreate", "required", "parent", "metadatablock_id");
         } else if (header.equals(HeaderType.CONTROLLEDVOCABULARY)) {
-            columns = Arrays.asList("DatasetField", "Value", "identifier", "displayOrder");
+            columns = Arrays.asList("DatasetField", "Value", "identifier", DISPLAY_ORDER);
         }
 
         return columns;

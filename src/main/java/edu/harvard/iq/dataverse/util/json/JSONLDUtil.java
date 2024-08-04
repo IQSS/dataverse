@@ -56,6 +56,16 @@ import jakarta.json.JsonReader;
 
 public class JSONLDUtil {
 
+    private static final String NOT_FOUND = " not found.";
+
+    private static final String WITH_VALUE = " with value: ";
+
+    private static final String CAN_T_APPEND_TO_A_SINGLE_VALUE_FIELD_THAT_ALREADY_HAS_A_VALUE = "Can't append to a single-value field that already has a value: ";
+
+    private static final String TERM = "Term: ";
+
+    private static final String LICENSE = "license";
+
     private static final Logger logger = Logger.getLogger(JSONLDUtil.class.getCanonicalName());
 
     /*
@@ -193,9 +203,9 @@ public class JSONLDUtil {
                     else if (datasetTerms.contains(key)) {
                         // Other Dataset-level TermsOfUseAndAccess
                         if (!append || !isSet(terms, key)) {
-                            if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())) {
+                            if (key.equals(JsonLDTerm.schemaOrg(LICENSE).getUrl())) {
                                 if (jsonld.containsKey(JsonLDTerm.termsOfUse.getUrl())) {
-                                    throw new BadRequestException("Cannot specify " + JsonLDTerm.schemaOrg("license").getUrl() + " and " + JsonLDTerm.termsOfUse.getUrl());
+                                    throw new BadRequestException("Cannot specify " + JsonLDTerm.schemaOrg(LICENSE).getUrl() + " and " + JsonLDTerm.termsOfUse.getUrl());
                                 }
                                 if (StringUtils.isEmpty(jsonld.getString(key))) {
                                     setSemTerm(terms, key, licenseSvc.getDefault());
@@ -214,7 +224,7 @@ public class JSONLDUtil {
                             }
                         }
                         else {
-                            throw new BadRequestException("Can't append to a single-value field that already has a value: " + key);
+                            throw new BadRequestException(CAN_T_APPEND_TO_A_SINGLE_VALUE_FIELD_THAT_ALREADY_HAS_A_VALUE + key);
                         }
                     } else if (key.equals(JsonLDTerm.fileTermsOfAccess.getUrl())) {
                         // Other DataFile-level TermsOfUseAndAccess
@@ -229,7 +239,7 @@ public class JSONLDUtil {
                                     }
                                 } else {
                                     throw new BadRequestException(
-                                            "Can't append to a single-value field that already has a value: "
+                                            CAN_T_APPEND_TO_A_SINGLE_VALUE_FIELD_THAT_ALREADY_HAS_A_VALUE
                                                     + fileKey);
                                 }
                             }
@@ -307,18 +317,18 @@ public class JSONLDUtil {
                 } else {
                     // Internal/non-metadatablock terms
                     boolean found = false;
-                    if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())) {
+                    if (key.equals(JsonLDTerm.schemaOrg(LICENSE).getUrl())) {
                         if (licenseSvc.getByNameOrUri(jsonld.getString(key)) != null) {
                             setSemTerm(terms, key, licenseSvc.getDefault());
                         } else {
                             throw new BadRequestException(
-                                    "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
+                                    TERM + key + WITH_VALUE + jsonld.getString(key) + NOT_FOUND);
                         }
                         found = true;
                     } else if (datasetTerms.contains(key)) {
                         if (!deleteIfSemTermMatches(terms, key, jsonld.get(key))) {
                             throw new BadRequestException(
-                                    "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
+                                    TERM + key + WITH_VALUE + jsonld.getString(key) + NOT_FOUND);
                         }
                         found = true;
                     } else if (key.equals(JsonLDTerm.fileTermsOfAccess.getUrl())) {
@@ -327,14 +337,14 @@ public class JSONLDUtil {
                             if (datafileTerms.contains(fileKey)) {
                                 if (!deleteIfSemTermMatches(terms, key, jsonld.get(key))) {
                                     throw new BadRequestException(
-                                            "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
+                                            TERM + key + WITH_VALUE + jsonld.getString(key) + NOT_FOUND);
                                 }
                                 found = true;
                             }
                         }
                     } else if (!found) {
                         throw new BadRequestException(
-                                "Term: " + key + " not found.");
+                                TERM + key + NOT_FOUND);
                                     }
 
                     dsv.setTermsOfUseAndAccess(terms);
@@ -366,7 +376,7 @@ public class JSONLDUtil {
                     || (dsft.isAllowControlledVocabulary() && !dsf.getControlledVocabularyValues().isEmpty())
                     || !dsf.getDatasetFieldValues().isEmpty()) {
                 throw new BadRequestException(
-                        "Can't append to a single-value field that already has a value: " + dsft.getName());
+                        CAN_T_APPEND_TO_A_SINGLE_VALUE_FIELD_THAT_ALREADY_HAS_A_VALUE + dsft.getName());
             }
         }
         logger.fine("Name: " + dsft.getName());

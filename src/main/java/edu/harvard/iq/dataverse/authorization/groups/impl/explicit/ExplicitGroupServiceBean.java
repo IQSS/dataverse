@@ -31,6 +31,8 @@ import jakarta.persistence.PersistenceContext;
 @Stateless
 public class ExplicitGroupServiceBean {
 
+    private static final String OWNER_ID = "ownerId";
+
     private static final Logger logger = Logger.getLogger(ExplicitGroupServiceBean.class.getName());
     @EJB
     private RoleAssigneeServiceBean roleAssigneeSvc;
@@ -98,7 +100,7 @@ public class ExplicitGroupServiceBean {
 
     public List<ExplicitGroup> findByOwner(Long dvObjectId) {
         return provider.updateProvider(em.createNamedQuery("ExplicitGroup.findByOwnerId", ExplicitGroup.class)
-                 .setParameter("ownerId", dvObjectId)
+                 .setParameter(OWNER_ID, dvObjectId)
                  .getResultList());
     }
 
@@ -117,7 +119,7 @@ public class ExplicitGroupServiceBean {
             return provider.updateProvider(
                     em.createNamedQuery("ExplicitGroup.findByOwnerIdAndAlias", ExplicitGroup.class)
                         .setParameter("alias", groupAliasInOwner)
-                        .setParameter("ownerId", ownerId)
+                        .setParameter(OWNER_ID, ownerId)
                         .getSingleResult());
         } catch (NoResultException nre) {
             return null;
@@ -218,7 +220,7 @@ public class ExplicitGroupServiceBean {
         if (ra instanceof ExplicitGroup) {
             for (DvObject cur = o; cur != null; cur = cur.getOwner()) {
                 groupList.addAll(em.createNamedQuery("ExplicitGroup.findByOwnerAndSubExGroupId", ExplicitGroup.class)
-                  .setParameter("ownerId", cur.getId())
+                  .setParameter(OWNER_ID, cur.getId())
                   .setParameter("subExGroupId", ((ExplicitGroup) ra).getId())
                   .getResultList());
             }
@@ -226,7 +228,7 @@ public class ExplicitGroupServiceBean {
         } else if (ra instanceof AuthenticatedUser) {
             for (DvObject cur = o; cur != null; cur = cur.getOwner()) {
                 groupList.addAll(em.createNamedQuery("ExplicitGroup.findByOwnerAndAuthUserId", ExplicitGroup.class)
-                  .setParameter("ownerId", cur.getId())
+                  .setParameter(OWNER_ID, cur.getId())
                   .setParameter("authUserId", ((AuthenticatedUser) ra).getId())
                   .getResultList());
             }
@@ -234,7 +236,7 @@ public class ExplicitGroupServiceBean {
         } else {
             for (DvObject cur = o; cur != null; cur = cur.getOwner()) {
                 groupList.addAll(em.createNamedQuery("ExplicitGroup.findByOwnerAndRAIdtf", ExplicitGroup.class)
-                  .setParameter("ownerId", cur.getId())
+                  .setParameter(OWNER_ID, cur.getId())
                   .setParameter("raIdtf", ra.getIdentifier())
                   .getResultList());
             }

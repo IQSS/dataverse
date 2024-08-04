@@ -23,6 +23,8 @@ import jakarta.ws.rs.core.UriInfo;
  */
 public class DownloadInstance {
 
+    private static final String SUBSET = "subset";
+
     private static final Logger logger = Logger.getLogger(DownloadInstance.class.getCanonicalName());
      /*
      private ByteArrayOutputStream outStream = null;
@@ -127,7 +129,7 @@ public class DownloadInstance {
                 logger.fine("Checking service: " + dataService.getServiceName());
                 if (serviceArg.equals("variables")) {
                     // Special case for the subsetting parameter (variables=<LIST>):
-                    if ("subset".equals(dataService.getServiceName())) {
+                    if (SUBSET.equals(dataService.getServiceName())) {
                         conversionParam = "subset";
                         conversionParamValue = serviceArgValue;
                         return true;
@@ -136,7 +138,7 @@ public class DownloadInstance {
                     // Another special case available for tabular ("subsettable") data files - 
                     // "do not add variable header" flag:
                     if ("true".equalsIgnoreCase(serviceArgValue) || "1".equalsIgnoreCase(serviceArgValue)) {
-                        if ("subset".equals(dataService.getServiceName())) {
+                        if (SUBSET.equals(dataService.getServiceName())) {
                             this.conversionParam = serviceArg;
                             return true;
                         }
@@ -175,7 +177,7 @@ public class DownloadInstance {
             if (dataService != null) {
                 // Special case for the subsetting parameter (variables=<LIST>):
                 if (serviceArg.equals("variables")) {
-                    if ("subset".equals(dataService.getServiceName())) {
+                    if (SUBSET.equals(dataService.getServiceName())) {
                         conversionParam = "subset";
                         conversionParamValue = serviceArgValue;
                         return dataService.getMimeType();

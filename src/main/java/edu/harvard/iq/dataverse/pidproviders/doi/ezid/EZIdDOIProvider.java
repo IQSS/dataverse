@@ -20,6 +20,24 @@ import java.util.logging.Logger;
 public class EZIdDOIProvider extends AbstractDOIProvider {
 
 
+    private static final String STRING_0 = "String {0}";
+
+
+    private static final String STATUS = "_status";
+
+
+    private static final String TARGET = "_target";
+
+
+    private static final String CAUSE = "cause";
+
+
+    private static final String LOCALIZED_MESSAGE_0 = "localized message {0}";
+
+
+    private static final String MESSAGE_0 = "message {0}";
+
+
     private static final Logger logger = Logger.getLogger(EZIdDOIProvider.class.getCanonicalName());
 
     EZIDService ezidService;
@@ -83,10 +101,10 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
             }
             logger.log(Level.WARNING, "alreadyRegistered failed");
             logger.log(Level.WARNING, "getIdentifier(dvObject) {0}", pid.asString());
-            logger.log(Level.WARNING, "String {0}", e.toString());
-            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            logger.log(Level.WARNING, STRING_0, e.toString());
+            logger.log(Level.WARNING, LOCALIZED_MESSAGE_0, e.getLocalizedMessage());
+            logger.log(Level.WARNING, CAUSE, e.getCause());
+            logger.log(Level.WARNING, MESSAGE_0, e.getMessage());
             throw e;
         }
     }
@@ -100,10 +118,10 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
             metadata = ezidService.getMetadata(identifier);
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "getIdentifierMetadata failed");
-            logger.log(Level.WARNING, "String {0}", e.toString());
-            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            logger.log(Level.WARNING, STRING_0, e.toString());
+            logger.log(Level.WARNING, LOCALIZED_MESSAGE_0, e.getLocalizedMessage());
+            logger.log(Level.WARNING, CAUSE, e.getCause());
+            logger.log(Level.WARNING, MESSAGE_0, e.getMessage());
             return metadata;
         }
         return metadata;
@@ -120,16 +138,16 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
     public String modifyIdentifierTargetURL(DvObject dvObject) throws Exception {
         String identifier = getIdentifier(dvObject);
         HashMap<String, String> metadata = new HashMap<>();
-        metadata.put("_target", getTargetUrl(dvObject));
+        metadata.put(TARGET, getTargetUrl(dvObject));
         try {
             ezidService.setMetadata(identifier, metadata);
             return identifier;
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "modifyMetadata failed");
-            logger.log(Level.WARNING, "String {0}", e.toString());
-            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            logger.log(Level.WARNING, STRING_0, e.toString());
+            logger.log(Level.WARNING, LOCALIZED_MESSAGE_0, e.getLocalizedMessage());
+            logger.log(Level.WARNING, CAUSE, e.getCause());
+            logger.log(Level.WARNING, MESSAGE_0, e.getMessage());
             throw e;
         }
     }
@@ -143,14 +161,14 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
             doiMetadata = ezidService.getMetadata(identifier);
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "get matadata failed cannot delete");
-            logger.log(Level.WARNING, "String {0}", e.toString());
-            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
+            logger.log(Level.WARNING, STRING_0, e.toString());
+            logger.log(Level.WARNING, LOCALIZED_MESSAGE_0, e.getLocalizedMessage());
             logger.log(Level.WARNING, "cause ", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            logger.log(Level.WARNING, MESSAGE_0, e.getMessage());
             return;
         }
 
-        String idStatus = doiMetadata.get("_status");
+        String idStatus = doiMetadata.get(STATUS);
 
         if (idStatus.equals("reserved")) {
             logger.log(Level.INFO, "Delete status is reserved..");
@@ -158,10 +176,10 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
                 ezidService.deleteIdentifier(identifier);
             } catch (EZIDException e) {
                 logger.log(Level.WARNING, "delete failed");
-                logger.log(Level.WARNING, "String {0}", e.toString());
-                logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-                logger.log(Level.WARNING, "cause", e.getCause());
-                logger.log(Level.WARNING, "message {0}", e.getMessage());
+                logger.log(Level.WARNING, STRING_0, e.toString());
+                logger.log(Level.WARNING, LOCALIZED_MESSAGE_0, e.getLocalizedMessage());
+                logger.log(Level.WARNING, CAUSE, e.getCause());
+                logger.log(Level.WARNING, MESSAGE_0, e.getMessage());
             }
             return;
         }
@@ -169,7 +187,7 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
             //if public then it has been released set to unavaialble and reset target to n2t url
             updateIdentifierStatus(dvObject, "unavailable | withdrawn by author");
             Map<String, String> metadata = new HashMap<>();
-            metadata.put("_target", "http://ezid.cdlib.org/id/" + dvObject.getProtocol() + ":" + dvObject.getAuthority()
+            metadata.put(TARGET, "http://ezid.cdlib.org/id/" + dvObject.getProtocol() + ":" + dvObject.getAuthority()
                     + "/" + dvObject.getIdentifier());
             try {
                 modifyIdentifierTargetURL(dvObject);
@@ -177,7 +195,7 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
                     Dataset dataset = (Dataset) dvObject;
                     for (DataFile df : dataset.getFiles()) {
                         metadata = new HashMap<>();
-                        metadata.put("_target", "http://ezid.cdlib.org/id/" + df.getProtocol() + ":" + df.getAuthority()
+                        metadata.put(TARGET, "http://ezid.cdlib.org/id/" + df.getProtocol() + ":" + df.getAuthority()
                                 + "/" + df.getIdentifier());
                                         modifyIdentifierTargetURL(df);
                     }
@@ -210,8 +228,8 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
         Map<String, String> dcMetadata;
         dcMetadata = new HashMap<>();
         dcMetadata.put("datacite", objMetadata);
-        dcMetadata.put("_status", statusIn);
-        dcMetadata.put("_target", getTargetUrl(dvObject));
+        dcMetadata.put(STATUS, statusIn);
+        dcMetadata.put(TARGET, getTargetUrl(dvObject));
 
         try {
             // ezID API requires HashMap, not just any map.            
@@ -220,10 +238,10 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
 
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "modifyMetadata failed");
-            logger.log(Level.WARNING, "String {0}", e.toString());
-            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            logger.log(Level.WARNING, STRING_0, e.toString());
+            logger.log(Level.WARNING, LOCALIZED_MESSAGE_0, e.getLocalizedMessage());
+            logger.log(Level.WARNING, CAUSE, e.getCause());
+            logger.log(Level.WARNING, MESSAGE_0, e.getMessage());
             return false;
         }
     }
@@ -246,7 +264,7 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
         dcMetadata = new HashMap<>();
         dcMetadata.put("datacite", objMetadata);
         dcMetadata.put("datacite.resourcetype", "Dataset");
-        dcMetadata.put("_status", "reserved");
+        dcMetadata.put(STATUS, "reserved");
 
         try {
             String retString = ezidService.createIdentifier(identifier, asHashMap(dcMetadata));
@@ -254,10 +272,10 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
             return retString;
         } catch (EZIDException e) {
             logger.log(Level.WARNING, "Identifier not created: create failed");
-            logger.log(Level.WARNING, "String {0}", e.toString());
-            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
+            logger.log(Level.WARNING, STRING_0, e.toString());
+            logger.log(Level.WARNING, LOCALIZED_MESSAGE_0, e.getLocalizedMessage());
+            logger.log(Level.WARNING, CAUSE, e.getCause());
+            logger.log(Level.WARNING, MESSAGE_0, e.getMessage());
             logger.log(Level.WARNING, "identifier: ", identifier);
             throw e;
         }

@@ -43,6 +43,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class DataCitation {
 
+    private static final String AUTHOR = "author";
+
     private static final Logger logger = Logger.getLogger(DataCitation.class.getCanonicalName());
 
     private List<String> authors = new ArrayList<>();
@@ -469,7 +471,7 @@ public class DataCitation {
         if (!authors.isEmpty()) {
         xmlw.writeStartElement("authors");
         for (String author : authors) {
-            xmlw.writeStartElement("author");
+            xmlw.writeStartElement(AUTHOR);
             xmlw.writeCharacters(author);
             xmlw.writeEndElement(); // author                    
         }
@@ -478,7 +480,7 @@ public class DataCitation {
         if (!producers.isEmpty()) {
             xmlw.writeStartElement("secondary-authors");
             for (String producer : producers) {
-                xmlw.writeStartElement("author");
+                xmlw.writeStartElement(AUTHOR);
                 xmlw.writeCharacters(producer);
                 xmlw.writeEndElement(); // author
             }
@@ -487,7 +489,7 @@ public class DataCitation {
         if (!funders.isEmpty()) {
             xmlw.writeStartElement("subsidiary-authors");
             for (String funder : funders) {
-                xmlw.writeStartElement("author");
+                xmlw.writeStartElement(AUTHOR);
                 xmlw.writeCharacters(funder);
                 xmlw.writeEndElement(); // author
             }

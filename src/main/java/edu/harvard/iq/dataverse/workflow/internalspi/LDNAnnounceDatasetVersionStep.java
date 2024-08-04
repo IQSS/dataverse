@@ -51,6 +51,8 @@ import org.apache.http.impl.client.HttpClients;
  */
 
 public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
+    private static final String IETF_CITE_AS = "ietf:cite-as";
+    private static final String INBOX = "inbox";
     private static final Logger logger = Logger.getLogger(LDNAnnounceDatasetVersionStep.class.getName());
     private static final String REQUIRED_FIELDS = ":LDNAnnounceRequiredFields";
     private static final String LDN_TARGET = ":LDNTarget";
@@ -69,7 +71,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
 
         JsonObject target = JsonUtil.getJsonObject((String) context.getSettings().get(LDN_TARGET));
         if (target != null) {
-            String inboxUrl = target.getString("inbox");
+            String inboxUrl = target.getString(INBOX);
 
             CloseableHttpClient client = HttpClients.createDefault();
 
@@ -176,14 +178,14 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
                         JsonArray rels = (JsonArray) jv;
                         for (JsonObject jo : rels.getValuesAs(JsonObject.class)) {
                             String id = getBestPubId(jo);
-                            relArrayBuilder.add(Json.createObjectBuilder().add("id", id).add("ietf:cite-as", id)
+                            relArrayBuilder.add(Json.createObjectBuilder().add("id", id).add(IETF_CITE_AS, id)
                                     .add("type", "sorg:ScholaryArticle").build());
                         }
                     }
 
                     else { // JsonObject
                         String id = getBestPubId((JsonObject) jv);
-                        relArrayBuilder.add(Json.createObjectBuilder().add("id", id).add("ietf:cite-as", id)
+                        relArrayBuilder.add(Json.createObjectBuilder().add("id", id).add(IETF_CITE_AS, id)
                                 .add("type", "sorg:ScholaryArticle").build());
                     }
                 }
@@ -216,15 +218,15 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         Dataset d = ctxt.getDataset();
         job.add("object",
                 Json.createObjectBuilder().add("id", d.getLocalURL())
-                        .add("ietf:cite-as", d.getGlobalId().asURL())
+                        .add(IETF_CITE_AS, d.getGlobalId().asURL())
                         .add("sorg:name", d.getDisplayName()).add("type", "sorg:Dataset"));
         job.add("origin", Json.createObjectBuilder().add("id", SystemConfig.getDataverseSiteUrlStatic())
-                .add("inbox", SystemConfig.getDataverseSiteUrlStatic() + "/api/inbox").add("type", "Service"));
+                .add(INBOX, SystemConfig.getDataverseSiteUrlStatic() + "/api/inbox").add("type", "Service"));
         job.add("target", target);
         job.add("type", Json.createArrayBuilder().add("Announce").add("coar-notify:ReleaseAction"));
 
         HttpPost annPost = new HttpPost();
-        annPost.setURI(new URI(target.getString("inbox")));
+        annPost.setURI(new URI(target.getString(INBOX)));
         String body = JsonUtil.prettyPrint(job.build());
         logger.fine("Body: " + body);
         annPost.setEntity(new StringEntity(JsonUtil.prettyPrint(body), "utf-8"));

@@ -68,6 +68,12 @@ import static org.apache.commons.lang3.StringUtils.isNumeric;
  */
 public abstract class AbstractApiBean {
 
+    private static final String FIND_DATASET_ERROR_DATASET_ID_IS_NULL = "find.dataset.error.dataset_id_is_null";
+
+    private static final String MESSAGE = "message";
+
+    private static final String STATUS = "status";
+
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
     private static final String PERSISTENT_ID_KEY = ":persistentId";
@@ -124,9 +130,9 @@ public abstract class AbstractApiBean {
                 if (entity == null) return null;
 
                 JsonObject obj = JsonUtil.getJsonObject(entity.toString());
-                if (obj.containsKey("message")) {
-                    JsonValue message = obj.get("message");
-                    return message.getValueType() == ValueType.STRING ? obj.getString("message") : message.toString();
+                if (obj.containsKey(MESSAGE)) {
+                    JsonValue message = obj.get(MESSAGE);
+                    return message.getValueType() == ValueType.STRING ? obj.getString(MESSAGE) : message.toString();
                 } else {
                     return null;
                 }
@@ -382,7 +388,7 @@ public abstract class AbstractApiBean {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
             if (persistentId == null) {
                 throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                        badRequest(BundleUtil.getStringFromBundle(FIND_DATASET_ERROR_DATASET_ID_IS_NULL, Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
             }
             GlobalId globalId;
             try {
@@ -397,7 +403,7 @@ public abstract class AbstractApiBean {
             }
             if (datasetId == null) {
                 throw new WrappedResponse(
-                    notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                    notFound(BundleUtil.getStringFromBundle(FIND_DATASET_ERROR_DATASET_ID_IS_NULL, Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
             }
         } else {
             try {
@@ -450,7 +456,7 @@ public abstract class AbstractApiBean {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
             if (persistentId == null) {
                 throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                        badRequest(BundleUtil.getStringFromBundle(FIND_DATASET_ERROR_DATASET_ID_IS_NULL, Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
             }
             datafile = fileService.findByGlobalId(persistentId);
             if (datafile == null) {
@@ -510,7 +516,7 @@ public abstract class AbstractApiBean {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
             if (persistentId == null) {
                 throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                        badRequest(BundleUtil.getStringFromBundle(FIND_DATASET_ERROR_DATASET_ID_IS_NULL, Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
             }
 
             Dataset dataset = datasetSvc.findByGlobalId(persistentId);
@@ -676,9 +682,9 @@ public abstract class AbstractApiBean {
         logger.log(Level.SEVERE, "API internal error " + incidentId + ": " + ex.getMessage(), ex);
         return Response.status(500)
                 .entity(Json.createObjectBuilder()
-                        .add("status", "ERROR")
+                        .add(STATUS, "ERROR")
                         .add("code", 500)
-                        .add("message", "Internal server error. More details available at the server logs.")
+                        .add(MESSAGE, "Internal server error. More details available at the server logs.")
                         .add("incidentId", incidentId)
                         .build())
                 .type("application/json").build();
@@ -690,14 +696,14 @@ public abstract class AbstractApiBean {
 
     protected Response ok(JsonArrayBuilder bld) {
         return Response.ok(Json.createObjectBuilder()
-            .add("status", ApiConstants.STATUS_OK)
+            .add(STATUS, ApiConstants.STATUS_OK)
             .add("data", bld).build())
             .type(MediaType.APPLICATION_JSON).build();
     }
 
     protected Response ok(JsonArrayBuilder bld, long totalCount) {
         return Response.ok(Json.createObjectBuilder()
-                        .add("status", ApiConstants.STATUS_OK)
+                        .add(STATUS, ApiConstants.STATUS_OK)
                         .add("totalCount", totalCount)
                         .add("data", bld).build())
                 .type(MediaType.APPLICATION_JSON).build();
@@ -705,14 +711,14 @@ public abstract class AbstractApiBean {
 
     protected Response ok(JsonArray ja) {
         return Response.ok(Json.createObjectBuilder()
-            .add("status", ApiConstants.STATUS_OK)
+            .add(STATUS, ApiConstants.STATUS_OK)
             .add("data", ja).build())
             .type(MediaType.APPLICATION_JSON).build();
     }
 
     protected Response ok(JsonObjectBuilder bld) {
         return Response.ok(Json.createObjectBuilder()
-            .add("status", ApiConstants.STATUS_OK)
+            .add(STATUS, ApiConstants.STATUS_OK)
             .add("data", bld).build())
             .type(MediaType.APPLICATION_JSON)
             .build();
@@ -720,7 +726,7 @@ public abstract class AbstractApiBean {
 
     protected Response ok(JsonObject jo) {
         return Response.ok(Json.createObjectBuilder()
-                .add("status", ApiConstants.STATUS_OK)
+                .add(STATUS, ApiConstants.STATUS_OK)
                 .add("data", jo).build())
                 .type(MediaType.APPLICATION_JSON)
                 .build();
@@ -728,16 +734,16 @@ public abstract class AbstractApiBean {
 
     protected Response ok(String msg) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", ApiConstants.STATUS_OK)
-            .add("data", Json.createObjectBuilder().add("message", msg)).build())
+            .add(STATUS, ApiConstants.STATUS_OK)
+            .add("data", Json.createObjectBuilder().add(MESSAGE, msg)).build())
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
 
     protected Response ok(String msg, JsonObjectBuilder bld) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", ApiConstants.STATUS_OK)
-            .add("message", Json.createObjectBuilder().add("message", msg))
+            .add(STATUS, ApiConstants.STATUS_OK)
+            .add(MESSAGE, Json.createObjectBuilder().add(MESSAGE, msg))
             .add("data", bld).build())
             .type(MediaType.APPLICATION_JSON)
             .build();
@@ -745,13 +751,13 @@ public abstract class AbstractApiBean {
 
     protected Response ok(boolean value) {
         return Response.ok().entity(Json.createObjectBuilder()
-            .add("status", ApiConstants.STATUS_OK)
+            .add(STATUS, ApiConstants.STATUS_OK)
             .add("data", value).build()).build();
     }
 
     protected Response ok(long value) {
         return Response.ok().entity(Json.createObjectBuilder()
-                .add("status", ApiConstants.STATUS_OK)
+                .add(STATUS, ApiConstants.STATUS_OK)
                 .add("data", value).build()).build();
     }
 
@@ -777,7 +783,7 @@ public abstract class AbstractApiBean {
     protected Response created(String uri, JsonObjectBuilder bld) {
         return Response.created(URI.create(uri))
                 .entity(Json.createObjectBuilder()
-                .add("status", "OK")
+                .add(STATUS, "OK")
                 .add("data", bld).build())
                 .type(MediaType.APPLICATION_JSON)
                 .build();
@@ -786,7 +792,7 @@ public abstract class AbstractApiBean {
     protected Response accepted(JsonObjectBuilder bld) {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
-                        .add("status", STATUS_WF_IN_PROGRESS)
+                        .add(STATUS, STATUS_WF_IN_PROGRESS)
                         .add("data", bld).build()
                 ).build();
     }
@@ -794,7 +800,7 @@ public abstract class AbstractApiBean {
     protected Response accepted() {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
-                        .add("status", STATUS_WF_IN_PROGRESS).build()
+                        .add(STATUS, STATUS_WF_IN_PROGRESS).build()
                 ).build();
     }
 
@@ -837,8 +843,8 @@ public abstract class AbstractApiBean {
     protected static Response error(Status sts, String msg) {
         return Response.status(sts)
                 .entity(NullSafeJsonBuilder.jsonObjectBuilder()
-                        .add("status", ApiConstants.STATUS_ERROR)
-                        .add("message", msg).build()
+                        .add(STATUS, ApiConstants.STATUS_ERROR)
+                        .add(MESSAGE, msg).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 }

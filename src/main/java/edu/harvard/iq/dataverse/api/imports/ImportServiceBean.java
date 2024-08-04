@@ -78,6 +78,14 @@ import org.apache.commons.lang3.StringUtils;
  */
 @Stateless
 public class ImportServiceBean {
+    private static final String CONVERTED_VALUE_NA = " Converted Value: 'NA'";
+    private static final String CONVERTED_VALUE = " Converted Value:'";
+    private static final String MSG = ", msg:";
+    private static final String FIELD = "; Field: ";
+    private static final String DATA_MODIFIED_FILE = "Data modified - File: ";
+    private static final String INVALID_VALUE_1 = "Invalid value:  '";
+    private static final String INVALID_VALUE = "Invalid value: '";
+    private static final String MESSAGE = "message";
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -165,12 +173,12 @@ public class ImportServiceBean {
             logger.log(Level.INFO, "completed doImport {0}/{1}", new Object[]{file.getParentFile().getName(), file.getName()});
             return status;
         } catch (ImportException ex) {
-            String msg = "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage();
+            String msg = "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + MSG + ex.getMessage();
             logger.info(msg);
             if (validationLog != null) {
                 validationLog.println(msg);
             }
-            return Json.createObjectBuilder().add("message", "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + ex.getMessage());
+            return Json.createObjectBuilder().add(MESSAGE, "Import Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + MSG + ex.getMessage());
         } catch (IOException e) {
             Throwable causedBy = e.getCause();
             while (causedBy != null && causedBy.getCause() != null) {
@@ -194,7 +202,7 @@ public class ImportServiceBean {
             validationLog.println(msg);
             e.printStackTrace();
 
-            return Json.createObjectBuilder().add("message", "Unexpected Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + ", msg:" + e.getMessage());
+            return Json.createObjectBuilder().add(MESSAGE, "Unexpected Exception processing file " + file.getParentFile().getName() + "/" + file.getName() + MSG + e.getMessage());
 
         }
     }
@@ -314,8 +322,8 @@ public class ImportServiceBean {
                         }
                     }
                     if (!fixed) {
-                        String msg = "Data modified - File: " + metadataFile.getName() + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
-                                + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + DatasetField.NA_VALUE + "'";
+                        String msg = DATA_MODIFIED_FILE + metadataFile.getName() + FIELD + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                                + INVALID_VALUE_1 + f.getValue() + "'" + CONVERTED_VALUE + DatasetField.NA_VALUE + "'";
                         cleanupLog.println(msg);
                         f.setValue(DatasetField.NA_VALUE);
 
@@ -477,8 +485,8 @@ public class ImportServiceBean {
                     }
                     if (!fixed) {
                         if (importType.equals(ImportType.HARVEST)) {
-                            String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
-                                    + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + DatasetField.NA_VALUE + "'";
+                            String msg = DATA_MODIFIED_FILE + fileName + FIELD + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                                    + INVALID_VALUE_1 + f.getValue() + "'" + CONVERTED_VALUE + DatasetField.NA_VALUE + "'";
                             cleanupLog.println(msg);
                             f.setValue(DatasetField.NA_VALUE);
 
@@ -535,7 +543,7 @@ public class ImportServiceBean {
             logger.log(Level.INFO, "Error excuting Create dataset command: {0}", ex.getMessage());
             throw new ImportException("Error excuting dataverse command: " + ex.getMessage(), ex);
         }
-        return Json.createObjectBuilder().add("message", status);
+        return Json.createObjectBuilder().add(MESSAGE, status);
     }
 
     private boolean processMigrationValidationError(DatasetFieldValue f, PrintWriter cleanupLog, String fileName) {
@@ -543,21 +551,21 @@ public class ImportServiceBean {
             //Try to convert it based on the errors we've seen
             String convertedVal = convertInvalidEmail(f.getValue());
             if (!(convertedVal == null)) {
-                String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
-                     + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + convertedVal + "'";
+                String msg = DATA_MODIFIED_FILE + fileName + FIELD + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                     + INVALID_VALUE_1 + f.getValue() + "'" + CONVERTED_VALUE + convertedVal + "'";
                 cleanupLog.println(msg);
                 f.setValue(convertedVal);
                 return true;
             }
             //if conversion fails set to NA
-            String msg = "Data modified - File: " + fileName + "; Field: Dataset Contact Email; " + "Invalid value: '" + f.getValue() + "'" + " Converted Value: 'NA'";
+            String msg = DATA_MODIFIED_FILE + fileName + "; Field: Dataset Contact Email; " + INVALID_VALUE + f.getValue() + "'" + CONVERTED_VALUE_NA;
             cleanupLog.println(msg);
             f.setValue(DatasetField.NA_VALUE);
             return true;
         }
         if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.producerURL)) {
             if (f.getValue().equals("PRODUCER URL")) {
-                String msg = "Data modified - File: " + fileName + "; Field: Producer URL; " + "Invalid value: '" + f.getValue() + "'" + " Converted Value: 'NA'";
+                String msg = DATA_MODIFIED_FILE + fileName + "; Field: Producer URL; " + INVALID_VALUE + f.getValue() + "'" + CONVERTED_VALUE_NA;
                 cleanupLog.println(msg);
                 f.setValue(DatasetField.NA_VALUE);
                 return true;
@@ -565,15 +573,15 @@ public class ImportServiceBean {
         }
         if (f.getDatasetField().getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.DATE)) {
             if (f.getValue().toUpperCase().equals("YYYY-MM-DD")) {
-                String msg = "Data modified - File: " + fileName + "; Field:" + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
-                     + "Invalid value: '" + f.getValue() + "'" + " Converted Value: 'NA'";
+                String msg = DATA_MODIFIED_FILE + fileName + "; Field:" + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                     + INVALID_VALUE + f.getValue() + "'" + CONVERTED_VALUE_NA;
                 cleanupLog.println(msg);
                 f.setValue(DatasetField.NA_VALUE);
                 return true;
             }
             String convertedVal = convertInvalidDateString(f.getValue());
             if (!(convertedVal == null)) {
-                String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + ""
+                String msg = DATA_MODIFIED_FILE + fileName + FIELD + f.getDatasetField().getDatasetFieldType().getDisplayName() + ""
                         + " Converted Value:" + convertedVal + "; Invalid value:  '" + f.getValue() + "'";
                 cleanupLog.println(msg);
                 f.setValue(convertedVal);

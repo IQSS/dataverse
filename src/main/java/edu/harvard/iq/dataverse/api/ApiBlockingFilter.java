@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * @author michael
  */
 public class ApiBlockingFilter implements Filter {
+    private static final String APPLICATION_JSON = "application/json";
     public static final String UNBLOCK_KEY_QUERYPARAM = "unblock-key";
 
     interface BlockPolicy {
@@ -51,7 +52,7 @@ public class ApiBlockingFilter implements Filter {
             HttpServletResponse httpResponse = (HttpServletResponse) sr1;
             httpResponse.getWriter().println("{ \"status\":\"error\", \"message\":\"Endpoint blocked. Please contact the dataverse administrator\"}");
             httpResponse.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-            httpResponse.setContentType("application/json");
+            httpResponse.setContentType(APPLICATION_JSON);
         }
     };
 
@@ -69,7 +70,7 @@ public class ApiBlockingFilter implements Filter {
                 HttpServletResponse httpResponse = (HttpServletResponse) sr1;
                 httpResponse.getWriter().println("{ \"status\":\"error\", \"message\":\"Endpoint available from localhost only. Please contact the dataverse administrator\"}");
                 httpResponse.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-                httpResponse.setContentType("application/json");
+                httpResponse.setContentType(APPLICATION_JSON);
             }
         }
     };
@@ -104,7 +105,7 @@ public class ApiBlockingFilter implements Filter {
                 HttpServletResponse httpResponse = (HttpServletResponse) sr1;
                 httpResponse.getWriter().println("{ \"status\":\"error\", \"message\":\"Endpoint available using API key only. Please contact the dataverse administrator\"}");
                 httpResponse.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-                httpResponse.setContentType("application/json");
+                httpResponse.setContentType(APPLICATION_JSON);
             } else {
                 fc.doFilter(sr, sr1);
             }

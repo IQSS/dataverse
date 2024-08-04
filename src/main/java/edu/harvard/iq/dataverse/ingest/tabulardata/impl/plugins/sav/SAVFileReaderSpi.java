@@ -53,6 +53,12 @@ import org.apache.commons.codec.binary.Hex;
  */
 public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
 
+    private static final String HEX_DUMP_OF_THE_1ST_4_BYTES_FL2_24_46_4C_32 = "hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]=";
+
+    private static final String THIS_FILE_IS_NOT_SPSS_SAV_TYPE = "this file is NOT spss-sav type";
+
+    private static final String THIS_FILE_IS_SPSS_SAV_TYPE = "this file is spss-sav type";
+
     private static Logger dbgLog = Logger.getLogger(
             SAVFileReaderSpi.class.getPackage().getName());
 
@@ -103,7 +109,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
             throw new IOException();
         }
         //printHexDump(b, "hex dump of the byte-array");
-        dbgLog.fine("hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]=" +
+        dbgLog.fine(HEX_DUMP_OF_THE_1ST_4_BYTES_FL2_24_46_4C_32 +
                 new String(Hex.encodeHex(b)));
         if (stream.markSupported()) {
             stream.reset();
@@ -115,10 +121,10 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
         dbgLog.fine("from string[$FL2 == 24 46 4C 32]=" + new String(Hex.encodeHex(b)).toUpperCase());
 
         if (hdr4sav.equals(SAV_FILE_SIGNATURE)) {
-            dbgLog.fine("this file is spss-sav type");
+            dbgLog.fine(THIS_FILE_IS_SPSS_SAV_TYPE);
             return true;
         } else {
-            dbgLog.fine("this file is NOT spss-sav type");
+            dbgLog.fine(THIS_FILE_IS_NOT_SPSS_SAV_TYPE);
             return false;
         }
     }
@@ -143,7 +149,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
             throw new IOException();
         }
         //printHexDump(b, "hex dump of the byte-array");
-        dbgLog.fine("hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]=" +
+        dbgLog.fine(HEX_DUMP_OF_THE_1ST_4_BYTES_FL2_24_46_4C_32 +
                 (new String(Hex.encodeHex(b))).toUpperCase());
 
 
@@ -158,10 +164,10 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
 
 
         if (hdr4sav.equals(SAV_FILE_SIGNATURE)) {
-            dbgLog.fine("this file is spss-sav type");
+            dbgLog.fine(THIS_FILE_IS_SPSS_SAV_TYPE);
             return true;
         } else {
-            dbgLog.fine("this file is NOT spss-sav type");
+            dbgLog.fine(THIS_FILE_IS_NOT_SPSS_SAV_TYPE);
             return false;
         }
     }
@@ -184,7 +190,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
         MappedByteBuffer buff = srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, SAV_HEADER_SIZE);
 
         //printHexDump(buff, "hex dump of the byte-buffer");
-        dbgLog.fine("hex dump of the 1st 4 bytes[$FL2 == 24 46 4C 32]=" +
+        dbgLog.fine(HEX_DUMP_OF_THE_1ST_4_BYTES_FL2_24_46_4C_32 +
                 new String(Hex.encodeHex(buff.array())));
 
         buff.rewind();
@@ -197,10 +203,10 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
         dbgLog.fine("from string[hdr4]=" + new String(Hex.encodeHex(hdr4)).toUpperCase());
 
         if (hdr4sav.equals("$FL2")) {
-            dbgLog.fine("this file is spss-sav type");
+            dbgLog.fine(THIS_FILE_IS_SPSS_SAV_TYPE);
             return true;
         } else {
-            dbgLog.fine("this file is NOT spss-sav type");
+            dbgLog.fine(THIS_FILE_IS_NOT_SPSS_SAV_TYPE);
         }
         return false;
     }

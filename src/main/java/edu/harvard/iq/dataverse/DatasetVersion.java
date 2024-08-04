@@ -83,6 +83,16 @@ import org.apache.commons.lang3.StringUtils;
 @ValidateVersionNote(versionNote = "versionNote", versionState = "versionState")
 public class DatasetVersion implements Serializable {
 
+    private static final String TYPE = "@type";
+
+    private static final String ORGANIZATION = "Organization";
+
+    private static final String FAMILY_NAME = "familyName";
+
+    private static final String GIVEN_NAME = "givenName";
+
+    private static final String IDENTIFIER = "identifier";
+
     private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());
     private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
@@ -1863,10 +1873,10 @@ public class DatasetVersion implements Serializable {
         }
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("@context", "http://schema.org");
-        job.add("@type", "Dataset");
+        job.add(TYPE, "Dataset");
         // Note that whenever you use "@id" you should also use "identifier" and vice versa.
         job.add("@id", this.getDataset().getPersistentURL());
-        job.add("identifier", this.getDataset().getPersistentURL());
+        job.add(IDENTIFIER, this.getDataset().getPersistentURL());
         job.add("name", this.getTitle());
         JsonArrayBuilder authors = Json.createArrayBuilder();
         for (DatasetAuthor datasetAuthor : this.getDatasetAuthors()) {
@@ -1879,34 +1889,34 @@ public class DatasetVersion implements Serializable {
                 affiliation = datasetAuthor.getAffiliation().getValue();
             }
             JsonObject entity = PersonOrOrgUtil.getPersonOrOrganization(name, false, (identifierAsUrl != null));
-            String givenName = entity.containsKey("givenName") ? entity.getString("givenName") : null;
-            String familyName = entity.containsKey("familyName") ? entity.getString("familyName") : null;
+            String givenName = entity.containsKey(GIVEN_NAME) ? entity.getString(GIVEN_NAME) : null;
+            String familyName = entity.containsKey(FAMILY_NAME) ? entity.getString(FAMILY_NAME) : null;
 
             if (entity.getBoolean("isPerson")) {
                 // Person
-                author.add("@type", "Person");
+                author.add(TYPE, "Person");
                 if (givenName != null) {
-                    author.add("givenName", givenName);
+                    author.add(GIVEN_NAME, givenName);
                 }
                 if (familyName != null) {
-                    author.add("familyName", familyName);
+                    author.add(FAMILY_NAME, familyName);
                 }
                 if (!StringUtil.isEmpty(affiliation)) {
-                    author.add("affiliation", Json.createObjectBuilder().add("@type", "Organization").add("name", affiliation));
+                    author.add("affiliation", Json.createObjectBuilder().add(TYPE, ORGANIZATION).add("name", affiliation));
                 }
                 //Currently all possible identifier URLs are for people not Organizations
                 if (identifierAsUrl != null) {
                     author.add("sameAs", identifierAsUrl);
                     //Legacy - not sure if these are still useful
                     author.add("@id", identifierAsUrl);
-                    author.add("identifier", identifierAsUrl);
+                    author.add(IDENTIFIER, identifierAsUrl);
 
                 }
             } else {
                 // Organization
-                author.add("@type", "Organization");
+                author.add(TYPE, ORGANIZATION);
                 if (!StringUtil.isEmpty(affiliation)) {
-                    author.add("parentOrganization", Json.createObjectBuilder().add("@type", "Organization").add("name", affiliation));
+                    author.add("parentOrganization", Json.createObjectBuilder().add(TYPE, ORGANIZATION).add("name", affiliation));
                 }
             }
             // Both cases
@@ -1995,13 +2005,13 @@ public class DatasetVersion implements Serializable {
                     addToArray = true;
                 }
                 JsonObjectBuilder citationEntry = Json.createObjectBuilder();
-                citationEntry.add("@type", "CreativeWork");
+                citationEntry.add(TYPE, "CreativeWork");
                 if (pubCitation != null) {
                     citationEntry.add("name", pubCitation);
                 }
                 if (pubUrl != null) {
                     citationEntry.add("@id", pubUrl);
-                    citationEntry.add("identifier", pubUrl);
+                    citationEntry.add(IDENTIFIER, pubUrl);
                     citationEntry.add("url", pubUrl);
                 }
                 if (addToArray) {
@@ -2047,7 +2057,7 @@ public class DatasetVersion implements Serializable {
         String installationBrandName = BrandingUtil.getInstallationBrandName();
 
         job.add("includedInDataCatalog", Json.createObjectBuilder()
-                .add("@type", "DataCatalog")
+                .add(TYPE, "DataCatalog")
                 .add("name", installationBrandName)
                 .add("url", SystemConfig.getDataverseSiteUrlStatic())
         );
@@ -2057,11 +2067,11 @@ public class DatasetVersion implements Serializable {
          * values. Some services seem to prefer one over the other.
          */
         job.add("publisher", Json.createObjectBuilder()
-                .add("@type", "Organization")
+                .add(TYPE, ORGANIZATION)
                 .add("name", installationBrandName)
         );
         job.add("provider", Json.createObjectBuilder()
-                .add("@type", "Organization")
+                .add(TYPE, ORGANIZATION)
                 .add("name", installationBrandName)
         );
 
@@ -2070,7 +2080,7 @@ public class DatasetVersion implements Serializable {
             JsonArrayBuilder funderArray = Json.createArrayBuilder();
             for (String funderName : funderNames) {
                 JsonObjectBuilder funder = NullSafeJsonBuilder.jsonObjectBuilder();
-                funder.add("@type", "Organization");
+                funder.add(TYPE, ORGANIZATION);
                 funder.add("name", funderName);
                 funderArray.add(funder);
             }
@@ -2096,13 +2106,13 @@ public class DatasetVersion implements Serializable {
                 String filePidUrlAsString = null;
                 GlobalId gid = fileMetadata.getDataFile().getGlobalId();
                 filePidUrlAsString = gid != null ? gid.asURL() : null;
-                fileObject.add("@type", "DataDownload");
+                fileObject.add(TYPE, "DataDownload");
                 fileObject.add("name", fileMetadata.getLabel());
                 fileObject.add("encodingFormat", fileMetadata.getDataFile().getContentType());
                 fileObject.add("contentSize", fileMetadata.getDataFile().getFilesize());
                 fileObject.add("description", fileMetadata.getDescription());
                 fileObject.add("@id", filePidUrlAsString);
-                fileObject.add("identifier", filePidUrlAsString);
+                fileObject.add(IDENTIFIER, filePidUrlAsString);
                 String hideFilesBoolean = System.getProperty(SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS);
                 if (hideFilesBoolean != null && hideFilesBoolean.equals("true")) {
                     // no-op

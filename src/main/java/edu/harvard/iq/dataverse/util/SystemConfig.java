@@ -45,6 +45,14 @@ import java.util.regex.Pattern;
 @Named
 public class SystemConfig {
 
+    private static final String FOR = " for ";
+
+    private static final String IMAGE = "Image";
+
+    private static final String RETURNING = "Returning ";
+
+    private static final String S_S = "\\s*,\\s*";
+
     private static final Logger logger = Logger.getLogger(SystemConfig.class.getCanonicalName());
 
     @EJB
@@ -176,10 +184,10 @@ public class SystemConfig {
                 if (returnInt >= 0) {
                     return returnInt;
                 } else {
-                    logger.info("Returning " + defaultValue + " for " + key + " because value must be greater than zero, not \"" + metricsCacheTimeString + "\".");
+                    logger.info(RETURNING + defaultValue + FOR + key + " because value must be greater than zero, not \"" + metricsCacheTimeString + "\".");
                 }
             } catch (NumberFormatException ex) {
-                logger.info("Returning " + defaultValue + " for " + key + " because value must be an integer greater than zero, not \"" + metricsCacheTimeString + "\".");
+                logger.info(RETURNING + defaultValue + FOR + key + " because value must be an integer greater than zero, not \"" + metricsCacheTimeString + "\".");
             }
         }
         return defaultValue;
@@ -196,13 +204,13 @@ public class SystemConfig {
                 if (intFromDatabase > 0) {
                     return intFromDatabase;
                 } else {
-                    logger.info("Returning " + reasonableDefault + " for " + key + " because value must be greater than zero, not \"" + intFromDatabase + "\".");
+                    logger.info(RETURNING + reasonableDefault + FOR + key + " because value must be greater than zero, not \"" + intFromDatabase + "\".");
                 }
             } catch (NumberFormatException ex) {
-                logger.info("Returning " + reasonableDefault + " for " + key + " because value must be an integer greater than zero, not \"" + valueFromDatabase + "\".");
+                logger.info(RETURNING + reasonableDefault + FOR + key + " because value must be an integer greater than zero, not \"" + valueFromDatabase + "\".");
             }
         }
-        logger.fine("Returning " + reasonableDefault + " for " + key);
+        logger.fine(RETURNING + reasonableDefault + FOR + key);
         return reasonableDefault;
     }
 
@@ -390,7 +398,7 @@ public class SystemConfig {
     }
 
     public long getThumbnailSizeLimitImage() {
-        return getThumbnailSizeLimit("Image");
+        return getThumbnailSizeLimit(IMAGE);
     }
 
     public long getThumbnailSizeLimitPDF() {
@@ -402,7 +410,7 @@ public class SystemConfig {
 
         //get options via jvm options
         
-        if ("Image".equals(type)) {
+        if (IMAGE.equals(type)) {
             option = System.getProperty("dataverse.dataAccess.thumbnail.image.limit");
             return getLongLimitFromStringOrDefault(option, DEFAULT_THUMBNAIL_SIZE_LIMIT_IMAGE);
         } else if ("PDF".equals(type)) {
@@ -419,7 +427,7 @@ public class SystemConfig {
     }
 
     public boolean isThumbnailGenerationDisabledForImages() {
-        return isThumbnailGenerationDisabledForType("Image");
+        return isThumbnailGenerationDisabledForType(IMAGE);
     }
 
     public boolean isThumbnailGenerationDisabledForPDF() {
@@ -933,7 +941,7 @@ public class SystemConfig {
         if (uploadMethods == null) {
             return false;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+           return  Arrays.asList(uploadMethods.toLowerCase().split(S_S)).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
     }
 
@@ -960,7 +968,7 @@ public class SystemConfig {
         if (methods == null) {
             return false;
         } else {
-            return Arrays.asList(methods.toLowerCase().split("\\s*,\\s*")).contains(method);
+            return Arrays.asList(methods.toLowerCase().split(S_S)).contains(method);
         }
     }
 
@@ -969,7 +977,7 @@ public class SystemConfig {
         if (uploadMethods == null) {
             return 0;
         } else {
-           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
+           return  Arrays.asList(uploadMethods.toLowerCase().split(S_S)).size();
         }
     }
 

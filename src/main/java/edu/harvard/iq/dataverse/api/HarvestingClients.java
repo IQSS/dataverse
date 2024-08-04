@@ -41,6 +41,15 @@ import jakarta.ws.rs.core.Response;
 public class HarvestingClients extends AbstractApiBean {
 
 
+    private static final String NOT_FOUND = " not found.";
+
+
+    private static final String EXCEPTION_CAUGHT_LOOKING_UP_HARVESTING_CLIENT = "Exception caught looking up harvesting client ";
+
+
+    private static final String HARVESTING_CLIENT = "Harvesting client ";
+
+
     @EJB
     HarvesterServiceBean harvesterService;
     @EJB
@@ -108,12 +117,12 @@ public class HarvestingClients extends AbstractApiBean {
         try {
             harvestingClient = harvestingClientService.findByNickname(nickName);
         } catch (Exception ex) {
-            logger.warning("Exception caught looking up harvesting client " + nickName + ": " + ex.getMessage());
+            logger.warning(EXCEPTION_CAUGHT_LOOKING_UP_HARVESTING_CLIENT + nickName + ": " + ex.getMessage());
             return error(Response.Status.BAD_REQUEST, "Internal error: failed to look up harvesting client " + nickName + ".");
         }
 
         if (harvestingClient == null) {
-            return error(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
+            return error(Response.Status.NOT_FOUND, HARVESTING_CLIENT + nickName + NOT_FOUND);
         }
 
         // See the comment in the harvestingClients() (plural) above for the explanation
@@ -175,14 +184,14 @@ public class HarvestingClients extends AbstractApiBean {
             try {
                 lookedUpClient = harvestingClientService.findByNickname(nickName);
             } catch (Exception ex) {
-                logger.warning("Exception caught looking up harvesting client " + nickName + ": " + ex.getMessage());
+                logger.warning(EXCEPTION_CAUGHT_LOOKING_UP_HARVESTING_CLIENT + nickName + ": " + ex.getMessage());
                 // let's hope that this was a fluke of some kind; we'll proceed
                 // with the attempt to create a new client and report an error
                 // if that fails too.
             }
 
             if (lookedUpClient != null) {
-                return error(Response.Status.BAD_REQUEST, "Harvesting client " + nickName + " already exists");
+                return error(Response.Status.BAD_REQUEST, HARVESTING_CLIENT + nickName + " already exists");
             }
 
             HarvestingClient harvestingClient = new HarvestingClient();
@@ -256,7 +265,7 @@ public class HarvestingClients extends AbstractApiBean {
         }
 
         if (harvestingClient == null) {
-            return error(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
+            return error(Response.Status.NOT_FOUND, HARVESTING_CLIENT + nickName + NOT_FOUND);
         }
 
         String ownerDataverseAlias = harvestingClient.getDataverse().getAlias();
@@ -337,18 +346,18 @@ public class HarvestingClients extends AbstractApiBean {
         try {
             harvestingClient = harvestingClientService.findByNickname(nickName);
         } catch (Exception ex) {
-            logger.warning("Exception caught looking up harvesting client " + nickName + ": " + ex.getMessage());
+            logger.warning(EXCEPTION_CAUGHT_LOOKING_UP_HARVESTING_CLIENT + nickName + ": " + ex.getMessage());
             return error(Response.Status.BAD_REQUEST, "Internal error: failed to look up harvesting client " + nickName);
         }
 
         if (harvestingClient == null) {
-            return error(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
+            return error(Response.Status.NOT_FOUND, HARVESTING_CLIENT + nickName + NOT_FOUND);
         }
 
         // Check if the client is in a state where it can be safely deleted: 
         
         if (harvestingClient.isDeleteInProgress()) {
-            return error(Response.Status.BAD_REQUEST, "Harvesting client " + nickName + " is already being deleted (in progress)");
+            return error(Response.Status.BAD_REQUEST, HARVESTING_CLIENT + nickName + " is already being deleted (in progress)");
         }
 
         if (harvestingClient.isHarvestingNow()) {

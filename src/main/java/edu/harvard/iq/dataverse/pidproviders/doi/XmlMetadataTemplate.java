@@ -20,6 +20,14 @@ import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 
 public class XmlMetadataTemplate {
 
+    private static final String AFFILIATION_1 = "</affiliation>";
+
+    private static final String NAME_IDENTIFIER = "</nameIdentifier>";
+
+    private static final String RELATED_IDENTIFIERS = "</relatedIdentifiers>";
+
+    private static final String AFFILIATION = "<affiliation>";
+
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.DataCiteMetadataTemplate");
     private static String template;
 
@@ -145,22 +153,22 @@ public class XmlMetadataTemplate {
                     if (author.getIdType().equals("ORCID")) {
                         creatorsElement.append(
                                 "<nameIdentifier schemeURI=\"https://orcid.org/\" nameIdentifierScheme=\"ORCID\">"
-                                        + author.getIdValue() + "</nameIdentifier>");
+                                        + author.getIdValue() + NAME_IDENTIFIER);
                     }
                     if (author.getIdType().equals("ISNI")) {
                         creatorsElement.append(
                                 "<nameIdentifier schemeURI=\"http://isni.org/isni/\" nameIdentifierScheme=\"ISNI\">"
-                                        + author.getIdValue() + "</nameIdentifier>");
+                                        + author.getIdValue() + NAME_IDENTIFIER);
                     }
                     if (author.getIdType().equals("LCNA")) {
                         creatorsElement.append(
                                 "<nameIdentifier schemeURI=\"http://id.loc.gov/authorities/names/\" nameIdentifierScheme=\"LCNA\">"
-                                        + author.getIdValue() + "</nameIdentifier>");
+                                        + author.getIdValue() + NAME_IDENTIFIER);
                     }
                 }
                 if (author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
                     creatorsElement
-                            .append("<affiliation>" + author.getAffiliation().getDisplayValue() + "</affiliation>");
+                            .append(AFFILIATION + author.getAffiliation().getDisplayValue() + AFFILIATION_1);
                 }
                 creatorsElement.append("</creator>");
             }
@@ -179,7 +187,7 @@ public class XmlMetadataTemplate {
                     contributorsElement.append("<contributor contributorType=\"ContactPerson\"><contributorName>"
                             + contact[0] + "</contributorName>");
                     if (!contact[1].isEmpty()) {
-                        contributorsElement.append("<affiliation>" + contact[1] + "</affiliation>");
+                        contributorsElement.append(AFFILIATION + contact[1] + AFFILIATION_1);
                     }
                     contributorsElement.append("</contributor>");
                 }
@@ -191,7 +199,7 @@ public class XmlMetadataTemplate {
                 contributorsElement.append("<contributor contributorType=\"Producer\"><contributorName>" + producer[0]
                         + "</contributorName>");
                 if (!producer[1].isEmpty()) {
-                    contributorsElement.append("<affiliation>" + producer[1] + "</affiliation>");
+                    contributorsElement.append(AFFILIATION + producer[1] + AFFILIATION_1);
                 }
                 contributorsElement.append("</contributor>");
             }
@@ -224,7 +232,7 @@ public class XmlMetadataTemplate {
                 }
 
                 if (!sb.toString().isEmpty()) {
-                    sb.append("</relatedIdentifiers>");
+                    sb.append(RELATED_IDENTIFIERS);
                 }
             }
         } else if (dvObject.isInstanceofDataFile()) {
@@ -232,7 +240,7 @@ public class XmlMetadataTemplate {
             sb.append("<relatedIdentifiers>");
             sb.append("<relatedIdentifier relatedIdentifierType=\"DOI\" relationType=\"IsPartOf\"" + ">"
                     + df.getOwner().getGlobalId() + "</relatedIdentifier>");
-            sb.append("</relatedIdentifiers>");
+            sb.append(RELATED_IDENTIFIERS);
         }
         return sb.toString();
     }
@@ -247,7 +255,7 @@ public class XmlMetadataTemplate {
                 datafileIdentifiers = new ArrayList<>();
                 for (DataFile dataFile : dataset.getFiles()) {
                     datafileIdentifiers.add(dataFile.getIdentifier());
-                    int x = xmlMetadata.indexOf("</relatedIdentifiers>") - 1;
+                    int x = xmlMetadata.indexOf(RELATED_IDENTIFIERS) - 1;
                     xmlMetadata = xmlMetadata.replace("{relatedIdentifier}", dataFile.getIdentifier());
                     xmlMetadata = xmlMetadata.substring(0, x) + "<relatedIdentifier relatedIdentifierType=\"hasPart\" "
                             + "relationType=\"doi\">${relatedIdentifier}</relatedIdentifier>"

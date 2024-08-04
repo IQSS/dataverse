@@ -49,6 +49,26 @@ import org.apache.commons.codec.binary.Hex;
  */
 public class PORFileReaderSpi extends TabularDataFileReaderSpi {
 
+    private static final String POSITION_1 = "\tposition(1)=";
+
+    private static final String POSITION_2 = "\tposition(2)=";
+
+    private static final String POSITION_3 = "\tposition(3)=";
+
+    private static final String TH_ITERATION_POSITION = "-th iteration position =";
+
+    private static final String A_0A_CASE = "0A case";
+
+    private static final String A_0D_CASE = "0D case";
+
+    private static final String A_0D0A_CASE = "0D0A case";
+
+    private static final String A_0D0D0A_CASE = "0D0D0A case";
+
+    private static final String THIS_FILE_IS_NOT_SPSS_POR_TYPE = "this file is NOT spss-por type";
+
+    private static final String THIS_FILE_IS_SPSS_POR_TYPE = "this file is spss-por type";
+
     private static Logger dbgLog = Logger.getLogger(
             PORFileReaderSpi.class.getPackage().getName());
 
@@ -97,7 +117,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             throw new IOException();
         } else if (nbytes < 491) {
            // size test
-           dbgLog.fine("this file is NOT spss-por type");
+           dbgLog.fine(THIS_FILE_IS_NOT_SPSS_POR_TYPE);
             return false;
         }
 
@@ -134,7 +154,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             // 1-char case
             pos1 = baseBias + i;
             buff.position(pos1);
-            dbgLog.finer("\tposition(1)=" + buff.position());
+            dbgLog.finer(POSITION_1 + buff.position());
             int j = 6 * i;
             nlch[j] = buff.get();
 
@@ -147,7 +167,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             // 2-char case
             pos2 = baseBias + 2 * i;
             buff.position(pos2);
-            dbgLog.finer("\tposition(2)=" + buff.position());
+            dbgLog.finer(POSITION_2 + buff.position());
 
             nlch[j + 1] = buff.get();
             nlch[j + 2] = buff.get();
@@ -155,14 +175,14 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             // 3-char case
             pos3 = baseBias + 3 * i;
             buff.position(pos3);
-            dbgLog.finer("\tposition(3)=" + buff.position());
+            dbgLog.finer(POSITION_3 + buff.position());
 
             nlch[j + 3] = buff.get();
             nlch[j + 4] = buff.get();
             nlch[j + 5] = buff.get();
 
-            dbgLog.finer(i + "-th iteration position =" + nlch[j] + "\t" + nlch[j + 1] + "\t" + nlch[j + 2]);
-            dbgLog.finer(i + "-th iteration position =" + nlch[j + 3] + "\t" + nlch[j + 4] + "\t" + nlch[j + 5]);
+            dbgLog.finer(i + TH_ITERATION_POSITION + nlch[j] + "\t" + nlch[j + 1] + "\t" + nlch[j + 2]);
+            dbgLog.finer(i + TH_ITERATION_POSITION + nlch[j + 3] + "\t" + nlch[j + 4] + "\t" + nlch[j + 5]);
 
             if ((nlch[j + 3] == 13) && (nlch[j + 4] == 13) && (nlch[j + 5] == 10)) {
                 three++;
@@ -173,15 +193,15 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             buff.rewind();
         }
         if (three == nolines) {
-            dbgLog.fine("0D0D0A case");
+            dbgLog.fine(A_0D0D0A_CASE);
             windowsNewLine = false;
         } else if ((ucase == nolines) && (wcase < nolines)) {
-            dbgLog.fine("0A case");
+            dbgLog.fine(A_0A_CASE);
             windowsNewLine = false;
         } else if ((ucase < nolines) && (wcase == nolines)) {
-            dbgLog.fine("0D0A case");
+            dbgLog.fine(A_0D0A_CASE);
         } else if ((mcase == nolines) && (wcase < nolines)) {
-            dbgLog.fine("0D case");
+            dbgLog.fine(A_0D_CASE);
             windowsNewLine = false;
         }
 
@@ -203,10 +223,10 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
                 new String(Hex.encodeHex(pormark)) + "<-");
 
         if (pormarks.equals(POR_MARK)) {
-            dbgLog.fine("this file is spss-por type");
+            dbgLog.fine(THIS_FILE_IS_SPSS_POR_TYPE);
             return true;
         } else {
-            dbgLog.fine("this file is NOT spss-por type");
+            dbgLog.fine(THIS_FILE_IS_NOT_SPSS_POR_TYPE);
         }
         return false;
     }
@@ -234,7 +254,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             throw new IOException();
         } else if (nbytes < 491) {
            // size test
-           dbgLog.fine("this file is NOT spss-por type");
+           dbgLog.fine(THIS_FILE_IS_NOT_SPSS_POR_TYPE);
             return false;
         }
 
@@ -271,7 +291,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             // 1-char case
             pos1 = baseBias + i;
             buff.position(pos1);
-            dbgLog.finer("\tposition(1)=" + buff.position());
+            dbgLog.finer(POSITION_1 + buff.position());
             int j = 6 * i;
             nlch[j] = buff.get();
 
@@ -284,7 +304,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             // 2-char case
             pos2 = baseBias + 2 * i;
             buff.position(pos2);
-            dbgLog.finer("\tposition(2)=" + buff.position());
+            dbgLog.finer(POSITION_2 + buff.position());
 
             nlch[j + 1] = buff.get();
             nlch[j + 2] = buff.get();
@@ -292,14 +312,14 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             // 3-char case
             pos3 = baseBias + 3 * i;
             buff.position(pos3);
-            dbgLog.finer("\tposition(3)=" + buff.position());
+            dbgLog.finer(POSITION_3 + buff.position());
 
             nlch[j + 3] = buff.get();
             nlch[j + 4] = buff.get();
             nlch[j + 5] = buff.get();
 
-            dbgLog.finer(i + "-th iteration position =" + nlch[j] + "\t" + nlch[j + 1] + "\t" + nlch[j + 2]);
-            dbgLog.finer(i + "-th iteration position =" + nlch[j + 3] + "\t" + nlch[j + 4] + "\t" + nlch[j + 5]);
+            dbgLog.finer(i + TH_ITERATION_POSITION + nlch[j] + "\t" + nlch[j + 1] + "\t" + nlch[j + 2]);
+            dbgLog.finer(i + TH_ITERATION_POSITION + nlch[j + 3] + "\t" + nlch[j + 4] + "\t" + nlch[j + 5]);
 
             if ((nlch[j + 3] == 13) && (nlch[j + 4] == 13) && (nlch[j + 5] == 10)) {
                 three++;
@@ -310,15 +330,15 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             buff.rewind();
         }
         if (three == nolines) {
-            dbgLog.fine("0D0D0A case");
+            dbgLog.fine(A_0D0D0A_CASE);
             windowsNewLine = false;
         } else if ((ucase == nolines) && (wcase < nolines)) {
-            dbgLog.fine("0A case");
+            dbgLog.fine(A_0A_CASE);
             windowsNewLine = false;
         } else if ((ucase < nolines) && (wcase == nolines)) {
-            dbgLog.fine("0D0A case");
+            dbgLog.fine(A_0D0A_CASE);
         } else if ((mcase == nolines) && (wcase < nolines)) {
-            dbgLog.fine("0D case");
+            dbgLog.fine(A_0D_CASE);
             windowsNewLine = false;
         }
 
@@ -341,10 +361,10 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
                 new String(Hex.encodeHex(pormark)) + "<-");
 
         if (pormarks.equals(POR_MARK)) {
-            dbgLog.fine("this file is spss-por type");
+            dbgLog.fine(THIS_FILE_IS_SPSS_POR_TYPE);
             return true;
         } else {
-            dbgLog.fine("this file is NOT spss-por type");
+            dbgLog.fine(THIS_FILE_IS_NOT_SPSS_POR_TYPE);
         }
         return false;
     }
@@ -376,7 +396,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
 
         // size test
         if (buff.capacity() < 491) {
-            dbgLog.fine("this file is NOT spss-por type");
+            dbgLog.fine(THIS_FILE_IS_NOT_SPSS_POR_TYPE);
             return false;
         }
 
@@ -405,7 +425,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             // 1-char case
             pos1 = baseBias + i;
             buff.position(pos1);
-            dbgLog.finer("\tposition(1)=" + buff.position());
+            dbgLog.finer(POSITION_1 + buff.position());
             int j = 6 * i;
             nlch[j] = buff.get();
 
@@ -418,7 +438,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             // 2-char case
             pos2 = baseBias + 2 * i;
             buff.position(pos2);
-            dbgLog.finer("\tposition(2)=" + buff.position());
+            dbgLog.finer(POSITION_2 + buff.position());
 
             nlch[j + 1] = buff.get();
             nlch[j + 2] = buff.get();
@@ -426,14 +446,14 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             // 3-char case
             pos3 = baseBias + 3 * i;
             buff.position(pos3);
-            dbgLog.finer("\tposition(3)=" + buff.position());
+            dbgLog.finer(POSITION_3 + buff.position());
 
             nlch[j + 3] = buff.get();
             nlch[j + 4] = buff.get();
             nlch[j + 5] = buff.get();
 
-            dbgLog.finer(i + "-th iteration position =" + nlch[j] + "\t" + nlch[j + 1] + "\t" + nlch[j + 2]);
-            dbgLog.finer(i + "-th iteration position =" + nlch[j + 3] + "\t" + nlch[j + 4] + "\t" + nlch[j + 5]);
+            dbgLog.finer(i + TH_ITERATION_POSITION + nlch[j] + "\t" + nlch[j + 1] + "\t" + nlch[j + 2]);
+            dbgLog.finer(i + TH_ITERATION_POSITION + nlch[j + 3] + "\t" + nlch[j + 4] + "\t" + nlch[j + 5]);
 
             if ((nlch[j + 3] == 13) && (nlch[j + 4] == 13) && (nlch[j + 5] == 10)) {
                 three++;
@@ -444,15 +464,15 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             buff.rewind();
         }
         if (three == nolines) {
-            dbgLog.fine("0D0D0A case");
+            dbgLog.fine(A_0D0D0A_CASE);
             windowsNewLine = false;
         } else if ((ucase == nolines) && (wcase < nolines)) {
-            dbgLog.fine("0A case");
+            dbgLog.fine(A_0A_CASE);
             windowsNewLine = false;
         } else if ((ucase < nolines) && (wcase == nolines)) {
-            dbgLog.fine("0D0A case");
+            dbgLog.fine(A_0D0A_CASE);
         } else if ((mcase == nolines) && (wcase < nolines)) {
-            dbgLog.fine("0D case");
+            dbgLog.fine(A_0D_CASE);
             windowsNewLine = false;
         }
 
@@ -474,10 +494,10 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
 
 
         if (pormarks.equals(POR_MARK)) {
-            dbgLog.fine("this file is spss-por type");
+            dbgLog.fine(THIS_FILE_IS_SPSS_POR_TYPE);
             return true;
         } else {
-            dbgLog.fine("this file is NOT spss-por type");
+            dbgLog.fine(THIS_FILE_IS_NOT_SPSS_POR_TYPE);
         }
         return false;
     }

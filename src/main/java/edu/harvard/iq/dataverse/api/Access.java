@@ -159,6 +159,11 @@ import edu.harvard.iq.dataverse.api.exceptions.AuthorizationRequiredException;
 
 @Path("access")
 public class Access extends AbstractApiBean {
+    private static final String CONTENT_DISPOSITION = "Content-disposition";
+    private static final String ACCESS_API_GRANT_ACCESS_NO_ASSIGNEE_FOUND = "access.api.grantAccess.noAssigneeFound";
+    private static final String ACCESS_API_REQUEST_ACCESS_FILE_NOT_FOUND = "access.api.requestAccess.fileNotFound";
+    private static final String FORMAT = "format";
+    private static final String ORIGINAL = "original";
     private static final Logger logger = Logger.getLogger(Access.class.getCanonicalName());
 
     @EJB
@@ -329,7 +334,7 @@ public class Access extends AbstractApiBean {
 
         if (df.isTabularData()) {
             String originalMimeType = df.getDataTable().getOriginalFileFormat();
-            dInfo.addServiceAvailable(new OptionalAccessService("original", originalMimeType, "format=original", "Saved original (" + originalMimeType + ")"));
+            dInfo.addServiceAvailable(new OptionalAccessService(ORIGINAL, originalMimeType, "format=original", "Saved original (" + originalMimeType + ")"));
             dInfo.addServiceAvailable(new OptionalAccessService("tabular", "text/tab-separated-values", "format=tab", "Tabular file in native format"));
             dInfo.addServiceAvailable(new OptionalAccessService("R", "application/x-rlang-transport", "format=RData", "Data in R format"));
             dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
@@ -357,13 +362,13 @@ public class Access extends AbstractApiBean {
             logger.fine("is download service supported? key=" + key + ", value=" + value);
             // The loop goes through all query params (e.g. including key, gbrecs, persistentId, etc. )
             // So we need to identify when a service is being called and then let checkIfServiceSupportedAndSetConverter see if the required one exists
-            if (key.equals("imageThumb") || key.equals("format") || key.equals("variables") || key.equals("noVarHeader")) {
+            if (key.equals("imageThumb") || key.equals(FORMAT) || key.equals("variables") || key.equals("noVarHeader")) {
                 serviceRequested = true;
                 //In the dataset file table context a user is allowed to select original as the format
                 //for download
                 // if the dataset has tabular files - it should not be applied to instances 
                 // where the file selected is not tabular see #6972
-                if ("format".equals(key) && "original".equals(value) && !df.isTabularData()) {
+                if (FORMAT.equals(key) && ORIGINAL.equals(value) && !df.isTabularData()) {
                     serviceRequested = false;
                     break;
                 }
@@ -489,7 +494,7 @@ public class Access extends AbstractApiBean {
             }
         }
 
-        response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
+        response.setHeader(CONTENT_DISPOSITION, "attachment; filename=\"dataverse_files.zip\"");
 
         FileMetadata fm = null;
         if (fileMetadataId == null) {
@@ -500,7 +505,7 @@ public class Access extends AbstractApiBean {
 
         String fileName = fm.getLabel().replaceAll("\\.tab$", "-ddi.xml");
 
-        response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + "\"");
+        response.setHeader(CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
         response.setHeader("Content-Type", "application/xml; name=\"" + fileName + "\"");
 
         ByteArrayOutputStream outStream = null;
@@ -818,7 +823,7 @@ public class Access extends AbstractApiBean {
         Boolean getOrig = false;
         for (String key : uriInfo.getQueryParameters().keySet()) {
             String value = uriInfo.getQueryParameters().getFirst(key);
-            if ("format".equals(key) && "original".equals(value)) {
+            if (FORMAT.equals(key) && ORIGINAL.equals(value)) {
                 getOrig = true;
             }
         }
@@ -882,7 +887,7 @@ public class Access extends AbstractApiBean {
                                         // to produce some output.
                                         zipper = new DataFileZipper(os);
                                         zipper.setFileManifest(fileManifest);
-                                        response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
+                                        response.setHeader(CONTENT_DISPOSITION, "attachment; filename=\"dataverse_files.zip\"");
                                         response.setHeader("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
                                     }
 
@@ -1419,7 +1424,7 @@ public class Access extends AbstractApiBean {
             dataFile = findDataFileOrDie(fileToRequestAccessId);
         } catch (WrappedResponse ex) {
             List<String> args = Arrays.asList(fileToRequestAccessId);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle(ACCESS_API_REQUEST_ACCESS_FILE_NOT_FOUND, args));
         }
 
         if (FileUtil.isRetentionExpired(dataFile)) {
@@ -1535,14 +1540,14 @@ public class Access extends AbstractApiBean {
             dataFile = findDataFileOrDie(fileToRequestAccessId);
         } catch (WrappedResponse ex) {
             List<String> args = Arrays.asList(fileToRequestAccessId);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle(ACCESS_API_REQUEST_ACCESS_FILE_NOT_FOUND, args));
         }
 
         RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(identifier);
 
         if (ra == null) {
             List<String> args = Arrays.asList(identifier);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle(ACCESS_API_GRANT_ACCESS_NO_ASSIGNEE_FOUND, args));
         }
 
         dataverseRequest = createDataverseRequest(getRequestUser(crc));
@@ -1597,7 +1602,7 @@ public class Access extends AbstractApiBean {
             dataFile = findDataFileOrDie(fileToRequestAccessId);
         } catch (WrappedResponse ex) {
             List<String> args = Arrays.asList(fileToRequestAccessId);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle(ACCESS_API_REQUEST_ACCESS_FILE_NOT_FOUND, args));
         }
 
         dataverseRequest = createDataverseRequest(getRequestUser(crc));
@@ -1609,7 +1614,7 @@ public class Access extends AbstractApiBean {
         RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(identifier);
         if (ra == null) {
             List<String> args = Arrays.asList(identifier);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle(ACCESS_API_GRANT_ACCESS_NO_ASSIGNEE_FOUND, args));
         }
 
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
@@ -1663,14 +1668,14 @@ public class Access extends AbstractApiBean {
             dataFile = findDataFileOrDie(fileToRequestAccessId);
         } catch (WrappedResponse ex) {
             List<String> args = Arrays.asList(fileToRequestAccessId);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle(ACCESS_API_REQUEST_ACCESS_FILE_NOT_FOUND, args));
         }
 
         RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(identifier);
 
         if (ra == null) {
             List<String> args = Arrays.asList(identifier);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle(ACCESS_API_GRANT_ACCESS_NO_ASSIGNEE_FOUND, args));
         }
 
         dataverseRequest = createDataverseRequest(getRequestUser(crc));

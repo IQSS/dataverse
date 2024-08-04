@@ -53,6 +53,10 @@ import org.primefaces.PrimeFaces;
 @Named
 public class FileDownloadServiceBean implements java.io.Serializable {
 
+    private static final String API_ACCESS_DATAFILE = "/api/access/datafile/";
+
+    private static final String CONTENT_DISPOSITION = "Content-Disposition";
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -248,8 +252,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             }
             MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, version, guestbookResponse.getDataFile());
             //As the api download url is not available at this point we construct it manually
-            entry.setTargetUrl("/api/access/datafile/" + guestbookResponse.getDataFile().getId());
-            entry.setRequestUrl("/api/access/datafile/" + guestbookResponse.getDataFile().getId());
+            entry.setTargetUrl(API_ACCESS_DATAFILE + guestbookResponse.getDataFile().getId());
+            entry.setRequestUrl(API_ACCESS_DATAFILE + guestbookResponse.getDataFile().getId());
             mdcLogService.logEntry(entry);
         } catch (CommandException e) {
             //if an error occurs here then download won't happen no need for response recs...
@@ -336,7 +340,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public void redirectToAuxFileDownloadAPI(Long fileId, String formatTag, String formatVersion) {
-        String fileDownloadUrl = "/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion;
+        String fileDownloadUrl = API_ACCESS_DATAFILE + fileId + "/auxiliary/" + formatTag + "/" + formatVersion;
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
         } catch (IOException ex) {
@@ -417,7 +421,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("text/xml");
-        response.setHeader("Content-Disposition", fileNameString);
+        response.setHeader(CONTENT_DISPOSITION, fileNameString);
 
         try {
             ServletOutputStream out = response.getOutputStream();
@@ -466,7 +470,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
-        response.setHeader("Content-Disposition", fileNameString);
+        response.setHeader(CONTENT_DISPOSITION, fileNameString);
 
         try {
             ServletOutputStream out = response.getOutputStream();
@@ -523,7 +527,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         //Fix for 6029 FireFox was failing to parse it when content type was set to json 
         response.setContentType("text/plain");
-        response.setHeader("Content-Disposition", fileNameString);
+        response.setHeader(CONTENT_DISPOSITION, fileNameString);
 
         try {
             ServletOutputStream out = response.getOutputStream();

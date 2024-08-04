@@ -57,6 +57,10 @@ import org.apache.solr.common.SolrDocumentList;
 @Named
 public class SearchServiceBean {
 
+    private static final String TO_ID = " to=id}";
+
+    private static final String JOIN_FROM = "{!join from=";
+
     private static final Logger logger = Logger.getLogger(SearchServiceBean.class.getCanonicalName());
 
     /**
@@ -991,7 +995,7 @@ public class SearchServiceBean {
          */
 //        String allUsersString = IndexServiceBean.getGroupPrefix() + AllUsers.get().getAlias();
 //        String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + allUsersString + ")";
-        String publicOnly = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + ")";
+        String publicOnly = JOIN_FROM + SearchFields.DEFINITION_POINT + TO_ID + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + ")";
 //        String publicOnly = "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getPublicGroupString();
         // initialize to public only to be safe
         String dangerZoneNoSolrJoin = null;
@@ -1137,7 +1141,7 @@ public class SearchServiceBean {
             }
             groupsFromProviders = sb.toString();
             logger.fine("groupsFromProviders:" + groupsFromProviders);
-            String guestWithGroups = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + groupsFromProviders + ")";
+            String guestWithGroups = JOIN_FROM + SearchFields.DEFINITION_POINT + TO_ID + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + groupsFromProviders + ")";
             logger.fine(guestWithGroups);
             return guestWithGroups;
         }
@@ -1194,7 +1198,7 @@ public class SearchServiceBean {
             /**
              * @todo get rid of "experimental" in name
              */
-            String experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";
+            String experimentalJoin = JOIN_FROM + SearchFields.DEFINITION_POINT + TO_ID + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + groupsFromProviders + ")";
             publicPlusUserPrivateGroup = experimentalJoin;
         }
 

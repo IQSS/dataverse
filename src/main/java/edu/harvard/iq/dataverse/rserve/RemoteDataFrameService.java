@@ -60,6 +60,14 @@ import org.apache.commons.lang3.StringUtils;
 
 public class RemoteDataFrameService {
 
+    private static final String DSNPRFX = ", dsnprfx='";
+
+    private static final String DATA = "Data.";
+
+    private static final String REXEC_ERROR = "RexecError";
+
+    private static final String FILE_REMOVE = "file.remove('";
+
     // ----------------------------------------------------- static filelds
     
     private static Logger logger = Logger.getLogger(RemoteDataFrameService.class.getPackage().getName());
@@ -128,13 +136,13 @@ public class RemoteDataFrameService {
             String rscript = readLocalResource(DATAVERSE_R_FUNCTIONS);
             connection.voidEval(rscript);
 
-            String dataFileName = "Data." + PID + ".RData";
+            String dataFileName = DATA + PID + ".RData";
 
             // data file to be copied back to the dvn
             String dsnprfx = RSERVE_TMP_DIR + "/" + dataFileName;
 
             String command = "direct_export(file='" + tempFileNameIn + "'," +
-                             "fmt='" + fmt + "'" + ", dsnprfx='" + dsnprfx + "')";
+                             "fmt='" + fmt + "'" + DSNPRFX + dsnprfx + "')";
 
             connection.voidEval(command);
 
@@ -153,14 +161,14 @@ public class RemoteDataFrameService {
 
             logger.fine("result object (before closing the Rserve):\n" + result);
 
-            String deleteLine = "file.remove('" + tempFileNameIn + "')";
+            String deleteLine = FILE_REMOVE + tempFileNameIn + "')";
             connection.eval(deleteLine);
 
             connection.close();
 
         } catch (IOException | REXPMismatchException | RserveException e) {
             logger.severe(e.getMessage());
-            result.put("RexecError", "true");
+            result.put(REXEC_ERROR, "true");
         }
 
         return result;
@@ -443,14 +451,14 @@ public class RemoteDataFrameService {
             // the above to a factor of "0" and "1"s), etc. 
             // -- L.A. 4.3
                             
-            String dataFileName = "Data." + PID + "." + jobRequest.getFormatRequested();
+            String dataFileName = DATA + PID + "." + jobRequest.getFormatRequested();
 
             // data file to be copied back to the dvn
             String dsnprfx = RSERVE_TMP_DIR + "/" + dataFileName;
 
             String dataverseDataFrameCommand = "createDataverseDataFrame(dtfrm=x," +
                 "dwnldoptn='" + jobRequest.getFormatRequested() + "'" +
-                ", dsnprfx='" + dsnprfx + "')";
+                DSNPRFX + dsnprfx + "')";
 
             connection.voidEval(dataverseDataFrameCommand);
 
@@ -461,7 +469,7 @@ public class RemoteDataFrameService {
             result.putAll(buildResult(connection, dsnprfx, wbFileSize, result));
         } catch (Exception e) {
             logger.severe(e.getMessage());
-            result.put("RexecError", "true");
+            result.put(REXEC_ERROR, "true");
         }
 
         return result;
@@ -486,7 +494,7 @@ public class RemoteDataFrameService {
 
         logger.fine("result object (before closing the Rserve):\n" + result);
 
-        String deleteLine = "file.remove('" + tempFileNameIn + "')";
+        String deleteLine = FILE_REMOVE + tempFileNameIn + "')";
         connection.eval(deleteLine);
         connection.close();
         return result;
@@ -598,7 +606,7 @@ public class RemoteDataFrameService {
             int fileSize = getFileSize(connection, tempFileNameOut);
             preprocessedDataFile = transferRemoteFile(connection, tempFileNameOut, PREPROCESS_FILE_PREFIX, "json", fileSize);
 
-            String deleteLine = "file.remove('" + tempFileNameOut + "')";
+            String deleteLine = FILE_REMOVE + tempFileNameOut + "')";
             connection.eval(deleteLine);
 
             connection.close();
@@ -649,14 +657,14 @@ public class RemoteDataFrameService {
         Map<String, String> sr = new HashMap<>();
 
         try {
-            String dataFileName = "Data." + PID + "." + jobRequest.getFormatRequested();
+            String dataFileName = DATA + PID + "." + jobRequest.getFormatRequested();
 
             // data file to be copied back to the dvn
             String dsnprfx = RSERVE_TMP_DIR + "/" + dataFileName;
 
             String dataverseDataFrameCommand = "createDataverseDataFrame(dtfrm=x," +
                 "dwnldoptn='" + jobRequest.getFormatRequested() + "'" +
-                ", dsnprfx='" + dsnprfx + "')";
+                DSNPRFX + dsnprfx + "')";
 
             connection.voidEval(dataverseDataFrameCommand);
 
@@ -666,11 +674,11 @@ public class RemoteDataFrameService {
 
         } catch (RserveException rse) {
             rse.printStackTrace();
-            sr.put("RexecError", "true");
+            sr.put(REXEC_ERROR, "true");
             return sr;
         }
 
-        sr.put("RexecError", "false");
+        sr.put(REXEC_ERROR, "false");
         return sr;
     }
 
@@ -724,7 +732,7 @@ public class RemoteDataFrameService {
         // delete remote file: 
         
         try {
-            String deleteLine = "file.remove('" + targetFilename + "')";
+            String deleteLine = FILE_REMOVE + targetFilename + "')";
             connection.eval(deleteLine);
         } catch (Exception ex) {
             // do nothing.

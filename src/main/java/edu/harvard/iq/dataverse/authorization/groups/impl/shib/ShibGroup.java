@@ -18,6 +18,8 @@ import jakarta.persistence.Transient;
 @Entity
 public class ShibGroup implements Group, Serializable {
 
+    private static final String NOT_SUPPORTED_YET = "Not supported yet.";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -96,12 +98,12 @@ public class ShibGroup implements Group, Serializable {
 
     @Override
     public String getDescription() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public boolean isEditable() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -132,6 +134,6 @@ public class ShibGroup implements Group, Serializable {
 
     @Override
     public boolean contains(DataverseRequest aRequest) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); //To change body of generated methods, choose Tools | Templates.
     }
 }

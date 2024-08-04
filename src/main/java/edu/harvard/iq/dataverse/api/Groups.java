@@ -38,6 +38,9 @@ import static org.apache.commons.lang3.StringUtils.isNumeric;
 @Path("admin/groups")
 @Stateless
 public class Groups extends AbstractApiBean {
+    private static final String NOT_FOUND = " not found";
+    private static final String GROUP = "Group ";
+    private static final String REQUIRED_FIELD_MISSING = "required field missing: ";
     private static final Logger logger = Logger.getLogger(Groups.class.getName());
 
     private IpGroupProvider ipGroupPrv;
@@ -127,7 +130,7 @@ public class Groups extends AbstractApiBean {
             grp = ipGroupPrv.get(groupIdtf);
         }
 
-        return (grp == null) ? notFound("Group " + groupIdtf + " not found") : ok(json(grp));
+        return (grp == null) ? notFound(GROUP + groupIdtf + NOT_FOUND) : ok(json(grp));
     }
 
     @DELETE
@@ -140,11 +143,11 @@ public class Groups extends AbstractApiBean {
             grp = ipGroupPrv.get(groupIdtf);
         }
 
-        if (grp == null) return notFound("Group " + groupIdtf + " not found");
+        if (grp == null) return notFound(GROUP + groupIdtf + NOT_FOUND);
 
         try {
             ipGroupPrv.deleteGroup(grp);
-            return ok("Group " + grp.getAlias() + " deleted.");
+            return ok(GROUP + grp.getAlias() + " deleted.");
         } catch (Exception topExp) {
             // get to the cause (unwraps EJB exception wrappers).
             Throwable e = topExp;
@@ -176,17 +179,17 @@ public class Groups extends AbstractApiBean {
         String expectedNameKey = "name";
         JsonString name = shibGroupInput.getJsonString(expectedNameKey);
         if (name == null) {
-            return error(Response.Status.BAD_REQUEST, "required field missing: " + expectedNameKey);
+            return error(Response.Status.BAD_REQUEST, REQUIRED_FIELD_MISSING + expectedNameKey);
         }
         String expectedAttributeKey = "attribute";
         JsonString attribute = shibGroupInput.getJsonString(expectedAttributeKey);
         if (attribute == null) {
-            return error(Response.Status.BAD_REQUEST, "required field missing: " + expectedAttributeKey);
+            return error(Response.Status.BAD_REQUEST, REQUIRED_FIELD_MISSING + expectedAttributeKey);
         }
         String expectedPatternKey = "pattern";
         JsonString pattern = shibGroupInput.getJsonString(expectedPatternKey);
         if (pattern == null) {
-            return error(Response.Status.BAD_REQUEST, "required field missing: " + expectedPatternKey);
+            return error(Response.Status.BAD_REQUEST, REQUIRED_FIELD_MISSING + expectedPatternKey);
         }
         ShibGroup shibGroupToPersist = new ShibGroup(name.getString(), attribute.getString(), pattern.getString(), shibGroupPrv);
         ShibGroup persitedShibGroup = shibGroupPrv.persist(shibGroupToPersist);
@@ -271,7 +274,7 @@ public class Groups extends AbstractApiBean {
     @Path("domain/{groupAlias}")
     public Response getMailDomainGroup(@PathParam("groupAlias") String groupAlias) {
         MailDomainGroup grp = mailDomainGroupPrv.get(groupAlias);
-        return (grp == null) ? notFound("Group " + groupAlias + " not found") : ok(json(grp));
+        return (grp == null) ? notFound(GROUP + groupAlias + NOT_FOUND) : ok(json(grp));
     }
 
     @DELETE
@@ -279,7 +282,7 @@ public class Groups extends AbstractApiBean {
     public Response deleteMailDomainGroup(@PathParam("groupAlias") String groupAlias) {
         mailDomainGroupPrv.delete(groupAlias);
         mailDomainGroupPrv.updateGroups();
-        return ok("Group " + groupAlias + " deleted.");
+        return ok(GROUP + groupAlias + " deleted.");
     }
 
 }

@@ -14,6 +14,12 @@ import jakarta.persistence.PersistenceContext;
 @Named
 public class FileAccessRequestServiceBean {
 
+    private static final String AUTHENTICATED_USER_ID = "authenticatedUserId";
+
+    private static final String DATA_FILE_ID = "dataFileId";
+
+    private static final String REQUEST_STATE = "requestState";
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -27,15 +33,15 @@ public class FileAccessRequestServiceBean {
 
     public List<FileAccessRequest> findAll(Long authenticatedUserId, Long fileId, FileAccessRequest.RequestState requestState) {
         return em.createNamedQuery("FileAccessRequest.findByAuthenticatedUserIdAndDataFileIdAndRequestState", FileAccessRequest.class)
-                .setParameter("authenticatedUserId", authenticatedUserId)
-                .setParameter("dataFileId", fileId)
-                .setParameter("requestState", requestState)
+                .setParameter(AUTHENTICATED_USER_ID, authenticatedUserId)
+                .setParameter(DATA_FILE_ID, fileId)
+                .setParameter(REQUEST_STATE, requestState)
                 .getResultList();
     }
 
     public List<FileAccessRequest> findAllByAuthenticedUserId(Long authenticatedUserId) {
         return em.createNamedQuery("FileAccessRequest.findByAuthenticatedUserId", FileAccessRequest.class)
-                        .setParameter("authenticatedUserId", authenticatedUserId)
+                        .setParameter(AUTHENTICATED_USER_ID, authenticatedUserId)
                         .getResultList();
     }
 
@@ -48,28 +54,28 @@ public class FileAccessRequestServiceBean {
 
     public List<FileAccessRequest> findAllByDataFileId(Long dataFileId) {
         return em.createNamedQuery("FileAccessRequest.findByDataFileId", FileAccessRequest.class)
-                        .setParameter("dataFileId", dataFileId)
+                        .setParameter(DATA_FILE_ID, dataFileId)
                         .getResultList();
     }
 
     public List<FileAccessRequest> findAllByAuthenticatedUserIdAndRequestState(Long authenticatedUserId, FileAccessRequest.RequestState requestState) {
         return em.createNamedQuery("FileAccessRequest.findByAuthenticatedUserIdAndRequestState", FileAccessRequest.class)
-                        .setParameter("authenticatedUserId", authenticatedUserId)
-                        .setParameter("requestState", requestState)
+                        .setParameter(AUTHENTICATED_USER_ID, authenticatedUserId)
+                        .setParameter(REQUEST_STATE, requestState)
                         .getResultList();
     }
 
     public List<FileAccessRequest> findAllByGuestbookResponseIdAndRequestState(Long guestbookResponseId, FileAccessRequest.RequestState requestState) {
         return em.createNamedQuery("FileAccessRequest.findByGuestbookResponseIdAndRequestState", FileAccessRequest.class)
-                        .setParameter("dataFileId", guestbookResponseId)
-                        .setParameter("requestState", requestState)
+                        .setParameter(DATA_FILE_ID, guestbookResponseId)
+                        .setParameter(REQUEST_STATE, requestState)
                         .getResultList();
     }
 
     public List<FileAccessRequest> findAllByDataFileIdAndRequestState(Long dataFileId, FileAccessRequest.RequestState requestState) {
         return em.createNamedQuery("FileAccessRequest.findByDataFileIdAndRequestState", FileAccessRequest.class)
-                        .setParameter("dataFileId", dataFileId)
-                        .setParameter("requestState", requestState)
+                        .setParameter(DATA_FILE_ID, dataFileId)
+                        .setParameter(REQUEST_STATE, requestState)
                         .getResultList();
     }
 

@@ -35,6 +35,12 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 public class InvalidData {
 
 
+    private static final String INVALRNG_1 = "\t\t</invalrng>\n";
+
+
+    private static final String INVALRNG = "\t\t<invalrng>\n";
+
+
     public InvalidData(int type) {
         this.type = type;
     }
@@ -84,15 +90,15 @@ public class InvalidData {
 
         switch (type) {
             case 1: case 2: case 3:
-                    sb.append("\t\t<invalrng>\n");
+                    sb.append(INVALRNG);
                     for (int k = 0; k < invalidValues.size(); k++) {
                         sb.append("\t\t\t<item VALUE=\"" + invalidValues.get(k) + "\"/>\n");
                     }
-                    sb.append("\t\t</invalrng>\n");
+                    sb.append(INVALRNG_1);
                 break;
             case -2:
                     // range-type 1 missing values
-                    sb.append("\t\t<invalrng>\n");
+                    sb.append(INVALRNG);
                     sb.append("\t\t\t<range");
                     if (!invalidRange.get(0).equals("LOWEST")) {
                         sb.append(" min=\"" + invalidRange.get(0) + "\"");
@@ -101,11 +107,11 @@ public class InvalidData {
                         sb.append(" max=\"" + invalidRange.get(1) + "\"");
                     }
                     sb.append("/>\n");
-                    sb.append("\t\t</invalrng>\n");
+                    sb.append(INVALRNG_1);
                 break;
             case -3:
                     // range-type: 2 missing values
-                    sb.append("\t\t<invalrng>\n");
+                    sb.append(INVALRNG);
                     sb.append("\t\t\t<range");
                     if (!invalidRange.get(0).equals("LOWEST")) {
                         sb.append(" min=\"" + invalidRange.get(0) + "\"");
@@ -115,7 +121,7 @@ public class InvalidData {
                     }
                     sb.append("/>\n");
                     sb.append("\t\t\t<item VALUE=\"" + invalidValues.get(0) + "\"/>\n");
-                    sb.append("\t\t</invalrng>\n");
+                    sb.append(INVALRNG_1);
 
                 break;
             default:

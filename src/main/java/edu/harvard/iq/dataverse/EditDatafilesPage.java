@@ -99,6 +99,12 @@ import org.primefaces.PrimeFaces;
 @Named("EditDatafilesPage")
 public class EditDatafilesPage implements java.io.Serializable {
 
+    private static final String COULDN_T_SAVE_DATASET_0 = "Couldn''t save dataset: {0}";
+
+    private static final String UPLOAD_IN_PROGRESS_CANCELLED = "Upload in progress cancelled";
+
+    private static final String DATASET_FILE_UPLOAD_WARNING = "dataset.file.uploadWarning";
+
     private static final Logger logger = Logger.getLogger(EditDatafilesPage.class.getCanonicalName());
 
     public enum FileEditMode {
@@ -1056,7 +1062,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (dataset.getId() != null) {
             Dataset lockTest = datasetService.find(dataset.getId());
             if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress) || lockTest.isLockedFor(DatasetLock.Reason.EditInProgress)) {
-                logger.log(Level.INFO, "Couldn''t save dataset: {0}", "It is locked."
+                logger.log(Level.INFO, COULDN_T_SAVE_DATASET_0, "It is locked."
                         + "");
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, getBundleString("dataset.locked.editInProgress.message"), BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null))));
                 return null;
@@ -1085,7 +1091,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 //SEK 09/19/18 Get Dataset again to test for lock just in case the user downloads the rsync script via the api while the 
                 // edit files page is open and has already loaded a file in http upload for Dual Mode
                 if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload) || lockTest.isLockedFor(DatasetLock.Reason.DcmUpload)) {
-                    logger.log(Level.INFO, "Couldn''t save dataset: {0}", "DCM script has been downloaded for this dataset. Additonal files are not permitted."
+                    logger.log(Level.INFO, COULDN_T_SAVE_DATASET_0, "DCM script has been downloaded for this dataset. Additonal files are not permitted."
                             + "");
                     populateDatasetUpdateFailureMessage();
                     return null;
@@ -1207,14 +1213,14 @@ public class EditDatafilesPage implements java.io.Serializable {
                 error.append(cause).append(" ");
                 error.append(cause.getMessage()).append(" ");
             }
-            logger.log(Level.INFO, "Couldn''t save dataset: {0}", error.toString());
+            logger.log(Level.INFO, COULDN_T_SAVE_DATASET_0, error.toString());
             populateDatasetUpdateFailureMessage();
             return null;
         } catch (CommandException ex) {
             // FacesContext.getCurrentInstance().addMessage(null, new
             // FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " +
             // ex.toString()));
-            logger.log(Level.INFO, "Couldn''t save dataset: {0}", ex.getMessage());
+            logger.log(Level.INFO, COULDN_T_SAVE_DATASET_0, ex.getMessage());
             populateDatasetUpdateFailureMessage();
             return null;
         }
@@ -1579,7 +1585,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }*/
             }
             if (uploadInProgress.isFalse()) {
-                logger.warning("Upload in progress cancelled");
+                logger.warning(UPLOAD_IN_PROGRESS_CANCELLED);
                 for (DataFile newFile : datafiles) {
                     FileUtil.deleteTempFile(newFile, dataset, ingestService);
                 }
@@ -1707,7 +1713,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
         if (s3io == null) {
-            FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), "Direct upload not supported for this dataset"));
+            FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle(DATASET_FILE_UPLOAD_WARNING), "Direct upload not supported for this dataset"));
         }
         String url = null;
         String storageIdentifier = null;
@@ -1716,7 +1722,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
         } catch (IOException io) {
             logger.warning(io.getMessage());
-            FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), "Issue in connecting to S3 store for direct upload"));
+            FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle(DATASET_FILE_UPLOAD_WARNING), "Issue in connecting to S3 store for direct upload"));
         }
 
         PrimeFaces.current().executeScript("uploadFileDirectly('" + url + "','" + storageIdentifier + "')");
@@ -1733,7 +1739,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (s3io == null) {
             FacesContext.getCurrentInstance().addMessage(uploadComponentId,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            BundleUtil.getStringFromBundle("dataset.file.uploadWarning"),
+                            BundleUtil.getStringFromBundle(DATASET_FILE_UPLOAD_WARNING),
                             "Direct upload not supported for this dataset"));
         }
         JsonObjectBuilder urls = null;
@@ -1746,7 +1752,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             logger.warning(io.getMessage());
             FacesContext.getCurrentInstance().addMessage(uploadComponentId,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                            BundleUtil.getStringFromBundle("dataset.file.uploadWarning"),
+                            BundleUtil.getStringFromBundle(DATASET_FILE_UPLOAD_WARNING),
                             "Issue in connecting to S3 store for direct upload"));
         }
 
@@ -1802,7 +1808,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
                 } else {
                     //adding back warnings in non-replace situations
-                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
+                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle(DATASET_FILE_UPLOAD_WARNING), uploadWarningMessage));
                 }
 
             } else if (uploadSuccessMessage != null) {
@@ -2105,14 +2111,14 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         if (warningMessage != null) {
             uploadWarningMessage = warningMessage;
-            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), warningMessage));
+            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle(DATASET_FILE_UPLOAD_WARNING), warningMessage));
             // save the component id of the p:upload widget, so that we could 
             // send an info message there, from elsewhere in the code:
             uploadComponentId = event.getComponent().getClientId();
         }
 
         if (uploadInProgress.isFalse()) {
-            logger.warning("Upload in progress cancelled");
+            logger.warning(UPLOAD_IN_PROGRESS_CANCELLED);
             for (DataFile newFile : dFileList) {
                 FileUtil.deleteTempFile(newFile, dataset, ingestService);
             }
@@ -2225,7 +2231,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     uploadWarningMessage = processUploadedFileList(datafiles);
                 }
                 if (uploadInProgress.isFalse()) {
-                    logger.warning("Upload in progress cancelled");
+                    logger.warning(UPLOAD_IN_PROGRESS_CANCELLED);
                     for (DataFile newFile : datafiles) {
                         FileUtil.deleteTempFile(newFile, dataset, ingestService);
                     }

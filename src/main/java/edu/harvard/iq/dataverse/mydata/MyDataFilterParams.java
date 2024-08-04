@@ -29,6 +29,12 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class MyDataFilterParams {
 
+    private static final String LABEL = "label";
+
+    private static final String SELECTED = "selected";
+
+    private static final String VALUE = "value";
+
     private static final Logger logger = Logger.getLogger(MyDataFilterParams.class.getCanonicalName());
 
     // -----------------------------------
@@ -351,15 +357,15 @@ public class MyDataFilterParams {
 
         JsonArrayBuilder jsonArray = Json.createArrayBuilder();
 
-        jsonArray.add(Json.createObjectBuilder().add("value", DvObject.DType.Dataverse.getDType())
-                            .add("label", SearchConstants.UI_DATAVERSES)
-                            .add("selected", this.areDataversesIncluded()))
-                .add(Json.createObjectBuilder().add("value", DvObject.DType.Dataset.getDType())
-                            .add("label", SearchConstants.UI_DATASETS)
-                            .add("selected", this.areDatasetsIncluded()))
-                .add(Json.createObjectBuilder().add("value", DvObject.DType.DataFile.getDType())
-                            .add("label", SearchConstants.UI_FILES)
-                            .add("selected", this.areFilesIncluded())
+        jsonArray.add(Json.createObjectBuilder().add(VALUE, DvObject.DType.Dataverse.getDType())
+                            .add(LABEL, SearchConstants.UI_DATAVERSES)
+                            .add(SELECTED, this.areDataversesIncluded()))
+                .add(Json.createObjectBuilder().add(VALUE, DvObject.DType.Dataset.getDType())
+                            .add(LABEL, SearchConstants.UI_DATASETS)
+                            .add(SELECTED, this.areDatasetsIncluded()))
+                .add(Json.createObjectBuilder().add(VALUE, DvObject.DType.DataFile.getDType())
+                            .add(LABEL, SearchConstants.UI_FILES)
+                            .add(SELECTED, this.areFilesIncluded())
                 );
 
         JsonObjectBuilder jsonData = Json.createObjectBuilder();

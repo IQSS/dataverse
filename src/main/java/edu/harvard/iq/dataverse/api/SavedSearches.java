@@ -32,6 +32,8 @@ import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 @Path("admin/savedsearches")
 public class SavedSearches extends AbstractApiBean {
 
+    private static final String REQUIRED_FIELD_MISSING = "Required field missing: ";
+
     private static final Logger logger = Logger.getLogger(SavedSearches.class.getCanonicalName());
 
     @GET
@@ -100,7 +102,7 @@ public class SavedSearches extends AbstractApiBean {
         try {
             creatorIdToLookUp = body.getInt(keyForAuthenticatedUserId);
         } catch (NullPointerException ex) {
-            return error(BAD_REQUEST, "Required field missing: " + keyForAuthenticatedUserId);
+            return error(BAD_REQUEST, REQUIRED_FIELD_MISSING + keyForAuthenticatedUserId);
         } catch (ClassCastException ex) {
             return error(BAD_REQUEST, "A number is required for " + keyForAuthenticatedUserId);
         } catch (Exception ex) {
@@ -117,7 +119,7 @@ public class SavedSearches extends AbstractApiBean {
         try {
             query = body.getString(keyForQuery);
         } catch (NullPointerException ex) {
-            return error(BAD_REQUEST, "Required field missing: " + keyForQuery);
+            return error(BAD_REQUEST, REQUIRED_FIELD_MISSING + keyForQuery);
         }
 
         String keyForDefinitionPointId = "definitionPointId";
@@ -125,7 +127,7 @@ public class SavedSearches extends AbstractApiBean {
         try {
             dataverseIdToLookup = body.getInt(keyForDefinitionPointId);
         } catch (NullPointerException ex) {
-            return error(BAD_REQUEST, "Required field missing: " + keyForDefinitionPointId);
+            return error(BAD_REQUEST, REQUIRED_FIELD_MISSING + keyForDefinitionPointId);
         } catch (ClassCastException ex) {
             return error(BAD_REQUEST, "A number is required for " + keyForDefinitionPointId);
         } catch (Exception ex) {

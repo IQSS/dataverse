@@ -34,6 +34,8 @@ import jakarta.ws.rs.core.UriInfo;
 @RequestScoped
 public class MakeDataCountLoggingServiceBean {
 
+    private static final String USER_AGENT = "user-agent";
+
     @EJB
     SystemConfig systemConfig;
 
@@ -84,7 +86,7 @@ public class MakeDataCountLoggingServiceBean {
                 HttpServletRequest req = (HttpServletRequest) fc.getExternalContext().getRequest();
                 setRequestUrl(req.getRequestURI() + "?" + req.getQueryString());
                 setTargetUrl(req.getRequestURI() + "?" + req.getQueryString());
-                setUserAgent(req.getHeader("user-agent"));
+                setUserAgent(req.getHeader(USER_AGENT));
                 HttpSession session = (HttpSession) fc.getExternalContext().getSession(false);
                 setSessionCookieId(session.getId());
             }
@@ -145,8 +147,8 @@ public class MakeDataCountLoggingServiceBean {
                 setRequestUrl(uriInfo.getRequestUri().toString());
                 setTargetUrl(uriInfo.getRequestUri().toString());
             }
-            if (null != headers && null != headers.getRequestHeader("user-agent")) {
-                setUserAgent(headers.getRequestHeader("user-agent").get(0));
+            if (null != headers && null != headers.getRequestHeader(USER_AGENT)) {
+                setUserAgent(headers.getRequestHeader(USER_AGENT).get(0));
             }
 
             setFilename(df.getStorageIdentifier());
@@ -161,8 +163,8 @@ public class MakeDataCountLoggingServiceBean {
                 setRequestUrl(uriInfo.getRequestUri().toString());
                 setTargetUrl(uriInfo.getRequestUri().toString());
             }
-            if (null != headers && null != headers.getRequestHeader("user-agent")) {
-                setUserAgent(headers.getRequestHeader("user-agent").get(0));
+            if (null != headers && null != headers.getRequestHeader(USER_AGENT)) {
+                setUserAgent(headers.getRequestHeader(USER_AGENT).get(0));
             }
         }
 

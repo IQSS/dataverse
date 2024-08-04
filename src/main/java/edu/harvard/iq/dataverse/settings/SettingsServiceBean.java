@@ -37,6 +37,8 @@ import java.util.logging.Logger;
 @Named
 public class SettingsServiceBean {
 
+    private static final String DEFAULT = "default";
+
     private static final Logger logger = Logger.getLogger(SettingsServiceBean.class.getCanonicalName());
 
     /**
@@ -770,8 +772,8 @@ public class SettingsServiceBean {
     			   JsonObject settings = JsonUtil.getJsonObject(val);
     			   if (settings.containsKey(param)) {
     				   return Long.parseLong(settings.getString(param));
-    			   } else if (settings.containsKey("default")) {
-    				   return Long.parseLong(settings.getString("default"));
+    			   } else if (settings.containsKey(DEFAULT)) {
+    				   return Long.parseLong(settings.getString(DEFAULT));
     			   } else {
     				   return null;
     			   }
@@ -804,8 +806,8 @@ public class SettingsServiceBean {
             JsonObject settings = JsonUtil.getJsonObject(val);
             if (settings.containsKey(param)) {
                 return Boolean.parseBoolean(settings.getString(param));
-            } else if (settings.containsKey("default")) {
-                return Boolean.parseBoolean(settings.getString("default"));
+            } else if (settings.containsKey(DEFAULT)) {
+                return Boolean.parseBoolean(settings.getString(DEFAULT));
             } else {
                 return null;
             }

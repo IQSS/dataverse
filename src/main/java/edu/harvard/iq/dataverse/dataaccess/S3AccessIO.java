@@ -90,6 +90,10 @@ import jakarta.validation.constraints.NotNull;
  */
 public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
+    private static final String CANNOT_GET_S3_OBJECT = "Cannot get S3 object ";
+
+    private static final String DATAVERSE_FILES = "dataverse.files.";
+
     private static final Config config = ConfigProvider.getConfig();
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.S3AccessIO");
     static final String URL_EXPIRATION_MINUTES = "url-expiration-minutes";
@@ -279,7 +283,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                                 }
                                 logger.warning("Retrying after: " + sce.getMessage());
                             } else {
-                                throw new IOException("Cannot get S3 object " + key + " (" + sce.getMessage() + ")");
+                                throw new IOException(CANNOT_GET_S3_OBJECT + key + " (" + sce.getMessage() + ")");
                             }
                         }
                     }
@@ -297,7 +301,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             try {
                 setInputStream(s3.getObject(new GetObjectRequest(bucketName, key)).getObjectContent());
             } catch (SdkClientException sce) {
-                throw new IOException("Cannot get S3 object " + key + " (" + sce.getMessage() + ")");
+                throw new IOException(CANNOT_GET_S3_OBJECT + key + " (" + sce.getMessage() + ")");
             }
         }
 
@@ -1151,7 +1155,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             AmazonS3ClientBuilder s3CB = AmazonS3ClientBuilder.standard();
 
             ClientConfiguration cc = new ClientConfiguration();
-            Integer poolSize = Integer.getInteger("dataverse.files." + driverId + ".connection-pool-size", 256);
+            Integer poolSize = Integer.getInteger(DATAVERSE_FILES + driverId + ".connection-pool-size", 256);
             cc.setMaxConnections(poolSize);
             s3CB.setClientConfiguration(cc);
 
@@ -1215,8 +1219,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             // Try to retrieve credentials via Microprofile Config API, too. For production
             // use, you should not use env vars or system properties to provide these, but 
             // use the secrets config source provided by Payara.
-            Optional<String> accessKey = config.getOptionalValue("dataverse.files." + driverId + ".access-key", String.class);
-            Optional<String> secretKey = config.getOptionalValue("dataverse.files." + driverId + ".secret-key", String.class);
+            Optional<String> accessKey = config.getOptionalValue(DATAVERSE_FILES + driverId + ".access-key", String.class);
+            Optional<String> secretKey = config.getOptionalValue(DATAVERSE_FILES + driverId + ".secret-key", String.class);
             if (accessKey.isPresent() && secretKey.isPresent()) {
                 allowInstanceCredentials = false;
                 AWSStaticCredentialsProvider staticCredentials = new AWSStaticCredentialsProvider(
@@ -1435,7 +1439,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             objectMetadata = s3.getObjectMetadata(bucketName, key);
         } catch (SdkClientException sce) {
-            throw new IOException("Cannot get S3 object " + key + " (" + sce.getMessage() + ")");
+            throw new IOException(CANNOT_GET_S3_OBJECT + key + " (" + sce.getMessage() + ")");
         }
         return objectMetadata.getContentLength();
     }

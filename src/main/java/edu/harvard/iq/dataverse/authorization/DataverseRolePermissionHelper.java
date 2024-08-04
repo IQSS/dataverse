@@ -29,6 +29,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class DataverseRolePermissionHelper implements java.io.Serializable {
 
+    private static final String BR = "<br />";
+
     private static final Logger logger = Logger.getLogger(DataverseRolePermissionHelper.class.getCanonicalName());
 
     //@EJB
@@ -273,7 +275,7 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
         for (Map.Entry<Long, String> pair : roleNameLookup.entrySet()) {
             outputList.add(pair.getKey() + " --> " + pair.getValue());
         }
-        return StringUtils.join(outputList, "<br />");
+        return StringUtils.join(outputList, BR);
 
     }
 
@@ -284,7 +286,7 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
             String roleName = this.roleNameLookup.get(pair.getKey());
             outputList.add(roleName);
         }
-        return StringUtils.join(outputList, "<br />");
+        return StringUtils.join(outputList, BR);
     }
 
     public String getDatasetRolesAsHTML() {
@@ -294,7 +296,7 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
             String roleName = this.roleNameLookup.get(pair.getKey());
             outputList.add(roleName);
         }
-        return StringUtils.join(outputList, "<br />");
+        return StringUtils.join(outputList, BR);
     }
 
      public String getRolesWithFilePermissionsAsHTML() {
@@ -304,7 +306,7 @@ public class DataverseRolePermissionHelper implements java.io.Serializable {
             String roleName = this.roleNameLookup.get(pair.getKey());
             outputList.add(roleName);
         }
-        return StringUtils.join(outputList, "<br />");
+        return StringUtils.join(outputList, BR);
     }
 
     public Map<Long, Boolean> getRolesWithDataversePermissions() {

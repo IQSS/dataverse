@@ -72,6 +72,8 @@ import org.primefaces.event.TabChangeEvent;
 @Named("DataverseUserPage")
 public class DataverseUserPage implements java.io.Serializable {
 
+    private static final String NOTIFICATION_EMAIL_INFO_UNAVAILABLE = "notification.email.info.unavailable";
+
     private static final Logger logger = Logger.getLogger(DataverseUserPage.class.getCanonicalName());
 
     public enum EditMode {
@@ -720,15 +722,15 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public String getRequestorName(UserNotification notification) {
-        if (notification == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");
-        if (notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
-        return (notification.getRequestor().getLastName() != null && notification.getRequestor().getLastName() != null) ? notification.getRequestor().getFirstName() + " " + notification.getRequestor().getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+        if (notification == null) return BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_INFO_UNAVAILABLE);
+        if (notification.getRequestor() == null) return BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_INFO_UNAVAILABLE);;
+        return (notification.getRequestor().getLastName() != null && notification.getRequestor().getLastName() != null) ? notification.getRequestor().getFirstName() + " " + notification.getRequestor().getLastName() : BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_INFO_UNAVAILABLE);
     }
 
     public String getRequestorEmail(UserNotification notification) {
-        if (notification == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
-        if (notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
-        return notification.getRequestor().getEmail() != null ? notification.getRequestor().getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+        if (notification == null) return BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_INFO_UNAVAILABLE);;
+        if (notification.getRequestor() == null) return BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_INFO_UNAVAILABLE);;
+        return notification.getRequestor().getEmail() != null ? notification.getRequestor().getEmail() : BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_INFO_UNAVAILABLE);
     }
 
     public List<Type> getNotificationTypeList() {

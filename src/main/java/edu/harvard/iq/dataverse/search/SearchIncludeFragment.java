@@ -51,6 +51,12 @@ import org.apache.commons.lang3.StringUtils;
 @Named("SearchIncludeFragment")
 public class SearchIncludeFragment implements java.io.Serializable {
 
+    private static final String DATASETS = "datasets";
+
+    private static final String DATAVERSES = "dataverses";
+
+    private static final String FILES = "files";
+
     private static final Logger logger = Logger.getLogger(SearchIncludeFragment.class.getCanonicalName());
 
     @EJB
@@ -384,9 +390,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
             // extra numbers. -- L.A. 10/16/2023
             
             // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
-            previewCountbyType.put(BundleUtil.getStringFromBundle("dataverses"), 0L);
-            previewCountbyType.put(BundleUtil.getStringFromBundle("datasets"), 0L);
-            previewCountbyType.put(BundleUtil.getStringFromBundle("files"), 0L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle(DATAVERSES), 0L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle(DATASETS), 0L);
+            previewCountbyType.put(BundleUtil.getStringFromBundle(FILES), 0L);
 
 
             // This will populate the type facet counts for the types that are 
@@ -406,7 +412,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
                 arr = new String[3];
                 int c = 0;
-                for (String dvObjectType : Arrays.asList("dataverses", "datasets", "files")) {
+                for (String dvObjectType : Arrays.asList(DATAVERSES, DATASETS, FILES)) {
                     if (!selectedTypesList.contains(dvObjectType)) {
                         arr[c++] = dvObjectType;
                     }
@@ -484,7 +490,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 solrSearchResult.setIsInTree(true);
                 // (we'll review this later!)
                 
-                if (solrSearchResult.getType().equals("dataverses")) {
+                if (solrSearchResult.getType().equals(DATAVERSES)) {
                     dataverseService.populateDvSearchCard(solrSearchResult);
 
                     /*
@@ -493,7 +499,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                         solrSearchResult.setHarvested(true);
                     }*/
 
-                } else if (solrSearchResult.getType().equals("datasets")) {
+                } else if (solrSearchResult.getType().equals(DATASETS)) {
                     datasetVersionService.populateDatasetSearchCard(solrSearchResult);
 
                     // @todo - the 3 lines below, should they be moved inside
@@ -503,7 +509,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                         solrSearchResult.setDescriptionNoSnippet(deaccesssionReason);
                     }
 
-                } else if (solrSearchResult.getType().equals("files")) {
+                } else if (solrSearchResult.getType().equals(FILES)) {
                     dataFileService.populateFileSearchCard(solrSearchResult);
 
                     /**
@@ -901,15 +907,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public Long getFacetCountDatasets() {
-        return findFacetCountByType(BundleUtil.getStringFromBundle("datasets"));
+        return findFacetCountByType(BundleUtil.getStringFromBundle(DATASETS));
     }
 
     public Long getFacetCountDataverses() {
-        return findFacetCountByType(BundleUtil.getStringFromBundle("dataverses"));
+        return findFacetCountByType(BundleUtil.getStringFromBundle(DATAVERSES));
     }
 
     public Long getFacetCountFiles() {
-        return findFacetCountByType(BundleUtil.getStringFromBundle("files"));
+        return findFacetCountByType(BundleUtil.getStringFromBundle(FILES));
     }
 
     public String getSearchFieldRelevance() {
@@ -1416,7 +1422,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         Set<Long> harvestedDatasetIds = null;
         for (SolrSearchResult result : searchResultsList) {
             //logger.info("checking DisplayImage for the search result " + i++);
-            if (result.getType().equals("dataverses")) {
+            if (result.getType().equals(DATAVERSES)) {
                 /**
                  * @todo Someday we should probably revert this setImageUrl to
                  * the original meaning "image_url" to address this issue:
@@ -1425,7 +1431,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                  * https://github.com/IQSS/dataverse/issues/3616
                  */
                 result.setImageUrl(thumbnailServiceWrapper.getDataverseCardImageAsBase64Url(result));
-            } else if (result.getType().equals("datasets")) {
+            } else if (result.getType().equals(DATASETS)) {
                 if (result.getEntity() != null) {
                     result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsUrl(result));
                 }
@@ -1436,7 +1442,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
                     harvestedDatasetIds.add(result.getEntityId());
                 }
-            } else if (result.getType().equals("files")) {
+            } else if (result.getType().equals(FILES)) {
                 result.setImageUrl(thumbnailServiceWrapper.getFileCardImageAsBase64Url(result));
                 if (result.isHarvested()) {
                     if (harvestedDatasetIds == null) {
@@ -1458,11 +1464,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
             if (descriptionsForHarvestedDatasets != null && descriptionsForHarvestedDatasets.size() > 0) {
                 for (SolrSearchResult result : searchResultsList) {
                     if (result.isHarvested()) {
-                        if (result.getType().equals("files")) {
+                        if (result.getType().equals(FILES)) {
                             if (descriptionsForHarvestedDatasets.containsKey(result.getParentIdAsLong())) {
                                 result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getParentIdAsLong()));
                             }
-                        } else if (result.getType().equals("datasets")) {
+                        } else if (result.getType().equals(DATASETS)) {
                             if (descriptionsForHarvestedDatasets.containsKey(result.getEntityId())) {
                                 result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getEntityId()));
                             }

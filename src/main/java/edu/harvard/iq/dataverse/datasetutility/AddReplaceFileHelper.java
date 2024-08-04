@@ -109,6 +109,24 @@ import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
  */
 public class AddReplaceFileHelper {
 
+    private static final String ERR_MSG_CANNOT_BE_NULL = "errMsg cannot be null";
+
+    private static final String ERROR_CODE = "errorCode";
+
+    private static final String ERROR_MESSAGE = "errorMessage";
+
+    private static final String EXISTING_FILE_TO_REPLACE_ID_IS_NULL = "existing_file_to_replace_id_is_null";
+
+    private static final String FILE_DETAILS = "fileDetails";
+
+    private static final String FILES = "files";
+
+    private static final String MESSAGE = "message";
+
+    private static final String STATUS = "status";
+
+    private static final String STORAGE_IDENTIFIER = "storageIdentifier";
+
     private static final Logger logger = Logger.getLogger(AddReplaceFileHelper.class.getCanonicalName());
 
     public static String FILE_ADD_OPERATION = "FILE_ADD_OPERATION";
@@ -410,7 +428,7 @@ public class AddReplaceFileHelper {
 
 
         if (oldFileId == null) {
-            this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
+            this.addErrorSevere(getBundleErr(EXISTING_FILE_TO_REPLACE_ID_IS_NULL));
             return false;
         }
 
@@ -451,7 +469,7 @@ public class AddReplaceFileHelper {
         this.currentOperation = FILE_REPLACE_OPERATION;
 
         if (oldFileId == null) {
-            this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
+            this.addErrorSevere(getBundleErr(EXISTING_FILE_TO_REPLACE_ID_IS_NULL));
             return false;
         }
 
@@ -540,7 +558,7 @@ public class AddReplaceFileHelper {
         this.currentOperation = FILE_REPLACE_FORCE_OPERATION;
 
         if (oldFileId == null) {
-            this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
+            this.addErrorSevere(getBundleErr(EXISTING_FILE_TO_REPLACE_ID_IS_NULL));
             return false;
         }
 
@@ -864,7 +882,7 @@ public class AddReplaceFileHelper {
     private void addError(String errMsg) {
 
         if (errMsg == null) {
-            throw new NullPointerException("errMsg cannot be null");
+            throw new NullPointerException(ERR_MSG_CANNOT_BE_NULL);
         }
         this.errorFound = true;
 
@@ -884,7 +902,7 @@ public class AddReplaceFileHelper {
             throw new NullPointerException("badHttpResponse cannot be null");
         }
         if (errMsg == null) {
-            throw new NullPointerException("errMsg cannot be null");
+            throw new NullPointerException(ERR_MSG_CANNOT_BE_NULL);
         }
 
         this.httpErrorCode = badHttpResponse;
@@ -896,7 +914,7 @@ public class AddReplaceFileHelper {
 
     private void addErrorWarning(String errMsg) {
         if (errMsg == null) {
-            throw new NullPointerException("errMsg cannot be null");
+            throw new NullPointerException(ERR_MSG_CANNOT_BE_NULL);
         }
 
         logger.severe(errMsg);
@@ -909,7 +927,7 @@ public class AddReplaceFileHelper {
     private void addErrorSevere(String errMsg) {
 
         if (errMsg == null) {
-            throw new NullPointerException("errMsg cannot be null");
+            throw new NullPointerException(ERR_MSG_CANNOT_BE_NULL);
         }
         this.errorFound = true;
 
@@ -1121,7 +1139,7 @@ public class AddReplaceFileHelper {
         //  Check for Null
         //
         if (dataFileId == null) {
-            this.addErrorSevere(getBundleErr("existing_file_to_replace_id_is_null"));
+            this.addErrorSevere(getBundleErr(EXISTING_FILE_TO_REPLACE_ID_IS_NULL));
             return false;
         }
 
@@ -2081,9 +2099,9 @@ public class AddReplaceFileHelper {
                                     optionalFileParams, true);
                             if (hasError()) {
                                 JsonObjectBuilder fileoutput = Json.createObjectBuilder()
-                                        .add("storageIdentifier", newStorageIdentifier)
-                                        .add("errorMessage", getHttpErrorCode().toString() + ":" + getErrorMessagesAsString("\n"))
-                                        .add("fileDetails", fileJson);
+                                        .add(STORAGE_IDENTIFIER, newStorageIdentifier)
+                                        .add(ERROR_MESSAGE, getHttpErrorCode().toString() + ":" + getErrorMessagesAsString("\n"))
+                                        .add(FILE_DETAILS, fileJson);
                                 jarr.add(fileoutput);
                             } else {
                                 JsonObject successresult = getSuccessResultAsJsonObjectBuilder().build();
@@ -2091,23 +2109,23 @@ public class AddReplaceFileHelper {
 
                                 if (duplicateWarning != null && !duplicateWarning.isEmpty()) {
                                     JsonObjectBuilder fileoutput = Json.createObjectBuilder()
-                                            .add("storageIdentifier", newStorageIdentifier)
+                                            .add(STORAGE_IDENTIFIER, newStorageIdentifier)
                                             .add("warningMessage", getDuplicateFileWarning())
-                                            .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
+                                            .add(FILE_DETAILS, successresult.getJsonArray(FILES).getJsonObject(0));
                                     jarr.add(fileoutput);
                                 } else {
                                     JsonObjectBuilder fileoutput = Json.createObjectBuilder()
-                                            .add("storageIdentifier", newStorageIdentifier)
+                                            .add(STORAGE_IDENTIFIER, newStorageIdentifier)
                                             .add("successMessage", "Added successfully to the dataset")
-                                            .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
+                                            .add(FILE_DETAILS, successresult.getJsonArray(FILES).getJsonObject(0));
                                     jarr.add(fileoutput);
                                 }
                             successNumberofFiles = successNumberofFiles + 1;
                             }
                         } else {
                             JsonObjectBuilder fileoutput = Json.createObjectBuilder()
-                                    .add("errorMessage", "You must provide a storageidentifier, filename, and mimetype.")
-                                    .add("fileDetails", fileJson);
+                                    .add(ERROR_MESSAGE, "You must provide a storageidentifier, filename, and mimetype.")
+                                    .add(FILE_DETAILS, fileJson);
 
                             jarr.add(fileoutput);
                         }
@@ -2115,18 +2133,18 @@ public class AddReplaceFileHelper {
                     } catch (DataFileTagException ex) {
                         logger.log(Level.SEVERE, null, ex);
                         JsonObjectBuilder fileoutput = Json.createObjectBuilder()
-                                .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
-                                .add("message", ex.getMessage())
-                                .add("fileDetails", fileJson);
+                                .add(ERROR_CODE, Response.Status.BAD_REQUEST.getStatusCode())
+                                .add(MESSAGE, ex.getMessage())
+                                .add(FILE_DETAILS, fileJson);
                         jarr.add(fileoutput);
 
                     }
                     catch (NoFilesException ex) {
                         logger.log(Level.SEVERE, null, ex);
                         JsonObjectBuilder fileoutput = Json.createObjectBuilder()
-                                .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
-                                .add("message", BundleUtil.getStringFromBundle("NoFileException!  Serious Error! See administrator!"))
-                                .add("fileDetails", fileJson);
+                                .add(ERROR_CODE, Response.Status.BAD_REQUEST.getStatusCode())
+                                .add(MESSAGE, BundleUtil.getStringFromBundle("NoFileException!  Serious Error! See administrator!"))
+                                .add(FILE_DETAILS, fileJson);
                         jarr.add(fileoutput);
                     }
 
@@ -2170,7 +2188,7 @@ public class AddReplaceFileHelper {
 
 
         return Response.ok().entity(Json.createObjectBuilder()
-                .add("status", ApiConstants.STATUS_OK)
+                .add(STATUS, ApiConstants.STATUS_OK)
                 .add("data", Json.createObjectBuilder().add("Files", jarr).add("Result", result)).build()).build();
     }
 
@@ -2249,9 +2267,9 @@ public class AddReplaceFileHelper {
                             }
                             if (hasError()) {
                                 JsonObjectBuilder fileoutput = Json.createObjectBuilder()
-                                        .add("storageIdentifier", newStorageIdentifier)
-                                        .add("errorMessage", getHttpErrorCode().toString() + ":" + getErrorMessagesAsString("\n"))
-                                        .add("fileDetails", fileJson);
+                                        .add(STORAGE_IDENTIFIER, newStorageIdentifier)
+                                        .add(ERROR_MESSAGE, getHttpErrorCode().toString() + ":" + getErrorMessagesAsString("\n"))
+                                        .add(FILE_DETAILS, fileJson);
                                 jarr.add(fileoutput);
                             } else {
                                 JsonObject successresult = getSuccessResultAsJsonObjectBuilder().build();
@@ -2259,23 +2277,23 @@ public class AddReplaceFileHelper {
 
                                 if (duplicateWarning != null && !duplicateWarning.isEmpty()) {
                                     JsonObjectBuilder fileoutput = Json.createObjectBuilder()
-                                            .add("storageIdentifier", newStorageIdentifier)
+                                            .add(STORAGE_IDENTIFIER, newStorageIdentifier)
                                             .add("warningMessage", getDuplicateFileWarning())
-                                            .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
+                                            .add(FILE_DETAILS, successresult.getJsonArray(FILES).getJsonObject(0));
                                     jarr.add(fileoutput);
                                 } else {
                                     JsonObjectBuilder fileoutput = Json.createObjectBuilder()
-                                            .add("storageIdentifier", newStorageIdentifier)
+                                            .add(STORAGE_IDENTIFIER, newStorageIdentifier)
                                             .add("successMessage", "Replaced successfully in the dataset")
-                                            .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
+                                            .add(FILE_DETAILS, successresult.getJsonArray(FILES).getJsonObject(0));
                                     jarr.add(fileoutput);
                                 }
                             successNumberofFiles = successNumberofFiles + 1;
                             }
                         } else {
                             JsonObjectBuilder fileoutput = Json.createObjectBuilder()
-                                    .add("errorMessage", "You must provide a fileToReplaceId, storageidentifier, filename, and mimetype.")
-                                    .add("fileDetails", fileJson);
+                                    .add(ERROR_MESSAGE, "You must provide a fileToReplaceId, storageidentifier, filename, and mimetype.")
+                                    .add(FILE_DETAILS, fileJson);
 
                             jarr.add(fileoutput);
                         }
@@ -2283,18 +2301,18 @@ public class AddReplaceFileHelper {
                     } catch (DataFileTagException ex) {
                         logger.log(Level.SEVERE, null, ex);
                         JsonObjectBuilder fileoutput = Json.createObjectBuilder()
-                                .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
-                                .add("message", ex.getMessage())
-                                .add("fileDetails", fileJson);
+                                .add(ERROR_CODE, Response.Status.BAD_REQUEST.getStatusCode())
+                                .add(MESSAGE, ex.getMessage())
+                                .add(FILE_DETAILS, fileJson);
                         jarr.add(fileoutput);
 
                     }
                     catch (NoFilesException ex) {
                         logger.log(Level.SEVERE, null, ex);
                         JsonObjectBuilder fileoutput = Json.createObjectBuilder()
-                                .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
-                                .add("message", BundleUtil.getStringFromBundle("NoFileException!  Serious Error! See administrator!"))
-                                .add("fileDetails", fileJson);
+                                .add(ERROR_CODE, Response.Status.BAD_REQUEST.getStatusCode())
+                                .add(MESSAGE, BundleUtil.getStringFromBundle("NoFileException!  Serious Error! See administrator!"))
+                                .add(FILE_DETAILS, fileJson);
                         jarr.add(fileoutput);
                     }
                 }// End of adding files
@@ -2338,15 +2356,15 @@ public class AddReplaceFileHelper {
                 .add("Number of files successfully replaced", successNumberofFiles);
 
         return Response.ok().entity(Json.createObjectBuilder()
-                .add("status", ApiConstants.STATUS_OK)
+                .add(STATUS, ApiConstants.STATUS_OK)
                 .add("data", Json.createObjectBuilder().add("Files", jarr).add("Result", result)).build()).build();
     }
 
     protected static Response error(Response.Status sts, String msg) {
         return Response.status(sts)
                 .entity(NullSafeJsonBuilder.jsonObjectBuilder()
-                        .add("status", ApiConstants.STATUS_ERROR)
-                        .add("message", msg).build()
+                        .add(STATUS, ApiConstants.STATUS_ERROR)
+                        .add(MESSAGE, msg).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 

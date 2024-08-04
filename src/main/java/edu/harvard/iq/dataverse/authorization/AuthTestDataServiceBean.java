@@ -21,6 +21,8 @@ import org.apache.commons.lang3.StringUtils;
 @Stateless
 public class AuthTestDataServiceBean {
 
+    private static final String EXCEPTION = "Exception: ";
+
     private static final Logger logger = Logger.getLogger(AuthTestDataServiceBean.class.getCanonicalName());
 
     /**
@@ -33,18 +35,18 @@ public class AuthTestDataServiceBean {
         try {
             url = new URL(sURL);
         } catch (MalformedURLException ex) {
-            logger.info("Exception: " + ex);
+            logger.info(EXCEPTION + ex);
         }
         HttpURLConnection randomUserRequest = null;
         try {
             randomUserRequest = (HttpURLConnection) url.openConnection();
         } catch (IOException ex) {
-            logger.info("Exception: " + ex);
+            logger.info(EXCEPTION + ex);
         }
         try {
             randomUserRequest.connect();
         } catch (IOException ex) {
-            logger.info("Exception: " + ex);
+            logger.info(EXCEPTION + ex);
         }
 
         JsonParser jp = new JsonParser();
@@ -52,7 +54,7 @@ public class AuthTestDataServiceBean {
         try {
             root = jp.parse(new InputStreamReader((InputStream) randomUserRequest.getContent()));
         } catch (IOException ex) {
-            logger.info("Exception: " + ex);
+            logger.info(EXCEPTION + ex);
         }
         if (root == null) {
             return getRandomUserStatic();

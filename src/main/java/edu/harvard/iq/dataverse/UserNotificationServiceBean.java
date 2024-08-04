@@ -32,6 +32,8 @@ import jakarta.persistence.TypedQuery;
 @Named
 public class UserNotificationServiceBean {
 
+    private static final String USER_ID = "userId";
+
     private static final Logger logger = Logger.getLogger(UserNotificationServiceBean.class.getCanonicalName());
 
     @EJB
@@ -44,13 +46,13 @@ public class UserNotificationServiceBean {
 
     public List<UserNotification> findByUser(Long userId) {
         TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc", UserNotification.class);
-        query.setParameter("userId", userId);
+        query.setParameter(USER_ID, userId);
         return query.getResultList();
     }
 
     public List<UserNotification> findByRequestor(Long userId) {
         TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.requestor.id =:userId order by un.sendDate desc", UserNotification.class);
-        query.setParameter("userId", userId);
+        query.setParameter(USER_ID, userId);
         return query.getResultList();
     }
 
@@ -62,7 +64,7 @@ public class UserNotificationServiceBean {
 
     public List<UserNotification> findUnreadByUser(Long userId) {
         TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.user.id =:userId and o.readNotification = 'false' order by o.sendDate desc", UserNotification.class);
-        query.setParameter("userId", userId);
+        query.setParameter(USER_ID, userId);
         return query.getResultList();
     }
 

@@ -53,6 +53,9 @@ import org.apache.commons.lang3.StringUtils;
  */
 @Stateless
 public class MailServiceBean implements java.io.Serializable {
+    private static final String SKIPPING = "Skipping ";
+    private static final String NOTIFICATION_EMAIL_GREETING_HTML = "notification.email.greeting.html";
+    private static final String NOTIFICATION_EMAIL_INFO_UNAVAILABLE = "notification.email.info.unavailable";
     @EJB
     UserNotificationServiceBean userNotificationService;
     @EJB
@@ -285,13 +288,13 @@ public class MailServiceBean implements java.io.Serializable {
                if (!(messageText.isEmpty() || subjectText.isEmpty())) {
                    retval = sendSystemEmail(emailAddress, subjectText, messageText, isHtmlContent);
                } else {
-                   logger.warning("Skipping " + notification.getType() + " notification, because couldn't get valid message");
+                   logger.warning(SKIPPING + notification.getType() + " notification, because couldn't get valid message");
                }
            } else {
-               logger.warning("Skipping " + notification.getType() + " notification, because no valid Object was found");
+               logger.warning(SKIPPING + notification.getType() + " notification, because no valid Object was found");
            }
         } else {
-            logger.warning("Skipping " + notification.getType() + " notification, because email address is null");
+            logger.warning(SKIPPING + notification.getType() + " notification, because email address is null");
         }
         return retval;
     }
@@ -447,10 +450,10 @@ public class MailServiceBean implements java.io.Serializable {
                 DataFile datafile = (DataFile) targetObject;
 
                 pattern = BundleUtil.getStringFromBundle("notification.email.requestFileAccess");
-                String requestorName = (requestor.getLastName() != null && requestor.getLastName() != null) ? requestor.getFirstName() + " " + requestor.getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
-                String requestorEmail = requestor.getEmail() != null ? requestor.getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+                String requestorName = (requestor.getLastName() != null && requestor.getLastName() != null) ? requestor.getFirstName() + " " + requestor.getLastName() : BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_INFO_UNAVAILABLE);
+                String requestorEmail = requestor.getEmail() != null ? requestor.getEmail() : BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_INFO_UNAVAILABLE);
                 String[] paramArrayRequestFileAccess = {datafile.getOwner().getDisplayName(), requestorName, requestorEmail, getDatasetManageFileAccessLink(datafile)};
-                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
+                messageText = BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_GREETING_HTML);
                 messageText += MessageFormat.format(pattern, paramArrayRequestFileAccess);
                 FileAccessRequest far = datafile.getAccessRequestForAssignee(requestor);
                 GuestbookResponse gbr = far.getGuestbookResponse();
@@ -501,8 +504,8 @@ public class MailServiceBean implements java.io.Serializable {
                     mightHaveSubmissionComment = ".\n\n" + BundleUtil.getStringFromBundle("submissionComment") + "\n\n" + comment;
                 }
                 */                
-                 requestorName = (requestor.getLastName() != null && requestor.getLastName() != null) ? requestor.getFirstName() + " " + requestor.getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
-                 requestorEmail = requestor.getEmail() != null ? requestor.getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+                 requestorName = (requestor.getLastName() != null && requestor.getLastName() != null) ? requestor.getFirstName() + " " + requestor.getLastName() : BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_INFO_UNAVAILABLE);
+                 requestorEmail = requestor.getEmail() != null ? requestor.getEmail() : BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_INFO_UNAVAILABLE);
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasSubmittedForReview");
 
                 String[] paramArraySubmittedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()),
@@ -604,7 +607,7 @@ public class MailServiceBean implements java.io.Serializable {
 
             case GLOBUSUPLOADCOMPLETED:
                 dataset = (Dataset) targetObject;
-                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
+                messageText = BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_GREETING_HTML);
                 String uploadCompletedMessage = messageText + BundleUtil.getStringFromBundle("notification.mail.globus.upload.completed", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalId().asString(),
@@ -615,7 +618,7 @@ public class MailServiceBean implements java.io.Serializable {
 
             case GLOBUSDOWNLOADCOMPLETED:
                 dataset = (Dataset) targetObject;
-                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
+                messageText = BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_GREETING_HTML);
                 String downloadCompletedMessage = messageText + BundleUtil.getStringFromBundle("notification.mail.globus.download.completed", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalId().asString(),
@@ -625,7 +628,7 @@ public class MailServiceBean implements java.io.Serializable {
                 return downloadCompletedMessage;
             case GLOBUSUPLOADCOMPLETEDWITHERRORS:
                 dataset = (Dataset) targetObject;
-                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
+                messageText = BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_GREETING_HTML);
                 String uploadCompletedWithErrorsMessage = messageText + BundleUtil.getStringFromBundle("notification.mail.globus.upload.completedWithErrors", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalId().asString(),
@@ -636,7 +639,7 @@ public class MailServiceBean implements java.io.Serializable {
 
             case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
                 dataset = (Dataset) targetObject;
-                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
+                messageText = BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_GREETING_HTML);
                 String downloadCompletedWithErrorsMessage = messageText + BundleUtil.getStringFromBundle("notification.mail.globus.download.completedWithErrors", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalId().asString(),
@@ -661,7 +664,7 @@ public class MailServiceBean implements java.io.Serializable {
 
             case INGESTCOMPLETED:
                 dataset = (Dataset) targetObject;
-                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
+                messageText = BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_GREETING_HTML);
                 String ingestedCompletedMessage = messageText + BundleUtil.getStringFromBundle("notification.ingest.completed", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalId().asString(),
@@ -674,7 +677,7 @@ public class MailServiceBean implements java.io.Serializable {
                 return ingestedCompletedMessage;
             case INGESTCOMPLETEDWITHERRORS:
                 dataset = (Dataset) targetObject;
-                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
+                messageText = BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_GREETING_HTML);
                 String ingestedCompletedWithErrorsMessage = messageText + BundleUtil.getStringFromBundle("notification.ingest.completedwitherrors", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalId().asString(),
@@ -710,7 +713,7 @@ public class MailServiceBean implements java.io.Serializable {
                 datafile = (DataFile) targetObject;
 
                 pattern = BundleUtil.getStringFromBundle("notification.email.requestedFileAccess");
-                 messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
+                 messageText = BundleUtil.getStringFromBundle(NOTIFICATION_EMAIL_GREETING_HTML);
                  messageText += MessageFormat.format(pattern, getDvObjectLink(datafile), datafile.getOwner().getDisplayName());
                 far = datafile.getAccessRequestForAssignee(requestor);
                 gbr = far.getGuestbookResponse();

@@ -17,6 +17,8 @@ import jakarta.ws.rs.core.Response;
 @Path("admin/storageSites")
 public class StorageSites extends AbstractApiBean {
 
+    private static final String COULD_NOT_FIND_A_STORAGE_SITE_BASED_ON_ID = "Could not find a storage site based on id ";
+
     @GET
     public Response listAll() {
         List<StorageSite> storageSites = storageSiteSvc.findAll();
@@ -36,7 +38,7 @@ public class StorageSites extends AbstractApiBean {
     public Response get(@PathParam("id") long id) {
         StorageSite storageSite = storageSiteSvc.find(id);
         if (storageSite == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find a storage site based on id " + id + ".");
+            return error(Response.Status.NOT_FOUND, COULD_NOT_FIND_A_STORAGE_SITE_BASED_ON_ID + id + ".");
         }
         return ok(storageSite.toJsonObjectBuilder());
     }
@@ -68,7 +70,7 @@ public class StorageSites extends AbstractApiBean {
     public Response setPrimary(@PathParam("id") long id, String input) {
         StorageSite toModify = storageSiteSvc.find(id);
         if (toModify == null) {
-            return error(Response.Status.NOT_FOUND, "Could not find a storage site based on id " + id + ".");
+            return error(Response.Status.NOT_FOUND, COULD_NOT_FIND_A_STORAGE_SITE_BASED_ON_ID + id + ".");
         }
         // "junk" gets parsed into "false".
         toModify.setPrimaryStorage(Boolean.valueOf(input));
@@ -89,7 +91,7 @@ public class StorageSites extends AbstractApiBean {
         if (deleted) {
             return ok("Storage site id  " + id + " has been deleted.");
         } else {
-            return error(Response.Status.NOT_FOUND, "Could not find a storage site based on id " + id + ".");
+            return error(Response.Status.NOT_FOUND, COULD_NOT_FIND_A_STORAGE_SITE_BASED_ON_ID + id + ".");
         }
     }
 

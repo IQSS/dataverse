@@ -19,6 +19,10 @@ import static edu.harvard.iq.dataverse.DataFileTag.TagLabelToTypes;
 @Named
 public class DatasetVersionFilesServiceBean implements Serializable {
 
+    private static final String CONTENT_TYPE = "contentType";
+
+    private static final String DATA_FILE = "dataFile";
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -80,7 +84,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
         Root<FileMetadata> fileMetadataRoot = criteriaQuery.from(FileMetadata.class);
-        Path<String> contentType = fileMetadataRoot.get("dataFile").get("contentType");
+        Path<String> contentType = fileMetadataRoot.get(DATA_FILE).get(CONTENT_TYPE);
         criteriaQuery
                 .multiselect(contentType, criteriaBuilder.count(contentType))
                 .where(createSearchCriteriaPredicate(datasetVersion, searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot))
@@ -127,7 +131,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
                 .multiselect(dataFileTagType, criteriaBuilder.count(fileMetadataRoot))
                 .where(criteriaBuilder.and(
                         createSearchCriteriaPredicate(datasetVersion, searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot),
-                        dataFileTagRoot.in(fileMetadataRoot.get("dataFile").get("dataFileTags"))))
+                        dataFileTagRoot.in(fileMetadataRoot.get(DATA_FILE).get("dataFileTags"))))
                 .groupBy(dataFileTagType);
         List<Tuple> tagNameOccurrences = em.createQuery(criteriaQuery).getResultList();
         Map<DataFileTag.TagType, Long> result = new HashMap<>();
@@ -245,7 +249,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
     }
 
     private Predicate createSearchCriteriaAccessStatusPredicate(FileAccessStatus accessStatus, CriteriaBuilder criteriaBuilder, Root<FileMetadata> fileMetadataRoot) {
-        Path<Object> dataFile = fileMetadataRoot.get("dataFile");
+        Path<Object> dataFile = fileMetadataRoot.get(DATA_FILE);
         Path<Object> retention = dataFile.get("retention");
         Predicate retentionExpiredPredicate = criteriaBuilder.lessThan(retention.<Date>get("dateUnavailable"), criteriaBuilder.currentDate());
         Path<Object> embargo = dataFile.get("embargo");
@@ -273,7 +277,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         predicates.add(basePredicate);
         String contentType = searchCriteria.getContentType();
         if (contentType != null) {
-            predicates.add(criteriaBuilder.equal(fileMetadataRoot.get("dataFile").<String>get("contentType"), contentType));
+            predicates.add(criteriaBuilder.equal(fileMetadataRoot.get(DATA_FILE).<String>get(CONTENT_TYPE), contentType));
         }
         FileAccessStatus accessStatus = searchCriteria.getAccessStatus();
         if (accessStatus != null) {
@@ -289,7 +293,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         if (tabularTagName != null) {
             Root<DataFileTag> dataFileTagRoot = criteriaQuery.from(DataFileTag.class);
             predicates.add(criteriaBuilder.equal(dataFileTagRoot.get("type"), TagLabelToTypes.get(tabularTagName)));
-            predicates.add(dataFileTagRoot.in(fileMetadataRoot.get("dataFile").get("dataFileTags")));
+            predicates.add(dataFileTagRoot.in(fileMetadataRoot.get(DATA_FILE).get("dataFileTags")));
         }
         String searchText = searchCriteria.getSearchText();
         if (searchText != null && !searchText.isEmpty()) {
@@ -303,7 +307,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
                                                     FileOrderCriteria orderCriteria,
                                                     Root<FileMetadata> fileMetadataRoot) {
         Path<Object> label = fileMetadataRoot.get("label");
-        Path<Object> dataFile = fileMetadataRoot.get("dataFile");
+        Path<Object> dataFile = fileMetadataRoot.get(DATA_FILE);
         Path<Timestamp> publicationDate = dataFile.get("publicationDate");
         Path<Timestamp> createDate = dataFile.get("createDate");
         Expression<Object> orderByLifetimeExpression = criteriaBuilder.selectCase().when(publicationDate.isNotNull(), publicationDate).otherwise(createDate);
@@ -314,7 +318,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
             case Oldest -> orderList.add(criteriaBuilder.asc(orderByLifetimeExpression));
             case Size -> orderList.add(criteriaBuilder.asc(dataFile.get("filesize")));
             case Type -> {
-                orderList.add(criteriaBuilder.asc(dataFile.get("contentType")));
+                orderList.add(criteriaBuilder.asc(dataFile.get(CONTENT_TYPE)));
                 orderList.add(criteriaBuilder.asc(label));
             }
             default -> orderList.add(criteriaBuilder.asc(label));
@@ -330,7 +334,7 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         criteriaQuery
                 .select(criteriaBuilder.sum(dataTableRoot.get("originalFileSize")))
                 .where(criteriaBuilder.and(
-                        criteriaBuilder.equal(dataTableRoot.get("dataFile"), fileMetadataRoot.get("dataFile")),
+                        criteriaBuilder.equal(dataTableRoot.get(DATA_FILE), fileMetadataRoot.get(DATA_FILE)),
                         createSearchCriteriaPredicate(datasetVersion, searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot)));
         Long result = em.createQuery(criteriaQuery).getSingleResult();
         return (result == null) ? 0 : result;
@@ -343,12 +347,12 @@ public class DatasetVersionFilesServiceBean implements Serializable {
         Predicate searchCriteriaPredicate = createSearchCriteriaPredicate(datasetVersion, searchCriteria, criteriaBuilder, criteriaQuery, fileMetadataRoot);
         Predicate wherePredicate;
         if (ignoreTabular) {
-            wherePredicate = criteriaBuilder.and(searchCriteriaPredicate, criteriaBuilder.isEmpty(fileMetadataRoot.get("dataFile").get("dataTables")));
+            wherePredicate = criteriaBuilder.and(searchCriteriaPredicate, criteriaBuilder.isEmpty(fileMetadataRoot.get(DATA_FILE).get("dataTables")));
         } else {
             wherePredicate = searchCriteriaPredicate;
         }
         criteriaQuery
-                .select(criteriaBuilder.sum(fileMetadataRoot.get("dataFile").get("filesize")))
+                .select(criteriaBuilder.sum(fileMetadataRoot.get(DATA_FILE).get("filesize")))
                 .where(wherePredicate);
         Long result = em.createQuery(criteriaQuery).getSingleResult();
         return (result == null) ? 0 : result;

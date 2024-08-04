@@ -32,6 +32,8 @@ import org.swordapp.server.SwordError;
 @Named
 public class SwordServiceBean {
 
+    private static final String RIGHTS = "rights";
+
     private static final Logger logger = Logger.getLogger(SwordServiceBean.class.getCanonicalName());
 
     @EJB
@@ -154,7 +156,7 @@ public class SwordServiceBean {
     public void setDatasetLicenseAndTermsOfUse(DatasetVersion datasetVersionToMutate, SwordEntry swordEntry) throws SwordError {
         Map<String, List<String>> dcterms = swordEntry.getDublinCore();
         List<String> listOfLicensesProvided = dcterms.get("license");
-        List<String> rights = dcterms.get("rights");
+        List<String> rights = dcterms.get(RIGHTS);
         if (rights != null && !systemConfig.isAllowCustomTerms()) {
             throw new SwordError("Custom Terms (dcterms:rights) are not allowed.");
         }
@@ -170,7 +172,7 @@ public class SwordServiceBean {
                 setTermsOfUse(datasetVersionToMutate, dcterms, existingLicense);
             } else {
                 License defaultLicense = licenseServiceBean.getDefault();
-                List<String> listOfRights = dcterms.get("rights");
+                List<String> listOfRights = dcterms.get(RIGHTS);
                 if (listOfRights != null) {
                     int numRightsProvided = listOfRights.size();
                     if (numRightsProvided != 1) {
@@ -219,7 +221,7 @@ public class SwordServiceBean {
                 throw new SwordError("Can not change license to \"" + providedLicense.getName() + "\" due to existing Terms of Use (dcterms:rights): \"" + existingTermsOfUse + "\". You can specify a Custom license.");
             }
         }
-        List<String> listOfRightsProvided = dcterms.get("rights");
+        List<String> listOfRightsProvided = dcterms.get(RIGHTS);
         if (listOfRightsProvided != null) {
             int numRightsProvided = listOfRightsProvided.size();
             if (providedLicense != null) {

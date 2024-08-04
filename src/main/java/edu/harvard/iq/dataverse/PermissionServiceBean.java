@@ -57,6 +57,16 @@ import jakarta.persistence.criteria.Root;
 @Named
 public class PermissionServiceBean {
 
+    private static final String IS_USER_ALLOWED_ON_EMPTY_TRUE = "IsUserAllowedOn: empty-true";
+
+    private static final String SELECT_ID_FROM_DVOBJECT_WHERE = "SELECT id FROM dvobject WHERE ";
+
+    private static final String DATASET_MESSAGE_LOCKED_DOWNLOAD_NOT_ALLOWED = "dataset.message.locked.downloadNotAllowed";
+
+    private static final String DATASET_MESSAGE_LOCKED_EDIT_NOT_ALLOWED = "dataset.message.locked.editNotAllowed";
+
+    private static final String DATASET_MESSAGE_LOCKED_PUBLISH_NOT_ALLOWED = "dataset.message.locked.publishNotAllowed";
+
     private static final Logger logger = Logger.getLogger(PermissionServiceBean.class.getName());
 
     private static final Set<Permission> PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY
@@ -155,7 +165,7 @@ public class PermissionServiceBean {
         public boolean canIssue(Class<? extends Command> aCmdClass) {
             Map<String, Set<Permission>> required = CH.permissionsRequired(aCmdClass);
             if (required.isEmpty() || required.get("") == null) {
-                logger.fine("IsUserAllowedOn: empty-true");
+                logger.fine(IS_USER_ALLOWED_ON_EMPTY_TRUE);
                 return true;
             } else {
                 Set<Permission> requiredPermissionSet = required.get("");
@@ -174,7 +184,7 @@ public class PermissionServiceBean {
         public boolean canIssue(Command<?> aCmd) {
             Map<String, Set<Permission>> required = aCmd.getRequiredPermissions();
             if (required.isEmpty() || required.get("") == null) {
-                logger.fine("IsUserAllowedOn: empty-true");
+                logger.fine(IS_USER_ALLOWED_ON_EMPTY_TRUE);
                 return true;
             } else {
                 Set<Permission> requiredPermissionSet = required.get("");
@@ -516,7 +526,7 @@ public class PermissionServiceBean {
 
     private boolean isUserAllowedOn(RoleAssignee u, Map<String, Set<Permission>> required, DvObject dvo) {
         if (required.isEmpty() || required.get("") == null) {
-            logger.fine("IsUserAllowedOn: empty-true");
+            logger.fine(IS_USER_ALLOWED_ON_EMPTY_TRUE);
             return true;
         } else {
             Set<Permission> requiredPermissionSet = required.get("");
@@ -658,7 +668,7 @@ public class PermissionServiceBean {
         String roleString = getRolesClause(roles);
         String typeString = getTypesClause(types);
 
-        Query nativeQuery = em.createNativeQuery("SELECT id FROM dvobject WHERE "
+        Query nativeQuery = em.createNativeQuery(SELECT_ID_FROM_DVOBJECT_WHERE
                 + typeString + " id in (select definitionpoint_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "
                 + roleString + ");");
         List<Integer> dataverseIdsToCheck = nativeQuery.getResultList();
@@ -680,7 +690,7 @@ public class PermissionServiceBean {
         // Get child datasets and files
         if (indirect) {
             indirectParentIds += ") ";
-            Query nativeQueryIndirect = em.createNativeQuery("SELECT id FROM dvobject WHERE "
+            Query nativeQueryIndirect = em.createNativeQuery(SELECT_ID_FROM_DVOBJECT_WHERE
                     + " owner_id in " + indirectParentIds + " and dType = 'Dataset'; ");
 
             List<Integer> childDatasetIds = nativeQueryIndirect.getResultList();
@@ -698,7 +708,7 @@ public class PermissionServiceBean {
                     }
                 }
             }
-            Query nativeQueryFileIndirect = em.createNativeQuery("SELECT id FROM dvobject WHERE "
+            Query nativeQueryFileIndirect = em.createNativeQuery(SELECT_ID_FROM_DVOBJECT_WHERE
                     + " owner_id in " + indirectDatasetParentIds + " and dType = 'DataFile'; ");
 
             List<Integer> childFileIds = nativeQueryFileIndirect.getResultList();
@@ -713,28 +723,28 @@ public class PermissionServiceBean {
     public void checkEditDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {
             if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_EDIT_NOT_ALLOWED), command);
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_EDIT_NOT_ALLOWED), command);
             }
             // TODO: Do we need to check for "Workflow"? Should the message be more specific?
             else if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
                 if (!isMatchingWorkflowLock(dataset, dataverseRequest.getUser().getIdentifier(),
                         dataverseRequest.getWFInvocationId())) {
                     throw new IllegalCommandException(
-                            BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+                            BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_EDIT_NOT_ALLOWED), command);
                 }
             }
             // TODO: Do we need to check for "DcmUpload"? Should the message be more specific?
             else if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_EDIT_NOT_ALLOWED), command);
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.GlobusUpload)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_EDIT_NOT_ALLOWED), command);
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_EDIT_NOT_ALLOWED), command);
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
                 // The "InReview" lock is not really a lock for curators. They can still make edits.
@@ -743,7 +753,7 @@ public class PermissionServiceBean {
                 }
             } else {
                 //catch all for locked for any other reason
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_EDIT_NOT_ALLOWED), command);
             }
         }
     }
@@ -759,37 +769,37 @@ public class PermissionServiceBean {
     public void checkPublishDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {
             if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_PUBLISH_NOT_ALLOWED), command);
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_PUBLISH_NOT_ALLOWED), command);
             }
             // TODO: Do we need to check for "Workflow"? Should the message be more specific?
             else if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
                 if (!isMatchingWorkflowLock(dataset, dataverseRequest.getUser().getIdentifier(),
                         dataverseRequest.getWFInvocationId())) {
                     throw new IllegalCommandException(
-                            BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+                            BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_PUBLISH_NOT_ALLOWED), command);
                 }
             }
             // TODO: Do we need to check for "DcmUpload"? Should the message be more specific?
             else if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_PUBLISH_NOT_ALLOWED), command);
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.GlobusUpload)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_PUBLISH_NOT_ALLOWED), command);
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_PUBLISH_NOT_ALLOWED), command);
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
                 // The "InReview" lock is not really a lock for curators. They can still publish
                 if (!isUserAllowedOn(dataverseRequest.getUser(), new PublishDatasetCommand(dataset, dataverseRequest, true), dataset)) {
-                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+                    throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_PUBLISH_NOT_ALLOWED), command);
                 }
             } else {
                 //catch all for locked for some other reason
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_PUBLISH_NOT_ALLOWED), command);
             }
         }
     }
@@ -803,22 +813,22 @@ public class PermissionServiceBean {
                 }
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_DOWNLOAD_NOT_ALLOWED), command);
             }
             else if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_DOWNLOAD_NOT_ALLOWED), command);
             }
             // TODO: Do we need to check for "Workflow"? Should the message be more specific?
             else if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
                 if (!isMatchingWorkflowLock(dataset, dataverseRequest.getUser().getIdentifier(),
                         dataverseRequest.getWFInvocationId())) {
                     throw new IllegalCommandException(
-                            BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
+                            BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_DOWNLOAD_NOT_ALLOWED), command);
                 }
             }
             // TODO: Do we need to check for "DcmUpload"? Should the message be more specific?
             else if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle(DATASET_MESSAGE_LOCKED_DOWNLOAD_NOT_ALLOWED), command);
             }
         }
     }

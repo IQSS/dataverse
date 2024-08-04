@@ -137,6 +137,9 @@ import ucar.nc2.NetcdfFiles;
 @Stateless
 @Named
 public class IngestServiceBean {
+    private static final String DATATABLE_ID = ", datatable id=";
+    private static final String DATA_FILE_ID = "DataFile id=";
+    private static final String FAILED_TO_CALCULATE_UNF_SIGNATURE_FOR_VARIABLE = "failed to calculate UNF signature for variable ";
     private static final Logger logger = Logger.getLogger(IngestServiceBean.class.getCanonicalName());
     @EJB
     VariableServiceBean variableService;
@@ -1943,7 +1946,7 @@ public class IngestServiceBean {
         if (unf != null) {
             dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
         } else {
-            logger.warning("failed to calculate UNF signature for variable " + varnum);
+            logger.warning(FAILED_TO_CALCULATE_UNF_SIGNATURE_FOR_VARIABLE + varnum);
         }
     }
 
@@ -1960,7 +1963,7 @@ public class IngestServiceBean {
         if (unf != null) {
             dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
         } else {
-            logger.warning("failed to calculate UNF signature for variable " + varnum);
+            logger.warning(FAILED_TO_CALCULATE_UNF_SIGNATURE_FOR_VARIABLE + varnum);
         }
     }
 
@@ -2060,7 +2063,7 @@ public class IngestServiceBean {
         if (unf != null) {
             dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
         } else {
-            logger.warning("failed to calculate UNF signature for variable " + varnum);
+            logger.warning(FAILED_TO_CALCULATE_UNF_SIGNATURE_FOR_VARIABLE + varnum);
         }
     }
 
@@ -2085,7 +2088,7 @@ public class IngestServiceBean {
         if (unf != null) {
             dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
         } else {
-            logger.warning("failed to calculate UNF signature for variable " + varnum);
+            logger.warning(FAILED_TO_CALCULATE_UNF_SIGNATURE_FOR_VARIABLE + varnum);
         }
     }
 
@@ -2175,12 +2178,12 @@ public class IngestServiceBean {
 
                     }
                 } catch (Exception ex) {
-                    logger.warning("Exception " + ex.getClass() + " caught trying to open StorageIO channel for the saved original; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());
+                    logger.warning("Exception " + ex.getClass() + " caught trying to open StorageIO channel for the saved original; (datafile id=" + fileId + DATATABLE_ID + datatableId + "): " + ex.getMessage());
                     savedOriginalFile = null;
                 }
 
                 if (savedOriginalFile == null) {
-                    logger.warning("Could not obtain the saved original file as a java.io.File! (datafile id=" + fileId + ", datatable id=" + datatableId + ")");
+                    logger.warning("Could not obtain the saved original file as a java.io.File! (datafile id=" + fileId + DATATABLE_ID + datatableId + ")");
                     return;
                 }
 
@@ -2189,7 +2192,7 @@ public class IngestServiceBean {
                 try {
                     fileTypeDetermined = FileUtil.determineFileType(savedOriginalFile, "");
                 } catch (IOException ioex) {
-                    logger.warning("Caught exception trying to determine original file type (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ioex.getMessage());
+                    logger.warning("Caught exception trying to determine original file type (datafile id=" + fileId + DATATABLE_ID + datatableId + "): " + ioex.getMessage());
                 }
 
                 Long savedOriginalFileSize = savedOriginalFile.length();
@@ -2200,7 +2203,7 @@ public class IngestServiceBean {
                 }
 
                 if (fileTypeDetermined == null) {
-                    logger.warning("Failed to determine preserved original file type. (datafile id=" + fileId + ", datatable id=" + datatableId + ")");
+                    logger.warning("Failed to determine preserved original file type. (datafile id=" + fileId + DATATABLE_ID + datatableId + ")");
                     return;
                 }
                 // adjust the final result:
@@ -2214,7 +2217,7 @@ public class IngestServiceBean {
                 if (FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT.equals(fileTypeDetermined)) {
                     fileTypeDetermined = FileUtil.MIME_TYPE_XLSX;
                 }
-                logger.info("Original file type determined: " + fileTypeDetermined + " (file id=" + fileId + ", datatable id=" + datatableId + "; file path: " + savedOriginalFile.getAbsolutePath() + ")");
+                logger.info("Original file type determined: " + fileTypeDetermined + " (file id=" + fileId + DATATABLE_ID + datatableId + "; file path: " + savedOriginalFile.getAbsolutePath() + ")");
 
                 // save permanently in the database:
                 dataFile.getDataTable().setOriginalFileFormat(fileTypeDetermined);
@@ -2222,10 +2225,10 @@ public class IngestServiceBean {
                 fileService.saveDataTable(dataFile.getDataTable());
 
             } else {
-                logger.info("DataFile id=" + fileId + "; original type already present: " + originalFormat);
+                logger.info(DATA_FILE_ID + fileId + "; original type already present: " + originalFormat);
             }
         } else {
-            logger.warning("DataFile id=" + fileId + ": No such DataFile!");
+            logger.warning(DATA_FILE_ID + fileId + ": No such DataFile!");
         }
     }
 
@@ -2248,12 +2251,12 @@ public class IngestServiceBean {
                     savedOriginalFileSize = storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
 
                 } catch (Exception ex) {
-                    logger.warning("Exception " + ex.getClass() + " caught trying to look up the size of the saved original; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());
+                    logger.warning("Exception " + ex.getClass() + " caught trying to look up the size of the saved original; (datafile id=" + fileId + DATATABLE_ID + datatableId + "): " + ex.getMessage());
                     return;
                 }
 
                 if (savedOriginalFileSize == null) {
-                    logger.warning("Failed to look up the size of the saved original file! (datafile id=" + fileId + ", datatable id=" + datatableId + ")");
+                    logger.warning("Failed to look up the size of the saved original file! (datafile id=" + fileId + DATATABLE_ID + datatableId + ")");
                     return;
                 }
 
@@ -2262,10 +2265,10 @@ public class IngestServiceBean {
                 fileService.saveDataTable(dataFile.getDataTable());
 
             } else {
-                logger.info("DataFile id=" + fileId + "; original file size already present: " + savedOriginalFileSize);
+                logger.info(DATA_FILE_ID + fileId + "; original file size already present: " + savedOriginalFileSize);
             }
         } else {
-            logger.warning("DataFile id=" + fileId + ": No such DataFile!");
+            logger.warning(DATA_FILE_ID + fileId + ": No such DataFile!");
         }
     }
 

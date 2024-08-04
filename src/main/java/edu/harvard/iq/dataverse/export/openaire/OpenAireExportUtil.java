@@ -31,6 +31,36 @@ import jakarta.mail.internet.InternetAddress;
 
 public class OpenAireExportUtil {
 
+    private static final String CONTACT_PERSON = "ContactPerson";
+
+    private static final String HANDLE = "Handle";
+
+    private static final String METHODS = "Methods";
+
+    private static final String CITATION = "citation";
+
+    private static final String CONTRIBUTORS = "contributors";
+
+    private static final String DATE_TYPE = "dateType";
+
+    private static final String DATES = "dates";
+
+    private static final String DESCRIPTIONS = "descriptions";
+
+    private static final String FAMILY_NAME = "familyName";
+
+    private static final String GIVEN_NAME = "givenName";
+
+    private static final String NAME_TYPE = "nameType";
+
+    private static final String RIGHTS_URI = "rightsURI";
+
+    private static final String SUBJECT = "subject";
+
+    private static final String SUBJECTS = "subjects";
+
+    private static final String XML_LANG = "xml:lang";
+
     private static final Logger logger = Logger.getLogger(OpenAireExportUtil.class.getCanonicalName());
 
     public static String XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance";
@@ -160,7 +190,7 @@ public class OpenAireExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.language.equals(fieldDTO.getTypeName())) {
                         for (String language_found : fieldDTO.getMultipleVocab()) {
@@ -193,7 +223,7 @@ public class OpenAireExportUtil {
                 identifier_map.put("identifierType", "DOI");
                 identifier = StringUtils.substring(identifier, identifier.indexOf("10."));
             } else if (StringUtils.containsIgnoreCase(identifier, HandlePidProvider.HDL_RESOLVER_URL)) {
-                identifier_map.put("identifierType", "Handle");
+                identifier_map.put("identifierType", HANDLE);
                 if (StringUtils.contains(identifier, "http")) {
                     identifier = identifier.replace(identifier.substring(0, identifier.indexOf("/") + 2), "");
                     identifier = identifier.substring(identifier.indexOf("/") + 1);
@@ -220,7 +250,7 @@ public class OpenAireExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.author.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
@@ -255,18 +285,18 @@ public class OpenAireExportUtil {
 
                                 // creatorName=<FamilyName>, <FirstName>
                                 if (creatorObj.getBoolean("isPerson")) {
-                                    creator_map.put("nameType", "Personal");
+                                    creator_map.put(NAME_TYPE, "Personal");
                                 } else {
-                                    creator_map.put("nameType", "Organizational");
+                                    creator_map.put(NAME_TYPE, "Organizational");
                                 }
                                 writeFullElement(xmlw, null, "creatorName", creator_map,
                                         creatorObj.getString("fullName"), language);
-                                if (creatorObj.containsKey("givenName")) {
-                                    writeFullElement(xmlw, null, "givenName", null, creatorObj.getString("givenName"),
+                                if (creatorObj.containsKey(GIVEN_NAME)) {
+                                    writeFullElement(xmlw, null, GIVEN_NAME, null, creatorObj.getString(GIVEN_NAME),
                                             language);
                                 }
-                                if (creatorObj.containsKey("familyName")) {
-                                    writeFullElement(xmlw, null, "familyName", null, creatorObj.getString("familyName"),
+                                if (creatorObj.containsKey(FAMILY_NAME)) {
+                                    writeFullElement(xmlw, null, FAMILY_NAME, null, creatorObj.getString(FAMILY_NAME),
                                             language);
                                 }
 
@@ -321,7 +351,7 @@ public class OpenAireExportUtil {
         String subtitle = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.subTitle);
         title_check = writeTitleElement(xmlw, "Subtitle", subtitle, title_check, language);
 
-        title_check = writeMultipleTitleElement(xmlw, "AlternativeTitle", datasetVersionDTO, "citation", title_check, language);
+        title_check = writeMultipleTitleElement(xmlw, "AlternativeTitle", datasetVersionDTO, CITATION, title_check, language);
         writeEndTag(xmlw, title_check);
     }
 
@@ -367,7 +397,7 @@ public class OpenAireExportUtil {
             xmlw.writeStartElement("title"); // <title>
 
             if (StringUtils.isNotBlank(language)) {
-                xmlw.writeAttribute("xml:lang", language);
+                xmlw.writeAttribute(XML_LANG, language);
             }
 
             if (StringUtils.isNotBlank(titleType)) {
@@ -431,12 +461,12 @@ public class OpenAireExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.subject.equals(fieldDTO.getTypeName())) {
                         for (String subject : fieldDTO.getMultipleVocab()) {
                             if (StringUtils.isNotBlank(subject)) {
-                                subject_check = writeOpenTag(xmlw, "subjects", subject_check);
+                                subject_check = writeOpenTag(xmlw, SUBJECTS, subject_check);
                                 writeSubjectElement(xmlw, null, null, null, subject, language);
                             }
                         }
@@ -469,7 +499,7 @@ public class OpenAireExportUtil {
                             }
 
                             if (StringUtils.isNotBlank(subject)) {
-                                subject_check = writeOpenTag(xmlw, "subjects", subject_check);
+                                subject_check = writeOpenTag(xmlw, SUBJECTS, subject_check);
                                 writeSubjectElement(xmlw, subjectScheme, keywordTermURI, keywordVocabURI, subject, language);
                             }
                         }
@@ -497,7 +527,7 @@ public class OpenAireExportUtil {
                             }
 
                             if (StringUtils.isNotBlank(subject)) {
-                                subject_check = writeOpenTag(xmlw, "subjects", subject_check);
+                                subject_check = writeOpenTag(xmlw, SUBJECTS, subject_check);
                                 writeSubjectElement(xmlw, subjectScheme, null, schemeURI, subject, language);
                             }
                         }
@@ -523,7 +553,7 @@ public class OpenAireExportUtil {
         Map<String, String> subject_map = new HashMap<>();
 
         if (StringUtils.isNotBlank(language)) {
-            subject_map.put("xml:lang", language);
+            subject_map.put(XML_LANG, language);
         }
 
         if (StringUtils.isNotBlank(subjectScheme)) {
@@ -537,9 +567,9 @@ public class OpenAireExportUtil {
         }
 
         if (!subject_map.isEmpty()) {
-            writeFullElement(xmlw, null, "subject", subject_map, value, language);
+            writeFullElement(xmlw, null, SUBJECT, subject_map, value, language);
         } else {
-            writeFullElement(xmlw, null, "subject", null, value, language);
+            writeFullElement(xmlw, null, SUBJECT, null, value, language);
         }
     }
 
@@ -562,7 +592,7 @@ public class OpenAireExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     // skip non-scompound value
 
@@ -582,7 +612,7 @@ public class OpenAireExportUtil {
                             }
 
                             if (StringUtils.isNotBlank(producerName)) {
-                                contributor_check = writeOpenTag(xmlw, "contributors", contributor_check);
+                                contributor_check = writeOpenTag(xmlw, CONTRIBUTORS, contributor_check);
                                 writeContributorElement(xmlw, "Producer", producerName, producerAffiliation, language);
                             }
                         }
@@ -602,7 +632,7 @@ public class OpenAireExportUtil {
                             }
 
                             if (StringUtils.isNotBlank(distributorName)) {
-                                contributor_check = writeOpenTag(xmlw, "contributors", contributor_check);
+                                contributor_check = writeOpenTag(xmlw, CONTRIBUTORS, contributor_check);
                                 writeContributorElement(xmlw, "Distributor", distributorName, distributorAffiliation, language);
                             }
                         }
@@ -615,8 +645,8 @@ public class OpenAireExportUtil {
                                 contactName = iterator.next();
 
                                 if (StringUtils.isNotBlank(contactName)) {
-                                    contributor_check = writeOpenTag(xmlw, "contributors", contributor_check);
-                                    writeContributorElement(xmlw, "ContactPerson", contactName, contactAffiliation, language);
+                                    contributor_check = writeOpenTag(xmlw, CONTRIBUTORS, contributor_check);
+                                    writeContributorElement(xmlw, CONTACT_PERSON, contactName, contactAffiliation, language);
                                 }
                             }
                         } else {
@@ -635,8 +665,8 @@ public class OpenAireExportUtil {
                                 }
 
                                 if (StringUtils.isNotBlank(contactName)) {
-                                    contributor_check = writeOpenTag(xmlw, "contributors", contributor_check);
-                                    writeContributorElement(xmlw, "ContactPerson", contactName, contactAffiliation, language);
+                                    contributor_check = writeOpenTag(xmlw, CONTRIBUTORS, contributor_check);
+                                    writeContributorElement(xmlw, CONTACT_PERSON, contactName, contactAffiliation, language);
                                 }
                             }
                         }
@@ -657,7 +687,7 @@ public class OpenAireExportUtil {
 
                             // Fix Funder contributorType
                             if (StringUtils.isNotBlank(contributorName) && !StringUtils.equalsIgnoreCase(FunderType, contributorType)) {
-                                contributor_check = writeOpenTag(xmlw, "contributors", contributor_check);
+                                contributor_check = writeOpenTag(xmlw, CONTRIBUTORS, contributor_check);
                                 writeContributorElement(xmlw, contributorType, contributorName, null, language);
                             }
                         }
@@ -693,22 +723,22 @@ public class OpenAireExportUtil {
         Map<String, String> contributor_map = new HashMap<>();
 
         JsonObject contributorObj = PersonOrOrgUtil.getPersonOrOrganization(contributorName,
-                ("ContactPerson".equals(contributorType) && !isValidEmailAddress(contributorName)), false);
+                (CONTACT_PERSON.equals(contributorType) && !isValidEmailAddress(contributorName)), false);
 
         if (contributorObj.getBoolean("isPerson")) {
-            if (contributorObj.containsKey("givenName")) {
-                contributor_map.put("nameType", "Personal");
+            if (contributorObj.containsKey(GIVEN_NAME)) {
+                contributor_map.put(NAME_TYPE, "Personal");
             }
         } else {
-            contributor_map.put("nameType", "Organizational");
+            contributor_map.put(NAME_TYPE, "Organizational");
         }
         writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
 
-        if (contributorObj.containsKey("givenName")) {
-            writeFullElement(xmlw, null, "givenName", null, contributorObj.getString("givenName"), language);
+        if (contributorObj.containsKey(GIVEN_NAME)) {
+            writeFullElement(xmlw, null, GIVEN_NAME, null, contributorObj.getString(GIVEN_NAME), language);
         }
-        if (contributorObj.containsKey("familyName")) {
-            writeFullElement(xmlw, null, "familyName", null, contributorObj.getString("familyName"), language);
+        if (contributorObj.containsKey(FAMILY_NAME)) {
+            writeFullElement(xmlw, null, FAMILY_NAME, null, contributorObj.getString(FAMILY_NAME), language);
         }
 
         if (StringUtils.isNotBlank(contributorAffiliation)) {
@@ -729,45 +759,45 @@ public class OpenAireExportUtil {
         boolean date_check = false;
         String dateOfDistribution = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.distributionDate);
         if (StringUtils.isNotBlank(dateOfDistribution)) {
-            date_check = writeOpenTag(xmlw, "dates", date_check);
+            date_check = writeOpenTag(xmlw, DATES, date_check);
 
             Map<String, String> date_map = new HashMap<>();
-            date_map.put("dateType", "Issued");
+            date_map.put(DATE_TYPE, "Issued");
             writeFullElement(xmlw, null, "date", date_map, dateOfDistribution, language);
         }
         // dates -> date with dateType attribute
 
         String dateOfProduction = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.productionDate);
         if (StringUtils.isNotBlank(dateOfProduction)) {
-            date_check = writeOpenTag(xmlw, "dates", date_check);
+            date_check = writeOpenTag(xmlw, DATES, date_check);
 
             Map<String, String> date_map = new HashMap<>();
-            date_map.put("dateType", "Created");
+            date_map.put(DATE_TYPE, "Created");
             writeFullElement(xmlw, null, "date", date_map, dateOfProduction, language);
         }
 
         String dateOfDeposit = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.dateOfDeposit);
         if (StringUtils.isNotBlank(dateOfDeposit)) {
-            date_check = writeOpenTag(xmlw, "dates", date_check);
+            date_check = writeOpenTag(xmlw, DATES, date_check);
 
             Map<String, String> date_map = new HashMap<>();
-            date_map.put("dateType", "Submitted");
+            date_map.put(DATE_TYPE, "Submitted");
             writeFullElement(xmlw, null, "date", date_map, dateOfDeposit, language);
         }
 
         String dateOfVersion = datasetVersionDTO.getReleaseTime();
         if (StringUtils.isNotBlank(dateOfVersion)) {
-            date_check = writeOpenTag(xmlw, "dates", date_check);
+            date_check = writeOpenTag(xmlw, DATES, date_check);
 
             Map<String, String> date_map = new HashMap<>();
-            date_map.put("dateType", "Updated");
+            date_map.put(DATE_TYPE, "Updated");
             writeFullElement(xmlw, null, "date", date_map, dateOfVersion.substring(0, 10), language);
         }
 
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.dateOfCollection.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
@@ -785,10 +815,10 @@ public class OpenAireExportUtil {
                             }
 
                             if (StringUtils.isNotBlank(dateOfCollectionStart) && StringUtils.isNotBlank(dateOfCollectionEnd)) {
-                                date_check = writeOpenTag(xmlw, "dates", date_check);
+                                date_check = writeOpenTag(xmlw, DATES, date_check);
 
                                 Map<String, String> date_map = new HashMap<>();
-                                date_map.put("dateType", "Collected");
+                                date_map.put(DATE_TYPE, "Collected");
                                 writeFullElement(xmlw, null, "date", date_map, dateOfCollectionStart + "/" + dateOfCollectionEnd, language);
                             }
                         }
@@ -813,7 +843,7 @@ public class OpenAireExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.kindOfData.equals(fieldDTO.getTypeName())) {
                         for (String resourceType : fieldDTO.getMultipleVocab()) {
@@ -851,7 +881,7 @@ public class OpenAireExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.otherId.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
@@ -906,7 +936,7 @@ public class OpenAireExportUtil {
             relatedIdentifierTypeMap.put("DOI".toLowerCase(), "DOI");
             relatedIdentifierTypeMap.put("EAN13".toLowerCase(), "EAN13");
             relatedIdentifierTypeMap.put("EISSN".toLowerCase(), "EISSN");
-            relatedIdentifierTypeMap.put("Handle".toLowerCase(), "Handle");
+            relatedIdentifierTypeMap.put(HANDLE.toLowerCase(), HANDLE);
             relatedIdentifierTypeMap.put("IGSN".toLowerCase(), "IGSN");
             relatedIdentifierTypeMap.put("ISBN".toLowerCase(), "ISBN");
             relatedIdentifierTypeMap.put("ISSN".toLowerCase(), "ISSN");
@@ -925,7 +955,7 @@ public class OpenAireExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.publication.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
@@ -1079,17 +1109,17 @@ public class OpenAireExportUtil {
         }
 
         if (restrict && closed) {
-            xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/restrictedAccess");
+            xmlw.writeAttribute(RIGHTS_URI, "info:eu-repo/semantics/restrictedAccess");
         } else if (!restrict && closed) {
-            xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/closedAccess");
+            xmlw.writeAttribute(RIGHTS_URI, "info:eu-repo/semantics/closedAccess");
         } else {
-            xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/openAccess");
+            xmlw.writeAttribute(RIGHTS_URI, "info:eu-repo/semantics/openAccess");
         }
         xmlw.writeEndElement(); // </rights>
 
         writeRightsHeader(xmlw, language);
         if (datasetVersionDTO.getLicense() != null) {
-            xmlw.writeAttribute("rightsURI", datasetVersionDTO.getLicense().getUri());
+            xmlw.writeAttribute(RIGHTS_URI, datasetVersionDTO.getLicense().getUri());
             xmlw.writeCharacters(datasetVersionDTO.getLicense().getName());
         }
         xmlw.writeEndElement(); // </rights>
@@ -1110,7 +1140,7 @@ public class OpenAireExportUtil {
         xmlw.writeStartElement("rights"); // <rights>
 
         if (StringUtils.isNotBlank(language)) {
-            xmlw.writeAttribute("xml:lang", language);
+            xmlw.writeAttribute(XML_LANG, language);
         }
     }
 
@@ -1129,7 +1159,7 @@ public class OpenAireExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.description.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
@@ -1143,7 +1173,7 @@ public class OpenAireExportUtil {
                             }
 
                             if (StringUtils.isNotBlank(descriptionOfAbstract)) {
-                                description_check = writeOpenTag(xmlw, "descriptions", description_check);
+                                description_check = writeOpenTag(xmlw, DESCRIPTIONS, description_check);
                                 writeDescriptionElement(xmlw, "Abstract", descriptionOfAbstract, language);
                             }
                         }
@@ -1155,7 +1185,7 @@ public class OpenAireExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.software.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
@@ -1173,7 +1203,7 @@ public class OpenAireExportUtil {
                             }
 
                             if (StringUtils.isNotBlank(softwareName) && StringUtils.isNotBlank(softwareVersion)) {
-                                description_check = writeOpenTag(xmlw, "descriptions", description_check);
+                                description_check = writeOpenTag(xmlw, DESCRIPTIONS, description_check);
                                 writeDescriptionElement(xmlw, "TechnicalInfo", softwareName + ", " + softwareVersion, language);
                             }
                         }
@@ -1184,26 +1214,26 @@ public class OpenAireExportUtil {
 
         String descriptionOfMethodsOrigin = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.originOfSources);
         if (StringUtils.isNotBlank(descriptionOfMethodsOrigin)) {
-            description_check = writeOpenTag(xmlw, "descriptions", description_check);
-            writeDescriptionElement(xmlw, "Methods", descriptionOfMethodsOrigin, language);
+            description_check = writeOpenTag(xmlw, DESCRIPTIONS, description_check);
+            writeDescriptionElement(xmlw, METHODS, descriptionOfMethodsOrigin, language);
         }
 
         String descriptionOfMethodsCharacteristic = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.characteristicOfSources);
         if (StringUtils.isNotBlank(descriptionOfMethodsCharacteristic)) {
-            description_check = writeOpenTag(xmlw, "descriptions", description_check);
-            writeDescriptionElement(xmlw, "Methods", descriptionOfMethodsCharacteristic, language);
+            description_check = writeOpenTag(xmlw, DESCRIPTIONS, description_check);
+            writeDescriptionElement(xmlw, METHODS, descriptionOfMethodsCharacteristic, language);
         }
 
         String descriptionOfMethodsAccess = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.accessToSources);
         if (StringUtils.isNotBlank(descriptionOfMethodsAccess)) {
-            description_check = writeOpenTag(xmlw, "descriptions", description_check);
-            writeDescriptionElement(xmlw, "Methods", descriptionOfMethodsAccess, language);
+            description_check = writeOpenTag(xmlw, DESCRIPTIONS, description_check);
+            writeDescriptionElement(xmlw, METHODS, descriptionOfMethodsAccess, language);
         }
 
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.series.equals(fieldDTO.getTypeName())) {
                         // String seriesName = null;
@@ -1216,7 +1246,7 @@ public class OpenAireExportUtil {
                                 }
                             }
                             if (StringUtils.isNotBlank(seriesInformation)) {
-                                description_check = writeOpenTag(xmlw, "descriptions", description_check);
+                                description_check = writeOpenTag(xmlw, DESCRIPTIONS, description_check);
                                 writeDescriptionElement(xmlw, "SeriesInformation", seriesInformation, language);
                             }
                         }
@@ -1227,7 +1257,7 @@ public class OpenAireExportUtil {
 
         String descriptionOfOther = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.notesText);
         if (StringUtils.isNotBlank(descriptionOfOther)) {
-            description_check = writeOpenTag(xmlw, "descriptions", description_check);
+            description_check = writeOpenTag(xmlw, DESCRIPTIONS, description_check);
             writeDescriptionElement(xmlw, "Other", descriptionOfOther, language);
         }
         writeEndTag(xmlw, description_check);
@@ -1247,7 +1277,7 @@ public class OpenAireExportUtil {
         Map<String, String> description_map = new HashMap<>();
 
         if (StringUtils.isNotBlank(language)) {
-            description_map.put("xml:lang", language);
+            description_map.put(XML_LANG, language);
         }
 
         description_map.put("descriptionType", descriptionType);
@@ -1376,7 +1406,7 @@ public class OpenAireExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.grantNumber.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> fieldDTOs : fieldDTO.getMultipleCompound()) {
@@ -1475,8 +1505,8 @@ public class OpenAireExportUtil {
 
             if (map != null) {
                 if (StringUtils.isNotBlank(language)) {
-                    if (StringUtils.containsIgnoreCase(tag_son, "subject") || StringUtils.containsIgnoreCase(tag_parent, "subject")) {
-                        map.put("xml:lang", language);
+                    if (StringUtils.containsIgnoreCase(tag_son, SUBJECT) || StringUtils.containsIgnoreCase(tag_parent, SUBJECT)) {
+                        map.put(XML_LANG, language);
                     }
                 }
                 writeAttribute(xmlw, map);

@@ -26,6 +26,8 @@ import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 public class SolrSearchResult {
+    private static final String CITATION = "citation";
+    private static final String TITLE = "title";
 	private static final Logger logger = Logger.getLogger(SolrSearchResult.class.getCanonicalName());
 
 	private String id;
@@ -316,7 +318,7 @@ public class SolrSearchResult {
 		/**
 		 * @todo: don't hard-code title, look it up properly... or start indexing titles as names: https://redmine.hmdc.harvard.edu/issues/3798#note-2
 		 */
-		Highlight highlight = highlightsAsMap.get("title");
+		Highlight highlight = highlightsAsMap.get(TITLE);
 		if (highlight != null) {
 			String firstSnippet = highlight.getSnippets().get(0);
 			if (firstSnippet != null) {
@@ -478,7 +480,7 @@ public class SolrSearchResult {
 			/**
 			 * @todo show more information for a file's parent, such as the title of the dataset it belongs to.
 			 */
-			datasetCitation = parent.get("citation");
+			datasetCitation = parent.get(CITATION);
 			datasetName = parent.get("name");
 			datasetId = parent.get("id");
 			datasetPersistentId = parent.get(SolrSearchResult.PARENT_IDENTIFIER);
@@ -524,7 +526,7 @@ public class SolrSearchResult {
 				.add("dataset_persistent_id", datasetPersistentId).add("dataset_citation", datasetCitation)
 				.add("deaccession_reason", this.deaccessionReason).add("citationHtml", this.citationHtml)
 				.add("identifier_of_dataverse", this.identifierOfDataverse)
-				.add("name_of_dataverse", this.nameOfDataverse).add("citation", this.citation);
+				.add("name_of_dataverse", this.nameOfDataverse).add(CITATION, this.citation);
 		// Now that nullSafeJsonBuilder has been instatiated, check for null before adding to it!
 		if (showRelevance) {
 			nullSafeJsonBuilder.add("matches", getRelevance());
@@ -582,8 +584,8 @@ public class SolrSearchResult {
 					JsonArrayBuilder relPub = Json.createArrayBuilder();
 					NullSafeJsonBuilder inner = jsonObjectBuilder();
 					for (DatasetRelPublication dsRelPub : dv.getRelatedPublications()) {
-						inner.add("title", dsRelPub.getTitle());
-						inner.add("citation", dsRelPub.getText());
+						inner.add(TITLE, dsRelPub.getTitle());
+						inner.add(CITATION, dsRelPub.getText());
 						inner.add("url", dsRelPub.getUrl());
 						relPub.add(inner);
 					}
@@ -869,7 +871,7 @@ public class SolrSearchResult {
 			 */
 			if (!field.equals(SearchFields.NAME) && !field.equals(SearchFields.DESCRIPTION)
 					&& !field.equals(SearchFields.DATASET_DESCRIPTION) && !field.equals(SearchFields.AFFILIATION)
-					&& !field.equals("title")) {
+					&& !field.equals(TITLE)) {
 				filtered.add(highlight);
 			}
 		}

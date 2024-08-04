@@ -33,6 +33,14 @@ import org.xmlunit.diff.Difference;
  */
 public class DOIDataCiteRegisterService {
 
+    private static final String TARGET = "_target";
+
+    private static final String DATACITE_CREATOR = "datacite.creator";
+
+    private static final String DATACITE_PUBLICATIONYEAR = "datacite.publicationyear";
+
+    private static final String DATACITE_TITLE = "datacite.title";
+
     private static final Logger logger = Logger.getLogger(DOIDataCiteRegisterService.class.getCanonicalName());
 
 
@@ -66,7 +74,7 @@ public class DOIDataCiteRegisterService {
     public String registerIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
         String retString = "";
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
-        String target = metadata.get("_target");
+        String target = metadata.get(TARGET);
 
         retString = client.postMetadata(xmlMetadata);
         client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
@@ -79,7 +87,7 @@ public class DOIDataCiteRegisterService {
         String retString = "";
         String numericIdentifier = identifier.substring(identifier.indexOf(":") + 1);
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
-        String target = metadata.get("_target");
+        String target = metadata.get(TARGET);
         String currentMetadata = client.getMetadata(numericIdentifier);
         Diff myDiff = DiffBuilder.compare(xmlMetadata)
                 .withTest(currentMetadata).ignoreWhitespace().checkForSimilar()
@@ -125,7 +133,7 @@ public class DOIDataCiteRegisterService {
 
         XmlMetadataTemplate metadataTemplate = new XmlMetadataTemplate();
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
-        metadataTemplate.setCreators(Arrays.asList(metadata.get("datacite.creator").split("; ")));
+        metadataTemplate.setCreators(Arrays.asList(metadata.get(DATACITE_CREATOR).split("; ")));
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         if (dvObject.isInstanceofDataset()) {
             //While getDescriptionPlainText strips < and > from HTML, it leaves '&' (at least so we need to xml escape as well
@@ -161,7 +169,7 @@ public class DOIDataCiteRegisterService {
             producerString = AbstractPidProvider.UNAVAILABLE;
         }
         metadataTemplate.setPublisher(producerString);
-        metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
+        metadataTemplate.setPublisherYear(metadata.get(DATACITE_PUBLICATIONYEAR));
 
         String xmlMetadata = metadataTemplate.generateXML(dvObject);
         logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
@@ -172,13 +180,13 @@ public class DOIDataCiteRegisterService {
 
         XmlMetadataTemplate metadataTemplate = new XmlMetadataTemplate();
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
-        metadataTemplate.setCreators(Arrays.asList(metadata.get("datacite.creator").split("; ")));
+        metadataTemplate.setCreators(Arrays.asList(metadata.get(DATACITE_CREATOR).split("; ")));
 
         metadataTemplate.setDescription(AbstractPidProvider.UNAVAILABLE);
 
-        String title = metadata.get("datacite.title");
+        String title = metadata.get(DATACITE_TITLE);
 
-        System.out.print("Map metadata title: " + metadata.get("datacite.title"));
+        System.out.print("Map metadata title: " + metadata.get(DATACITE_TITLE));
 
         metadataTemplate.setAuthors(null);
 
@@ -186,7 +194,7 @@ public class DOIDataCiteRegisterService {
         String producerString = AbstractPidProvider.UNAVAILABLE;
 
         metadataTemplate.setPublisher(producerString);
-        metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
+        metadataTemplate.setPublisherYear(metadata.get(DATACITE_PUBLICATIONYEAR));
 
         String xmlMetadata = metadataTemplate.generateXML(dvObject);
         logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
@@ -201,7 +209,7 @@ public class DOIDataCiteRegisterService {
         logger.fine("XML to send to DataCite: " + xmlMetadata);
 
         String status = metadata.get("_status").trim();
-        String target = metadata.get("_target");
+        String target = metadata.get(TARGET);
         String retString = "";
         switch (status) {
         case DataCiteDOIProvider.DRAFT:
@@ -243,10 +251,10 @@ public class DOIDataCiteRegisterService {
         try {
             String xmlMetadata = client.getMetadata(identifier.substring(identifier.indexOf(":") + 1));
             XmlMetadataTemplate template = new XmlMetadataTemplate(xmlMetadata);
-            metadata.put("datacite.creator", String.join("; ", template.getCreators()));
-            metadata.put("datacite.title", template.getTitle());
+            metadata.put(DATACITE_CREATOR, String.join("; ", template.getCreators()));
+            metadata.put(DATACITE_TITLE, template.getTitle());
             metadata.put("datacite.publisher", template.getPublisher());
-            metadata.put("datacite.publicationyear", template.getPublisherYear());
+            metadata.put(DATACITE_PUBLICATIONYEAR, template.getPublisherYear());
         } catch (RuntimeException e) {
             logger.log(Level.INFO, identifier, e);
         }

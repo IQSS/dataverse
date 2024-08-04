@@ -80,6 +80,24 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.InvalidData;
 
 public class SAVFileReader  extends TabularDataFileReader {
 
+    private static final String HIGHEST = "HIGHEST";
+
+    private static final String LOWEST = "LOWEST";
+
+    private static final String MONTH = "MONTH";
+
+    private static final String US_ASCII = "US-ASCII";
+
+    private static final String WKDAY = "WKDAY";
+
+    private static final String DATA_K = "data k=";
+
+    private static final String OTHER = "other";
+
+    private static final String RAW_BYTES_IN_HEX = "raw bytes in Hex:";
+
+    private static final String STREAM_NULL = "stream == null!";
+
     // static fields ---------------------------------------------------------//
     private static String[] FORMAT_NAMES = {"sav", "SAV"};
     private static String[] EXTENSIONS = {"sav"};
@@ -190,8 +208,8 @@ public class SAVFileReader  extends TabularDataFileReader {
         missingValueCodeUnits.put(0, 0);
 
         RecordType7SubType4Fields.add("SYSMIS");
-        RecordType7SubType4Fields.add("HIGHEST");
-        RecordType7SubType4Fields.add("LOWEST");
+        RecordType7SubType4Fields.add(HIGHEST);
+        RecordType7SubType4Fields.add(LOWEST);
 
         // set the origin of GCO to 1582-10-15
         GCO.set(1, 1582);// year
@@ -473,12 +491,12 @@ public class SAVFileReader  extends TabularDataFileReader {
                                 dataTable.getDataVariables().get(indx).setFormat(dateFormatList[indx]);
                             }
                         }
-                    } else if (variableFormatType.equals("other")) {
+                    } else if (variableFormatType.equals(OTHER)) {
                         dbgLog.fine("Variable of format type \"other\"; type adjustment may be needed");
                         dbgLog.fine("SPSS print format: " + printFormatTable.get(dataTable.getDataVariables().get(indx).getName()));
 
-                        if (printFormatTable.get(dataTable.getDataVariables().get(indx).getName()).equals("WKDAY")
-                            || printFormatTable.get(dataTable.getDataVariables().get(indx).getName()).equals("MONTH")) {
+                        if (printFormatTable.get(dataTable.getDataVariables().get(indx).getName()).equals(WKDAY)
+                            || printFormatTable.get(dataTable.getDataVariables().get(indx).getName()).equals(MONTH)) {
                             // week day or month; 
                             // These are not treated as time/date values (meaning, we 
                             // don't define time/date formats for them; there's likely 
@@ -548,7 +566,7 @@ public class SAVFileReader  extends TabularDataFileReader {
         dbgLog.fine("decodeHeader(): start");
 
         if (stream == null) {
-            throw new IllegalArgumentException("stream == null!");
+            throw new IllegalArgumentException(STREAM_NULL);
         }
         // the length of the magic number is 4 (1-byte character * 4)
         // its value is expected to be $FL2
@@ -600,7 +618,7 @@ public class SAVFileReader  extends TabularDataFileReader {
         dbgLog.fine("***** decodeRecordType1(): start *****");
 
         if (stream == null) {
-            throw new IllegalArgumentException("stream == null!");
+            throw new IllegalArgumentException(STREAM_NULL);
         }
         // how to read each recordType
         // 1. set-up the following objects before reading bytes
@@ -629,7 +647,7 @@ public class SAVFileReader  extends TabularDataFileReader {
             int offset_end = LENGTH_SPSS_PRODUCT_INFO; // 60 bytes
             
             String productInfo = new String(Arrays.copyOfRange(recordType1, offset_start,
-                offset_end), "US-ASCII");
+                offset_end), US_ASCII);
 
             dbgLog.fine("productInfo:\n" + productInfo + "\n");
             dataTable.setOriginalFormatVersion(productInfo);
@@ -868,7 +886,7 @@ public class SAVFileReader  extends TabularDataFileReader {
             offset_end += LENGTH_FILE_CREATION_INFO; // 84 bytes
             
             String fileCreationInfo = getNullStrippedString(new String(Arrays.copyOfRange(recordType1, offset_start,
-                offset_end), "US-ASCII"));
+                offset_end), US_ASCII));
 
             dbgLog.fine("fileCreationInfo:\n" + fileCreationInfo + "\n");
 
@@ -895,7 +913,7 @@ public class SAVFileReader  extends TabularDataFileReader {
     void decodeRecordType2(BufferedInputStream stream) throws IOException {
         dbgLog.fine("decodeRecordType2(): start");
         if (stream == null) {
-            throw new IllegalArgumentException("stream == null!");
+            throw new IllegalArgumentException(STREAM_NULL);
         }
 
         Map<String, String> printFormatNameTable = new LinkedHashMap<>();
@@ -1484,7 +1502,7 @@ public class SAVFileReader  extends TabularDataFileReader {
         while (true) {
             try {
                 if (stream == null) {
-                    throw new IllegalArgumentException("stream == null!");
+                    throw new IllegalArgumentException(STREAM_NULL);
                 }
 		// this secton may not exit so first check the 4-byte header value
                 //if (stream.markSupported()){
@@ -1731,7 +1749,7 @@ public class SAVFileReader  extends TabularDataFileReader {
         dbgLog.fine("***** decodeRecordType6(): start *****");
         try {
             if (stream == null) {
-                throw new IllegalArgumentException("stream == null!");
+                throw new IllegalArgumentException(STREAM_NULL);
             }
             // this section is optional; so let's first check the 4-byte header 
             // value and see what type it is. 
@@ -1908,7 +1926,7 @@ public class SAVFileReader  extends TabularDataFileReader {
                             byte[] work = new byte[unitLength];
 
                             int nb = stream.read(work);
-                            dbgLog.finer("raw bytes in Hex:" + new String(Hex.encodeHex(work)));
+                            dbgLog.finer(RAW_BYTES_IN_HEX + new String(Hex.encodeHex(work)));
                             ByteBuffer bb_field = ByteBuffer.wrap(work);
                             if (isLittleEndian) {
                                 bb_field.order(ByteOrder.LITTLE_ENDIAN);
@@ -1916,7 +1934,7 @@ public class SAVFileReader  extends TabularDataFileReader {
                             String dataInHex = new String(Hex.encodeHex(bb_field.array()));
                             /// releaseMachineSpecificInfoHex.add(dataInHex);
                             
-                            dbgLog.finer("raw bytes in Hex:" + dataInHex);
+                            dbgLog.finer(RAW_BYTES_IN_HEX + dataInHex);
                             if (unitLength == 4) {
                                 int fieldData = bb_field.getInt();
                                 dbgLog.finer("fieldData(int)=" + fieldData);
@@ -1951,7 +1969,7 @@ public class SAVFileReader  extends TabularDataFileReader {
 
                             int nb = stream.read(work);
 
-                            dbgLog.finer("raw bytes in Hex:" + new String(Hex.encodeHex(work)));
+                            dbgLog.finer(RAW_BYTES_IN_HEX + new String(Hex.encodeHex(work)));
                             ByteBuffer bb_field = ByteBuffer.wrap(work);
                             dbgLog.finer("byte order=" + bb_field.order().toString());
                             if (isLittleEndian) {
@@ -2019,12 +2037,12 @@ public class SAVFileReader  extends TabularDataFileReader {
                             byte[] work = new byte[unitLength];
 
                             int nb = stream.read(work);
-                            dbgLog.finer("raw bytes in Hex:" + new String(Hex.encodeHex(work)));
+                            dbgLog.finer(RAW_BYTES_IN_HEX + new String(Hex.encodeHex(work)));
                             ByteBuffer bb_field = ByteBuffer.wrap(work);
                             if (isLittleEndian) {
                                 bb_field.order(ByteOrder.LITTLE_ENDIAN);
                             }
-                            dbgLog.finer("raw bytes in Hex:" + new String(Hex.encodeHex(bb_field.array())));
+                            dbgLog.finer(RAW_BYTES_IN_HEX + new String(Hex.encodeHex(bb_field.array())));
 
                             if (unitLength == 4) {
                                 int fieldData = bb_field.getInt();
@@ -2070,7 +2088,7 @@ public class SAVFileReader  extends TabularDataFileReader {
                         byte[] work = new byte[unitLength * numberOfUnits];
                         int nbtyes13 = stream.read(work);
 
-                        String[] variableShortLongNamePairs = new String(work, "US-ASCII").split("\t");
+                        String[] variableShortLongNamePairs = new String(work, US_ASCII).split("\t");
 
                         for (int i = 0; i < variableShortLongNamePairs.length; i++) {
                             dbgLog.fine("RT7: " + i + "-th pair" + variableShortLongNamePairs[i]);
@@ -2161,7 +2179,7 @@ public class SAVFileReader  extends TabularDataFileReader {
                         byte[] rt7st20bytes = new byte[unitLength * numberOfUnits];
                         int nbytes20 = stream.read(rt7st20bytes);
 
-                        String dataCharSet = new String(rt7st20bytes, "US-ASCII");
+                        String dataCharSet = new String(rt7st20bytes, US_ASCII);
 
                         if (dataCharSet != null && !(dataCharSet.equals(""))) {
                             dbgLog.fine("RT7-20: data charset: " + dataCharSet);
@@ -2276,12 +2294,12 @@ public class SAVFileReader  extends TabularDataFileReader {
 
                 if (invalidDataInfo.getInvalidRange() != null &&
                     !invalidDataInfo.getInvalidRange().isEmpty()) {
-                    if (invalidDataInfo.getInvalidRange().get(0).equals(OBSTypeHexValue.get("LOWEST"))) {
+                    if (invalidDataInfo.getInvalidRange().get(0).equals(OBSTypeHexValue.get(LOWEST))) {
                         dbgLog.fine("1st value is LOWEST");
-                        invalidDataInfo.getInvalidRange().set(0, "LOWEST");
-                    } else if (invalidDataInfo.getInvalidRange().get(1).equals(OBSTypeHexValue.get("HIGHEST"))) {
+                        invalidDataInfo.getInvalidRange().set(0, LOWEST);
+                    } else if (invalidDataInfo.getInvalidRange().get(1).equals(OBSTypeHexValue.get(HIGHEST))) {
                         dbgLog.fine("2nd value is HIGHEST");
-                        invalidDataInfo.getInvalidRange().set(1, "HIGHEST");
+                        invalidDataInfo.getInvalidRange().set(1, HIGHEST);
                     }
                 }
             }
@@ -2310,7 +2328,7 @@ public class SAVFileReader  extends TabularDataFileReader {
 
 
         if (stream == null) {
-            throw new IllegalArgumentException("stream == null!");
+            throw new IllegalArgumentException(STREAM_NULL);
         }
         if (isDataSectionCompressed) {
             decodeRecordTypeDataCompressed(stream, storeWithVariableHeader);
@@ -2845,20 +2863,20 @@ public class SAVFileReader  extends TabularDataFileReader {
                                         }
                                     }
 
-                                } else if (variableFormatType.equals("other")) {
+                                } else if (variableFormatType.equals(OTHER)) {
                                     dbgLog.finer("other non-date/time case:=" + i);
 
-                                    if (printFormatTable.get(variableNameList.get(k)).equals("WKDAY")) {
+                                    if (printFormatTable.get(variableNameList.get(k)).equals(WKDAY)) {
                                         // day of week
-                                        dbgLog.finer("data k=" + k + ":" + casewiseRecordForTabFile.get(k));
-                                        dbgLog.finer("data k=" + k + ":" + SPSSConstants.WEEKDAY_LIST.get(Integer.valueOf(casewiseRecordForTabFile.get(k).toString()) - 1));
+                                        dbgLog.finer(DATA_K + k + ":" + casewiseRecordForTabFile.get(k));
+                                        dbgLog.finer(DATA_K + k + ":" + SPSSConstants.WEEKDAY_LIST.get(Integer.valueOf(casewiseRecordForTabFile.get(k).toString()) - 1));
                                         String newDatum = SPSSConstants.WEEKDAY_LIST.get(Integer.valueOf(casewiseRecordForTabFile.get(k).toString()) - 1);
                                         casewiseRecordForTabFile.set(k, newDatum);
                                         dbgLog.finer("wkday:k=" + k + ":" + casewiseRecordForTabFile.get(k));
-                                    } else if (printFormatTable.get(variableNameList.get(k)).equals("MONTH")) {
+                                    } else if (printFormatTable.get(variableNameList.get(k)).equals(MONTH)) {
                                         // month
-                                        dbgLog.finer("data k=" + k + ":" + casewiseRecordForTabFile.get(k));
-                                        dbgLog.finer("data k=" + k + ":" + SPSSConstants.MONTH_LIST.get(Integer.valueOf(casewiseRecordForTabFile.get(k).toString()) - 1));
+                                        dbgLog.finer(DATA_K + k + ":" + casewiseRecordForTabFile.get(k));
+                                        dbgLog.finer(DATA_K + k + ":" + SPSSConstants.MONTH_LIST.get(Integer.valueOf(casewiseRecordForTabFile.get(k).toString()) - 1));
                                         String newDatum = SPSSConstants.MONTH_LIST.get(Integer.valueOf(casewiseRecordForTabFile.get(k).toString()) - 1);
                                         casewiseRecordForTabFile.set(k, newDatum);
                                         dbgLog.finer("month:k=" + k + ":" + casewiseRecordForTabFile.get(k));
@@ -2881,8 +2899,8 @@ public class SAVFileReader  extends TabularDataFileReader {
                         for (int l = 0; l < casewiseRecordForTabFile.size(); l++) {
                             if (variableFormatTypeList[l].equals("date")
                                     || variableFormatTypeList[l].equals("time")
-                                    || printFormatTable.get(variableNameList.get(l)).equals("WKDAY")
-                                    || printFormatTable.get(variableNameList.get(l)).equals("MONTH")) {
+                                    || printFormatTable.get(variableNameList.get(l)).equals(WKDAY)
+                                    || printFormatTable.get(variableNameList.get(l)).equals(MONTH)) {
                                 // TODO: 
                                 // figure out if any special handling is still needed here in 4.0. 
                                 // -- L.A. - Aug. 2014
@@ -3285,20 +3303,20 @@ public class SAVFileReader  extends TabularDataFileReader {
                                     }
                                 }
                             }
-                        } else if (variableFormatType.equals("other")) {
+                        } else if (variableFormatType.equals(OTHER)) {
                             dbgLog.finer("other non-date/time case");
 
-                            if (printFormatTable.get(variableNameList.get(k)).equals("WKDAY")) {
+                            if (printFormatTable.get(variableNameList.get(k)).equals(WKDAY)) {
                                 // day of week
-                                dbgLog.finer("data k=" + k + ":" + casewiseRecordForTabFile.get(k));
-                                dbgLog.finer("data k=" + k + ":" + SPSSConstants.WEEKDAY_LIST.get(Integer.valueOf(casewiseRecordForTabFile.get(k).toString()) - 1));
+                                dbgLog.finer(DATA_K + k + ":" + casewiseRecordForTabFile.get(k));
+                                dbgLog.finer(DATA_K + k + ":" + SPSSConstants.WEEKDAY_LIST.get(Integer.valueOf(casewiseRecordForTabFile.get(k).toString()) - 1));
                                 String newDatum = SPSSConstants.WEEKDAY_LIST.get(Integer.valueOf(casewiseRecordForTabFile.get(k).toString()) - 1);
                                 casewiseRecordForTabFile.set(k, newDatum);
                                 dbgLog.finer("wkday:k=" + k + ":" + casewiseRecordForTabFile.get(k));
-                            } else if (printFormatTable.get(variableNameList.get(k)).equals("MONTH")) {
+                            } else if (printFormatTable.get(variableNameList.get(k)).equals(MONTH)) {
                                 // month
-                                dbgLog.finer("data k=" + k + ":" + casewiseRecordForTabFile.get(k));
-                                dbgLog.finer("data k=" + k + ":" + SPSSConstants.MONTH_LIST.get(Integer.valueOf(casewiseRecordForTabFile.get(k).toString()) - 1));
+                                dbgLog.finer(DATA_K + k + ":" + casewiseRecordForTabFile.get(k));
+                                dbgLog.finer(DATA_K + k + ":" + SPSSConstants.MONTH_LIST.get(Integer.valueOf(casewiseRecordForTabFile.get(k).toString()) - 1));
                                 String newDatum = SPSSConstants.MONTH_LIST.get(Integer.valueOf(casewiseRecordForTabFile.get(k).toString()) - 1);
                                 casewiseRecordForTabFile.set(k, newDatum);
                                 dbgLog.finer("month:k=" + k + ":" + casewiseRecordForTabFile.get(k));
@@ -3319,8 +3337,8 @@ public class SAVFileReader  extends TabularDataFileReader {
                 for (int l = 0; l < casewiseRecordForTabFile.size(); l++) {
                     if (variableFormatTypeList[l].equals("date") ||
                          variableFormatTypeList[l].equals("time") ||
-                         printFormatTable.get(variableNameList.get(l)).equals("WKDAY") ||
-                         printFormatTable.get(variableNameList.get(l)).equals("MONTH")) {
+                         printFormatTable.get(variableNameList.get(l)).equals(WKDAY) ||
+                         printFormatTable.get(variableNameList.get(l)).equals(MONTH)) {
 
                     } else {
                         if (variableTypelList.get(l) <= 0) {
@@ -3556,7 +3574,7 @@ public class SAVFileReader  extends TabularDataFileReader {
                 byte[] work = new byte[unitLength];
 
                 int nb = stream.read(work);
-                dbgLog.finer("raw bytes in Hex:" + new String(Hex.encodeHex(work)));
+                dbgLog.finer(RAW_BYTES_IN_HEX + new String(Hex.encodeHex(work)));
                 ByteBuffer bb_field = ByteBuffer.wrap(work);
                 if (isLittleEndian) {
                     bb_field.order(ByteOrder.LITTLE_ENDIAN);

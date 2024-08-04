@@ -59,6 +59,7 @@ import jakarta.validation.ConstraintViolationException;
 @Stateless
 @Path("edit")
 public class EditDDI  extends AbstractApiBean {
+    private static final String COULDN_T_SAVE_DATASET_0 = "Couldn''t save dataset: {0}";
     private static final Logger logger = Logger.getLogger(Access.class.getCanonicalName());
 
     //private static final String API_KEY_HEADER = "X-Dataverse-key";
@@ -200,11 +201,11 @@ public class EditDDI  extends AbstractApiBean {
                 error.append(cause).append(" ");
                 error.append(cause.getMessage()).append(" ");
             }
-            logger.log(Level.SEVERE, "Couldn''t save dataset: {0}", error.toString());
+            logger.log(Level.SEVERE, COULDN_T_SAVE_DATASET_0, error.toString());
 
             return false;
         } catch (CommandException ex) { ;
-            logger.log(Level.SEVERE, "Couldn''t save dataset: {0}", ex.getMessage());
+            logger.log(Level.SEVERE, COULDN_T_SAVE_DATASET_0, ex.getMessage());
             return false;
         }
 
@@ -338,11 +339,11 @@ public class EditDDI  extends AbstractApiBean {
                 error.append(cause).append(" ");
                 error.append(cause.getMessage()).append(" ");
             }
-            logger.log(Level.SEVERE, "Couldn''t save dataset: {0}", error.toString());
+            logger.log(Level.SEVERE, COULDN_T_SAVE_DATASET_0, error.toString());
 
             return false;
         } catch (CommandException ex) { ;
-            logger.log(Level.SEVERE, "Couldn''t save dataset: {0}", ex.getMessage());
+            logger.log(Level.SEVERE, COULDN_T_SAVE_DATASET_0, ex.getMessage());
             return false;
         }
 

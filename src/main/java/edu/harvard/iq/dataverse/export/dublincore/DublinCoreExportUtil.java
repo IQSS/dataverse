@@ -34,6 +34,14 @@ import javax.xml.stream.XMLStreamWriter;
  */
 public class DublinCoreExportUtil {
 
+    private static final String CITATION = "citation";
+
+    private static final String CONTRIBUTOR = "contributor";
+
+    private static final String SPATIAL = "spatial";
+
+    private static final String TEMPORAL = "temporal";
+
     private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
 
     public static String OAI_DC_XML_NAMESPACE = "http://www.openarchives.org/OAI/2.0/oai_dc/";
@@ -128,7 +136,7 @@ public class DublinCoreExportUtil {
         }
         writeFullElement(xmlw, dcFlavor + ":" + "date", date);
 
-        writeFullElement(xmlw, dcFlavor + ":" + "contributor", dto2Primitive(version, DatasetFieldConstant.depositor));
+        writeFullElement(xmlw, dcFlavor + ":" + CONTRIBUTOR, dto2Primitive(version, DatasetFieldConstant.depositor));
 
         writeContributorElement(xmlw, version, dcFlavor);
         writeFullElement(xmlw, dcFlavor + ":" + "dateSubmitted", dto2Primitive(version, DatasetFieldConstant.dateOfDeposit));
@@ -182,7 +190,7 @@ public class DublinCoreExportUtil {
         }
         writeFullElement(xmlw, dcFlavor + ":" + "date", date);
 
-        writeFullElement(xmlw, dcFlavor + ":" + "contributor", dto2Primitive(version, DatasetFieldConstant.depositor));
+        writeFullElement(xmlw, dcFlavor + ":" + CONTRIBUTOR, dto2Primitive(version, DatasetFieldConstant.depositor));
 
         writeContributorElement(xmlw, version, dcFlavor);
 
@@ -200,7 +208,7 @@ public class DublinCoreExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.author.equals(fieldDTO.getTypeName())) {
                         String authorName = "";
@@ -227,7 +235,7 @@ public class DublinCoreExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.description.equals(fieldDTO.getTypeName())) {
                         String descriptionText = "";
@@ -257,7 +265,7 @@ public class DublinCoreExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.subject.equals(fieldDTO.getTypeName())) {
                         for (String subject : fieldDTO.getMultipleVocab()) {
@@ -292,7 +300,7 @@ public class DublinCoreExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.publication.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
@@ -335,7 +343,7 @@ public class DublinCoreExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
                         String contributorName = "";
@@ -347,7 +355,7 @@ public class DublinCoreExportUtil {
                                 }
                             }
                             if (!contributorName.isEmpty()) {
-                                xmlw.writeStartElement(dcFlavor + ":" + "contributor");
+                                xmlw.writeStartElement(dcFlavor + ":" + CONTRIBUTOR);
                                 xmlw.writeCharacters(contributorName);
                                 xmlw.writeEndElement(); //abstract
                             }
@@ -362,7 +370,7 @@ public class DublinCoreExportUtil {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
+            if (CITATION.equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.timePeriodCovered.equals(fieldDTO.getTypeName())) {
                         String dateValStart = "";
@@ -378,10 +386,10 @@ public class DublinCoreExportUtil {
                                 }
                             }
                             if (!dateValStart.isEmpty()) {
-                                writeFullElement(xmlw, dcFlavor + ":" + "temporal", dateValStart);
+                                writeFullElement(xmlw, dcFlavor + ":" + TEMPORAL, dateValStart);
                             }
                             if (!dateValEnd.isEmpty()) {
-                                writeFullElement(xmlw, dcFlavor + ":" + "temporal", dateValEnd);
+                                writeFullElement(xmlw, dcFlavor + ":" + TEMPORAL, dateValEnd);
                             }
                         }
                     }
@@ -399,10 +407,10 @@ public class DublinCoreExportUtil {
                                 }
                             }
                             if (!dateValStart.isEmpty()) {
-                               writeFullElement(xmlw, dcFlavor + ":" + "temporal", dateValStart);
+                               writeFullElement(xmlw, dcFlavor + ":" + TEMPORAL, dateValStart);
                             }
                             if (!dateValEnd.isEmpty()) {
-                                writeFullElement(xmlw, dcFlavor + ":" + "temporal", dateValEnd);
+                                writeFullElement(xmlw, dcFlavor + ":" + TEMPORAL, dateValEnd);
                             }
                         }
                     }
@@ -422,16 +430,16 @@ public class DublinCoreExportUtil {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.country.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, dcFlavor + ":" + "spatial", next.getSinglePrimitive());
+                                    writeFullElement(xmlw, dcFlavor + ":" + SPATIAL, next.getSinglePrimitive());
                                 }
                                 if (DatasetFieldConstant.city.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, dcFlavor + ":" + "spatial", next.getSinglePrimitive());
+                                    writeFullElement(xmlw, dcFlavor + ":" + SPATIAL, next.getSinglePrimitive());
                                 }
                                 if (DatasetFieldConstant.state.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, dcFlavor + ":" + "spatial", next.getSinglePrimitive());
+                                    writeFullElement(xmlw, dcFlavor + ":" + SPATIAL, next.getSinglePrimitive());
                                 }
                                 if (DatasetFieldConstant.otherGeographicCoverage.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, dcFlavor + ":" + "spatial", next.getSinglePrimitive());
+                                    writeFullElement(xmlw, dcFlavor + ":" + SPATIAL, next.getSinglePrimitive());
                                 }
                             }
                         }

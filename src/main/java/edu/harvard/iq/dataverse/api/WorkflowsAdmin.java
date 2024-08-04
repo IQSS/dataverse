@@ -31,6 +31,12 @@ import jakarta.ws.rs.core.Response;
 @Path("admin/workflows")
 public class WorkflowsAdmin extends AbstractApiBean {
 
+    private static final String AVAILABLE_TRIGGERS = "'. Available triggers: ";
+
+    private static final String UNKNOWN_TRIGGER_TYPE = "Unknown trigger type '";
+
+    private static final String WORKFLOW_IDENTIFIER_HAS_TO_BE_NUMERIC = "workflow identifier has to be numeric.";
+
     public static final String IP_WHITELIST_KEY = "WorkflowsAdmin#IP_WHITELIST_KEY";
 
     @EJB
@@ -69,9 +75,9 @@ public class WorkflowsAdmin extends AbstractApiBean {
                 return notFound("Can't find workflow with id " + idtf);
             }
         } catch (NumberFormatException nfe) {
-            return badRequest("workflow identifier has to be numeric.");
+            return badRequest(WORKFLOW_IDENTIFIER_HAS_TO_BE_NUMERIC);
         } catch (IllegalArgumentException iae) {
-            return badRequest("Unknown trigger type '" + triggerType + "'. Available triggers: " + Arrays.toString(TriggerType.values()));
+            return badRequest(UNKNOWN_TRIGGER_TYPE + triggerType + AVAILABLE_TRIGGERS + Arrays.toString(TriggerType.values()));
         }
     }
 
@@ -96,7 +102,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
                             .map(wf -> ok(json(wf)))
                             .orElse(notFound("no default workflow"));
         } catch (IllegalArgumentException iae) {
-            return badRequest("Unknown trigger type '" + triggerType + "'. Available triggers: " + Arrays.toString(TriggerType.values()));
+            return badRequest(UNKNOWN_TRIGGER_TYPE + triggerType + AVAILABLE_TRIGGERS + Arrays.toString(TriggerType.values()));
         }
     }
 
@@ -107,7 +113,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
             workflows.setDefaultWorkflowId(TriggerType.valueOf(triggerType), null);
             return ok("default workflow for trigger " + triggerType + " unset.");
         } catch (IllegalArgumentException iae) {
-            return badRequest("Unknown trigger type '" + triggerType + "'. Available triggers: " + Arrays.toString(TriggerType.values()));
+            return badRequest(UNKNOWN_TRIGGER_TYPE + triggerType + AVAILABLE_TRIGGERS + Arrays.toString(TriggerType.values()));
         }
     }
 
@@ -120,7 +126,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
                             .map(wf -> ok(json(wf)))
                             .orElse(notFound("Can't find workflow with id " + identifier));
         } catch (NumberFormatException nfe) {
-            return badRequest("workflow identifier has to be numeric.");
+            return badRequest(WORKFLOW_IDENTIFIER_HAS_TO_BE_NUMERIC);
         }
     }
 
@@ -132,7 +138,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
             return workflows.deleteWorkflow(idtf) ? ok("Workflow " + idtf + " deleted")
                                  : notFound("workflow with id " + idtf + " not found");
         } catch (NumberFormatException nfe) {
-            return badRequest("workflow identifier has to be numeric.");
+            return badRequest(WORKFLOW_IDENTIFIER_HAS_TO_BE_NUMERIC);
 
         } catch (IllegalArgumentException e) {
             return forbidden("Cannot delete the default workflow. Please change the default workflow and try again.");

@@ -26,6 +26,10 @@ import org.apache.commons.httpclient.HttpStatus;
  */
 public class DataCiteDOIProvider extends AbstractDOIProvider {
 
+    private static final String STATUS = "_status";
+
+    private static final String TARGET = "_target";
+
     private static final Logger logger = Logger.getLogger(DataCiteDOIProvider.class.getCanonicalName());
 
     static final String FINDABLE = "findable";     //public - published dataset versions
@@ -86,7 +90,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         }
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = getMetadataForCreateIndicator(dvObject);
-        metadata.put("_status", DRAFT);
+        metadata.put(STATUS, DRAFT);
         try {
             String retString = doiDataCiteRegisterService.reserveIdentifier(identifier, metadata, dvObject);
             logger.log(Level.FINE, "create DOI identifier retString : " + retString);
@@ -104,7 +108,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         Map<String, String> metadata = new HashMap<>();
         try {
             metadata = doiDataCiteRegisterService.getMetadata(identifier);
-            metadata.put("_status", getPidStatus(dvObject));
+            metadata.put(STATUS, getPidStatus(dvObject));
         } catch (Exception e) {
             logger.log(Level.WARNING, "getIdentifierMetadata failed", e);
         }
@@ -150,8 +154,8 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
             // if public then it has been released set to REGISTERED/unavailable and reset
             // target to n2t url
             Map<String, String> metadata = addDOIMetadataForDestroyedDataset(dvObject);
-            metadata.put("_status", "registered");
-            metadata.put("_target", getTargetUrl(dvObject));
+            metadata.put(STATUS, "registered");
+            metadata.put(TARGET, getTargetUrl(dvObject));
             doiDataCiteRegisterService.deactivateIdentifier(identifier, metadata, dvObject);
             break;
 
@@ -199,9 +203,9 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         }
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = getUpdateMetadata(dvObject);
-        metadata.put("_status", FINDABLE);
+        metadata.put(STATUS, FINDABLE);
         metadata.put("datacite.publicationyear", generateYear(dvObject));
-        metadata.put("_target", getTargetUrl(dvObject));
+        metadata.put(TARGET, getTargetUrl(dvObject));
         try {
             doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);
             return true;
@@ -322,9 +326,9 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         }
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = getUpdateMetadata(dvObject);
-        metadata.put("_status", "public");
+        metadata.put(STATUS, "public");
         metadata.put("datacite.publicationyear", generateYear(dvObject));
-        metadata.put("_target", getTargetUrl(dvObject));
+        metadata.put(TARGET, getTargetUrl(dvObject));
         try {
             String updated = doiDataCiteRegisterService.reRegisterIdentifier(identifier, metadata, dvObject);
             if (updated.length() != 0) {

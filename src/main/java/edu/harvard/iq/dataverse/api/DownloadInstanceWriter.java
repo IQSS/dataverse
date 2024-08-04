@@ -60,6 +60,10 @@ import org.apache.tika.mime.MimeTypes;
 @Provider
 public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstance> {
 
+    private static final String FORMAT = "format";
+
+    private static final String IMAGE_THUMB = "imageThumb";
+
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
     @Inject
@@ -118,7 +122,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     redirectSupported = true;
 
 
-                    if ("imageThumb".equals(di.getConversionParam())) {
+                    if (IMAGE_THUMB.equals(di.getConversionParam())) {
 
                         // Can redirect - but only if already generated and cached.
                         int requestedSize = 0;
@@ -163,7 +167,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         // Many separate special cases here. 
 
                         if (di.getConversionParam() != null) {
-                            if (di.getConversionParam().equals("format")) {
+                            if (di.getConversionParam().equals(FORMAT)) {
 
                                 if ("original".equals(di.getConversionParamValue())) {
                                     auxiliaryTag = StoredOriginalFile.SAVED_ORIGINAL_FILENAME_EXTENSION;
@@ -225,7 +229,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                 String driverId = DataAccess.getStorageDriverFromIdentifier(dataFile.getStorageIdentifier());
                 if (systemConfig.isGlobusFileDownload() && (GlobusAccessibleStore.acceptsGlobusTransfers(driverId) || GlobusAccessibleStore.allowsGlobusReferences(driverId))) {
                     if (di.getConversionParam() != null) {
-                        if (di.getConversionParam().equals("format")) {
+                        if (di.getConversionParam().equals(FORMAT)) {
 
                             if ("GlobusTransfer".equals(di.getConversionParamValue())) {
                                 List<DataFile> downloadDFList = new ArrayList<>(1);
@@ -278,7 +282,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     // NOTE: should be supported on all files for which StorageIO drivers
                     // are available (but not on harvested files1) -- L.A. 4.6.2
 
-                    if (di.getConversionParam().equals("imageThumb") && !dataFile.isHarvested()) {
+                    if (di.getConversionParam().equals(IMAGE_THUMB) && !dataFile.isHarvested()) {
                         if ("".equals(di.getConversionParamValue())) {
                             storageIO = ImageThumbConverter.getImageThumbnailAsInputStream(storageIO, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
                         } else {
@@ -315,7 +319,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 logger.fine("can't serve request for tabular data without varheader, since stored with it");
                                 throw new ServiceUnavailableException();
                             }
-                        } else if (di.getConversionParam().equals("format")) {
+                        } else if (di.getConversionParam().equals(FORMAT)) {
                             // Conversions, and downloads of "stored originals" are 
                             // now supported on all DataFiles for which StorageIO 
                             // access drivers are available.
@@ -669,7 +673,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             return false;
         }
 
-        return downloadInstance.getConversionParam().equals("imageThumb");
+        return downloadInstance.getConversionParam().equals(IMAGE_THUMB);
     }
 
     private boolean isPreprocessedMetadataDownload(DownloadInstance downloadInstance) {
@@ -685,7 +689,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             return false;
         }
 
-        return downloadInstance.getConversionParam().equals("format") && downloadInstance.getConversionParamValue().equals("prep");
+        return downloadInstance.getConversionParam().equals(FORMAT) && downloadInstance.getConversionParamValue().equals("prep");
     }
 
     private long getContentSize(StorageIO<?> accessObject) {

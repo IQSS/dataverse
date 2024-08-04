@@ -37,6 +37,8 @@ import jakarta.persistence.Transient;
 @Entity
 public class MetadataBlock implements Serializable, Comparable {
 
+    private static final String CITATION = "citation";
+
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -122,7 +124,7 @@ public class MetadataBlock implements Serializable, Comparable {
 
     public boolean isRequired() {
         // eventually this will be dynamic, for now only citation is required
-        return "citation".equals(name);
+        return CITATION.equals(name);
     }
 
     @OneToOne
@@ -227,7 +229,7 @@ public class MetadataBlock implements Serializable, Comparable {
     public int compareTo(Object arg0) {
         //guaranteeing that citation will be shown first with custom blocks in order of creation
         MetadataBlock other = (MetadataBlock) arg0;
-        Long t = "citation".equals(name) ? -1 : this.getId();
-        return t.compareTo("citation".equals(other.name) ? -1 : other.getId());
+        Long t = CITATION.equals(name) ? -1 : this.getId();
+        return t.compareTo(CITATION.equals(other.name) ? -1 : other.getId());
     }
 }

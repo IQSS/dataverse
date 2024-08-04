@@ -81,6 +81,10 @@ import jakarta.batch.operations.NoSuchJobExecutionException;
 @Dependent
 public class FileRecordJobListener implements ItemReadListener, StepListener, JobListener {
 
+    private static final String FAILED = "FAILED";
+
+    private static final String USER_ID = "userId";
+
     public static final String SEP = File.separator;
 
     private static final UserNotification.Type notifyType = UserNotification.Type.FILESYSTEMIMPORT;
@@ -172,17 +176,17 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
 
         if (dataset == null) {
             getJobLogger().log(Level.SEVERE, "Can't find dataset.");
-            jobContext.setExitStatus("FAILED");
+            jobContext.setExitStatus(FAILED);
             throw new IOException("Can't find dataset.");
         }
 
         if (!dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
             getJobLogger().log(Level.SEVERE, "Dataset {0} is not locked for DCM upload. Exiting", dataset.getGlobalId());
-            jobContext.setExitStatus("FAILED");
+            jobContext.setExitStatus(FAILED);
             throw new IOException("Dataset " + dataset.getGlobalId() + " is not locked for DCM upload");
         }
 
-        jobParams.setProperty("userId", getUserId());
+        jobParams.setProperty(USER_ID, getUserId());
         jobParams.setProperty("mode", getMode());
 
         uploadFolder = jobParams.getProperty("uploadFolder");
@@ -205,7 +209,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             // load the checksum manifest
             loadChecksumManifest();
         } else {
-            jobContext.setExitStatus("FAILED");
+            jobContext.setExitStatus(FAILED);
         }
     }
 
@@ -216,7 +220,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
     public void afterJob() throws Exception {
 
         //TODO add notifications to job failure?
-        if (jobContext.getExitStatus() != null && jobContext.getExitStatus().equals("FAILED")) {
+        if (jobContext.getExitStatus() != null && jobContext.getExitStatus().equals(FAILED)) {
             getJobLogger().log(Level.SEVERE, "Job Failed. See Log for more information.");
             closeJobLoggerHandlers();
             return;
@@ -388,8 +392,8 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             getJobLogger().log(Level.INFO, "User Identifier (userPrimaryKey=" + userPrimaryKey + "): " + user.getIdentifier());
             return Long.toString(user.getId());
         }
-        if (jobParams.containsKey("userId")) {
-            String userId = jobParams.getProperty("userId");
+        if (jobParams.containsKey(USER_ID)) {
+            String userId = jobParams.getProperty(USER_ID);
             user = authenticationServiceBean.getAuthenticatedUser(userId);
             getJobLogger().log(Level.INFO, "User Identifier (userId=" + userId + "): " + user.getIdentifier());
             return Long.toString(user.getId());
@@ -468,7 +472,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             getJobLogger().log(Level.INFO, "Checksums found = " + map.size());
         } catch (IOException ioe) {
             getJobLogger().log(Level.SEVERE, "Unable to load checksum manifest file: " + ioe.getMessage());
-            jobContext.setExitStatus("FAILED");
+            jobContext.setExitStatus(FAILED);
         } finally {
             IOUtils.closeQuietly(scanner);
         }

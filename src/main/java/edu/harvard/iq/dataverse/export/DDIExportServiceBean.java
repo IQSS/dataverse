@@ -61,6 +61,20 @@ import javax.xml.stream.XMLOutputFactory;
 @Named
 public class DDIExportServiceBean {
 
+    private static final String CATGRY = "catgry";
+
+    private static final String FILE_DSCR = "fileDscr";
+
+    private static final String FILE_TXT = "fileTxt";
+
+    private static final String INVALRNG = "invalrng";
+
+    private static final String LEVEL = "level";
+
+    private static final String NOTES = "notes";
+
+    private static final String SUBJECT = "subject";
+
     private static final Logger logger = Logger.getLogger(DDIExportServiceBean.class.getCanonicalName());
     @EJB
     DatasetServiceBean datasetService;
@@ -309,12 +323,12 @@ public class DDIExportServiceBean {
         if (checkField("labl", excludedFieldSet, includedFieldSet)) {
             if ((vmList.size() == 0 || StringUtilisEmpty(vmList.get(0).getLabel())) && !StringUtilisEmpty(dv.getLabel())) {
                 xmlw.writeStartElement("labl");
-                writeAttribute(xmlw, "level", "variable");
+                writeAttribute(xmlw, LEVEL, OBJECT_TAG_VARIABLE);
                 xmlw.writeCharacters(dv.getLabel());
                 xmlw.writeEndElement(); //labl
             } else if (vm != null && !StringUtilisEmpty(vm.getLabel())) {
                 xmlw.writeStartElement("labl");
-                writeAttribute(xmlw, "level", "variable");
+                writeAttribute(xmlw, LEVEL, OBJECT_TAG_VARIABLE);
                 xmlw.writeCharacters(vmList.get(0).getLabel());
                 xmlw.writeEndElement(); //labl
             }
@@ -345,18 +359,18 @@ public class DDIExportServiceBean {
         }
 
         // invalrng
-        if (checkField("invalrng", excludedFieldSet, includedFieldSet)) {
+        if (checkField(INVALRNG, excludedFieldSet, includedFieldSet)) {
             boolean invalrngAdded = false;
             for (VariableRange range : dv.getInvalidRanges()) {
                 //if (range.getBeginValueType() != null && range.getBeginValueType().getName().equals(DB_VAR_RANGE_TYPE_POINT)) {
                 if (range.getBeginValueType() != null && range.isBeginValueTypePoint()) {
                     if (range.getBeginValue() != null) {
-                        invalrngAdded = checkParentElement(xmlw, "invalrng", invalrngAdded);
+                        invalrngAdded = checkParentElement(xmlw, INVALRNG, invalrngAdded);
                         xmlw.writeEmptyElement("item");
                         writeAttribute(xmlw, "VALUE", range.getBeginValue());
                     }
                 } else {
-                    invalrngAdded = checkParentElement(xmlw, "invalrng", invalrngAdded);
+                    invalrngAdded = checkParentElement(xmlw, INVALRNG, invalrngAdded);
                     xmlw.writeEmptyElement("range");
                     if (range.getBeginValueType() != null && range.getBeginValue() != null) {
                         if (range.isBeginValueTypeMin()) {
@@ -405,9 +419,9 @@ public class DDIExportServiceBean {
         }
 
         // categories
-        if (checkField("catgry", excludedFieldSet, includedFieldSet)) {
+        if (checkField(CATGRY, excludedFieldSet, includedFieldSet)) {
             for (VariableCategory cat : dv.getCategories()) {
-                xmlw.writeStartElement("catgry");
+                xmlw.writeStartElement(CATGRY);
                 if (cat.isMissing()) {
                     writeAttribute(xmlw, "missing", "Y");
                 }
@@ -420,7 +434,7 @@ public class DDIExportServiceBean {
                 // label
                 if (!StringUtilisEmpty(cat.getLabel())) {
                     xmlw.writeStartElement("labl");
-                    writeAttribute(xmlw, "level", "category");
+                    writeAttribute(xmlw, LEVEL, "category");
                     xmlw.writeCharacters(cat.getLabel());
                     xmlw.writeEndElement(); //labl
                 }
@@ -472,17 +486,17 @@ public class DDIExportServiceBean {
 
         // notes
         if (checkField("unf", excludedFieldSet, includedFieldSet)) {
-            xmlw.writeStartElement("notes");
-            writeAttribute(xmlw, "subject", "Universal Numeric Fingerprint");
-            writeAttribute(xmlw, "level", "variable");
+            xmlw.writeStartElement(NOTES);
+            writeAttribute(xmlw, SUBJECT, "Universal Numeric Fingerprint");
+            writeAttribute(xmlw, LEVEL, OBJECT_TAG_VARIABLE);
             writeAttribute(xmlw, "type", "VDC:UNF");
             xmlw.writeCharacters(dv.getUnf());
             xmlw.writeEndElement(); //notes
         }
-        if (checkField("notes", excludedFieldSet, includedFieldSet)) {
+        if (checkField(NOTES, excludedFieldSet, includedFieldSet)) {
             if (vm != null) {
                 if (!StringUtilisEmpty(vm.getNotes())) {
-                    xmlw.writeStartElement("notes");
+                    xmlw.writeStartElement(NOTES);
                     xmlw.writeCData(vm.getNotes());
                     xmlw.writeEndElement(); //notes CDATA
                 }
@@ -524,7 +538,7 @@ public class DDIExportServiceBean {
 
         DataTable dt = fileService.findDataTableByFileId(df.getId());
 
-        if (checkField("fileDscr", excludedFieldSet, includedFieldSet)) {
+        if (checkField(FILE_DSCR, excludedFieldSet, includedFieldSet)) {
             createFileDscr(xmlw, excludedFieldSet, null, df, dt, fm);
         }
 
@@ -542,7 +556,7 @@ public class DDIExportServiceBean {
 
         if (checkField("var", excludedFieldSet, includedFieldSet)) {
             List<DataVariable> vars = variableService.findByDataTableId(dt.getId());
-            if (checkField("catgry", excludedFieldSet, includedFieldSet)) {
+            if (checkField(CATGRY, excludedFieldSet, includedFieldSet)) {
                 if (checkIsWithoutFrequencies(vars)) {
                     // @todo: the method called here to calculate frequencies 
                     // when they are missing from the database (for whatever
@@ -631,7 +645,7 @@ public class DDIExportServiceBean {
             }
         }
 
-        if (checkField("fileDscr", excludedFieldSet, includedFieldSet)) {
+        if (checkField(FILE_DSCR, excludedFieldSet, includedFieldSet)) {
             for (FileMetadata fileMetadata : tabularDataFiles) {
                 DataTable dt = fileService.findDataTableByFileId(fileMetadata.getDataFile().getId());
                 createFileDscr(xmlw, excludedFieldSet, includedFieldSet, fileMetadata.getDataFile(), dt, fileMetadata);
@@ -727,15 +741,15 @@ public class DDIExportServiceBean {
 
     private void createFileDscr(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DataFile df, DataTable dt, FileMetadata fm) throws XMLStreamException {
 
-        xmlw.writeStartElement("fileDscr");
+        xmlw.writeStartElement(FILE_DSCR);
         writeAttribute(xmlw, "ID", "f" + df.getId().toString());
         //writeAttribute( xmlw, "URI", determineFileURI(fm) );
 
         // fileTxt
-        if (checkField("fileTxt", excludedFieldSet, includedFieldSet)) {
-            xmlw.writeStartElement("fileTxt");
+        if (checkField(FILE_TXT, excludedFieldSet, includedFieldSet)) {
+            xmlw.writeStartElement(FILE_TXT);
 
-            if (checkField("fileTxt", excludedFieldSet, includedFieldSet)) {
+            if (checkField(FILE_TXT, excludedFieldSet, includedFieldSet)) {
                 xmlw.writeStartElement("fileName");
                 xmlw.writeCharacters(fm.getLabel());
                 xmlw.writeEndElement(); // fileName
@@ -792,10 +806,10 @@ public class DDIExportServiceBean {
         // this specially formatted note section is used to store the UNF
         // (Universal Numeric Fingerprint) signature:
         if (checkField("unf", excludedFieldSet, includedFieldSet) && dt.getUnf() != null && !dt.getUnf().equals("")) {
-            xmlw.writeStartElement("notes");
-            writeAttribute(xmlw, "level", LEVEL_FILE);
+            xmlw.writeStartElement(NOTES);
+            writeAttribute(xmlw, LEVEL, LEVEL_FILE);
             writeAttribute(xmlw, "type", NOTE_TYPE_UNF);
-            writeAttribute(xmlw, "subject", NOTE_SUBJECT_UNF);
+            writeAttribute(xmlw, SUBJECT, NOTE_SUBJECT_UNF);
             xmlw.writeCharacters(dt.getUnf());
             xmlw.writeEndElement(); // notes
         }
@@ -822,10 +836,10 @@ public class DDIExportServiceBean {
          */
         if (checkField("tags", excludedFieldSet, includedFieldSet) && df.getTags() != null) {
             for (int i = 0; i < df.getTags().size(); i++) {
-                xmlw.writeStartElement("notes");
-                writeAttribute(xmlw, "level", LEVEL_FILE);
+                xmlw.writeStartElement(NOTES);
+                writeAttribute(xmlw, LEVEL, LEVEL_FILE);
                 writeAttribute(xmlw, "type", NOTE_TYPE_TAG);
-                writeAttribute(xmlw, "subject", NOTE_SUBJECT_TAG);
+                writeAttribute(xmlw, SUBJECT, NOTE_SUBJECT_TAG);
                 xmlw.writeCharacters(df.getTags().get(i).getTypeLabel());
                 xmlw.writeEndElement(); // notes
             }

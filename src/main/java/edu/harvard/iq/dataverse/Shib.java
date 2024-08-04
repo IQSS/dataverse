@@ -40,6 +40,10 @@ import jakarta.servlet.http.HttpServletRequest;
 @Named("Shib")
 public class Shib implements java.io.Serializable {
 
+    private static final String AND_WAS_TRIMMED_TO = "\" and was trimmed to \"";
+
+    private static final String THE_SAML_ASSERTION_FOR = "The SAML assertion for \"";
+
     private static final Logger logger = Logger.getLogger(Shib.class.getCanonicalName());
 
     @Inject
@@ -422,14 +426,14 @@ public class Shib implements java.io.Serializable {
             String attributeValue = attribute.toString();
             String trimmedValue = attributeValue.trim();
             if (!trimmedValue.isEmpty()) {
-                logger.fine("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
+                logger.fine(THE_SAML_ASSERTION_FOR + key + "\" (optional) was \"" + attributeValue + AND_WAS_TRIMMED_TO + trimmedValue + "\".");
                 return trimmedValue;
             } else {
-                logger.fine("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\" (empty string). Returing null.");
+                logger.fine(THE_SAML_ASSERTION_FOR + key + "\" (optional) was \"" + attributeValue + AND_WAS_TRIMMED_TO + trimmedValue + "\" (empty string). Returing null.");
                 return null;
             }
         } else {
-            logger.fine("The SAML assertion for \"" + key + "\" (optional) was null.");
+            logger.fine(THE_SAML_ASSERTION_FOR + key + "\" (optional) was null.");
             return null;
         }
     }
@@ -443,7 +447,7 @@ public class Shib implements java.io.Serializable {
     private String getRequiredValueFromAssertion(String key) throws Exception {
         Object attribute = request.getAttribute(key);
         if (attribute == null) {
-            String msg = "The SAML assertion for \"" + key + "\" was null. Please contact support.";
+            String msg = THE_SAML_ASSERTION_FOR + key + "\" was null. Please contact support.";
             logger.info(msg);
             boolean showMessage = true;
             if (shibIdp.equals(ShibUtil.testShibIdpEntityId) && key.equals(ShibUtil.emailAttribute)) {
@@ -462,7 +466,7 @@ public class Shib implements java.io.Serializable {
 			attributeValue = new String( attributeValue.getBytes("ISO-8859-1"), "UTF-8");
 		}
         String trimmedValue = attributeValue.trim();
-        logger.fine("The SAML assertion for \"" + key + "\" (required) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
+        logger.fine(THE_SAML_ASSERTION_FOR + key + "\" (required) was \"" + attributeValue + AND_WAS_TRIMMED_TO + trimmedValue + "\".");
         return trimmedValue;
     }
 

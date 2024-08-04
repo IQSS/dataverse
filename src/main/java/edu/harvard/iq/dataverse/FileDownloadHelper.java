@@ -37,6 +37,8 @@ import org.primefaces.PrimeFaces;
  @Named
 public class FileDownloadHelper implements java.io.Serializable {
 
+     private static final String PF_GUESTBOOK_AND_TERMS_POPUP_HIDE = "PF('guestbookAndTermsPopup').hide()";
+
     private static final Logger logger = Logger.getLogger(FileDownloadHelper.class.getCanonicalName());
     @Inject
     DataverseSession session;
@@ -71,7 +73,7 @@ public class FileDownloadHelper implements java.io.Serializable {
     // file downloads and multiple (batch) downloads - since both use the same
     // terms/etc. popup.
     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse, boolean isGlobusTransfer) {
-        PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
+        PrimeFaces.current().executeScript(PF_GUESTBOOK_AND_TERMS_POPUP_HIDE);
         guestbookResponse.setEventType(GuestbookResponse.DOWNLOAD);
          // Note that this method is only ever called from the file-download-popup -
          // meaning we know for the fact that we DO want to save this
@@ -96,7 +98,7 @@ public class FileDownloadHelper implements java.io.Serializable {
 
      public void writeGuestbookAndOpenSubset(GuestbookResponse guestbookResponse) {
 
-             PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
+             PrimeFaces.current().executeScript(PF_GUESTBOOK_AND_TERMS_POPUP_HIDE);
              PrimeFaces.current().executeScript("PF('downloadDataSubsetPopup').show()");
              guestbookResponse.setEventType(GuestbookResponse.SUBSET);
              fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
@@ -137,12 +139,12 @@ public class FileDownloadHelper implements java.io.Serializable {
 
          fileDownloadService.explore(guestbookResponse, fmd, externalTool);
          //requestContext.execute("PF('downloadPopup').hide()");
-         PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
+         PrimeFaces.current().executeScript(PF_GUESTBOOK_AND_TERMS_POPUP_HIDE);
     }
 
     public void writeGuestbookAndLaunchPackagePopup(GuestbookResponse guestbookResponse) {
 
-            PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
+            PrimeFaces.current().executeScript(PF_GUESTBOOK_AND_TERMS_POPUP_HIDE);
             PrimeFaces.current().executeScript("PF('downloadPackagePopup').show()");
             PrimeFaces.current().executeScript("handleResizeDialog('downloadPackagePopup')");
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
@@ -155,7 +157,7 @@ public class FileDownloadHelper implements java.io.Serializable {
             /* Only for single file requests (i.e. from kebab menu) */
             guestbookResponse.setDataFile(filesForRequestAccess.get(0));
         }
-        PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
+        PrimeFaces.current().executeScript(PF_GUESTBOOK_AND_TERMS_POPUP_HIDE);
         fileDownloadService.writeGuestbookResponseAndRequestAccess(guestbookResponse);
     }
 

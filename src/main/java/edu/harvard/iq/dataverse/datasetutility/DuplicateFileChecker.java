@@ -27,6 +27,8 @@ import java.util.logging.Logger;
  */
 public class DuplicateFileChecker {
 
+    private static final String DATASET_VERSION_CANNOT_BE_NULL = "datasetVersion cannot be null";
+
     private static final Logger logger = Logger.getLogger(DuplicateFileChecker.class.getCanonicalName());
     private DatasetVersionServiceBean datasetVersionService;
 
@@ -56,7 +58,7 @@ public class DuplicateFileChecker {
     public boolean isFileInSavedDatasetVersion(DatasetVersion datasetVersion, FileMetadata fileMetadata) {
 
          if (datasetVersion == null) {
-             throw new NullPointerException("datasetVersion cannot be null");
+             throw new NullPointerException(DATASET_VERSION_CANNOT_BE_NULL);
          }
 
          if (fileMetadata == null) {
@@ -74,7 +76,7 @@ public class DuplicateFileChecker {
     public boolean isFileInSavedDatasetVersion(DatasetVersion datasetVersion, String checkSum) {
 
         if (datasetVersion == null) {
-             throw new NullPointerException("datasetVersion cannot be null");
+             throw new NullPointerException(DATASET_VERSION_CANNOT_BE_NULL);
         }
 
         if (checkSum == null) {
@@ -96,7 +98,7 @@ public class DuplicateFileChecker {
     public Map<String, Integer> getDatasetHashesFromDatabase(DatasetVersion datasetVersion) {
 
         if (datasetVersion == null) {
-             throw new NullPointerException("datasetVersion cannot be null");
+             throw new NullPointerException(DATASET_VERSION_CANNOT_BE_NULL);
          }
 
         Map<String, Integer> checksumHashCounts = new HashMap<>();
@@ -129,7 +131,7 @@ public class DuplicateFileChecker {
      */
     public static boolean isDuplicateOriginalWay(DatasetVersion workingVersion, FileMetadata fileMetadata) {
         if (workingVersion == null) {
-            throw new NullPointerException("datasetVersion cannot be null");
+            throw new NullPointerException(DATASET_VERSION_CANNOT_BE_NULL);
         }
 
         String selectedCheckSum = fileMetadata.getDataFile().getChecksumValue();

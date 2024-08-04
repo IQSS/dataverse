@@ -14,6 +14,8 @@ import java.util.logging.Level;
  */
 class FirstNames {
 
+    private static final String I_CANNOT_READ_0_FILE = "I cannot read {0} file";
+
     private static FirstNames instance = null;
 
     private final int capacity = (int) ((49000 + 33000) * 1.2 * 0.8);
@@ -54,21 +56,21 @@ class FirstNames {
             try {
                 readNameDict();
             } catch (IOException ioe) {
-                logger.log(Level.WARNING, "I cannot read {0} file", NAME_DICT_FILENAME);
+                logger.log(Level.WARNING, I_CANNOT_READ_0_FILE, NAME_DICT_FILENAME);
             }
         }
         if (loadYobDict) {
             try {
                 readYob();
             } catch (IOException ioe) {
-                logger.log(Level.WARNING, "I cannot read {0} file", YOB_FILENAME);
+                logger.log(Level.WARNING, I_CANNOT_READ_0_FILE, YOB_FILENAME);
             }
         }
         if (loadHint) {
             try {
                 readHint();
             } catch (IOException ioe) {
-                logger.log(Level.WARNING, "I cannot read {0} file", HINT_FILENAME);
+                logger.log(Level.WARNING, I_CANNOT_READ_0_FILE, HINT_FILENAME);
             }
         }
     }

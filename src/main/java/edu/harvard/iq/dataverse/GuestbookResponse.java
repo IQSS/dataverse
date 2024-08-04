@@ -43,6 +43,7 @@ import java.util.Collections;
 )
 
 public class GuestbookResponse implements Serializable {
+    private static final String LI_LI = "</li>\n<li>";
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -341,9 +342,9 @@ public class GuestbookResponse implements Serializable {
         sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.id") + ": " + getId() + "<br>\n");
         sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.date") + ": " + getResponseDate() + "<br>\n");
         sb.append(BundleUtil.getStringFromBundle("dataset.guestbookResponse.respondent") + "<br><ul style=\"list-style-type:none;\">\n<li>"
-                + BundleUtil.getStringFromBundle("name") + ": " + getName() + "</li>\n<li>");
-        sb.append("  " + BundleUtil.getStringFromBundle("email") + ": " + getEmail() + "</li>\n<li>");
-        sb.append("  " + BundleUtil.getStringFromBundle("institution") + ": " + wrapNullAnswer(getInstitution()) + "</li>\n<li>");
+                + BundleUtil.getStringFromBundle("name") + ": " + getName() + LI_LI);
+        sb.append("  " + BundleUtil.getStringFromBundle("email") + ": " + getEmail() + LI_LI);
+        sb.append("  " + BundleUtil.getStringFromBundle("institution") + ": " + wrapNullAnswer(getInstitution()) + LI_LI);
         sb.append("  " + BundleUtil.getStringFromBundle("position") + ": " + wrapNullAnswer(getPosition()) + "</li>");
 
         //Add requestor information to response to help dataset admin with request processing

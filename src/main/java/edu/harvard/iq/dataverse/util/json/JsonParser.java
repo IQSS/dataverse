@@ -62,6 +62,26 @@ import jakarta.json.JsonValue.ValueType;
  */
 public class JsonParser {
 
+    private static final String DOES_NOT_EXIST_IN_TYPE = "' does not exist in type '";
+
+    private static final String IT_SHOULD_BE_AN_ARRAY_OF_VALUES = ". It should be an array of values.";
+
+    private static final String INVALID_VALUES_SUBMITTED_FOR = "Invalid values submitted for ";
+
+    private static final String VALUE_1 = "Value '";
+
+    private static final String ALIAS = "alias";
+
+    private static final String DESCRIPTION = "description";
+
+    private static final String FIELDS = "fields";
+
+    private static final String TYPE_CLASS = "typeClass";
+
+    private static final String TYPE_NAME = "typeName";
+
+    private static final String VALUE = "value";
+
     private static final Logger logger = Logger.getLogger(JsonParser.class.getCanonicalName());
 
     DatasetFieldServiceBean datasetFieldSvc;
@@ -118,9 +138,9 @@ public class JsonParser {
          * required or not but other bean validation rules such as "must match
          * this regex".
          */
-        dv.setAlias(getMandatoryString(jobj, "alias"));
+        dv.setAlias(getMandatoryString(jobj, ALIAS));
         dv.setName(getMandatoryString(jobj, "name"));
-        dv.setDescription(jobj.getString("description", null));
+        dv.setDescription(jobj.getString(DESCRIPTION, null));
         dv.setPermissionRoot(jobj.getBoolean("permissionRoot", false));
         dv.setFacetRoot(jobj.getBoolean("facetRoot", false));
         dv.setAffiliation(jobj.getString("affiliation", null));
@@ -250,8 +270,8 @@ public class JsonParser {
             retVal.setId(Long.valueOf(obj.getInt("id")));
         }
         retVal.setDisplayName(obj.getString("name", null));
-        retVal.setDescription(obj.getString("description", null));
-        retVal.setPersistedGroupAlias(obj.getString("alias", null));
+        retVal.setDescription(obj.getString(DESCRIPTION, null));
+        retVal.setPersistedGroupAlias(obj.getString(ALIAS, null));
 
         if (obj.containsKey("ranges")) {
             obj.getJsonArray("ranges").stream()
@@ -280,8 +300,8 @@ public class JsonParser {
             grp.setId(obj.getJsonNumber("id").longValue());
         }
         grp.setDisplayName(getMandatoryString(obj, "name"));
-        grp.setDescription(obj.getString("description", null));
-        grp.setPersistedGroupAlias(getMandatoryString(obj, "alias"));
+        grp.setDescription(obj.getString(DESCRIPTION, null));
+        grp.setPersistedGroupAlias(getMandatoryString(obj, ALIAS));
         grp.setIsRegEx(obj.getBoolean("regex", false));
         if (obj.containsKey("domains")) {
             List<String> domains =
@@ -500,21 +520,21 @@ public class JsonParser {
 
         for (String blockName : keys) {
             JsonObject blockJson = json.getJsonObject(blockName);
-            JsonArray fieldsJson = blockJson.getJsonArray("fields");
+            JsonArray fieldsJson = blockJson.getJsonArray(FIELDS);
             fields.addAll(parseFieldsFromArray(fieldsJson, true));
         }
         return fields;
     }
 
     public List<DatasetField> parseMultipleFields(JsonObject json) throws JsonParseException {
-        JsonArray fieldsJson = json.getJsonArray("fields");
+        JsonArray fieldsJson = json.getJsonArray(FIELDS);
         List<DatasetField> fields = parseFieldsFromArray(fieldsJson, false);
         return fields;
     }
 
     public List<DatasetField> parseMultipleFieldsForDelete(JsonObject json) throws JsonParseException {
         List<DatasetField> fields = new LinkedList<>();
-        for (JsonObject fieldJson : json.getJsonArray("fields").getValuesAs(JsonObject.class)) {
+        for (JsonObject fieldJson : json.getJsonArray(FIELDS).getValuesAs(JsonObject.class)) {
             fields.add(parseFieldForDelete(fieldJson));
         }
         return fields;
@@ -529,7 +549,7 @@ public class JsonParser {
                         fields.add(field);
                     }
                 } catch (CompoundVocabularyException ex) {
-                    DatasetFieldType fieldType = datasetFieldSvc.findByNameOpt(fieldJson.getString("typeName", ""));
+                    DatasetFieldType fieldType = datasetFieldSvc.findByNameOpt(fieldJson.getString(TYPE_NAME, ""));
                     if (lenient && (DatasetFieldConstant.geographicCoverage).equals(fieldType.getName())) {
                         fields.add(remapGeographicCoverage(ex));
                     } else {
@@ -549,7 +569,7 @@ public class JsonParser {
             for (JsonObject filemetadataJson : metadatasJson.getValuesAs(JsonObject.class)) {
                 String label = filemetadataJson.getString("label");
                 String directoryLabel = filemetadataJson.getString("directoryLabel", null);
-                String description = filemetadataJson.getString("description", null);
+                String description = filemetadataJson.getString(DESCRIPTION, null);
 
                 FileMetadata fileMetadata = new FileMetadata();
                 fileMetadata.setLabel(label);
@@ -630,7 +650,7 @@ public class JsonParser {
              */
             String type = checksum.getString("type");
             if (type != null) {
-                String value = checksum.getString("value");
+                String value = checksum.getString(VALUE);
                 if (value != null) {
                     try {
                         dataFile.setChecksumType(DataFile.ChecksumType.fromString(type));
@@ -698,9 +718,9 @@ public class JsonParser {
 
     public DatasetField parseFieldForDelete(JsonObject json) throws JsonParseException {
         DatasetField ret = new DatasetField();
-        DatasetFieldType type = datasetFieldSvc.findByNameOpt(json.getString("typeName", ""));
+        DatasetFieldType type = datasetFieldSvc.findByNameOpt(json.getString(TYPE_NAME, ""));
         if (type == null) {
-            throw new JsonParseException("Can't find type '" + json.getString("typeName", "") + "'");
+            throw new JsonParseException("Can't find type '" + json.getString(TYPE_NAME, "") + "'");
         }
         return ret;
     }
@@ -717,24 +737,24 @@ public class JsonParser {
         }
 
         DatasetField ret = new DatasetField();
-        DatasetFieldType type = datasetFieldSvc.findByNameOpt(json.getString("typeName", ""));
+        DatasetFieldType type = datasetFieldSvc.findByNameOpt(json.getString(TYPE_NAME, ""));
 
 
         if (type == null) {
-            logger.fine("Can't find type '" + json.getString("typeName", "") + "'");
+            logger.fine("Can't find type '" + json.getString(TYPE_NAME, "") + "'");
             return null;
         }
         if (testType && type.isAllowMultiples() != json.getBoolean("multiple")) {
-            throw new JsonParseException("incorrect multiple   for field " + json.getString("typeName", ""));
+            throw new JsonParseException("incorrect multiple   for field " + json.getString(TYPE_NAME, ""));
         }
-        if (testType && type.isCompound() && !json.getString("typeClass").equals("compound")) {
-            throw new JsonParseException("incorrect  typeClass for field " + json.getString("typeName", "") + ", should be compound.");
+        if (testType && type.isCompound() && !json.getString(TYPE_CLASS).equals("compound")) {
+            throw new JsonParseException("incorrect  typeClass for field " + json.getString(TYPE_NAME, "") + ", should be compound.");
         }
-        if (testType && !type.isControlledVocabulary() && type.isPrimitive() && !json.getString("typeClass").equals("primitive")) {
-            throw new JsonParseException("incorrect  typeClass for field: " + json.getString("typeName", "") + ", should be primitive");
+        if (testType && !type.isControlledVocabulary() && type.isPrimitive() && !json.getString(TYPE_CLASS).equals("primitive")) {
+            throw new JsonParseException("incorrect  typeClass for field: " + json.getString(TYPE_NAME, "") + ", should be primitive");
         }
-        if (testType && type.isControlledVocabulary() && !json.getString("typeClass").equals("controlledVocabulary")) {
-            throw new JsonParseException("incorrect  typeClass for field " + json.getString("typeName", "") + ", should be controlledVocabulary");
+        if (testType && type.isControlledVocabulary() && !json.getString(TYPE_CLASS).equals("controlledVocabulary")) {
+            throw new JsonParseException("incorrect  typeClass for field " + json.getString(TYPE_NAME, "") + ", should be controlledVocabulary");
         }
 
 
@@ -761,11 +781,11 @@ public class JsonParser {
         if (compoundType.isAllowMultiples()) {
             int order = 0;
             try {
-                json.getJsonArray("value").getValuesAs(JsonObject.class);
+                json.getJsonArray(VALUE).getValuesAs(JsonObject.class);
             } catch (ClassCastException cce) {
-                throw new JsonParseException("Invalid values submitted for " + compoundType.getName() + ". It should be an array of values.");
+                throw new JsonParseException(INVALID_VALUES_SUBMITTED_FOR + compoundType.getName() + IT_SHOULD_BE_AN_ARRAY_OF_VALUES);
             }
-            for (JsonObject obj : json.getJsonArray("value").getValuesAs(JsonObject.class)) {
+            for (JsonObject obj : json.getJsonArray(VALUE).getValuesAs(JsonObject.class)) {
                 DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
                 List<DatasetField> fields = new LinkedList<>();
                 for (String fieldName : obj.keySet()) {
@@ -798,7 +818,7 @@ public class JsonParser {
 
             DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
             List<DatasetField> fields = new LinkedList<>();
-            JsonObject value = json.getJsonObject("value");
+            JsonObject value = json.getJsonObject(VALUE);
             for (String key : value.keySet()) {
                 JsonObject childFieldJson = value.getJsonObject(key);
                 DatasetField f = null;
@@ -835,33 +855,33 @@ public class JsonParser {
         List<DatasetFieldValue> vals = new LinkedList<>();
         if (dft.isAllowMultiples()) {
            try {
-            json.getJsonArray("value").getValuesAs(JsonObject.class);
+            json.getJsonArray(VALUE).getValuesAs(JsonObject.class);
             } catch (ClassCastException cce) {
-                throw new JsonParseException("Invalid values submitted for " + dft.getName() + ". It should be an array of values.");
+                throw new JsonParseException(INVALID_VALUES_SUBMITTED_FOR + dft.getName() + IT_SHOULD_BE_AN_ARRAY_OF_VALUES);
             }
-            for (JsonString val : json.getJsonArray("value").getValuesAs(JsonString.class)) {
+            for (JsonString val : json.getJsonArray(VALUE).getValuesAs(JsonString.class)) {
                 DatasetFieldValue datasetFieldValue = new DatasetFieldValue(dsf);
                 datasetFieldValue.setDisplayOrder(vals.size() - 1);
                 datasetFieldValue.setValue(val.getString().trim());
                 if (extVocab) {
                     if (!datasetFieldSvc.isValidCVocValue(dft, datasetFieldValue.getValue())) {
-                        throw new JsonParseException("Invalid values submitted for " + dft.getName() + " which is limited to specific vocabularies.");
+                        throw new JsonParseException(INVALID_VALUES_SUBMITTED_FOR + dft.getName() + " which is limited to specific vocabularies.");
                     }
                 }
                 vals.add(datasetFieldValue);
             }
 
         } else {
-            try {json.getString("value");}
+            try {json.getString(VALUE);}
             catch (ClassCastException cce) {
                 throw new JsonParseException("Invalid value submitted for " + dft.getName() + ". It should be a single value.");
             }
             DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
-            datasetFieldValue.setValue(json.getString("value", "").trim());
+            datasetFieldValue.setValue(json.getString(VALUE, "").trim());
             datasetFieldValue.setDatasetField(dsf);
             if (extVocab) {
                 if (!datasetFieldSvc.isValidCVocValue(dft, datasetFieldValue.getValue())) {
-                    throw new JsonParseException("Invalid values submitted for " + dft.getName() + " which is limited to specific vocabularies.");
+                    throw new JsonParseException(INVALID_VALUES_SUBMITTED_FOR + dft.getName() + " which is limited to specific vocabularies.");
                 }
             }
             vals.add(datasetFieldValue);
@@ -918,21 +938,21 @@ public class JsonParser {
         try {
             if (cvvType.isAllowMultiples()) {
                 try {
-                    json.getJsonArray("value").getValuesAs(JsonObject.class);
+                    json.getJsonArray(VALUE).getValuesAs(JsonObject.class);
                 } catch (ClassCastException cce) {
-                    throw new JsonParseException("Invalid values submitted for " + cvvType.getName() + ". It should be an array of values.");
+                    throw new JsonParseException(INVALID_VALUES_SUBMITTED_FOR + cvvType.getName() + IT_SHOULD_BE_AN_ARRAY_OF_VALUES);
                 }
-                for (JsonString strVal : json.getJsonArray("value").getValuesAs(JsonString.class)) {
+                for (JsonString strVal : json.getJsonArray(VALUE).getValuesAs(JsonString.class)) {
                     String strValue = strVal.getString();
                     ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue, lenient);
                     if (cvv == null) {
                         if (allowHarvestingMissingCVV) {
                             // we need to process these as primitive values
-                            logger.warning("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'. Processing as primitive per setting override.");
+                            logger.warning(VALUE_1 + strValue + DOES_NOT_EXIST_IN_TYPE + cvvType.getName() + "'. Processing as primitive per setting override.");
                             parsePrimitiveValue(dsf, cvvType, json);
                             return;
                         } else {
-                            throw new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
+                            throw new ControlledVocabularyException(VALUE_1 + strValue + DOES_NOT_EXIST_IN_TYPE + cvvType.getName() + "'", cvvType, strValue);
                         }
                     }
                     cvv.setDatasetFieldType(cvvType);
@@ -944,27 +964,27 @@ public class JsonParser {
 
             } else {
                 try {
-                    json.getString("value");
+                    json.getString(VALUE);
                 } catch (ClassCastException cce) {
                     throw new JsonParseException("Invalid value submitted for " + cvvType.getName() + ". It should be a single value.");
                 }
-                String strValue = json.getString("value", "");
+                String strValue = json.getString(VALUE, "");
                 ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue, lenient);
                 if (cvv == null) {
                     if (allowHarvestingMissingCVV) {
                         // we need to process this as a primitive value
-                        logger.warning(">>>> Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'. Processing as primitive per setting override.");
+                        logger.warning(">>>> Value '" + strValue + DOES_NOT_EXIST_IN_TYPE + cvvType.getName() + "'. Processing as primitive per setting override.");
                         parsePrimitiveValue(dsf, cvvType, json);
                         return;
                     } else {
-                        throw new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
+                        throw new ControlledVocabularyException(VALUE_1 + strValue + DOES_NOT_EXIST_IN_TYPE + cvvType.getName() + "'", cvvType, strValue);
                     }
                 }
                 cvv.setDatasetFieldType(cvvType);
                 vals.add(cvv);
             }
         } catch (ClassCastException cce) {
-            throw new JsonParseException("Invalid values submitted for " + cvvType.getName());
+            throw new JsonParseException(INVALID_VALUES_SUBMITTED_FOR + cvvType.getName());
         }
 
         dsf.setControlledVocabularyValues(vals);

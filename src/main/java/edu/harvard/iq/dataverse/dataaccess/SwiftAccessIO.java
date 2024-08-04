@@ -46,6 +46,8 @@ import org.javaswift.joss.model.StoredObject;
  */
 public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
+    private static final String SWIFT_ACCESS_IO_INVALID_SWIFT_STORAGE_TOKEN = "SwiftAccessIO: invalid swift storage token: ";
+
     private String swiftFolderPath;
     private String swiftLocation;
 
@@ -530,7 +532,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
 
                 if (swiftStorageTokens.length != 3) {
                     // bad storage identifier
-                    throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
+                    throw new IOException(SWIFT_ACCESS_IO_INVALID_SWIFT_STORAGE_TOKEN + storageIdentifier);
                 }
 
                 swiftEndPoint = swiftStorageTokens[0];
@@ -540,7 +542,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 if (StringUtil.isEmpty(swiftEndPoint) || StringUtil.isEmpty(swiftContainerName) || StringUtil.isEmpty(swiftFileName)) {
                     // all of these things need to be specified, for this to be a valid Swift location
                     // identifier.
-                    throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
+                    throw new IOException(SWIFT_ACCESS_IO_INVALID_SWIFT_STORAGE_TOKEN + storageIdentifier);
                 }
 
                 if (auxItemTag != null) {
@@ -582,7 +584,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 //number of tokens should be two because there is not main file
                 if (swiftStorageTokens.length != 2) {
                     // bad storage identifier
-                    throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
+                    throw new IOException(SWIFT_ACCESS_IO_INVALID_SWIFT_STORAGE_TOKEN + storageIdentifier);
                 }
 
                 swiftEndPoint = swiftStorageTokens[0];
@@ -597,7 +599,7 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
                 if (StringUtil.isEmpty(swiftEndPoint) || StringUtil.isEmpty(swiftContainerName) || StringUtil.isEmpty(swiftFileName)) {
                     // all of these things need to be specified, for this to be a valid Swift location
                     // identifier.1
-                    throw new IOException("SwiftAccessIO: invalid swift storage token: " + storageIdentifier);
+                    throw new IOException(SWIFT_ACCESS_IO_INVALID_SWIFT_STORAGE_TOKEN + storageIdentifier);
                 }
 
             } else if (this.isReadAccess) {

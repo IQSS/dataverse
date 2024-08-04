@@ -39,6 +39,12 @@ import org.apache.commons.lang3.StringUtils;
 
 public class DataAccess {
 
+    private static final String COULD_NOT_FIND_STORAGE_DRIVER_FOR = "Could not find storage driver for: ";
+
+    private static final String UNDEFINED = "Undefined";
+
+    private static final String GET_DATA_ACCESS_OBJECT_NULL_OR_INVALID_DATAFILE = "getDataAccessObject: null or invalid datafile.";
+
 	private static final Logger logger = Logger.getLogger(DataAccess.class.getCanonicalName());
 
     public DataAccess() {
@@ -79,7 +85,7 @@ public class DataAccess {
 	public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject, DataAccessRequest req) throws IOException {
 
 		if (dvObject == null || dvObject.getStorageIdentifier() == null || dvObject.getStorageIdentifier().isEmpty()) {
-			throw new IOException("getDataAccessObject: null or invalid datafile.");
+			throw new IOException(GET_DATA_ACCESS_OBJECT_NULL_OR_INVALID_DATAFILE);
 		}
 
         String storageDriverId = getStorageDriverFromIdentifier(dvObject.getStorageIdentifier());
@@ -111,7 +117,7 @@ public class DataAccess {
 		// "storage identifier".
 		// -- L.A. 4.0.2
 
-		logger.warning("Could not find storage driver for: " + storageDriverId);
+		logger.warning(COULD_NOT_FIND_STORAGE_DRIVER_FOR + storageDriverId);
 		throw new IOException("getDataAccessObject: Unsupported storage method.");
 	}
 
@@ -135,7 +141,7 @@ public class DataAccess {
         case GLOBUS:
             return new GlobusOverlayAccessIO<>(storageLocation, storageDriverId);
         default:
-        	logger.warning("Could not find storage driver for: " + fullStorageLocation);
+        	logger.warning(COULD_NOT_FIND_STORAGE_DRIVER_FOR + fullStorageLocation);
         	throw new IOException("getDirectStorageIO: Unsupported storage method.");
         }
     }
@@ -187,7 +193,7 @@ public class DataAccess {
     	if (driverId.isEmpty() || driverId.equals("tmp")) {
     		return "tmp";
     	}
-    	return StorageIO.getConfigParamForDriver(driverId, StorageIO.TYPE, "Undefined");
+    	return StorageIO.getConfigParamForDriver(driverId, StorageIO.TYPE, UNDEFINED);
     }
 
     //This 
@@ -195,7 +201,7 @@ public class DataAccess {
         if (driverId.isEmpty() || driverId.equals("tmp")) {
             return "tmp" + SEPARATOR;
         }
-        String storageType = StorageIO.getConfigParamForDriver(driverId, StorageIO.TYPE, "Undefined");
+        String storageType = StorageIO.getConfigParamForDriver(driverId, StorageIO.TYPE, UNDEFINED);
         switch (storageType) {
         case FILE:
             return FileAccessIO.getDriverPrefix(driverId);
@@ -218,7 +224,7 @@ public class DataAccess {
         		|| dvObject.getDataverseContext() == null
                 || storageTag == null
                 || storageTag.isEmpty()) {
-            throw new IOException("getDataAccessObject: null or invalid datafile.");
+            throw new IOException(GET_DATA_ACCESS_OBJECT_NULL_OR_INVALID_DATAFILE);
         }
 
         if (dvObject instanceof Dataset) {
@@ -232,7 +238,7 @@ public class DataAccess {
         if (dvObject == null
                 || storageTag == null
                 || storageTag.isEmpty()) {
-            throw new IOException("getDataAccessObject: null or invalid datafile.");
+            throw new IOException(GET_DATA_ACCESS_OBJECT_NULL_OR_INVALID_DATAFILE);
         }
 
         /* Prior versions sometimes called createNewStorageIO(object, "placeholder") with an existing object to get a ~clone for use in storing/reading Aux files
@@ -267,11 +273,11 @@ public class DataAccess {
             storageIO = createNewStorageIO(dvObject, storageTag, AbstractRemoteOverlayAccessIO.getBaseStoreIdFor(storageDriverId)) ;
             break;
         default:
-        	logger.warning("Could not find storage driver for: " + storageTag);
+        	logger.warning(COULD_NOT_FIND_STORAGE_DRIVER_FOR + storageTag);
         	throw new IOException("createDataAccessObject: Unsupported storage method " + storageDriverId);
         }
         if (storageIO == null) {
-            logger.warning("Could not find storage driver for: " + storageTag);
+            logger.warning(COULD_NOT_FIND_STORAGE_DRIVER_FOR + storageTag);
             throw new IOException("createDataAccessObject: Unsupported storage method " + storageDriverId);
         }
         // Note: All storageIO classes must assure that dvObject instances' storageIdentifiers are prepended with 
@@ -389,7 +395,7 @@ public class DataAccess {
     public static boolean isValidDirectStorageIdentifier(String storageId) {
         String driverId = DataAccess.getStorageDriverFromIdentifier(storageId);
         String storageType = DataAccess.getDriverType(driverId);
-        if (storageType.equals("tmp") || storageType.equals("Undefined")) {
+        if (storageType.equals("tmp") || storageType.equals(UNDEFINED)) {
             return false;
         }
         switch (storageType) {
@@ -412,7 +418,7 @@ public class DataAccess {
 
     public static String getNewStorageIdentifier(String driverId) {
         String storageType = DataAccess.getDriverType(driverId);
-        if (storageType.equals("tmp") || storageType.equals("Undefined")) {
+        if (storageType.equals("tmp") || storageType.equals(UNDEFINED)) {
             return null;
         }
         switch (storageType) {

@@ -70,6 +70,10 @@ import org.primefaces.event.TransferEvent;
 @Named("DataversePage")
 public class DataversePage implements java.io.Serializable {
 
+    private static final String DATAVERSE_DEFAULT = "dataverse.default";
+
+    private static final String DATAVERSE_INHERITED = "dataverse.inherited";
+
     private static final Logger logger = Logger.getLogger(DataversePage.class.getCanonicalName());
 
     public enum EditMode {
@@ -1243,9 +1247,9 @@ public class DataversePage implements java.io.Serializable {
     	}
    		String label = DataAccess.getStorageDriverLabelFor(storageDriverId);
    		if (fromAncestor) {
-   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+   			label = label + " " + BundleUtil.getStringFromBundle(DATAVERSE_INHERITED);
    		} else {
-   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.default");
+   			label = label + " " + BundleUtil.getStringFromBundle(DATAVERSE_DEFAULT);
    		}
    		return label;
     }
@@ -1298,9 +1302,9 @@ public class DataversePage implements java.io.Serializable {
         }
         if (setName != null) {
             if (fromAncestor) {
-                setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+                setName = setName + " " + BundleUtil.getStringFromBundle(DATAVERSE_INHERITED);
             } else {
-                setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.default");
+                setName = setName + " " + BundleUtil.getStringFromBundle(DATAVERSE_DEFAULT);
             }
         }
         return setName;
@@ -1319,11 +1323,11 @@ public class DataversePage implements java.io.Serializable {
             String label = null;
             if (this.dataverse.getOwner() != null && this.dataverse.getOwner().getEffectivePidGenerator() != null) {
                 PidProvider inheritedPidProvider = this.dataverse.getOwner().getEffectivePidGenerator();
-                label = inheritedPidProvider.getLabel() + " " + BundleUtil.getStringFromBundle("dataverse.inherited") + ": "
+                label = inheritedPidProvider.getLabel() + " " + BundleUtil.getStringFromBundle(DATAVERSE_INHERITED) + ": "
                         + inheritedPidProvider.getProtocol() + ":" + inheritedPidProvider.getAuthority()
                         + inheritedPidProvider.getSeparator() + inheritedPidProvider.getShoulder();
             } else {
-                label = defaultPidProvider.getLabel() + " " + BundleUtil.getStringFromBundle("dataverse.default") + ": "
+                label = defaultPidProvider.getLabel() + " " + BundleUtil.getStringFromBundle(DATAVERSE_DEFAULT) + ": "
                         + defaultPidProvider.getProtocol() + ":" + defaultPidProvider.getAuthority()
                         + defaultPidProvider.getSeparator() + defaultPidProvider.getShoulder();
             }

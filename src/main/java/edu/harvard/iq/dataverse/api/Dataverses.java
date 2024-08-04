@@ -82,6 +82,18 @@ import javax.xml.stream.XMLStreamException;
 @Path("dataverses")
 public class Dataverses extends AbstractApiBean {
 
+    private static final String DELETED = " deleted";
+
+    private static final String UPDATED = " updated.";
+
+    private static final String DATASETS = "/datasets/";
+
+    private static final String DATAVERSE = "Dataverse ";
+
+    private static final String NOT_A_SUPERUSER = "Not a superuser";
+
+    private static final String PERSISTENT_ID = "persistentId";
+
     private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
     private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
@@ -305,10 +317,10 @@ public class Dataverses extends AbstractApiBean {
                 return ww.getResponse();
             }
 
-            return created("/datasets/" + managedDs.getId(),
+            return created(DATASETS + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
-                            .add("persistentId", managedDs.getGlobalId().asString())
+                            .add(PERSISTENT_ID, managedDs.getGlobalId().asString())
             );
 
         } catch (WrappedResponse ex) {
@@ -348,10 +360,10 @@ public class Dataverses extends AbstractApiBean {
             DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
             Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
-            return created("/datasets/" + managedDs.getId(),
+            return created(DATASETS + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
-                            .add("persistentId", managedDs.getGlobalId().asString())
+                            .add(PERSISTENT_ID, managedDs.getGlobalId().asString())
             );
 
         } catch (WrappedResponse ex) {
@@ -366,7 +378,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
-                return error(Status.FORBIDDEN, "Not a superuser");
+                return error(Status.FORBIDDEN, NOT_A_SUPERUSER);
             }
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = parseDataset(jsonBody);
@@ -419,14 +431,14 @@ public class Dataverses extends AbstractApiBean {
             Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
             JsonObjectBuilder responseBld = Json.createObjectBuilder()
                     .add("id", managedDs.getId())
-                    .add("persistentId", managedDs.getGlobalId().asString());
+                    .add(PERSISTENT_ID, managedDs.getGlobalId().asString());
 
             if (shouldRelease) {
                 PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
                 responseBld.add("releaseCompleted", res.isCompleted());
             }
 
-            return created("/datasets/" + managedDs.getId(), responseBld);
+            return created(DATASETS + managedDs.getId(), responseBld);
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -441,7 +453,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
-                return error(Status.FORBIDDEN, "Not a superuser");
+                return error(Status.FORBIDDEN, NOT_A_SUPERUSER);
             }
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = null;
@@ -485,7 +497,7 @@ public class Dataverses extends AbstractApiBean {
 
             JsonObjectBuilder responseBld = Json.createObjectBuilder()
                     .add("id", managedDs.getId())
-                    .add("persistentId", managedDs.getGlobalId().toString());
+                    .add(PERSISTENT_ID, managedDs.getGlobalId().toString());
 
             if (shouldRelease) {
                 DatasetVersion latestVersion = ds.getLatestVersion();
@@ -502,7 +514,7 @@ public class Dataverses extends AbstractApiBean {
                 responseBld.add("releaseCompleted", res.isCompleted());
             }
 
-            return created("/datasets/" + managedDs.getId(), responseBld);
+            return created(DATASETS + managedDs.getId(), responseBld);
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -517,7 +529,7 @@ public class Dataverses extends AbstractApiBean {
         try {
             User u = getRequestUser(crc);
             if (!u.isSuperuser()) {
-                return error(Status.FORBIDDEN, "Not a superuser");
+                return error(Status.FORBIDDEN, NOT_A_SUPERUSER);
             }
             Dataverse owner = findDataverseOrDie(parentIdtf);
 
@@ -554,9 +566,9 @@ public class Dataverses extends AbstractApiBean {
             Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
             JsonObjectBuilder responseBld = Json.createObjectBuilder()
                     .add("id", managedDs.getId())
-                    .add("persistentId", managedDs.getGlobalId().toString());
+                    .add(PERSISTENT_ID, managedDs.getGlobalId().toString());
 
-            return created("/datasets/" + managedDs.getId(), responseBld);
+            return created(DATASETS + managedDs.getId(), responseBld);
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -589,7 +601,7 @@ public class Dataverses extends AbstractApiBean {
     public Response deleteDataverse(@Context ContainerRequestContext crc, @PathParam("identifier") String idtf) {
         return response(req -> {
             execCommand(new DeleteDataverseCommand(req, findDataverseOrDie(idtf)));
-            return ok("Dataverse " + idtf + " deleted");
+            return ok(DATAVERSE + idtf + DELETED);
         }, getRequestUser(crc));
     }
 
@@ -736,7 +748,7 @@ public class Dataverses extends AbstractApiBean {
         boolean index = true;
         return response(req -> {
             execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(linkingDataverseId), findDataverseLinkingDataverseOrDie(linkingDataverseId, linkedDataverseId), index));
-            return ok("Link from Dataverse " + linkingDataverseId + " to linked Dataverse " + linkedDataverseId + " deleted");
+            return ok("Link from Dataverse " + linkingDataverseId + " to linked Dataverse " + linkedDataverseId + DELETED);
         }, getRequestUser(crc));
     }
 
@@ -785,7 +797,7 @@ public class Dataverses extends AbstractApiBean {
 
         try {
             execCommand(new UpdateDataverseMetadataBlocksCommand.SetBlocks(createDataverseRequest(getRequestUser(crc)), findDataverseOrDie(dvIdtf), blocks));
-            return ok("Metadata blocks of dataverse " + dvIdtf + " updated.");
+            return ok("Metadata blocks of dataverse " + dvIdtf + UPDATED);
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -835,7 +847,7 @@ public class Dataverses extends AbstractApiBean {
             final boolean root = parseBooleanOrDie(body);
             final Dataverse dataverse = findDataverseOrDie(dvIdtf);
             execCommand(new UpdateDataverseMetadataBlocksCommand.SetRoot(req, dataverse, root));
-            return ok("Dataverse " + dataverse.getName() + " is now a metadata  " + (root ? "" : "non-") + "root");
+            return ok(DATAVERSE + dataverse.getName() + " is now a metadata  " + (root ? "" : "non-") + "root");
         }, getRequestUser(crc));
     }
 
@@ -941,7 +953,7 @@ public class Dataverses extends AbstractApiBean {
             }
             // by passing null for Facets and DataverseFieldTypeInputLevel, those are not changed
             execCommand(new UpdateDataverseCommand(dataverse, null, featuredTarget, createDataverseRequest(getRequestUser(crc)), null));
-            return ok("Featured Dataverses of dataverse " + dvIdtf + " updated.");
+            return ok("Featured Dataverses of dataverse " + dvIdtf + UPDATED);
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -989,7 +1001,7 @@ public class Dataverses extends AbstractApiBean {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             // by passing null for Featured Dataverses and DataverseFieldTypeInputLevel, those are not changed
             execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(getRequestUser(crc)), null));
-            return ok("Facets of dataverse " + dvIdtf + " updated.");
+            return ok("Facets of dataverse " + dvIdtf + UPDATED);
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -1512,7 +1524,7 @@ public class Dataverses extends AbstractApiBean {
         return response(req -> {
             execCommand(new DeleteExplicitGroupCommand(req,
                     findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)));
-            return ok("Group " + dvIdtf + "/" + grpAliasInOwner + " deleted");
+            return ok("Group " + dvIdtf + "/" + grpAliasInOwner + DELETED);
         }, getRequestUser(crc));
     }
 
@@ -1571,7 +1583,7 @@ public class Dataverses extends AbstractApiBean {
             User u = getRequestUser(crc);
             Dataverse dv = findDataverseOrDie(dvIdtf);
             if (!u.isSuperuser()) {
-                return error(Status.FORBIDDEN, "Not a superuser");
+                return error(Status.FORBIDDEN, NOT_A_SUPERUSER);
             }
 
             List<Dataverse> dvsThisDvHasLinkedToList = dataverseSvc.findDataversesThisIdHasLinkedTo(dv.getId());
@@ -1640,7 +1652,7 @@ public class Dataverses extends AbstractApiBean {
             execCommand(new LinkDataverseCommand(
                     createDataverseRequest(u), linking, linked
             ));
-            return ok("Dataverse " + linked.getAlias() + " linked successfully to " + linking.getAlias());
+            return ok(DATAVERSE + linked.getAlias() + " linked successfully to " + linking.getAlias());
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
