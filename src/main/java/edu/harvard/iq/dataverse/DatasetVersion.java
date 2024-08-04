@@ -90,7 +90,7 @@ public class DatasetVersion implements Serializable {
      * Convenience comparator to compare dataset versions by their version number.
      * The draft version is considered the latest.
      */
-    public static final Comparator<DatasetVersion> compareByVersion = new Comparator<DatasetVersion>() {
+    public static final Comparator<DatasetVersion> compareByVersion = new Comparator<>() {
         @Override
         public int compare(DatasetVersion o1, DatasetVersion o2) {
             if (o1.isDraft()) {
@@ -262,7 +262,7 @@ public class DatasetVersion implements Serializable {
          * the jar it is in.
          */
         if (!(fileMetadatas instanceof ArrayList)) {
-            List<FileMetadata> newFMDs = new ArrayList<FileMetadata>();
+            List<FileMetadata> newFMDs = new ArrayList<>();
             for (FileMetadata fmd : fileMetadatas) {
                 newFMDs.add(fmd);
             }
@@ -877,7 +877,7 @@ public class DatasetVersion implements Serializable {
      * @returns - a single string composed of all descriptions (joined with \n if more than one) truncated with a trailing '...' if >=5000 chars
      */
     public String getDescriptionsPlainTextTruncated() {
-        List<String> plainTextDescriptions = new ArrayList<String>();
+        List<String> plainTextDescriptions = new ArrayList<>();
 
         for (String htmlDescription : getDescriptions()) {
             plainTextDescriptions.add(MarkupChecker.stripAllTags(htmlDescription));
@@ -1187,7 +1187,7 @@ public class DatasetVersion implements Serializable {
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.geographicCoverage)) {
                 for (DatasetFieldCompoundValue geoValue : dsf.getDatasetFieldCompoundValues()) {
-                    List<String> coverage = new ArrayList<String>();
+                    List<String> coverage = new ArrayList<>();
                     for (DatasetField subField : geoValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName()
                                 .equals(DatasetFieldConstant.country)) {
@@ -1439,7 +1439,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public List<String> getDatasetProducerNames() {
-        List<String> producerNames = new ArrayList<String>();
+        List<String> producerNames = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.producer)) {
                 for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {

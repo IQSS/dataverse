@@ -1722,10 +1722,10 @@ public final class DatasetVersionDifference {
      * 
      */
     public static Set<MetadataBlock> getBlocksWithChanges(DatasetVersion newVersion, DatasetVersion originalVersion) {
-        Set<MetadataBlock> changedBlockSet = new HashSet<MetadataBlock>();
+        Set<MetadataBlock> changedBlockSet = new HashSet<>();
 
         // Compare Data
-        List<DatasetField> newDatasetFields = new LinkedList<DatasetField>(newVersion.getDatasetFields());
+        List<DatasetField> newDatasetFields = new LinkedList<>(newVersion.getDatasetFields());
         if (originalVersion == null) {
             // Every field is new, just list blocks used
             Iterator<DatasetField> dsfnIter = newDatasetFields.listIterator();
@@ -1737,7 +1737,7 @@ public final class DatasetVersionDifference {
             }
 
         } else {
-            List<DatasetField> originalDatasetFields = new LinkedList<DatasetField>(originalVersion.getDatasetFields());
+            List<DatasetField> originalDatasetFields = new LinkedList<>(originalVersion.getDatasetFields());
             Iterator<DatasetField> dsfoIter = originalDatasetFields.listIterator();
             while (dsfoIter.hasNext()) {
                 DatasetField dsfo = dsfoIter.next();

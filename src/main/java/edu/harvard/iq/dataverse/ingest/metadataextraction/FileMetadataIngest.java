@@ -41,7 +41,7 @@ public class FileMetadataIngest {
     private String metadataSummary;
 
     public FileMetadataIngest() {
-        fileTypes = new HashSet<String>();
+        fileTypes = new HashSet<>();
     }
 
     public Set<String> getFileTypes() {

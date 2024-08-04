@@ -138,7 +138,7 @@ public class PersonOrOrgUtil {
 
     // Public for testing
     public static void setOrgPhraseArray(String phraseArray) {
-        orgPhrases = new ArrayList<String>();
+        orgPhrases = new ArrayList<>();
         if (!StringUtil.isEmpty(phraseArray)) {
             try {
                 JsonArray phrases = JsonUtil.getJsonArray(phraseArray);

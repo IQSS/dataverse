@@ -1241,7 +1241,7 @@ public class FilePage implements java.io.Serializable {
         JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
     }
 
-    private static final Comparator<ExternalTool> CompareExternalToolName = new Comparator<ExternalTool>() {
+    private static final Comparator<ExternalTool> CompareExternalToolName = new Comparator<>() {
         @Override
         public int compare(ExternalTool o1, ExternalTool o2) {
             return o1.getDisplayName().toUpperCase().compareTo(o2.getDisplayName().toUpperCase());

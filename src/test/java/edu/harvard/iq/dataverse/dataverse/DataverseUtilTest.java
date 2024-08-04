@@ -28,8 +28,8 @@ public class DataverseUtilTest {
 
     @Test
     public void testCheckMetadataLanguageCases() {
-        Map<String, String> emptyMLangSettingMap = new HashMap<String, String>();
-        Map<String, String> mLangSettingMap = new HashMap<String, String>();
+        Map<String, String> emptyMLangSettingMap = new HashMap<>();
+        Map<String, String> mLangSettingMap = new HashMap<>();
         mLangSettingMap.put("en", "English");
         mLangSettingMap.put("fr", "French");
         Dataverse undefinedParent = new Dataverse();

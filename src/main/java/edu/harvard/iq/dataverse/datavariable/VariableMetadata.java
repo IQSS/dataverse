@@ -102,13 +102,13 @@ public class VariableMetadata implements Serializable {
     private DataVariable weightvariable;
 
     public VariableMetadata() {
-        categoriesMetadata = new ArrayList<CategoryMetadata>();
+        categoriesMetadata = new ArrayList<>();
     }
 
     public VariableMetadata(DataVariable dataVariable, FileMetadata fileMetadata) {
         this.dataVariable = dataVariable;
         this.fileMetadata = fileMetadata;
-        categoriesMetadata = new ArrayList<CategoryMetadata>();
+        categoriesMetadata = new ArrayList<>();
     }
 
     /**

@@ -72,7 +72,7 @@ public class UtilIT {
     static Matcher<String> equalToCI(String value) {
         String valueLc = value.toLowerCase();
 
-        return new BaseMatcher<String>(){
+        return new BaseMatcher<>(){
             @Override
             public boolean matches(Object o) {
                 if (!(o instanceof String)) return false;
@@ -1642,7 +1642,7 @@ public class UtilIT {
             String sortKey
     ) {
 
-        List<String> queryParams = new ArrayList<String>();
+        List<String> queryParams = new ArrayList<>();
         if (searchTerm != null) {
             queryParams.add("searchTerm=" + searchTerm);
         }

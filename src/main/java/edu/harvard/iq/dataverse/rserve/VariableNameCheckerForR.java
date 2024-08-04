@@ -58,9 +58,9 @@ public class VariableNameCheckerForR {
         "Else", "Next", "Break"
     };
     public static Map<String, String> R_RESERVED_WORDS_MAPPING_TABLE =
-        new HashMap<String, String>();
+        new HashMap<>();
 
-    public static Set<String> R_RESERVED_WORD_SET = new HashSet<String>();
+    public static Set<String> R_RESERVED_WORD_SET = new HashSet<>();
 
     static {
         for (int i = 0; i < R_RESERVED_WORDS.length; i++) {
@@ -74,12 +74,12 @@ public class VariableNameCheckerForR {
     private static String[] unsafeChar = {"#", "$", "@", "?"};
     private static String[] safeChar = {"hex23", "hex24", "hex40", "hex3F"};
 
-    private Map<String, String> raw2safeTable = new HashMap<String, String>();
+    private Map<String, String> raw2safeTable = new HashMap<>();
 
-    private Map<String, String> safe2rawTable = new HashMap<String, String>();
+    private Map<String, String> safe2rawTable = new HashMap<>();
 
-    private List<String> renamedVars = new ArrayList<String>();
-    private List<String> renamedResults = new ArrayList<String>();
+    private List<String> renamedVars = new ArrayList<>();
+    private List<String> renamedResults = new ArrayList<>();
 
 
     // ----------------------------------------------------- public method

@@ -172,7 +172,7 @@ public class WorkflowServiceBean {
     }
 
     private Map<String, Object> retrieveRequestedSettings(Map<String, String> requiredSettings) {
-        Map<String, Object> retrievedSettings = new HashMap<String, Object>();
+        Map<String, Object> retrievedSettings = new HashMap<>();
         for (String setting : requiredSettings.keySet()) {
             String settingType = requiredSettings.get(setting);
             switch (settingType) {

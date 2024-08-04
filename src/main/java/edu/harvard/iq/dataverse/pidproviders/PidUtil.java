@@ -119,8 +119,8 @@ public class PidUtil {
         return globalId.getAuthority() + "/" + globalId.getIdentifier();
     }
 
-    static Map<String, PidProvider> providerMap = new HashMap<String, PidProvider>();
-    static Map<String, PidProvider> unmanagedProviderMap = new HashMap<String, PidProvider>();
+    static Map<String, PidProvider> providerMap = new HashMap<>();
+    static Map<String, PidProvider> unmanagedProviderMap = new HashMap<>();
 
     public static void addToProviderList(PidProvider pidProvider) {
         providerMap.put(pidProvider.getId(), pidProvider);

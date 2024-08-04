@@ -11,7 +11,7 @@ import java.util.List;
 public  class MetadataBlockDTO {
          String displayName;
          String name;
-         List<FieldDTO> fields = new ArrayList<FieldDTO>();
+         List<FieldDTO> fields = new ArrayList<>();
 
         public String getDisplayName() {
             return displayName;

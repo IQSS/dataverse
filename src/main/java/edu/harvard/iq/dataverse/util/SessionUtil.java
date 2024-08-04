@@ -18,7 +18,7 @@ public class SessionUtil {
      */
     public static void changeSessionId(HttpServletRequest h) {
         HttpSession session = h.getSession(false);
-        HashMap<String, Object> sessionAttributes = new HashMap<String, Object>();
+        HashMap<String, Object> sessionAttributes = new HashMap<>();
         for (Enumeration<String> e = session.getAttributeNames(); e.hasMoreElements(); ) {
         	String name = e.nextElement();
         	sessionAttributes.put(name, session.getAttribute(name));

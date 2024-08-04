@@ -631,7 +631,7 @@ public class OptionalFileParams {
         // Get existing tag list and convert it to list of strings (labels)
         // --------------------------------------------------
         
-        df.setTags(new ArrayList<DataFileTag>()); //MAD: TEST CLEARING TAGS
+        df.setTags(new ArrayList<>()); //MAD: TEST CLEARING TAGS
         
         
 

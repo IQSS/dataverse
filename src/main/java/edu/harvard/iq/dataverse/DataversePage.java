@@ -1219,7 +1219,7 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public Set<Entry<String, String>> getStorageDriverOptions() {
-    	HashMap<String, String> drivers = new HashMap<String, String>();
+    	HashMap<String, String> drivers = new HashMap<>();
     	drivers.putAll(DataAccess.getStorageDriverLabels());
     	//Add an entry for the default (inherited from an ancestor or the system default)
     	drivers.put(getDefaultStorageDriverLabel(), DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER);
@@ -1258,7 +1258,7 @@ public class DataversePage implements java.io.Serializable {
 
     public Set<Entry<String, String>> getCurationLabelSetOptions() {
         if (curationLabelSetOptions == null) {
-            HashMap<String, String> setNames = new HashMap<String, String>();
+            HashMap<String, String> setNames = new HashMap<>();
             Set<String> allowedSetNames = systemConfig.getCurationLabels().keySet();
             if (allowedSetNames.size() > 0) {
                 // Add an entry for the default (inherited from an ancestor or the system
@@ -1313,7 +1313,7 @@ public class DataversePage implements java.io.Serializable {
     public Set<Entry<String, String>> getPidProviderOptions() {
         PidProvider defaultPidProvider = pidProviderFactoryBean.getDefaultPidGenerator();
         Set<String> providerIds = PidUtil.getManagedProviderIds();
-        Set<Entry<String, String>> options = new HashSet<Entry<String, String>>();
+        Set<Entry<String, String>> options = new HashSet<>();
         if (providerIds.size() > 1) {
 
             String label = null;
@@ -1327,14 +1327,14 @@ public class DataversePage implements java.io.Serializable {
                         + defaultPidProvider.getProtocol() + ":" + defaultPidProvider.getAuthority()
                         + defaultPidProvider.getSeparator() + defaultPidProvider.getShoulder();
             }
-            Entry<String, String> option = new AbstractMap.SimpleEntry<String, String>("default", label);
+            Entry<String, String> option = new AbstractMap.SimpleEntry<>("default", label);
             options.add(option);
         }
         for (String providerId : providerIds) {
             PidProvider pidProvider = PidUtil.getPidProvider(providerId);
             String label = pidProvider.getLabel() + ": " + pidProvider.getProtocol() + ":" + pidProvider.getAuthority()
                     + pidProvider.getSeparator() + pidProvider.getShoulder();
-            Entry<String, String> option = new AbstractMap.SimpleEntry<String, String>(providerId, label);
+            Entry<String, String> option = new AbstractMap.SimpleEntry<>(providerId, label);
             options.add(option);
         }
         return options;

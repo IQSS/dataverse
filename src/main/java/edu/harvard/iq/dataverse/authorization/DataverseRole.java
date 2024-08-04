@@ -75,7 +75,7 @@ public class DataverseRole implements Serializable {
     public static final String NONE = "none";
 
 
-	public static final Comparator<DataverseRole> CMP_BY_NAME = new Comparator<DataverseRole>(){
+	public static final Comparator<DataverseRole> CMP_BY_NAME = new Comparator<>(){
 
 		@Override
 		public int compare(DataverseRole o1, DataverseRole o2) {

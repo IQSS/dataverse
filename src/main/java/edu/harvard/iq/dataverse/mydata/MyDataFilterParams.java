@@ -380,7 +380,7 @@ public class MyDataFilterParams {
         if (defaultPublishedStates == null) {
             throw new NullPointerException("defaultPublishedStates cannot be null");
         }
-        List<String[]> publicationStateInfoList = new ArrayList<String[]>();
+        List<String[]> publicationStateInfoList = new ArrayList<>();
         String stateNameAsVariable;
         for (String displayState : defaultPublishedStates) {
             stateNameAsVariable = displayState.toLowerCase().replace(" ", "_");

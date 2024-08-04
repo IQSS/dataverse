@@ -729,7 +729,7 @@ public class GlobusServiceBean implements java.io.Serializable {
             try {
                 //
 
-                List<String> inputList = new ArrayList<String>();
+                List<String> inputList = new ArrayList<>();
                 JsonArray filesJsonArray = jsonData.getJsonArray("files");
 
                 if (filesJsonArray != null) {
@@ -1246,7 +1246,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         DataFile df = guestbookResponse.getDataFile();
         if (df != null) {
             logger.fine("Single datafile case for writeGuestbookAndStartTransfer");
-            List<DataFile> downloadDFList = new ArrayList<DataFile>(1);
+            List<DataFile> downloadDFList = new ArrayList<>(1);
             downloadDFList.add(df);
             if (!doNotSaveGuestbookResponse) {
                 fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
@@ -1255,7 +1255,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         } else {
             // Following FileDownloadServiceBean writeGuestbookAndStartBatchDownload
             List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
-            List<DataFile> selectedFiles = new ArrayList<DataFile>();
+            List<DataFile> selectedFiles = new ArrayList<>();
             for (String idAsString : list) {
                 try {
                     Long fileId = Long.parseLong(idAsString);

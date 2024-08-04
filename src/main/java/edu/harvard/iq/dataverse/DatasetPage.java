@@ -3713,7 +3713,7 @@ public class DatasetPage implements java.io.Serializable {
 
         //Remove embargoes that are no longer referenced
         //Identify which ones are involved here
-        List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
+        List<Embargo> orphanedEmbargoes = new ArrayList<>();
         if (selectedFiles != null && selectedFiles.size() > 0) {
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 for (FileMetadata fm : selectedFiles) {
@@ -3732,7 +3732,7 @@ public class DatasetPage implements java.io.Serializable {
 
         //Remove retentions that are no longer referenced
         //Identify which ones are involved here
-        List<Retention> orphanedRetentions = new ArrayList<Retention>();
+        List<Retention> orphanedRetentions = new ArrayList<>();
         if (selectedFiles != null && selectedFiles.size() > 0) {
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 for (FileMetadata fm : selectedFiles) {
@@ -6282,10 +6282,10 @@ public class DatasetPage implements java.io.Serializable {
             FacesContext.getCurrentInstance().validationFailed();
             return "";
         }
-        List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
+        List<Embargo> orphanedEmbargoes = new ArrayList<>();
         List<FileMetadata> embargoFMs = null;
         if (fileMetadataForAction != null) {
-            embargoFMs = new ArrayList<FileMetadata>();
+            embargoFMs = new ArrayList<>();
             embargoFMs.add(fileMetadataForAction);
         } else if (selectedFiles != null && selectedFiles.size() > 0) {
             embargoFMs = selectedFiles;
@@ -6477,10 +6477,10 @@ public class DatasetPage implements java.io.Serializable {
             FacesContext.getCurrentInstance().validationFailed();
             return "";
         }
-        List<Retention> orphanedRetentions = new ArrayList<Retention>();
+        List<Retention> orphanedRetentions = new ArrayList<>();
         List<FileMetadata> retentionFMs = null;
         if (fileMetadataForAction != null) {
-            retentionFMs = new ArrayList<FileMetadata>();
+            retentionFMs = new ArrayList<>();
             retentionFMs.add(fileMetadataForAction);
         } else if (selectedFiles != null && selectedFiles.size() > 0) {
             retentionFMs = selectedFiles;

@@ -1218,7 +1218,7 @@ public class JsonPrinter {
     }
 
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
-        return new Collector<String, JsonArrayBuilder, JsonArrayBuilder>() {
+        return new Collector<>() {
 
             @Override
             public Supplier<JsonArrayBuilder> supplier() {
@@ -1277,7 +1277,7 @@ public class JsonPrinter {
     }
 
     public static Collector<JsonObjectBuilder, ArrayList<JsonObjectBuilder>, JsonArrayBuilder> toJsonArray() {
-        return new Collector<JsonObjectBuilder, ArrayList<JsonObjectBuilder>, JsonArrayBuilder>() {
+        return new Collector<>() {
 
             @Override
             public Supplier<ArrayList<JsonObjectBuilder>> supplier() {

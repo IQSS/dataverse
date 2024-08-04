@@ -66,7 +66,7 @@ public class Util {
     private static final  String DATE_TIME_FORMAT_STRING = "yyyy-MM-dd'T'HH:mm:ss'Z'";
     private static final String DATE_FORMAT_STRING = "yyyy-MM-dd";
 
-    private static final ThreadLocal<SimpleDateFormat> DATETIME_FORMAT_TL = new ThreadLocal<SimpleDateFormat>(){
+    private static final ThreadLocal<SimpleDateFormat> DATETIME_FORMAT_TL = new ThreadLocal<>(){
         @Override
         protected SimpleDateFormat initialValue()
         {
@@ -76,7 +76,7 @@ public class Util {
         }
     };
 
-    private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT_TL = new ThreadLocal<SimpleDateFormat>(){
+    private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT_TL = new ThreadLocal<>(){
         @Override
         protected SimpleDateFormat initialValue()
         {

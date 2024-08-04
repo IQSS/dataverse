@@ -413,7 +413,7 @@ public class Template implements Serializable {
             if (instructions != null) {
             instructionsMap = JsonUtil.getJsonObject(instructions).entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> ((JsonString) entry.getValue()).getString()));
             } else {
-                instructionsMap = new HashMap<String, String>();
+                instructionsMap = new HashMap<>();
         }
         return instructionsMap;
     }

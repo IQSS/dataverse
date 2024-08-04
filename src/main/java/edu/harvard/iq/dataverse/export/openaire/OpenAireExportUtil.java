@@ -187,7 +187,7 @@ public class OpenAireExportUtil {
     public static void writeIdentifierElement(XMLStreamWriter xmlw, String identifier, String language) throws XMLStreamException {
         // identifier with identifierType attribute        
         if (StringUtils.isNotBlank(identifier)) {
-            Map<String, String> identifier_map = new HashMap<String, String>();
+            Map<String, String> identifier_map = new HashMap<>();
 
             if (StringUtils.containsIgnoreCase(identifier, AbstractDOIProvider.DOI_RESOLVER_URL)) {
                 identifier_map.put("identifierType", "DOI");
@@ -249,7 +249,7 @@ public class OpenAireExportUtil {
                                 creator_check = writeOpenTag(xmlw, "creators", creator_check);
                                 xmlw.writeStartElement("creator"); // <creator>
                                 
-                                Map<String, String> creator_map = new HashMap<String, String>();
+                                Map<String, String> creator_map = new HashMap<>();
                                 JsonObject creatorObj = PersonOrOrgUtil.getPersonOrOrganization(creatorName, false,
                                         StringUtils.containsIgnoreCase(nameIdentifierScheme, "orcid"));
 
@@ -520,7 +520,7 @@ public class OpenAireExportUtil {
      */
     private static void writeSubjectElement(XMLStreamWriter xmlw, String subjectScheme, String valueURI, String schemeURI, String value, String language) throws XMLStreamException {
         // write a subject
-        Map<String, String> subject_map = new HashMap<String, String>();
+        Map<String, String> subject_map = new HashMap<>();
 
         if (StringUtils.isNotBlank(language)) {
             subject_map.put("xml:lang", language);
@@ -690,7 +690,7 @@ public class OpenAireExportUtil {
         }
 
         boolean nameType_check = false;
-        Map<String, String> contributor_map = new HashMap<String, String>();
+        Map<String, String> contributor_map = new HashMap<>();
 
         JsonObject contributorObj = PersonOrOrgUtil.getPersonOrOrganization(contributorName,
                 ("ContactPerson".equals(contributorType) && !isValidEmailAddress(contributorName)), false);
@@ -731,7 +731,7 @@ public class OpenAireExportUtil {
         if (StringUtils.isNotBlank(dateOfDistribution)) {
             date_check = writeOpenTag(xmlw, "dates", date_check);
 
-            Map<String, String> date_map = new HashMap<String, String>();
+            Map<String, String> date_map = new HashMap<>();
             date_map.put("dateType", "Issued");
             writeFullElement(xmlw, null, "date", date_map, dateOfDistribution, language);
         }
@@ -741,7 +741,7 @@ public class OpenAireExportUtil {
         if (StringUtils.isNotBlank(dateOfProduction)) {
             date_check = writeOpenTag(xmlw, "dates", date_check);
 
-            Map<String, String> date_map = new HashMap<String, String>();
+            Map<String, String> date_map = new HashMap<>();
             date_map.put("dateType", "Created");
             writeFullElement(xmlw, null, "date", date_map, dateOfProduction, language);
         }
@@ -750,7 +750,7 @@ public class OpenAireExportUtil {
         if (StringUtils.isNotBlank(dateOfDeposit)) {
             date_check = writeOpenTag(xmlw, "dates", date_check);
 
-            Map<String, String> date_map = new HashMap<String, String>();
+            Map<String, String> date_map = new HashMap<>();
             date_map.put("dateType", "Submitted");
             writeFullElement(xmlw, null, "date", date_map, dateOfDeposit, language);
         }
@@ -759,7 +759,7 @@ public class OpenAireExportUtil {
         if (StringUtils.isNotBlank(dateOfVersion)) {
             date_check = writeOpenTag(xmlw, "dates", date_check);
 
-            Map<String, String> date_map = new HashMap<String, String>();
+            Map<String, String> date_map = new HashMap<>();
             date_map.put("dateType", "Updated");
             writeFullElement(xmlw, null, "date", date_map, dateOfVersion.substring(0, 10), language);
         }
@@ -787,7 +787,7 @@ public class OpenAireExportUtil {
                             if (StringUtils.isNotBlank(dateOfCollectionStart) && StringUtils.isNotBlank(dateOfCollectionEnd)) {
                                 date_check = writeOpenTag(xmlw, "dates", date_check);
 
-                                Map<String, String> date_map = new HashMap<String, String>();
+                                Map<String, String> date_map = new HashMap<>();
                                 date_map.put("dateType", "Collected");
                                 writeFullElement(xmlw, null, "date", date_map, dateOfCollectionStart + "/" + dateOfCollectionEnd, language);
                             }
@@ -818,7 +818,7 @@ public class OpenAireExportUtil {
                     if (DatasetFieldConstant.kindOfData.equals(fieldDTO.getTypeName())) {
                         for (String resourceType : fieldDTO.getMultipleVocab()) {
                             if (StringUtils.isNotBlank(resourceType)) {
-                                Map<String, String> resourceType_map = new HashMap<String, String>();
+                                Map<String, String> resourceType_map = new HashMap<>();
                                 resourceType_map.put("resourceTypeGeneral", "Dataset");
                                 writeFullElement(xmlw, null, "resourceType", resourceType_map, resourceType, language);
                                 resourceTypeFound = true;
@@ -872,7 +872,7 @@ public class OpenAireExportUtil {
                                 alternateIdentifier_check = writeOpenTag(xmlw, "alternateIdentifiers", alternateIdentifier_check);
 
                                 if (StringUtils.isNotBlank(alternateIdentifierType)) {
-                                    Map<String, String> alternateIdentifier_map = new HashMap<String, String>();
+                                    Map<String, String> alternateIdentifier_map = new HashMap<>();
                                     alternateIdentifier_map.put("alternateIdentifierType", alternateIdentifierType);
                                     writeFullElement(xmlw, null, "alternateIdentifier", alternateIdentifier_map, alternateIdentifier, language);
                                 } else {
@@ -949,7 +949,7 @@ public class OpenAireExportUtil {
                             if (StringUtils.isNotBlank(relatedIdentifierType)) {
                                 relatedIdentifier_check = writeOpenTag(xmlw, "relatedIdentifiers", relatedIdentifier_check);
 
-                                Map<String, String> relatedIdentifier_map = new HashMap<String, String>();
+                                Map<String, String> relatedIdentifier_map = new HashMap<>();
                                 // fix case
                                 if (relatedIdentifierTypeMap.containsKey(relatedIdentifierType)) {
                                     relatedIdentifierType = (String) relatedIdentifierTypeMap.get(relatedIdentifierType);
@@ -1244,7 +1244,7 @@ public class OpenAireExportUtil {
      */
     private static void writeDescriptionElement(XMLStreamWriter xmlw, String descriptionType, String description, String language) throws XMLStreamException {
         // write a description
-        Map<String, String> description_map = new HashMap<String, String>();
+        Map<String, String> description_map = new HashMap<>();
 
         if (StringUtils.isNotBlank(language)) {
             description_map.put("xml:lang", language);

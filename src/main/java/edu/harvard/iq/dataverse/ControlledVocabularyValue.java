@@ -38,7 +38,7 @@ public class ControlledVocabularyValue implements Serializable {
 
     private static final Logger logger = Logger.getLogger(ControlledVocabularyValue.class.getCanonicalName());
 
-    public static final Comparator<ControlledVocabularyValue> DisplayOrder = new Comparator<ControlledVocabularyValue>() {
+    public static final Comparator<ControlledVocabularyValue> DisplayOrder = new Comparator<>() {
         @Override
         public int compare(ControlledVocabularyValue o1, ControlledVocabularyValue o2) {
             return Integer.compare(o1.getDisplayOrder(), o2.getDisplayOrder());

@@ -447,7 +447,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             } catch (Exception e) {
                 logger.warning(
                         "Problem interpreting external vocab value for uri: " + termUri + " : " + e.getMessage());
-                return new HashSet<String>();
+                return new HashSet<>();
             }
         }
         logger.fine("Returning " + String.join(",", strings) + " for " + termUri);
@@ -646,7 +646,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         params = Json.createArrayBuilder().build();
                     }
                     logger.fine("Params: " + params.toString());
-                    List<Object> vals = new ArrayList<Object>();
+                    List<Object> vals = new ArrayList<>();
                     for (int i = 0; i < params.size(); i++) {
                         String param = params.getString(i);
                         if (param.startsWith("/")) {
@@ -814,7 +814,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
     public List<String> getVocabScripts(Map<Long, JsonObject> cvocConf) {
         //ToDo - only return scripts that are needed (those fields are set on display pages, those blocks/fields are allowed in the Dataverse collection for create/edit)?
-        Set<String> scripts = new HashSet<String>();
+        Set<String> scripts = new HashSet<>();
         for (JsonObject jo : cvocConf.values()) {
             // Allow either a single script (a string) or an array of scripts (used, for
             // example, to allow use of the common cvocutils.js script along with a main

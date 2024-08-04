@@ -34,12 +34,12 @@ public class IngestMessage implements Serializable {
     /** Creates a new instance of IngestMessage */
 
     public IngestMessage() {
-        datafile_ids = new ArrayList<Long>();
+        datafile_ids = new ArrayList<>();
     }
 
     public IngestMessage(Long authenticatedUserId) {
         this.authenticatedUserId = authenticatedUserId;
-        datafile_ids = new ArrayList<Long>();
+        datafile_ids = new ArrayList<>();
     }
 
     private Long datasetId;

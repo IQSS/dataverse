@@ -20,7 +20,7 @@ public class JsonLDNamespace {
 	public static JsonLDNamespace ore = new JsonLDNamespace("ore", "http://www.openarchives.org/ore/terms/");
 	public static JsonLDNamespace schema = new JsonLDNamespace("schema", "http://schema.org/");
 
-	private static List<JsonLDNamespace> namespaces = new ArrayList<JsonLDNamespace>(Arrays.asList(dvcore, dcterms, ore, schema));
+	private static List<JsonLDNamespace> namespaces = new ArrayList<>(Arrays.asList(dvcore, dcterms, ore, schema));
 
 	public static JsonLDNamespace defineNamespace(String prefix, String url) {
 

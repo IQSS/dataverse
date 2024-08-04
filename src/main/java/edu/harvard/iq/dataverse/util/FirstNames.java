@@ -24,12 +24,12 @@ class FirstNames {
     private final int nameDictLength = 27;
     private int duplicates = 0;     // 20%, factor 0.8
 
-    private HashMap<String, String> map = new HashMap<String, String>(capacity);
+    private HashMap<String, String> map = new HashMap<>(capacity);
     private static final Logger logger = Logger.getLogger(FirstNames.class.getCanonicalName());
     public static String NAME_DICT_FILENAME = "edu/harvard/iq/dataverse/firstNames/nam_dict.txt";
     public static String YOB_FILENAME = "edu/harvard/iq/dataverse/firstNames/yob2017.txt";
 
-    public static HashMap<String, String> hints = new HashMap<String, String>();
+    public static HashMap<String, String> hints = new HashMap<>();
     public static String HINT_FILENAME = "edu/harvard/iq/dataverse/firstNames/hint.txt";
 
     /**

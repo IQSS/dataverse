@@ -14,7 +14,7 @@ import java.util.Comparator;
  */
 public class DatasetAuthor {
 
-    public static Comparator<DatasetAuthor> DisplayOrder = new Comparator<DatasetAuthor>(){
+    public static Comparator<DatasetAuthor> DisplayOrder = new Comparator<>(){
         @Override
         public int compare(DatasetAuthor o1, DatasetAuthor o2) {
             return o1.getDisplayOrder() - o2.getDisplayOrder();

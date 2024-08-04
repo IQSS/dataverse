@@ -51,7 +51,7 @@ public class FeedbackUtil {
                 Dataverse dataverse = (Dataverse) feedbackTarget;
                 contextEnding = BundleUtil.getStringFromBundle("contact.context.dataverse.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, dataverse.getAlias(), supportTeamName, systemEmail));
                 List<DvObjectContact> contacts = getDataverseContacts(dataverse);
-                List<String> contactEmailList = new ArrayList<String>();
+                List<String> contactEmailList = new ArrayList<>();
                 for (DvObjectContact contact : contacts) {
                     contactEmailList.add(contact.getEmail());
                 }
@@ -73,8 +73,8 @@ public class FeedbackUtil {
                 String datasetPid = dataset.getGlobalId().asString();
                 contextEnding = BundleUtil.getStringFromBundle("contact.context.dataset.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, datasetPid, supportTeamName, systemEmail));
                 List<DvObjectContact> contacts = getDatasetContacts(dataset);
-                List<String> contactEmailList = new ArrayList<String>();
-                List<String> contactNameList = new ArrayList<String>();
+                List<String> contactEmailList = new ArrayList<>();
+                List<String> contactNameList = new ArrayList<>();
 
                 for (DvObjectContact contact : contacts) {
                     String name = getContactName(contact);
@@ -104,8 +104,8 @@ public class FeedbackUtil {
                 String filename = datafile.getFileMetadatas().get(0).getLabel();
                 List<DvObjectContact> contacts = getDatasetContacts(datafile.getOwner());
                 contextEnding = BundleUtil.getStringFromBundle("contact.context.file.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, datafile.getId().toString(), supportTeamName, systemEmail));
-                List<String> contactEmailList = new ArrayList<String>();
-                List<String> contactNameList = new ArrayList<String>();
+                List<String> contactEmailList = new ArrayList<>();
+                List<String> contactNameList = new ArrayList<>();
 
                 for (DvObjectContact contact : contacts) {
                     String name = getContactName(contact);

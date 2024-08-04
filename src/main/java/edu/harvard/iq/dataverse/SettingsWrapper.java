@@ -500,7 +500,7 @@ public class SettingsWrapper implements java.io.Serializable {
     public boolean shouldBeAnonymized(DatasetField df) {
         // Set up once per view
         if (anonymizedFieldTypes == null) {
-            anonymizedFieldTypes = new ArrayList<String>();
+            anonymizedFieldTypes = new ArrayList<>();
             String names = get(SettingsServiceBean.Key.AnonymizedFieldTypeNames.toString(), "");
             anonymizedFieldTypes.addAll(Arrays.asList(names.split(",\\s")));
         }
@@ -682,7 +682,7 @@ public class SettingsWrapper implements java.io.Serializable {
     }
 
     public Map<String, String> getMetadataLanguages(DvObjectContainer target) {
-        Map<String, String> currentMap = new HashMap<String, String>();
+        Map<String, String> currentMap = new HashMap<>();
         currentMap.putAll(getBaseMetadataLanguageMap(false));
         currentMap.put(DvObjectContainer.UNDEFINED_CODE, getDefaultMetadataLanguageLabel(target));
         return currentMap;
@@ -722,7 +722,7 @@ public class SettingsWrapper implements java.io.Serializable {
     }
 
     public Map<String, String> getGuestbookEntryOptions(DvObjectContainer target) {
-        Map<String, String> currentMap = new HashMap<String, String>();
+        Map<String, String> currentMap = new HashMap<>();
         String atDownload = BundleUtil.getStringFromBundle("dataverse.guestbookentry.atdownload");
         String atRequest = BundleUtil.getStringFromBundle("dataverse.guestbookentry.atrequest");
         Optional<Boolean> gbDefault = JvmSettings.GUESTBOOK_AT_REQUEST.lookupOptional(Boolean.class);
@@ -828,11 +828,11 @@ public class SettingsWrapper implements java.io.Serializable {
     public List<String> getAllowedExternalStatuses(Dataset d) {
         String setName = d.getEffectiveCurationLabelSetName();
         if (setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
         String[] labelArray = systemConfig.getCurationLabels().get(setName);
         if (labelArray == null) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
         return Arrays.asList(labelArray);
     }
@@ -847,7 +847,7 @@ public class SettingsWrapper implements java.io.Serializable {
     public List<MetadataBlock> getSystemMetadataBlocks() {
 
         if (systemMetadataBlocks == null) {
-            systemMetadataBlocks = new ArrayList<MetadataBlock>();
+            systemMetadataBlocks = new ArrayList<>();
         }
         List<MetadataBlock> blocks = mdbService.listMetadataBlocks();
         for (MetadataBlock mdb : blocks) {

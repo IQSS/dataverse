@@ -53,7 +53,7 @@ public class OREMap {
     private static final String DATAVERSE_SOFTWARE_URL = "https://github.com/iqss/dataverse";
 
 
-    private Map<String, String> localContext = new TreeMap<String, String>();
+    private Map<String, String> localContext = new TreeMap<>();
     private DatasetVersion version;
     private Boolean excludeEmail = null;
 

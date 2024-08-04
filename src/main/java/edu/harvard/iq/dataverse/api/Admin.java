@@ -2138,7 +2138,7 @@ public class Admin extends AbstractApiBean {
         boolean inheritAllRoles = false;
         String rolesString = settingsSvc.getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
         if (rolesString.length() > 0) {
-            ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s*,\\s*")));
+            ArrayList<String> rolesToInherit = new ArrayList<>(Arrays.asList(rolesString.split("\\s*,\\s*")));
             if (!rolesToInherit.isEmpty()) {
                 if (rolesToInherit.contains("*")) {
                     inheritAllRoles = true;

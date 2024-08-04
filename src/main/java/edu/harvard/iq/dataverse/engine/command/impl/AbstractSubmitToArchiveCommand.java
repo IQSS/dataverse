@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<DatasetVersion> {
 
     private final DatasetVersion version;
-    private final Map<String, String> requestedSettings = new HashMap<String, String>();
+    private final Map<String, String> requestedSettings = new HashMap<>();
     protected boolean success = false;
     private static final Logger logger = Logger.getLogger(AbstractSubmitToArchiveCommand.class.getName());
     private static final int MAX_ZIP_WAIT = 20000;

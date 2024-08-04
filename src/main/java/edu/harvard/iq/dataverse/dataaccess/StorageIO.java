@@ -90,7 +90,7 @@ public abstract class StorageIO<T extends DvObject> {
     // restriction and embargoes.
     // Currently, this is just used to warn users at upload time rather than disable
     // restriction/embargo.
-    static protected Map<String, Boolean> driverPublicAccessMap = new HashMap<String, Boolean>();
+    static protected Map<String, Boolean> driverPublicAccessMap = new HashMap<>();
 
     public boolean canRead() {
         return isReadAccess;

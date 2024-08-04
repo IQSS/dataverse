@@ -123,7 +123,7 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         // First check that we have what is required
         DatasetVersion dv = ctxt.getDataset().getReleasedVersion();
         List<DatasetField> dvf = dv.getDatasetFields();
-        Map<String, DatasetField> fields = new HashMap<String, DatasetField>();
+        Map<String, DatasetField> fields = new HashMap<>();
         String[] requiredFields = ((String) ctxt.getSettings().getOrDefault(REQUIRED_FIELDS, "")).split(",\\s*");
         for (String field : requiredFields) {
             fields.put(field, null);
@@ -140,9 +140,9 @@ public class LDNAnnounceDatasetVersionStep implements WorkflowStep {
         }
         // We do, so construct the json-ld body and method
 
-        Map<String, String> localContext = new HashMap<String, String>();
+        Map<String, String> localContext = new HashMap<>();
         JsonObjectBuilder coarContext = Json.createObjectBuilder();
-        Map<Long, JsonObject> emptyCvocMap = new HashMap<Long, JsonObject>();
+        Map<Long, JsonObject> emptyCvocMap = new HashMap<>();
         boolean includeLocalContext = false;
         for (Entry<String, DatasetField> entry : fields.entrySet()) {
             DatasetField field = entry.getValue();

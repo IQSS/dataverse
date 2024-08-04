@@ -104,19 +104,19 @@ public class NewDTAFileReader extends TabularDataFileReader {
     private static final String TAG_VALUE_LABELS_LBL_DEF = "lbl";
 
     private static Map<Integer, String> STATA_RELEASE_NUMBER =
-            new HashMap<Integer, String>();
+            new HashMap<>();
 
     private static Map<Integer, Map<String, Integer>> CONSTANT_TABLE =
-            new LinkedHashMap<Integer, Map<String, Integer>>();
+            new LinkedHashMap<>();
 
     private static Map<String, Integer> releaseconstant
-            = new LinkedHashMap<String, Integer>();
+            = new LinkedHashMap<>();
 
     private static Map<String, Integer> byteLengthTable =
-            new HashMap<String, Integer>();
+            new HashMap<>();
 
     private static Map<Integer, String> variableTypeTable =
-            new LinkedHashMap<Integer, String>();
+            new LinkedHashMap<>();
 
     private static final int[] LENGTH_HEADER = {60, 109};
     private static final int[] LENGTH_LABEL = {32, 81};
@@ -211,7 +211,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         "time", "date", "date", "date", "date", "date", "date",
         "date", "date", "date", "date", "date", "date"
     };
-    private static Map<String, String> DATE_TIME_FORMAT_TABLE = new LinkedHashMap<String, String>();
+    private static Map<String, String> DATE_TIME_FORMAT_TABLE = new LinkedHashMap<>();
 
     private static long MILLISECCONDS_PER_DAY = 24 * 60 * 60 * 1000L;
 

@@ -112,7 +112,7 @@ class S3AccessIOLocalstackIT {
         dataset.setAuthority("10.5072/FK2");
         dataset.setIdentifier("ABC123");
         String sid = sid = bucketName + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier();
-        S3AccessIO<DataFile> s3io = new S3AccessIO<DataFile>(sid, storageDriverId);
+        S3AccessIO<DataFile> s3io = new S3AccessIO<>(sid, storageDriverId);
     }
 
     // just to test this: saveInputStream exception: java.io.IOException: ERROR: s3 not initialised

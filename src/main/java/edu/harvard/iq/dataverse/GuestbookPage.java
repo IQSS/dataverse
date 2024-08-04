@@ -145,7 +145,7 @@ public class GuestbookPage implements java.io.Serializable {
             }
             guestbook.setDataverse(dataverse);
             if (guestbook.getCustomQuestions() == null || guestbook.getCustomQuestions().isEmpty()) {
-                guestbook.setCustomQuestions(new ArrayList<CustomQuestion>());
+                guestbook.setCustomQuestions(new ArrayList<>());
                 initCustomQuestion();
             }
             editMode = EditMode.METADATA;
@@ -153,7 +153,7 @@ public class GuestbookPage implements java.io.Serializable {
             // create mode for a new template
             guestbook = new Guestbook();
             guestbook.setDataverse(dataverse);
-            guestbook.setCustomQuestions(new ArrayList<CustomQuestion>());
+            guestbook.setCustomQuestions(new ArrayList<>());
             initCustomQuestion();
             editMode = EditMode.CREATE;
         } else if (ownerId != null && sourceId != null) {
@@ -166,7 +166,7 @@ public class GuestbookPage implements java.io.Serializable {
             guestbook.setUsageCount(new Long(0));
             guestbook.setCreateTime(new Timestamp(new Date().getTime()));
             if (guestbook.getCustomQuestions() == null || guestbook.getCustomQuestions().isEmpty()) {
-                guestbook.setCustomQuestions(new ArrayList<CustomQuestion>());
+                guestbook.setCustomQuestions(new ArrayList<>());
                 initCustomQuestion();
             }
 
@@ -190,7 +190,7 @@ public class GuestbookPage implements java.io.Serializable {
     private void initCustomQuestion() {
         CustomQuestion toAdd = new CustomQuestion();
         toAdd.setQuestionType("text");
-        toAdd.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
+        toAdd.setCustomQuestionValues(new ArrayList<>());
         toAdd.setGuestbook(guestbook);
         int index = guestbook.getCustomQuestions().size();
         guestbook.addCustomQuestion(index, toAdd);
@@ -199,7 +199,7 @@ public class GuestbookPage implements java.io.Serializable {
     public void addCustomQuestion(Integer indexIn) {
         CustomQuestion toAdd = new CustomQuestion();
         toAdd.setQuestionType("text");
-        toAdd.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
+        toAdd.setCustomQuestionValues(new ArrayList<>());
         toAdd.setGuestbook(guestbook);
         guestbook.addCustomQuestion(indexIn, toAdd);
     }
@@ -218,7 +218,7 @@ public class GuestbookPage implements java.io.Serializable {
     public void toggleQuestionType(CustomQuestion questionIn) {
         if (questionIn.getCustomQuestionValues() != null && questionIn.getCustomQuestionValues().isEmpty()
                 && questionIn.getQuestionType() != null && questionIn.getQuestionType().equals("options")) {
-            questionIn.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
+            questionIn.setCustomQuestionValues(new ArrayList<>());
             CustomQuestionValue addCQV = new CustomQuestionValue();
             addCQV.setCustomQuestion(questionIn);
             questionIn.getCustomQuestionValues().add(addCQV);

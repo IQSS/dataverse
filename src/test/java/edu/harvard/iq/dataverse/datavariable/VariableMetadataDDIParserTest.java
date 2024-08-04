@@ -34,8 +34,8 @@ public class VariableMetadataDDIParserTest {
         }
         VariableMetadataDDIParser dti = new VariableMetadataDDIParser();
 
-        Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
-        Map<Long, VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
+        Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<>();
+        Map<Long, VarGroup> varGroupMap = new HashMap<>();
 
         try {
 
@@ -143,7 +143,7 @@ public class VariableMetadataDDIParserTest {
         assertNotNull(vg1);
 
         //first group
-        Set<DataVariable> dvSet1 = new HashSet<DataVariable>();
+        Set<DataVariable> dvSet1 = new HashSet<>();
         DataVariable dv = new DataVariable();
         dv.setId(1169L);
         dvSet1.add(dv);
@@ -154,7 +154,7 @@ public class VariableMetadataDDIParserTest {
         //second group
         VarGroup vg2 = varGroupMap.get(2L);
         assertNotNull(vg2);
-        Set<DataVariable> dvSet2 = new HashSet<DataVariable>();
+        Set<DataVariable> dvSet2 = new HashSet<>();
         dv.setId(1168L);
         dvSet2.add(dv);
         eachGroupTest(vg2, "New Group 2", dvSet2);

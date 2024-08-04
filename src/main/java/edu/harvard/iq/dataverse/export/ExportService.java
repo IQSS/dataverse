@@ -147,7 +147,7 @@ public class ExportService {
                 exportLocalDate = lastExportDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                 logger.fine("Last export date: " + exportLocalDate.toString());
                 // Track which embargoes we've already checked
-                Set<Long> embargoIds = new HashSet<Long>();
+                Set<Long> embargoIds = new HashSet<>();
                 // Check for all files in the latest released version
                 for (FileMetadata fm : dataset.getLatestVersionForCopy().getFileMetadatas()) {
                     // ToDo? This loop is necessary because we have not stored the date when the

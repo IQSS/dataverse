@@ -90,7 +90,7 @@ public class MakeDataCountUtil {
         }
 
         private static List<String> getMetricNameList() {
-           ArrayList<String> names = new ArrayList<String>();
+           ArrayList<String> names = new ArrayList<>();
            for (MetricType mt : MetricType.values()) {
                names.add(mt.text);
            }

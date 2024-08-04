@@ -141,7 +141,7 @@ public class JSONLDUtil {
 
         // get existing ones?
         List<DatasetField> dsfl = dsv.getDatasetFields();
-        Map<DatasetFieldType, DatasetField> fieldByTypeMap = new HashMap<DatasetFieldType, DatasetField>();
+        Map<DatasetFieldType, DatasetField> fieldByTypeMap = new HashMap<>();
         for (DatasetField dsf : dsfl) {
             if (fieldByTypeMap.containsKey(dsf.getDatasetFieldType())) {
                 // May have multiple values per field, but not multiple fields of one type?
@@ -268,7 +268,7 @@ public class JSONLDUtil {
 
         //Another map - from datasetFieldType to an existing field in the dataset
         List<DatasetField> dsfl = dsv.getDatasetFields();
-        Map<DatasetFieldType, DatasetField> fieldByTypeMap = new HashMap<DatasetFieldType, DatasetField>();
+        Map<DatasetFieldType, DatasetField> fieldByTypeMap = new HashMap<>();
         for (DatasetField dsf : dsfl) {
             if (fieldByTypeMap.containsKey(dsf.getDatasetFieldType())) {
                 // May have multiple values per field, but not multiple fields of one type?
@@ -494,8 +494,8 @@ public class JSONLDUtil {
         return valArray;
     }
 
-    static Map<String, String> localContext = new TreeMap<String, String>();
-    static Map<String, DatasetFieldType> dsftMap = new TreeMap<String, DatasetFieldType>();
+    static Map<String, String> localContext = new TreeMap<>();
+    static Map<String, DatasetFieldType> dsftMap = new TreeMap<>();
 
     //A map if DatasetFieldTypes by decontextualized URL
     private static void populateFieldTypeMap(MetadataBlockServiceBean metadataBlockSvc) {
@@ -582,7 +582,7 @@ public class JSONLDUtil {
 
 //Modified from https://stackoverflow.com/questions/3389348/parse-any-date-in-java
 
-    private static final Map<String, String> DATE_FORMAT_REGEXPS = new HashMap<String, String>() {
+    private static final Map<String, String> DATE_FORMAT_REGEXPS = new HashMap<>() {
         {
             put("^\\d{8}$", "yyyyMMdd");
             put("^\\d{1,2}-\\d{1,2}-\\d{4}$", "dd-MM-yyyy");
@@ -594,7 +594,7 @@ public class JSONLDUtil {
         }
     };
 
-    private static final Map<String, String> DATETIME_FORMAT_REGEXPS = new HashMap<String, String>() {
+    private static final Map<String, String> DATETIME_FORMAT_REGEXPS = new HashMap<>() {
         {
             put("^\\d{12}$", "yyyyMMddHHmm");
             put("^\\d{8}\\s\\d{4}$", "yyyyMMdd HHmm");
@@ -665,7 +665,7 @@ public class JSONLDUtil {
 
     // Convenience methods for TermsOfUseAndAccess
 
-    public static final List<String> datasetTerms = new ArrayList<String>(Arrays.asList(
+    public static final List<String> datasetTerms = new ArrayList<>(Arrays.asList(
             "http://schema.org/license",
             "https://dataverse.org/schema/core#termsOfUse",
             "https://dataverse.org/schema/core#confidentialityDeclaration",
@@ -673,7 +673,7 @@ public class JSONLDUtil {
             "https://dataverse.org/schema/core#citationRequirements",
             "https://dataverse.org/schema/core#depositorRequirements", "https://dataverse.org/schema/core#conditions",
             "https://dataverse.org/schema/core#disclaimer"));
-    public static final List<String> datafileTerms = new ArrayList<String>(Arrays.asList(
+    public static final List<String> datafileTerms = new ArrayList<>(Arrays.asList(
             "https://dataverse.org/schema/core#termsOfAccess", "https://dataverse.org/schema/core#fileRequestAccess",
             "https://dataverse.org/schema/core#dataAccessPlace", "https://dataverse.org/schema/core#originalArchive",
             "https://dataverse.org/schema/core#availabilityStatus",

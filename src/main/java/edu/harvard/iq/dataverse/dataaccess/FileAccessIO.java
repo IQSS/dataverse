@@ -612,7 +612,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("Could not determine the filesystem directory of the parent dataset.");
         }
 
-        DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+        DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<>() {
             @Override
             public boolean accept(Path file) throws IOException {
                 return (file.getFileName() != null

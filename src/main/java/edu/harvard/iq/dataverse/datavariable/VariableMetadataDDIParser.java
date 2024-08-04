@@ -51,7 +51,7 @@ public class VariableMetadataDDIParser {
         if (vars != null) {
             vars = vars.trim();
             String[] parts = vars.split(" ");
-            varsInGroups = new HashSet<DataVariable>();
+            varsInGroups = new HashSet<>();
             for (int i = 0; i < parts.length; i++)
             {
                 long varId = Long.parseLong(parts[i].replace("v", ""));

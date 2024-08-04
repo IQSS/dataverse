@@ -850,7 +850,7 @@ public class MetricsServiceBean implements Serializable {
 
     public JsonObject getDataverseTree(Dataverse d, String yyyymm, DatasetVersion.VersionState state) {
         List<Object[]> results = getDataversesChildrenRecursively(d, yyyymm, state);
-        HashMap<Long, JsonArray> subtrees = new HashMap<Long, JsonArray>();
+        HashMap<Long, JsonArray> subtrees = new HashMap<>();
         // Relying on the depth-first order
         // id, depth, alias, name, ownerid
         // (String)objs[2], (int)objs[0], (int) (long)objs[4], (int)objs[1],

@@ -32,7 +32,7 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
 
     @Override
     public WorkflowStepResult run(WorkflowContext context) {
-        Map<String, String> requestedSettings = new HashMap<String, String>();
+        Map<String, String> requestedSettings = new HashMap<>();
         Map<String, Object> typedSettings = context.getSettings();
         for (String setting : (typedSettings.keySet())) {
             Object val = typedSettings.get(setting);

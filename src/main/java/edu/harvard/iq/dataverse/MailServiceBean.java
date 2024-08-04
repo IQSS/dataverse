@@ -537,7 +537,7 @@ public class MailServiceBean implements java.io.Serializable {
                 }
 
                 Dataverse d = (Dataverse) version.getDataset().getOwner();
-                List<String> contactEmailList = new ArrayList<String>();
+                List<String> contactEmailList = new ArrayList<>();
                 for (DataverseContact dc : d.getDataverseContacts()) {
                     contactEmailList.add(dc.getContactEmail());
                 }

@@ -75,7 +75,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
         }
      }
 
-    public static final Visitor<String> NamePrinter = new Visitor<String>(){
+    public static final Visitor<String> NamePrinter = new Visitor<>(){
 
         @Override
         public String visit(Dataverse dv) {
@@ -92,7 +92,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
             return df.getFileMetadata().getLabel();
         }
     };
-    public static final Visitor<String> NameIdPrinter = new Visitor<String>(){
+    public static final Visitor<String> NameIdPrinter = new Visitor<>(){
 
         @Override
         public String visit(Dataverse dv) {

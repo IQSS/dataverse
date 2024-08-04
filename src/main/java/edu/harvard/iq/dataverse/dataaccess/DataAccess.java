@@ -301,7 +301,7 @@ public class DataAccess {
     }
 
     private static void populateDrivers() {
-    	drivers = new HashMap<String, String>();
+    	drivers = new HashMap<>();
     	Properties p = System.getProperties();
     	for (String property : p.stringPropertyNames()) {
     		if (property.startsWith("dataverse.files.") && property.endsWith(".label")) {

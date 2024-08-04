@@ -20,7 +20,7 @@ public class BundleUtil {
 
     private static final String defaultBundleFile = "Bundle";
 
-    private static final Map<String, ClassLoader> classLoaderCache = new HashMap<String, ClassLoader>();
+    private static final Map<String, ClassLoader> classLoaderCache = new HashMap<>();
 
     public static String getStringFromBundle(String key) {
         return getStringFromBundle(key, (List<String>) null);

@@ -1088,7 +1088,7 @@ public class SystemConfig {
     }
 
     public Map<String, String[]> getCurationLabels() {
-        Map<String, String[]> labelMap = new HashMap<String, String[]>();
+        Map<String, String[]> labelMap = new HashMap<>();
         String setting = settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "");
         if (!setting.isEmpty()) {
             try (JsonReader jsonReader = Json.createReader(new StringReader(setting))) {

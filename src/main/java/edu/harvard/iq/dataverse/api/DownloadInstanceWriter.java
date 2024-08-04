@@ -228,7 +228,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         if (di.getConversionParam().equals("format")) {
 
                             if ("GlobusTransfer".equals(di.getConversionParamValue())) {
-                                List<DataFile> downloadDFList = new ArrayList<DataFile>(1);
+                                List<DataFile> downloadDFList = new ArrayList<>(1);
                                 downloadDFList.add(dataFile);
                                 redirect_url_str = globusService.getGlobusAppUrlForDataset(dataFile.getOwner(), false, downloadDFList);
                             }

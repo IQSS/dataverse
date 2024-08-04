@@ -57,7 +57,7 @@ public class AuthorizedExternalStep implements WorkflowStep {
             int responseStatus = client.executeMethod(mtd);
             if (responseStatus >= 200 && responseStatus < 300) {
                 // HTTP OK range
-                Map<String, String> data = new HashMap<String, String>();
+                Map<String, String> data = new HashMap<>();
                 //Allow external client to use invocationId as a key to act on the user's behalf
                 data.put(PendingWorkflowInvocation.AUTHORIZED, "true");
                 return new Pending(data);

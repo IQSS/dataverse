@@ -34,7 +34,7 @@ public class DataverseRequest {
 
     private static String headerToUse = null;
 
-    private static final HashSet<String> ALLOWED_HEADERS = new HashSet<String>(Arrays.asList(
+    private static final HashSet<String> ALLOWED_HEADERS = new HashSet<>(Arrays.asList(
             "x-forwarded-for",
             "proxy-client-ip",
             "wl-proxy-client-ip",

@@ -88,7 +88,7 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         // for data file check permission on owning dataset
-        Set<Permission> requiredPermissions = new HashSet<Permission>();
+        Set<Permission> requiredPermissions = new HashSet<>();
 
         if (defPoint instanceof Dataverse) {
             requiredPermissions.add(Permission.ManageDataversePermissions);

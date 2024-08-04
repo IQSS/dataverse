@@ -566,7 +566,7 @@ public class IngestServiceBean {
             return null;
         }
 
-        DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+        DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<>() {
             @Override
             public boolean accept(Path file) throws IOException {
                 return (file.getFileName() != null
@@ -876,7 +876,7 @@ public class IngestServiceBean {
     }
 
     public static Hashtable<Object, Double> calculateFrequency(Object[] variableVector) {
-        Hashtable<Object, Double> freq = new Hashtable<Object, Double>();
+        Hashtable<Object, Double> freq = new Hashtable<>();
 
         for (int j = 0; j < variableVector.length; j++) {
             if (variableVector[j] != null) {
@@ -1682,7 +1682,7 @@ public class IngestServiceBean {
                                 // finally, compare it to the value we have now:
                                 if (!storedValue.equals(newAggregateValue)) {
                                     if (dsf.getDatasetFieldValues() == null) {
-                                        dsf.setDatasetFieldValues(new ArrayList<DatasetFieldValue>());
+                                        dsf.setDatasetFieldValues(new ArrayList<>());
                                     }
                                     if (dsf.getDatasetFieldValues().get(0) == null) {
                                         DatasetFieldValue newDsfv = new DatasetFieldValue(dsf);
@@ -1898,7 +1898,7 @@ public class IngestServiceBean {
     }
 
     private Set<Integer> selectContinuousVariableColumns(DataFile dataFile) {
-        Set<Integer> contVarFields = new LinkedHashSet<Integer>();
+        Set<Integer> contVarFields = new LinkedHashSet<>();
 
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if (dataFile.getDataTable().getDataVariables().get(i).isIntervalContinuous()) {

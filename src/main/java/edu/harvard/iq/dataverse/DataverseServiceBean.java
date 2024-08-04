@@ -771,7 +771,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         JsonArrayBuilder dataverseAliases = Json.createArrayBuilder();
         // Get the Dataverses for the returned ids
 
-        List<Dataverse> children = new ArrayList<Dataverse>();
+        List<Dataverse> children = new ArrayList<>();
 
         for (int i = 0; i < childIds.size(); i++) {
             Integer childId = childIds.get(i);
@@ -789,7 +789,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         // Create a list of just the inheritable role assignments on the original
         // dataverse
-        List<RoleAssignment> inheritableRAsOnOwner = new ArrayList<RoleAssignment>();
+        List<RoleAssignment> inheritableRAsOnOwner = new ArrayList<>();
         for (RoleAssignment role : allRAsOnOwner) {
             if (inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias())) {
                 //Only supporting built-in/non-dataverse-specific custom roles. Custom roles all have an owner.
@@ -801,10 +801,10 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         String privateUrlToken = null;
         // Create lists of the existing inheritable roles for each child Dataverse
-        Map<Long, List<RoleAssignment>> existingRAs = new HashMap<Long, List<RoleAssignment>>();
+        Map<Long, List<RoleAssignment>> existingRAs = new HashMap<>();
         for (Dataverse childDv : children) {
             List<RoleAssignment> allRAsOnChild = rolesService.directRoleAssignments(childDv);
-            List<RoleAssignment> inheritableRoles = new ArrayList<RoleAssignment>();
+            List<RoleAssignment> inheritableRoles = new ArrayList<>();
             for (RoleAssignment role : allRAsOnChild) {
                 if (inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias())) {
                     inheritableRoles.add(role);

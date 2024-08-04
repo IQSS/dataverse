@@ -47,7 +47,7 @@ public class DataverseXoaiSetRepository implements SetRepository {
     public List<Set> getSets() {
         logger.fine("calling retrieveSets()");
         List<OAISet> dataverseOAISets = setService.findAllActiveNamedSets();
-        List<Set> XOAISets = new ArrayList<Set>();
+        List<Set> XOAISets = new ArrayList<>();
 
         if (dataverseOAISets != null) {
             for (int i = 0; i < dataverseOAISets.size(); i++) {

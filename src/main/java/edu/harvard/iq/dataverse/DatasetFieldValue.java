@@ -33,7 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 public class DatasetFieldValue implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    public static final Comparator<DatasetFieldValue> DisplayOrder = new Comparator<DatasetFieldValue>() {
+    public static final Comparator<DatasetFieldValue> DisplayOrder = new Comparator<>() {
         @Override
         public int compare(DatasetFieldValue o1, DatasetFieldValue o2) {
             return Integer.compare(o1.getDisplayOrder(),

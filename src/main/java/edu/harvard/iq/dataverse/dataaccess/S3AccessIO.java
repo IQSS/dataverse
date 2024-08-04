@@ -105,8 +105,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private boolean mainDriver = true;
 
-    private static HashMap<String, AmazonS3> driverClientMap = new HashMap<String, AmazonS3>();
-    private static HashMap<String, TransferManager> driverTMMap = new HashMap<String, TransferManager>();
+    private static HashMap<String, AmazonS3> driverClientMap = new HashMap<>();
+    private static HashMap<String, TransferManager> driverTMMap = new HashMap<>();
 
     public S3AccessIO(T dvObject, DataAccessRequest req, String driverId) {
         super(dvObject, req, driverId);

@@ -40,7 +40,7 @@ public class DatasetFieldCompoundValue implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public static final Comparator<DatasetFieldCompoundValue> DisplayOrder = new Comparator<DatasetFieldCompoundValue>() {
+    public static final Comparator<DatasetFieldCompoundValue> DisplayOrder = new Comparator<>() {
         @Override
         public int compare(DatasetFieldCompoundValue o1, DatasetFieldCompoundValue o2) {
             return Integer.compare(o1.getDisplayOrder(), o2.getDisplayOrder());

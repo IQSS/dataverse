@@ -151,7 +151,7 @@ public class DDIExportServiceBean {
         DatasetVersion releasedVersion = null;
 
         if (partialExclude != null && !"".equals(partialExclude)) {
-            excludedFieldSet = new HashSet<String>();
+            excludedFieldSet = new HashSet<>();
 
             String splitTokens[] = partialExclude.split(",");
 
@@ -163,7 +163,7 @@ public class DDIExportServiceBean {
         }
 
         if (partialInclude != null && !"".equals(partialInclude)) {
-            includedFieldSet = new HashSet<String>();
+            includedFieldSet = new HashSet<>();
 
             String splitTokens[] = partialInclude.split(",");
 

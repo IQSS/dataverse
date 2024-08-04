@@ -107,8 +107,8 @@ public class EditDDI  extends AbstractApiBean {
             return unauthorized("Cannot edit metadata, access denied");
         }
 
-        Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
-        Map<Long, VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
+        Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<>();
+        Map<Long, VarGroup> varGroupMap = new HashMap<>();
         try {
             readXML(body, mapVarToVarMet, varGroupMap);
         } catch (XMLStreamException e) {
@@ -119,7 +119,7 @@ public class EditDDI  extends AbstractApiBean {
         DatasetVersion latestVersion = dataFile.getOwner().getLatestVersion();
         Dataset dataset = latestVersion.getDataset();
 
-        ArrayList<VariableMetadata> neededToUpdateVM = new ArrayList<VariableMetadata>();
+        ArrayList<VariableMetadata> neededToUpdateVM = new ArrayList<>();
 
         if (!latestVersion.isWorkingCopy()) {
             //for new draft version

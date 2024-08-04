@@ -30,8 +30,8 @@ class Organizations {
     };
 
     private static final Logger logger = Logger.getLogger(FirstNames.class.getCanonicalName());
-    private static List<NameFinderME> organizationNameFinders = new ArrayList<NameFinderME>();
-    private static List<TokenizerME> tokenizers = new ArrayList<TokenizerME>();
+    private static List<NameFinderME> organizationNameFinders = new ArrayList<>();
+    private static List<TokenizerME> tokenizers = new ArrayList<>();
 
     public static final String[] TAG_ORGANIZATIONS = {"organization"};
     public static String[] ORGANIZATION_MODELS = {

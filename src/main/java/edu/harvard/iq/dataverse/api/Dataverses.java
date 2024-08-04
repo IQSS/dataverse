@@ -1080,7 +1080,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/contents")
     public Response listContent(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf) throws WrappedResponse {
 
-        DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<JsonObjectBuilder>() {
+        DvObject.Visitor<JsonObjectBuilder> ser = new DvObject.Visitor<>() {
             @Override
             public JsonObjectBuilder visit(Dataverse dv) {
                 return Json.createObjectBuilder().add("type", "dataverse")

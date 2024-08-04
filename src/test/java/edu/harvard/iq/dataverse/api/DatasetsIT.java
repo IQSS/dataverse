@@ -3460,8 +3460,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         InputStream variableData = origXml.body().asInputStream();
 
-        Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<Long, VariableMetadata>();
-        Map<Long, VarGroup> varGroupMap = new HashMap<Long, VarGroup>();
+        Map<Long, VariableMetadata> mapVarToVarMet = new HashMap<>();
+        Map<Long, VarGroup> varGroupMap = new HashMap<>();
         try {
             XMLInputFactory factory = XMLInputFactory.newInstance();
             XMLStreamReader xmlr = factory.createXMLStreamReader(variableData);

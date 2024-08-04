@@ -128,7 +128,7 @@ public class FieldDTO {
     public Set<FieldDTO> getSingleCompound() {
         Gson gson = new Gson();
         JsonObject elem = (JsonObject) value;
-        Set<FieldDTO> elemFields = new HashSet<FieldDTO>();
+        Set<FieldDTO> elemFields = new HashSet<>();
 
         Set<Map.Entry<String, JsonElement>> set = elem.entrySet();
 
@@ -161,13 +161,13 @@ public class FieldDTO {
 
     public ArrayList<HashSet<FieldDTO>> getMultipleCompound() {
         Gson gson = new Gson();
-        ArrayList<HashSet<FieldDTO>> fields = new ArrayList<HashSet<FieldDTO>>();
+        ArrayList<HashSet<FieldDTO>> fields = new ArrayList<>();
         JsonArray array = value.getAsJsonArray();
 
         Iterator<JsonElement> iter = array.iterator();
         while (iter.hasNext()) {
             JsonObject elem = (JsonObject) iter.next();
-            HashSet<FieldDTO> elemFields = new HashSet<FieldDTO>();
+            HashSet<FieldDTO> elemFields = new HashSet<>();
             fields.add(elemFields);
             Set<Map.Entry<String, JsonElement>> set = elem.entrySet();
 
@@ -239,7 +239,7 @@ public class FieldDTO {
          Gson gson = new Gson();
         this.typeClass = "compound";
         this.multiple = true;
-        List<Map<String, FieldDTO>> mapList = new ArrayList<Map<String, FieldDTO>>();
+        List<Map<String, FieldDTO>> mapList = new ArrayList<>();
             Map<String, FieldDTO> fieldMap = new HashMap<>();
             for (FieldDTO fieldDTO : fieldList) {
                 if (fieldDTO != null) {
@@ -260,7 +260,7 @@ public class FieldDTO {
          Gson gson = new Gson();
         this.typeClass = "compound";
         this.multiple = true;
-        List<Map<String, FieldDTO>> mapList = new ArrayList<Map<String, FieldDTO>>();
+        List<Map<String, FieldDTO>> mapList = new ArrayList<>();
         for (Set<FieldDTO> compoundField : compoundFieldList) {
             Map<String, FieldDTO> fieldMap = new HashMap<>();
             for (FieldDTO fieldDTO : compoundField) {

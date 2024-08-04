@@ -53,13 +53,13 @@ public class IngestableDataChecker implements java.io.Serializable {
     private static String[] defaultFormatSet = {"POR", "SAV", "DTA", "RDA", "XPT"};
     private String[] testFormatSet;
     // Map that returns a Stata Release number
-    private static Map<Byte, String> stataReleaseNumber = new HashMap<Byte, String>();
+    private static Map<Byte, String> stataReleaseNumber = new HashMap<>();
     public static String STATA_13_HEADER = "<stata_dta><header><release>117</release>";
     public static String STATA_14_HEADER = "<stata_dta><header><release>118</release>";
     public static String STATA_15_HEADER = "<stata_dta><header><release>119</release>";
     // Map that returns a reader-implemented mime-type
-    private static Set<String> readableFileTypes = new HashSet<String>();
-    private static Map<String, Method> testMethods = new HashMap<String, Method>();
+    private static Set<String> readableFileTypes = new HashSet<>();
+    private static Map<String, Method> testMethods = new HashMap<>();
     public static String SAS_XPT_HEADER_80 = "HEADER RECORD*******LIBRARY HEADER RECORD!!!!!!!000000000000000000000000000000  ";
     public static String SAS_XPT_HEADER_11 = "SAS     SAS";
     public static int POR_MARK_POSITION_DEFAULT = 461;

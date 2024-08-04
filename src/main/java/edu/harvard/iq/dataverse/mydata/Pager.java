@@ -213,7 +213,7 @@ public class Pager {
      * @return 
      */
     public List<String> getPageNumberListAsStringList() {
-        List<String> newList = new ArrayList<String>(pageNumberList.length);
+        List<String> newList = new ArrayList<>(pageNumberList.length);
         for (int pgNum : pageNumberList) {
           newList.add(String.valueOf(pgNum));
         }

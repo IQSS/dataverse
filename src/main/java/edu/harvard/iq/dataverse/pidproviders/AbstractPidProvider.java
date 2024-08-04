@@ -47,8 +47,8 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.id = id;
         this.label = label;
         this.protocol = protocol;
-        this.managedSet = new HashSet<String>();
-        this.excludedSet = new HashSet<String>();
+        this.managedSet = new HashSet<>();
+        this.excludedSet = new HashSet<>();
     }
 
     protected AbstractPidProvider(String id, String label, String protocol, String authority, String shoulder,
@@ -60,8 +60,8 @@ public abstract class AbstractPidProvider implements PidProvider {
         this.shoulder = shoulder;
         this.identifierGenerationStyle = identifierGenerationStyle;
         this.datafilePidFormat = datafilePidFormat;
-        this.managedSet = new HashSet<String>(Arrays.asList(managedList.split(",\\s")));
-        this.excludedSet = new HashSet<String>(Arrays.asList(excludedList.split(",\\s")));
+        this.managedSet = new HashSet<>(Arrays.asList(managedList.split(",\\s")));
+        this.excludedSet = new HashSet<>(Arrays.asList(excludedList.split(",\\s")));
         if (logger.isLoggable(Level.FINE)) {
             Iterator<String> iter = managedSet.iterator();
             while (iter.hasNext()) {
@@ -440,7 +440,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         // This will catch identifiers already assigned in the current transaction (e.g.
         // in FinalizeDatasetPublicationCommand) that haven't been committed to the db
         // without having to make a call to the PIDProvider
-        Set<String> existingIdentifiers = new HashSet<String>();
+        Set<String> existingIdentifiers = new HashSet<>();
         List<DataFile> files = datafile.getOwner().getFiles();
         for (DataFile f : files) {
             existingIdentifiers.add(f.getIdentifier());

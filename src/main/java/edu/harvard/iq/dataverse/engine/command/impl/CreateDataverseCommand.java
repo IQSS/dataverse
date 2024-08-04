@@ -123,7 +123,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         // Add additional role assignments if inheritance is set
         boolean inheritAllRoles = false;
         String rolesString = ctxt.settings().getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
-        ArrayList<String> rolesToInherit = new ArrayList<String>(Arrays.asList(rolesString.split("\\s*,\\s*")));
+        ArrayList<String> rolesToInherit = new ArrayList<>(Arrays.asList(rolesString.split("\\s*,\\s*")));
         if (rolesString.length() > 0) {
             if (!rolesToInherit.isEmpty()) {
                 if (rolesToInherit.contains("*")) {

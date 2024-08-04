@@ -396,7 +396,7 @@ public class Access extends AbstractApiBean {
                                         DataVariable variable = variableService.find(variableId);
                                         if (variable != null) {
                                             if (downloadInstance.getExtraArguments() == null) {
-                                                downloadInstance.setExtraArguments(new ArrayList<Object>());
+                                                downloadInstance.setExtraArguments(new ArrayList<>());
                                             }
                                             logger.fine("putting variable id " + variable.getId() + " on the parameters list of the download instance.");
                                             downloadInstance.getExtraArguments().add(variable);

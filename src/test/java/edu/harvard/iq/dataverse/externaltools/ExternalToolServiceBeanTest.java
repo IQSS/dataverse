@@ -39,10 +39,10 @@ public class ExternalToolServiceBeanTest {
         Dataset ds = new Dataset();
         dv.setDataset(ds);
         fmd.setDatasetVersion(dv);
-        List<FileMetadata> fmdl = new ArrayList<FileMetadata>();
+        List<FileMetadata> fmdl = new ArrayList<>();
         fmdl.add(fmd);
         dataFile.setFileMetadatas(fmdl);
-        List<DataTable> dataTables = new ArrayList<DataTable>();
+        List<DataTable> dataTables = new ArrayList<>();
         dataTables.add(new DataTable());
         dataFile.setDataTables(dataTables);
         ApiToken apiToken = new ApiToken();
@@ -101,7 +101,7 @@ public class ExternalToolServiceBeanTest {
         Dataset ds = new Dataset();
         dv.setDataset(ds);
         fmd.setDatasetVersion(dv);
-        List<FileMetadata> fmdl = new ArrayList<FileMetadata>();
+        List<FileMetadata> fmdl = new ArrayList<>();
         fmdl.add(fmd);
         dataFile.setFileMetadatas(fmdl);
         ApiToken apiToken = new ApiToken();
@@ -153,7 +153,7 @@ public class ExternalToolServiceBeanTest {
         Dataset ds = new Dataset();
         dv.setDataset(ds);
         fmd.setDatasetVersion(dv);
-        List<FileMetadata> fmdl = new ArrayList<FileMetadata>();
+        List<FileMetadata> fmdl = new ArrayList<>();
         fmdl.add(fmd);
         dataFile.setFileMetadatas(fmdl);
         ApiToken apiToken = new ApiToken();

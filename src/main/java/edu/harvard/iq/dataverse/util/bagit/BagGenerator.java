@@ -88,8 +88,8 @@ public class BagGenerator {
     private JsonArray aggregates = null;
     private ArrayList<String> resourceIndex = null;
     private Boolean[] resourceUsed = null;
-    private HashMap<String, String> pidMap = new LinkedHashMap<String, String>();
-    private HashMap<String, String> checksumMap = new LinkedHashMap<String, String>();
+    private HashMap<String, String> pidMap = new LinkedHashMap<>();
+    private HashMap<String, String> checksumMap = new LinkedHashMap<>();
 
     private int timeout = 60;
     private RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout * 1000)
@@ -104,7 +104,7 @@ public class BagGenerator {
     private long dataCount = 0l;
     private long totalDataSize = 0l;
     private long maxFileSize = 0l;
-    private Set<String> mimetypes = new TreeSet<String>();
+    private Set<String> mimetypes = new TreeSet<>();
 
     private String bagID = null;
     private String bagPath = "/tmp";
@@ -480,7 +480,7 @@ public class BagGenerator {
 
     private void processContainer(JsonObject item, String currentPath) throws IOException {
         JsonArray children = getChildren(item);
-        HashSet<String> titles = new HashSet<String>();
+        HashSet<String> titles = new HashSet<>();
         String title = null;
         if (item.has(JsonLDTerm.dcTerms("Title").getLabel())) {
             title = item.get("Title").getAsString();
@@ -656,7 +656,7 @@ public class BagGenerator {
 
     private ArrayList<String> indexResources(String aggId, JsonArray aggregates) {
 
-        ArrayList<String> l = new ArrayList<String>(aggregates.size() + 1);
+        ArrayList<String> l = new ArrayList<>(aggregates.size() + 1);
         l.add(aggId);
         for (int i = 0; i < aggregates.size(); i++) {
             logger.fine("Indexing : " + i + " " + aggregates.get(i).getAsJsonObject().get("@id").getAsString());
@@ -907,7 +907,7 @@ public class BagGenerator {
         } else if (jsonElement.isJsonArray()) {
 
             Iterator<JsonElement> iter = jsonElement.getAsJsonArray().iterator();
-            ArrayList<String> stringArray = new ArrayList<String>();
+            ArrayList<String> stringArray = new ArrayList<>();
             while (iter.hasNext()) {
                 stringArray.add(iter.next().getAsJsonObject().getAsJsonPrimitive(key).getAsString());
             }

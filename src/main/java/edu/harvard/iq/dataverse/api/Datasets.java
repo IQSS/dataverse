@@ -915,9 +915,9 @@ public class Datasets extends AbstractApiBean {
 
             dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
 
-            List<ControlledVocabularyValue> controlledVocabularyItemsToRemove = new ArrayList<ControlledVocabularyValue>();
-            List<DatasetFieldValue> datasetFieldValueItemsToRemove = new ArrayList<DatasetFieldValue>();
-            List<DatasetFieldCompoundValue> datasetFieldCompoundValueItemsToRemove = new ArrayList<DatasetFieldCompoundValue>();
+            List<ControlledVocabularyValue> controlledVocabularyItemsToRemove = new ArrayList<>();
+            List<DatasetFieldValue> datasetFieldValueItemsToRemove = new ArrayList<>();
+            List<DatasetFieldCompoundValue> datasetFieldCompoundValueItemsToRemove = new ArrayList<>();
 
             for (DatasetField updateField : fields) {
                 boolean found = false;
@@ -1544,7 +1544,7 @@ public class Datasets extends AbstractApiBean {
             }
         }
 
-        List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
+        List<Embargo> orphanedEmbargoes = new ArrayList<>();
         // check if files belong to dataset
         if (datasetFiles.containsAll(filesToEmbargo)) {
             JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
@@ -1663,7 +1663,7 @@ public class Datasets extends AbstractApiBean {
             }
         }
 
-        List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
+        List<Embargo> orphanedEmbargoes = new ArrayList<>();
         // check if files belong to dataset
         if (datasetFiles.containsAll(embargoFilesToUnset)) {
             JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
@@ -1834,7 +1834,7 @@ public class Datasets extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "No fileIds specified");
         }
 
-        List<Retention> orphanedRetentions = new ArrayList<Retention>();
+        List<Retention> orphanedRetentions = new ArrayList<>();
         // check if files belong to dataset
         if (datasetFiles.containsAll(filesToRetention)) {
             JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
@@ -1964,7 +1964,7 @@ public class Datasets extends AbstractApiBean {
             return error(Status.BAD_REQUEST, "No fileIds specified");
         }
 
-        List<Retention> orphanedRetentions = new ArrayList<Retention>();
+        List<Retention> orphanedRetentions = new ArrayList<>();
         // check if files belong to dataset
         if (datasetFiles.containsAll(retentionFilesToUnset)) {
             JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
@@ -2714,7 +2714,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.FORBIDDEN,
                         "You are not permitted to complete file uploads with the supplied parameters.");
             }
-            List<PartETag> eTagList = new ArrayList<PartETag>();
+            List<PartETag> eTagList = new ArrayList<>();
             logger.info("Etags: " + partETagBody);
             try {
                 JsonObject object = JsonUtil.getJsonObject(partETagBody);
@@ -3685,7 +3685,7 @@ public class Datasets extends AbstractApiBean {
         try {
             dataset = findDatasetOrDie(id);
             User u = getRequestUser(crc);
-            Set<Permission> perms = new HashSet<Permission>();
+            Set<Permission> perms = new HashSet<>();
             perms.add(Permission.ViewUnpublishedDataset);
             boolean canSeeDraft = permissionSvc.hasPermissionsFor(u, dataset, perms);
             JsonObjectBuilder timestamps = Json.createObjectBuilder();
@@ -4237,7 +4237,7 @@ public class Datasets extends AbstractApiBean {
         } else {
             if ((body != null) && body.containsKey("fileIds")) {
                 Collection<JsonValue> fileVals = body.getJsonArray("fileIds").getValuesAs(JsonValue.class);
-                fileIds = new HashSet<String>(fileVals.size());
+                fileIds = new HashSet<>(fileVals.size());
                 for (JsonValue fileVal : fileVals) {
                     String id = null;
                     switch (fileVal.getValueType()) {
@@ -4261,7 +4261,7 @@ public class Datasets extends AbstractApiBean {
         if (fileIds.isEmpty()) {
             return notFound(BundleUtil.getStringFromBundle("datasets.api.globusdownloadnotfound"));
         }
-        ArrayList<DataFile> dataFiles = new ArrayList<DataFile>(fileIds.size());
+        ArrayList<DataFile> dataFiles = new ArrayList<>(fileIds.size());
         for (String id : fileIds) {
             boolean published = false;
             logger.info("File id: " + id);
@@ -4547,12 +4547,12 @@ public class Datasets extends AbstractApiBean {
         }
 
         List<DataverseRole> allRoles = dataverseRoleService.findAll();
-        List<DataverseRole> curationRoles = new ArrayList<DataverseRole>();
+        List<DataverseRole> curationRoles = new ArrayList<>();
         allRoles.forEach(r -> {
             if (r.permissions().contains(Permission.PublishDataset))
                 curationRoles.add(r);
         });
-        HashMap<String, HashSet<String>> assignees = new HashMap<String, HashSet<String>>();
+        HashMap<String, HashSet<String>> assignees = new HashMap<>();
         curationRoles.forEach(r -> {
             assignees.put(r.getAlias(), null);
         });
@@ -4580,7 +4580,7 @@ public class Datasets extends AbstractApiBean {
             String date = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getCreateTime());
             String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dsv.getLastUpdateTime());
             String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
-            List<String> sList = new ArrayList<String>();
+            List<String> sList = new ArrayList<>();
             assignees.entrySet().forEach(e -> sList.add(e.getValue().size() == 0 ? "" : String.join(";", e.getValue())));
             csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, status == null ? "" : status, String.join(",", sList)));
         }

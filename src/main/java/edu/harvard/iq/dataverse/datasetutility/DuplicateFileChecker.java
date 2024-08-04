@@ -137,7 +137,7 @@ public class DuplicateFileChecker {
             return false;
         }
 
-        Map<String, Integer> checkSumMap = new HashMap<String, Integer>();
+        Map<String, Integer> checkSumMap = new HashMap<>();
 
         // TODO: 
         // think of a way to do this that doesn't involve populating this 

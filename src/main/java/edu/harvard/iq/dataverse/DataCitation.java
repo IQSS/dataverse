@@ -45,8 +45,8 @@ public class DataCitation {
 
     private static final Logger logger = Logger.getLogger(DataCitation.class.getCanonicalName());
 
-    private List<String> authors = new ArrayList<String>();
-    private List<String> producers = new ArrayList<String>();
+    private List<String> authors = new ArrayList<>();
+    private List<String> producers = new ArrayList<>();
     private String title;
     private String fileTitle = null;
     private String year;

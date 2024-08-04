@@ -33,12 +33,12 @@ public class VarGroup {
 
 
     public VarGroup() {
-        varsInGroup = new HashSet<DataVariable>();
+        varsInGroup = new HashSet<>();
     }
 
     public VarGroup(FileMetadata fileMetadata) {
         this.fileMetadata = fileMetadata;
-        varsInGroup = new HashSet<DataVariable>();
+        varsInGroup = new HashSet<>();
     }
 
     public VarGroup(FileMetadata fileMetadata, Set<DataVariable> varsInGroup) {

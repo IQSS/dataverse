@@ -438,7 +438,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                 if (variableHeader) {
                     // Initialize variables:
                     dbglog.fine("variableHeader mode; ");
-                    List<DataVariable> variableList = new ArrayList<DataVariable>();
+                    List<DataVariable> variableList = new ArrayList<>();
                     //columnCount = variableNames.size();
                     columnCount = dataTable.getVarQuantity().intValue();
 

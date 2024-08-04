@@ -43,7 +43,7 @@ public class SolrSearchResultTest {
         this.inReviewFlag = IndexServiceBean.getIN_REVIEW_STRING();
         this.deaccessionedFlag = IndexServiceBean.getDEACCESSIONED_STRING();
         this.invalidFlag = "abc";
-        this.statuses = new ArrayList<String>();
+        this.statuses = new ArrayList<>();
         this.solrSearchResult = new SolrSearchResult("myQuery", "myName");
     }
 

@@ -36,12 +36,12 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
     DatasetServiceBean datasetService;
 
   //Array of relationship types that are considered to be citations
-  static ArrayList<String> inboundRelationships = new ArrayList<String>(
+  static ArrayList<String> inboundRelationships = new ArrayList<>(
           Arrays.asList(
           "cites",
           "references",
           "supplements"));
-  static ArrayList<String> outboundRelationships = new ArrayList<String>(
+  static ArrayList<String> outboundRelationships = new ArrayList<>(
           Arrays.asList(
           "is-cited-by",
           "is-referenced-by",

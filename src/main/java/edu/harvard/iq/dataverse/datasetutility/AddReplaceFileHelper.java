@@ -1604,7 +1604,7 @@ public class AddReplaceFileHelper {
         return true;
     }
 
-    List<FileMetadata> filesToDelete = new ArrayList<FileMetadata>();
+    List<FileMetadata> filesToDelete = new ArrayList<>();
     Map<Long, String> deleteFileStorageLocations = new HashMap<>();
 
     /**

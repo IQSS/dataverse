@@ -143,8 +143,8 @@ public class FileMetadata implements Serializable {
     }
 
     public FileMetadata() {
-        variableMetadatas = new ArrayList<VariableMetadata>();
-        varGroups = new ArrayList<VarGroup>();
+        variableMetadatas = new ArrayList<>();
+        varGroups = new ArrayList<>();
     }
 
     public String getDirectoryLabel() {
@@ -217,7 +217,7 @@ public class FileMetadata implements Serializable {
              * the jar it is in.
              */
             if (!(fileCategories instanceof ArrayList)) {
-                List<DataFileCategory> newDFCs = new ArrayList<DataFileCategory>();
+                List<DataFileCategory> newDFCs = new ArrayList<>();
                 for (DataFileCategory fdc : fileCategories) {
                     newDFCs.add(fdc);
                 }
@@ -560,7 +560,7 @@ public class FileMetadata implements Serializable {
         return "edu.harvard.iq.dataverse.FileMetadata[id=" + id + "]";
     }
 
-    public static final Comparator<FileMetadata> compareByLabel = new Comparator<FileMetadata>() {
+    public static final Comparator<FileMetadata> compareByLabel = new Comparator<>() {
         @Override
         public int compare(FileMetadata o1, FileMetadata o2) {
             return o1.getLabel().toUpperCase().compareTo(o2.getLabel().toUpperCase());
@@ -570,7 +570,7 @@ public class FileMetadata implements Serializable {
     static Map<String, Long> categoryMap = null;
 
     public static void setCategorySortOrder(String categories) {
-       categoryMap = new HashMap<String, Long>();
+       categoryMap = new HashMap<>();
        long i = 1;
        for (String cat : categories.split(",\\s*")) {
            categoryMap.put(cat.toUpperCase(), i);
@@ -583,7 +583,7 @@ public class FileMetadata implements Serializable {
     }
 
 
-    public static final Comparator<DataFileCategory> compareByNameWithSortCategories = new Comparator<DataFileCategory>() {
+    public static final Comparator<DataFileCategory> compareByNameWithSortCategories = new Comparator<>() {
         @Override
         public int compare(DataFileCategory o1, DataFileCategory o2) {
             if (categoryMap != null) {
@@ -601,7 +601,7 @@ public class FileMetadata implements Serializable {
         }
     };
 
-    public static final Comparator<FileMetadata> compareByFullPath = new Comparator<FileMetadata>() {
+    public static final Comparator<FileMetadata> compareByFullPath = new Comparator<>() {
         @Override
         public int compare(FileMetadata o1, FileMetadata o2) {
             String folder1 = StringUtil.isEmpty(o1.getDirectoryLabel()) ? "" : o1.getDirectoryLabel().toUpperCase() + "/";
@@ -685,7 +685,7 @@ public class FileMetadata implements Serializable {
     public void copyVariableMetadata(Collection<VariableMetadata> vml) {
 
         if (variableMetadatas == null) {
-            variableMetadatas = new ArrayList<VariableMetadata>();
+            variableMetadatas = new ArrayList<>();
         }
 
         for (VariableMetadata vm : vml) {
@@ -745,7 +745,7 @@ public class FileMetadata implements Serializable {
             }
             vgNew.setLabel(vg.getLabel());
             if (varGroups == null) {
-                varGroups = new ArrayList<VarGroup>();
+                varGroups = new ArrayList<>();
             }
             varGroups.add(vgNew);
         }

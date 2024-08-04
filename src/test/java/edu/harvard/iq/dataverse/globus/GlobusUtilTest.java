@@ -61,7 +61,7 @@ public class GlobusUtilTest {
         rDatafile = MocksFactory.makeDataFile();
         rDatafile.setOwner(dataset);
         rDatafile.setStorageIdentifier("globusr://" + baseStoreId2 + "//" + logoPath);
-        List<DataFile> files = new ArrayList<DataFile>();
+        List<DataFile> files = new ArrayList<>();
         files.add(mDatafile);
         files.add(rDatafile);
         dataset.setFiles(files);

@@ -47,7 +47,7 @@ public class DatasetField implements Serializable {
     /**
      * Orders dataset fields by their display order.
      */
-    public static final Comparator<DatasetField> DisplayOrder = new Comparator<DatasetField>() {
+    public static final Comparator<DatasetField> DisplayOrder = new Comparator<>() {
         @Override
         public int compare(DatasetField o1, DatasetField o2) {
             return Integer.compare(o1.getDatasetFieldType().getDisplayOrder(),

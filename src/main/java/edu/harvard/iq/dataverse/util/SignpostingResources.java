@@ -160,7 +160,7 @@ public class SignpostingResources {
      * @param limit - if true, will return an empty list (for level 1) if more than maxAuthor authors with URLs are found 
      */
     private List<String> getAuthorURLs(boolean limit) {
-        List<String> authorURLs = new ArrayList<String>(maxAuthors);
+        List<String> authorURLs = new ArrayList<>(maxAuthors);
         int visibleAuthorCounter = 0;
 
         for (DatasetAuthor da : workingDatasetVersion.getDatasetAuthors()) {

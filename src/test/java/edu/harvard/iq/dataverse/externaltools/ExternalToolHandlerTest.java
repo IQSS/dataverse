@@ -117,7 +117,7 @@ public class ExternalToolHandlerTest {
         Dataset ds = new Dataset();
         dv.setDataset(ds);
         fmd.setDatasetVersion(dv);
-        List<FileMetadata> fmdl = new ArrayList<FileMetadata>();
+        List<FileMetadata> fmdl = new ArrayList<>();
         fmdl.add(fmd);
         dataFile.setFileMetadatas(fmdl);
         ApiToken apiToken = new ApiToken();

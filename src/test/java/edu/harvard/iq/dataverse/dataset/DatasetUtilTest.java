@@ -112,7 +112,7 @@ public class DatasetUtilTest {
     @Test
     public void testGetDatasetSummaryField_defaultSelectionWithAndWithoutMatches() {
         DatasetVersion version = new DatasetVersion();
-        List<DatasetField> fields = new ArrayList<DatasetField>();
+        List<DatasetField> fields = new ArrayList<>();
 
         String[] fieldNames = {"subject", "keyword", "random-notInDefault"};
         for (String fieldName : fieldNames) {
@@ -129,7 +129,7 @@ public class DatasetUtilTest {
     @Test
     public void testGetDatasetSummaryField_defaultSelectionWithoutDatasetFields() {
         DatasetVersion version = new DatasetVersion();
-        List<DatasetField> fields = new ArrayList<DatasetField>();
+        List<DatasetField> fields = new ArrayList<>();
         version.setDatasetFields(fields);
 
         assertEquals(0, DatasetUtil.getDatasetSummaryFields(version, null).size());
@@ -139,7 +139,7 @@ public class DatasetUtilTest {
     @Test
     public void testGetDatasetSummaryField_withSelectionWithoutDatasetFields() {
         DatasetVersion version = new DatasetVersion();
-        List<DatasetField> fields = new ArrayList<DatasetField>();
+        List<DatasetField> fields = new ArrayList<>();
         version.setDatasetFields(fields);
 
         assertEquals(0, DatasetUtil.getDatasetSummaryFields(version, "subject,randomSelector").size());
@@ -148,7 +148,7 @@ public class DatasetUtilTest {
     @Test
     public void testGetDatasetSummaryField_withSelectionWithoutMatches() {
         DatasetVersion version = new DatasetVersion();
-        List<DatasetField> fields = new ArrayList<DatasetField>();
+        List<DatasetField> fields = new ArrayList<>();
 
         String[] fieldNames = {"subject"};
         for (String fieldName : fieldNames) {

@@ -15,7 +15,7 @@ import jakarta.persistence.Version;
  */
 public class DatasetDistributor {
 
-    public static Comparator<DatasetDistributor> DisplayOrder = new Comparator<DatasetDistributor>() {
+    public static Comparator<DatasetDistributor> DisplayOrder = new Comparator<>() {
         @Override
         public int compare(DatasetDistributor o1, DatasetDistributor o2) {
             return o1.getDisplayOrder() - o2.getDisplayOrder();

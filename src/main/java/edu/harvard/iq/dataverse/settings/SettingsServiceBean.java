@@ -958,7 +958,7 @@ public class SettingsServiceBean {
 
     public Map<String, String> getBaseMetadataLanguageMap(Map<String, String> languageMap, boolean refresh) {
         if (languageMap == null || refresh) {
-            languageMap = new HashMap<String, String>();
+            languageMap = new HashMap<>();
 
             /* If MetadataLanaguages is set, use it.
              * If not, we can't assume anything and should avoid assuming a metadata language
@@ -996,7 +996,7 @@ public class SettingsServiceBean {
 
 
     public Set<String> getConfiguredLanguages() {
-        Set<String> langs = new HashSet<String>();
+        Set<String> langs = new HashSet<>();
         langs.addAll(getBaseMetadataLanguageMap(new HashMap<String, String>(), true).keySet());
         Map<String, String> configuredLocales = new LinkedHashMap<>();
         initLocaleSettings(configuredLocales);

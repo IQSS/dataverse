@@ -118,7 +118,7 @@ public class AdminIT {
         // --------------------------------------------
         String randUserNamePrefix = "r" + UtilIT.getRandomString(4) + "_";
 
-        List<String> randomUsernames = new ArrayList<String>();
+        List<String> randomUsernames = new ArrayList<>();
         for (int i = 0; i < 11; i++) {
 
             createUserResponse = UtilIT.createRandomUser(randUserNamePrefix);
