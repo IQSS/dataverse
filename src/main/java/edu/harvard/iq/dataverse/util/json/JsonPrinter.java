@@ -55,7 +55,6 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import java.math.BigDecimal;
 
 /**
  * Convert objects to Json.

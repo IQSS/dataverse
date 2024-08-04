@@ -7,7 +7,6 @@ import io.gdcc.spi.export.ExportException;
 import io.gdcc.spi.export.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
-import jakarta.json.JsonObject;
 import jakarta.ws.rs.core.MediaType;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;

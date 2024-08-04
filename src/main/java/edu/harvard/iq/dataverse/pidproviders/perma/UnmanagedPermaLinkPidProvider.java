@@ -5,10 +5,10 @@ import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.ejb.Stateless;
 import org.apache.commons.lang3.NotImplementedException;
 
 /** This class is just used to parse Handles that are not managed by any account configured in Dataverse

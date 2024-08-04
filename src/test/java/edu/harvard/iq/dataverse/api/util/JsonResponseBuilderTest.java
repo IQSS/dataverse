@@ -9,8 +9,9 @@ import org.mockito.Mockito;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class JsonResponseBuilderTest {
 

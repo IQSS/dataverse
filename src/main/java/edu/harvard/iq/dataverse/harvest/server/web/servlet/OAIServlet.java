@@ -29,8 +29,6 @@ import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiItemRepository;
 import edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiSetRepository;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.gdcc.xoai.exceptions.BadVerbException;
 import io.gdcc.xoai.exceptions.OAIException;

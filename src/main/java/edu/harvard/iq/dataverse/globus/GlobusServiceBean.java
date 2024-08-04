@@ -22,7 +22,6 @@ import jakarta.json.JsonPatch;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue.ValueType;
 import jakarta.json.stream.JsonParsingException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.HttpMethod;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
@@ -33,7 +32,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Duration;

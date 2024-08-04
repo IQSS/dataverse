@@ -59,9 +59,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *

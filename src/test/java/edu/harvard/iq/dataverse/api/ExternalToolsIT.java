@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonReader;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;

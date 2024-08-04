@@ -5,7 +5,8 @@ import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataIngest;
 import java.io.File;
 import java.util.Map;
 import java.util.Set;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 
 public class NetcdfFileMetadataExtractorTest {

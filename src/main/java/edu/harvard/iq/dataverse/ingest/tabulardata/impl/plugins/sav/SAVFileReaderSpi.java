@@ -23,13 +23,17 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.util.logging.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
+import java.util.logging.Logger;
 
 import javax.imageio.IIOException;
-import java.util.*;
+import java.util.Locale;
 
 import org.apache.commons.codec.binary.Hex;
 

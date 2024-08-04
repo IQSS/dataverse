@@ -22,9 +22,9 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.spi;
 
 import java.nio.MappedByteBuffer;
 import java.util.logging.Logger;
-import static java.lang.System.*;
+import static java.lang.System.out;
 
-import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
+import edu.harvard.iq.dataverse.ingest.plugin.spi.IngestServiceProvider;
 
 
 /**

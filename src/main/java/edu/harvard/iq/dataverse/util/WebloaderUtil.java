@@ -2,9 +2,6 @@ package edu.harvard.iq.dataverse.util;
 
 import java.util.logging.Logger;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 

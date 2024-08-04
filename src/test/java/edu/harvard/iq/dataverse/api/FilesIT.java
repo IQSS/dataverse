@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.File;
 import java.io.IOException;
 
@@ -43,7 +42,6 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FilesIT {

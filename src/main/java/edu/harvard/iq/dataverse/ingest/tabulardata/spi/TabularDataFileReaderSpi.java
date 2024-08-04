@@ -20,9 +20,11 @@
 
 package edu.harvard.iq.dataverse.ingest.tabulardata.spi;
 
-import edu.harvard.iq.dataverse.ingest.tabulardata.*;
-import java.util.logging.*;
-import java.io.*;
+import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
+import java.util.logging.Logger;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * The service provider interface (SPI) for <code>StatDataFileReader</code>.

@@ -10,9 +10,7 @@ import org.junit.jupiter.api.BeforeAll;
 import java.util.logging.Logger;
 
 import static jakarta.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LicensesIT {
 

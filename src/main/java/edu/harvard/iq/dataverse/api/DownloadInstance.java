@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
-import jakarta.faces.context.FacesContext;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.UriInfo;
 

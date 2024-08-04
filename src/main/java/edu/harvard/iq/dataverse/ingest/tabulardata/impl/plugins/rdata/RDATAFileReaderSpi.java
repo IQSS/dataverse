@@ -22,8 +22,10 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 
-import java.io.*;
-import java.util.logging.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Logger;
 import java.util.Locale;
 
 /*

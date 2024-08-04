@@ -21,9 +21,10 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx;
 
 
 import java.io.*;
-import java.io.FileReader;
-import java.util.logging.*;
-import java.util.*;
+import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;

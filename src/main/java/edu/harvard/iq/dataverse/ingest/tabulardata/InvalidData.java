@@ -19,7 +19,7 @@
 */
 package edu.harvard.iq.dataverse.ingest.tabulardata;
 
-import java.util.*;
+import java.util.List;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 

@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.util.zip.ZipInputStream;
 
-import jakarta.json.Json;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -25,7 +24,7 @@ import java.util.HashMap;
 import org.hamcrest.collection.IsMapContaining;
 
 import static jakarta.ws.rs.core.Response.Status.*;
-import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.jupiter.api.Assertions.*;

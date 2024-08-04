@@ -20,16 +20,25 @@
 package edu.harvard.iq.dataverse.ingest;
 
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.out;
 import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.util.*;
-import java.lang.reflect.*;
-import java.util.regex.*;
-import java.util.zip.*;
+import java.nio.BufferUnderflowException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 import java.util.logging.Logger;
-import org.apache.commons.lang3.builder.*;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.io.IOUtils;
 
 /**

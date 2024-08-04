@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 import java.util.List;
 import java.util.Optional;
 import jakarta.ejb.Stateless;
-import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 

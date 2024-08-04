@@ -7,8 +7,9 @@
 package edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits;
 
 
-import edu.harvard.iq.dataverse.ingest.metadataextraction.*;
-import edu.harvard.iq.dataverse.ingest.metadataextraction.spi.*;
+import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
+import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataIngest;
+import edu.harvard.iq.dataverse.ingest.metadataextraction.spi.FileMetadataExtractorSpi;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.BufferedReader;

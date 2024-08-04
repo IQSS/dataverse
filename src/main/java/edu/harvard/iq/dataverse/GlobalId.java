@@ -6,14 +6,12 @@
 
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.pidproviders.perma.PermaLinkPidProvider;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

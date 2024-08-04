@@ -1,7 +1,5 @@
 package io.gdcc.spi.export;
 
-import jakarta.ws.rs.core.MediaType;
-
 /**
  * XML Exporter is an extension of the base Exporter interface that adds the
  * additional methods needed for generating XML metadata export formats.

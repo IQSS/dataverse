@@ -26,7 +26,7 @@ package edu.harvard.iq.dataverse.dataaccess;
  * and open the template in the editor.
  */
 import java.io.InputStream;
-import java.util.*;
+import java.util.List;
 
 /**
  * original author:

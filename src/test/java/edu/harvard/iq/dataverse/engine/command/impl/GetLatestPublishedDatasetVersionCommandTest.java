@@ -12,7 +12,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
 
 /**
  *

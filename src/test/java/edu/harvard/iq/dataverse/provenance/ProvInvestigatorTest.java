@@ -9,7 +9,8 @@ import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Logger;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.harvard.iq.dataverse.util.testing.Tags;
 import org.junit.jupiter.api.BeforeEach;

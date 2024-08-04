@@ -5,11 +5,7 @@
  */
 package edu.harvard.iq.dataverse.userdata;
 
-import edu.harvard.iq.dataverse.UserNotification.Type;
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  *

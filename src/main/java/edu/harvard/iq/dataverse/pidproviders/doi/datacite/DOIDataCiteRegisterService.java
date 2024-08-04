@@ -24,8 +24,6 @@ import edu.harvard.iq.dataverse.pidproviders.AbstractPidProvider;
 import edu.harvard.iq.dataverse.pidproviders.doi.XmlMetadataTemplate;
 
 import org.xmlunit.builder.DiffBuilder;
-import org.xmlunit.builder.Input;
-import org.xmlunit.builder.Input.Builder;
 import org.xmlunit.diff.Diff;
 import org.xmlunit.diff.Difference;
 

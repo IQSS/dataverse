@@ -76,7 +76,6 @@ import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
-import java.util.Optional;
 
 public class BagGenerator {
 

@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.settings.JvmSettings;
-import jakarta.annotation.Resource;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Named;

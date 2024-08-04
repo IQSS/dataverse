@@ -6,10 +6,11 @@
 
 package edu.harvard.iq.dataverse.ingest.metadataextraction;
 
-import edu.harvard.iq.dataverse.ingest.metadataextraction.spi.*;
-import java.io.*;
-import java.util.Map; 
-import java.util.Set;
+import edu.harvard.iq.dataverse.ingest.metadataextraction.spi.FileMetadataExtractorSpi;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 
 /**
  *

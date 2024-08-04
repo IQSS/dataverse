@@ -26,7 +26,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static jakarta.ws.rs.core.Response.Status.*;

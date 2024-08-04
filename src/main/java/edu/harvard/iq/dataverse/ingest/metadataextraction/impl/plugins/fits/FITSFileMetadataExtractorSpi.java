@@ -6,16 +6,17 @@
 
 package edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits;
 
-import edu.harvard.iq.dataverse.ingest.metadataextraction.*;
-import edu.harvard.iq.dataverse.ingest.metadataextraction.spi.*;
+import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
+import edu.harvard.iq.dataverse.ingest.metadataextraction.spi.FileMetadataExtractorSpi;
 
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.logging.Logger;
 import java.util.Locale;
 
-import static java.lang.System.*;
+import static java.lang.System.out;
 
 import org.apache.commons.codec.binary.Hex;
 

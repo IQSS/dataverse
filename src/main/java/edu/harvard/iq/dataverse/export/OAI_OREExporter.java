@@ -11,7 +11,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-import jakarta.json.JsonObject;
 import jakarta.ws.rs.core.MediaType;
 
 @AutoService(Exporter.class)

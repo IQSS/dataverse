@@ -32,7 +32,8 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 
-import static edu.harvard.iq.dataverse.api.ApiConstants.*;
+import static edu.harvard.iq.dataverse.api.ApiConstants.DS_VERSION_LATEST;
+import static edu.harvard.iq.dataverse.api.ApiConstants.STATUS_OK;
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -67,7 +68,6 @@ import jakarta.ws.rs.core.UriInfo;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;

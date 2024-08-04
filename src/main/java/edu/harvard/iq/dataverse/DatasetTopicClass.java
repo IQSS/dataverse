@@ -6,9 +6,6 @@
 
 package edu.harvard.iq.dataverse;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Version;
-
 /**
  *
  * @author skraffmiller

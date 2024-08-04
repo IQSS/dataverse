@@ -21,10 +21,13 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata;
 
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.ingest.tabulardata.spi.*;
+import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 //import edu.harvard.iq.dataverse.ingest.plugin.metadata.*;
-import java.io.*;
-import static java.lang.System.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import static java.lang.System.out;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
