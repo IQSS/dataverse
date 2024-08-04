@@ -30,31 +30,31 @@ import jakarta.ws.rs.core.Response;
  */
 @Path("admin/workflows")
 public class WorkflowsAdmin extends AbstractApiBean {
-      
+
     public static final String IP_WHITELIST_KEY = "WorkflowsAdmin#IP_WHITELIST_KEY";
-    
+
     @EJB
     WorkflowServiceBean workflows;
-    
+
     @POST
     public Response addWorkflow(JsonObject jsonWorkflow) {
         JsonParser jp = new JsonParser();
         try {
             Workflow wf = jp.parseWorkflow(jsonWorkflow);
             Workflow managedWf = workflows.save(wf);
-            
+
             return created("/admin/workflows/" + managedWf.getId(), json(managedWf));
         } catch (JsonParseException ex) {
             return badRequest("Can't parse Json: " + ex.getMessage());
         }
     }
-    
+
     @GET
     public Response listWorkflows() {
         return ok(workflows.listWorkflows().stream()
                             .map(wf -> brief.json(wf)).collect(toJsonArray()));
     }
-    
+
     @Path("default/{triggerType}")
     @PUT
     public Response setDefault(@PathParam("triggerType") String triggerType, String identifier) {
@@ -74,20 +74,20 @@ public class WorkflowsAdmin extends AbstractApiBean {
             return badRequest("Unknown trigger type '" + triggerType + "'. Available triggers: " + Arrays.toString(TriggerType.values()));
         }
     }
-    
+
     @Path("default/")
     @GET
     public Response listDefaults() {
         JsonObjectBuilder bld = Json.createObjectBuilder();
         for (TriggerType tp : TriggerType.values()) {
-            bld.add(tp.name(), 
+            bld.add(tp.name(),
                     workflows.getDefaultWorkflow(tp)
                              .map(wf -> (JsonValue) brief.json(wf).build())
                              .orElse(JsonValue.NULL));
         }
         return ok(bld);
     }
-    
+
     @Path("default/{triggerType}")
     @GET
     public Response getDefault(@PathParam("triggerType") String triggerType) {
@@ -99,7 +99,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
             return badRequest("Unknown trigger type '" + triggerType + "'. Available triggers: " + Arrays.toString(TriggerType.values()));
         }
     }
-    
+
     @Path("default/{triggerType}")
     @DELETE
     public Response deleteDefault(@PathParam("triggerType") String triggerType) {
@@ -110,7 +110,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
             return badRequest("Unknown trigger type '" + triggerType + "'. Available triggers: " + Arrays.toString(TriggerType.values()));
         }
     }
-    
+
     @Path("/{id}")
     @GET
     public Response getWorkflow(@PathParam("id") String identifier) {
@@ -123,20 +123,20 @@ public class WorkflowsAdmin extends AbstractApiBean {
             return badRequest("workflow identifier has to be numeric.");
         }
     }
-    
+
     @Path("/{id}")
     @DELETE
     public Response deleteWorkflow(@PathParam("id") String id) {
         try {
             long idtf = Long.parseLong(id);
-            return workflows.deleteWorkflow(idtf) ? ok("Workflow " + idtf + " deleted") 
-                                 : notFound("workflow with id " + idtf + " not found"); 
+            return workflows.deleteWorkflow(idtf) ? ok("Workflow " + idtf + " deleted")
+                                 : notFound("workflow with id " + idtf + " not found");
         } catch (NumberFormatException nfe) {
             return badRequest("workflow identifier has to be numeric.");
-            
+
         } catch (IllegalArgumentException e) {
             return forbidden("Cannot delete the default workflow. Please change the default workflow and try again.");
-            
+
         } catch (Exception e) {
             Throwable cc = e;
             while (cc.getCause() != null) {
@@ -149,13 +149,13 @@ public class WorkflowsAdmin extends AbstractApiBean {
             }
         }
     }
-    
+
     @Path("/ip-whitelist")
     @GET
     public Response getIpWhitelist() {
         return ok(settingsSvc.get(IP_WHITELIST_KEY, "127.0.0.1;::1"));
     }
-    
+
     @Path("/ip-whitelist")
     @PUT
     public Response setIpWhitelist(String body) {
@@ -175,14 +175,14 @@ public class WorkflowsAdmin extends AbstractApiBean {
         } else {
             return badRequest("Request contains illegal IP addresses.");
         }
-                
+
     }
-    
+
     @Path("/ip-whitelist")
     @DELETE
     public Response deleteIpWhitelist() {
         settingsSvc.delete(IP_WHITELIST_KEY);
         return ok("Restored whitelist to default (127.0.0.1;::1)");
     }
-    
+
 }

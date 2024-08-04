@@ -37,7 +37,7 @@ public class PasswordResetServiceBean {
 
     @EJB
     PasswordValidatorServiceBean passwordValidatorService;
-    
+
     @EJB
     AuthenticationServiceBean authService;
 
@@ -58,7 +58,7 @@ public class PasswordResetServiceBean {
     // inspired by Troy Hunt: Everything you ever wanted to know about building a secure password reset feature - http://www.troyhunt.com/2012/05/everything-you-ever-wanted-to-know.html
     public PasswordResetInitResponse requestReset(String emailAddress) throws PasswordResetException {
         deleteAllExpiredTokens();
-        AuthenticatedUser authUser = authService.getAuthenticatedUserByEmail(emailAddress);        
+        AuthenticatedUser authUser = authService.getAuthenticatedUserByEmail(emailAddress);
         // This null check is for the NPE reported in https://github.com/IQSS/dataverse/issues/5462
         if (authUser == null) {
             logger.info("Cannot find a user based on " + emailAddress + ". Cannot reset password.");
@@ -76,16 +76,16 @@ public class PasswordResetServiceBean {
             return new PasswordResetInitResponse(false);
         }
     }
-    
+
     public PasswordResetInitResponse requestPasswordReset(BuiltinUser aUser, boolean sendEmail, PasswordResetData.Reason reason) throws PasswordResetException {
         AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
-        
+
         // delete old tokens for the user
         List<PasswordResetData> oldTokens = findPasswordResetDataByDataverseUser(aUser);
         for (PasswordResetData oldToken : oldTokens) {
             em.remove(oldToken);
         }
-        
+
         // create a fresh token for the user
         PasswordResetData passwordResetData = new PasswordResetData(aUser);
         passwordResetData.setReason(reason);
@@ -97,12 +97,12 @@ public class PasswordResetServiceBean {
             }
 
             return passwordResetInitResponse;
-            
+
         } catch (Exception ex) {
             String msg = "Unable to save token for " + authUser.getEmail();
             throw new PasswordResetException(msg, ex);
         }
-        
+
     }
 
     private void sendPasswordResetEmail(BuiltinUser aUser, String passwordResetUrl) throws PasswordResetException {
@@ -127,7 +127,7 @@ public class PasswordResetServiceBean {
         }
         logger.log(Level.INFO, "attempted to send mail to {0}", authUser.getEmail());
     }
-    
+
     /**
      * Process the password reset token, allowing the user to reset the password
      * or report on a invalid token.
@@ -237,7 +237,7 @@ public class PasswordResetServiceBean {
         int latestVersionNumber = PasswordEncryption.getLatestVersionNumber();
         user.updateEncryptedPassword(newHashedPass, latestVersionNumber);
         BuiltinUser savedUser = dataverseUserService.save(user);
-        
+
         if (savedUser != null) {
             messageSummary = messageSummarySuccess;
             messageDetail = messageDetailSuccess;
@@ -247,7 +247,7 @@ public class PasswordResetServiceBean {
                 logger.info("token " + token + " for user id " + user.getId() + " was not deleted");
             }
             AuthenticatedUser authUser = authService.getAuthenticatedUser(user.getUserName());
-            
+
             String toAddress = authUser.getEmail();
             String subject = "Dataverse Password Reset Successfully Changed";
 

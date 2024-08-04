@@ -16,5 +16,5 @@ public class AuthorizationSetupException extends AuthorizationException {
     public AuthorizationSetupException(String message, Throwable cause) {
         super(message, cause);
     }
-    
+
 }

@@ -14,20 +14,20 @@ import jakarta.validation.ConstraintValidatorContext;
  * @author skraffmi
  */
 public class DatasetVersionNoteValidator implements ConstraintValidator<ValidateVersionNote, DatasetVersion> {
-    
+
     private String versionState;
     private String versionNote;
 
     @Override
     public void initialize(ValidateVersionNote constraintAnnotation) {
         versionState = constraintAnnotation.versionState();
-        versionNote = constraintAnnotation.versionNote();      
+        versionNote = constraintAnnotation.versionNote();
     }
 
 
     @Override
     public boolean isValid(DatasetVersion value, ConstraintValidatorContext context) {
-        
+
         if (versionState.equals(DatasetVersion.VersionState.DEACCESSIONED) && versionNote.isEmpty()) {
             if (context != null) {
                 context.buildConstraintViolationWithTemplate(value + "  " + BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.textForReason.error")).addConstraintViolation();
@@ -41,7 +41,7 @@ public class DatasetVersionNoteValidator implements ConstraintValidator<Validate
             return false;
         }
         return true;
-        
+
     }
 
 }

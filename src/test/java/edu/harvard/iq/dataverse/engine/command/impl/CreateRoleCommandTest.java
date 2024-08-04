@@ -31,9 +31,9 @@ import static org.mockito.Mockito.when;
  * @author michael
  */
 public class CreateRoleCommandTest {
-    
+
     boolean saveCalled = false;
-    
+
     TestDataverseEngine engine = new TestDataverseEngine( new TestCommandContext(){
         @Override
         public DataverseRoleServiceBean roles() {
@@ -45,69 +45,69 @@ public class CreateRoleCommandTest {
                 }
             };
         }
-        
-        @Override 
+
+        @Override
         public EntityManager em() {
             return new LocalTestEntityManager();
-            
+
         }
     });
-    
+
     @BeforeEach
     public void before() {
         saveCalled = false;
     }
-    
+
     @Test
     void testNonSuperUsersCantAddRoles() {
         DataverseRole dvr = new DataverseRole();
         dvr.setAlias("roleTest");
         dvr.setName("Tester Role");
         dvr.addPermission(Permission.AddDataset);
-        
+
         Dataverse dv = MocksFactory.makeDataverse();
         dvr.setOwner(dv);
-        
+
         AuthenticatedUser normalUser = new AuthenticatedUser();
         normalUser.setSuperuser(false);
-        
+
         CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(normalUser, IpAddress.valueOf("89.17.33.33")), dv);
         assertThrows(IllegalCommandException.class, () -> engine.submit(sut));
     }
-   
+
     @Test
     public void testSuperUsersAddRoles() throws CommandException {
         DataverseRole dvr = new DataverseRole();
         dvr.setAlias("roleTest");
         dvr.setName("Tester Role");
         dvr.addPermission(Permission.AddDataset);
-        
+
         Dataverse dv = MocksFactory.makeDataverse();
         dvr.setOwner(dv);
-        
+
         AuthenticatedUser normalUser = new AuthenticatedUser();
         normalUser.setSuperuser(true);
-        
+
         CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(normalUser, IpAddress.valueOf("89.17.33.33")), dv);
         engine.submit(sut);
         assertTrue(saveCalled, "CreateRoleCommand did not call save on the created role.");
-    
+
     }
-    
+
     @Test
     void testGuestUsersCantAddRoles() {
         DataverseRole dvr = new DataverseRole();
         dvr.setAlias("roleTest");
         dvr.setName("Tester Role");
         dvr.addPermission(Permission.AddDataset);
-        
+
         Dataverse dv = MocksFactory.makeDataverse();
         dvr.setOwner(dv);
-        
+
         CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(GuestUser.get(), IpAddress.valueOf("89.17.33.33")), dv);
         assertThrows(IllegalCommandException.class, () -> engine.submit(sut));
     }
-    
+
     private class LocalTestEntityManager extends TestEntityManager {
 
         @Override
@@ -136,5 +136,5 @@ public class CreateRoleCommandTest {
         }
 
     }
-    
+
 }

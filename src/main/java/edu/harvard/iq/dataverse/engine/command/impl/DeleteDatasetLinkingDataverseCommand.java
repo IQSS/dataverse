@@ -31,14 +31,14 @@ public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Datase
     private final DatasetLinkingDataverse doomed;
     private final Dataset editedDs;
     private final boolean index;
-    
+
     public DeleteDatasetLinkingDataverseCommand(DataverseRequest aRequest, Dataset editedDs, DatasetLinkingDataverse doomed, boolean index) {
         super(aRequest, editedDs);
         this.editedDs = editedDs;
         this.doomed = doomed;
         this.index = index;
     }
-    
+
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
@@ -51,7 +51,7 @@ public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Datase
 
         try {
             ctxt.index().indexDataverse(doomed.getLinkingDataverse());
-        } catch (IOException | SolrServerException e) {    
+        } catch (IOException | SolrServerException e) {
             String failureLogText = "Post delete linking dataverse indexing failed for Dataverse. ";
             failureLogText += "\r\n" + e.getLocalizedMessage();
             LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, doomed.getLinkingDataverse());
@@ -59,7 +59,7 @@ public class DeleteDatasetLinkingDataverseCommand extends AbstractCommand<Datase
 
         return merged;
     }
-    
+
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         boolean retVal = true;

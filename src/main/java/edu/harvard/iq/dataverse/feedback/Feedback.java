@@ -28,7 +28,7 @@ public class Feedback {
     public String getToEmail() {
         return toEmail;
     }
-    
+
     public String getCcEmail() {
         return ccEmail;
     }

@@ -196,7 +196,7 @@ public class FeedbackUtilTest {
         assertEquals(expectedBody, feedback1.getBody());
         assertEquals("dvContact1@librascholar.edu,dvContact2@librascholar.edu", feedback1.getToEmail());
         assertEquals(systemEmail, feedback1.getCcEmail());
-        
+
         assertEquals("personClickingContactOrSupportButton@example.com", feedback1.getFromEmail());
         JsonObject jsonObject = feedback1.toJsonObjectBuilder().build();
         System.out.println("json: " + jsonObject);

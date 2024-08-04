@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AuthUtilTest {
-    
+
     @ParameterizedTest
     @CsvSource(value = {
         "NULL,NULL,NULL",
@@ -29,29 +29,29 @@ public class AuthUtilTest {
     void testGetDisplayName(String expectedDisplayName, String displayFirst, String displayLast) {
         assertEquals(expectedDisplayName, AuthUtil.getDisplayName(displayFirst, displayLast));
     }
-    
+
     /**
      * Test of isNonLocalLoginEnabled method, of class AuthUtil.
      */
     @Test
     public void testIsNonLocalLoginEnabled() {
         System.out.println("isNonLocalLoginEnabled");
-        
+
         AuthUtil authUtil = new AuthUtil();
-        
+
         assertFalse(AuthUtil.isNonLocalLoginEnabled(null));
-        
+
         Collection<AuthenticationProvider> shibOnly = new HashSet<>();
         shibOnly.add(new ShibAuthenticationProvider());
         assertTrue(AuthUtil.isNonLocalLoginEnabled(shibOnly));
-        
+
         Collection<AuthenticationProvider> manyNonLocal = new HashSet<>();
         manyNonLocal.add(new ShibAuthenticationProvider());
         manyNonLocal.add(new GitHubOAuth2AP(null, null));
         manyNonLocal.add(new GoogleOAuth2AP(null, null));
         manyNonLocal.add(new OrcidOAuth2AP(null, null, null));
         assertTrue(AuthUtil.isNonLocalLoginEnabled(manyNonLocal));
-        
+
         Collection<AuthenticationProvider> onlyBuiltin = new HashSet<>();
         onlyBuiltin.add(new BuiltinAuthenticationProvider(null, null, null));
         // only builtin provider

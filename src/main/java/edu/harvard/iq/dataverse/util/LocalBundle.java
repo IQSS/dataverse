@@ -8,7 +8,6 @@ public class LocalBundle extends ResourceBundle {
     private static final String defaultBundleFile = "Bundle";
 
 
-
     public LocalBundle() {
         ResourceBundle localBundle = BundleUtil.getResourceBundle(defaultBundleFile);
 

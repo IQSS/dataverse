@@ -35,7 +35,7 @@ public class VariableRangeItem implements Serializable {
      */
     public VariableRangeItem() {
     }
-    
+
     /*
      * Definitions of class properties: 
      */
@@ -44,8 +44,8 @@ public class VariableRangeItem implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    
+
+
     /*
      * value: a numeric (BigDecimal) value of tis Range Item.
      */
@@ -58,7 +58,7 @@ public class VariableRangeItem implements Serializable {
     @JoinColumn(nullable = false)
     private DataVariable dataVariable;
 
-    
+
     /*
      * Getter and Setter methods:
      */
@@ -79,15 +79,15 @@ public class VariableRangeItem implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public DataVariable getDataVariable() {
         return this.dataVariable;
     }
-    
+
     public void setDataVariable(DataVariable dataVariable) {
         this.dataVariable = dataVariable;
-    } 
-    
+    }
+
     /* 
      * Custom overrides for hashCode(), equals() and toString() methods:
      */
@@ -112,11 +112,11 @@ public class VariableRangeItem implements Serializable {
         if (this.id != other.id) {
             if (this.id == null || !this.id.equals(other.id)) {
                 return false;
-            }                    
+            }
         }
         return true;
     }
-    
+
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.VariableRangeItem[ " + this.getValue() + " ]";

@@ -73,13 +73,13 @@ public interface CommandContext {
     public BuiltinUserServiceBean builtinUsers();
 
     public IndexServiceBean index();
-    
+
     public IndexBatchServiceBean indexBatch();
 
     public SolrIndexServiceBean solrIndex();
 
     public SearchServiceBean search();
-    
+
     public IngestServiceBean ingest();
 
     public PermissionServiceBean permissions();
@@ -117,7 +117,7 @@ public interface CommandContext {
     public UserNotificationServiceBean notifications();
 
     public AuthenticationServiceBean authentication();
-    
+
     public StorageUseServiceBean storageUse();
 
     public SystemConfig systemConfig();
@@ -125,27 +125,27 @@ public interface CommandContext {
     public PrivateUrlServiceBean privateUrl();
 
     public DatasetVersionServiceBean datasetVersion();
-    
+
     public WorkflowServiceBean workflows();
 
     public DataCaptureModuleServiceBean dataCaptureModule();
-    
+
     public FileDownloadServiceBean fileDownload();
-    
+
     public ConfirmEmailServiceBean confirmEmail();
-    
+
     public ActionLogServiceBean actionLog();
 
     public MetadataBlockServiceBean metadataBlocks();
 
     public void beginCommandSequence();
-    
+
     public boolean completeCommandSequence(Command command);
-    
+
     public void cancelCommandSequence();
-    
+
     public Stack<Command> getCommandsCalled();
-    
+
     public void addCommand(Command command);
 
     public DatasetFieldServiceBean dsField();

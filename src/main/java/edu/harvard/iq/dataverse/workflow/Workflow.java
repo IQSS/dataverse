@@ -27,13 +27,13 @@ import jakarta.persistence.OrderColumn;
 })
 @Entity
 public class Workflow implements Serializable {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     private String name;
-    
+
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @OrderColumn(name = "index")
     List<WorkflowStepData> steps;
@@ -100,6 +100,6 @@ public class Workflow implements Serializable {
         }
         return Objects.deepEquals(this.steps, other.steps);
     }
-    
-    
+
+
 }

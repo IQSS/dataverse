@@ -68,7 +68,7 @@ public class SavedSearchServiceBean {
             return null;
         }
     }
-    
+
     public  List<SavedSearch> findByAuthenticatedUser(AuthenticatedUser user) {
         TypedQuery<SavedSearch> typedQuery = em.createQuery("SELECT OBJECT(o) FROM SavedSearch AS o WHERE o.creator.id = :id", SavedSearch.class);
         typedQuery.setParameter("id", user.getId());
@@ -123,8 +123,8 @@ public class SavedSearchServiceBean {
             return em.merge(savedSearch);
         }
     }
-    
-    
+
+
     @Schedule(dayOfWeek = "0", hour = "0", minute = "30", persistent = false)
     public void makeLinksForAllSavedSearchesTimer() {
         if (systemConfig.isTimerServer()) {
@@ -133,7 +133,7 @@ public class SavedSearchServiceBean {
                 JsonObjectBuilder makeLinksForAllSavedSearches = makeLinksForAllSavedSearches(false);
             } catch (SearchException | CommandException ex) {
                 Logger.getLogger(SavedSearchServiceBean.class.getName()).log(Level.SEVERE, null, ex);
-            }       
+            }
         }
     }
 
@@ -175,21 +175,21 @@ public class SavedSearchServiceBean {
 
         List skipList = new ArrayList(); // a list for the definition point itself and already linked objects
         skipList.add(savedSearch.getDefinitionPoint().getId());
-        
+
         TypedQuery<Long> typedQuery = em.createNamedQuery("DataverseLinkingDataverse.findIdsByLinkingDataverseId", Long.class)
             .setParameter("linkingDataverseId", savedSearch.getDefinitionPoint().getId());
         skipList.addAll(typedQuery.getResultList());
-        
+
         typedQuery = em.createNamedQuery("DatasetLinkingDataverse.findIdsByLinkingDataverseId", Long.class)
             .setParameter("linkingDataverseId", savedSearch.getDefinitionPoint().getId());
         skipList.addAll(typedQuery.getResultList());
-           
+
         for (SolrSearchResult solrSearchResult : queryResponse.getSolrSearchResults()) {
 
             JsonObjectBuilder hitInfo = Json.createObjectBuilder();
             hitInfo.add("name", solrSearchResult.getNameSort());
             hitInfo.add("dvObjectId", solrSearchResult.getEntityId());
-            
+
             if (skipList.contains(solrSearchResult.getEntityId())) {
                 hitInfo.add(resultString, "Skipping because would link to itself or an already linked entity.");
                 infoPerHit.add(hitInfo);
@@ -201,8 +201,8 @@ public class SavedSearchServiceBean {
                 hitInfo.add(resultString, "Could not find DvObject with id " + solrSearchResult.getEntityId());
                 infoPerHit.add(hitInfo);
                 continue;
-            }   
-                    
+            }
+
             if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataverse()) {
                 Dataverse dataverseToLinkTo = (Dataverse) dvObjectThatDefinitionPointWillLinkTo;
                 if (dataverseToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
@@ -228,14 +228,14 @@ public class SavedSearchServiceBean {
             }
             infoPerHit.add(hitInfo);
         }
-        
+
         JsonObjectBuilder info = getInfo(savedSearch, infoPerHit);
         if (debugFlag) {
             info.add("debug", getDebugInfo(savedSearch));
         }
         savedSearchArrayBuilder.add(info);
         response.add("hits for saved search id " + savedSearch.getId(), savedSearchArrayBuilder);
-        
+
         logger.info("SAVED SEARCH (" + savedSearch.getId() + ") total time in ms: " + (new Date().getTime() - start.getTime()));
         return response;
     }
@@ -249,11 +249,11 @@ public class SavedSearchServiceBean {
         int numResultsPerPage = Integer.MAX_VALUE;
         List<Dataverse> dataverses = new ArrayList<>();
         dataverses.add(savedSearch.getDefinitionPoint());
-        
+
         // since saved search can only link Dataverses and Datasets, we can limit our search
-        List<String> searchFilterQueries = savedSearch.getFilterQueriesAsStrings();        
+        List<String> searchFilterQueries = savedSearch.getFilterQueriesAsStrings();
         searchFilterQueries.add("dvObjectType:(dataverses OR datasets)");
-                        
+
         // run the search as GuestUser to only link published objects
         SolrQueryResponse solrQueryResponse = searchService.search(
                 new DataverseRequest(GuestUser.get(), getHttpServletRequest()),

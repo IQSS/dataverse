@@ -69,7 +69,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
     private static final String PACKAGE_ID = "package_id";
     private static final String SINGLE_VERSION = "single_version";
     private static final String DRS_ENDPOINT = "DRS_endpoint";
-    
+
 
     private static final String RSA_KEY = "dataverse.archiver.drs.rsa_key";
 
@@ -193,7 +193,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                          * RSAPublicKey(System.getProperty(RS256_KEY));
                          */
                         Algorithm algorithmRSA = Algorithm.RSA256(null, privKey);
-                        
+
                         String body = drsConfigString;
                         String jwtString = createJWTString(algorithmRSA, BrandingUtil.getInstallationBrandName(), body, jwtTimeout);
                         logger.fine("JWT: " + jwtString);
@@ -278,7 +278,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
                     dv.setArchivalCopyLocation(statusObject.build().toString());
                     return new Failure("DRS Archiver fail in initial S3 Archiver transfer");
                 }
-                
+
             } else {
                 logger.fine("DRS Archiver: No matching collection found - will not archive: " + packageId);
                 return WorkflowStepResult.OK;
@@ -300,7 +300,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
         return spaceName + ("_datacite.v" + dv.getFriendlyVersionNumber()).replace('.', '_');
     }
 
-    
+
     public static String createJWTString(Algorithm algorithmRSA, String installationBrandName, String body, int expirationInMinutes) throws IOException {
         String canonicalBody = new JsonCanonicalizer(body).getEncodedString();
         logger.fine("Canonical body: " + canonicalBody);
@@ -350,7 +350,7 @@ public class DRSSubmitToArchiveCommand extends S3SubmitToArchiveCommand implemen
         }
         return false;
     }
-    
+
     // DRS Archiver supports single-version semantics if the SINGLE_VERSION key in
     // the DRS_CONFIG is true
     // These methods make that choices visible on the page (cached via

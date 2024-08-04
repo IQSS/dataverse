@@ -31,7 +31,7 @@ import jakarta.json.JsonObjectBuilder;
 public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
 
     private static final Logger logger = Logger.getLogger(GetUserTracesCommand.class.getCanonicalName());
-    
+
     private DataverseRequest request;
     private AuthenticatedUser user;
     private String element;

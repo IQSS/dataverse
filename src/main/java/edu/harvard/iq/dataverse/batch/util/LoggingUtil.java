@@ -65,11 +65,11 @@ public class LoggingUtil {
             logger.log(Level.SEVERE, "Error saving log report: " + fileName + " " + e.getMessage());
         }
     }
-    
+
     public static void writeOnSuccessFailureLog(Command command, String failureNotes, DvObject dvo) {
         String logDir = System.getProperty("com.sun.aas.instanceRoot") + SEP + "logs" + SEP + "process-failures" + SEP;
         String identifier = dvo.getIdentifier();
-        
+
         if (identifier != null) {
             identifier = identifier.substring(identifier.indexOf("/") + 1);
         } else {
@@ -82,9 +82,9 @@ public class LoggingUtil {
         String logTimestamp = logFormatter.format(new Date());
         String fileName = "/process-failure" + "-" + identifier + "-" + logTimestamp + ".txt";
         LoggingUtil.saveLogFile(failureNotes, logDir, fileName);
-        
+
     }
-     
+
     public static void saveLogFileAppendWithHeader(String fileContent, String logDir, String fileName, String logHeader) {
         try {
             checkCreateLogDirectory(logDir);
@@ -149,7 +149,7 @@ public class LoggingUtil {
 		    logger.log(Level.SEVERE, "security exception checking / creating log directory: " + logDir);
 	    }
     }
-    
+
     public static Logger getJobLogger(String jobId) {
 	    try {
 		    Logger jobLogger = Logger.getLogger("job-" + jobId);
@@ -170,7 +170,7 @@ public class LoggingUtil {
 		    return null;
 	    }
     }
-    
+
     public static class JobLogFormatter extends Formatter {
         @Override
         public String format(LogRecord record) {
@@ -178,4 +178,3 @@ public class LoggingUtil {
         }
     }
 }
- 

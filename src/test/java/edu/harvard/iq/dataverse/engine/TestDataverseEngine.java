@@ -13,7 +13,7 @@ import java.util.Set;
  * @author michael
  */
 public class TestDataverseEngine implements DataverseEngine {
-	
+
     private final TestCommandContext ctxt;
 
     private final Map<DvObject, Set<Permission>> requiredPermissionsForObjects = new HashMap<>();
@@ -21,7 +21,7 @@ public class TestDataverseEngine implements DataverseEngine {
     public TestDataverseEngine(TestCommandContext ctxt) {
         this.ctxt = ctxt;
     }
-	
+
     @Override
     public <R> R submit(Command<R> aCommand) throws CommandException {
         Map<String, DvObject> affectedDvs = aCommand.getAffectedDvObjects();
@@ -30,14 +30,14 @@ public class TestDataverseEngine implements DataverseEngine {
         for (String dvObjKey : affectedDvs.keySet()) {
             requiredPermissionsForObjects.put(affectedDvs.get(dvObjKey), requiredPermissions.get(dvObjKey));
         }
-        
+
         R r = aCommand.execute(ctxt);
         aCommand.onSuccess(ctxt, r);
         return r;
     }
-        
+
     public Map<DvObject, Set<Permission>> getReqiredPermissionsForObjects() {
         return requiredPermissionsForObjects;
     }
-	
+
 }

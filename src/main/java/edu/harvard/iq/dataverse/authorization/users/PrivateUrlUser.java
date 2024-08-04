@@ -20,12 +20,12 @@ public class PrivateUrlUser implements User {
      * is a DvObject.
      */
     private final long datasetId;
-    private final boolean anonymizedAccess; 
+    private final boolean anonymizedAccess;
 
     public PrivateUrlUser(long datasetId) {
         this(datasetId, false);
     }
-    
+
     public PrivateUrlUser(long datasetId, boolean anonymizedAccess) {
         this.datasetId = datasetId;
         this.anonymizedAccess = anonymizedAccess;
@@ -38,7 +38,7 @@ public class PrivateUrlUser implements User {
     public boolean hasAnonymizedAccess() {
         return anonymizedAccess;
     }
-    
+
     /**
      * By always returning false for isAuthenticated(), we prevent a
      * name from appearing in the corner as well as preventing an account page
@@ -67,7 +67,6 @@ public class PrivateUrlUser implements User {
         String title = BundleUtil.getStringFromBundle("dataset.privateurl.roleassigeeTitle");
         return new RoleAssigneeDisplayInfo(title, null);
     }
-
 
 
 }

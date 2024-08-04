@@ -45,18 +45,19 @@ public class HarvestingClientsIT {
     private static String harvestCollectionAlias;
     String clientApiPath = null;
     List<String> globalIdList = new ArrayList();
-    
+
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
-        
+
         // Create the users, an admin and a non-admin:
-        setupUsers(); 
-        
+        setupUsers();
+
         // Create a collection that we will use to harvest remote content into: 
         setupCollection();
-        
+
     }
+
     @AfterEach
     public void cleanup() throws InterruptedException {
         if (clientApiPath != null) {
@@ -87,12 +88,12 @@ public class HarvestingClientsIT {
         Response u1a = UtilIT.makeSuperUser(un1);
         adminUserAPIKey = UtilIT.getApiTokenFromResponse(cu1);
     }
-    
+
     private static void setupCollection() {
         Response createDataverseResponse = UtilIT.createRandomDataverse(adminUserAPIKey);
         createDataverseResponse.prettyPrint();
         assertEquals(CREATED.getStatusCode(), createDataverseResponse.getStatusCode());
-        
+
         harvestCollectionAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
         // publish dataverse:
@@ -106,17 +107,17 @@ public class HarvestingClientsIT {
         // API. 
         
         String nickName = "h" + UtilIT.getRandomString(6);
-        
+
 
         String clientApiPath = String.format(HARVEST_CLIENTS_API + "%s", nickName);
         String clientJson = String.format("{\"dataverseAlias\":\"%s\","
                 + "\"type\":\"oai\","
                 + "\"harvestUrl\":\"%s\","
                 + "\"archiveUrl\":\"%s\","
-                + "\"metadataFormat\":\"%s\"}", 
+                + "\"metadataFormat\":\"%s\"}",
                 ROOT_COLLECTION, HARVEST_URL, ARCHIVE_URL, HARVEST_METADATA_FORMAT);
 
-        
+
         // Try to create a client as normal user, should fail:
         
         Response rCreate = given()
@@ -125,7 +126,7 @@ public class HarvestingClientsIT {
                 .post(clientApiPath);
         assertEquals(UNAUTHORIZED.getStatusCode(), rCreate.getStatusCode());
 
-        
+
         // Try to create the same as admin user, should succeed:
         
         rCreate = given()
@@ -133,26 +134,26 @@ public class HarvestingClientsIT {
                 .body(clientJson)
                 .post(clientApiPath);
         assertEquals(CREATED.getStatusCode(), rCreate.getStatusCode());
-        
+
         // Try to update the client we have just created:
         
         String updateJson = String.format("{\"archiveDescription\":\"%s\"}", ARCHIVE_DESCRIPTION);
-        
+
         Response rUpdate = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .body(updateJson)
                 .put(clientApiPath);
         assertEquals(OK.getStatusCode(), rUpdate.getStatusCode());
-        
+
         // Now let's retrieve the client we've just created and edited: 
                 
         Response getClientResponse = given()
                 .get(clientApiPath);
-        
+
         logger.info("getClient.getStatusCode(): " + getClientResponse.getStatusCode());
         logger.info("getClient printresponse:  " + getClientResponse.prettyPrint());
         assertEquals(OK.getStatusCode(), getClientResponse.getStatusCode());
-        
+
         // ... and validate the values:
         
         getClientResponse.then().assertThat()
@@ -163,8 +164,8 @@ public class HarvestingClientsIT {
                 .body("data.dataverseAlias", equalTo(ROOT_COLLECTION))
                 .body("data.harvestUrl", equalTo(HARVEST_URL))
                 .body("data.archiveUrl", equalTo(ARCHIVE_URL))
-                .body("data.metadataFormat", equalTo(HARVEST_METADATA_FORMAT));        
-        
+                .body("data.metadataFormat", equalTo(HARVEST_METADATA_FORMAT));
+
         // Try to delete the client as normal user  should fail: 
         
         Response rDelete = given()
@@ -172,7 +173,7 @@ public class HarvestingClientsIT {
                 .delete(clientApiPath);
         logger.info("rDelete.getStatusCode(): " + rDelete.getStatusCode());
         assertEquals(UNAUTHORIZED.getStatusCode(), rDelete.getStatusCode());
-        
+
         // Try to delete as admin user  should work:
         
         rDelete = given()
@@ -186,6 +187,7 @@ public class HarvestingClientsIT {
     public void testHarvestingClientRun_AllowHarvestingMissingCVV_False()  throws InterruptedException {
         harvestingClientRun(false);
     }
+
     @Test
     public void testHarvestingClientRun_AllowHarvestingMissingCVV_True()  throws InterruptedException {
         harvestingClientRun(true);
@@ -211,27 +213,27 @@ public class HarvestingClientsIT {
                 + "\"archiveUrl\":\"%s\","
                 + "\"set\":\"%s\","
                 + "\"allowHarvestingMissingCVV\":%s,"
-                + "\"metadataFormat\":\"%s\"}", 
+                + "\"metadataFormat\":\"%s\"}",
                 harvestCollectionAlias, HARVEST_URL, ARCHIVE_URL, CONTROL_OAI_SET, allowHarvestingMissingCVV, HARVEST_METADATA_FORMAT);
-        
+
         Response createResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .body(clientJson)
                 .post(clientApiPath);
         assertEquals(CREATED.getStatusCode(), createResponse.getStatusCode());
-        
+
         // API TEST 1. Run the harvest using the configuration (client) we have 
         // just created
         
         String runHarvestApiPath = String.format(HARVEST_CLIENTS_API + "%s/run", nickName);
-        
+
         // TODO? - verify that a non-admin user cannot perform this operation (401)
         
         Response runResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .post(runHarvestApiPath);
         assertEquals(ACCEPTED.getStatusCode(), runResponse.getStatusCode());
-        
+
         // API TEST 2. As indicated by the ACCEPTED status code above, harvesting
         // is an asynchronous operation that will be performed in the background.
         // Verify that this "in progress" status is properly reported while it's 
@@ -248,46 +250,46 @@ public class HarvestingClientsIT {
             // keep checking the status of the client with the GET api:
             Response getClientResponse = given()
                 .get(clientApiPath);
-        
+
             assertEquals(OK.getStatusCode(), getClientResponse.getStatusCode());
             JsonPath responseJsonPath = getClientResponse.body().jsonPath();
             assertNotNull(responseJsonPath, "Invalid JSON in GET client response");
             assertEquals(ApiConstants.STATUS_OK, responseJsonPath.getString("status"));
-            
+
             String clientStatus = responseJsonPath.getString("data.status");
             assertNotNull(clientStatus);
-            
+
             if ("inProgress".equals(clientStatus) || "IN PROGRESS".equals(responseJsonPath.getString("data.lastResult"))) {
                 // we'll sleep for another second
                 i++;
             } else {
-                logger.info("getClientResponse.prettyPrint: " 
+                logger.info("getClientResponse.prettyPrint: "
                         + getClientResponse.prettyPrint());
                 // Check the values in the response:
                 // a) Confirm that the harvest has completed: 
                 assertEquals("inActive", clientStatus, "Unexpected client status: " + clientStatus);
-                
+
                 // b) Confirm that it has actually succeeded:
                 assertEquals("SUCCESS", responseJsonPath.getString("data.lastResult"), "Last harvest not reported a success (took " + i + " seconds)");
                 String harvestTimeStamp = responseJsonPath.getString("data.lastHarvest");
-                assertNotNull(harvestTimeStamp); 
-                
+                assertNotNull(harvestTimeStamp);
+
                 // c) Confirm that the other timestamps match: 
                 assertEquals(harvestTimeStamp, responseJsonPath.getString("data.lastSuccessful"));
                 assertEquals(harvestTimeStamp, responseJsonPath.getString("data.lastNonEmpty"));
-                
+
                 // d) Confirm that the correct number of datasets have been harvested:
                 assertEquals(expectedNumberOfSetsHarvested, responseJsonPath.getInt("data.lastDatasetsHarvested"));
-                
+
                 // ok, it looks like the harvest has completed successfully.
                 break;
             }
-        } while (i < maxWait); 
-        
+        } while (i < maxWait);
+
         System.out.println("Waited " + i + " seconds for the harvest to complete.");
 
         // Let's give the asynchronous indexing an extra sec. to finish:
-        Thread.sleep(1000L); 
+        Thread.sleep(1000L);
         Response searchHarvestedDatasets = UtilIT.search("metadataSource:" + nickName, normalUserAPIKey);
         searchHarvestedDatasets.then().assertThat().statusCode(OK.getStatusCode());
         searchHarvestedDatasets.prettyPrint();
@@ -299,7 +301,7 @@ public class HarvestingClientsIT {
         }
         // verify count after collecting global ids
         assertEquals(expectedNumberOfSetsHarvested, jsonPath.getInt("data.total_count"));
-        
+
         // Fail if it hasn't completed in maxWait seconds
         assertTrue(i < maxWait);
     }

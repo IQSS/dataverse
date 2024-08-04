@@ -29,7 +29,7 @@ public class SuperUserPage implements java.io.Serializable {
     private String indexAllStatus = "No status available";
 
     private Future<JsonObjectBuilder> indexAllFuture;
-    
+
     public String init() {
         if (!session.getUser().isSuperuser()) {
             return  permissionsWrapper.notAuthorized();

@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 
 @AutoService(PidProviderFactory.class)
 public class FakeProviderFactory implements PidProviderFactory {
-    
+
     @Override
     public PidProvider createPidProvider(String providerId) {
         String providerType = JvmSettings.PID_PROVIDER_TYPE.lookup(providerId);

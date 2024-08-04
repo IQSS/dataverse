@@ -19,21 +19,21 @@ import java.util.logging.Logger;
 public class GetCollectionStorageUseCommand extends AbstractCommand<Long> {
 
     private static final Logger logger = Logger.getLogger(GetCollectionStorageUseCommand.class.getCanonicalName());
-    
+
     private final Dataverse collection;
-    
+
     public GetCollectionStorageUseCommand(DataverseRequest aRequest, Dataverse target) {
         super(aRequest, target);
         collection = target;
-    } 
-        
+    }
+
     @Override
     public Long execute(CommandContext ctxt) throws CommandException {
-               
+
         if (collection == null) {
             throw new CommandException("null collection passed to get storage use command", this);
         }
-        return ctxt.storageUse().findStorageSizeByDvContainerId(collection.getId());        
+        return ctxt.storageUse().findStorageSizeByDvContainerId(collection.getId());
     }
 
     /*@Override

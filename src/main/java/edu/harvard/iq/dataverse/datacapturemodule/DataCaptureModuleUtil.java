@@ -19,7 +19,7 @@ public class DataCaptureModuleUtil {
 
     @Deprecated(forRemoval = true, since = "2024-07-07")
     public static boolean rsyncSupportEnabled(String uploadMethodsSettings) {
-        logger.fine("uploadMethodsSettings: " + uploadMethodsSettings);; 
+        logger.fine("uploadMethodsSettings: " + uploadMethodsSettings);;
         if (uploadMethodsSettings == null) {
             return false;
         } else {

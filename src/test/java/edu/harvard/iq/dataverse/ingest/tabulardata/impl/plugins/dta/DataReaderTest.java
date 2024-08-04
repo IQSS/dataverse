@@ -19,7 +19,7 @@ public class DataReaderTest {
         reader.setLSF(true);
         assertEquals(-1, reader.readInt());
     }
-    
+
     @Test
     public void testReadUInt() throws IOException {
         byte[] bytes = ByteBuffer.allocate(4).putInt(-1).array();
@@ -28,7 +28,7 @@ public class DataReaderTest {
         reader.setLSF(true);
         assertEquals(4294967295L, reader.readUInt());
     }
-    
+
     @Test
     public void testReadUShort() throws IOException {
         byte[] bytes = ByteBuffer.allocate(2).putShort((short) -1).array();
@@ -37,7 +37,7 @@ public class DataReaderTest {
         reader.setLSF(true);
         assertEquals(65535, reader.readUShort());
     }
-    
+
     // This should throw until we figure out what to do with uLongs that are large
     @Test
     void testReadULong() throws IOException {

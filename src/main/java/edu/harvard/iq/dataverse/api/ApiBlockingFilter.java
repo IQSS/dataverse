@@ -27,11 +27,11 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 public class ApiBlockingFilter implements Filter {
     public static final String UNBLOCK_KEY_QUERYPARAM = "unblock-key";
-            
+
     interface BlockPolicy {
         public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException;
     }
-    
+
     /**
      * A policy that allows all requests.
      */
@@ -41,7 +41,7 @@ public class ApiBlockingFilter implements Filter {
             fc.doFilter(sr, sr1);
         }
     };
-    
+
     /**
      * A policy that drops blocked requests.
      */
@@ -54,7 +54,7 @@ public class ApiBlockingFilter implements Filter {
             httpResponse.setContentType("application/json");
         }
     };
-    
+
     /**
      * Allow only from localhost.
      */
@@ -73,7 +73,7 @@ public class ApiBlockingFilter implements Filter {
             }
         }
     };
-      
+
     /**
      * Allow only for requests that have the {@link #UNBLOCK_KEY_QUERYPARAM} param with
      * value from {@link SettingsServiceBean.Key.BlockedApiKey}
@@ -83,7 +83,7 @@ public class ApiBlockingFilter implements Filter {
         @Override
         public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
             boolean block = true;
-            
+
             String masterKey = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiKey);
             if (masterKey != null) {
                 String queryString = ((HttpServletRequest) sr).getQueryString();
@@ -99,7 +99,7 @@ public class ApiBlockingFilter implements Filter {
                     }
                 }
             }
-            
+
             if (block) {
                 HttpServletResponse httpResponse = (HttpServletResponse) sr1;
                 httpResponse.getWriter().println("{ \"status\":\"error\", \"message\":\"Endpoint available using API key only. Please contact the dataverse administrator\"}");
@@ -110,16 +110,16 @@ public class ApiBlockingFilter implements Filter {
             }
         }
     };
-    
+
     private static final Logger logger = Logger.getLogger(ApiBlockingFilter.class.getName());
-    
+
     @EJB
     protected SettingsServiceBean settingsSvc;
-    
+
     final Set<String> blockedApiEndpoints = new TreeSet<>();
     private String lastEndpointList;
     private final Map<String, BlockPolicy> policies = new TreeMap<>();
-    
+
     @Override
     public void init(FilterConfig fc) throws ServletException {
         updateBlockedPoints();
@@ -135,7 +135,7 @@ public class ApiBlockingFilter implements Filter {
         for (String endpoint : endpointList.split(",")) {
             String endpointPrefix = canonize(endpoint);
             if (!endpointPrefix.isEmpty()) {
-                endpointPrefix = endpointPrefix + "/"; 
+                endpointPrefix = endpointPrefix + "/";
                 logger.log(Level.INFO, "Blocking API endpoint: {0}", endpointPrefix);
                 blockedApiEndpoints.add(endpointPrefix);
             }
@@ -145,12 +145,12 @@ public class ApiBlockingFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
-        
+
         String endpointList = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiEndpoints, "");
         if (!endpointList.equals(lastEndpointList)) {
             updateBlockedPoints();
         }
-        
+
         HttpServletRequest hsr = (HttpServletRequest) sr;
         String requestURI = hsr.getRequestURI();
         String apiEndpoint = canonize(requestURI.substring(hsr.getServletPath().length()));
@@ -176,10 +176,10 @@ public class ApiBlockingFilter implements Filter {
             resp.getWriter().append("Error: " + se.getMessage());
         }
     }
-    
+
     @Override
     public void destroy() {}
-    
+
     private BlockPolicy getBlockPolicy() {
         String blockPolicyName = settingsSvc.getValueForKey(SettingsServiceBean.Key.BlockedApiPolicy, "");
         BlockPolicy p = policies.get(blockPolicyName.trim());
@@ -191,7 +191,7 @@ public class ApiBlockingFilter implements Filter {
             return ALLOW;
         }
     }
-    
+
     /**
      * Creates a canonical representation of {@code in}: trimmed spaces and slashes
      * @param in the raw string
@@ -206,6 +206,6 @@ public class ApiBlockingFilter implements Filter {
             in = in.substring(0, in.length() - 1);
         }
         return in;
-    } 
-    
+    }
+
 }

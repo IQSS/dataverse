@@ -28,7 +28,7 @@ public class SwiftAccessIOTest {
     private Dataset dataset;
     private DataFile datafile;
     private SwiftAccessIO swiftAccess;
-    
+
 
     public SwiftAccessIOTest() {
     }
@@ -54,26 +54,26 @@ public class SwiftAccessIOTest {
         assertEquals(false, datasetAccess.canRead());
         assertEquals(false, datasetAccess.canWrite());
     }
-    
+
     @Test
     public void testIsExpiryExpired() {
         long currentTime = 1502221467;
         assertEquals(false, swiftAccess.isExpiryExpired(60, 1502281, currentTime));
     }
-    
+
     @Test
     public void testGenerateTempUrlExpiry() {
         long currentTime = 1502221467;
         assertEquals(1502281, datafileAccess.generateTempUrlExpiry(60, currentTime));
     }
-    
+
     @Test
     public void testToHexString() {
         String str = "hello";
 	byte[] bytes = str.getBytes();
         assertEquals("68656c6c6f", swiftAccess.toHexString(bytes));
     }
-    
+
     @Test
     public void testCalculateRFC2104HMAC() throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
         assertEquals("104152c5bfdca07bc633eebd46199f0255c9f49d", swiftAccess.calculateRFC2104HMAC("data", "key"));

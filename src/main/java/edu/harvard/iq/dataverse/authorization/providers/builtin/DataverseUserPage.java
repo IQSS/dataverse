@@ -76,7 +76,7 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public enum EditMode {
         CREATE, EDIT, CHANGE_PASSWORD, FORGOT
-    };
+    }
 
     @Inject
     DataverseSession session;
@@ -117,7 +117,7 @@ public class DataverseUserPage implements java.io.Serializable {
     AuthenticationServiceBean authSvc;
 
     private AuthenticatedUser currentUser;
-    private BuiltinUser builtinUser;    
+    private BuiltinUser builtinUser;
     private AuthenticatedUserDisplayInfo userDisplayInfo;
     private transient AuthenticationProvider userAuthProvider;
     private EditMode editMode;
@@ -134,12 +134,12 @@ public class DataverseUserPage implements java.io.Serializable {
     private String selectTab = "dataRelatedToMe";
     UIInput usernameField;
 
-    
+
     private String username;
     boolean nonLocalLoginEnabled;
     private List<String> passwordErrors;
-    
-    
+
+
     private List<Type> notificationTypeList;
     private Set<Type> mutedEmails;
     private Set<Type> mutedNotifications;
@@ -178,7 +178,7 @@ public class DataverseUserPage implements java.io.Serializable {
             mutedNotifications = new HashSet<>(currentUser.getMutedNotifications());
             disabledNotifications = new HashSet<>(settingsWrapper.getAlwaysMutedSet());
             disabledNotifications.addAll(settingsWrapper.getNeverMutedSet());
-            
+
             switch (selectTab) {
                 case "notifications":
                     activeIndex = 1;
@@ -222,17 +222,17 @@ public class DataverseUserPage implements java.io.Serializable {
     public void validateUserName(FacesContext context, UIComponent toValidate, Object value) {
         String userName = (String) value;
         boolean userNameFound = authenticationService.identifierExists(userName);
-        
+
         // SF fix for issue 3752
         // checks if username has any invalid characters 
         boolean userNameValid = userName != null && UserNameValidator.isUserNameValid(userName);
-        
+
         if (editMode == EditMode.CREATE && userNameFound) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
-        
+
         if (editMode == EditMode.CREATE && !userNameValid) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.invalid"), null);
@@ -285,7 +285,7 @@ public class DataverseUserPage implements java.io.Serializable {
             context.addMessage(toValidate.getClientId(context), message);
             return;
 
-        } 
+        }
 
         final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
         this.passwordErrors = errors;
@@ -296,12 +296,12 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public String save() {
         boolean passwordChanged = false;
-        
+
         //First reget user to make sure they weren't deactivated or deleted
         if (session.getUser().isAuthenticated() && !session.getUser(true).isAuthenticated()) {
             return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "&faces-redirect=true";
         }
-        
+
         if (editMode == EditMode.CHANGE_PASSWORD) {
             final AuthenticationProvider prv = getUserAuthProvider();
             if (prv.isPasswordUpdateAllowed()) {
@@ -326,7 +326,7 @@ public class DataverseUserPage implements java.io.Serializable {
             builtinUser.setUserName(getUsername());
             builtinUser.updateEncryptedPassword(PasswordEncryption.get().encrypt(inputPassword),
                                                 PasswordEncryption.getLatestVersionNumber());
-            
+
             AuthenticatedUser au = authenticationService.createAuthenticatedUser(
                     new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName()),
                     builtinUser.getUserName(), userDisplayInfo, false);
@@ -338,10 +338,10 @@ public class DataverseUserPage implements java.io.Serializable {
                 context.addMessage(getUsernameField().getClientId(context), message);
                 return null;
             }
-            
+
             // The Authenticated User was just created via the UI, add an initial login timestamp
             au = userService.updateLastLogin(au);
-            
+
             // Authenticated user registered. Save the new bulitin, and log in.
             builtinUserService.save(builtinUser);
             session.setUser(au);
@@ -363,7 +363,7 @@ public class DataverseUserPage implements java.io.Serializable {
             if ("/loginpage.xhtml".equals(redirectPage) || "loginpage.xhtml".equals(redirectPage)) {
                 redirectPage = "/dataverse.xhtml";
             }
-            
+
             if ("dataverse.xhtml".equals(redirectPage)) {
                 redirectPage = redirectPage + "?alias=" + dataverseService.findRootDataverse().getAlias();
             }
@@ -378,7 +378,7 @@ public class DataverseUserPage implements java.io.Serializable {
             logger.log(Level.FINE, "Sending user to = {0}", redirectPage);
 
 
-            return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";            
+            return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
 
         //Happens if user is logged out while editing
         } else if (!session.getUser().isAuthenticated()) {
@@ -511,11 +511,11 @@ public class DataverseUserPage implements java.io.Serializable {
                 case STATUSUPDATED:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
                     break;
-                    
+
                 case CREATEACC:
                     userNotification.setTheObject(userNotification.getUser());
                     break;
-                    
+
                 case CHECKSUMFAIL:
                     userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
                     break;
@@ -568,11 +568,11 @@ public class DataverseUserPage implements java.io.Serializable {
         }
     }
 
-    
+
     public boolean showVerifyEmailButton() {
         return !confirmEmailService.hasVerifiedEmail(currentUser);
     }
-    
+
     public boolean isEmailIsVerified() {
         return confirmEmailService.hasVerifiedEmail(currentUser);
     }
@@ -584,18 +584,18 @@ public class DataverseUserPage implements java.io.Serializable {
     public boolean isEmailGrandfathered() {
         return currentUser.getEmailConfirmed().equals(ConfirmEmailUtil.getGrandfatheredTime());
     }
-    
+
     public AuthenticationProvider getUserAuthProvider() {
         if (userAuthProvider == null) {
             userAuthProvider = authenticationService.lookupProvider(currentUser);
         }
         return userAuthProvider;
     }
-    
+
     public boolean isPasswordEditable() {
         return getUserAuthProvider().isPasswordUpdateAllowed();
     }
-    
+
     public boolean isAccountDetailsEditable() {
         return getUserAuthProvider().isUserInfoUpdateAllowed();
     }
@@ -607,7 +607,7 @@ public class DataverseUserPage implements java.io.Serializable {
     public void setUserDisplayInfo(AuthenticatedUserDisplayInfo userDisplayInfo) {
         this.userDisplayInfo = userDisplayInfo;
     }
-    
+
     public EditMode getChangePasswordMode() {
         return EditMode.CHANGE_PASSWORD;
     }
@@ -636,7 +636,7 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public void setRedirectPage(String redirectPage) {
         this.redirectPage = redirectPage;
-    } 
+    }
 
     public String getInputPassword() {
         return inputPassword;
@@ -718,13 +718,13 @@ public class DataverseUserPage implements java.io.Serializable {
     public String getPasswordRequirements() {
         return passwordValidatorService.getGoodPasswordDescription(passwordErrors);
     }
-    
+
     public String getRequestorName(UserNotification notification) {
         if (notification == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");
         if (notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
         return (notification.getRequestor().getLastName() != null && notification.getRequestor().getLastName() != null) ? notification.getRequestor().getFirstName() + " " + notification.getRequestor().getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
     }
-    
+
     public String getRequestorEmail(UserNotification notification) {
         if (notification == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
         if (notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
@@ -759,10 +759,10 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public void setToReceiveNotifications(Set<Type> toReceiveNotifications) {
         this.mutedNotifications = notificationTypeList.stream().filter(
-            x -> !isDisabled(x) && !toReceiveNotifications.contains(x) 
+            x -> !isDisabled(x) && !toReceiveNotifications.contains(x)
         ).collect(Collectors.toSet());
     }
-    
+
     public boolean isDisabled(Type t) {
         return disabledNotifications.contains(t);
     }

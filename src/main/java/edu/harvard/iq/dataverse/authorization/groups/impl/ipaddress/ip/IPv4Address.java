@@ -8,7 +8,7 @@ import java.util.Arrays;
  * @author michael
  */
 public class IPv4Address extends IpAddress implements Comparable<IPv4Address> {
-    
+
     public static IPv4Address valueOf(String input) {
         String[] comps = input.split("\\.");
         if (comps.length != 4) {
@@ -21,30 +21,30 @@ public class IPv4Address extends IpAddress implements Comparable<IPv4Address> {
         return new IPv4Address(arr);
     }
     protected final short[] bytes = new short[4];
-    
+
     public IPv4Address(short[] arr) {
         System.arraycopy(arr, 0, bytes, 0, 4);
     }
-    
+
     public IPv4Address(short a, short b, short c, short d) {
         this(new short[]{a, b, c, d});
     }
-    
+
     public IPv4Address(int a, int b, int c, int d) {
         this(new short[]{(short) a, (short) b, (short) c, (short) d});
     }
-    
+
     public IPv4Address(BigInteger bits) {
         this(bits.longValue());
     }
-    
+
     public IPv4Address(long l) {
         bytes[0] = (short) ((l >>> 24) & 0xFF);
         bytes[1] = (short) ((l >>> 16) & 0xFF);
         bytes[2] = (short) ((l >>> 8) & 0xFF);
         bytes[3] = (short) (l & 0xFF);
     }
-    
+
     @Override
     public boolean isLocalhost() {
         return Arrays.equals(new short[]{127, 0, 0, 1}, bytes);
@@ -62,11 +62,11 @@ public class IPv4Address extends IpAddress implements Comparable<IPv4Address> {
     public short[] getBytes() {
         return bytes;
     }
-    
+
     public long toLong() {
         return (get(0) << 24) | (get(1) << 16) | (get(2) << 8) | get(3);
     }
-    
+
     public BigInteger toBigInteger() {
         BigInteger res = BigInteger.ZERO;
         for (int i = 0; i < 3; i++) {
@@ -75,7 +75,7 @@ public class IPv4Address extends IpAddress implements Comparable<IPv4Address> {
         }
         return res.add(BigInteger.valueOf(get(3)));
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 3;
@@ -104,5 +104,5 @@ public class IPv4Address extends IpAddress implements Comparable<IPv4Address> {
         }
         return 0;
     }
-    
+
 }

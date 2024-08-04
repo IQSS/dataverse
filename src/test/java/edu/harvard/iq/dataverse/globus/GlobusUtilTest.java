@@ -76,10 +76,10 @@ public class GlobusUtilTest {
                 "dataverse.files.globusr." + AbstractRemoteOverlayAccessIO.REFERENCE_ENDPOINTS_WITH_BASEPATHS);
     }
 
-    
+
     @Test
     public void testgetFilesMap() {
-        
+
         JsonObject jo = GlobusUtil.getFilesMap(dataset.getFiles(), dataset);
         System.out.println(JsonUtil.prettyPrint(jo));
         assertEquals(jo.getString(Long.toString(mDatafile.getId())), "d7c42580-6538-4605-9ad8-116a61982644/hdc1/10.5072/F2ABCDEF/182ad2bda2f-c3508e719076");

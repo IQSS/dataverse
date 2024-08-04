@@ -57,41 +57,41 @@ public class DatabaseAccessUtil implements java.io.Serializable {
         if (!validateTokenFormat(jobKey)) {
             return null; // This will result in a "no such job" response.
         }
-        
+
         Connection c = connectToDatabase();
-        
+
         if (c == null) {
             // no connection - no data, return null queitly
-            return null; 
+            return null;
         }
-        
-        PreparedStatement stmt; 
-        ResultSet rs; 
-        
+
+        PreparedStatement stmt;
+        ResultSet rs;
+
         List<String[]> ret = new ArrayList<>();
-        
+
         try {
             c.setAutoCommit(false);
 
             stmt = c.prepareStatement(JOB_LOOKUP_QUERY);
             stmt.setString(1, jobKey);
             rs = stmt.executeQuery();
-            
+
             while (rs.next()) {
                 String storageLocation = rs.getString("storageLocation");
                 String  fileName = rs.getString("fileName");
-                
+
                 //System.out.println( "storageLocation = " + storageLocation );
                 //System.out.println( "fileName = " + fileName );
                 
                 String[] entry = new String[2];
                 entry[0] = storageLocation;
                 entry[1] = fileName;
-                
+
                 ret.add(entry);
             }
             rs.close();
-            stmt.close();            
+            stmt.close();
         } catch (Exception e) {
             System.err.println("Database error: " + e.getClass().getName() + " " + e.getMessage());
             // return null (but close the connection first):
@@ -100,7 +100,7 @@ public class DatabaseAccessUtil implements java.io.Serializable {
             } catch (Exception ex) {}
             return null;
         }
-        
+
         // Delete all the entries associated with the job, now that we are done
         // with it. 
         
@@ -119,14 +119,14 @@ public class DatabaseAccessUtil implements java.io.Serializable {
             // on the application side as well).
             //System.err.println("Failed to delete the job from the db");
         }
-        
+
         try {
             c.close();
         } catch (Exception e) {}
 
         return ret;
     }
-    
+
     // Opens the connection to the database. 
     // Uses the credentials supplied via JVM options
     private static Connection connectToDatabase() {
@@ -149,16 +149,16 @@ public class DatabaseAccessUtil implements java.io.Serializable {
         }
         return c;
     }
-    
+
     private static boolean validateTokenFormat(String jobKey) {
         // A legitimate token is 16 characters long, and is made up of 
         // hex digits and one dash. 
-        if (jobKey == null 
-                || jobKey.length() != JOB_TOKEN_LENGTH 
+        if (jobKey == null
+                || jobKey.length() != JOB_TOKEN_LENGTH
                 || !jobKey.matches(JOB_TOKEN_REGEX)) {
             return false;
         }
-        
+
         return true;
     }
 }

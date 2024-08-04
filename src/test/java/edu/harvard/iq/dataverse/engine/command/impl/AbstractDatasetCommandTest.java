@@ -17,14 +17,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author michael
  */
 public class AbstractDatasetCommandTest {
-    
-   
+
+
     @Test
     void testNullDataset() {
         DataverseRequest request = makeRequest();
         assertThrows(IllegalArgumentException.class, () -> new AbstractDatasetCommandImpl(request, null));
     }
-    
+
     @Test
     void testNullDatasetNonNullParent() {
         DataverseRequest request = makeRequest();
@@ -32,7 +32,7 @@ public class AbstractDatasetCommandTest {
         assertThrows(IllegalArgumentException.class,
             () -> new AbstractDatasetCommandImpl(request, null, dataverse));
     }
-    
+
     /**
      * Test of getDataset method, of class AbstractDatasetCommand.
      */
@@ -71,5 +71,5 @@ public class AbstractDatasetCommandTest {
 
 
     }
-    
+
 }

@@ -14,7 +14,7 @@ import java.util.Objects;
  * @author michael
  */
 public class UserRecordIdentifier {
-    
+
     final String repoId;
     final String userIdInRepo;
 
@@ -35,11 +35,11 @@ public class UserRecordIdentifier {
     public String toString() {
         return "[UserRecordIdentifier " + repoId + "/" + userIdInRepo + ']';
     }
-    
+
     public AuthenticatedUserLookup createAuthenticatedUserLookup(AuthenticatedUser u) {
         return new AuthenticatedUserLookup(userIdInRepo, repoId, u);
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -47,7 +47,7 @@ public class UserRecordIdentifier {
         UserRecordIdentifier that = (UserRecordIdentifier) o;
         return Objects.equals(repoId, that.repoId) && Objects.equals(getUserIdInRepo(), that.getUserIdInRepo());
     }
-    
+
     @Override
     public int hashCode() {
         return Objects.hash(repoId, getUserIdInRepo());

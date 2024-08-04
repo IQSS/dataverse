@@ -45,7 +45,7 @@ public class IndexBatchServiceBean {
     DvObjectServiceBean dvObjectService;
     @EJB
     SystemConfig systemConfig;
-    
+
     @Asynchronous
     public Future<JsonObjectBuilder> indexStatus() {
         JsonObjectBuilder response = Json.createObjectBuilder();
@@ -56,16 +56,16 @@ public class IndexBatchServiceBean {
         try {
             contentInSolrButNotDatabase = getContentInSolrButNotDatabase().build();
             permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase().build();
-          
+
         } catch (SearchException ex) {
             String msg = "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage();
             logger.info(msg);
             response.add("SearchException ", msg);
             return new AsyncResult<>(response);
         }
-           
+
         JsonObject permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr().build();
-    
+
         JsonObjectBuilder data = Json.createObjectBuilder()
                 .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
                 .add("contentInIndexButNotDatabase", contentInSolrButNotDatabase)
@@ -75,16 +75,17 @@ public class IndexBatchServiceBean {
         logger.log(Level.INFO, "contentInDatabaseButStaleInOrMissingFromIndex: {0}", contentInDatabaseButStaleInOrMissingFromSolr);
         logger.log(Level.INFO, "contentInIndexButNotDatabase: {0}", contentInSolrButNotDatabase);
         logger.log(Level.INFO, "permissionsInDatabaseButStaleInOrMissingFromIndex: {0}", permissionsInDatabaseButStaleInOrMissingFromSolr);
-        logger.log(Level.INFO, "permissionsInIndexButNotDatabase: {0}", permissionsInSolrButNotDatabase);    
-      
+        logger.log(Level.INFO, "permissionsInIndexButNotDatabase: {0}", permissionsInSolrButNotDatabase);
+
         return new AsyncResult<>(data);
     }
+
     @Asynchronous
     public Future<JsonObjectBuilder> clearOrphans() {
         JsonObjectBuilder response = Json.createObjectBuilder();
         List<String> solrIds = new ArrayList<>();
         logger.info("Beginning clearOrphans() to check for orphan Solr documents.");
-        try {     
+        try {
             logger.info("checking for orphans type dataverse");
             solrIds.addAll(indexService.findDataversesInSolrOnly());
             logger.info("checking for orphans type dataset");
@@ -96,16 +97,16 @@ public class IndexBatchServiceBean {
         } catch (SearchException e) {
             logger.info("SearchException in clearOrphans: " + e.getMessage());
             response.add("response from clearOrphans", "SearchException: " + e.getMessage());
-        } 
+        }
         logger.info("found " + solrIds.size() + " orphan documents");
         IndexResponse resultOfSolrDeletionAttempt = solrIndexService.deleteMultipleSolrIds(solrIds);
         logger.info(resultOfSolrDeletionAttempt.getMessage());
         response.add("resultOfSolrDeletionAttempt", resultOfSolrDeletionAttempt.getMessage());
-        
+
         return new AsyncResult<>(response);
     }
 
-    
+
     @Asynchronous
     public Future<JsonObjectBuilder> indexAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed, boolean previewOnly) {
         JsonObjectBuilder response = Json.createObjectBuilder();
@@ -119,15 +120,15 @@ public class IndexBatchServiceBean {
         JsonObjectBuilder response = Json.createObjectBuilder();
         JsonObjectBuilder previewOfWorkload = Json.createObjectBuilder();
         JsonObjectBuilder dvContainerIds = Json.createObjectBuilder();
-        
+
         List<Long> dataverseIds = dataverseService.findDataverseIdsForIndexing(skipIndexed);
-        
+
         JsonArrayBuilder dataverseIdsJson = Json.createArrayBuilder();
         //List<Dataverse> dataverses = dataverseService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         for (Long id : dataverseIds) {
             dataverseIdsJson.add(id);
         }
-        
+
         List<Long> datasetIds = datasetService.findAllOrSubset(numPartitions, partitionId, skipIndexed);
 
         JsonArrayBuilder datasetIdsJson = Json.createArrayBuilder();
@@ -180,7 +181,7 @@ public class IndexBatchServiceBean {
         // Note: no support for "partitions" in this experimental branch. 
         // The method below returns the ids of all the unindexed dataverses.
         List<Long> dataverseIds = dataverseIds = dataverseService.findDataverseIdsForIndexing(skipIndexed);
-        
+
         int dataverseIndexCount = 0;
         int dataverseFailureCount = 0;
         //for (Dataverse dataverse : dataverses) {
@@ -213,20 +214,20 @@ public class IndexBatchServiceBean {
         logger.info(timeElapsed);
         if (datasetFailureCount + dataverseFailureCount > 0) {
             String failureMessage = "There were index failures. " + dataverseFailureCount + " dataverse(s) and " + datasetFailureCount + " dataset(s) failed to index. Please check the log for more information.";
-            logger.info(failureMessage);            
+            logger.info(failureMessage);
         }
         status = dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed. " + timeElapsed + ". " + resultOfClearingIndexTimes + "\n";
         logger.info(status);
         return new AsyncResult<>(status);
     }
-        
+
     @Asynchronous
     public void indexDataverseRecursively(Dataverse dataverse) {
         long start = System.currentTimeMillis();
         int datasetIndexCount = 0, datasetFailureCount = 0, dataverseIndexCount = 0, dataverseFailureCount = 0;
         // get list of Dataverse children
         List<Long> dataverseChildren = dataverseService.findAllDataverseDataverseChildren(dataverse.getId());
-        
+
         // get list of Dataset children
         List<Long> datasetChildren = dataverseService.findAllDataverseDatasetChildren(dataverse.getId());
 
@@ -242,7 +243,7 @@ public class IndexBatchServiceBean {
             dataverseFailureCount++;
             logger.info("FAILURE indexing dataverse " + dataverseIndexCount + " of " + (dataverseChildren.size() + 1) + " (id=" + dataverse.getId() + ") Exception info: " + e.getMessage());
         }
-        
+
         // index the Dataverse children
         for (Long childId : dataverseChildren) {
             try {
@@ -257,7 +258,7 @@ public class IndexBatchServiceBean {
                 logger.info("FAILURE indexing dataverse " + dataverseIndexCount + " of " + dataverseChildren.size() + " (id=" + childId + ") Exception info: " + e.getMessage());
             }
         }
-        
+
         // index the Dataset children
         for (Long childId : datasetChildren) {
             datasetIndexCount++;
@@ -266,14 +267,15 @@ public class IndexBatchServiceBean {
         }
         long end = System.currentTimeMillis();
         if (datasetFailureCount + dataverseFailureCount > 0) {
-            logger.info("There were index failures. " + dataverseFailureCount + " dataverse(s) and " + datasetFailureCount + " dataset(s) failed to index. Please check the log for more information.");            
+            logger.info("There were index failures. " + dataverseFailureCount + " dataverse(s) and " + datasetFailureCount + " dataset(s) failed to index. Please check the log for more information.");
         }
         logger.info(dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed. Total time to index " + (end - start) + ".");
     }
+
       private JsonObjectBuilder getContentInDatabaseButStaleInOrMissingFromSolr() {
         logger.info("checking for stale or missing dataverses");
         List<Long> stateOrMissingDataverses = indexService.findStaleOrMissingDataverses();
-        logger.info("checking for stale or missing datasets");  
+        logger.info("checking for stale or missing datasets");
         List<Long> staleOrMissingDatasets = indexService.findStaleOrMissingDatasets();
         JsonArrayBuilder jsonStaleOrMissingDataverses = Json.createArrayBuilder();
         for (Long id : stateOrMissingDataverses) {
@@ -322,7 +324,7 @@ public class IndexBatchServiceBean {
                 .add("dataverses", dataversesInSolrButNotDatabase.build())
                 .add("datasets", datasetsInSolrButNotDatabase.build())
                 .add("files", filesInSolrButNotDatabase.build());
-        
+
         return contentInSolrButNotDatabase;
     }
 
@@ -338,9 +340,9 @@ public class IndexBatchServiceBean {
         return Json.createObjectBuilder()
                 .add("dvobjects", stalePermissionList.build());
     }
-    
+
     private JsonObjectBuilder getPermissionsInSolrButNotDatabase() throws SearchException {
-        
+
         List<String> staleOrMissingPermissions = indexService.findPermissionsInSolrOnly();
         JsonArrayBuilder stalePermissionList = Json.createArrayBuilder();
         for (String id : staleOrMissingPermissions) {

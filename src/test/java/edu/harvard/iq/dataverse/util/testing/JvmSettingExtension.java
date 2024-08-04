@@ -17,25 +17,25 @@ import java.util.Optional;
 import static edu.harvard.iq.dataverse.util.testing.JvmSetting.PLACEHOLDER;
 
 public class JvmSettingExtension implements BeforeTestExecutionCallback, AfterTestExecutionCallback, BeforeAllCallback, AfterAllCallback {
-    
+
     @Override
     public void beforeAll(ExtensionContext extensionContext) throws Exception {
         List<JvmSetting> settings = AnnotationSupport.findRepeatableAnnotations(extensionContext.getTestClass(), JvmSetting.class);
         ExtensionContext.Store store = extensionContext.getStore(
             ExtensionContext.Namespace.create(getClass(), extensionContext.getRequiredTestClass()));
-        
+
         setSetting(extensionContext.getRequiredTestClass(), settings, getBroker(extensionContext), store);
     }
-    
+
     @Override
     public void afterAll(ExtensionContext extensionContext) throws Exception {
         List<JvmSetting> settings = AnnotationSupport.findRepeatableAnnotations(extensionContext.getTestClass(), JvmSetting.class);
         ExtensionContext.Store store = extensionContext.getStore(
             ExtensionContext.Namespace.create(getClass(), extensionContext.getRequiredTestClass()));
-        
+
         resetSetting(settings, getBroker(extensionContext), store);
     }
-    
+
     @Override
     public void beforeTestExecution(ExtensionContext extensionContext) throws Exception {
         List<JvmSetting> settings = AnnotationSupport.findRepeatableAnnotations(extensionContext.getTestMethod(), JvmSetting.class);
@@ -45,10 +45,10 @@ public class JvmSettingExtension implements BeforeTestExecutionCallback, AfterTe
                 extensionContext.getRequiredTestClass(),
                 extensionContext.getRequiredTestMethod()
             ));
-        
+
         setSetting(extensionContext.getRequiredTestClass(), settings, getBroker(extensionContext), store);
     }
-    
+
     @Override
     public void afterTestExecution(ExtensionContext extensionContext) throws Exception {
         List<JvmSetting> settings = AnnotationSupport.findRepeatableAnnotations(extensionContext.getTestMethod(), JvmSetting.class);
@@ -58,29 +58,29 @@ public class JvmSettingExtension implements BeforeTestExecutionCallback, AfterTe
                 extensionContext.getRequiredTestClass(),
                 extensionContext.getRequiredTestMethod()
             ));
-        
+
         resetSetting(settings, getBroker(extensionContext), store);
     }
-    
+
     private void setSetting(Class<?> testClass, List<JvmSetting> settings, JvmSettingBroker broker, ExtensionContext.Store store) throws Exception {
         for (JvmSetting setting : settings) {
             // get the setting name (might need var args substitution)
             String settingName = getSettingName(setting);
-            
+
             // get the setting value ...
             String oldSetting = broker.getJvmSetting(settingName);
-            
+
             // if present - store in context to restore later
             if (oldSetting != null) {
                 store.put(settingName, oldSetting);
             }
-            
+
             // set to new value
             if (setting.value().equals(PLACEHOLDER) && setting.method().equals(PLACEHOLDER)) {
                 throw new IllegalArgumentException("You must either provide a value or a method reference " +
                     "for key JvmSettings" + setting.key());
             }
-            
+
             String value;
             // Retrieve value from static (!) test class method if no direct setting given
             if (setting.value().equals(PLACEHOLDER)) {
@@ -93,7 +93,7 @@ public class JvmSettingExtension implements BeforeTestExecutionCallback, AfterTe
             } else {
                 value = setting.value();
             }
-            
+
             // If the retrieved value is null, delete the setting (will be reset after the test), otherwise set.
             if (value != null) {
                 broker.setJvmSetting(settingName, value);
@@ -102,15 +102,15 @@ public class JvmSettingExtension implements BeforeTestExecutionCallback, AfterTe
             }
         }
     }
-    
+
     private void resetSetting(List<JvmSetting> settings, JvmSettingBroker broker, ExtensionContext.Store store) throws Exception {
         for (JvmSetting setting : settings) {
             // get the setting name (might need var args substitution)
             String settingName = getSettingName(setting);
-            
+
             // get a stored setting from context
             String oldSetting = store.remove(settingName, String.class);
-            
+
             // if present before, restore
             if (oldSetting != null) {
                 broker.setJvmSetting(settingName, oldSetting);
@@ -120,25 +120,25 @@ public class JvmSettingExtension implements BeforeTestExecutionCallback, AfterTe
             }
         }
     }
-    
+
     private String getSettingName(JvmSetting setting) {
         JvmSettings target = setting.key();
-        
+
         if (target.needsVarArgs()) {
             String[] variableArguments = setting.varArgs();
-            
+
             if (variableArguments == null || variableArguments.length != target.numberOfVarArgs()) {
                 throw new IllegalArgumentException("You must provide " + target.numberOfVarArgs() +
                     " variable arguments via varArgs = {...} for setting " + target +
                     " (\"" + target.getScopedKey() + "\")");
             }
-            
+
             return target.insert(variableArguments);
         }
-        
+
         return target.getScopedKey();
     }
-    
+
     private JvmSettingBroker getBroker(ExtensionContext extensionContext) throws Exception {
         // Is this test class using local system properties, then get a broker for these
         if (AnnotationSupport.isAnnotated(extensionContext.getTestClass(), LocalJvmSettings.class)) {
@@ -148,5 +148,5 @@ public class JvmSettingExtension implements BeforeTestExecutionCallback, AfterTe
             throw new IllegalStateException("You must provide the @LocalJvmSettings annotation to the test class");
         }
     }
-    
+
 }

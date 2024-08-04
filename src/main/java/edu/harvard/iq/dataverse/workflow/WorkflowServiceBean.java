@@ -57,10 +57,10 @@ public class WorkflowServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
-    
+
     @EJB
     DatasetServiceBean datasets;
-    
+
     @EJB
     DvObjectServiceBean dvObjects;
 
@@ -69,19 +69,19 @@ public class WorkflowServiceBean {
 
     @EJB
     RoleAssigneeServiceBean roleAssignees;
-    
-    @EJB 
+
+    @EJB
     SystemConfig systemConfig;
 
     @EJB
     UserNotificationServiceBean userNotificationService;
-    
+
     @EJB
     EjbDataverseEngine engine;
-    
+
     @Inject
     DataverseRequestServiceBean dvRequestService;
-    
+
     final Map<String, WorkflowStepSPI> providers = new HashMap<>();
 
     public WorkflowServiceBean() {
@@ -102,7 +102,7 @@ public class WorkflowServiceBean {
 //        }
         
     }
-    
+
     /**
      * Starts executing workflow {@code wf} under the passed context.
      *
@@ -156,7 +156,7 @@ public class WorkflowServiceBean {
         lockDataset(ctxt, new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser()));
         forward(wf, ctxt);
     }
-    
+
 
     private ApiToken getCurrentApiToken(AuthenticatedUser au) {
         if (au != null) {
@@ -210,17 +210,17 @@ public class WorkflowServiceBean {
         em.remove(em.merge(pending));
         doResume(pending, body);
     }
-    
-    
+
+
     @Asynchronous
     private void forward(Workflow wf, WorkflowContext ctxt) {
         executeSteps(wf, ctxt, 0);
     }
-    
+
     private void doResume(PendingWorkflowInvocation pending, String body) {
         Workflow wf = pending.getWorkflow();
         List<WorkflowStepData> stepsLeft = wf.getSteps().subList(pending.getPendingStepIdx(), wf.getSteps().size());
-        
+
         WorkflowStep pendingStep = createStep(stepsLeft.get(0));
         WorkflowContext newCtxt = pending.reCreateContext(roleAssignees);
         final WorkflowContext ctxt = refresh(newCtxt, retrieveRequestedSettings(wf.getRequiredSettings()), getCurrentApiToken(newCtxt.getRequest().getAuthenticatedUser()));
@@ -250,22 +250,22 @@ public class WorkflowServiceBean {
     private void rollback(Workflow wf, WorkflowContext ctxt, Failure failure, int lastCompletedStepIdx) {
         ctxt = refresh(ctxt);
         final List<WorkflowStepData> steps = wf.getSteps();
-        
+
         for (int stepIdx = lastCompletedStepIdx; stepIdx >= 0; --stepIdx) {
             WorkflowStepData wsd = steps.get(stepIdx);
             WorkflowStep step = createStep(wsd);
-            
+
             try {
                 logger.log(Level.INFO, "Workflow {0} step {1}: Rollback", new Object[]{ctxt.getInvocationId(), stepIdx});
                 rollbackStep(step, ctxt, failure);
-                
+
             } catch (Exception e) {
-                logger.log(Level.WARNING, "Workflow " + ctxt.getInvocationId() 
+                logger.log(Level.WARNING, "Workflow " + ctxt.getInvocationId()
                                           + " step " + stepIdx + ": Rollback error: " + e.getMessage(), e);
             }
 
         }
-        
+
         logger.log(Level.INFO, "Removing workflow lock");
         try {
             unlockDataset(ctxt);
@@ -273,7 +273,7 @@ public class WorkflowServiceBean {
             logger.log(Level.SEVERE, "Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
         }
     }
-    
+
     /**
      * Execute the passed workflow, starting from {@code initialStepIdx}.
      * @param wf    The workflow to run.
@@ -282,12 +282,12 @@ public class WorkflowServiceBean {
      */
     private void executeSteps(Workflow wf, WorkflowContext ctxt, int initialStepIdx) {
         final List<WorkflowStepData> steps = wf.getSteps();
-        
+
         for (int stepIdx = initialStepIdx; stepIdx < steps.size(); stepIdx++) {
             WorkflowStepData wsd = steps.get(stepIdx);
             WorkflowStep step = createStep(wsd);
             WorkflowStepResult res = runStep(step, ctxt);
-            
+
             try {
                 if (res == WorkflowStepResult.OK) {
                     logger.log(Level.INFO, "Workflow {0} step {1}: OK", new Object[]{ctxt.getInvocationId(), stepIdx});
@@ -302,7 +302,7 @@ public class WorkflowServiceBean {
                     pauseAndAwait(wf, ctxt, (Pending) res, stepIdx);
                     return;
                 }
-                
+
             } catch (Exception e) {
                 logger.log(Level.WARNING, "Workflow {0} step {1}: Uncought exception:", new Object[]{ctxt.getInvocationId(), e.getMessage()});
                 logger.log(Level.WARNING, "Trace:", e);
@@ -310,11 +310,11 @@ public class WorkflowServiceBean {
                 return;
             }
         }
-        
+
         workflowCompleted(wf, ctxt);
-        
+
     }
-    
+
     //////////////////////////////////////////////////////////////
     // Internal methods to run each step in its own transaction.
     //
@@ -323,17 +323,17 @@ public class WorkflowServiceBean {
     WorkflowStepResult runStep(WorkflowStep step, WorkflowContext ctxt) {
         return step.run(ctxt);
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     WorkflowStepResult resumeStep(WorkflowStep step, WorkflowContext ctxt, Map<String, String> localData, String externalData) {
         return step.resume(ctxt, localData, externalData);
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     void rollbackStep(WorkflowStep step, WorkflowContext ctxt, Failure reason) {
         step.rollback(ctxt, reason);
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     void lockDataset(WorkflowContext ctxt, DatasetLock datasetLock) throws CommandException {
         /*
@@ -372,7 +372,7 @@ public class WorkflowServiceBean {
         }
         em.flush();
     }
-    
+
     //
     //
     //////////////////////////////////////////////////////////////
@@ -385,7 +385,7 @@ public class WorkflowServiceBean {
 
     private void workflowCompleted(Workflow wf, WorkflowContext ctxt) {
         logger.log(Level.INFO, "Workflow {0} completed.", ctxt.getInvocationId());
-        
+
             try {
         if (ctxt.getType() == TriggerType.PrePublishDataset) {
                 ctxt = refresh(ctxt);
@@ -394,18 +394,18 @@ public class WorkflowServiceBean {
                 DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
                 Dataset dataset = ctxt.getDataset();
                 lock.setDataset(dataset);
-                boolean registerGlobalIdsForFiles = 
+                boolean registerGlobalIdsForFiles =
                         systemConfig.isFilePIDsEnabledForCollection(ctxt.getDataset().getOwner()) &&
                                 dvObjects.getEffectivePidGenerator(dataset).canCreatePidsLike(dataset.getGlobalId());
-                
+
                 boolean validatePhysicalFiles = systemConfig.isDatafileValidationOnPublishEnabled();
-                String info = "Publishing the dataset; "; 
+                String info = "Publishing the dataset; ";
                 info += registerGlobalIdsForFiles ? "Registering PIDs for Datafiles; " : "";
                 info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
                 lock.setInfo(info);
                 lockDataset(ctxt, lock);
                 ctxt.getDataset().addLock(lock);
-                
+
                 unlockDataset(ctxt);
                 ctxt.setLockId(null); //the workflow lock
                 //Refreshing merges the dataset
@@ -420,7 +420,7 @@ public class WorkflowServiceBean {
                 logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() + ": " + ex.getMessage(), ex);
                 rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.steps.size() - 1);
             }
-        
+
     }
 
     public List<Workflow> listWorkflows() {
@@ -511,7 +511,7 @@ public class WorkflowServiceBean {
         }
         return provider.getStep(wsd.getStepType(), wsd.getStepParameters());
     }
-    
+
     private WorkflowContext refresh(WorkflowContext ctxt) {
     	return refresh(ctxt, ctxt.getSettings(), ctxt.getApiToken());
     }

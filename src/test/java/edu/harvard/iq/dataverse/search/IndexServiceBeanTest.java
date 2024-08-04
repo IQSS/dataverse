@@ -41,7 +41,7 @@ public class IndexServiceBeanTest {
     private SettingsServiceBean settingsService;
     @InjectMocks
     private SystemConfig systemConfig = new SystemConfig();
-    
+
     @BeforeEach
     public void setUp() {
         dataverse = MocksFactory.makeDataverse();
@@ -56,21 +56,21 @@ public class IndexServiceBeanTest {
 
         Mockito.when(indexService.dataverseService.findRootDataverse()).thenReturn(dataverse);
     }
-    
+
     @Test
     public void testInitWithDefaults() {
         // given
         String url = "http://localhost:8983/solr/collection1";
-        
+
         // when
         indexService.init();
-        
+
         // then
         HttpSolrClient client = (HttpSolrClient) indexService.solrServer;
         assertEquals(url, client.getBaseURL());
     }
-    
-    
+
+
     @Test
     @JvmSetting(key = JvmSettings.SOLR_HOST, value = "foobar")
     @JvmSetting(key = JvmSettings.SOLR_PORT, value = "1234")
@@ -78,10 +78,10 @@ public class IndexServiceBeanTest {
     void testInitWithConfig() {
         // given
         String url = "http://foobar:1234/solr/test";
-        
+
         // when
         indexService.init();
-        
+
         // then
         HttpSolrClient client = (HttpSolrClient) indexService.solrServer;
         assertEquals(url, client.getBaseURL());
@@ -127,6 +127,7 @@ public class IndexServiceBeanTest {
         assertTrue(!doc.get().containsKey("geolocation"));
         assertTrue(!doc.get().containsKey("boundingBox"));
     }
+
     private DatasetField constructBoundingBoxValue(String datasetFieldTypeName, String value) {
         DatasetField retVal = new DatasetField();
         retVal.setDatasetFieldType(new DatasetFieldType(datasetFieldTypeName, DatasetFieldType.FieldType.TEXT, false));

@@ -73,12 +73,12 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
 
             s3 = createClient(configObject);
             tm = TransferManagerBuilder.standard().withS3Client(s3).build();
-            
+
             //Set a failure status that will be updated if we succeed
             JsonObjectBuilder statusObject = Json.createObjectBuilder();
             statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
             statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
-            
+
             try {
 
                 Dataset dataset = dv.getDataset();
@@ -100,7 +100,7 @@ public class S3SubmitToArchiveCommand extends AbstractSubmitToArchiveCommand imp
 
                         // Store BagIt file
                         String fileName = getFileName(spaceName, dv);
-                        
+
                         String bagKey = spaceName + "/" + fileName + ".zip";
                         // Add BagIt ZIP file
                         // Google uses MD5 as one way to verify the

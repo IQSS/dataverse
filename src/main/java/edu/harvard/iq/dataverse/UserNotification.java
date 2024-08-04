@@ -34,13 +34,13 @@ import jakarta.persistence.Transient;
 public class UserNotification implements Serializable {
     // Keep in sync with list at admin/user-administration.rst
     public enum Type {
-        ASSIGNROLE, REVOKEROLE, CREATEDV, CREATEDS, CREATEACC, SUBMITTEDDS, RETURNEDDS, 
-        PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS, FILESYSTEMIMPORT, 
-        CHECKSUMIMPORT, CHECKSUMFAIL, CONFIRMEMAIL, APIGENERATED, INGESTCOMPLETED, INGESTCOMPLETEDWITHERRORS, 
+        ASSIGNROLE, REVOKEROLE, CREATEDV, CREATEDS, CREATEACC, SUBMITTEDDS, RETURNEDDS,
+        PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS, FILESYSTEMIMPORT,
+        CHECKSUMIMPORT, CHECKSUMFAIL, CONFIRMEMAIL, APIGENERATED, INGESTCOMPLETED, INGESTCOMPLETEDWITHERRORS,
         PUBLISHFAILED_PIDREG, WORKFLOW_SUCCESS, WORKFLOW_FAILURE, STATUSUPDATED, DATASETCREATED, DATASETMENTIONED,
         GLOBUSUPLOADCOMPLETED, GLOBUSUPLOADCOMPLETEDWITHERRORS,
         GLOBUSDOWNLOADCOMPLETED, GLOBUSDOWNLOADCOMPLETEDWITHERRORS, REQUESTEDFILEACCESS;
-        
+
         public String getDescription() {
             return BundleUtil.getStringFromBundle("notification.typeDescription." + this.name());
         }
@@ -65,10 +65,10 @@ public class UserNotification implements Serializable {
             }
             return String.join(",", typesSet.stream().map(x -> x.name()).collect(Collectors.toList()));
         }
-    };
-    
+    }
+
     private static final long serialVersionUID = 1L;
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -85,18 +85,18 @@ public class UserNotification implements Serializable {
     private AuthenticatedUser requestor;
     private Timestamp sendDate;
     private boolean readNotification;
-    
+
     @Enumerated
     @Column(nullable = false)
     private Type type;
     private Long objectId;
-    
+
     private String additionalInfo;
 
     @Transient
     private boolean displayAsRead;
-    
-    @Transient 
+
+    @Transient
     String roleString;
 
     private boolean emailed;
@@ -116,7 +116,7 @@ public class UserNotification implements Serializable {
     public void setUser(AuthenticatedUser user) {
         this.user = user;
     }
-        
+
     public AuthenticatedUser getRequestor() {
         return requestor;
     }
@@ -152,7 +152,7 @@ public class UserNotification implements Serializable {
     public void setType(Type type) {
         this.type = type;
     }
-    
+
     public Long getObjectId() {
         return objectId;
     }
@@ -160,8 +160,8 @@ public class UserNotification implements Serializable {
     public void setObjectId(Long objectId) {
         this.objectId = objectId;
     }
-    
-    @Transient 
+
+    @Transient
     private Object theObject;
 
     public Object getTheObject() {
@@ -171,8 +171,8 @@ public class UserNotification implements Serializable {
     public void setTheObject(Object theObject) {
         this.theObject = theObject;
     }
-    
-        
+
+
     public boolean isDisplayAsRead() {
         return displayAsRead;
     }
@@ -187,8 +187,8 @@ public class UserNotification implements Serializable {
 
     public void setEmailed(boolean emailed) {
         this.emailed = emailed;
-    }    
-    
+    }
+
     public String getRoleString() {
         return roleString;
     }

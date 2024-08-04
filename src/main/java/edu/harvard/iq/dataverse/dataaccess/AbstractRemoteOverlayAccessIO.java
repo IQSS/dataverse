@@ -48,7 +48,7 @@ public abstract class AbstractRemoteOverlayAccessIO<T extends DvObject> extends 
     static final String URL_EXPIRATION_MINUTES = "url-expiration-minutes";
     protected static final String REMOTE_STORE_NAME = "remote-store-name";
     protected static final String REMOTE_STORE_URL = "remote-store-url";
-    
+
     // Whether Dataverse can access the file bytes
     // Currently False only for the Globus store when using the S3Connector, and Remote Stores like simple web servers where the URLs resolve to the actual file bits
     static final String FILES_NOT_ACCESSIBLE_BY_DATAVERSE = "files-not-accessible-by-dataverse";
@@ -173,7 +173,7 @@ public abstract class AbstractRemoteOverlayAccessIO<T extends DvObject> extends 
             try {
                 initHttpPool();
                 httpclient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(config).build();
-    
+
             } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException ex) {
                 logger.warning(ex.getMessage());
             }
@@ -186,13 +186,13 @@ public abstract class AbstractRemoteOverlayAccessIO<T extends DvObject> extends 
             // use the TrustSelfSignedStrategy to allow Self Signed Certificates
             SSLContext sslContext;
             SSLConnectionSocketFactory connectionFactory;
-    
+
             sslContext = SSLContextBuilder.create().loadTrustMaterial(new TrustAllStrategy()).build();
             // create an SSL Socket Factory to use the SSLContext with the trust self signed
             // certificate strategy
             // and allow all hosts verifier.
             connectionFactory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
-    
+
             Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
                     .register("https", connectionFactory).build();
             cm = new PoolingHttpClientConnectionManager(registry);
@@ -205,7 +205,7 @@ public abstract class AbstractRemoteOverlayAccessIO<T extends DvObject> extends 
 
     @Override
     abstract public long retrieveSizeFromMedia();
-    
+
     @Override
     public boolean exists() {
         logger.fine("Exists called");
@@ -216,7 +216,7 @@ public abstract class AbstractRemoteOverlayAccessIO<T extends DvObject> extends 
     public List<String> cleanUp(Predicate<String> filter, boolean dryRun) throws IOException {
         return baseStore.cleanUp(filter, dryRun);
     }
-    
+
     @Override
     public String getStorageLocation() throws IOException {
         String fullStorageLocation = dvObject.getStorageIdentifier();
@@ -236,6 +236,7 @@ public abstract class AbstractRemoteOverlayAccessIO<T extends DvObject> extends 
         logger.fine("fullStorageLocation: " + fullStorageLocation);
         return fullStorageLocation;
     }
+
     protected void configureStores(DataAccessRequest req, String driverId, String storageLocation) throws IOException {
 
         if (baseStore == null) {

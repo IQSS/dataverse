@@ -13,18 +13,20 @@ import java.util.Comparator;
  * @author skraffmiller
  */
 public class DatasetAuthor {
-       
+
     public static Comparator<DatasetAuthor> DisplayOrder = new Comparator<DatasetAuthor>(){
         @Override
         public int compare(DatasetAuthor o1, DatasetAuthor o2) {
             return o1.getDisplayOrder() - o2.getDisplayOrder();
         }
     };
-    
+
     private DatasetVersion datasetVersion;
+
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;
     }
+
     public void setDatasetVersion(DatasetVersion metadata) {
         this.datasetVersion = metadata;
     }
@@ -35,26 +37,31 @@ public class DatasetAuthor {
     public DatasetField getName() {
         return this.name;
     }
+
     public void setName(DatasetField name) {
         this.name = name;
     }
 
     private int displayOrder;
+
     public int getDisplayOrder() {
         return this.displayOrder;
     }
+
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
     }
 
     private DatasetField affiliation;
+
     public DatasetField getAffiliation() {
         return this.affiliation;
     }
+
     public void setAffiliation(DatasetField affiliation) {
         this.affiliation = affiliation;
     }
-    
+
     private String idType;
 
     public String getIdType() {
@@ -62,16 +69,16 @@ public class DatasetAuthor {
             return ("ORCID");
         } else {
             return idType;
-        }        
+        }
     }
 
     public void setIdType(String idType) {
         this.idType = idType;
     }
-    
+
     private String idValue;
-    
-    
+
+
     public String getIdValue() {
         return idValue;
     }

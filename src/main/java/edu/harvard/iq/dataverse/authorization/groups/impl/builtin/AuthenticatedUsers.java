@@ -10,12 +10,12 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 public class AuthenticatedUsers implements Group {
 
     private static final AuthenticatedUsers instance = new AuthenticatedUsers();
-    
+
     private AuthenticatedUsers() {
     }
-    
+
     public static AuthenticatedUsers get() { return instance; }
-    
+
     @Override
     public boolean contains(DataverseRequest ra) {
         return (ra.getUser() instanceof AuthenticatedUser);
@@ -55,7 +55,7 @@ public class AuthenticatedUsers implements Group {
     public String getDescription() {
         return "All users, except for guests";
     }
-    
+
     @Override
     public String toString() {
         return "[AuthenticatedUsers " + getIdentifier() + "]";

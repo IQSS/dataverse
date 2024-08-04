@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
@@ -20,7 +19,7 @@ import java.util.Set;
  * @author stephenkraffmiller
  */
 public class ListFeaturedCollectionsCommand extends AbstractCommand<List<Dataverse>> {
-    
+
     private final Dataverse dv;
 
     public ListFeaturedCollectionsCommand(DataverseRequest aRequest, Dataverse aDataverse) {
@@ -37,14 +36,14 @@ public class ListFeaturedCollectionsCommand extends AbstractCommand<List<Dataver
                 featuredTarget.add(fd);
             }
         return featuredTarget;
-        
+
     }
-    
+
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         return Collections.singletonMap("",
                 dv.isReleased() ? Collections.<Permission>emptySet()
                 : Collections.singleton(Permission.ViewUnpublishedDataverse));
     }
-    
+
 }

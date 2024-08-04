@@ -13,10 +13,10 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
  * @author michael
  */
 public interface Group extends RoleAssignee {
-    
+
     public static final String IDENTIFIER_PREFIX = "&";
     public static final String PATH_SEPARATOR = "/";
-    
+
     /**
      * A unique identifier of this group within a Dataverse system installation.
      * Normally consists of the group's provider's alias as a prefix, then {@link Group#PATH_SEPARATOR},
@@ -30,19 +30,19 @@ public interface Group extends RoleAssignee {
      * @see #getDisplayName() 
      */
     public String getAlias();
-    
+
     /**
      * @return Name of the group (for display purposes)
      * @see #getAlias() 
      */
     public String getDisplayName();
-    
-    
+
+
     /**
      * @return Description of this group
      */
     public String getDescription();
-    
+
     /**
      * Tests to see whether {@code aRequest} is a part of {@code this} group. Inclusion
      * in groups is not just a matter of user, as it can be specified also by, e.g. IP addresses.
@@ -53,13 +53,13 @@ public interface Group extends RoleAssignee {
      * @return {@code true} iff {@code anAssignee} is in this group; {@code false} otherwise.
      */
     public boolean contains(DataverseRequest aRequest);
-    
+
     public boolean isEditable();
-    
+
     /**
      * References the object that created the group, and may also edit it.
      * @return the creator of this group.
      */
     public GroupProvider getGroupProvider();
-    
+
 }

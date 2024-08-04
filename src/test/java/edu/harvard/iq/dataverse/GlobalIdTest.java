@@ -60,7 +60,7 @@ public class GlobalIdTest {
 
         // String badProtocol = "hdl:'Select value from datasetfieldvalue';/ha";
         GlobalId instance = PidUtil.parseAsGlobalID(HandlePidProvider.HDL_PROTOCOL, "'Select value from datasetfieldvalue';", "ha");
-        assertNull(instance); 
+        assertNull(instance);
 
         //exception.expect(IllegalArgumentException.class);
         //exception.expectMessage("Failed to parse identifier: " + badProtocol);
@@ -73,7 +73,7 @@ public class GlobalIdTest {
         System.out.println("testUnknownProtocol");
 
         String badProtocol = "doy:10.5072/FK2/BYM3IW";
-        
+
         //exception.expect(IllegalArgumentException.class);
         //exception.expectMessage("Failed to parse identifier: " + badProtocol);
         //new GlobalId(badProtocol);

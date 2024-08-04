@@ -43,20 +43,20 @@ public class PasswordResetPage implements java.io.Serializable {
     @EJB
     BuiltinUserServiceBean dataverseUserService;
     @EJB
-    DataverseServiceBean dataverseService;    
+    DataverseServiceBean dataverseService;
     @EJB
     AuthenticationServiceBean authSvc;
     @Inject
     DataverseSession session;
     @Inject
-    SettingsWrapper settingsWrapper; 
-    
+    SettingsWrapper settingsWrapper;
+
     @EJB
     ActionLogServiceBean actionLogSvc;
 
     @EJB
     PasswordValidatorServiceBean passwordValidatorService;
-    
+
     @EJB
     SystemConfig systemConfig;
 
@@ -89,11 +89,11 @@ public class PasswordResetPage implements java.io.Serializable {
      * The new password the user enters.
      */
     String newPassword;
-    
+
     PasswordResetData passwordResetData;
 
     boolean validationFailed = true;
-    
+
     private List<String> passwordErrors;
 
     public void init() {
@@ -107,7 +107,7 @@ public class PasswordResetPage implements java.io.Serializable {
                     validationFailed = false;
                 }
             } else {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, 
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
                         BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetLinkTitle"),
                         BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetLinkDesc")));
             }
@@ -115,7 +115,7 @@ public class PasswordResetPage implements java.io.Serializable {
     }
 
     public String sendPasswordResetLink() {
-            
+
         actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetRequest")
                             .setInfo("Email Address: " + emailAddress));
         try {
@@ -136,7 +136,7 @@ public class PasswordResetPage implements java.io.Serializable {
              * have an account based on your email address. Yes, this is a white
              * lie sometimes, in the name of security.
              */
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetInitiated"), 
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetInitiated"),
                     BundleUtil.getStringFromBundle("passwdReset.successSubmit.tip", Arrays.asList(emailAddress))));
         } catch (PasswordResetException ex) {
             /**
@@ -176,7 +176,7 @@ public class PasswordResetPage implements java.io.Serializable {
             context.addMessage(toValidate.getClientId(context), message);
             return;
 
-        } 
+        }
 
         final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
         this.passwordErrors = errors;
@@ -184,19 +184,19 @@ public class PasswordResetPage implements java.io.Serializable {
             ((UIInput) toValidate).setValid(false);
         }
     }
-    
+
     public String getPasswordRequirements() {
         return passwordValidatorService.getGoodPasswordDescription(passwordErrors);
     }
-    
+
     public boolean isAccountUpgrade() {
         return passwordResetData.getReason() == PasswordResetData.Reason.UPGRADE_REQUIRED;
     }
-    
+
     public boolean isPasswordCompliant() {
         return passwordResetData.getReason() == PasswordResetData.Reason.NON_COMPLIANT_PASSWORD;
     }
-    
+
     public String getToken() {
         return token;
     }

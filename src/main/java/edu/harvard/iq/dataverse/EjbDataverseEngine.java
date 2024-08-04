@@ -61,7 +61,7 @@ import jakarta.validation.ConstraintViolationException;
 @Named
 public class EjbDataverseEngine {
     private static final Logger logger = Logger.getLogger(EjbDataverseEngine.class.getCanonicalName());
-    
+
     @EJB
     DatasetServiceBean datasetService;
 
@@ -76,7 +76,7 @@ public class EjbDataverseEngine {
 
     @EJB
     IndexServiceBean indexService;
-    
+
     @EJB
     IndexBatchServiceBean indexBatchService;
 
@@ -85,7 +85,7 @@ public class EjbDataverseEngine {
 
     @EJB
     SearchServiceBean searchService;
-    
+
     @EJB
     IngestServiceBean ingestService;
 
@@ -106,7 +106,7 @@ public class EjbDataverseEngine {
 
     @EJB
     TemplateServiceBean templateService;
-    
+
     @EJB
     SavedSearchServiceBean savedSearchService;
 
@@ -118,19 +118,19 @@ public class EjbDataverseEngine {
 
     @EJB
     SettingsServiceBean settings;
-    
+
     @EJB
     GuestbookServiceBean guestbookService;
-    
+
     @EJB
     GuestbookResponseServiceBean responses;
 
     @EJB
     MetadataBlockServiceBean metadataBlockService;
-    
+
     @EJB
     DataverseLinkingServiceBean dvLinking;
-    
+
     @EJB
     DatasetLinkingServiceBean dsLinking;
 
@@ -145,12 +145,12 @@ public class EjbDataverseEngine {
 
     @EJB
     RoleAssigneeServiceBean roleAssignees;
-    
+
     @EJB
-    UserNotificationServiceBean userNotificationService;   
-    
+    UserNotificationServiceBean userNotificationService;
+
     @EJB
-    AuthenticationServiceBean authentication; 
+    AuthenticationServiceBean authentication;
 
     @EJB
     SystemConfig systemConfig;
@@ -166,48 +166,48 @@ public class EjbDataverseEngine {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     @EJB
     ActionLogServiceBean logSvc;
-    
+
     @EJB
     WorkflowServiceBean workflowService;
-    
+
     @EJB
     FileDownloadServiceBean fileDownloadService;
-    
+
     @EJB
     ConfirmEmailServiceBean confirmEmailService;
-    
+
     @EJB
-    StorageUseServiceBean storageUseService; 
-    
+    StorageUseServiceBean storageUseService;
+
     @EJB
     EjbDataverseEngineInner innerEngine;
 
     @EJB
     CacheFactoryBean cacheFactory;
-    
+
     @Resource
     EJBContext ejbCtxt;
 
     private CommandContext ctxt;
-    
+
     @TransactionAttribute(REQUIRES_NEW)
     public <R> R submitInNewTransaction(Command<R> aCommand) throws CommandException {
         return submit(aCommand);
     }
-    
+
     private DvObject getRetType(Object r) {
 
         return (DvObject) r;
-       
+
     }
 
 
     @TransactionAttribute(SUPPORTS)
     public <R> R submit(Command<R> aCommand) throws CommandException {
-        
+
         final ActionLogRecord logRec = new ActionLogRecord(ActionLogRecord.ActionType.Command, aCommand.getClass().getCanonicalName());
 
         try {
@@ -251,7 +251,7 @@ public class EjbDataverseEngine {
                 Set<Permission> granted = (dvo != null) ? permissionService.permissionsFor(dvReq, dvo)
                         : EnumSet.allOf(Permission.class);
                 Set<Permission> required = requiredMap.get(dvName);
-                
+
                 if (!granted.containsAll(required)) {
                     required.removeAll(granted);
                     logRec.setActionResult(ActionLogRecord.Result.PermissionError);
@@ -276,7 +276,7 @@ public class EjbDataverseEngine {
                 //This list of commands is held by the outermost command's context
                 //to be run on completeCommand method when the outermost command is completed
                 Stack<Command> previouslyCalled = getContext().getCommandsCalled();
-                R r = innerEngine.submit(aCommand, getContext());   
+                R r = innerEngine.submit(aCommand, getContext());
                 if (getContext().getCommandsCalled().empty() && !previouslyCalled.empty()) {
                     for (Command c : previouslyCalled) {
                         getContext().getCommandsCalled().add(c);
@@ -285,35 +285,35 @@ public class EjbDataverseEngine {
                 //This runs the onSuccess Methods for all commands in the stack when the outermost command completes
                 this.completeCommand(aCommand, r, getContext().getCommandsCalled());
                 return r;
-                
+
             } catch (EJBException ejbe) {
                 throw new CommandException("Command " + aCommand.toString() + " failed: " + ejbe.getMessage(), ejbe.getCausedByException(), aCommand);
-            } 
+            }
         } catch (CommandException cmdEx) {
-            if (!(cmdEx instanceof PermissionException)) {            
-                logRec.setActionResult(ActionLogRecord.Result.InternalError); 
-            } 
+            if (!(cmdEx instanceof PermissionException)) {
+                logRec.setActionResult(ActionLogRecord.Result.InternalError);
+            }
             logRec.setInfo(logRec.getInfo() + " (" + cmdEx.getMessage() + ")");
             throw cmdEx;
         } catch (RuntimeException re) {
             logRec.setActionResult(ActionLogRecord.Result.InternalError);
-            logRec.setInfo(logRec.getInfo() + " (" + re.getMessage() + ")");   
-            
-            Throwable cause = re;          
+            logRec.setInfo(logRec.getInfo() + " (" + re.getMessage() + ")");
+
+            Throwable cause = re;
             while (cause != null) {
                 if (cause instanceof ConstraintViolationException) {
-                    StringBuilder sb = new StringBuilder(); 
-                    sb.append("Unexpected bean validation constraint exception:"); 
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("Unexpected bean validation constraint exception:");
                     sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                     logger.log(Level.SEVERE, sb.toString());
                     // set this more detailed info in action log
                     logRec.setInfo(logRec.getInfo() + " (" + sb.toString() + ")");
                 }
                 cause = cause.getCause();
-            }           
-            
+            }
+
             throw re;
-            
+
         } finally {
             //when we get here we need to wipe out the command list so that
             //failed commands don't have their onSuccess methods run.
@@ -325,32 +325,32 @@ public class EjbDataverseEngine {
                      ejbCtxt.setRollbackOnly();
                 } catch (IllegalStateException isEx) {
                     //Not in a transaction nothing to rollback
-                }                  
+                }
             }
             logRec.setEndTime(new java.util.Date());
             logSvc.log(logRec);
         }
     }
-    
+
     protected void completeCommand(Command command, Object r, Stack<Command> called) {
-        
+
         if (called.isEmpty()) {
             return;
         }
-        
+
         Command test = called.get(0);
         if (!test.equals(command)) {
             //if it's not the first command on the stack it must be an "inner" command
             //and we don't want to run its onSuccess until all commands have comepleted successfully
             return;
         }
-        
+
         for (Command commandLoop : called) {
            commandLoop.onSuccess(ctxt, r);
         }
-        
+
     }
-    
+
 
     public CommandContext getContext() {
         if (ctxt == null) {
@@ -385,14 +385,14 @@ public class EjbDataverseEngine {
                     }
 					commandsCalled.push(command);
                 }
-                
-                
+
+
                 @Override
                 public Stack<Command> getCommandsCalled() {
                     return commandsCalled;
                 }
-                
-                
+
+
                 @Override
                 public DatasetServiceBean datasets() {
                     return datasetService;
@@ -417,7 +417,7 @@ public class EjbDataverseEngine {
                 public IndexServiceBean index() {
                     return indexService;
                 }
-                
+
                 @Override
                 public IndexBatchServiceBean indexBatch() {
                     return indexBatchService;
@@ -437,7 +437,7 @@ public class EjbDataverseEngine {
                 public IngestServiceBean ingest() {
                     return ingestService;
                 }
-                
+
                 @Override
                 public PermissionServiceBean permissions() {
                     return permissionService;
@@ -472,7 +472,7 @@ public class EjbDataverseEngine {
                 public TemplateServiceBean templates() {
                     return templateService;
                 }
-                
+
                 @Override
                 public SavedSearchServiceBean savedSearches() {
                     return savedSearchService;
@@ -487,12 +487,12 @@ public class EjbDataverseEngine {
                 public PidProviderFactoryBean pidProviderFactory() {
                     return pidProviderFactory;
                 }
-                
+
                 @Override
                 public SettingsServiceBean settings() {
                     return settings;
                 }
-                
+
                 @Override
                 public GuestbookServiceBean guestbooks() {
                     return guestbookService;
@@ -502,12 +502,12 @@ public class EjbDataverseEngine {
                 public GuestbookResponseServiceBean responses() {
                     return responses;
                 }
-                
+
                 @Override
                 public DataverseLinkingServiceBean dvLinking() {
                     return dvLinking;
                 }
-                                
+
                 @Override
                 public DatasetLinkingServiceBean dsLinking() {
                     return dsLinking;
@@ -522,7 +522,7 @@ public class EjbDataverseEngine {
                 public StorageUseServiceBean storageUse() {
                     return storageUseService;
                 }
-                
+
                 @Override
                 public DataverseEngine engine() {
                     return new DataverseEngine() {
@@ -537,7 +537,7 @@ public class EjbDataverseEngine {
                 public ExplicitGroupServiceBean explicitGroups() {
                     return explicitGroups;
                 }
-                
+
                 @Override
                 public GroupServiceBean groups() {
                     return groups;
@@ -547,16 +547,16 @@ public class EjbDataverseEngine {
                 public RoleAssigneeServiceBean roleAssignees() {
                     return roleAssignees;
                 }
-                
+
                 @Override
                 public UserNotificationServiceBean notifications() {
                     return userNotificationService;
-                } 
-                
+                }
+
                 @Override
                 public AuthenticationServiceBean authentication() {
                     return authentication;
-                } 
+                }
 
                 @Override
                 public SystemConfig systemConfig() {
@@ -572,7 +572,7 @@ public class EjbDataverseEngine {
                 public DatasetVersionServiceBean datasetVersion() {
                     return datasetVersionService;
                 }
-                
+
                 @Override
                 public WorkflowServiceBean workflows() {
                     return workflowService;
@@ -582,17 +582,17 @@ public class EjbDataverseEngine {
                 public DataCaptureModuleServiceBean dataCaptureModule() {
                     return dataCaptureModule;
                 }
-                
+
                 @Override
                 public FileDownloadServiceBean fileDownload() {
                     return fileDownloadService;
                 }
-                
+
                 @Override
                 public ConfirmEmailServiceBean confirmEmail() {
                     return confirmEmailService;
                 }
-                
+
                 @Override
                 public ActionLogServiceBean actionLog() {
                     return logSvc;

@@ -25,7 +25,7 @@ import java.util.Date;
 public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand {
 
     private final Dataset target;
-    
+
     public UpdateDatasetTargetURLCommand(Dataset target, DataverseRequest aRequest) {
         super(aRequest, target);
         this.target = target;
@@ -52,7 +52,7 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand {
                         ctxt.em().merge(df);
                         ctxt.em().flush();
                     }
-                }               
+                }
             } else {
                 //do nothing - we'll know it failed because the global id create time won't have been updated.
             }
@@ -60,5 +60,5 @@ public class UpdateDatasetTargetURLCommand extends AbstractVoidCommand {
             //do nothing - idem and the problem has been logged
         }
     }
-    
+
 }

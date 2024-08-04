@@ -30,10 +30,10 @@ import org.apache.commons.lang3.StringUtils;
 @ViewScoped
 @Named
 public class NavigationWrapper implements java.io.Serializable {
-    
+
     @Inject
     DataverseSession session;
-    
+
     String redirectPage;
 
 
@@ -43,7 +43,7 @@ public class NavigationWrapper implements java.io.Serializable {
 
     public String getPageFromContext() {
         if (redirectPage == null) {
-            StringBuilder redirectBuilder = new StringBuilder();        
+            StringBuilder redirectBuilder = new StringBuilder();
 
             HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
             redirectBuilder.append(req.getServletPath());
@@ -74,28 +74,27 @@ public class NavigationWrapper implements java.io.Serializable {
                 redirectPage = "";
             }
         }
-        
+
         return redirectPage;
-    }  
-    
-    
-    
+    }
+
+
      public String notAuthorized() {
         if (!session.getUser().isAuthenticated()) {
             return "/loginpage.xhtml" + getRedirectPage();
         } else {
             return sendError(HttpServletResponse.SC_FORBIDDEN);
-        }        
+        }
     }
-    
+
     public String tooManyRequests() {
         return sendError(Status.TOO_MANY_REQUESTS.getStatusCode());
     }
-     
+
     public String notFound() {
         return sendError(HttpServletResponse.SC_NOT_FOUND);
     }
-    
+
     private String sendError(int errorCode) {
         FacesContext context = FacesContext.getCurrentInstance();
         try {
@@ -106,8 +105,7 @@ public class NavigationWrapper implements java.io.Serializable {
         }
         context.responseComplete();
         return "";
-    }    
-       
-    
+    }
+
 
 }

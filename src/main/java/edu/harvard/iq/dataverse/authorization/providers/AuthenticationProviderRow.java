@@ -29,7 +29,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(indexes = {@Index(columnList = "enabled")})
 public class AuthenticationProviderRow implements java.io.Serializable {
-    
+
     @Id
     private String id;
 
@@ -38,13 +38,13 @@ public class AuthenticationProviderRow implements java.io.Serializable {
      * internationalize it. Or add a translatableTitle field?
      */
     private String title;
-    
+
     private String subtitle;
-    
+
     private String factoryAlias;
-    
+
     private boolean enabled;
-    
+
     @Lob
     private String factoryData;
 
@@ -95,7 +95,7 @@ public class AuthenticationProviderRow implements java.io.Serializable {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 7;
@@ -114,6 +114,6 @@ public class AuthenticationProviderRow implements java.io.Serializable {
         final AuthenticationProviderRow other = (AuthenticationProviderRow) obj;
         return Objects.equals(this.id, other.id);
     }
-    
-    
+
+
 }

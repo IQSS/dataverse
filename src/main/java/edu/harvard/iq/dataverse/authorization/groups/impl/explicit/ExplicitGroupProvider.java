@@ -15,9 +15,9 @@ import java.util.logging.Logger;
  * @author michael
  */
 public class ExplicitGroupProvider implements GroupProvider {
-    
+
     private static final Logger logger = Logger.getLogger(ExplicitGroupProvider.class.getName());
-    
+
     private final ExplicitGroupServiceBean explicitGroupSvc;
     private final RoleAssigneeServiceBean roleAssigneeSvc;
 
@@ -25,7 +25,7 @@ public class ExplicitGroupProvider implements GroupProvider {
         explicitGroupSvc = anExplicitGroupSvc;
         roleAssigneeSvc = aRoleAssigneeSvc;
     }
-       
+
     @Override
     public String getGroupProviderAlias() {
         return "explicit";
@@ -35,7 +35,7 @@ public class ExplicitGroupProvider implements GroupProvider {
     public String getGroupProviderInfo() {
         return "Creates groups that contain users and other groups.";
     }
-    
+
     /**
      * Returns all the groups role assignee belongs to in the context of 
      * {@code o} and {@code req}. This includes groups defined on {@code o}'s parents as well,
@@ -50,12 +50,12 @@ public class ExplicitGroupProvider implements GroupProvider {
     public Set<ExplicitGroup> groupsFor(DataverseRequest req, DvObject o) {
         return updateProvider(explicitGroupSvc.findGroups(req.getUser(), o));
     }
-    
+
     @Override
     public Set<ExplicitGroup> groupsFor(RoleAssignee ra, DvObject o) {
         return updateProvider(explicitGroupSvc.findGroups(ra, o));
     }
-    
+
     @Override
     public Set<ExplicitGroup> groupsFor(RoleAssignee ra) {
         return updateProvider(explicitGroupSvc.findGroups(ra));
@@ -65,7 +65,7 @@ public class ExplicitGroupProvider implements GroupProvider {
     public Set<ExplicitGroup> groupsFor(DataverseRequest req) {
         return updateProvider(explicitGroupSvc.findGroups(req.getUser()));
     }
-    
+
     @Override
     public ExplicitGroup get(String groupAlias) {
         return updateProvider(explicitGroupSvc.findByAlias(groupAlias));
@@ -79,11 +79,11 @@ public class ExplicitGroupProvider implements GroupProvider {
     public Set<ExplicitGroup> findGlobalGroups() {
         return Collections.emptySet();
     }
-    
+
     public ExplicitGroup makeGroup() {
         return new ExplicitGroup(this);
     }
-    
+
     /**
      * Finds the role assignee whose identifier is given. While this is basically
      * a delegation to {@link RoleAssigneeServiceBean}, we need it as a way of
@@ -96,7 +96,7 @@ public class ExplicitGroupProvider implements GroupProvider {
     RoleAssignee findRoleAssignee(String roleAssigneeIdtf) {
         return roleAssigneeSvc.getRoleAssignee(roleAssigneeIdtf);
     }
-    
+
     /**
      * Sets the provider of the passed explicit group to {@code this}.
      * @param eg the collection
@@ -104,12 +104,12 @@ public class ExplicitGroupProvider implements GroupProvider {
      */
     ExplicitGroup updateProvider(ExplicitGroup eg) {
         if (eg == null) {
-            return null; 
+            return null;
         }
         eg.setProvider(this);
         return eg;
     }
-    
+
     /**
      * Sets the provider of the explicit groups to {@code this}.
      * @param <T> Collection's type

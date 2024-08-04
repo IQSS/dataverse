@@ -18,15 +18,15 @@ public class FileDirectoryNameValidator implements ConstraintValidator<ValidateD
 
     @Override
     public void initialize(ValidateDataFileDirectoryName constraintAnnotation) {
-        
+
     }
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         return isFileDirectoryNameValid(value, context);
-        
+
     }
-    
+
     public static boolean isFileDirectoryNameValid(String value, ConstraintValidatorContext context) {
 
         if (value == null || value.isEmpty()) {
@@ -38,5 +38,5 @@ public class FileDirectoryNameValidator implements ConstraintValidator<ValidateD
         return m.matches();
 
     }
-    
+
 }

@@ -53,7 +53,7 @@ import jakarta.validation.constraints.Size;
 		, @Index(columnList = "name")
 		, @Index(columnList = "alias")})
 public class DataverseRole implements Serializable {
-    
+
     //constants for the built in roles references in the code
     public static final String ADMIN = "admin";
     public static final String FILE_DOWNLOADER = "fileDownloader";
@@ -71,23 +71,24 @@ public class DataverseRole implements Serializable {
     public static final String MANAGER = "manager";
     public static final String CURATOR = "curator";
     public static final String MEMBER = "member";
-    
+
     public static final String NONE = "none";
-    
-    
+
+
 	public static final Comparator<DataverseRole> CMP_BY_NAME = new Comparator<DataverseRole>(){
 
 		@Override
 		public int compare(DataverseRole o1, DataverseRole o2) {
 			int cmp = o1.getName().compareTo(o2.getName());
 			if (cmp != 0) return cmp;
-                        
+
             Long o1OwnerId = o1.getOwner() == null ? 0l : o1.getOwner().getId();
             Long o2OwnerId = o2.getOwner() == null ? 0l : o2.getOwner().getId();
 
 			return o1OwnerId.compareTo(o2OwnerId);
 		}
 	};
+
 	public static Set<Permission> permissionSet(Iterable<DataverseRole> roles) {
 		long miniset = 0l;
 		for (DataverseRole role : roles) {
@@ -95,30 +96,30 @@ public class DataverseRole implements Serializable {
 		}
 		return new BitSet(miniset).asSetOf(Permission.class);
 	}
-	
+
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Pattern(regexp = ".+", message = "{role.name}")
     @Column(nullable = false)
     private String name;
-    
+
     @Size(max = 255, message = "{desc.maxLength}")
     private String description;
-    
+
     @Size(max = 16, message = "{alias.maxLength}")
     @Pattern(regexp = "[a-zA-Z0-9\\_\\-]+", message = "{alias.illegalCharacters}")
     @Column(nullable = false, unique = true)
     private String alias;
-	
+
 	/** Stores the permissions in a bit set.  */
 	private long permissionBits;
-	
+
 	@ManyToOne
-    @JoinColumn(nullable = true)     
+    @JoinColumn(nullable = true)
     private DvObject owner;
-	
+
 	public Long getId() {
 		return id;
 	}
@@ -189,23 +190,23 @@ public class DataverseRole implements Serializable {
 	public void setOwner(DvObject owner) {
 		this.owner = owner;
 	}
-	
+
 	public void addPermissions(Collection<Permission> ps) {
 		for (Permission p : ps) addPermission(p);
 	}
-	
+
 	public void addPermission(Permission p) {
 		permissionBits = new BitSet(permissionBits).set(p.ordinal()).getBits();
 	}
-	
+
 	public void clearPermissions() {
 		permissionBits = 0l;
 	}
-	
+
 	public Set<Permission> permissions() {
 		return new BitSet(permissionBits).asSetOf(Permission.class);
 	}
-	
+
 	public long getPermissionsBits() {
 		return permissionBits;
 	}
@@ -236,7 +237,7 @@ public class DataverseRole implements Serializable {
 		}
 		return true;
 	}
-        
+
         /**
          * Given a DvObject object, see if this role contains a Permission 
          * applicable to that object
@@ -245,13 +246,13 @@ public class DataverseRole implements Serializable {
          * @return 
          */
         public boolean doesDvObjectHavePermissionForObject(DvObject dvObject) {
-            
+
             if (dvObject == null) {
                 return false;
             }
-            
+
             return this.doesDvObjectClassHavePermissionForObject(dvObject.getClass());
-            
+
         } // doesDvObjectHavePermissionForObject   
         
         
@@ -265,11 +266,11 @@ public class DataverseRole implements Serializable {
          * @return 
          */
         public boolean doesDvObjectClassHavePermissionForObject(Class<? extends DvObject> dvObjectClass) {
-            
+
             if (dvObjectClass == null) {
                 return false;
             }
-            
+
             // Iterate through permissions.  If one applies to this class, return true
             //
             for (Permission perm : this.permissions()) {
@@ -277,9 +278,9 @@ public class DataverseRole implements Serializable {
                    return true;
                }
             }
-            
+
             return false;
-            
+
         } // doesDvObjectClassHavePermissionForObject   
         
         

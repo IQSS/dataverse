@@ -11,7 +11,7 @@ import jakarta.mail.internet.InternetAddress;
 public class BrandingUtil {
 
     private static final Logger logger = Logger.getLogger(BrandingUtil.class.getCanonicalName());
-    
+
     private static DataverseServiceBean dataverseService;
     private static SettingsServiceBean settingsService;
 

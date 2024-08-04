@@ -11,7 +11,7 @@ import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotEmpty;
-;
+
 
 /**
  * A group that explicitly lists email address domains that a user might have to belong to this group.
@@ -24,53 +24,57 @@ import jakarta.validation.constraints.NotEmpty;
 })
 @Entity
 public class MailDomainGroup extends PersistedGlobalGroup {
-    
+
     /**
      * All the email address domains that make users belong
      * to this group, concatenated with ";" (thus avoiding another relation)
      */
     @NotEmpty
     private String emailDomains;
-    
+
     private boolean isRegEx = false;
-    
+
     @Transient
     private MailDomainGroupProvider provider;
-    
+
     /**
      * Empty Constructor for JPA.
      */
     public MailDomainGroup() {}
-    
+
     public void setEmailDomains(String domains) {
         this.emailDomains = domains;
     }
+
     public void setEmailDomains(List<String> domains) {
         this.emailDomains = String.join(";", domains);
     }
-    
+
     public String getEmailDomains() {
         return this.emailDomains;
     }
+
     public List<String> getEmailDomainsAsList() {
         return Arrays.asList(this.emailDomains.split(";"));
     }
-    
+
     public boolean isRegEx() {
         return isRegEx;
     }
+
     public void setIsRegEx(boolean isRegEx) {
         this.isRegEx = isRegEx;
     }
-    
+
     @Override
     public MailDomainGroupProvider getGroupProvider() {
         return provider;
     }
+
     public void setGroupProvider(MailDomainGroupProvider pvd) {
         this.provider = pvd;
     }
-    
+
     /**
      * This will throw an UnsupportOperationException if called.
      * Due to the necessity of checking if the mail adress is confirmed,
@@ -82,7 +86,7 @@ public class MailDomainGroup extends PersistedGlobalGroup {
     public boolean contains(DataverseRequest aRequest) {
         throw new UnsupportedOperationException("This cannot be supported.");
     }
-    
+
     /**
      * This will throw an UnsupportOperationException if called.
      * We will not allow edits of this via UI due to it's static nature. Can be changed via API.
@@ -115,12 +119,12 @@ public class MailDomainGroup extends PersistedGlobalGroup {
             return Objects.equals(this.emailDomains, other.getEmailDomains());
         }
     }
-    
+
     @Override
     public String toString() {
         return "[MailDomainGroup " + this.getPersistedGroupAlias() + ": id=" + this.getId() + " domains=" + this.emailDomains + " ]";
     }
-    
+
     public MailDomainGroup update(MailDomainGroup src) {
         setPersistedGroupAlias(src.getPersistedGroupAlias());
         setDisplayName(src.getDisplayName());

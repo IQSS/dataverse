@@ -180,11 +180,11 @@ public class BagGenerator {
     public void setIgnoreHashes(boolean val) {
         ignorehashes = val;
     }
-    
+
     public void setDefaultCheckSumType(ChecksumType type) {
     	hashtype = type;
     }
-    
+
     public static void println(String s) {
         System.out.println(s);
         System.out.flush();
@@ -202,7 +202,7 @@ public class BagGenerator {
      * @return success true/false
      */
     public boolean generateBag(OutputStream outputStream) throws Exception {
-        
+
 
         File tmp = File.createTempFile("qdr-scatter-dirs", "tmp");
         dirs = ScatterZipOutputStream.fileBased(tmp);
@@ -213,7 +213,7 @@ public class BagGenerator {
         String pidString = PidUtil.parseAsGlobalID(pidUrlString).asString();
         bagID = pidString + "v."
                 + aggregation.get(JsonLDTerm.schemaOrg("version").getLabel()).getAsString();
-        
+
         logger.info("Generating Bag: " + bagID);
         try {
             // Create valid filename from identifier and extend path with
@@ -543,7 +543,7 @@ public class BagGenerator {
                 if (directoryLabel != null) {
                     childPath = currentPath + directoryLabel.getAsString() + "/" + childTitle;
                 }
-                
+
 
                 String childHash = null;
                 if (child.has(JsonLDTerm.checksum.getLabel())) {
@@ -734,7 +734,7 @@ public class BagGenerator {
                 }
             } catch (InterruptedException e) {
                 logger.log(Level.SEVERE, "Hash Calculations interrupted", e);
-            } 
+            }
         } catch (IOException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
@@ -778,7 +778,7 @@ public class BagGenerator {
             JsonElement contacts = aggregation.get(contactTerm.getLabel());
             JsonLDTerm contactNameTerm = oremap.getContactNameTerm();
             JsonLDTerm contactEmailTerm = oremap.getContactEmailTerm();
-            
+
             if (contacts.isJsonArray()) {
                 for (int i = 0; i < contactsArray.size(); i++) {
                     info.append("Contact-Name: ");
@@ -841,7 +841,7 @@ public class BagGenerator {
         info.append(CRLF);
 
         info.append("External-Description: ");
-        
+
         /* Description, and it's subfields, are terms from citation.tsv whose mapping to a formal vocabulary and label in the oremap may change
          * so we need to find the labels used.
          */
@@ -905,7 +905,7 @@ public class BagGenerator {
             JsonObject jsonObject = jsonElement.getAsJsonObject();
             val = jsonObject.get(key).getAsString();
         } else if (jsonElement.isJsonArray()) {
-            
+
             Iterator<JsonElement> iter = jsonElement.getAsJsonArray().iterator();
             ArrayList<String> stringArray = new ArrayList<String>();
             while (iter.hasNext()) {

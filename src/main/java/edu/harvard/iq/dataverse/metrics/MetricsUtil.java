@@ -89,11 +89,11 @@ public class MetricsUtil {
         }
         return jab;
     }
-    
+
     public static JsonArray timeSeriesToJson(List<Object[]> results) {
         return timeSeriesToJson(results, false);
     }
-    
+
     public static JsonArray timeSeriesToJson(List<Object[]> results, boolean isBigDecimal) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         long total = 0;
@@ -104,7 +104,7 @@ public class MetricsUtil {
         // Create an entry for each date
         for (String date : dates) {
             JsonObjectBuilder job = Json.createObjectBuilder();
-            
+
             // If there's a result for this date, add it's count to the total
             // and find the date of the next entry
             if (date.equals(curDate)) {
@@ -134,7 +134,7 @@ public class MetricsUtil {
         }
         return jab.build();
     }
-    
+
     public static JsonArray timeSeriesByTypeToJson(List<Object[]> results) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         Map<String, Long> totals = new HashMap<>();
@@ -169,7 +169,7 @@ public class MetricsUtil {
         }
         return jab.build();
     }
-    
+
     public static JsonArray timeSeriesByPIDToJson(List<Object[]> results) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         Map<String, Long> totals = new HashMap<>();
@@ -200,7 +200,7 @@ public class MetricsUtil {
         }
         return jab.build();
     }
-    
+
     public static JsonArray timeSeriesByIDAndPIDToJson(List<Object[]> results) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         Map<Integer, Long> totals = new HashMap<>();
@@ -237,7 +237,7 @@ public class MetricsUtil {
         }
         return jab.build();
     }
-    
+
 
     /**
      *

@@ -35,29 +35,31 @@ public class ControlledVocabAlternate implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    @Column(columnDefinition = "TEXT", nullable = false) 
+
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String strValue;
 
     public String getStrValue() {
         return strValue;
     }
+
     public void setStrValue(String strValue) {
         this.strValue = strValue;
-        
+
     }
-    
+
     @ManyToOne
     @JoinColumn(nullable = false)
     private DatasetFieldType datasetFieldType;
-    
+
     public DatasetFieldType getDatasetFieldType() {
         return datasetFieldType;
     }
+
     public void setDatasetFieldType(DatasetFieldType datasetFieldType) {
         this.datasetFieldType = datasetFieldType;
     }
-    
+
     @ManyToOne
     @JoinColumn(nullable = false)
     private ControlledVocabularyValue controlledVocabularyValue;
@@ -91,6 +93,6 @@ public class ControlledVocabAlternate implements Serializable {
         }
         return true;
     }
-    
-    
+
+
 }

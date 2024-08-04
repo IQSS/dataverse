@@ -1,4 +1,5 @@
 package edu.harvard.iq.dataverse;
+
 import java.io.Serializable;
 import java.util.List;
 import jakarta.persistence.*;
@@ -29,22 +30,22 @@ public class CustomQuestion implements Serializable {
     @ManyToOne
     @JoinColumn(nullable = false)
     private Guestbook guestbook;
-    
+
     @OneToMany(mappedBy = "customQuestion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     private List<CustomQuestionResponse> customQuestionResponses;
 
     @OneToMany(mappedBy = "customQuestion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
-    @OrderBy("displayOrder")    
+    @OrderBy("displayOrder")
     private List<CustomQuestionValue> customQuestionValues;
-    
+
     @Column(nullable = false)
     private String questionType;
-    
+
     @NotBlank(message = "{custom.questiontext}")
     @Column(nullable = false)
     private String questionString;
     private boolean required;
-    
+
     private boolean hidden;  //when a question is marked for removal, but it has data it is set to hidden
 
     private int displayOrder;
@@ -56,7 +57,7 @@ public class CustomQuestion implements Serializable {
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
     }
-    
+
     public boolean isHidden() {
         return hidden;
     }
@@ -92,10 +93,10 @@ public class CustomQuestion implements Serializable {
     public List<CustomQuestionValue> getCustomQuestionValues() {
         return customQuestionValues;
     }
-    
+
     public String getCustomQuestionValueString() {
         String retString = "";
-        
+
         if (customQuestionValues != null && !this.customQuestionValues.isEmpty()) {
             for (CustomQuestionValue customQuestionValue : this.customQuestionValues) {
                 if (!retString.isEmpty()) {
@@ -106,7 +107,7 @@ public class CustomQuestion implements Serializable {
                 retString += customQuestionValue.getValueString();
             }
         }
-        
+
         return retString;
     }
 
@@ -121,7 +122,7 @@ public class CustomQuestion implements Serializable {
     public void setQuestionType(String questionType) {
         this.questionType = questionType;
     }
-    
+
     public List<CustomQuestionResponse> getCustomQuestionResponses() {
         return customQuestionResponses;
     }
@@ -129,16 +130,16 @@ public class CustomQuestion implements Serializable {
     public void setCustomQuestionResponses(List<CustomQuestionResponse> customQuestionResponses) {
         this.customQuestionResponses = customQuestionResponses;
     }
-    
+
     public void removeCustomQuestionValue(int index) {
         customQuestionValues.remove(index);
     }
-    
+
     public void addCustomQuestionValue(int index, CustomQuestionValue cq) {
         customQuestionValues.add(index, cq);
     }
-    
-       
+
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -163,6 +164,6 @@ public class CustomQuestion implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dvn.core.vdc.CustomQuestion[ id=" + id + " ]";
     }
-    
+
 }
 

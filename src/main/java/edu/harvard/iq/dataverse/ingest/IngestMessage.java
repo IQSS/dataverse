@@ -41,7 +41,7 @@ public class IngestMessage implements Serializable {
         this.authenticatedUserId = authenticatedUserId;
         datafile_ids = new ArrayList<Long>();
     }
-    
+
     private Long datasetId;
     private List<Long> datafile_ids;
     private Long authenticatedUserId;
@@ -54,15 +54,15 @@ public class IngestMessage implements Serializable {
     public void setDatasetId(Long datasetId) {
         this.datasetId = datasetId;
     }
-    
+
     public List<Long> getFileIds() {
-        return datafile_ids; 
+        return datafile_ids;
     }
-    
+
     public void setFileIds(List<Long> file_ids) {
         datafile_ids = file_ids;
     }
-    
+
     public void addFileId(Long file_id) {
         datafile_ids.add(file_id);
     }

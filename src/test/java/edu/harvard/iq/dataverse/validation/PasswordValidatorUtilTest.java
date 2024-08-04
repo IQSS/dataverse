@@ -54,7 +54,7 @@ public class PasswordValidatorUtilTest {
             String req4 = PasswordValidatorUtil.getPasswordRequirements(minLength, maxLength, characterRules, numberOfCharacteristics, 0, goodStrength, true, errors);
             System.out.println(HtmlPrinter.prettyPrint(req4));
         }
-        
+
         /**
          * Test of parseConfigString method, of class PasswordValidatorUtil.
          */
@@ -94,6 +94,7 @@ public class PasswordValidatorUtilTest {
                 "At least 1 character from 2 of the following types: uppercase, lowercase, letter, numeral, special")
         );
     }
+
     @ParameterizedTest
     @MethodSource("configurations")
     void testGetRequiredCharacters(int numberOfCharacteristics, String characterRulesConfigString, String expectedValue) {
@@ -106,7 +107,7 @@ public class PasswordValidatorUtilTest {
             characterRules = PasswordValidatorUtil.getCharacterRulesDefault();
             message += "default";
         }
-        
+
         String reqString = PasswordValidatorUtil.getRequiredCharacters(characterRules, numberOfCharacteristics);
         assertEquals(expectedValue, reqString, message + ": " + reqString);
     }

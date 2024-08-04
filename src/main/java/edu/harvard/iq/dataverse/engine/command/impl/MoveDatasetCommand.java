@@ -74,13 +74,13 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
         if (moved.getOwner().equals(destination)) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.targetDataverseSameAsOriginalDataverse"), this);
         }
-        
+
         // if dataset is published make sure that its target is published
         
         if (moved.isReleased() && !destination.isReleased()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dashboard.card.datamove.dataset.command.error.targetDataverseUnpublishedDatasetPublished", Arrays.asList(destination.getDisplayName())), this);
         }
-                
+
         //if the datasets guestbook is not contained in the new dataverse then remove it
         if (moved.getGuestbook() != null) {
             Guestbook gb = moved.getGuestbook();
@@ -99,14 +99,14 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
+
         // generate list of all possible parent dataverses to check against
         List<Dataverse> ownersToCheck = new ArrayList<>();
         ownersToCheck.add(destination);
         if (destination.getOwners() != null) {
             ownersToCheck.addAll(destination.getOwners());
         }
-        
+
         // if the dataset is linked to the new dataverse or any of 
         // its parent dataverses then remove the link
         List<DatasetLinkingDataverse> linkingDatasets = new ArrayList<>();
@@ -126,7 +126,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
+
         if (removeGuestbook || removeLinkDs) {
             StringBuilder errorString = new StringBuilder();
             if (removeGuestbook) {
@@ -137,7 +137,7 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
             }
             throw new UnforcedCommandException(errorString.toString(), this);
         }
-        
+
         // 6575 if dataset is submitted for review and the default contributor
         // role includes dataset publish then remove the lock
         

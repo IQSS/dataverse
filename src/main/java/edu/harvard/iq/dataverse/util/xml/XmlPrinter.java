@@ -17,17 +17,17 @@ public class XmlPrinter {
     static public String prettyPrintXml(String xml) {
         try {
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            
+
             // pretty print by indention
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             // set amount of whitespace during indent
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-    
+
             StreamSource source = new StreamSource(new StringReader(xml));
             StringWriter output = new StringWriter();
-    
+
             transformer.transform(source, new StreamResult(output));
-            
+
             // This hacky hack is necessary due to https://bugs.openjdk.java.net/browse/JDK-7150637
             // which has not been a problem before because of using old xercesImpl 2.8.0 library dated 2006.
             // That old library contains security flaws, so the change was necessary.

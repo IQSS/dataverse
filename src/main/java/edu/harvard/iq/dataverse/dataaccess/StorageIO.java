@@ -625,7 +625,7 @@ public abstract class StorageIO<T extends DvObject> {
     public static boolean isDataverseAccessible(String driverId) {
         return (true && !Boolean.parseBoolean(StorageIO.getConfigParamForDriver(driverId, AbstractRemoteOverlayAccessIO.FILES_NOT_ACCESSIBLE_BY_DATAVERSE)));
     }
-    
+
     // Check that storageIdentifier is consistent with store's config
     // False will prevent direct uploads
     static boolean isValidIdentifier(String driverId, String storageId) {
@@ -652,8 +652,8 @@ public abstract class StorageIO<T extends DvObject> {
      * @throws IOException 
      */
     public abstract long retrieveSizeFromMedia() throws IOException;
-    
-    
+
+
     /* Convenience methods to get a driver-specific parameter
      * 
      * - with or without a default
@@ -674,10 +674,11 @@ public abstract class StorageIO<T extends DvObject> {
     protected static String getConfigParamForDriver(String driverId, String parameterName) {
         return getConfigParamForDriver(driverId, parameterName, null);
     }
+
     protected static String getConfigParamForDriver(String driverId, String parameterName, String defaultValue) {
         return System.getProperty("dataverse.files." + driverId + "." + parameterName, defaultValue);
     }
-    
+
     public static String getNewIdentifier(String driverId) {
         return driverId + DataAccess.SEPARATOR + FileUtil.generateStorageIdentifier();
     }

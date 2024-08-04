@@ -16,10 +16,10 @@ import jakarta.persistence.PersistenceContext;
 @Stateless
 public class CustomFieldServiceBean {
 
-   
+
      @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-     
+
     public CustomFieldMap findByTemplateField(String template, String field) {
         try {
             CustomFieldMap map = (CustomFieldMap) em.createNamedQuery("CustomFieldMap.findByTemplateField").setParameter("template", template).setParameter("field", field).getSingleResult();

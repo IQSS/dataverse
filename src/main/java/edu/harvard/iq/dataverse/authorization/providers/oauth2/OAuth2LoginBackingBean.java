@@ -50,8 +50,8 @@ public class OAuth2LoginBackingBean implements Serializable {
     private String responseBody;
     Optional<String> redirectPage = Optional.empty();
     private OAuth2Exception error;
-    private boolean disabled = false; 
-    private boolean signUpDisabled = false; 
+    private boolean disabled = false;
+    private boolean signUpDisabled = false;
     /**
      * TODO: Only used in exchangeCodeForToken(). Make local var in method.
      */
@@ -59,7 +59,7 @@ public class OAuth2LoginBackingBean implements Serializable {
 
     @EJB
     AuthenticationServiceBean authenticationSvc;
-    
+
     @EJB
     OAuth2TokenDataServiceBean oauth2Tokens;
 
@@ -74,11 +74,11 @@ public class OAuth2LoginBackingBean implements Serializable {
 
     @Inject
     OAuth2FirstLoginPage newAccountPage;
-    
+
     @Inject
     @ClockUtil.LocalTime
     Clock clock;
-    
+
     /**
      * Generate the OAuth2 Provider URL to be used in the login page link for the provider.
      * @param idpId Unique ID for the provider (used to lookup in authn service bean)
@@ -90,14 +90,14 @@ public class OAuth2LoginBackingBean implements Serializable {
         String state = createState(idp, toOption(redirectPage));
         return idp.buildAuthzUrl(state, systemConfig.getOAuth2CallbackUrl());
     }
-    
+
     /**
      * View action for callback.xhtml, the browser redirect target for the OAuth2 provider.
      * @throws IOException
      */
     public void exchangeCodeForToken() throws IOException {
         HttpServletRequest req = Faces.getRequest();
-        
+
         try {
             Optional<AbstractOAuth2AuthenticationProvider> oIdp = parseStateFromRequest(req.getParameter("state"));
             Optional<String> code = parseCodeFromRequest(req);
@@ -105,30 +105,30 @@ public class OAuth2LoginBackingBean implements Serializable {
             if (oIdp.isPresent() && code.isPresent()) {
                 AbstractOAuth2AuthenticationProvider idp = oIdp.get();
                 oauthUser = idp.getUserRecord(code.get(), req.getParameter("state"), systemConfig.getOAuth2CallbackUrl());
-                
+
                 // Throw an error if this authentication method is disabled:
                 // (it's not clear if it's possible at all, for somebody to get here with 
                 // the provider really disabled; but, shouldn't hurt either).
                 if (isProviderDisabled(idp.getId())) {
-                    disabled = true; 
+                    disabled = true;
                     throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.providerDisabled"), idp.getId()));
                 }
-                
+
                 UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
                 AuthenticatedUser dvUser = authenticationSvc.lookupUser(idtf);
-    
+
                 if (dvUser == null) {
                     // Need to create a new user - unless signups are disabled 
                     // for this authentication method; in which case, throw 
                     // an error:
                     if (systemConfig.isSignupDisabledForRemoteAuthProvider(idp.getId())) {
-                        signUpDisabled = true; 
-                        throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.signupDisabledForProvider"), idp.getId())); 
+                        signUpDisabled = true;
+                        throw new OAuth2Exception(-1, "", MessageFormat.format(BundleUtil.getStringFromBundle("oauth2.callback.error.signupDisabledForProvider"), idp.getId()));
                     } else {
                         newAccountPage.setNewUser(oauthUser);
                         Faces.redirect("/oauth2/firstLogin.xhtml");
                     }
-        
+
                 } else {
                     // login the user and redirect to HOME of intended page (if any).
                     // setUser checks for deactivated users.
@@ -140,7 +140,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                         tokenData.setOauthProviderId(idp.getId());
                         oauth2Tokens.store(tokenData);
                     }
-                    
+
                     Faces.redirect(redirectPage.orElse("/"));
                 }
             }
@@ -153,7 +153,7 @@ public class OAuth2LoginBackingBean implements Serializable {
             logger.log(Level.WARNING, "Threading exception caught. Message: {0}", ex.getLocalizedMessage());
         }
     }
-    
+
     /**
      * TODO: Refactor this to be included in calling method.
      * TODO: Use org.apache.commons.io.IOUtils.toString(req.getReader()) instead of overcomplicated code below.
@@ -178,7 +178,7 @@ public class OAuth2LoginBackingBean implements Serializable {
         }
         return Optional.of(code);
     }
-    
+
     /**
      * Parse and verify the state returned from the provider.
      *
@@ -196,7 +196,7 @@ public class OAuth2LoginBackingBean implements Serializable {
             logger.log(Level.INFO, "No state present in request");
             return Optional.empty();
         }
-        
+
         String[] topFields = state.split("~", 2);
         if (topFields.length != 2) {
             logger.log(Level.INFO, "Wrong number of fields in state string", state);
@@ -207,7 +207,7 @@ public class OAuth2LoginBackingBean implements Serializable {
             logger.log(Level.INFO, "Can''t find IDP ''{0}''", topFields[0]);
             return Optional.empty();
         }
-        
+
         // Verify the response by decrypting values and check for state valid timeout
         String raw = StringUtil.decrypt(topFields[1], idp.clientSecret);
         String[] stateFields = raw.split("~", -1);
@@ -228,7 +228,7 @@ public class OAuth2LoginBackingBean implements Serializable {
             return Optional.empty();
         }
     }
-    
+
     /**
      * Create a randomized unique state string to be used while crafting the autorization request
      * @param idp
@@ -240,7 +240,7 @@ public class OAuth2LoginBackingBean implements Serializable {
             throw new IllegalArgumentException("idp cannot be null");
         }
         SecureRandom rand = new SecureRandom();
-        
+
         String base = idp.getId() + "~" + this.clock.millis()
                                   + "~" + rand.nextInt(1000)
                                   + redirectPage.map(page -> "~" + page).orElse("");
@@ -249,21 +249,21 @@ public class OAuth2LoginBackingBean implements Serializable {
         final String state = idp.getId() + "~" + encrypted;
         return state;
     }
-    
+
     /**
      * TODO: Unused. Remove.
      */
     public String getResponseBody() {
         return responseBody;
     }
-    
+
     /**
      * TODO: Unused. Remove.
      */
     public int getResponseCode() {
         return responseCode;
     }
-    
+
     /**
      * TODO: Unused. Remove.
      */
@@ -274,14 +274,14 @@ public class OAuth2LoginBackingBean implements Serializable {
     public OAuth2Exception getError() {
         return error;
     }
-    
+
     /**
      * TODO: Unused. Remove.
      */
     public boolean isInError() {
         return error != null;
     }
-    
+
     /**
      * TODO: Unused. Remove.
      */
@@ -290,32 +290,32 @@ public class OAuth2LoginBackingBean implements Serializable {
                 .sorted(Comparator.comparing(AbstractOAuth2AuthenticationProvider::getTitle))
                 .collect(toList());
     }
-    
+
     /**
      * TODO: Unused. Remove.
      */
     public boolean isOAuth2ProvidersDefined() {
         return !authenticationSvc.getOAuth2Providers().isEmpty();
     }
-    
+
     public boolean isDisabled() {
         return disabled;
     }
-    
+
     public boolean isSignUpDisabled() {
-        return signUpDisabled; 
+        return signUpDisabled;
     }
-    
+
     private boolean isProviderDisabled(String providerId) {
         // Compare this provider id against the list of *enabled* auth providers 
         // returned by the Authentication Service:
         List<AuthenticationProvider> idps = new ArrayList<>(authenticationSvc.getAuthenticationProviders());
-        
+
         // for the tests to work:
         if (idps.isEmpty()) {
-            return false; 
+            return false;
         }
-        
+
         for (AuthenticationProvider idp : idps) {
             if (idp != null) {
                 if (providerId.equals(idp.getId())) {

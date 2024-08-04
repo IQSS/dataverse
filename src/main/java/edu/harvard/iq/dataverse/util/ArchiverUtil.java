@@ -39,7 +39,7 @@ public class ArchiverUtil {
         }
         return null;
     }
-    
+
     public static boolean onlySingleVersionArchiving(Class<? extends AbstractSubmitToArchiveCommand> clazz, SettingsServiceBean settingsService) {
         Method m;
         try {

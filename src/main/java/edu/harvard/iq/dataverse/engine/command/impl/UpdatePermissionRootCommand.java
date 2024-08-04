@@ -16,16 +16,16 @@ import java.util.Set;
  */
 // no annotations here, since permissions are dynamically decided
 public class UpdatePermissionRootCommand extends AbstractCommand<Dataverse> {
-    
+
 	private final boolean newValue;
 	private final Dataverse dvoc;
-    
+
 	public UpdatePermissionRootCommand(boolean newValue, DataverseRequest aRequest, Dataverse anAffectedDataverse) {
 		super(aRequest, anAffectedDataverse);
 		this.newValue = newValue;
 		dvoc = anAffectedDataverse;
 	}
-	
+
 	@Override
 	public Dataverse execute(final CommandContext ctxt) throws CommandException {
 		if (dvoc.isPermissionRoot() == newValue) {
@@ -38,9 +38,9 @@ public class UpdatePermissionRootCommand extends AbstractCommand<Dataverse> {
 	}
 
     @Override
-    public boolean onSuccess(CommandContext ctxt, Object r) {  
+    public boolean onSuccess(CommandContext ctxt, Object r) {
         return ctxt.dataverses().index((Dataverse) r, true);
-    }        
+    }
 
 
     //TODO: Review this as this will never be an instance of Dataset, will it?
@@ -51,5 +51,5 @@ public class UpdatePermissionRootCommand extends AbstractCommand<Dataverse> {
                 dvoc instanceof Dataverse ? Collections.singleton(Permission.ManageDataversePermissions)
                 : Collections.singleton(Permission.ManageDatasetPermissions));
     }
-        
+
 }

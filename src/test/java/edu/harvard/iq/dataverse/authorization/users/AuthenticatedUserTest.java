@@ -81,7 +81,7 @@ public class AuthenticatedUserTest {
         assertEquals(expResult, result);
 
     }
-    
+
     @Test
     public void testIsAuthenticated() {
         System.out.println("isAuthenticated");

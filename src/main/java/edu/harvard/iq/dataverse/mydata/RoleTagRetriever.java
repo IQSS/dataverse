@@ -33,7 +33,7 @@ import jakarta.json.JsonArrayBuilder;
  * @author rmp553
  */
 public class RoleTagRetriever {
-    
+
     private static final Logger logger = Logger.getLogger(RoleTagRetriever.class.getCanonicalName());
 
     private final DataverseRolePermissionHelper rolePermissionHelper;
@@ -42,7 +42,7 @@ public class RoleTagRetriever {
 
     public boolean errorFound = false;
     public String errorMessage = null;
-    
+
     //public Map<Long, String> roleNameLookup = new HashMap<>();    // { role id : role name }
 
     
@@ -53,9 +53,9 @@ public class RoleTagRetriever {
     private Map<Long, String> idToDvObjectType;     // { dvobject id : dvobject type }
     
     private List<Long> datasetIdsNeedingParentIds;
-    
+
     private List<Long> finalCardIds;
-    
+
     private Map<Long, List<String>> finalIdToRolesHash;  // { dvobject id : [role name, role name] }
 
     // ----------------------------------
@@ -68,36 +68,36 @@ public class RoleTagRetriever {
        this.roleAssigneeService = roleAssigneeService;
        this.dvObjectServiceBean = dvObjectServiceBean;
     }
-    
+
     public void loadRoles(DataverseRequest dataverseRequest, SolrQueryResponse solrQueryResponse) {
         if (dataverseRequest == null) {
             throw new NullPointerException("RoleTagRetriever.constructor. dataverseRequest cannot be null");
         }
-        
+
         AuthenticatedUser au = dataverseRequest.getAuthenticatedUser();
-        
+
         if (au == null) {
             throw new NullPointerException("RoleTagRetriever.constructor. au cannot be null");
         }
-        
+
         String userIdentifier = au.getUserIdentifier();
         if (userIdentifier == null) {
             throw new NullPointerException("RoleTagRetriever.constructor. userIdentifier cannot be null");
         }
-        
+
         if (solrQueryResponse == null) {
             throw new NullPointerException("RoleTagRetriever.constructor. solrQueryResponse cannot be null");
         }
-        
+
         // (1) Reset variables
         initLookups();
-        
+
         // (2) Load roles from solr docs
         loadInfoFromSolrResponseDocs(solrQueryResponse);
-        
+
         // (3) Load grandparent ids, if needed
         findDataverseIdsForFiles();
-        
+
         // (4) Retrieve the role ids
         retrieveRoleIdsForDvObjects(dataverseRequest, au);
 
@@ -107,73 +107,73 @@ public class RoleTagRetriever {
         //showRoleListHash();
 
     }
-    
-    
+
+
     private void initLookups() {
-        
+
         this.errorFound = false;
         this.errorMessage = null;
-        
+
         this.idToRoleListHash = new HashMap<>();    // { dvobject id : [role id, role id] }
 
         this.childToParentIdHash = new HashMap<>();     // { dvobject id : parent id }
 
         this.idToDvObjectType = new HashMap<>();     // { dvobject id : dvobject type }
 
-        this.finalIdToRolesHash = new HashMap<>();  
+        this.finalIdToRolesHash = new HashMap<>();
 
         this.datasetIdsNeedingParentIds = new ArrayList<>();
 
         this.finalCardIds = new ArrayList<>();
     }
-        
+
     private void addIdNeedingRoleRetrieval(Long dvObjectId) {
         if (dvObjectId == null) {
             return;
         }
-        
+
         // initialize with dvObject id and empty list of role ids
         //
         if (!this.idToRoleListHash.containsKey(dvObjectId)) {
             this.idToRoleListHash.put(dvObjectId, new ArrayList<>());
         }
     }
-    
+
     public void showRoleListHash() {
-        
+
         msgt("showRoleListHash");
         for (Map.Entry<Long, List<Long>> entry : idToRoleListHash.entrySet()) {
-            msg("id: " + entry.getKey() + " | values: " + entry.getValue().toString());            
+            msg("id: " + entry.getKey() + " | values: " + entry.getValue().toString());
         }
-        
+
         msgt("show idToDvObjectType");
         for (Map.Entry<Long, String> entry : idToDvObjectType.entrySet()) {
-            msg("dv id: " + entry.getKey() + " | type: " + entry.getValue());            
+            msg("dv id: " + entry.getKey() + " | type: " + entry.getValue());
         }
 
         for (Map.Entry<Long, List<String>> entry : finalIdToRolesHash.entrySet()) {
-            msg("id: " + entry.getKey() + " | values: " + entry.getValue().toString());            
+            msg("id: " + entry.getKey() + " | values: " + entry.getValue().toString());
         }
-        
+
     }
-    
-    
+
+
     private void addRoleIdForHash(Long dvObjectId, Long roleId) {
         if ((dvObjectId == null) || (roleId == null)) {
             return;
         }
-        
+
         if (!this.idToRoleListHash.containsKey(dvObjectId)) {
             logger.warning("DvObject id not found in hash (shouldn't happen): " + dvObjectId);
             return;
         }
         List<Long> roldIdList = this.idToRoleListHash.get(dvObjectId);
-        roldIdList.add(roleId);   
-        
+        roldIdList.add(roleId);
+
         this.idToRoleListHash.put(dvObjectId, roldIdList);
-        
+
     }
-    
+
     /**
      * Iterate through the Solr Cards and collect
      *  - DvObject Id + Parent ID
@@ -203,12 +203,12 @@ public class RoleTagRetriever {
 
             String dtype = doc.getType();
             Long entityId = doc.getEntityId();
-                        
+
             if (dtype == null) {
                 throw new NullPointerException("The dvobject type cannot be null for SolrSearchResult");
             }
             logger.fine("\nid: " + doc.getEntityId() + " dtype: " + dtype);
-            
+
             // -------------------------------------------------
             // (b) Populate dict of { dvObject id : dtype } 
             //      e.g. { 3 : 'Dataverse' }
@@ -219,13 +219,13 @@ public class RoleTagRetriever {
             // (c) initialize dict of { dvObject id : [ (empty list for role ids) ] } 
             // -------------------------------------------------
             addIdNeedingRoleRetrieval(entityId);
-            
+
             Long parentId = doc.getParentIdAsLong();
 
             // -------------------------------------------------
             // For datasets and files, check parents
             // -------------------------------------------------
-            if (!(dtype.equals(SearchConstants.SOLR_DATAVERSES))) {   
+            if (!(dtype.equals(SearchConstants.SOLR_DATAVERSES))) {
 
                 // -------------------------------------------------
                 // (d) Add to the childToParentIdHash  { child id : parent id }
@@ -244,7 +244,7 @@ public class RoleTagRetriever {
                 //          - similar to (c) above
                 // -------------------------------------------------
                 addIdNeedingRoleRetrieval(parentId);
-                
+
                 // -------------------------------------------------
                 // (f) Add the parent to the DvObject type lookup { dvObject id : dtype } 
                 //          - similar to (b) above
@@ -256,12 +256,12 @@ public class RoleTagRetriever {
                     // (f1) This is a file, we know the parent is a Dataset
                     // -------------------------------------------------
                     this.idToDvObjectType.put(parentId, SearchConstants.SOLR_DATASETS);
-                    
+
                     // -------------------------------------------------
                     // (g) For files, we'll need to get roles from the grandparent--e.g., the dataverse
                     // -------------------------------------------------
                     this.datasetIdsNeedingParentIds.add(parentId);
-    
+
                 }if (dtype.equals(SearchConstants.SOLR_DATASETS)) {
                     logger.fine("It's a dataset");
 
@@ -271,7 +271,7 @@ public class RoleTagRetriever {
                     this.idToDvObjectType.put(parentId, SearchConstants.SOLR_DATAVERSES);
                 }
             }
-                        
+
             // -------------------------------------------------
             // initialize final hash of dvObject id and empty list of role names
             //          { dvObject id : [ (empty list for role nams) ] } 
@@ -279,9 +279,9 @@ public class RoleTagRetriever {
             this.finalIdToRolesHash.put(doc.getEntityId(), new ArrayList<>());
 
         }
-        
+
     }
-    
+
     /**
      *  From the Cards, we know the Parent Ids of all the DvObjects
      * 
@@ -299,32 +299,32 @@ public class RoleTagRetriever {
      */
     private void findDataverseIdsForFiles() {
         msgt("findDataverseIdsForFiles: " + datasetIdsNeedingParentIds.toString());
-        
+
         // -------------------------------------
         // (1) Do we have any dataset Ids where we need to find the parent dataverse?
         // -------------------------------------
         if (this.datasetIdsNeedingParentIds == null) {
             throw new NullPointerException("findDataverseIdsForFiles should not be null");
         }
-        
+
         if (this.datasetIdsNeedingParentIds.isEmpty()) {
             logger.fine("No ids found!");
             return;
         }
-        
+
         // -------------------------------------
         // (2) Do we have any dataset Ids where we need to find the parent dataverse?
         // -------------------------------------
         List<Object[]> results = this.dvObjectServiceBean.getDvObjectInfoForMyData(this.datasetIdsNeedingParentIds);
         logger.fine("findDataverseIdsForFiles results count: " + results.size());
-       
+
         // -------------------------------------
         // (2a) Nope, return
         // -------------------------------------
         if (results.isEmpty()) {
-            return;       
+            return;
         }
-        
+
 
         // -------------------------------------
         // (3) Process the results -- the parent ID is the Dataverse that we're interested in
@@ -333,7 +333,7 @@ public class RoleTagRetriever {
         Long dvId;
         String dtype;
         Long parentId;
-        
+
         // -------------------------------------
         // Iterate through object list
         // -------------------------------------
@@ -342,7 +342,7 @@ public class RoleTagRetriever {
             dvId = new Long(dvIdAsInteger);
             dtype = (String) ra[1];
             parentId = (Long) ra[2];
-                       
+
             //msg("result: dvId: " + dvId + " |dtype: " + dtype + " |parentId: " + parentId);
             // Should ALWAYS be a Dataset!
             if (DvObject.DType.valueOf(dtype).equals(DvObject.DType.Dataset)) {
@@ -352,15 +352,15 @@ public class RoleTagRetriever {
             }
         }
     }
-    
-    
+
+
     private boolean retrieveRoleIdsForDvObjects(DataverseRequest dataverseRequest, AuthenticatedUser au) {
-        
+
         String userIdentifier = au.getUserIdentifier();
         if (userIdentifier == null) {
             throw new NullPointerException("RoleTagRetriever.constructor. userIdentifier cannot be null");
-        }        
-        
+        }
+
         if (this.idToRoleListHash.isEmpty()) {
             return true;
         }
@@ -372,7 +372,7 @@ public class RoleTagRetriever {
         //msg("dvObjectIdList: " + dvObjectIdList.toString());
 
         List<Object[]> results = this.roleAssigneeService.getRoleIdsFor(dataverseRequest, dvObjectIdList);
-        
+
         //msgt("runStep1RoleAssignments results: " + results.toString());
 
         if (results == null) {
@@ -380,32 +380,32 @@ public class RoleTagRetriever {
             return false;
         } else if (results.isEmpty()) {
             logger.log(Level.WARNING, "No roles were found for user {0} with ids {1}", new Object[]{userIdentifier, dvObjectIdList.toString()});
-            this.addErrorMessage("Sorry, no roles were found.");              
+            this.addErrorMessage("Sorry, no roles were found.");
             return false;
         }
-    
+
         // Iterate through assigned objects, a single object may end up in 
         // multiple "buckets"
         for (Object[] ra : results) {
             Long dvId = (Long) ra[0];
             Long roleId = (Long) ra[1];
-            
+
             this.addRoleIdForHash(dvId, roleId);
             //msg("dv id: " + dvId + "(" + this.idToDvObjectType.get(dvId) + ") | roleId: " 
             //        + roleId + "(" +  this.rolePermissionHelper.getRoleName(roleId)+")");
-        }      
+        }
         return true;
     }
-    
+
     private List<String> getFormattedRoleListForId(Long dvId) {
-        
+
         if (dvId == null) {
             return null;
         }
         if (!this.idToRoleListHash.containsKey(dvId)) {
             return null;
         }
-        
+
         List<String> roleNames = new ArrayList<>();
         for (Long roleId : this.idToRoleListHash.get(dvId)) {
             String roleName = this.rolePermissionHelper.getRoleName(roleId);
@@ -414,20 +414,20 @@ public class RoleTagRetriever {
             }
         }
         return roleNames;
-        
+
     }
 
-    private List<String> getFormattedRoleListForId(Long dvId, 
-                                                boolean withDatasetPerms, 
+    private List<String> getFormattedRoleListForId(Long dvId,
+                                                boolean withDatasetPerms,
                                                 boolean withFilePerms) {
-        
+
         if (dvId == null) {
             return null;
         }
         if (!this.idToRoleListHash.containsKey(dvId)) {
             return null;
         }
-        
+
         List<String> roleNames = new ArrayList<>();
         for (Long roleId : this.idToRoleListHash.get(dvId)) {
             if ((withDatasetPerms && this.rolePermissionHelper.hasDatasetPermissions(roleId))
@@ -440,11 +440,10 @@ public class RoleTagRetriever {
             }
         }
         return roleNames;
-        
+
     }
 
-    
-    
+
     public boolean hasRolesForCard(Long dvObjectId) {
         if (dvObjectId == null) {
             return false;
@@ -464,33 +463,31 @@ public class RoleTagRetriever {
         if (!this.hasRolesForCard(dvObjectId)) {
             return null;
         }
-               
+
         JsonArrayBuilder jsonArray = Json.createArrayBuilder();
-        
-        for (String roleName : this.finalIdToRolesHash.get(dvObjectId)) {            
-            jsonArray.add(roleName);            
+
+        for (String roleName : this.finalIdToRolesHash.get(dvObjectId)) {
+            jsonArray.add(roleName);
         }
-        return jsonArray;             
+        return jsonArray;
     }
-    
-    
-            
-    
+
+
     /**
      * For the cards, make a dict of { dv object id : [role name, role name, etc ]}
      * 
      */
     public void prepareFinalRoleLists() {
-        
+
         msgt("prepareFinalRoleLists");
-        
+
         if (finalCardIds.isEmpty()) {
             return;
         }
-        
+
         List<String> formattedRoleNames;
         List<String> finalRoleNames;
-        
+
         for (Long dvIdForCard : this.finalCardIds) {
            //msgt("dvIdForCard: " + dvIdForCard + "(" + this.idToDvObjectType.get(dvIdForCard) + ")");
            
@@ -499,7 +496,7 @@ public class RoleTagRetriever {
             // -------------------------------------------------
             finalRoleNames = new ArrayList<>();
             if (!this.idToDvObjectType.containsKey(dvIdForCard)) {
-                throw new IllegalStateException("All dvObject ids from solr should have their dvObject types in this hash");                 
+                throw new IllegalStateException("All dvObject ids from solr should have their dvObject types in this hash");
             }
 
             // -------------------------------------------------
@@ -526,17 +523,17 @@ public class RoleTagRetriever {
                 finalIdToRolesHash.put(dvIdForCard, this.formatRoleNames(finalRoleNames));
                 continue;
             }
-            
+
             // -------------------------------------------------
             // (d) get dtype
             // -------------------------------------------------
             String dtype = this.idToDvObjectType.get(dvIdForCard);
-            
-            switch (dtype) {                
+
+            switch (dtype) {
                 //case(SearchConstants.SOLR_DATAVERSES  // No indirect assignments                   
 
                 case(SearchConstants.SOLR_DATASETS):
-                    
+
                     // -------------------------------------------------
                     // (d1) May have indirect assignments re: dataverse
                     // -------------------------------------------------
@@ -568,10 +565,10 @@ public class RoleTagRetriever {
                         if (formattedRoleNames != null) {
                             //msg("(e) 2-step indirect assignments: " + StringUtils.join(formattedRoleNames, ", "));
                             finalRoleNames.addAll(formattedRoleNames);
-                            
+
                         }
-                    }  
-                   
+                    }
+
                     break;
             } // end switch
             //msg("Roles from dataverse: " + formattedRoleNames.toString());
@@ -580,9 +577,9 @@ public class RoleTagRetriever {
             //Object value = entry.getValue();
             // ...
         }
-        
+
     }
-  
+
     private List<String> formatRoleNames(List<String> roleNames) {
         if (roleNames == null) {
             return null;
@@ -590,34 +587,34 @@ public class RoleTagRetriever {
 
         // remove duplicates
         Set<String> distinctRoleNames = new HashSet<>(roleNames);
-            
+
         // back to list
         roleNames = new ArrayList<>(distinctRoleNames);
 
         // sort list
         Collections.sort(roleNames);
-        
+
         return roleNames;
-        
+
     }
-    
+
     public boolean hasError() {
         return this.errorFound;
     }
-    
+
     public String getErrorMessage() {
         return this.errorMessage;
     }
-    
+
     private void addErrorMessage(String s) {
         this.errorFound = true;
         this.errorMessage = s;
     }
-   
+
     private void msg(String s) {
         //System.out.println(s);
     }
-    
+
     private void msgt(String s) {
         msg("-------------------------------");
         msg(s);

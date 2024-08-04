@@ -63,7 +63,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @Named
 @Dependent
 public class FileRecordWriter extends AbstractItemWriter {
-    
+
     @Inject
     JobContext jobContext;
 
@@ -73,7 +73,7 @@ public class FileRecordWriter extends AbstractItemWriter {
     @Inject
     @BatchProperty
     String checksumType;
-    
+
     @Inject
     @BatchProperty
     String checksumManifest;
@@ -83,10 +83,10 @@ public class FileRecordWriter extends AbstractItemWriter {
 
     @EJB
     AuthenticationServiceBean authenticationServiceBean;
-    
+
     @EJB
     SettingsServiceBean settingsService;
-    
+
     @EJB
     DataFileServiceBean dataFileServiceBean;
 
@@ -96,13 +96,13 @@ public class FileRecordWriter extends AbstractItemWriter {
     Dataset dataset;
     AuthenticatedUser user;
     int fileCount;
-    String fileMode; 
+    String fileMode;
     Long suppliedSize = null;
-    String uploadFolder; 
+    String uploadFolder;
 
     public static String FILE_MODE_INDIVIDUAL_FILES = "individual_files";
     public static String FILE_MODE_PACKAGE_FILE = "package_file";
-    
+
     @PostConstruct
     public void init() {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
@@ -114,16 +114,16 @@ public class FileRecordWriter extends AbstractItemWriter {
         fileMode = jobParams.getProperty("fileMode");
         uploadFolder = jobParams.getProperty("uploadFolder");
         if (jobParams.getProperty("totalSize") != null) {
-            try { 
+            try {
                 suppliedSize = new Long(jobParams.getProperty("totalSize"));
                 getJobLogger().log(Level.INFO, "Size parameter supplied: " + suppliedSize);
             } catch (NumberFormatException ex) {
                 getJobLogger().log(Level.WARNING, "Invalid file size supplied (in FileRecordWriter.init()): " + jobParams.getProperty("totalSize"));
-                suppliedSize = null; 
+                suppliedSize = null;
             }
         }
     }
-    
+
     @Override
     public void open(Serializable checkpoint) throws Exception {
         // no-op   
@@ -175,7 +175,7 @@ public class FileRecordWriter extends AbstractItemWriter {
             getJobLogger().log(Level.SEVERE, "No items in the writeItems list.");
         }
     }
-    
+
     // utils
     /**
      * Update the dataset version using the command engine so permissions and constraints are enforced.
@@ -185,7 +185,7 @@ public class FileRecordWriter extends AbstractItemWriter {
      *        
      */
     private void updateDatasetVersion(DatasetVersion version) {
-    
+
         // update version using the command engine to enforce user permissions and constraints
         if (dataset.getVersions().size() == 1 && version.getVersionState() == DatasetVersion.VersionState.DRAFT) {
             try {
@@ -203,9 +203,9 @@ public class FileRecordWriter extends AbstractItemWriter {
             getJobLogger().log(Level.SEVERE, constraintError);
             jobContext.setExitStatus("FAILED");
         }
-       
+
     }
-    
+
     /**
      * Import the supplied batch of files as a single "package file" DataFile 
      * (basically, a folder/directory, with the single associated DataFile/FileMetadata, etc.)
@@ -223,10 +223,10 @@ public class FileRecordWriter extends AbstractItemWriter {
     private DataFile createPackageDataFile(List<File> files) {
         DataFile packageFile = new DataFile(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
         FileUtil.generateStorageIdentifier(packageFile);
-        
+
         String datasetDirectory = null;
-        String folderName = null; 
-        
+        String folderName = null;
+
         long totalSize;
 
         if (suppliedSize != null) {
@@ -234,9 +234,9 @@ public class FileRecordWriter extends AbstractItemWriter {
         } else {
             totalSize = 0L;
         }
-        
+
         String gid = dataset.getAuthority() + "/" + dataset.getIdentifier();
-        
+
         packageFile.setChecksumType(DataFile.ChecksumType.SHA1); // initial default
 
         // check system property first, otherwise use the batch job property:
@@ -257,7 +257,7 @@ public class FileRecordWriter extends AbstractItemWriter {
         for (File file : files) {
             String path = file.getAbsolutePath();
             String relativePath = path.substring(path.indexOf(gid) + gid.length() + 1);
-            
+
             // All the files have been moved into the same final destination folder by now; so 
             // the folderName and datasetDirectory need to be initialized only once: 
             if (datasetDirectory == null && folderName == null) {
@@ -300,19 +300,19 @@ public class FileRecordWriter extends AbstractItemWriter {
             }
 
         }
-        
+
         // If the manifest file is present, calculate the checksum of the manifest 
         // and use it as the checksum of the datafile: 
         
         if (System.getProperty("checksumManifest") != null) {
             checksumManifest = System.getProperty("checksumManifest");
         }
-        
-        File checksumManifestFile = null; 
+
+        File checksumManifestFile = null;
         if (checksumManifest != null && !checksumManifest.isEmpty()) {
             String checksumManifestPath = datasetDirectory + File.separator + folderName + File.separator + checksumManifest;
             checksumManifestFile = new File(checksumManifestPath);
-        
+
             if (!checksumManifestFile.exists()) {
                 getJobLogger().log(Level.WARNING, "Manifest file not found");
                 // TODO: 
@@ -329,15 +329,15 @@ public class FileRecordWriter extends AbstractItemWriter {
         } else {
             getJobLogger().log(Level.WARNING, "No checksumManifest property supplied");
         }
-        
+
         // Move the folder to the final destination: 
         if (!(new File(datasetDirectory + File.separator + folderName).renameTo(new File(datasetDirectory + File.separator + packageFile.getStorageIdentifier())))) {
             getJobLogger().log(Level.SEVERE, "Could not move the file folder to the final destination (" + datasetDirectory + File.separator + packageFile.getStorageIdentifier() + ")");
             jobContext.setExitStatus("FAILED");
             return null;
         }
-   
-            
+
+
         packageFile.setFilesize(totalSize);
         packageFile.setModificationTime(new Timestamp(new Date().getTime()));
         packageFile.setCreateDate(new Timestamp(new Date().getTime()));
@@ -350,14 +350,14 @@ public class FileRecordWriter extends AbstractItemWriter {
         // set metadata and add to latest version
         FileMetadata fmd = new FileMetadata();
         fmd.setLabel(folderName);
-        
+
         fmd.setDataFile(packageFile);
         packageFile.getFileMetadatas().add(fmd);
         if (dataset.getLatestVersion().getFileMetadatas() == null) dataset.getLatestVersion().setFileMetadatas(new ArrayList<>());
-        
+
         dataset.getLatestVersion().getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(dataset.getLatestVersion());
-        
+
     if (commandEngine.getContext().systemConfig().isFilePIDsEnabledForCollection(dataset.getOwner())) {
 
         PidProvider pidProvider = commandEngine.getContext().dvObjects().getEffectivePidGenerator(dataset);
@@ -371,7 +371,7 @@ public class FileRecordWriter extends AbstractItemWriter {
             try {
                 doiRetString = pidProvider.createIdentifier(packageFile);
             } catch (Throwable e) {
-                
+
             }
 
             // Check return value to make sure registration succeeded
@@ -383,10 +383,10 @@ public class FileRecordWriter extends AbstractItemWriter {
 	}
 
         getJobLogger().log(Level.INFO, "Successfully created a file of type package");
-        
+
         return packageFile;
     }
-    
+
     /**
      * Create a DatasetFile and corresponding FileMetadata for a file on the filesystem and add it to the
      * latest dataset version (if the user has AddDataset permissions for the dataset).
@@ -394,12 +394,12 @@ public class FileRecordWriter extends AbstractItemWriter {
      * @return datafile
      */
     private DataFile createDataFile(File file) {
-        
+
         DatasetVersion version = dataset.getLatestVersion();
         String path = file.getAbsolutePath();
         String gid = dataset.getAuthority() + "/" + dataset.getIdentifier();
         String relativePath = path.substring(path.indexOf(gid) + gid.length() + 1);
-        
+
         DataFile datafile = new DataFile("application/octet-stream"); // we don't determine mime type
         datafile.setStorageIdentifier(relativePath);
         datafile.setFilesize(file.length());
@@ -456,9 +456,9 @@ public class FileRecordWriter extends AbstractItemWriter {
         datafile = dataFileServiceBean.save(datafile);
         return datafile;
     }
-    
+
     private Logger getJobLogger() {
         return Logger.getLogger("job-" + jobContext.getInstanceId());
     }
-    
+
 }

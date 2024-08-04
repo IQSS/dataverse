@@ -34,7 +34,7 @@ public class GetDatasetStorageSizeCommand extends AbstractCommand<Long> {
     private final Boolean countCachedFiles;
     private final Mode mode;
     private final DatasetVersion version;
-    
+
     public enum Mode {
 
         STORAGE, DOWNLOAD

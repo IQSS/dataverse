@@ -38,31 +38,31 @@ public class TemplatePage implements java.io.Serializable {
 
     @EJB
     EjbDataverseEngine commandEngine;
-    
+
     @EJB
-    DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService; 
-    
+    DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;
+
     @Inject
     DataverseRequestServiceBean dvRequestService;
-    
+
     @Inject
     PermissionsWrapper permissionsWrapper;
-    
+
     @Inject
     DataverseSession session;
-    
+
     @Inject
     LicenseServiceBean licenseServiceBean;
-    
+
     @Inject
     SettingsWrapper settingsWrapper;
-    
+
     private static final Logger logger = Logger.getLogger(TemplatePage.class.getCanonicalName());
 
     public enum EditMode {
 
         CREATE, METADATA, LICENSE, LICENSEADD, CLONE
-    };
+    }
 
     private Template template;
     private Dataverse dataverse;
@@ -109,7 +109,7 @@ public class TemplatePage implements java.io.Serializable {
     public void setOwnerId(Long ownerId) {
         this.ownerId = ownerId;
     }
-    
+
     private int selectedTabIndex;
 
     public int getSelectedTabIndex() {
@@ -121,14 +121,14 @@ public class TemplatePage implements java.io.Serializable {
     }
 
     public String init() {
- 
+
         dataverse = dataverseService.find(ownerId);
         if (dataverse == null) {
             return permissionsWrapper.notFound();
         }
         if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
             return permissionsWrapper.notAuthorized();
-        } 
+        }
         if (templateId != null) { // edit or view existing for a template  
 
             template = templateService.find(templateId);
@@ -155,23 +155,23 @@ public class TemplatePage implements java.io.Serializable {
             updateDatasetFieldInputLevels();
         } else {
             throw new RuntimeException("On Template page without id or ownerid."); // improve error handling
-        }       
-        return null;        
+        }
+        return null;
     }
-    
+
     private void updateDatasetFieldInputLevels() {
-        Long dvIdForInputLevel = ownerId;        
+        Long dvIdForInputLevel = ownerId;
         if (!dataverseService.find(ownerId).isMetadataBlockRoot()) {
             dvIdForInputLevel = dataverseService.find(ownerId).getMetadataRootId();
-        }        
-        
-        for (DatasetField dsf : template.getFlatDatasetFields()) { 
+        }
+
+        for (DatasetField dsf : template.getFlatDatasetFields()) {
            DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dvIdForInputLevel, dsf.getDatasetFieldType().getId());
            if (dsfIl != null) {
                dsf.setInclude(dsfIl.isInclude());
            } else {
                dsf.setInclude(true);
-           } 
+           }
         }
     }
 
@@ -180,7 +180,7 @@ public class TemplatePage implements java.io.Serializable {
     }
 
     public String save(String redirectPage) {
-        
+
         boolean create = false;
         Command<Void> cmd;
         Long createdId = new Long(0);
@@ -190,7 +190,7 @@ public class TemplatePage implements java.io.Serializable {
             DatasetFieldUtil.tidyUpFields(template.getDatasetFields(), false);
 
             template.updateInstructions();
-            
+
             if (editMode == EditMode.CREATE) {
                 template.setCreateTime(new Timestamp(new Date().getTime()));
                 template.setUsageCount(new Long(0));
@@ -223,14 +223,14 @@ public class TemplatePage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.save.fail"));
             return null;
         }
-        editMode = null;       
+        editMode = null;
         String msg = (create) ? BundleUtil.getStringFromBundle("template.create") : BundleUtil.getStringFromBundle("template.save");
         JsfHelper.addFlashMessage(msg);
-        String retString = "";   
+        String retString = "";
         if (!redirectPage.isEmpty() && createdId.intValue() > 0) {
             retString = "/template.xhtml?id=" + createdId + "&ownerId=" + dataverse.getId() + "&editMode=LICENSEADD&faces-redirect=true";
         } else {
-            retString = "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";           
+            retString = "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
         }
         return retString;
     }
@@ -238,11 +238,11 @@ public class TemplatePage implements java.io.Serializable {
     public void cancel() {
         editMode = null;
     }
-    
+
     public String deleteTemplate(Long templateId) {
         List<Dataverse> dataverseWDefaultTemplate = null;
         Template doomed = templateService.find(templateId);
-        dataverse.getTemplates().remove(doomed);  
+        dataverse.getTemplates().remove(doomed);
         dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(doomed.getId());
         try {
             commandEngine.submit(new DeleteTemplateCommand(dvRequestService.getDataverseRequest(), getDataverse(), doomed, dataverseWDefaultTemplate  ));
@@ -251,9 +251,9 @@ public class TemplatePage implements java.io.Serializable {
             String failMessage = BundleUtil.getStringFromBundle("template.delete.error");//"The dataset template cannot be deleted.";
             JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
         }
-        return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true"; 
+        return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
     }
-    
+
     //Get the cutstom instructions defined for a give fieldType
     public String getInstructionsLabelFor(String fieldType) {
         String fieldInstructions = template.getInstructionsMap().get(fieldType);

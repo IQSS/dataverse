@@ -42,7 +42,7 @@ public class DatasetVersionDTO {
     String citation;
     LicenseDTO license;
     boolean inReview;
-    
+
     Map<String, MetadataBlockDTO> metadataBlocks;
     List<FileMetadataDTO> fileMetadatas;
     List<FileDTO> files;
@@ -174,15 +174,15 @@ public class DatasetVersionDTO {
     public void setStudyCompletion(String studyCompletion) {
         this.studyCompletion = studyCompletion;
     }
-    
+
     public boolean isFileAccessRequest() {
     	return fileAccessRequest;
     }
-    
+
     public void setFileAccessRequest(boolean fileAccessRequest) {
     	this.fileAccessRequest = fileAccessRequest;
     }
-    
+
     public String getCitation() {
         return citation;
     }
@@ -255,7 +255,6 @@ public class DatasetVersionDTO {
         this.id = id;
     }
 
-    
 
     public VersionState getVersionState() {
         return versionState;
@@ -272,8 +271,8 @@ public class DatasetVersionDTO {
     public void setReleaseDate(String releaseDate) {
         this.releaseDate = releaseDate;
     }
-    
-    
+
+
     public String getReleaseTime() {
         return releaseTime;
     }
@@ -321,7 +320,7 @@ public class DatasetVersionDTO {
     public void setMetadataBlocks(Map<String, MetadataBlockDTO> metadataBlocks) {
         this.metadataBlocks = metadataBlocks;
     }
-    
+
     public List<FieldDTO> getDatasetFields() {
         List<FieldDTO> fields = new ArrayList<>();
         //TODO: finish this
@@ -332,13 +331,6 @@ public class DatasetVersionDTO {
     public String toString() {
         return "DatasetVersionDTO{" + "archiveNote=" + archiveNote + ", deacessionLink=" + deacessionLink + ", versionNumber=" + versionNumber + ", minorVersionNumber=" + versionMinorNumber + ", id=" + id + ", versionState=" + versionState + ", releaseDate=" + releaseDate + ", lastUpdateTime=" + lastUpdateTime + ", createTime=" + createTime + ", archiveTime=" + archiveTime + ", UNF=" + UNF + ", metadataBlocks=" + metadataBlocks + ", fileMetadatas=" + fileMetadatas + '}';
     }
-    
-    
-    
-     
-     
-    
-     
-    
- 
+
+
 }

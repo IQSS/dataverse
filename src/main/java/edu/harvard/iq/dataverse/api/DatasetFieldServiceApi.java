@@ -69,7 +69,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     ControlledVocabularyValueServiceBean controlledVocabularyValueService;
 
     private static final Logger logger = Logger.getLogger(DatasetFieldServiceApi.class.getName());
-    
+
     @GET
     public Response getAll() {
         try {
@@ -98,7 +98,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                     .add("doesNotAllowMultiples", asJsonArray(listOfIsAllowsMultiplesFalse))
                     .add("required", asJsonArray(requiredFieldNames))
             );
-            
+
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -160,10 +160,10 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                     .add("solrFieldFacetable", solrFieldFacetable)
                     .add("isRequired", isRequired)
                     .add("uri", uri));
-        
+
         } catch (NoResultException nre) {
             return notFound(name);
-            
+
         } catch (EJBException | NullPointerException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -200,8 +200,8 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         }
         return ok(possibleSubjects);
     }
-    
-    
+
+
     // TODO consider replacing with a @Startup method on the datasetFieldServiceBean
     @GET
     @Path("loadNAControlledVocabularyValue")
@@ -210,7 +210,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
 //            datasetFieldService.findNAControlledVocabularyValue();
         TypedQuery<ControlledVocabularyValue> naValueFinder = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.datasetFieldType is null AND o.strValue = :strvalue", ControlledVocabularyValue.class);
         naValueFinder.setParameter("strvalue", DatasetField.NA_VALUE);
-        
+
         if (naValueFinder.getResultList().isEmpty()) {
             ControlledVocabularyValue naValue = new ControlledVocabularyValue();
             naValue.setStrValue(DatasetField.NA_VALUE);
@@ -265,19 +265,19 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                                                     .add("name", parseMetadataBlock(values))
                                                     .add("type", "MetadataBlock"));
                             break;
-                            
+
                         case DATASETFIELD:
                             responseArr.add(Json.createObjectBuilder()
                                                     .add("name", parseDatasetField(values))
                                                     .add("type", "DatasetField"));
                             break;
-                            
+
                         case CONTROLLEDVOCABULARY:
                             responseArr.add(Json.createObjectBuilder()
                                                     .add("name", parseControlledVocabulary(values))
                                                     .add("type", "Controlled Vocabulary"));
                             break;
-                            
+
                         default:
                             throw new IOException("No #header defined in file.");
 
@@ -302,7 +302,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo(alr.getInfo() + "// " + message);
             return error(Status.INTERNAL_SERVER_ERROR, message);
-            
+
         } finally {
             if (br != null) {
                 try {
@@ -344,7 +344,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                                                  int wrongIndex) {
 
         List<String> columns = getColumnsByHeader(header);
-        
+
         String column = columns.get(wrongIndex - 1);
         List<String> arguments = new ArrayList<>();
         arguments.add(header.name());
@@ -398,7 +398,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     }
 
     private String parseDatasetField(String[] values) {
-        
+
         //First see if it exists
         DatasetFieldType dsf = datasetFieldService.findByName(values[1]);
         if (dsf == null) {
@@ -433,7 +433,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     }
 
     private String parseControlledVocabulary(String[] values) {
-        
+
         DatasetFieldType dsv = datasetFieldService.findByName(values[1]);
         //See if it already exists
         /*
@@ -442,13 +442,13 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         */
         //First see if cvv exists based on display name
         ControlledVocabularyValue cvv = datasetFieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(dsv, values[2], true);
-        
+
         //then see if there's a match on identifier
         ControlledVocabularyValue cvvi = null;
         if (values[3] != null && !values[3].trim().isEmpty()) {
             cvvi = datasetFieldService.findControlledVocabularyValueByDatasetFieldTypeAndIdentifier(dsv, values[3]);
         }
-        
+
         //if there's a match on identifier use it
         if (cvvi != null) {
             cvv = cvvi;
@@ -459,7 +459,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             cvv = new ControlledVocabularyValue();
             cvv.setDatasetFieldType(dsv);
         }
-        
+
         // Alternate variants for this controlled vocab. value: 
         
         // Note that these are overwritten every time:
@@ -474,7 +474,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             alt.setStrValue(values[i]);
             cvv.getControlledVocabAlternates().add(alt);
         }
-        
+
         cvv.setStrValue(values[2]);
         cvv.setIdentifier(values[3]);
         cvv.setDisplayOrder(Integer.parseInt(values[4]));

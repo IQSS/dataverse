@@ -51,7 +51,7 @@ public class Metadata extends AbstractApiBean {
         datasetService.exportAllAsync();
         return this.accepted();
     }
-    
+
     // reExportAll will FORCE A FULL REEXPORT on every published, local 
     // dataset, regardless of the lastexporttime value.
     @GET

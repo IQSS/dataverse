@@ -92,7 +92,7 @@ public class JSONLDUtil {
                         + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
             }
         }
-        
+
         //Store the metadatalanguage if sent - the caller needs to check whether it is allowed (as with any GlobalID)
         ds.setMetadataLanguage(jsonld.getString(JsonLDTerm.schemaOrg("inLanguage").getUrl(), null));
 
@@ -136,7 +136,7 @@ public class JSONLDUtil {
 
         //Assume draft to start
         dsv.setVersionState(VersionState.DRAFT);
-        
+
         populateFieldTypeMap(metadataBlockSvc);
 
         // get existing ones?
@@ -246,6 +246,7 @@ public class JSONLDUtil {
 
         return dsv;
     }
+
     /**
      * 
      * @param dsv
@@ -275,7 +276,7 @@ public class JSONLDUtil {
             }
             fieldByTypeMap.put(dsf.getDatasetFieldType(), dsf);
         }
-        
+
         TermsOfUseAndAccess terms = dsv.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
 
         //Iterate through input json
@@ -335,7 +336,7 @@ public class JSONLDUtil {
                         throw new BadRequestException(
                                 "Term: " + key + " not found.");
                                     }
-                    
+
                     dsv.setTermsOfUseAndAccess(terms);
                 }
             }
@@ -343,7 +344,7 @@ public class JSONLDUtil {
         dsv.setDatasetFields(dsfl);
         return dsv;
     }
-    
+
     /**
      * 
      * @param dsf
@@ -374,7 +375,7 @@ public class JSONLDUtil {
         logger.fine("CV: " + dsft.isAllowControlledVocabulary());
 
         Map<Long, JsonObject> cvocMap = datasetFieldSvc.getCVocConf(true);
-        
+
         if (dsft.isCompound()) {
             /*
              * List<DatasetFieldCompoundValue> vals = parseCompoundValue(type,
@@ -787,7 +788,7 @@ public class JSONLDUtil {
             val = ((JsonString) jsonValue).getString();
         }
         switch (semterm) {
-        
+
         case "https://dataverse.org/schema/core#termsOfUse":
             if (terms.getTermsOfUse().equals(val)) {
                 terms.setTermsOfUse(null);
@@ -888,7 +889,7 @@ public class JSONLDUtil {
             logger.warning("deleteIfSemTermMatches called for " + semterm);
             break;
         }
-        return foundTerm; 
+        return foundTerm;
     }
 
 }

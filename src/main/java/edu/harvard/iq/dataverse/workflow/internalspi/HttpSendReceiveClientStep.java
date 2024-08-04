@@ -35,11 +35,11 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
     public HttpSendReceiveClientStep(Map<String, String> paramSet) {
         params = new HashMap<>(paramSet);
     }
-    
+
     @Override
     public WorkflowStepResult run(WorkflowContext context) {
         HttpClient client = new HttpClient();
-        
+
         try {
             // build method
             HttpMethodBase mtd = buildMethod(false, context);
@@ -52,7 +52,7 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
                 String responseBody = mtd.getResponseBodyAsString();
                 return new Failure("Error communicating with server. Server response: " + responseBody + " (" + responseStatus + ").");
             }
-            
+
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Error communicating with remote server: " + ex.getMessage(), ex);
             return new Failure("Error executing request: " + ex.getLocalizedMessage(), "Cannot communicate with remote server.");
@@ -74,25 +74,25 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
     @Override
     public void rollback(WorkflowContext context, Failure reason) {
         HttpClient client = new HttpClient();
-        
+
         try {
             // build method
             HttpMethodBase mtd = buildMethod(true, context);
-            
+
             // execute
             int responseStatus = client.executeMethod(mtd);
             if (responseStatus < 200 || responseStatus >= 300) {
                 // out of HTTP OK range
                 String responseBody = mtd.getResponseBodyAsString();
-                Logger.getLogger(HttpSendReceiveClientStep.class.getName()).log(Level.WARNING, 
+                Logger.getLogger(HttpSendReceiveClientStep.class.getName()).log(Level.WARNING,
                         "Bad response from remote server while rolling back step: {0}", responseBody);
             }
-            
+
         } catch (Exception ex) {
             Logger.getLogger(HttpSendReceiveClientStep.class.getName()).log(Level.WARNING, "IO error rolling back step: " + ex.getMessage(), ex);
         }
     }
-    
+
     HttpMethodBase buildMethod(boolean rollback, WorkflowContext ctxt) throws Exception {
         String methodName = params.getOrDefault("method" + (rollback ? "-rollback" : ""), "GET").trim().toUpperCase();
         HttpMethodBase m = null;
@@ -103,8 +103,8 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
             case "DELETE": m = new DeleteMethod(); m.setFollowRedirects(true); break;
             default: throw new IllegalStateException("Unsupported HTTP method: '" + methodName + "'");
         }
-        
-        
+
+
         Map<String, String> templateParams = new HashMap<>();
         templateParams.put("invocationId", ctxt.getInvocationId());
         templateParams.put("dataset.id", Long.toString(ctxt.getDataset().getId()));
@@ -115,9 +115,9 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
         templateParams.put("minorVersion", Long.toString(ctxt.getNextMinorVersionNumber()));
         templateParams.put("majorVersion", Long.toString(ctxt.getNextVersionNumber()));
         templateParams.put("releaseStatus", (ctxt.getType() == TriggerType.PostPublishDataset) ? "done" : "in-progress");
-        
+
         m.addRequestHeader("Content-Type", params.getOrDefault("contentType", "text/plain"));
-        
+
         String urlKey = rollback ? "rollbackUrl" : "url";
         String url = params.get(urlKey);
         try {
@@ -125,21 +125,21 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
         } catch (URIException ex) {
             throw new IllegalStateException("Illegal URL: '" + url + "'");
         }
-        
+
         String bodyKey = (rollback ? "rollbackBody" : "body");
         if (params.containsKey(bodyKey) && m instanceof EntityEnclosingMethod) {
             String body = params.get(bodyKey);
             ((EntityEnclosingMethod) m).setRequestEntity(new StringRequestEntity(process(body, templateParams)));
         }
-        
+
         return m;
     }
-    
+
     String process(String template, Map<String, String> values) {
         String curValue = template;
         for (Map.Entry<String, String> ent : values.entrySet()) {
             String val = ent.getValue();
-            if (val == null) { 
+            if (val == null) {
                 val = "";
             }
             String varRef = "${" + ent.getKey() + "}";
@@ -147,8 +147,8 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
                 curValue = curValue.replace(varRef, val);
             }
         }
-        
+
         return curValue;
     }
-    
+
 }

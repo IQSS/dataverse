@@ -141,11 +141,11 @@ public class DeactivateUsersIT {
 
     @Test
     public void testDeactivateUserById() {
-        
+
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
-        
+
         Long userId = JsonPath.from(createUser.body().asString()).getLong("data.authenticatedUser.id");
         Response deactivateUser = UtilIT.deactivateUser(userId);
         deactivateUser.prettyPrint();

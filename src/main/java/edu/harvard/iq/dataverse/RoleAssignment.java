@@ -56,30 +56,30 @@ public class RoleAssignment implements java.io.Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@Column(nullable = false)
 	private String assigneeIdentifier;
-		
+
 	@ManyToOne(cascade = {CascadeType.MERGE})
 	@JoinColumn(nullable = false)
 	private DataverseRole role;
-	
-	@ManyToOne(cascade = {CascadeType.MERGE}) 
+
+	@ManyToOne(cascade = {CascadeType.MERGE})
 	@JoinColumn(nullable = false)
 	private DvObject definitionPoint;
 
     @Column(nullable = true)
     private String privateUrlToken;
-	
+
     @Column(nullable = true)
     private Boolean privateUrlAnonymizedAccess;
-	
+
 	public RoleAssignment() {}
-		
+
 	public RoleAssignment(DataverseRole aRole, RoleAssignee anAssignee, DvObject aDefinitionPoint, String privateUrlToken) {
 	    this(aRole, anAssignee, aDefinitionPoint, privateUrlToken, false);
 	}
-	
+
 	public RoleAssignment(DataverseRole aRole, RoleAssignee anAssignee, DvObject aDefinitionPoint, String privateUrlToken, Boolean anonymizedAccess) {
         role = aRole;
         assigneeIdentifier = anAssignee.getIdentifier();
@@ -87,7 +87,7 @@ public class RoleAssignment implements java.io.Serializable {
         this.privateUrlToken = privateUrlToken;
         this.privateUrlAnonymizedAccess = anonymizedAccess;
     }
-	
+
 	public Long getId() {
 		return id;
 	}
@@ -145,16 +145,16 @@ public class RoleAssignment implements java.io.Serializable {
 			return false;
 		}
 		final RoleAssignment other = (RoleAssignment) obj;
-		
+
 		return (Objects.equals(getRole(), other.getRole())
 				 && Objects.equals(getAssigneeIdentifier(), other.getAssigneeIdentifier())
 					&& Objects.equals(getDefinitionPoint(), other.getDefinitionPoint()));
-		
+
 	}
 
 	@Override
 	public String toString() {
 		return "RoleAssignment{" + "id=" + id + ", assignee=" + assigneeIdentifier + ", role=" + role + ", definitionPoint=" + definitionPoint + '}';
 	}
-	
+
 }

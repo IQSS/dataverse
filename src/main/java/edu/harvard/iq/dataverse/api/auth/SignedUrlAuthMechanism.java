@@ -32,7 +32,7 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
     protected AuthenticationServiceBean authSvc;
     @Inject
     protected PrivateUrlServiceBean privateUrlSvc;
-    
+
     @Override
     public User findUserFromRequest(ContainerRequestContext containerRequestContext) throws WrappedAuthErrorResponse {
         String signedUrlRequestParameter = getSignedUrlRequestParameter(containerRequestContext);
@@ -59,7 +59,7 @@ public class SignedUrlAuthMechanism implements AuthMechanism {
         // we reject the request.
         UriInfo uriInfo = containerRequestContext.getUriInfo();
         String userId = uriInfo.getQueryParameters().getFirst(SIGNED_URL_USER);
-        User targetUser = null; 
+        User targetUser = null;
         ApiToken userApiToken = null;
         if (!userId.startsWith(PrivateUrlUser.PREFIX)) {
             targetUser = authSvc.getAuthenticatedUser(userId);

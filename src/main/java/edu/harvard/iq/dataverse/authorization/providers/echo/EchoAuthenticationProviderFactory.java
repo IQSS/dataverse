@@ -43,5 +43,5 @@ public class EchoAuthenticationProviderFactory implements AuthenticationProvider
             throw new AuthorizationSetupException("Can't create Echo prov. Raw data: '" + rawData + "'", e);
         }
     }
-    
+
 }

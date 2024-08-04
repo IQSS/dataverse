@@ -11,14 +11,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author michael
  */
 public class LruCacheTest {
-    
+
     LruCache<Long, String> sut;
-    
+
     @BeforeEach
     public void setUp() {
         sut = new LruCache<>();
     }
-    
+
     @AfterEach
     public void tearDown() {
         sut = null;
@@ -34,7 +34,7 @@ public class LruCacheTest {
 
         assertEquals(value1, sut.put(1l, value1));
         assertEquals(value2, sut.put(2l, value2));
-        
+
         assertEquals(value1, sut.get(1l));
         assertEquals(value2, sut.get(2l));
     }
@@ -43,7 +43,7 @@ public class LruCacheTest {
     public void testGetMaxSize() {
         assertEquals(128, sut.getMaxSize());
     }
-  
+
     /**
      * Test of setMaxSize method, of class LruCache.
      */
@@ -52,18 +52,18 @@ public class LruCacheTest {
         int maxSize = 10;
         sut.setMaxSize(maxSize);
         sut.put(0l, "x");
-        
+
         for (long l = 10; l < 20; l++) {
             sut.put(l, "filler" + l);
         }
-        
+
         assertEquals(maxSize, sut.size());
         assertNull(sut.get(0l));
-        
+
         for (long l = 10; l < 20; l++) {
             assertEquals(sut.get(l), "filler" + l);
         }
-        
+
     }
 
     @Test

@@ -32,6 +32,7 @@ public class UpdateDataverseThemeCommand extends AbstractCommand<Dataverse> {
         this.locate = location;
 
     }
+
     /**
      * Update Theme and Widget related data for this dataverse, and 
      * do file management needed for theme images.

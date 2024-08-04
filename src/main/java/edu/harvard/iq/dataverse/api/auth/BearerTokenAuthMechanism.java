@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class BearerTokenAuthMechanism implements AuthMechanism {
     private static final String BEARER_AUTH_SCHEME = "Bearer";
     private static final Logger logger = Logger.getLogger(BearerTokenAuthMechanism.class.getCanonicalName());
-    
+
     public static final String UNAUTHORIZED_BEARER_TOKEN = "Unauthorized bearer token";
     public static final String INVALID_BEARER_TOKEN = "Could not parse bearer token";
     public static final String BEARER_TOKEN_DETECTED_NO_OIDC_PROVIDER_CONFIGURED = "Bearer token detected, no OIDC provider configured";
@@ -32,7 +32,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
     protected AuthenticationServiceBean authSvc;
     @Inject
     protected UserServiceBean userSvc;
-    
+
     @Override
     public User findUserFromRequest(ContainerRequestContext containerRequestContext) throws WrappedAuthErrorResponse {
         if (FeatureFlags.API_BEARER_AUTH.enabled()) {
@@ -41,7 +41,7 @@ public class BearerTokenAuthMechanism implements AuthMechanism {
             if (bearerToken.isEmpty()) {
                 return null;
             }
-            
+
             // Validate and verify provided Bearer Token, and retrieve UserRecordIdentifier
             // TODO: Get the identifier from an invalidating cache to avoid lookup bursts of the same token. Tokens in the cache should be removed after some (configurable) time.
             UserRecordIdentifier userInfo = verifyOidcBearerTokenAndGetUserIdentifier(bearerToken.get());

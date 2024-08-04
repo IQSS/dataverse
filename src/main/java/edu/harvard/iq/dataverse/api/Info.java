@@ -34,7 +34,7 @@ public class Info extends AbstractApiBean {
 
     @EJB
     SettingsServiceBean settingsService;
-    
+
     @EJB
     SystemConfig systemConfig;
 

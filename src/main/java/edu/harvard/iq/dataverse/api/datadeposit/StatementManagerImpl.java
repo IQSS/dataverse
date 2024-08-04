@@ -94,7 +94,7 @@ public class StatementManagerImpl implements StatementManager {
             states.put("latestVersionState", dataset.getLatestVersion().getVersionState().toString());
             Boolean isMinorUpdate = dataset.getLatestVersion().isMinorUpdate();
             states.put("isMinorUpdate", isMinorUpdate.toString());
-            
+
             if (dataset.isLocked()) {
                 states.put("locked", "true");
                 states.put("lockedDetail", dataset.getLocks().stream().map(l -> l.getInfo()).collect(joining(",")));
@@ -103,7 +103,7 @@ public class StatementManagerImpl implements StatementManager {
             } else {
                 states.put("locked", "false");
             }
-            
+
             statement.setStates(states);
             List<FileMetadata> fileMetadatas = dataset.getLatestVersion().getFileMetadatas();
             for (FileMetadata fileMetadata : fileMetadatas) {

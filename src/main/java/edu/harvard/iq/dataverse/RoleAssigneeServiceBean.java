@@ -81,7 +81,7 @@ public class RoleAssigneeServiceBean {
         }
         return (getRoleAssignee(identifier, false));
     }
-    
+
     /**
      * @param identifier An identifier beginning with ":" (builtin), "@"
      * @param augmented boolean to decide whether to get provider information
@@ -153,7 +153,7 @@ public class RoleAssigneeServiceBean {
     }
 
     public List<DataverseRole> getAssigneeDataverseRoleFor(DataverseRequest dataverseRequest) {
-        
+
         if (dataverseRequest == null) {
             throw new NullPointerException("dataverseRequest cannot be null!");
         }
@@ -186,11 +186,11 @@ public class RoleAssigneeServiceBean {
     }
 
     public List<Object[]> getAssigneeAndRoleIdListFor(MyDataFilterParams filterParams) {
-         
+
         if (filterParams == null) {
             throw new NullPointerException("Cannot be null! filterParams must be an instance of MyDataFilterParams");
         }
-        
+
         AuthenticatedUser au = filterParams.getAuthenticatedUser();
         List<Long> roleIdList = filterParams.getRoleIds();
                         //filterParams.getAuthenticatedUser()
@@ -200,7 +200,7 @@ public class RoleAssigneeServiceBean {
             return null;
         }
         String roleAssigneeIdentifier = "@" + au.getUserIdentifier();
-        
+
         roleAssigneeIdentifier = roleAssigneeIdentifier.replaceAll("\\s", "");   // remove spaces from string
         List<String> userExplicitGroups = getUserExplicitGroups(au);
         List<String> userRunTimeGroups = getUserRuntimeGroups(filterParams.getDataverseRequest());

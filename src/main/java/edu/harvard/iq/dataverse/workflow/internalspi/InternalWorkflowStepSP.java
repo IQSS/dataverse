@@ -31,5 +31,5 @@ public class InternalWorkflowStepSP implements WorkflowStepSPI {
                 throw new IllegalArgumentException("Unsupported step type: '" + stepType + "'.");
         }
     }
-    
+
 }

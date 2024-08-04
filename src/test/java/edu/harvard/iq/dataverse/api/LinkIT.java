@@ -166,7 +166,7 @@ public class LinkIT {
                 .body("data.message", equalTo("Dataverse " + level1a + " linked successfully to " + level1b));
 
         assertTrue(UtilIT.sleepForSearch("*", apiToken, "&subtree=" + level1b, 1, UtilIT.GENERAL_LONG_DURATION), "Zero counts in level1b");
-        
+
         Response searchLevel1toLevel1 = UtilIT.search("*", apiToken, "&subtree=" + level1b);
         searchLevel1toLevel1.prettyPrint();
         searchLevel1toLevel1.then().assertThat()
@@ -189,7 +189,7 @@ public class LinkIT {
                 .body("data.message", equalTo("Dataverse " + level2a + " linked successfully to " + level2b));
 
         assertTrue(UtilIT.sleepForSearch("*", apiToken, "&subtree=" + level2b, 1, UtilIT.GENERAL_LONG_DURATION), "Never found linked dataverse: " + level2b);
-        
+
         Response searchLevel2toLevel2 = UtilIT.search("*", apiToken, "&subtree=" + level2b);
         searchLevel2toLevel2.prettyPrint();
         searchLevel2toLevel2.then().assertThat()

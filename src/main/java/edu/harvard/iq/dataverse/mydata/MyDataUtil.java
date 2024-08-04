@@ -10,8 +10,8 @@ package edu.harvard.iq.dataverse.mydata;
  * @author rmp553
  */
 public class MyDataUtil {
-    
-    
+
+
     public static String formatUserIdentifierAsAssigneeIdentifier(String userIdentifier) {
         if (userIdentifier == null) {
             return null;
@@ -21,7 +21,7 @@ public class MyDataUtil {
         }
         return "@" + userIdentifier;
     }
-    
+
     public static String formatUserIdentifierForMyDataForm(String userIdentifier) {
         if (userIdentifier == null) {
             return null;

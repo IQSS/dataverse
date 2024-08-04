@@ -42,12 +42,12 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
     public DeleteDataFileCommand(DataFile doomed, DataverseRequest aRequest) {
         this(doomed, aRequest, false);
     }
-    
+
     public DeleteDataFileCommand(DataFile doomed, DataverseRequest aRequest, boolean destroy) {
         super(aRequest, doomed.getOwner());
         this.doomed = doomed;
         this.destroy = destroy;
-    }    
+    }
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
@@ -79,25 +79,25 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         logger.log(Level.FINE, "Delete command called on an unpublished DataFile {0}", doomed.getId());
 
         if (!doomed.isHarvested() && !StringUtil.isEmpty(doomed.getStorageIdentifier())) {
-            
+
             // "Package" files need to be treated as a special case, because, 
             // as of now, they are not supported by StorageIO (they only work 
             // with local filesystem as the storage mechanism). 
             
             if (FileUtil.isPackageFile(doomed)) {
-                try { 
+                try {
                     String datasetDirectory = doomed.getOwner().getFileSystemDirectory().toString();
                     Path datasetDirectoryPath = Paths.get(datasetDirectory, doomed.getStorageIdentifier());
-                            
+
                         Files.walkFileTree(datasetDirectoryPath, new SimpleFileVisitor<Path>(){
-                        @Override 
+                        @Override
                         public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs)
                           throws IOException {
                           Files.delete(file);
                           return FileVisitResult.CONTINUE;
                         }
 
-                        @Override 
+                        @Override
                         public FileVisitResult visitFileFailed(final Path file, final IOException e) {
                           return handleException(e);
                         }
@@ -107,7 +107,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                           return FileVisitResult.TERMINATE;
                         }
 
-                        @Override 
+                        @Override
                         public FileVisitResult postVisitDirectory(final Path dir, final IOException e)
                           throws IOException {
                           if (e != null) return handleException(e);
@@ -116,13 +116,13 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                         }
                         }
                 );
-                    
+
                 } catch (IOException ioex) {
                     throw new CommandExecutionException("Failed to delete package file " + doomed.getStorageIdentifier(), ioex, this);
                 }
-                
+
                 logger.info("Successfully deleted the package file " + doomed.getStorageIdentifier());
-                
+
             } else {
                 logger.fine("Skipping deleting the physical file on the storage volume (will be done outside the command)");
                 /* We no longer attempt to delete the physical file from inside the command, 
@@ -227,8 +227,8 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         // ctxt.em().flush();
 
     }
-    
-    @Override 
+
+    @Override
     public String describe() {
         StringBuilder sb = new StringBuilder();
         sb.append(super.describe());
@@ -245,10 +245,10 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
             long storedSize = doomed.getFilesize();
             // ingested tabular data files also have saved originals that 
             // are counted as "storage use"
-            Long savedOriginalSize = doomed.getOriginalFileSize(); 
+            Long savedOriginalSize = doomed.getOriginalFileSize();
             if (savedOriginalSize != null) {
                 // Note that DataFile.getFilesize() can return -1 (for "unknown"):
-                storedSize = storedSize > 0 ? storedSize + savedOriginalSize : savedOriginalSize; 
+                storedSize = storedSize > 0 ? storedSize + savedOriginalSize : savedOriginalSize;
             }
             if (storedSize > 0) {
                 ctxt.storageUse().incrementStorageSizeRecursively(doomed.getOwner().getId(), (0L - storedSize));

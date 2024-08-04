@@ -206,6 +206,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             return wr.getResponse();
         }
     }
+
     @GET
     @Path("{yearMonth}/processingState")
     public Response getProcessingState(@PathParam("yearMonth") String yearMonth) {

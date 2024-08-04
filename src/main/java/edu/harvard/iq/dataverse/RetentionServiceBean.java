@@ -39,7 +39,7 @@ public class RetentionServiceBean {
     public Retention merge(Retention r) {
         return em.merge(r);
     }
-    
+
     public Long save(Retention retention, String userIdentifier) {
         if (retention.getId() == null) {
             em.persist(retention);
@@ -60,6 +60,7 @@ public class RetentionServiceBean {
                 .setParameter("id", id)
                 .executeUpdate();
     }
+
     public int delete(Retention retention, String userIdentifier) {
         return deleteById(retention.getId(), userIdentifier);
     }

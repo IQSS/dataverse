@@ -53,7 +53,7 @@ public class DuplicateFileCheckerTest {
     void testIsFileInSavedDatasetVersionWithCheckSumParamWithUndefinedDatasetVersion() {
         DatasetVersion datasetVersion = null;
         String checkSum = "checkSum";
-        
+
         assertThrows(NullPointerException.class, () -> this.duplicateFileChecker.isFileInSavedDatasetVersion(datasetVersion, checkSum));
     }
 
@@ -61,7 +61,7 @@ public class DuplicateFileCheckerTest {
     void testIsFileInSavedDatasetVersionWithChecksumParamWithUndefinedChecksum() {
         DatasetVersion datasetVersion = new DatasetVersion();
         String checkSum = null;
-        
+
         assertThrows(NullPointerException.class, () -> this.duplicateFileChecker.isFileInSavedDatasetVersion(datasetVersion, checkSum));
     }
 
@@ -85,7 +85,7 @@ public class DuplicateFileCheckerTest {
     void testIsFileInSavedDatasetVersionWithFileMetadataParamWithUndefinedDatasetVersion() {
         DatasetVersion datasetVersion = null;
         FileMetadata fileMetadata = new FileMetadata();
-        
+
         assertThrows(NullPointerException.class, () -> this.duplicateFileChecker.isFileInSavedDatasetVersion(datasetVersion, fileMetadata));
     }
 
@@ -93,7 +93,7 @@ public class DuplicateFileCheckerTest {
     void testIsFileInSavedDatasetVersionWithFileMetadataParamWithUndefinedFileMetadata() {
         DatasetVersion datasetVersion = new DatasetVersion();
         FileMetadata fileMetadata = null;
-        
+
         assertThrows(NullPointerException.class, () -> this.duplicateFileChecker.isFileInSavedDatasetVersion(datasetVersion, fileMetadata));
     }
 

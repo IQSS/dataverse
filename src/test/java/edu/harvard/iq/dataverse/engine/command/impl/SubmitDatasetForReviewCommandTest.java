@@ -85,11 +85,11 @@ public class SubmitDatasetForReviewCommandTest {
             @Override
             public DatasetServiceBean datasets() {
                 return new DatasetServiceBean() {
-                    
+
                     {
                         em = new NoOpTestEntityManager();
                     }
-                    
+
                     @Override
                     public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
                         return null;
@@ -99,7 +99,7 @@ public class SubmitDatasetForReviewCommandTest {
                     public DatasetLock addDatasetLock(Long datasetId, DatasetLock.Reason reason, Long userId, String info) {
                         return null;
                     }
-                    
+
                 };
             }
 
@@ -141,7 +141,7 @@ public class SubmitDatasetForReviewCommandTest {
         assertThrows(IllegalArgumentException.class,
             () -> new SubmitDatasetForReviewCommand(dataverseRequest, null));
     }
-    
+
     @Test
     public void testReleasedDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);

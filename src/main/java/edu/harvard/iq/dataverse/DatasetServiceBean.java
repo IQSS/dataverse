@@ -139,7 +139,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
+
     public List<Dataset> findByOwnerId(Long ownerId) {
         return findByOwnerId(ownerId, false);
     }
@@ -352,7 +352,6 @@ public class DatasetServiceBean implements java.io.Serializable {
             }
         }
     }
-
 
 
     public Long getMaximumExistingDatafileIdentifier(Dataset dataset) {
@@ -581,7 +580,6 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
 
-
         return null;
     }
 
@@ -631,7 +629,6 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         return ret;
     }
-
 
 
     public boolean isDatasetCardImageAvailable(DatasetVersion datasetVersion, User user) {
@@ -880,7 +877,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.fine("In clearDatasetLevelThumbnail but dataset is null! Returning null.");
             return null;
         }
-        
+
         // Just in case the thumbnail that was designated for the dataset was 
         // a "custom logo" kind, i.e. an uploaded "dataset_logo" file, the following method 
         // will try to delete it, and all the associated caches here (because there 
@@ -888,7 +885,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         // cases, without trying to check if the dataset was in fact using a custom 
         // logo; probably under the assumption that it can't hurt.
         DatasetUtil.deleteDatasetLogo(dataset);
-        
+
         // Clear any designated thumbnails for the dataset:
         dataset.setThumbnailFile(null);
         dataset.setUseGenericThumbnail(true);
@@ -1069,5 +1066,5 @@ public class DatasetServiceBean implements java.io.Serializable {
             hdLogger.warning("Failed to destroy the dataset");
         }
     }
-    
+
 }

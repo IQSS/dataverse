@@ -209,7 +209,7 @@ class MetricsUtilTest {
         }
 
     }
-    
+
     @ParameterizedTest
     @CsvSource(value = {
         "local,false,local",

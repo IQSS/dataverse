@@ -155,6 +155,7 @@ public class SolrSearchResult {
 	public void setHarvestingDescription(String harvestingDescription) {
 		this.harvestingDescription = harvestingDescription;
 	}
+
 //    public boolean isStatePublished() {
 //        return statePublished;
 //    }

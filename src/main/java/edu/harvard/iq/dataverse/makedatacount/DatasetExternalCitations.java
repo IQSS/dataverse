@@ -28,15 +28,15 @@ public class DatasetExternalCitations implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    
+
     @NotNull
     @JoinColumn(nullable = false)
     @ManyToOne
     private Dataset dataset;
-    
+
     @Column(nullable = false)
     private String citedByUrl;
-    
+
 
     public Long getId() {
         return id;
@@ -45,8 +45,8 @@ public class DatasetExternalCitations implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    
+
+
     public Dataset getDataset() {
         return dataset;
     }
@@ -54,7 +54,7 @@ public class DatasetExternalCitations implements Serializable {
     public void setDataset(Dataset dataset) {
         this.dataset = dataset;
     }
-    
+
     public String getCitedByUrl() {
         return citedByUrl;
     }
@@ -62,7 +62,7 @@ public class DatasetExternalCitations implements Serializable {
     public void setCitedByUrl(String citedByUrl) {
         this.citedByUrl = citedByUrl;
     }
-        
+
 
     @Override
     public int hashCode() {
@@ -88,5 +88,5 @@ public class DatasetExternalCitations implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations[ id=" + id + " ]";
     }
-    
+
 }

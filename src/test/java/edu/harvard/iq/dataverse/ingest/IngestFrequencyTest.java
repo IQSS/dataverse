@@ -130,7 +130,6 @@ public class IngestFrequencyTest {
     }
 
 
-
     private void firstVariableTest(Collection<VariableCategory> cats) {
         for (VariableCategory cat : cats) {
             double freq = cat.getFrequency();

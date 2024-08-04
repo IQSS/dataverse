@@ -33,10 +33,10 @@ public class PermissionsWrapper implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
-    
+
     @Inject
     DataverseRequestServiceBean dvRequestService;
-    
+
     @Inject
     SettingsWrapper settingsWrapper;
 
@@ -44,7 +44,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     // (referenced by the Long ids), for multiple Commands. The current session 
     // user is assumed when lookups are performed. 
     private final Map<Long, Map<Class<? extends Command<?>>, Boolean>> commandMap = new HashMap<>();
-    
+
     // In some instances our pages need to know whether Authenticated Users as a whole - 
     // not a specific user! - can perform a specific action on a dataverse
     // - such as create datasets or dataverses, in the current dv, or root etc. 
@@ -83,19 +83,19 @@ public class PermissionsWrapper implements java.io.Serializable {
             return null;
         }
         if (!dvoCommandMap.get(id).containsKey(command)) {
-            return null; 
+            return null;
         }
         return dvoCommandMap.get(id).get(command);
     }
-    
-    
+
+
     private void addCommandAuthorizationToDvoCache(Long id, Class<? extends Command<?>> command, Map<Long, Map<Class<? extends Command<?>>, Boolean>> dvoCommandMap, boolean canIssueCommand) {
         if (!dvoCommandMap.containsKey(id)) {
             dvoCommandMap.put(id, new HashMap<>());
         }
         dvoCommandMap.get(id).put(command, canIssueCommand);
     }
-    
+
     /* Dataverse Commands */
 
     public boolean canIssueUpdateDataverseCommand(DvObject dvo) {
@@ -109,11 +109,11 @@ public class PermissionsWrapper implements java.io.Serializable {
     public boolean canIssueDeleteDataverseCommand(DvObject dvo) {
         return canIssueCommand(dvo, DeleteDataverseCommand.class);
     }
-    
+
     public boolean canIssueCreateDataverseCommand(DvObject dvo) {
         return canIssueCommand(dvo, CreateDataverseCommand.class);
     }
-    
+
     // TODO: 
     // Wondering if there's a reason why we don't attempt to cache the 
     // looked up Permission.* results as well as Command authorizations
@@ -123,28 +123,28 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (dvo == null || (dvo.getId() == null)) {
             return false;
         }
-        
+
         User u = session.getUser();
         return dvo instanceof Dataverse
                 ? canManageDataversePermissions(u, (Dataverse) dvo)
                 : canManageDatasetPermissions(u, (Dataset) dvo);
     }
-    
+
     public boolean canManageDataversePermissions(User u, Dataverse dv) {
         if (dv == null || (dv.getId() == null)) {
             return false;
         }
-        if (u == null) {            
+        if (u == null) {
             return false;
         }
         return permissionService.requestOn(dvRequestService.getDataverseRequest(), dv).has(Permission.ManageDataversePermissions);
     }
-    
+
     public boolean canManageDatasetPermissions(User u, Dataset ds) {
         if (ds == null || (ds.getId() == null)) {
             return false;
         }
-        if (u == null) {            
+        if (u == null) {
             return false;
         }
         return permissionService.requestOn(dvRequestService.getDataverseRequest(), ds).has(Permission.ManageDatasetPermissions);
@@ -153,15 +153,15 @@ public class PermissionsWrapper implements java.io.Serializable {
     public boolean canViewUnpublishedDataset(DataverseRequest dr, Dataset dataset) {
         return doesSessionUserHaveDataSetPermission(dr, dataset, Permission.ViewUnpublishedDataset);
     }
-    
+
     public boolean canUpdateDataset(DataverseRequest dr, Dataset dataset) {
         return doesSessionUserHaveDataSetPermission(dr, dataset, Permission.EditDataset);
     }
-    
+
     public boolean canManageFilesOnDataset(Dataset dataset) {
         return doesSessionUserHaveDataSetPermission(dvRequestService.getDataverseRequest(), dataset, Permission.ManageFilePermissions);
     }
-    
+
     /**
      * (Using Raman's implementation in DatasetPage - moving it here, so that 
      * other components could use this optimization -- L.A. 4.2.1)
@@ -177,36 +177,37 @@ public class PermissionsWrapper implements java.io.Serializable {
         if (permissionToCheck == null) {
             return false;
         }
-               
+
         String permName = permissionToCheck.getHumanName();
-       
+
         // Has this check already been done? 
         // 
         if (this.datasetPermissionMap.containsKey(permName)) {
             // Yes, return previous answer
             return this.datasetPermissionMap.get(permName);
         }
-        
+
         // Check the permission
         boolean hasPermission = this.permissionService.requestOn(req, dataset).has(permissionToCheck);
 
         // Save the permission
         this.datasetPermissionMap.put(permName, hasPermission);
-        
+
         // return true/false
         return hasPermission;
     }
+
     /**
      *  Does this dvoObject have "Permission.DownloadFile"?
      * @param dvo
      * @return 
      */
     public boolean hasDownloadFilePermission(DvObject dvo) {
-        
+
         if ((dvo == null) || (dvo.getId() == null)) {
             return false;
         }
-        
+
         // Has this check already been done? Check the hash
         //
         if (this.fileDownloadPermissionMap.containsKey(dvo.getId())) {
@@ -221,17 +222,16 @@ public class PermissionsWrapper implements java.io.Serializable {
             // Yes, has permission, store result
             fileDownloadPermissionMap.put(dvo.getId(), true);
             return true;
-            
+
         } else {
-        
+
             // No permission, store result
             fileDownloadPermissionMap.put(dvo.getId(), false);
             return false;
         }
     }
-    
 
-    
+
     /* -----------------------------------
         Dataset Commands 
      ----------------------------------- */
@@ -250,12 +250,12 @@ public class PermissionsWrapper implements java.io.Serializable {
     public boolean canIssueDeleteDatasetCommand(DvObject dvo) {
         return canIssueCommand(dvo, DeleteDatasetCommand.class);
     }
-    
+
     // PLUBLISH DATASET
     public boolean canIssuePublishDatasetCommand(DvObject dvo) {
         return canIssueCommand(dvo, PublishDatasetCommand.class);
     }
-    
+
     // For the dataverse_header fragment (and therefore, most of the pages),
     // we need to know if authenticated users can add dataverses and datasets to the
     // root collection. For the "Add Data" menu further in the search include fragment
@@ -278,22 +278,22 @@ public class PermissionsWrapper implements java.io.Serializable {
         }
         return checkDvoCacheForCommandAuthorization(dvo.getId(), command, authUsersCommandMap);
     }
-    
+
     public boolean authUsersCanCreateDatasetsInDataverse(Dataverse dataverse) {
         return authenticatedUsersCanIssueCommand(dataverse, CreateNewDatasetCommand.class);
     }
-    
+
     public boolean authUsersCanCreateDataversesInDataverse(Dataverse dataverse) {
         return authenticatedUsersCanIssueCommand(dataverse, CreateDataverseCommand.class);
     }
-    
+
     // todo: move any calls to this to call NavigationWrapper   
     @Inject NavigationWrapper navigationWrapper;
-    
+
     public String notAuthorized() {
         return navigationWrapper.notAuthorized();
     }
-    
+
     public String notFound() {
         return navigationWrapper.notFound();
     }

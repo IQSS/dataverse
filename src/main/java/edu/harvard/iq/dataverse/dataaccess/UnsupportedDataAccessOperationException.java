@@ -12,9 +12,9 @@ import java.io.IOException;
  * @author Leonid Andreev
  */
 public class UnsupportedDataAccessOperationException extends IOException {
-    
+
     public UnsupportedDataAccessOperationException(String message) {
         super(message);
     }
-    
+
 }

@@ -32,23 +32,23 @@ import java.util.logging.Logger;
 @Singleton
 public class SolrClientService {
     private static final Logger logger = Logger.getLogger(SolrClientService.class.getCanonicalName());
-    
+
     @EJB
     SystemConfig systemConfig;
-    
+
     private SolrClient solrClient;
-    
+
     @PostConstruct
     public void init() {
         // Get from MPCONFIG. Might be configured by a sysadmin or simply return the default shipped with
         // resources/META-INF/microprofile-config.properties.
         String protocol = JvmSettings.SOLR_PROT.lookup();
         String path = JvmSettings.SOLR_PATH.lookup();
-        
+
         String urlString = protocol + "://" + systemConfig.getSolrHostColonPort() + path;
         solrClient = new HttpSolrClient.Builder(urlString).build();
     }
-    
+
     @PreDestroy
     public void close() {
         if (solrClient != null) {
@@ -65,7 +65,7 @@ public class SolrClientService {
     public SolrClient getSolrClient() {
         // Should never happen - but? 
         if (solrClient == null) {
-            init(); 
+            init();
         }
         return solrClient;
     }
@@ -73,9 +73,9 @@ public class SolrClientService {
     public void setSolrClient(SolrClient solrClient) {
         this.solrClient = solrClient;
     }
-    
+
     public void reInitialize() {
-        close(); 
+        close();
         init();
     }
 }

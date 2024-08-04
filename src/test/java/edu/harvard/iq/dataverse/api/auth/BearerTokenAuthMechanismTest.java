@@ -51,17 +51,18 @@ class BearerTokenAuthMechanismTest {
     @Test
     void testFindUserFromRequest_invalid_token() {
         Mockito.when(sut.authSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)).thenReturn(Collections.emptySet());
-        
+
         ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer ");
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
         //then
         assertEquals(INVALID_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
     }
+
     @Test
     void testFindUserFromRequest_no_OidcProvider() {
         Mockito.when(sut.authSvc.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)).thenReturn(Collections.emptySet());
-        
+
         ContainerRequestContext testContainerRequest = new BearerTokenKeyContainerRequestTestFake("Bearer " + TEST_API_KEY);
         WrappedAuthErrorResponse wrappedAuthErrorResponse = assertThrows(WrappedAuthErrorResponse.class, () -> sut.findUserFromRequest(testContainerRequest));
 
@@ -110,6 +111,7 @@ class BearerTokenAuthMechanismTest {
         //then
         assertEquals(UNAUTHORIZED_BEARER_TOKEN, wrappedAuthErrorResponse.getMessage());
     }
+
     @Test
     void testFindUserFromRequest_oneProvider_validToken() throws WrappedAuthErrorResponse, ParseException, IOException {
         OIDCAuthProvider oidcAuthProvider = Mockito.mock(OIDCAuthProvider.class);
@@ -138,6 +140,7 @@ class BearerTokenAuthMechanismTest {
         Mockito.verify(sut.userSvc, Mockito.atLeastOnce()).updateLastApiUseTime(testAuthenticatedUser);
 
     }
+
     @Test
     void testFindUserFromRequest_oneProvider_validToken_noAccount() throws WrappedAuthErrorResponse, ParseException, IOException {
         OIDCAuthProvider oidcAuthProvider = Mockito.mock(OIDCAuthProvider.class);

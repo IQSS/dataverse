@@ -40,12 +40,12 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
         logger.fine("In LocalCloudSubmitToArchive...");
         String localPath = requestedSettings.get(":BagItLocalPath");
         String zipName = null;
-        
+
         //Set a failure status that will be updated if we succeed
         JsonObjectBuilder statusObject = Json.createObjectBuilder();
         statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
         statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
-        
+
         try {
 
             Dataset dataset = dv.getDataset();
@@ -57,7 +57,7 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
                         .replace('.', '-').toLowerCase();
 
                 String dataciteXml = getDataCiteXml(dv);
-                
+
                 FileUtils.writeStringToFile(
                         new File(localPath + "/" + spaceName + "-datacite.v" + dv.getFriendlyVersionNumber() + ".xml"),
                         dataciteXml, StandardCharsets.UTF_8);
@@ -89,7 +89,7 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
         } finally {
             dv.setArchivalCopyLocation(statusObject.build().toString());
         }
-        
+
         return WorkflowStepResult.OK;
     }
 

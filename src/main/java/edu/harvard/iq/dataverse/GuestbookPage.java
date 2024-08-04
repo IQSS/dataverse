@@ -35,7 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 public class GuestbookPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(GuestbookPage.class.getCanonicalName());
-    
+
     @EJB
     GuestbookServiceBean guestbookService;
 
@@ -44,23 +44,23 @@ public class GuestbookPage implements java.io.Serializable {
 
     @EJB
     EjbDataverseEngine commandEngine;
-    
+
     @EJB
     GuestbookResponseServiceBean guestbookResponseService;
-    
+
     @Inject
     DataverseSession session;
-    
+
     @Inject
     DataverseRequestServiceBean dvRequestService;
 
     @Inject
     PermissionsWrapper permissionsWrapper;
-        
+
     public enum EditMode {
 
         CREATE, METADATA, CLONE
-    };
+    }
 
     private Guestbook guestbook;
     private Dataverse dataverse;
@@ -68,9 +68,9 @@ public class GuestbookPage implements java.io.Serializable {
     private Long ownerId;
     private Long guestbookId;
     private Long sourceId;
-    
+
     private Guestbook sourceGB;
-    
+
     public Long getSourceId() {
         return sourceId;
     }
@@ -128,7 +128,7 @@ public class GuestbookPage implements java.io.Serializable {
     }
 
     public String init() {
-    
+
         dataverse = dataverseService.find(ownerId);
         if (dataverse == null) {
             return permissionsWrapper.notFound();
@@ -136,7 +136,7 @@ public class GuestbookPage implements java.io.Serializable {
         if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
             return permissionsWrapper.notAuthorized();
         }
-        
+
         if (guestbookId != null) { // edit or view existing for a template  
             for (Guestbook dvGb : dataverse.getGuestbooks()) {
                 if (dvGb.getId().longValue() == guestbookId) {
@@ -173,58 +173,57 @@ public class GuestbookPage implements java.io.Serializable {
         } else {
             throw new RuntimeException("On Guestook page without id or ownerid."); // improve error handling
         }
-        
+
         return null;
-        
+
     }
 
     public String removeCustomQuestion(Long index) {
         guestbook.removeCustomQuestion(index.intValue());
         return "";
     }
-    
+
     public List<GuestbookResponse> getGuestbookResponses() {
         return null;
     }
-    
+
     private void initCustomQuestion() {
         CustomQuestion toAdd = new CustomQuestion();
         toAdd.setQuestionType("text");
         toAdd.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
-        toAdd.setGuestbook(guestbook);       
+        toAdd.setGuestbook(guestbook);
         int index = guestbook.getCustomQuestions().size();
-        guestbook.addCustomQuestion(index, toAdd);       
+        guestbook.addCustomQuestion(index, toAdd);
     }
-        
+
     public void addCustomQuestion(Integer indexIn) {
         CustomQuestion toAdd = new CustomQuestion();
         toAdd.setQuestionType("text");
         toAdd.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
-        toAdd.setGuestbook(guestbook);       
+        toAdd.setGuestbook(guestbook);
         guestbook.addCustomQuestion(indexIn, toAdd);
     }
-    
+
     public void addCustomQuestionValue(CustomQuestion cq, int index) {
         CustomQuestionValue toAdd = new CustomQuestionValue();
         toAdd.setValueString("");
         toAdd.setCustomQuestion(cq);
-        cq.addCustomQuestionValue(index, toAdd);    
+        cq.addCustomQuestionValue(index, toAdd);
     }
-    
+
     public void removeCustomQuestionValue(CustomQuestion cq, Long index) {
         cq.removeCustomQuestionValue(index.intValue());
     }
-    
+
     public void toggleQuestionType(CustomQuestion questionIn) {
-        if (questionIn.getCustomQuestionValues() != null && questionIn.getCustomQuestionValues().isEmpty() 
+        if (questionIn.getCustomQuestionValues() != null && questionIn.getCustomQuestionValues().isEmpty()
                 && questionIn.getQuestionType() != null && questionIn.getQuestionType().equals("options")) {
             questionIn.setCustomQuestionValues(new ArrayList<CustomQuestionValue>());
             CustomQuestionValue addCQV = new CustomQuestionValue();
             addCQV.setCustomQuestion(questionIn);
             questionIn.getCustomQuestionValues().add(addCQV);
-        } 
+        }
     }
-    
 
 
     public void edit(GuestbookPage.EditMode editMode) {
@@ -259,7 +258,7 @@ public class GuestbookPage implements java.io.Serializable {
                     }
                 }
             }
-            
+
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
                 if (cq != null && cq.getQuestionType().equals("options")) {
                     if (cq.getCustomQuestionValues() == null || cq.getCustomQuestionValues().isEmpty()) {
@@ -268,7 +267,7 @@ public class GuestbookPage implements java.io.Serializable {
                     }
                     if (cq.getCustomQuestionValues().size() == 1) {
                         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("guestbook.save.fail"), BundleUtil.getStringFromBundle("guestbook.option.msg") ));
-                        return null; 
+                        return null;
                     }
                 }
             }
@@ -283,9 +282,9 @@ public class GuestbookPage implements java.io.Serializable {
                     }
                 }
                 i++;
-            }            
+            }
         }
-           
+
         Command<Dataverse> cmd;
         try {
             // Per recent #dv-tech conversation w/ Jim - copying the code 
@@ -299,10 +298,10 @@ public class GuestbookPage implements java.io.Serializable {
                 guestbook.setEnabled(true);
                 dataverse.getGuestbooks().add(guestbook);
                 create = true;
-            } 
+            }
             cmd = new UpdateDataverseGuestbookCommand(dataverse, guestbook, dvRequestService.getDataverseRequest());
             commandEngine.submit(cmd);
-        
+
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
             error.append(ex).append(" ");

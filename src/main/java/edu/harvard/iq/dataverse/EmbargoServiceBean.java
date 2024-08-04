@@ -41,7 +41,7 @@ public class EmbargoServiceBean {
     public Embargo merge(Embargo e) {
         return em.merge(e);
     }
-    
+
     public Long save(Embargo embargo, String userIdentifier) {
         if (embargo.getId() == null) {
             em.persist(embargo);

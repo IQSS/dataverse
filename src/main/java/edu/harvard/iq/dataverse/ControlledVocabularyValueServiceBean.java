@@ -22,13 +22,13 @@ public class ControlledVocabularyValueServiceBean implements java.io.Serializabl
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     public List<ControlledVocabularyValue> findByDatasetFieldTypeId(Long dsftId) {
 
         String queryString = "select o from ControlledVocabularyValue as o where o.datasetFieldType.id = " + dsftId + " ";
         TypedQuery<ControlledVocabularyValue> query = em.createQuery(queryString, ControlledVocabularyValue.class);
         return query.getResultList();
-        
+
     }
-    
+
 }

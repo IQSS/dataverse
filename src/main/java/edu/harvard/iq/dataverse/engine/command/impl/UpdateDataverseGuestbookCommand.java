@@ -44,5 +44,5 @@ public class UpdateDataverseGuestbookCommand extends AbstractCommand<Dataverse> 
         Dataverse result = ctxt.dataverses().save(editedDv);
         return result;
     }
-    
+
 }

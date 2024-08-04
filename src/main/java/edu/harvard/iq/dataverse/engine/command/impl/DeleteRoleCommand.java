@@ -15,8 +15,9 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  */
 @RequiredPermissions(Permission.ManageDataversePermissions)
 public class DeleteRoleCommand extends AbstractVoidCommand {
-    
+
     private final DataverseRole doomed;
+
     public DeleteRoleCommand(DataverseRequest aRequest, DataverseRole doomed) {
         super(aRequest, doomed.getOwner());
         this.doomed = doomed;
@@ -29,5 +30,5 @@ public class DeleteRoleCommand extends AbstractVoidCommand {
         }
         ctxt.roles().delete(doomed.getId());
     }
-    
+
 }

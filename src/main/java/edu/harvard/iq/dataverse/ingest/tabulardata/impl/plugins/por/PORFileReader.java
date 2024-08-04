@@ -87,17 +87,18 @@ public class PORFileReader  extends TabularDataFileReader {
     private static final String MissingValueForTextDataFile = "";
 
     private TabularDataIngest ingesteddata = new TabularDataIngest();
-    private DataTable dataTable = new DataTable(); 
-    
-    private static final int POR_HEADER_SIZE = 500;   
+    private DataTable dataTable = new DataTable();
+
+    private static final int POR_HEADER_SIZE = 500;
     private static final int POR_MARK_POSITION_DEFAULT = 461;
     private static final String POR_MARK = "SPSSPORT";
     private static final int LENGTH_SECTION_HEADER = 1;
-    private static final int LENGTH_SECTION_2 = 19;        
+    private static final int LENGTH_SECTION_2 = 19;
     private static final String MIME_TYPE = "application/x-spss-por";
     private static Pattern pattern4positiveInteger = Pattern.compile("[0-9A-T]+");
     private static Pattern pattern4Integer = Pattern.compile("[-]?[0-9A-T]+");
     private static Calendar GCO = new GregorianCalendar();
+
     static {
         // set the origin of GCO to 1582-10-15
         GCO.set(1, 1582);// year
@@ -111,9 +112,10 @@ public class PORFileReader  extends TabularDataFileReader {
         GCO.set(15, 0);// z
         
     }
+
     private static final long SPSS_DATE_BIAS = 60 * 60 * 24 * 1000;
     private static final long SPSS_DATE_OFFSET = SPSS_DATE_BIAS + Math.abs(GCO.getTimeInMillis());
-    
+
 
     // instance fields -------------------------------------------------------//
 
@@ -145,7 +147,6 @@ public class PORFileReader  extends TabularDataFileReader {
     private List<Integer> formatDecimalPointPositionList = new ArrayList<>();
 
 
-
     // date/time data format
     private SimpleDateFormat sdf_ymd = new SimpleDateFormat("yyyy-MM-dd");
     private SimpleDateFormat sdf_ymdhms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -167,68 +168,68 @@ public class PORFileReader  extends TabularDataFileReader {
         super(originator);
     }
 
-    
+
     private void init() throws IOException {
-        
+
         sdf_ymd.setTimeZone(TimeZone.getTimeZone("GMT"));
         sdf_ymdhms.setTimeZone(TimeZone.getTimeZone("GMT"));
         sdf_dhms.setTimeZone(TimeZone.getTimeZone("GMT"));
         sdf_hms.setTimeZone(TimeZone.getTimeZone("GMT"));
-    
+
         doubleNumberFormatter.setGroupingUsed(false);
         doubleNumberFormatter.setMaximumFractionDigits(340); // TODO: 340?? -- L.A. 4.0 beta
     }
-    
+
     @Override
     public TabularDataIngest read(BufferedInputStream stream, boolean storeWithVariableHeader, File additionalData) throws IOException {
         dbgLog.fine("PORFileReader: read() start");
-        
+
         if (additionalData != null) {
             //throw new IOException ("this plugin does not support external raw data files");
             dbgLog.fine("Using extended variable labels from file " + additionalData.getName());
-            
+
             extendedLabels = createLabelMap(additionalData);
         }
-        
-        
+
+
         File tempPORfile = decodeHeader(stream);
         BufferedReader bfReader = null;
-        
-        try {            
+
+        try {
             bfReader = new BufferedReader(new InputStreamReader(new FileInputStream(tempPORfile.getAbsolutePath()), "US-ASCII"));
             if (bfReader == null) {
                 dbgLog.fine("bfReader is null");
                 throw new IOException("bufferedReader is null");
             }
-            
+
             decodeSec2(bfReader);
-            
+
             while (true) {
 
                 char[] header = new char[LENGTH_SECTION_HEADER]; // 1 byte
                 bfReader.read(header);
                 String headerId = Character.toString(header[0]);
-                
+
                 dbgLog.fine("////////////////////// headerId=" + headerId + "//////////////////////");
-                
+
                 if (headerId.equals("Z")) {
                     throw new IOException("reading failure: wrong headerId(Z) here");
                 }
-                
+
                 if (headerId.equals("F")) {
                     // missing value
                     if ((missingValueTable != null) && (missingValueTable.size() > 0)) {
                         processMissingValueData();
                     }
                 }
-                                
+
                 if (headerId.equals("8") && isCurrentVariableString) {
                     headerId = "8S";
                 }
 
                 decode(headerId, bfReader, storeWithVariableHeader);
 
-                
+
                 // for last iteration
                 if (headerId.equals("F")) {
                     // finished the last block (F == data) 
@@ -236,8 +237,8 @@ public class PORFileReader  extends TabularDataFileReader {
                     break;
                 }
             }
-            
-                    
+
+
         } finally {
             try {
                 if (bfReader != null) {
@@ -251,20 +252,20 @@ public class PORFileReader  extends TabularDataFileReader {
                 tempPORfile.delete();
             }
         }
-        
+
         dbgLog.fine("done parsing headers and decoding;");
 
         List<DataVariable> variableList = new ArrayList<>();
-        
+
         for (int indx = 0; indx < variableTypelList.size(); indx++) {
-            
+
             DataVariable dv = new DataVariable(indx, dataTable);
-            String varName = variableNameList.get(indx); 
+            String varName = variableNameList.get(indx);
             dv.setName(varName);
             String varLabel = variableLabelMap.get(varName);
             if (varLabel != null && varLabel.length() > 255) {
                 varLabel = varLabel.substring(0, 255);
-            } 
+            }
             // TODO: do we still need to enforce the 255 byte limit on 
             // labels? is that enough to store whatever they have 
             // in their POR files at ODUM?
@@ -274,9 +275,9 @@ public class PORFileReader  extends TabularDataFileReader {
             } else {
                 dv.setLabel(varLabel);
             }
-            
-            variableList.add(dv);            
-            
+
+            variableList.add(dv);
+
             int simpleType = 0;
             if (variableTypelList.get(indx) != null) {
                 simpleType = variableTypelList.get(indx);
@@ -292,12 +293,12 @@ public class PORFileReader  extends TabularDataFileReader {
                 // (see the setFormatCategory below... but double-check!)
                 // -- L.A. 4.0 alpha
                 String variableFormatType = variableFormatTypeList[indx];
-                
+
                 if (variableFormatType != null) {
                     if (variableFormatType.equals("time")
                         || variableFormatType.equals("date")) {
-                        simpleType = 1; 
-                    
+                        simpleType = 1;
+
                         String formatCategory = formatCategoryTable.get(varName);
 
                         if (formatCategory != null) {
@@ -311,7 +312,7 @@ public class PORFileReader  extends TabularDataFileReader {
                     } else if (variableFormatType.equals("other")) {
                         dbgLog.fine("Variable of format type \"other\"; type adjustment may be needed");
                         dbgLog.fine("SPSS print format: " + printFormatTable.get(variableList.get(indx).getName()));
-                        
+
                         if (printFormatTable.get(variableList.get(indx).getName()).equals("WKDAY")
                             || printFormatTable.get(variableList.get(indx).getName()).equals("MONTH")) {
                             // week day or month; 
@@ -328,11 +329,11 @@ public class PORFileReader  extends TabularDataFileReader {
                         }
                     }
                 }
-                
+
             }
-            
+
             dbgLog.fine("Finished creating variable " + indx + ", " + varName);
-            
+
             // OK, we can now assign the types: 
             
             if (simpleType > 0) {
@@ -350,14 +351,14 @@ public class PORFileReader  extends TabularDataFileReader {
                 } else {
                     variableList.get(indx).setIntervalDiscrete();
                 }
-                
+
             }
             dbgLog.fine("Finished configuring variable type information.");
         }
-        
-        
+
+
         dbgLog.fine("done configuring variables;");
-        
+
         /* 
          * From the original (3.6) code: 
             //smd.setVariableTypeMinimal(ArrayUtils.toPrimitive(variableTypelList.toArray(new Integer[variableTypelList.size()])));
@@ -371,17 +372,17 @@ public class PORFileReader  extends TabularDataFileReader {
          */
         
         dataTable.setDataVariables(variableList);
-        
+
         // Assign value labels: 
         
         assignValueLabels(valueLabelTable);
-        
+
         ingesteddata.setDataTable(dataTable);
-        
+
         dbgLog.info("PORFileReader: read() end");
         return ingesteddata;
     }
-    
+
     private void decode(String headerId, BufferedReader reader, boolean storeWithVariableHeader) throws IOException {
         if (headerId.equals("1")) decodeProductName(reader);
         else if (headerId.equals("2")) decodeLicensee(reader);
@@ -400,7 +401,7 @@ public class PORFileReader  extends TabularDataFileReader {
         else if (headerId.equals("E")) decodeDocument(reader);
         else if (headerId.equals("F")) decodeData(reader, storeWithVariableHeader);
     }
-    
+
 
     private File decodeHeader(BufferedInputStream stream) throws IOException {
         dbgLog.fine("decodeHeader(): start");
@@ -409,7 +410,7 @@ public class PORFileReader  extends TabularDataFileReader {
         if (stream == null) {
             throw new IllegalArgumentException("file == null!");
         }
-        
+
         byte[] headerByes = new byte[POR_HEADER_SIZE];
 
         if (stream.markSupported()) {
@@ -485,7 +486,7 @@ public class PORFileReader  extends TabularDataFileReader {
             pos2 = baseBias + 2 * i;
             buff.position(pos2);
             dbgLog.finer("\tposition(2)=" + buff.position());
-            
+
             nlch[j + 1] = buff.get();
             nlch[j + 2] = buff.get();
 
@@ -493,7 +494,7 @@ public class PORFileReader  extends TabularDataFileReader {
             pos3 = baseBias + 3 * i;
             buff.position(pos3);
             dbgLog.finer("\tposition(3)=" + buff.position());
-            
+
             nlch[j + 3] = buff.get();
             nlch[j + 4] = buff.get();
             nlch[j + 5] = buff.get();
@@ -502,7 +503,7 @@ public class PORFileReader  extends TabularDataFileReader {
                     nlch[j] + "\t" + nlch[j + 1] + "\t" + nlch[j + 2]);
             dbgLog.finer(i + "-th iteration position =" +
                     nlch[j + 3] + "\t" + nlch[j + 4] + "\t" + nlch[j + 5]);
-            
+
             if ((nlch[j + 3] == 13) &&
                 (nlch[j + 4] == 13) &&
                 (nlch[j + 5] == 10)) {
@@ -513,7 +514,7 @@ public class PORFileReader  extends TabularDataFileReader {
 
             buff.rewind();
         }
-        
+
         boolean windowsNewLine = true;
         if (three == nolines) {
             windowsNewLine = false; // lineTerminator = "0D0D0A"
@@ -546,7 +547,7 @@ public class PORFileReader  extends TabularDataFileReader {
         if (pormarks.equals(POR_MARK)) {
             dbgLog.fine("POR ID toke test: Passed");
             init();
-                        
+
             dataTable.setOriginalFileFormat(MIME_TYPE);
             dataTable.setUnf("UNF:6:NOTCALCULATED");
 
@@ -563,7 +564,7 @@ public class PORFileReader  extends TabularDataFileReader {
 
         // Scanner class can handle three-character line-terminator
         Scanner porScanner = null;
-        
+
         try {
             tempPORfile = File.createTempFile("tempPORfile.", ".por");
             fileOutPOR = new FileOutputStream(tempPORfile);
@@ -600,7 +601,6 @@ public class PORFileReader  extends TabularDataFileReader {
 
         return tempPORfile;
     }
-
 
 
     private void decodeSec2(BufferedReader reader) throws IOException {
@@ -728,7 +728,7 @@ public class PORFileReader  extends TabularDataFileReader {
             throw new IllegalArgumentException("decodeFileLabel: reader == null!");
         }
 
-        String fileLabel = parseStringField(reader);     
+        String fileLabel = parseStringField(reader);
         // TODO: is this "file label" potentially useful? -- L.A. 4.0 beta
         ///smd.getFileInformation().put("fileLabel", fileLabel);
     }
@@ -738,7 +738,7 @@ public class PORFileReader  extends TabularDataFileReader {
         if (reader == null) {
             throw new IllegalArgumentException("decodeNumberOfVariables: reader == null!");
         }
-        
+
         String temp = null;
         char[] tmp = new char[1];
         StringBuilder sb = new StringBuilder();
@@ -756,7 +756,7 @@ public class PORFileReader  extends TabularDataFileReader {
         int rawLength = rawNumberOfVariables.length();
 
         String numberOfVariables = StringUtils.stripStart((StringUtils.strip(rawNumberOfVariables)), "0");
-        
+
         if ((numberOfVariables.equals("")) && (numberOfVariables.length() == rawLength)) {
             numberOfVariables = "0";
         }
@@ -769,8 +769,8 @@ public class PORFileReader  extends TabularDataFileReader {
     private void decodeFieldNo5(BufferedReader reader) throws IOException {
         if (reader == null) {
             throw new IllegalArgumentException("decodeFieldNo5: reader == null!");
-        }    
-        
+        }
+
         int field5 = parseNumericField(reader);
     }
 
@@ -778,8 +778,8 @@ public class PORFileReader  extends TabularDataFileReader {
     private void decodeWeightVariable(BufferedReader reader) throws IOException {
         if (reader == null) {
             throw new IllegalArgumentException("decodeWeightVariable: reader == null!");
-        }    
-        
+        }
+
         String weightVariableName = parseStringField(reader);
         // TODO: make sure case weight variables are properly handled! 
         // -- L.A. 4.0 beta
@@ -791,20 +791,20 @@ public class PORFileReader  extends TabularDataFileReader {
     private void decodeVariableInformation(BufferedReader reader) throws IOException {
         if (reader == null) {
             throw new IllegalArgumentException("decodeVariableInformation: reader == null!");
-        } 
+        }
 
         // step 1: variable type
         int variableType = parseNumericField(reader);
         variableTypelList.add(variableType);
         isCurrentVariableString = (variableType > 0);
-            
-            
+
+
         // step 2: variable name            
         String variableName = parseStringField(reader);
         currentVariableName = variableName;
         variableNameList.add(variableName);
         variableTypeTable.put(variableName, variableType);
-           
+
         // step 3: format(print/write)
         int[] printWriteFormatTable = new int[6];
         for (int i = 0; i < 6; i++) {
@@ -838,7 +838,7 @@ public class PORFileReader  extends TabularDataFileReader {
         if (reader == null) {
             throw new IllegalArgumentException("decodeMissValuePointNumeric: reader == null!");
         }
-        
+
         if (missingValueCodeTable.containsKey(currentVariableName)) {
             missingValueCodeTable.get(currentVariableName).add("8");
         } else {
@@ -872,8 +872,8 @@ public class PORFileReader  extends TabularDataFileReader {
     private void decodeMissValuePointString(BufferedReader reader) throws IOException {
         if (reader == null) {
             throw new IllegalArgumentException("decodeMissValuePointString: reader == null!");
-        }    
-        
+        }
+
         if (missingValueCodeTable.containsKey(currentVariableName)) {
             missingValueCodeTable.get(currentVariableName).add("8");
         } else {
@@ -881,9 +881,9 @@ public class PORFileReader  extends TabularDataFileReader {
             mvc.add("8");
             missingValueCodeTable.put(currentVariableName, mvc);
         }
-        
+
         String missingValuePointString = parseStringField(reader);
-        
+
         if (missingValueTable.containsKey(currentVariableName)) {
             // already stored
             (missingValueTable.get(currentVariableName)).add(missingValuePointString);
@@ -900,7 +900,7 @@ public class PORFileReader  extends TabularDataFileReader {
         if (reader == null) {
             throw new IllegalArgumentException("decodeMissValueRangeLow: reader == null!");
         }
-        
+
         if (missingValueCodeTable.containsKey(currentVariableName)) {
             missingValueCodeTable.get(currentVariableName).add("9");
         } else {
@@ -919,7 +919,7 @@ public class PORFileReader  extends TabularDataFileReader {
         } else {
             missingValueRangeLOtype = Integer.valueOf(base30value, 30).toString();
         }
-        
+
         if (missingValueTable.containsKey(currentVariableName)) {
             // already stored
             (missingValueTable.get(currentVariableName)).add("LOWEST");
@@ -938,7 +938,7 @@ public class PORFileReader  extends TabularDataFileReader {
         if (reader == null) {
             throw new IllegalArgumentException("decodeMissValueRangeHigh: reader == null!");
         }
-        
+
         if (missingValueCodeTable.containsKey(currentVariableName)) {
             missingValueCodeTable.get(currentVariableName).add("A");
         } else {
@@ -970,8 +970,8 @@ public class PORFileReader  extends TabularDataFileReader {
            missingValueTable.put(currentVariableName, mv);
         }
     }
-    
-    
+
+
     private void decodeMissValueRange(BufferedReader reader) throws IOException {
         if (reader == null) {
             throw new IllegalArgumentException("decodeMissValueRange: reader == null!");
@@ -984,7 +984,7 @@ public class PORFileReader  extends TabularDataFileReader {
             mvc.add("B");
             missingValueCodeTable.put(currentVariableName, mvc);
         }
-        
+
         String[] missingValueRange = new String[2];
 
        // missing values are not always integers
@@ -1016,12 +1016,12 @@ public class PORFileReader  extends TabularDataFileReader {
            missingValueTable.put(currentVariableName, mv);
         }
     }
-    
+
 
     private void decodeVariableLabel(BufferedReader reader) throws IOException {
         if (reader == null) {
             throw new IllegalArgumentException("decodeVariableLabel: reader == null!");
-        }    
+        }
 
         String variableLabel = parseStringField(reader);
         variableLabelMap.put(currentVariableName, variableLabel);
@@ -1029,11 +1029,11 @@ public class PORFileReader  extends TabularDataFileReader {
         // saving them to the metatadata object is done within read() method
 
     }
-    
-    
+
+
     private void decodeValueLabel(BufferedReader reader) throws IOException {
         Map<String, String> valueLabelSet = new LinkedHashMap<>();
-        
+
         int numberOfVariables = parseNumericField(reader);
         String[] variableNames = new String[numberOfVariables];
 
@@ -1083,8 +1083,8 @@ public class PORFileReader  extends TabularDataFileReader {
     private void decodeDocument(BufferedReader reader) throws IOException {
         if (reader == null) {
             throw new IllegalArgumentException("decodeVariableLabel: reader == null!");
-        }    
-        
+        }
+
         int noOfdocumentLines = parseNumericField(reader);
         String[] document = new String[noOfdocumentLines];
 
@@ -1108,7 +1108,7 @@ public class PORFileReader  extends TabularDataFileReader {
         // create a File object to save the tab-delimited data file
         File tabDelimitedDataFile = File.createTempFile("tempTabfile.", ".tab");
         ingesteddata.setTabDelimitedFile(tabDelimitedDataFile);
-        
+
 
         FileOutputStream fileOutTab = null;
         PrintWriter pwout = null;
@@ -1128,7 +1128,7 @@ public class PORFileReader  extends TabularDataFileReader {
 
             if (storeWithVariableHeader) {
                 pwout.println(StringUtils.join(variableNameList, "\t"));
-            } 
+            }
             // raw-case counter
             int j = 0; // case
 
@@ -1392,8 +1392,8 @@ public class PORFileReader  extends TabularDataFileReader {
 
         dbgLog.fine("decodeData(): end");
     }
-    
-    
+
+
     private void processMissingValueData() {
         /*
 
@@ -1454,7 +1454,7 @@ public class PORFileReader  extends TabularDataFileReader {
                 } else {
                    dbgLog.severe("unkown missing-value combination(3 values)");
                 }
-                
+
             } else if (valueList.size() == 2) {
                 if (codeList.get(0).equals("8") && codeList.get(1).equals("8")) {
                     type = 2;
@@ -1511,9 +1511,8 @@ public class PORFileReader  extends TabularDataFileReader {
         }
         dbgLog.fine("missingValueTable=" + missingValueTable);
     }
-    
-    
-    
+
+
     // utility methods  -----------------------------------------------------//
     
     private int parseNumericField(BufferedReader reader) throws IOException {
@@ -1560,7 +1559,6 @@ public class PORFileReader  extends TabularDataFileReader {
         dbgLog.finer("stringData=" + stringData);
         return stringData;
     }
-
 
 
     private String getNumericFieldAsRawString(BufferedReader reader) throws IOException {
@@ -1665,18 +1663,18 @@ public class PORFileReader  extends TabularDataFileReader {
 
         return base10value.doubleValue();
     }
-    
+
     void assignValueLabels(Map<String, Map<String, String>> valueLabelTable) {
         // Let's go through all the categorical value label mappings and 
         // assign them to the correct variables: 
         
         for (DataVariable dataVariable : dataTable.getDataVariables()) {
             String varName = dataVariable.getName();
-            
+
             Map<String, String> valueLabelPairs = valueLabelTable.get(valueVariableMappingTable.get(varName));
             if (valueLabelPairs != null && !valueLabelPairs.isEmpty()) {
                 for (String value : valueLabelPairs.keySet()) {
-                    
+
                     VariableCategory cat = new VariableCategory();
                     cat.setValue(value);
                     cat.setLabel(valueLabelPairs.get(value));
@@ -1688,14 +1686,14 @@ public class PORFileReader  extends TabularDataFileReader {
             }
         }
     }
-    
+
     private void print2Darray(Object[][] datatable, String title) {
         dbgLog.fine(title);
         for (Object[] datatable1 : datatable) {
             dbgLog.fine(StringUtils.join(datatable1, "|"));
         }
-    }    
-    
+    }
+
     private Map<String, String> createLabelMap(File extendedLabelsFile) {
         Map<String, String> varLabelMap = new HashMap<>();
 
@@ -1743,6 +1741,6 @@ public class PORFileReader  extends TabularDataFileReader {
         return varLabelMap;
     }
 
-    
+
 }
 

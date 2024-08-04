@@ -17,7 +17,7 @@ public class LruCache<K, V> {
     private final LinkedHashMap<K, V> cache = new LinkedHashMap<>(10, 0.75f, true);
     private final ReentrantLock cacheLock = new ReentrantLock();
     private long maxSize = 128;
-    
+
     /**
      * @param k The key to get
      * @return The value associated with {@code k}, or {@code null}, if there isn't any.
@@ -28,7 +28,7 @@ public class LruCache<K, V> {
             return cache.get(k);
         } finally { cacheLock.unlock(); }
     }
-    
+
     /**
      * Associates {@code k} with {@code v}.
      * @param k the key
@@ -50,7 +50,7 @@ public class LruCache<K, V> {
             return cache.size();
         } finally { cacheLock.unlock(); }
     }
-        
+
     public long getMaxSize() {
         return maxSize;
     }
@@ -65,21 +65,21 @@ public class LruCache<K, V> {
             shrinkToMaxSize();
         } finally { cacheLock.unlock(); }
     }
-    
+
     public void invalidate() {
         try {
             cacheLock.lock();
             cache.clear();
         } finally { cacheLock.unlock(); }
     }
-    
+
     public void invalidate(K k) {
         try {
             cacheLock.lock();
             cache.remove(k);
         } finally { cacheLock.unlock(); }
     }
-    
+
     private void shrinkToMaxSize() {
         while (cache.size() > getMaxSize()) {
             cache.remove(cache.entrySet().iterator().next().getKey());

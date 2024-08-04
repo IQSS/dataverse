@@ -12,7 +12,7 @@ import java.util.TreeMap;
  * @author michael
  */
 public class AuthenticationRequest {
-    
+
     private final Map<String, String> credentials = new TreeMap<>();
     private IpAddress ipAddress;
 
@@ -35,6 +35,6 @@ public class AuthenticationRequest {
     public Set<String> credentialSet() {
         return credentials.keySet();
     }
-    
-    
+
+
 }

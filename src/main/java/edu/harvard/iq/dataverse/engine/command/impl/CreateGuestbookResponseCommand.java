@@ -22,6 +22,7 @@ import java.util.Date;
 @RequiredPermissions({})
 public class CreateGuestbookResponseCommand extends AbstractVoidCommand {
     private final GuestbookResponse response;
+
     public CreateGuestbookResponseCommand(DataverseRequest aRequest, GuestbookResponse responseIn, Dataset affectedDataset) {
         super(aRequest, affectedDataset);
         response = responseIn;
@@ -33,5 +34,5 @@ public class CreateGuestbookResponseCommand extends AbstractVoidCommand {
        response.setResponseTime(createDate);
        ctxt.responses().save(response);
     }
-    
+
 }

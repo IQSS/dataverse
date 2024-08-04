@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
+
 /**
  *
  * @author Leonid Andreev
@@ -39,10 +40,10 @@ import org.apache.commons.lang3.StringUtils;
 public class DataAccess {
 
 	private static final Logger logger = Logger.getLogger(DataAccess.class.getCanonicalName());
-	
+
     public DataAccess() {
 
-    };
+    }
 
     public static final String FILE = "file";
     public static final String S3 = "s3";
@@ -63,10 +64,9 @@ public class DataAccess {
         return getStorageIO(dvObject, null);
     }
 
-    
 
     public static String getStorageDriverFromIdentifier(String storageIdentifier) {
-        
+
         int separatorIndex = storageIdentifier.indexOf(SEPARATOR);
         String driverId = DEFAULT_STORAGE_DRIVER_IDENTIFIER; // default
         if (separatorIndex > 0) {
@@ -74,7 +74,7 @@ public class DataAccess {
         }
         return driverId;
     }
-    
+
     //passing DVObject instead of a datafile to accomodate for use of datafiles as well as datasets
 	public static <T extends DvObject> StorageIO<T> getStorageIO(T dvObject, DataAccessRequest req) throws IOException {
 
@@ -139,7 +139,7 @@ public class DataAccess {
         	throw new IOException("getDirectStorageIO: Unsupported storage method.");
         }
     }
-    
+
     public static String[] getDriverIdAndStorageLocation(String storageLocation) {
     	//default if no prefix
     	String storageIdentifier = storageLocation;
@@ -151,7 +151,7 @@ public class DataAccess {
         }
 		return new String[]{storageDriverId, storageIdentifier};
     }
-    
+
     public static String getStorageIdFromLocation(String location) {
         if (location.contains(SEPARATOR)) {
             // It's a full location with a driverId, so strip and reapply the driver id
@@ -162,7 +162,7 @@ public class DataAccess {
         }
         return location.substring(location.lastIndexOf('/') + 1);
     }
-    
+
     /** Changes storageidentifiers of the form
      * s3://bucketname/18b39722140-50eb7d3c5ece or file://18b39722140-50eb7d3c5ece to s3://10.5072/FK2/ABCDEF/18b39722140-50eb7d3c5ece
      * and
@@ -182,14 +182,14 @@ public class DataAccess {
         }
         return path + id.substring(id.lastIndexOf('/') + 1);
     }
-    
+
     public static String getDriverType(String driverId) {
     	if (driverId.isEmpty() || driverId.equals("tmp")) {
     		return "tmp";
     	}
     	return StorageIO.getConfigParamForDriver(driverId, StorageIO.TYPE, "Undefined");
     }
-    
+
     //This 
     public static String getDriverPrefix(String driverId) throws IOException {
         if (driverId.isEmpty() || driverId.equals("tmp")) {
@@ -207,7 +207,7 @@ public class DataAccess {
             logger.warning("Could not find storage driver for id: " + driverId);
             throw new IOException("getDriverPrefix: Unsupported storage method.");
         }
-        
+
 
     }
 
@@ -220,10 +220,10 @@ public class DataAccess {
                 || storageTag.isEmpty()) {
             throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
-                
+
         if (dvObject instanceof Dataset) {
             return createNewStorageIO(dvObject, storageTag, ((Dataset) dvObject).getEffectiveStorageDriverId());
-        } 
+        }
         // it's a DataFile:
         return createNewStorageIO(dvObject, storageTag, dvObject.getOwner().getEffectiveStorageDriverId());
     }
@@ -234,7 +234,7 @@ public class DataAccess {
                 || storageTag.isEmpty()) {
             throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
-        
+
         /* Prior versions sometimes called createNewStorageIO(object, "placeholder") with an existing object to get a ~clone for use in storing/reading Aux files
          * Since PR #6488 for multi-store - this can return a clone using a different store than the original (e.g. if the default store changes) which causes errors
          * This if will catch any cases where that's attempted.
@@ -245,7 +245,7 @@ public class DataAccess {
         }
 
         StorageIO<T> storageIO = null;
-        
+
         dvObject.setStorageIdentifier(storageTag);
 
         if (StringUtils.isBlank(storageDriverId)) {
@@ -282,14 +282,14 @@ public class DataAccess {
     }
 
     static HashMap<String, String> drivers = null;
-    
+
     public static String getStorageDriverId(String driverLabel) {
     	if (drivers == null) {
     		populateDrivers();
     	}
     	if (!StringUtils.isBlank(driverLabel) && drivers.containsKey(driverLabel)) {
     		return drivers.get(driverLabel);
-    	} 
+    	}
     	return DEFAULT_STORAGE_DRIVER_IDENTIFIER;
     }
 
@@ -331,7 +331,7 @@ public class DataAccess {
     	}
     	return label;
     }
-    
+
     /**
      * This method checks to see if an overlay store is being used and, if so,
      * defines a base storage identifier for use with auxiliary files, and adds it
@@ -357,7 +357,7 @@ public class DataAccess {
         }
         return newStorageIdentifier;
     }
-    
+
     public static boolean uploadToDatasetAllowed(Dataset d, String storageIdentifier) {
         boolean allowed = true;
         String driverId = DataAccess.getStorageDriverFromIdentifier(storageIdentifier);
@@ -408,7 +408,6 @@ public class DataAccess {
         }
         return false;
     }
-
 
 
     public static String getNewStorageIdentifier(String driverId) {

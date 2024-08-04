@@ -26,52 +26,58 @@ import jakarta.persistence.Table;
  * @author skraffmiller
  */
 @Entity
-@Table(indexes = {@Index(columnList = "datasetfield_id"), 
-    @Index(columnList = "defaultvalueset_id"), 
-    @Index(columnList = "parentdatasetfielddefaultvalue_id"), 
+@Table(indexes = {@Index(columnList = "datasetfield_id"),
+    @Index(columnList = "defaultvalueset_id"),
+    @Index(columnList = "parentdatasetfielddefaultvalue_id"),
     @Index(columnList = "displayorder")})
 public class DatasetFieldDefaultValue implements Serializable {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     public Long getId() {
         return id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public DatasetFieldDefaultValue() {
-   
+
     }
-    
+
     public DatasetFieldDefaultValue(DatasetFieldType sf, DefaultValueSet dvs, String val) {
         setDatasetField(sf);
         setDefaultValueSet(dvs);
-        setStrValue(val);    
-    } 
-    
+        setStrValue(val);
+    }
+
     @ManyToOne
     @JoinColumn(nullable = false)
     private DatasetFieldType datasetField;
+
     public DatasetFieldType getDatasetField() {
         return datasetField;
     }
+
     public void setDatasetField(DatasetFieldType datasetField) {
         this.datasetField = datasetField;
     }
-    
+
     @ManyToOne
     @JoinColumn(nullable = false)
     private DefaultValueSet defaultValueSet;
+
     public DefaultValueSet getDefaultValueSet() {
         return defaultValueSet;
     }
+
     public void setDefaultValueSet(DefaultValueSet defaultValueSet) {
         this.defaultValueSet = defaultValueSet;
     }
-    
+
     @OneToMany(mappedBy = "parentDatasetFieldDefaultValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
     private Collection<DatasetFieldDefaultValue> childDatasetFieldDefaultValues;
@@ -79,19 +85,22 @@ public class DatasetFieldDefaultValue implements Serializable {
     public Collection<DatasetFieldDefaultValue> getChildDatasetFieldDefaultValues() {
         return this.childDatasetFieldDefaultValues;
     }
+
     public void setChildDatasetFieldDefaultValues(Collection<DatasetFieldDefaultValue> childDatasetFieldDefaultValues) {
         this.childDatasetFieldDefaultValues = childDatasetFieldDefaultValues;
     }
-    
+
     @ManyToOne(cascade = CascadeType.MERGE)
     private DatasetFieldDefaultValue parentDatasetFieldDefaultValue;
+
     public DatasetFieldDefaultValue getParentDatasetFieldDefaultValue() {
         return parentDatasetFieldDefaultValue;
     }
+
     public void setParentDatasetFieldValue(DatasetFieldDefaultValue parentDatasetFieldDefaultValue) {
         this.parentDatasetFieldDefaultValue = parentDatasetFieldDefaultValue;
     }
-        
+
     @Column(columnDefinition = "TEXT", nullable = false)
     private String strValue;
 
@@ -101,8 +110,8 @@ public class DatasetFieldDefaultValue implements Serializable {
 
     public void setStrValue(String strValue) {
         this.strValue = strValue;
-        
-    }    
+
+    }
 
     @Override
     public int hashCode() {
@@ -124,13 +133,15 @@ public class DatasetFieldDefaultValue implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.DatasetFieldDefaultValue[ id=" + id + " ]";
     }
-    
+
      public boolean isEmpty() {
         return ((strValue == null || strValue.trim().equals("")));
     }
-    
+
     private int displayOrder;
+
     public int getDisplayOrder() { return this.displayOrder;}
-    public void setDisplayOrder(int displayOrder) {this.displayOrder = displayOrder;} 
-    
+
+    public void setDisplayOrder(int displayOrder) {this.displayOrder = displayOrder;}
+
 }

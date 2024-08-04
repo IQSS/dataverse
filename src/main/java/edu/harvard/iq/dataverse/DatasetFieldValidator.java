@@ -62,8 +62,8 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
         if (!dsfType.isPrimitive() || !StringUtils.isBlank(value.getValue())) {
             return true;
         }
-       
-        if (value.isRequired()) { 
+
+        if (value.isRequired()) {
             String errorMessage = null;
             DatasetFieldCompoundValue parent = value.getParentDatasetFieldCompoundValue();
             if (parent == null || parent.getParentDatasetField().isRequired()) {
@@ -78,14 +78,14 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
                 } catch (NullPointerException npe) {
                     //if there's no context for the error we can't put it anywhere....
                 }
-                
+
                 return false;
             }
         }
-               
+
         return true;
     }
-    
+
     private boolean isTemplateDatasetField(DatasetField dsf) {
         if (dsf.getParentDatasetFieldCompoundValue() != null) {
             return isTemplateDatasetField(dsf.getParentDatasetFieldCompoundValue().getParentDatasetField());
@@ -93,7 +93,7 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
             return dsf.getTemplate() != null;
         }
     }
-    
+
     private boolean areSiblingsPopulated(DatasetField dsf) {
         if (dsf.getParentDatasetFieldCompoundValue() != null) {
             DatasetFieldCompoundValue compound = dsf.getParentDatasetFieldCompoundValue();
@@ -101,9 +101,9 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
                 if (!StringUtils.isBlank(sibling.getValue())) {
                     return true;
                 }
-            }      
+            }
         }
 
         return false;
-    } 
+    }
 }

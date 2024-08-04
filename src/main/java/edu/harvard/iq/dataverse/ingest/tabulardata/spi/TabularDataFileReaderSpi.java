@@ -33,7 +33,7 @@ import java.io.*;
  */
 public abstract class TabularDataFileReaderSpi extends TabularDataFileReaderWriterSpi {
 
-    private static Logger dbgLog = 
+    private static Logger dbgLog =
     Logger.getLogger(TabularDataFileReaderSpi.class.getPackage().getName());
 
     /**
@@ -52,7 +52,7 @@ public abstract class TabularDataFileReaderSpi extends TabularDataFileReaderWrit
         return writerSpiNames == null ?
             null : (String[]) writerSpiNames.clone();
     }
-    
+
     /**
      * Constructs an empty <code>StatDataFileReaderSpi</code> instance.
      */
@@ -86,7 +86,7 @@ public abstract class TabularDataFileReaderSpi extends TabularDataFileReaderWrit
                 readerClassName);
         dbgLog.fine("StatDataFileReaderSpi is called");
     }
-    
+
     /**
      * Returns true if the supplied source object starts with a sequence of bytes
      * that is of the format supported by this reader.  Returning true from this
@@ -99,8 +99,8 @@ public abstract class TabularDataFileReaderSpi extends TabularDataFileReaderWrit
      *                             during reading the stream.
      */
     public abstract boolean canDecodeInput(Object source) throws IOException;
-    
-    
+
+
     /**
      * Returns true if the supplied <code>File</code> object starts with 
      * a sequence of bytes that is of the format supported by this reader.
@@ -127,7 +127,7 @@ public abstract class TabularDataFileReaderSpi extends TabularDataFileReaderWrit
      * during reading the stream.
      */
     public abstract boolean canDecodeInput(BufferedInputStream stream) throws IOException;
-    
+
     /**
      * Returns an instance of <code>StatDataFileReader</code> implementation associated with
      * this service provider.
@@ -138,7 +138,7 @@ public abstract class TabularDataFileReaderSpi extends TabularDataFileReaderWrit
      */
     public abstract TabularDataFileReader createReaderInstance(Object extension)
         throws IOException;
-    
+
     /**
      * Returns an instance of <code>StatDataFileReader</code> implementation 
      * associated with his service provider.
@@ -150,7 +150,7 @@ public abstract class TabularDataFileReaderSpi extends TabularDataFileReaderWrit
     public TabularDataFileReader createReaderInstance() throws IOException {
         return createReaderInstance(null);
     }
-    
+
     /**
      * Returns <code>true</code> if the <code>StatDataFileReader</code> object
      * supplied in is an instance of the <code>StatDataFileReader</code>

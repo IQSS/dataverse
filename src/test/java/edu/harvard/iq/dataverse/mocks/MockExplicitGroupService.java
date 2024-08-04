@@ -13,9 +13,9 @@ import static java.util.stream.Collectors.toSet;
  * @author michael
  */
 public class MockExplicitGroupService extends ExplicitGroupServiceBean {
-    
+
     private Map<Long, ExplicitGroup> groups = new HashMap<>();
-    
+
     public ExplicitGroup registerGroup(ExplicitGroup grp) {
         groups.put(grp.getId(), grp);
         return grp;
@@ -27,6 +27,6 @@ public class MockExplicitGroupService extends ExplicitGroupServiceBean {
                 .filter(g -> g.getDirectMembers().contains(ra))
                 .collect(toSet());
     }
-    
-    
+
+
 }

@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConfirmEmailUtilTest {
-    
+
     static Stream<Arguments> dataPoints() {
         return Stream.of(
             Arguments.of("48 hours", 2880),
@@ -24,13 +24,13 @@ public class ConfirmEmailUtilTest {
             Arguments.of("1 minute", 1)
         );
     }
-    
+
     @ParameterizedTest
     @MethodSource("dataPoints")
     void friendlyExpirationTimeTest(String timeAsFriendlyString, int timeInMinutes) {
         assertEquals(timeAsFriendlyString, ConfirmEmailUtil.friendlyExpirationTime(timeInMinutes));
     }
-    
+
     @Test
     void testGrandfatheredTime() {
         //System.out.println("Grandfathered account timestamp test");

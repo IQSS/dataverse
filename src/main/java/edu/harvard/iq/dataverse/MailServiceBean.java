@@ -62,7 +62,7 @@ public class MailServiceBean implements java.io.Serializable {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
-    DatasetVersionServiceBean versionService; 
+    DatasetVersionServiceBean versionService;
     @EJB
     SystemConfig systemConfig;
     @EJB
@@ -83,7 +83,7 @@ public class MailServiceBean implements java.io.Serializable {
      */
     public MailServiceBean() {
     }
-    
+
     /**
      * Creates a new instance of MailServiceBean with explicit injection, as used during testing.
      */
@@ -99,7 +99,7 @@ public class MailServiceBean implements java.io.Serializable {
     public boolean sendSystemEmail(String to, String subject, String messageText) {
         return sendSystemEmail(to, subject, messageText, false);
     }
-    
+
     /**
      * Send a system notification to one or multiple recipients by email.
      * Will skip sending when {@link #getSystemAddress()} doesn't return a configured "from" address.
@@ -126,7 +126,7 @@ public class MailServiceBean implements java.io.Serializable {
         try {
             // Since JavaMail 1.6, we have support for UTF-8 mail addresses and do not need to handle these ourselves.
             InternetAddress[] recipients = InternetAddress.parse(to);
-            
+
             MimeMessage msg = new MimeMessage(session);
             msg.setFrom(systemAddress);
             msg.setSentDate(new Date());
@@ -137,7 +137,7 @@ public class MailServiceBean implements java.io.Serializable {
             } else {
                 msg.setText(body, charset);
             }
-            
+
             Transport.send(msg, recipients);
             return true;
         } catch (MessagingException ae) {
@@ -146,7 +146,7 @@ public class MailServiceBean implements java.io.Serializable {
         }
         return false;
     }
-    
+
     /**
      * Lookup the system mail address ({@code InternetAddress} may contain personal and actual address).
      * @return The system mail address or an empty {@code Optional} if not configured.
@@ -154,7 +154,7 @@ public class MailServiceBean implements java.io.Serializable {
     public Optional<InternetAddress> getSystemAddress() {
         boolean providedByDB = false;
         String mailAddress = JvmSettings.SYSTEM_EMAIL.lookupOptional().orElse(null);
-        
+
         // Try lookup of (deprecated) database setting only if not configured via MPCONFIG
         if (mailAddress == null) {
             mailAddress = settingsService.getValueForKey(Key.SystemEmail);
@@ -164,7 +164,7 @@ public class MailServiceBean implements java.io.Serializable {
                 logger.warning("The :SystemMail DB setting has been deprecated, please reconfigure using JVM option " + JvmSettings.SYSTEM_EMAIL.getScopedKey());
             }
         }
-        
+
         try {
             // Parse and return.
             return Optional.of(new InternetAddress(Objects.requireNonNull(mailAddress), true));
@@ -179,7 +179,7 @@ public class MailServiceBean implements java.io.Serializable {
         // notifications (like in a development context, but might be useful elsewhere, too).
         return Optional.empty();
     }
-    
+
     /**
      * Lookup the support team mail address ({@code InternetAddress} may contain personal and actual address).
      * Will default to return {@code #getSystemAddress} if not configured.
@@ -206,10 +206,10 @@ public class MailServiceBean implements java.io.Serializable {
         }
         // Always send from system address to avoid email being blocked
         InternetAddress fromAddress = optionalAddress.get();
-        
+
         try {
             MimeMessage msg = new MimeMessage(session);
-            
+
             try {
                 setContactDelegation(reply, fromAddress);
             } catch (UnsupportedEncodingException ex) {
@@ -287,9 +287,9 @@ public class MailServiceBean implements java.io.Serializable {
                } else {
                    logger.warning("Skipping " + notification.getType() + " notification, because couldn't get valid message");
                }
-           } else { 
+           } else {
                logger.warning("Skipping " + notification.getType() + " notification, because no valid Object was found");
-           }           
+           }
         } else {
             logger.warning("Skipping " + notification.getType() + " notification, because email address is null");
         }
@@ -298,17 +298,17 @@ public class MailServiceBean implements java.io.Serializable {
 
     private String getDatasetManageFileAccessLink(DataFile datafile) {
         return  systemConfig.getDataverseSiteUrl() + "/permissions-manage-files.xhtml?id=" + datafile.getOwner().getId();
-    } 
+    }
 
-    private String getDatasetLink(Dataset dataset) {        
+    private String getDatasetLink(Dataset dataset) {
         return  systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString();
-    } 
+    }
 
-    private String getDatasetDraftLink(Dataset dataset) {        
-        return  systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&version=DRAFT" + "&faces-redirect=true"; 
-    } 
+    private String getDatasetDraftLink(Dataset dataset) {
+        return  systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&version=DRAFT" + "&faces-redirect=true";
+    }
 
-    private String getDataverseLink(Dataverse dataverse) {       
+    private String getDataverseLink(Dataverse dataverse) {
         return  systemConfig.getDataverseSiteUrl() + "/dataverse/" + dataverse.getAlias();
     }
 
@@ -410,7 +410,7 @@ public class MailServiceBean implements java.io.Serializable {
                         pattern = BundleUtil.getStringFromBundle("notification.access.granted.fileDownloader.additionalDataverse");
                          String[]  paramArrayAssignRoleDV = {" "};
                         messageText += MessageFormat.format(pattern, paramArrayAssignRoleDV);
-                    }                   
+                    }
                 }
                 return messageText;
             case REVOKEROLE:
@@ -445,10 +445,10 @@ public class MailServiceBean implements java.io.Serializable {
             case REQUESTFILEACCESS:
                 //Notification to those who can grant file access requests on a dataset when a user makes a request
                 DataFile datafile = (DataFile) targetObject;
-                
+
                 pattern = BundleUtil.getStringFromBundle("notification.email.requestFileAccess");
                 String requestorName = (requestor.getLastName() != null && requestor.getLastName() != null) ? requestor.getFirstName() + " " + requestor.getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
-                String requestorEmail = requestor.getEmail() != null ? requestor.getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable"); 
+                String requestorEmail = requestor.getEmail() != null ? requestor.getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
                 String[] paramArrayRequestFileAccess = {datafile.getOwner().getDisplayName(), requestorName, requestorEmail, getDatasetManageFileAccessLink(datafile)};
                 messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
                 messageText += MessageFormat.format(pattern, paramArrayRequestFileAccess);
@@ -491,7 +491,7 @@ public class MailServiceBean implements java.io.Serializable {
                 return messageText += datasetCreatedMessage;
             case SUBMITTEDDS:
                 version = (DatasetVersion) targetObject;
-                String mightHaveSubmissionComment = "";              
+                String mightHaveSubmissionComment = "";
                 /*
                 FIXME
                 Setting up to add single comment when design completed
@@ -502,10 +502,10 @@ public class MailServiceBean implements java.io.Serializable {
                 }
                 */                
                  requestorName = (requestor.getLastName() != null && requestor.getLastName() != null) ? requestor.getFirstName() + " " + requestor.getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
-                 requestorEmail = requestor.getEmail() != null ? requestor.getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");               
+                 requestorEmail = requestor.getEmail() != null ? requestor.getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasSubmittedForReview");
 
-                String[] paramArraySubmittedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
+                String[] paramArraySubmittedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()),
                     version.getDataset().getOwner().getDisplayName(), getDataverseLink(version.getDataset().getOwner()),
                    requestorName, requestorEmail};
                 messageText += MessageFormat.format(pattern, paramArraySubmittedDataset);
@@ -513,14 +513,14 @@ public class MailServiceBean implements java.io.Serializable {
             case PUBLISHEDDS:
                 version = (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasPublished");
-                String[] paramArrayPublishedDataset = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), 
+                String[] paramArrayPublishedDataset = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()),
                     version.getDataset().getOwner().getDisplayName(), getDataverseLink(version.getDataset().getOwner())};
                 messageText += MessageFormat.format(pattern, paramArrayPublishedDataset);
                 return messageText;
             case PUBLISHFAILED_PIDREG:
                 version = (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.publishFailedPidReg");
-                String[] paramArrayPublishFailedDatasetPidReg = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), 
+                String[] paramArrayPublishFailedDatasetPidReg = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()),
                     version.getDataset().getOwner().getDisplayName(), getDataverseLink(version.getDataset().getOwner())};
                 messageText += MessageFormat.format(pattern, paramArrayPublishFailedDatasetPidReg);
                 return messageText;
@@ -528,7 +528,7 @@ public class MailServiceBean implements java.io.Serializable {
                 version = (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasReturnedByReviewer");
 
-                String[] paramArrayReturnedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
+                String[] paramArrayReturnedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()),
                     version.getDataset().getOwner().getDisplayName(), getDataverseLink(version.getDataset().getOwner())};
                 messageText += MessageFormat.format(pattern, paramArrayReturnedDataset);
 
@@ -690,25 +690,25 @@ public class MailServiceBean implements java.io.Serializable {
                 dataset = (Dataset) targetObject;
                 JsonObject citingResource = null;
                 citingResource = JsonUtil.getJsonObject(additionalInfo);
-                
+
 
                 pattern = BundleUtil.getStringFromBundle("notification.email.datasetWasMentioned");
                 Object[] paramArrayDatasetMentioned = {
                         userNotification.getUser().getName(),
-                        BrandingUtil.getInstallationBrandName(), 
+                        BrandingUtil.getInstallationBrandName(),
                         citingResource.getString("@type"),
                         citingResource.getString("@id"),
                         citingResource.getString("name"),
-                        citingResource.getString("relationship"), 
+                        citingResource.getString("relationship"),
                         systemConfig.getDataverseSiteUrl(),
-                        dataset.getGlobalId().toString(), 
+                        dataset.getGlobalId().toString(),
                         dataset.getDisplayName()};
                 messageText = MessageFormat.format(pattern, paramArrayDatasetMentioned);
                 return messageText;
             case REQUESTEDFILEACCESS:
                 //Notification to requestor when they make a request
                 datafile = (DataFile) targetObject;
-                
+
                 pattern = BundleUtil.getStringFromBundle("notification.email.requestedFileAccess");
                  messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
                  messageText += MessageFormat.format(pattern, getDvObjectLink(datafile), datafile.getOwner().getDisplayName());
@@ -791,6 +791,6 @@ public class MailServiceBean implements java.io.Serializable {
         }
 
         logger.fine("no email address");
-        return null; 
+        return null;
     }
 }

@@ -21,7 +21,7 @@ public class DatasetVersionServiceBeanTest {
   @BeforeEach
   public void setUp() {
     this.datasetVersionServiceBean = new DatasetVersionServiceBean();
-    
+
   }
 
   @AfterEach

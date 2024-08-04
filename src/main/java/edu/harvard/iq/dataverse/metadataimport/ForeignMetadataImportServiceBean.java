@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.metadataimport;
 
 
@@ -40,13 +39,13 @@ import javax.xml.stream.XMLInputFactory;
 public class ForeignMetadataImportServiceBean {
 
     private static final Logger logger = Logger.getLogger(ForeignMetadataImportServiceBean.class.getCanonicalName());
-    
+
     @EJB
     DatasetFieldServiceBean datasetfieldService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     ForeignMetadataFormatMapping findFormatMappingByName(String name) {
         try {
             return em.createNamedQuery("ForeignMetadataFormatMapping.findByName", ForeignMetadataFormatMapping.class)
@@ -56,22 +55,22 @@ public class ForeignMetadataImportServiceBean {
             return null;
         }
     }
-    
+
     public void importXML(String xmlToParse, String foreignFormat, DatasetVersion datasetVersion) {
         StringReader reader = null;
-        XMLStreamReader xmlr = null;        
-        
+        XMLStreamReader xmlr = null;
+
         ForeignMetadataFormatMapping mappingSupported = findFormatMappingByName(foreignFormat);
         if (mappingSupported == null) {
             throw new EJBException("Unknown/unsupported foreign metadata format " + foreignFormat);
         }
-        
+
         try {
             reader = new StringReader(xmlToParse);
             XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
             xmlr = xmlFactory.createXMLStreamReader(reader);
             processXML(xmlr, mappingSupported, datasetVersion);
-        
+
         } catch (XMLStreamException ex) {
             //Logger.getLogger("global").log(Level.SEVERE, null, ex);
             throw new EJBException("ERROR occurred while parsing XML fragment  (" + xmlToParse.substring(0, 64) + "...); ", ex);
@@ -81,7 +80,7 @@ public class ForeignMetadataImportServiceBean {
             } catch (XMLStreamException ex) {}
         }
     }
-    
+
     public void importXML(File xmlFile, String foreignFormat, DatasetVersion datasetVersion) {
         FileInputStream in = null;
         XMLStreamReader xmlr = null;
@@ -92,7 +91,7 @@ public class ForeignMetadataImportServiceBean {
         if (mappingSupported == null) {
             throw new EJBException("Unknown/unsupported foreign metadata format " + foreignFormat);
         }
-        
+
         try {
             in = new FileInputStream(xmlFile);
             XMLInputFactory xmlFactory = javax.xml.stream.XMLInputFactory.newInstance();
@@ -124,38 +123,38 @@ public class ForeignMetadataImportServiceBean {
         String openingTag = foreignFormatMapping.getStartElement();
         if (openingTag != null) {
             xmlr.require(XMLStreamConstants.START_ELEMENT, null, openingTag);
-        } else { 
+        } else {
             // TODO: 
             // add support for parsing the body regardless of the start element.
             // June 20 2014 -- L.A. 
             throw new EJBException("No support for format mappings without start element defined (yet)");
         }
-                
+
         processXMLElement(xmlr, ":", openingTag, foreignFormatMapping, datasetVersion);
 
     }
-    
+
     private void processXMLElement(XMLStreamReader xmlr, String currentPath, String openingTag, ForeignMetadataFormatMapping foreignFormatMapping, DatasetVersion datasetVersion) throws XMLStreamException {
         logger.fine("entering processXMLElement; (" + currentPath + ")");
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 String currentElement = xmlr.getLocalName();
-                
+
                 ForeignMetadataFieldMapping mappingDefined = datasetfieldService.findFieldMapping(foreignFormatMapping.getName(), currentPath + currentElement);
-                
+
                 if (mappingDefined != null) {
-                    DatasetFieldCompoundValue cachedCompoundValue = null; 
-                    
+                    DatasetFieldCompoundValue cachedCompoundValue = null;
+
                     // Process attributes, if any are defined in the mapping:
                     
                     for (ForeignMetadataFieldMapping childMapping : mappingDefined.getChildFieldMappings()) {
                         if (childMapping.isAttribute()) {
                             String attributeName = childMapping.getForeignFieldXPath();
-                            
+
                             String attributeValue = xmlr.getAttributeValue(null, attributeName);
                             if (attributeValue != null) {
                                 String mappedFieldName = childMapping.getDatasetfieldName();
-                                
+
                                 logger.fine("looking up dataset field " + mappedFieldName);
 
                                 DatasetFieldType mappedFieldType = datasetfieldService.findByNameOpt(mappedFieldName);
@@ -171,7 +170,7 @@ public class ForeignMetadataImportServiceBean {
                             }
                         }
                     }
-                    
+
                     // Process the payload of this XML element:
                     String dataverseFieldName = mappingDefined.getDatasetfieldName();
                     if (dataverseFieldName != null && !dataverseFieldName.equals("")) {
@@ -187,14 +186,14 @@ public class ForeignMetadataImportServiceBean {
                     // recursively, process the xml stream further down: 
                     processXMLElement(xmlr, currentPath + currentElement + ":", currentElement, foreignFormatMapping, datasetVersion);
                 }
-                
+
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals(openingTag)) return;
             }
         }
     }
-    
-    
+
+
     private DatasetFieldCompoundValue createDatasetFieldValue(DatasetFieldType dsft, DatasetFieldCompoundValue savedCompoundValue, String elementText, DatasetVersion datasetVersion) {
         if (dsft.isPrimitive()) {
             if (!dsft.isHasParent()) {
@@ -223,7 +222,7 @@ public class ForeignMetadataImportServiceBean {
                     DatasetFieldValue newDsfv = new DatasetFieldValue(dsf);
                     newDsfv.setValue(elementText);
                     dsf.getDatasetFieldValues().add(newDsfv);
-                    
+
                 } else {
                     // A controlled vocabulary entry: 
                     // first, let's see if it's a legit control vocab. entry: 
@@ -247,7 +246,7 @@ public class ForeignMetadataImportServiceBean {
                     */
                 }
                 // No compound values had to be created; returning null:
-                return null;   
+                return null;
             } else {
                 // a primitive that is part of a compound value:
                 
@@ -259,26 +258,26 @@ public class ForeignMetadataImportServiceBean {
                 DatasetFieldValue childValue = new DatasetFieldValue(childField);
                 childValue.setValue(elementText);
                 childField.getDatasetFieldValues().add(childValue);
-                
-                
+
+
                 // see if a compound value of the right type has already been 
                 // created and passed to us: 
                 
-                DatasetFieldCompoundValue parentCompoundValue = null; 
+                DatasetFieldCompoundValue parentCompoundValue = null;
                 DatasetFieldType parentFieldType = dsft.getParentDatasetFieldType();
                 if (parentFieldType == null) {
                     logger.severe("Child field type with no parent field type defined!");
                     // we could throw an exception and exit... but maybe we 
                     // could just skip this field and try to continue - ? 
-                    return null; 
+                    return null;
                 }
-                
+
                 if (savedCompoundValue != null) {
                     if (parentFieldType.equals(savedCompoundValue.getParentDatasetField().getDatasetFieldType())) {
-                        parentCompoundValue = savedCompoundValue; 
+                        parentCompoundValue = savedCompoundValue;
                     }
                 }
-                
+
                 // if not, create a new one: 
 
                 if (parentCompoundValue == null) {
@@ -288,8 +287,8 @@ public class ForeignMetadataImportServiceBean {
                     // is a misnomer, and that the relationship between the compound value
                     // and the corresponding dataset field should be called 
                     // "CompoundDatasetField", not "ParentDatasetField") (discuss?)
-                    DatasetField parentField = null; 
-                    
+                    DatasetField parentField = null;
+
                     for (DatasetField existingDsf : datasetVersion.getFlatDatasetFields()) {
                         if (existingDsf.getDatasetFieldType().equals(parentFieldType)) {
                             parentField = existingDsf;
@@ -303,25 +302,25 @@ public class ForeignMetadataImportServiceBean {
                         datasetVersion.getDatasetFields().add(parentField);
                         parentField.setDatasetVersion(datasetVersion);
                     }
-                    
+
                     // and then create new compound value: 
                     parentCompoundValue = new DatasetFieldCompoundValue();
                     parentCompoundValue.setParentDatasetField(parentField);
                     parentField.getDatasetFieldCompoundValues().add(parentCompoundValue);
                 }
-                
+
                 childField.setParentDatasetFieldCompoundValue(parentCompoundValue);
                 parentCompoundValue.getChildDatasetFields().add(childField);
-                
-                return parentCompoundValue; 
+
+                return parentCompoundValue;
 
             }
         }
-               
-       
-        return null; 
+
+
+        return null;
     }
-    
+
     private String parseText(XMLStreamReader xmlr) throws XMLStreamException {
         return parseText(xmlr, true);
      }
@@ -340,5 +339,5 @@ public class ForeignMetadataImportServiceBean {
         return tempString;
      }
 
-    
+
 }

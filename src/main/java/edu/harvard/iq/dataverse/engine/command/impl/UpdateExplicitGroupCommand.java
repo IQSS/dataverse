@@ -14,8 +14,9 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  */
 @RequiredPermissions(Permission.ManageDataversePermissions)
 public class UpdateExplicitGroupCommand extends AbstractCommand<ExplicitGroup> {
-    
+
     private final ExplicitGroup explicitGroup;
+
     public UpdateExplicitGroupCommand(DataverseRequest aRequest, ExplicitGroup anExplicitGroup) {
         super(aRequest, anExplicitGroup.getOwner());
         explicitGroup = anExplicitGroup;
@@ -25,5 +26,5 @@ public class UpdateExplicitGroupCommand extends AbstractCommand<ExplicitGroup> {
     public ExplicitGroup execute(CommandContext ctxt) throws CommandException {
         return ctxt.explicitGroups().persist(explicitGroup);
     }
-    
+
 }

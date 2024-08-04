@@ -19,13 +19,13 @@ import org.apache.commons.lang3.StringUtils;
  * @author rmp553
  */
 public class SolrQueryFormatter {
-    
-    public static int SOLR_ID_GROUP_SIZE = 1000; 
-    
+
+    public static int SOLR_ID_GROUP_SIZE = 1000;
+
     public void setSolrIdGroupSize(int groupSize) {
         SOLR_ID_GROUP_SIZE = groupSize;
     }
-    
+
     /**
      *
      * @param sliceOfIds
@@ -42,9 +42,9 @@ public class SolrQueryFormatter {
         if (sliceOfIds.isEmpty()) {
             throw new IllegalStateException("sliceOfIds must have at least 1 value");
         }
-        
-        List<String> idList = new ArrayList<>();        
-        for (Long id : sliceOfIds) {          
+
+        List<String> idList = new ArrayList<>();
+        for (Long id : sliceOfIds) {
             if (id != null) {
                 idList.add("" + id);
             }
@@ -58,8 +58,8 @@ public class SolrQueryFormatter {
 
         return qPart;
     }
-    
-    
+
+
     /**
      *  SOLR cannot parse over 1024 items in a boolean clause
      *   Group IDs in batches of 1000
@@ -74,16 +74,16 @@ public class SolrQueryFormatter {
         if ((idListSet == null) || (idListSet.isEmpty())) {
             return null;
         }
-        
+
         List<Long> idList = new ArrayList<>(idListSet);
         int numIds = idList.size();
-        
+
         List<String> queryClauseParts = new ArrayList<>();
         int idCnt = 0;
 
         int numFullGroups = numIds / this.SOLR_ID_GROUP_SIZE;
-        List<Long> sliceOfIds; 
-        
+        List<Long> sliceOfIds;
+
         // -------------------------------------------
         // Ids in groups of SOLR_ID_GROUP_SIZE (1,000)
         // -------------------------------------------
@@ -91,10 +91,10 @@ public class SolrQueryFormatter {
             // slice group of ids off
             //
             sliceOfIds = idList.subList(idCnt, this.SOLR_ID_GROUP_SIZE * (current_group_num + 1));
-            
+
             // add them to the count
             idCnt += sliceOfIds.size();
-            
+
             // format ids into solr OR clause
             //
             queryClauseParts.add(this.formatIdsForSolrClause(sliceOfIds, paramName, dvObjectType));
@@ -109,13 +109,13 @@ public class SolrQueryFormatter {
             // slice group of ids off
             //
             sliceOfIds = idList.subList(idCnt, idCnt + extraIdCount);
-            
+
             // format ids into solr OR clause
             //
-            queryClauseParts.add(this.formatIdsForSolrClause(sliceOfIds, paramName, dvObjectType));        
+            queryClauseParts.add(this.formatIdsForSolrClause(sliceOfIds, paramName, dvObjectType));
         }
-        
+
         return StringUtils.join(queryClauseParts, " OR ");
-        
+
     }
 }

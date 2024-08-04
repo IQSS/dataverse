@@ -59,7 +59,6 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // Copy metadata from draft version to latest published version
         updateVersion.setDatasetFields(newVersion.initDatasetFields());
 
-        
 
         // final DatasetVersion editVersion = getDataset().getEditVersion();
         DatasetFieldUtil.tidyUpFields(updateVersion.getDatasetFields(), true);
@@ -73,10 +72,10 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         updateVersion.setTermsOfUseAndAccess(newTerms);
         //Put old terms on version that will be deleted....
         newVersion.setTermsOfUseAndAccess(oldTerms);
-        
+
         //Validate metadata and TofA conditions
         validateOrDie(updateVersion, isValidateLenient());
-        
+
         //Also set the fileaccessrequest boolean on the dataset to match the new terms
         getDataset().setFileAccessRequest(updateVersion.getTermsOfUseAndAccess().isFileAccessRequest());
         List<WorkflowComment> newComments = newVersion.getWorkflowComments();
@@ -87,13 +86,13 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             updateVersion.getWorkflowComments().addAll(newComments);
         }
 
-        
+
         // we have to merge to update the database but not flush because
         // we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(getDataset());
-        
+
         updateVersion = tempDataset.getLatestVersionForCopy();
-        
+
         // Look for file metadata changes and update published metadata if needed
         List<FileMetadata> pubFmds = updateVersion.getFileMetadatas();
         int pubFileCount = pubFmds.size();
@@ -174,7 +173,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // And update metadata at PID provider
         ctxt.engine().submit(
                 new UpdateDvObjectPIDMetadataCommand(savedDataset, getRequest()));
-        
+
         //And the exported metadata files
         try {
             ExportService instance = ExportService.getInstance();
@@ -183,14 +182,12 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             // Just like with indexing, a failure to export is not a fatal condition.
             logger.log(Level.WARNING, "Curate Published DatasetVersion: exception while exporting metadata files:{0}", ex.getMessage());
         }
-        
+
 
         // Update so that getDataset() in updateDatasetUser will get the up-to-date copy
         // (with no draft version)
         setDataset(savedDataset);
         updateDatasetUser(ctxt);
-        
-
 
 
         return savedDataset;

@@ -59,7 +59,7 @@ public class DataAccessTest {
     StorageIO<Dataset> storageIo = DataAccess.createNewStorageIO(dataset, "valid-tag");
     assertTrue(storageIo.getClass().equals(FileAccessIO.class));
   }
-  
+
   @Test
   void testGetLocationFromStorageId() {
       Dataset d = new Dataset();
@@ -71,7 +71,7 @@ public class DataAccessTest {
               DataAccess.getLocationFromStorageId("18b39722140-50eb7d3c5ece", d));
 
   }
-  
+
   @Test
   void testGetStorageIdFromLocation() {
       assertEquals("file://18b39722140-50eb7d3c5ece",

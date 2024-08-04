@@ -40,12 +40,12 @@ public final class SPSSConstants {
      10, 11, 12, 15, 16, 17,
      20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
      30, 31, 32, 33, 34, 35, 36, 37, 38, 39};
-     
-     
+
+
      private static final int[] FORMAT_KEYS_POR = {
           0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
          10, 11, 12, 15, 16, 17,
-        102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 
+        102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
         112, 113, 114, 115, 116, 117, 118, 119, 120, 121};
 
     private static final String[] FORMAT_VALUES = {
@@ -66,7 +66,7 @@ public final class SPSSConstants {
      */
     public static Map<Integer, String> FORMAT_CODE_TABLE_SAV =
             new LinkedHashMap<Integer, String>();
-            
+
     /**
      * A mapping table from a <code>Integer</code> value to 
      * SPSS POR data-format code.
@@ -75,7 +75,7 @@ public final class SPSSConstants {
      */
     public static Map<Integer, String> FORMAT_CODE_TABLE_POR =
             new LinkedHashMap<Integer, String>();
-            
+
     /**
      * A mapping table that groups data-formats into three categories
      * (date, time, and other).
@@ -96,12 +96,12 @@ public final class SPSSConstants {
      * A <code>String</code> array of short weekday names in English 
      */
     public static String[] WEEKDAYS = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-    
+
     /**
      * A <code>String</code> array of short month names in English 
      */
     public static String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-    
+
     /**
      * A mapping table from an <code>Integer</code> to
      * a short-weekday name in English.
@@ -120,14 +120,14 @@ public final class SPSSConstants {
             FORMAT_CATEGORY_TABLE.put(FORMAT_VALUES[i], FORMAT_CATEGORIES[i]);
 
         }
-        
+
         for (int i = 0; i < WEEKDAYS.length; i++) {
             WEEKDAY_LIST.put(i, WEEKDAYS[i]);
         }
         for (int i = 0; i < MONTHS.length; i++) {
             MONTH_LIST.put(i, MONTHS[i]);
         }
-        
+
     }
 
 

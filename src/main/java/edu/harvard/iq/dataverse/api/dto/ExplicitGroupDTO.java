@@ -7,11 +7,11 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
  * @author michael
  */
 public class ExplicitGroupDTO {
-    
+
     private String description;
     private String displayName;
     private String aliasInOwner;
-    
+
     /**
      * Applies the information in the DTO to the passed group.
      * The the passed group's {@link ExplicitGroup#setGroupAliasInOwner(java.lang.String)} is
@@ -22,16 +22,16 @@ public class ExplicitGroupDTO {
      */
     
     public ExplicitGroup apply(ExplicitGroup eg) {
-        
+
         eg.setDescription(description);
         eg.setDisplayName(displayName);
         if (eg.getGroupAliasInOwner() == null) {
             eg.setGroupAliasInOwner(aliasInOwner);
         }
-        
+
         return eg;
     }
-    
+
     public String getDescription() {
         return description;
     }
@@ -55,6 +55,6 @@ public class ExplicitGroupDTO {
     public void setAliasInOwner(String aliasInOwner) {
         this.aliasInOwner = aliasInOwner;
     }
-    
-    
+
+
 }

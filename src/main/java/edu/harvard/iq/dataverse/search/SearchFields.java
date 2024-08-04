@@ -97,7 +97,7 @@ public class SearchFields {
     public static final String DATAVERSE_AFFILIATION = "dvAffiliation";
     public static final String DATAVERSE_DESCRIPTION = "dvDescription";
     public static final String DATAVERSE_CATEGORY = "dvCategory";
-    
+
     /**
      * What is dvSubject_en for? How does it get populated into Solr? The
      * behavior changed so that now the subjects of dataverses are based on
@@ -117,20 +117,20 @@ public class SearchFields {
      * could have a convention like "subjectFacet" for the facets?
      */
     public static final String SUBJECT = "subject_ss";
-    
+
     /*
      * The category of the Dataverse (aka Dataverse Type). Named differently
      * than DATAVERSE_CATEGORY so it can be searched but doesn't show up on the
      * homepage facet
      */
     public static final String CATEGORY_OF_DATAVERSE = "categoryOfDataverse";
-    
+
     /*
      * The alias of the dataverse. This named differently because IDENTIFIER
      * is used for dataset for its own identifier.
      */
     public static final String IDENTIFIER_OF_DATAVERSE = "identifierOfDataverse";
-    
+
     /**
      * @todo think about how to tie the fact that this needs to be multivalued
      * (_ss) because a multivalued facet (authorAffilition_ss) will be collapsed
@@ -178,7 +178,7 @@ public class SearchFields {
      * Indexed as text_en so it's searchable by lower case etc.
      */
     public static final String FILE_TAG_SEARCHABLE = "fileTags";
-    
+
     /**
      * Internal boolean indicating that the file has been deleted in the draft version.
      */
@@ -210,7 +210,7 @@ public class SearchFields {
     public static final String NAME_SORT = "nameSort";
     // PUBLICATION_YEAR used to be called PUBLICATION_DATE.
     public static final String PUBLICATION_YEAR = "publicationDate";
-    public static final String RELEASE_OR_CREATE_DATE = "dateSort"; 
+    public static final String RELEASE_OR_CREATE_DATE = "dateSort";
 
 
     public static final String DEFINITION_POINT = "definitionPointDocId";
@@ -230,7 +230,7 @@ public class SearchFields {
      * i.e. "Unpublished", "Draft" (multivalued)
      */
     public static final String PUBLICATION_STATUS = "publicationStatus";
-    
+
     public static final String EXTERNAL_STATUS = "externalStatus";
     /**
      * @todo reconcile different with Solr schema.xml where type is Long rather
@@ -277,7 +277,7 @@ public class SearchFields {
     public static final String FULL_TEXT = "_text_";
     public static final String EMBARGO_END_DATE = "embargoEndDate";
     public static final String RETENTION_END_DATE = "retentionEndDate";
-    
+
     // SpatialRecursivePrefixTreeFieldType: https://solr.apache.org/guide/8_11/spatial-search.html#rpt
     public static final String GEOLOCATION = "geolocation";
     // BBoxField (bounding box): https://solr.apache.org/guide/8_11/spatial-search.html#bboxfield

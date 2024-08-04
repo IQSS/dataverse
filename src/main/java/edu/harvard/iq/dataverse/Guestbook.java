@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -30,34 +29,34 @@ import org.hibernate.validator.constraints.NotBlank;
  */
 @Entity
 public class Guestbook implements Serializable {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
      /**
      * Holds value of the Dataverse
      */
     @ManyToOne
     @JoinColumn(nullable = true)
     private Dataverse dataverse;
-    
+
     @OneToMany(mappedBy = "guestbook", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     @OrderBy("displayOrder")
     private List<CustomQuestion> customQuestions;
-    
+
     @NotBlank(message = "{guestbook.name}")
     private String name;
-    
+
     private boolean enabled;
     private boolean nameRequired;
     private boolean emailRequired;
-    private boolean institutionRequired;   
-    private boolean positionRequired; 
+    private boolean institutionRequired;
+    private boolean positionRequired;
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date createTime;
-    
+
     /* WE PROBABLY NEED HELP INFO TEXT...
      * public String guestbook() {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Guestbook", " – Edit your dataset guestbook and click Save Changes. Asterisks indicate required fields."));
@@ -71,7 +70,7 @@ public class Guestbook implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public Dataverse getDataverse() {
         return dataverse;
     }
@@ -135,7 +134,7 @@ public class Guestbook implements Serializable {
     public void setPositionRequired(boolean positionRequired) {
         this.positionRequired = positionRequired;
     }
-    
+
     public Date getCreateTime() {
         return createTime;
     }
@@ -147,7 +146,7 @@ public class Guestbook implements Serializable {
     public String getCreateDate() {
         return DateUtil.formatDate(createTime);
     }
-        
+
     public Guestbook copyGuestbook(Guestbook source, Dataverse dataverse) {
         Guestbook newGuestbook = new Guestbook();
         newGuestbook.setDataverse(dataverse);
@@ -175,11 +174,11 @@ public class Guestbook implements Serializable {
                     }
                 }
                 newGuestbook.getCustomQuestions().add(target);
-            }          
+            }
         }
         return newGuestbook;
     }
-    
+
     @Transient
     private boolean deletable;
 
@@ -189,8 +188,8 @@ public class Guestbook implements Serializable {
 
     public void setDeletable(boolean deletable) {
         this.deletable = deletable;
-    }    
-    
+    }
+
     public List<String> getRequiredAccountInformation() {
         List<String> retList = new ArrayList<>();
         if (nameRequired) {
@@ -207,7 +206,7 @@ public class Guestbook implements Serializable {
         }
         return retList;
     }
-    
+
     public List<String> getOptionalAccountInformation() {
                 List<String> retList = new ArrayList<>();
         if (!nameRequired) {
@@ -223,9 +222,9 @@ public class Guestbook implements Serializable {
             retList.add(BundleUtil.getStringFromBundle("position"));
         }
         return retList;
-        
+
     }
-    
+
     public List<String> getRequiredQuestionsList() {
         List<String> retList = new ArrayList<>();
                 for (CustomQuestion cq : this.getCustomQuestions()) {
@@ -235,7 +234,7 @@ public class Guestbook implements Serializable {
                 }
         return retList;
     }
-    
+
     public List<String> getOptionalQuestionsList() {
         List<String> retList = new ArrayList<>();
                 for (CustomQuestion cq : this.getCustomQuestions()) {
@@ -245,38 +244,38 @@ public class Guestbook implements Serializable {
                 }
         return retList;
     }
-        
+
     public void removeCustomQuestion(int index) {
         customQuestions.remove(index);
     }
-    
+
     public void addCustomQuestion(int index, CustomQuestion cq) {
         customQuestions.add(index, cq);
     }
-    
+
     @Transient
     private Long usageCount;
 
     public Long getUsageCount() {
         return usageCount;
     }
-    
+
     public void setUsageCount(Long usageCount) {
         this.usageCount = usageCount;
     }
-    
+
     @Transient
     private Long usageCountDataverse;
 
     public Long getUsageCountDataverse() {
         return usageCountDataverse;
     }
-    
+
     public void setUsageCountDataverse(Long usageCountDataverse) {
         this.usageCountDataverse = usageCountDataverse;
     }
-    
-    @Transient 
+
+    @Transient
     private Long responseCount;
 
     public Long getResponseCount() {
@@ -286,8 +285,8 @@ public class Guestbook implements Serializable {
     public void setResponseCount(Long responseCount) {
         this.responseCount = responseCount;
     }
-    
-    @Transient 
+
+    @Transient
     private Long responseCountDataverse;
 
     public Long getResponseCountDataverse() {
@@ -297,7 +296,7 @@ public class Guestbook implements Serializable {
     public void setResponseCountDataverse(Long responseCountDataverse) {
         this.responseCountDataverse = responseCountDataverse;
     }
-    
+
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof Guestbook)) {
@@ -306,6 +305,6 @@ public class Guestbook implements Serializable {
         Guestbook other = (Guestbook) object;
         return Objects.equals(getId(), other.getId());
     }
-    
-    
+
+
 }

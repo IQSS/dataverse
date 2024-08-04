@@ -33,17 +33,17 @@ public class DataverseContact implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public DataverseContact() {
-    }      
-    
-    public DataverseContact(Dataverse dv) {
-        this.dataverse = dv; 
     }
-    
+
+    public DataverseContact(Dataverse dv) {
+        this.dataverse = dv;
+    }
+
     public DataverseContact(Dataverse dv, String contactEmail) {
-        this.dataverse = dv;        
+        this.dataverse = dv;
         this.contactEmail = contactEmail;
-    }      
-    
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

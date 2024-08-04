@@ -49,6 +49,7 @@ public class CacheFactoryBeanTest {
     AuthenticatedUser authUser = new AuthenticatedUser();
     GuestUser guestUser = GuestUser.get();
     static final String settingDefaultCapacity = "30,60,120";
+
     public String getJsonSetting() {
         return """
              [
@@ -92,6 +93,7 @@ public class CacheFactoryBeanTest {
                }
              ]""";
     }
+
     @BeforeEach
     public void init() throws IOException {
         // Reuse cache and config for all tests
@@ -120,6 +122,7 @@ public class CacheFactoryBeanTest {
     public static void cleanup() {
         Hazelcast.shutdownAll();
     }
+
     @Test
     public void testGuestUserGettingRateLimited() {
         Command action = new ListDataverseContentCommand(null, null);
@@ -194,6 +197,7 @@ public class CacheFactoryBeanTest {
     private Config getConfig() {
         return getConfig(null);
     }
+
     private Config getConfig(String members) {
         Config config = new Config();
         config.getNetworkConfig().getJoin().getAutoDetectionConfig().setEnabled(false);
@@ -212,120 +216,149 @@ public class CacheFactoryBeanTest {
     private class TestCache implements Cache<String, String> {
         HazelcastInstance hzInstance;
         IMap<String, String> cache;
+
         TestCache(Config config) {
             hzInstance = Hazelcast.newHazelcastInstance(config);
             cache = hzInstance.getMap("test");
             Address address = hzInstance.getCluster().getLocalMember().getAddress();
             cache.put("memberAddress", String.format("%s:%d", address.getHost(), address.getPort()));
         }
+
         @Override
         public String get(String s) {
             return cache.get(s);
         }
+
         @Override
         public Map<String, String> getAll(Set<? extends String> set) {
             return null;
         }
+
         @Override
         public boolean containsKey(String s) {
             return get(s) != null;
         }
+
         @Override
         public void loadAll(Set<? extends String> set, boolean b, CompletionListener completionListener) {
 
         }
+
         @Override
         public void put(String s, String s2) {
             cache.put(s, s2);
         }
+
         @Override
         public String getAndPut(String s, String s2) {
             return null;
         }
+
         @Override
         public void putAll(Map<? extends String, ? extends String> map) {
 
         }
+
         @Override
         public boolean putIfAbsent(String s, String s2) {
             return false;
         }
+
         @Override
         public boolean remove(String s) {
             return false;
         }
+
         @Override
         public boolean remove(String s, String s2) {
             return false;
         }
+
         @Override
         public String getAndRemove(String s) {
             return null;
         }
+
         @Override
         public boolean replace(String s, String s2, String v1) {
             return false;
         }
+
         @Override
         public boolean replace(String s, String s2) {
             return false;
         }
+
         @Override
         public String getAndReplace(String s, String s2) {
             return null;
         }
+
         @Override
         public void removeAll(Set<? extends String> set) {
 
         }
+
         @Override
         public void removeAll() {
 
         }
+
         @Override
         public void clear() {
             cache.clear();
         }
+
         @Override
         public <C extends Configuration<String, String>> C getConfiguration(Class<C> aClass) {
             return null;
         }
+
         @Override
         public <T> T invoke(String s, EntryProcessor<String, String, T> entryProcessor, Object... objects) throws EntryProcessorException {
             return null;
         }
+
         @Override
         public <T> Map<String, EntryProcessorResult<T>> invokeAll(Set<? extends String> set, EntryProcessor<String, String, T> entryProcessor, Object... objects) {
             return null;
         }
+
         @Override
         public String getName() {
             return null;
         }
+
         @Override
         public CacheManager getCacheManager() {
             return null;
         }
+
         @Override
         public void close() {
             hzInstance.shutdown();
         }
+
         @Override
         public boolean isClosed() {
             return false;
         }
+
         @Override
         public <T> T unwrap(Class<T> aClass) {
             return null;
         }
+
         @Override
         public void registerCacheEntryListener(CacheEntryListenerConfiguration<String, String> cacheEntryListenerConfiguration) {
 
         }
+
         @Override
         public void deregisterCacheEntryListener(CacheEntryListenerConfiguration<String, String> cacheEntryListenerConfiguration) {
 
         }
+
         @Override
         public Iterator<Cache.Entry<String, String>> iterator() {
             return null;

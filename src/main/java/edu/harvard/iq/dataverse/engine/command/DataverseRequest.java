@@ -25,16 +25,16 @@ public class DataverseRequest {
     private final IpAddress sourceAddress;
     private final String invocationId;
     private final HttpServletRequest httpServletRequest;
-    
+
     private final static String undefined = "0.0.0.0";
-    
+
     private final static String MDKEY_PREFIX = "mdkey.";
-    
+
     private static final Logger logger = Logger.getLogger(DataverseRequest.class.getName());
-    
+
     private static String headerToUse = null;
-    
-    private static final HashSet<String> ALLOWED_HEADERS = new HashSet<String>(Arrays.asList( 
+
+    private static final HashSet<String> ALLOWED_HEADERS = new HashSet<String>(Arrays.asList(
             "x-forwarded-for",
             "proxy-client-ip",
             "wl-proxy-client-ip",
@@ -46,7 +46,7 @@ public class DataverseRequest {
             "http_forwarded",
             "http_via",
             "remote_addr"));
-     
+
     static {
         String header = System.getProperty("dataverse.useripaddresssourceheader");
         // Security check - make sure any supplied header is one that is used to forward
@@ -55,15 +55,15 @@ public class DataverseRequest {
             headerToUse = header;
         }
     }
-    
+
     public DataverseRequest(User aUser, HttpServletRequest aHttpServletRequest) {
         this.user = aUser;
         httpServletRequest = aHttpServletRequest;
-        
+
         IpAddress address = null;
 
         if (aHttpServletRequest != null) {
-           
+
             if (headerToUse != null) {
                 /*
                  * The optional case of using a header to determine the IP address is discussed
@@ -138,16 +138,16 @@ public class DataverseRequest {
                     }
                 }
             }
-            
+
             String headerParamWFKey = aHttpServletRequest.getHeader(AbstractApiBean.DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME);
             String queryParamWFKey = aHttpServletRequest.getParameter("invocationId");
-                    
+
             invocationId = headerParamWFKey != null ? headerParamWFKey : queryParamWFKey;
 
         } else {
             invocationId = null;
         }
-        
+
         sourceAddress = address;
     }
 
@@ -157,7 +157,7 @@ public class DataverseRequest {
         invocationId = null;
         httpServletRequest = null;
     }
-    
+
     public User getUser() {
         return user;
     }
@@ -171,17 +171,17 @@ public class DataverseRequest {
 
     @Override
     public String toString() {
-        return "[DataverseRequest user:" + getUser() + "@" + getSourceAddress() + "]";                
+        return "[DataverseRequest user:" + getUser() + "@" + getSourceAddress() + "]";
     }
-    
+
     /**
      * Get an AuthenticatedUser or return null
      * @return 
      */
     public AuthenticatedUser getAuthenticatedUser() {
-        
+
         User authUser = this.getUser();
-        
+
         if (authUser instanceof AuthenticatedUser) {
             return (AuthenticatedUser) authUser;
         }
@@ -191,11 +191,11 @@ public class DataverseRequest {
     public String getWFInvocationId() {
         return invocationId;
     }
-    
+
     public HttpServletRequest getHttpServletRequest() {
         return httpServletRequest;
     }
-    
+
     public String getSystemMetadataBlockKeyFor(String blockName) {
         String key = null;
         if (httpServletRequest != null) {
@@ -208,5 +208,5 @@ public class DataverseRequest {
         }
         return key;
     }
-    
+
 }

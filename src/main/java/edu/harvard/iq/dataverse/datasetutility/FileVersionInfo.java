@@ -18,7 +18,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
  */
 //ToDo - used at all?
 public class FileVersionInfo {
-    
+
     private Long id;
 
     private String doi;
@@ -40,8 +40,8 @@ public class FileVersionInfo {
      * 
      */
     public FileVersionInfo() {
-        
-        
+
+
     }
 
     /**
@@ -59,7 +59,7 @@ public class FileVersionInfo {
     public Long getId() {
         return this.id;
     }
-    
+
 
     /**
      *  Set doi
@@ -76,7 +76,7 @@ public class FileVersionInfo {
     public String getDoi() {
         return this.doi;
     }
-    
+
 
     /**
      *  Set majorVersion
@@ -93,7 +93,7 @@ public class FileVersionInfo {
     public Long getMajorVersion() {
         return this.majorVersion;
     }
-    
+
 
     /**
      *  Set minorVersion
@@ -110,7 +110,7 @@ public class FileVersionInfo {
     public Long getMinorVersion() {
         return this.minorVersion;
     }
-    
+
 
     /**
      *  Set datasetId
@@ -127,7 +127,7 @@ public class FileVersionInfo {
     public Long getDatasetId() {
         return this.datasetId;
     }
-    
+
 
     /**
      *  Set datasetVersionId
@@ -144,7 +144,7 @@ public class FileVersionInfo {
     public Long getDatasetVersionId() {
         return this.datasetVersionId;
     }
-    
+
 
     /**
      *  Set dataFile
@@ -161,7 +161,7 @@ public class FileVersionInfo {
     public DataFile getDataFile() {
         return this.dataFile;
     }
-    
+
 
     /**
      *  Set fileMetadata
@@ -178,6 +178,6 @@ public class FileVersionInfo {
     public FileMetadata getFileMetadata() {
         return this.fileMetadata;
     }
-    
+
 
 }

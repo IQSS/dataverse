@@ -38,8 +38,8 @@ public class CreatePrivateUrlCommandTest {
     private final Long latestVersionIsNotDraft = 2l;
     private final Long createDatasetLong = 3l;
     private final Long versionIsReleased = 4l;
-    
-    
+
+
     @BeforeEach
     public void setUp() {
         dataset = new Dataset();
@@ -81,6 +81,7 @@ public class CreatePrivateUrlCommandTest {
                         // no-op
                         return assignment;
                     }
+
                     @Override
                     public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
                         return List.of();
@@ -101,7 +102,7 @@ public class CreatePrivateUrlCommandTest {
                 };
 
             }
-            
+
             @Override
             public SolrIndexServiceBean solrIndex() {
                 return new SolrIndexServiceBean(){
@@ -175,7 +176,7 @@ public class CreatePrivateUrlCommandTest {
         assertNotNull(privateUrl.getToken());
         assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
     }
-    
+
     @Test
     public void testCreateAnonymizedAccessPrivateUrlSuccessfully() throws CommandException {
         dataset = new Dataset();
@@ -193,7 +194,7 @@ public class CreatePrivateUrlCommandTest {
         assertTrue(privateUrl.isAnonymizedAccess());
         assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
     }
-    
+
     @Test
     public void testAttemptCreateAnonymizedAccessPrivateUrlOnReleased() {
         dataset = new Dataset();
@@ -201,7 +202,7 @@ public class CreatePrivateUrlCommandTest {
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         DatasetVersion datasetVersion2 = new DatasetVersion();
-        
+
         versions.add(datasetVersion);
         versions.add(datasetVersion2);
         dataset.setVersions(versions);

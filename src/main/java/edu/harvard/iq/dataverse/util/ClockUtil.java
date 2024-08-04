@@ -11,16 +11,16 @@ import java.time.Clock;
 
 @Singleton
 public class ClockUtil {
-    
-    
+
+
     @Qualifier
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD, ElementType.METHOD, ElementType.TYPE, ElementType.PARAMETER})
     public @interface LocalTime {
     }
-    
+
     @Produces
     @LocalTime
     public static final Clock LOCAL_CLOCK = Clock.systemDefaultZone();
-    
+
 }

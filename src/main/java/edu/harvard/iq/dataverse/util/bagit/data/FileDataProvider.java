@@ -14,7 +14,9 @@ import java.util.Optional;
 public interface FileDataProvider extends Closeable {
 
     public String getName();
+
     public List<Path> getFilePaths();
+
     public Optional<InputStreamProvider> getInputStreamProvider(Path filePath);
 
     public static interface InputStreamProvider {

@@ -185,6 +185,7 @@ public class PidUtil {
         // throw new IllegalArgumentException("Failed to parse identifier from protocol:
         // " + protocol + ", authority:" + authority + ", identifier: " + identifier);
     }
+
     /*
      * This method should be deprecated/removed when further refactoring to support
      * multiple PID providers is done. At that point, when the providers aren't
@@ -238,7 +239,6 @@ public class PidUtil {
     }
 
 
-
     /**
      * Method to clear all managed/unmanaged PidProviders. Only for testing as these
      * lists are only loaded once by the @Stateless PidProviderFactoryBean in Dataverse.
@@ -254,7 +254,7 @@ public class PidUtil {
     public static PidProvider getPidProvider(String protocol, String authority, String shoulder) {
         return getPidProvider(protocol, authority, shoulder, AbstractPidProvider.SEPARATOR);
     }
-    
+
     public static PidProvider getPidProvider(String protocol, String authority, String shoulder, String separator) {
         for (PidProvider pidProvider : providerMap.values()) {
             if (protocol.equals(pidProvider.getProtocol()) && authority.equals(pidProvider.getAuthority())
@@ -273,7 +273,7 @@ public class PidUtil {
     public static Set<String> getManagedProviderIds() {
         return providerMap.keySet();
     }
-    
+
     public static JsonObject getProviders() {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         for (PidProvider pidProvider : providerMap.values()) {

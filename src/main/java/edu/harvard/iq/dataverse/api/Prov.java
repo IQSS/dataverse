@@ -40,7 +40,7 @@ public class Prov extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Prov.class.getCanonicalName());
 
     ProvInvestigator provUtil = ProvInvestigator.getInstance();
-    
+
     /** Provenance JSON methods **/
     @POST
     @AuthRequired
@@ -58,11 +58,11 @@ public class Prov extends AbstractApiBean {
             if (dataFile.isReleased() && dataFile.getProvEntityName() != null) {
                 return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.jsonUpdateNotAllowed"));
             }
-            
+
             if (!provUtil.isProvValid(body)) {
                 return error(BAD_REQUEST, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError"));
             }
-            
+
             /*Add when we actually integrate provCpl*/
             //else if (dataFile.getProvCplId() != 0) {
             //    return error(METHOD_NOT_ALLOWED, "File provenance has already exists in the CPL system and cannot be uploaded.");
@@ -72,7 +72,7 @@ public class Prov extends AbstractApiBean {
                 //TODO: We should maybe go a step further and provide a way through the api to see the parsed entity names.
                 return error(BAD_REQUEST, BundleUtil.getStringFromBundle("api.prov.error.entityMismatch"));
             }
-            
+
             execCommand(new PersistProvJsonCommand(createDataverseRequest(getRequestUser(crc)), dataFile, body, entityName, true));
             JsonObjectBuilder jsonResponse = Json.createObjectBuilder();
             jsonResponse.add("message", BundleUtil.getStringFromBundle("api.prov.provJsonSaved") + " " + dataFile.getDisplayName());
@@ -81,7 +81,7 @@ public class Prov extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
     @DELETE
     @AuthRequired
     @Path("{id}/prov-json")
@@ -111,7 +111,7 @@ public class Prov extends AbstractApiBean {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("api.prov.error.provDisabled"));
         }
         JsonObject jsonObj = null;
-        
+
         try {
             jsonObj = JsonUtil.getJsonObject(body);
         } catch (JsonException ex) {
@@ -138,9 +138,9 @@ public class Prov extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-        
+
     }
-    
+
     @GET
     @AuthRequired
     @Path("{id}/prov-freeform")
@@ -160,7 +160,7 @@ public class Prov extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
     @GET
     @AuthRequired
     @Path("{id}/prov-json")
@@ -180,5 +180,5 @@ public class Prov extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
 }

@@ -12,7 +12,7 @@ public class PersonOrOrgUtilTest {
 
         public PersonOrOrgUtilTest() {
         }
-        
+
         @Test
         public void testOrganizationSimpleName() {
             verifyIsOrganization("IBM");
@@ -49,7 +49,7 @@ public class PersonOrOrgUtilTest {
         PersonOrOrgUtil.setAssumeCommaInPersonName(false);
         }
 
-        
+
         @Test
         public void testOrganizationCommaOrDash() {
             verifyIsOrganization("Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA");
@@ -64,7 +64,7 @@ public class PersonOrOrgUtilTest {
             //Spanish recognition is not enabled - see export/Organization.java
             verifyIsOrganization("Compañía de San Fernando");
         }
-        
+
         /**
          * Name is composed of:
          * <First Names> <Family Name>
@@ -85,12 +85,12 @@ public class PersonOrOrgUtilTest {
             verifyIsPerson("Francesco", "Francesco", null);
             // test only family name
             verifyIsPerson("Cadili", null, null);
-            
+
             verifyIsPerson("kcjim11, kcjim11", "kcjim11", "kcjim11");
-            
+
             verifyIsPerson("Bartholomew 3, James", "James", "Bartholomew 3");
         }
-        
+
         private void verifyIsOrganization(String fullName) {
             JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization(fullName, false, false);
             System.out.println(JsonUtil.prettyPrint(obj));
@@ -98,11 +98,11 @@ public class PersonOrOrgUtilTest {
             assertFalse(obj.getBoolean("isPerson"));
 
         }
-        
+
         private void verifyIsPerson(String fullName, String givenName, String familyName) {
             verifyIsPerson(fullName, givenName, familyName, false);
         }
-        
+
         private void verifyIsPerson(String fullName, String givenName, String familyName, boolean isPerson) {
             JsonObject obj = PersonOrOrgUtil.getPersonOrOrganization(fullName, false, isPerson);
             System.out.println(JsonUtil.prettyPrint(obj));

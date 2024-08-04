@@ -35,7 +35,7 @@ public class Notifications extends AbstractApiBean {
 
     @EJB
     MailServiceBean mailService;
-    
+
     @GET
     @AuthRequired
     @Path("/all")

@@ -217,8 +217,8 @@ public class Groups extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "Could not find Shibboleth group with an id of " + id);
         }
     }
-    
-    
+
+
     /**
      * Creates a new {@link MailDomainGroup}. The name of the group is based on the
      * {@code alias:} field, but might be changed to ensure uniqueness.
@@ -235,7 +235,7 @@ public class Groups extends AbstractApiBean {
 
         return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp));
     }
-    
+
     /**
      * Creates or updates the {@link MailDomainGroup} named {@code groupName}.
      * @param groupAlias Name of the group.
@@ -252,28 +252,28 @@ public class Groups extends AbstractApiBean {
         if (!legalGroupName.matcher(groupAlias).matches()) {
             return badRequest("Group name can contain only letters, digits, and the chars '-' and '_'");
         }
-        
+
         MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
         mailDomainGroupPrv.saveOrUpdate(Optional.of(groupAlias), grp);
         mailDomainGroupPrv.updateGroups();
-        
+
         return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp));
     }
-    
+
     @GET
     @Path("domain")
     public Response listMailDomainGroups() {
         return ok(mailDomainGroupPrv.findGlobalGroups()
             .stream().map(g -> json(g)).collect(toJsonArray()));
     }
-    
+
     @GET
     @Path("domain/{groupAlias}")
     public Response getMailDomainGroup(@PathParam("groupAlias") String groupAlias) {
         MailDomainGroup grp = mailDomainGroupPrv.get(groupAlias);
         return (grp == null) ? notFound("Group " + groupAlias + " not found") : ok(json(grp));
     }
-    
+
     @DELETE
     @Path("domain/{groupAlias}")
     public Response deleteMailDomainGroup(@PathParam("groupAlias") String groupAlias) {

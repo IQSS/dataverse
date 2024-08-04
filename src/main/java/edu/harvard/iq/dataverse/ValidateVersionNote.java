@@ -31,9 +31,9 @@ public @interface ValidateVersionNote {
   Class<?>[] groups() default {};
 
   Class<? extends Payload>[] payload() default {};
-  
+
   String versionNote();
-  
+
   String versionState();
 
 }

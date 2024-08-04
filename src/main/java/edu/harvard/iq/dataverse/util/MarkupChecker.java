@@ -16,9 +16,8 @@ import org.jsoup.parser.Parser;
  * @author rmp553
  */
 public class MarkupChecker {
-    
-    
-    
+
+
     /**
      * Wrapper around Jsoup clean method with the basic Safe list
      *   http://jsoup.org/cookbook/cleaning-html/safelist-sanitizer
@@ -40,7 +39,7 @@ public class MarkupChecker {
         return Jsoup.clean(unsafe, sl);
 
     }
-        
+
     /**
      * Strip all HTMl tags
      * 
@@ -58,7 +57,7 @@ public class MarkupChecker {
         return Parser.unescapeEntities(Jsoup.clean(unsafe, Safelist.none()), true);
 
     }
-    
+
     public static String escapeHtml(String unsafe) {
          return StringEscapeUtils.escapeHtml4(unsafe);
     }

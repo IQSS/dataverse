@@ -18,13 +18,13 @@ import jakarta.ejb.Startup;
 public class OREMapHelper {
     @EJB
     SettingsServiceBean settingsSvc;
-    
+
     @EJB
     DatasetFieldServiceBean datasetFieldSvc;
-    
+
     @EJB
     SystemConfig systemConfig;
-    
+
     @PostConstruct
     public void injectService() {
         OREMap.injectServices(settingsSvc, datasetFieldSvc, systemConfig);

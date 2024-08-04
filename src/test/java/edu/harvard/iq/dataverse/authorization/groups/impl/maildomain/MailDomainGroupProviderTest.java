@@ -13,43 +13,43 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class MailDomainGroupProviderTest {
-    
+
     MailDomainGroupServiceBean svc = Mockito.mock(MailDomainGroupServiceBean.class);
-    
+
     @Test
     void testUserMatched() {
         // given
         MailDomainGroupProvider pvd = new MailDomainGroupProvider(svc);
-        
+
         MailDomainGroup t = new MailDomainGroup();
         t.setEmailDomains("foobar.com");
         Set<MailDomainGroup> set = new HashSet<>();
         set.add(t);
-        
+
         AuthenticatedUser u = new AuthenticatedUser();
         when(svc.findAllWithDomain(u)).thenReturn(set);
-        
+
         DataverseRequest req = new DataverseRequest(u, new IPv4Address(192, 168, 0, 1));
-        
+
         // when
         Set<MailDomainGroup> result = pvd.groupsFor(req);
-        
+
         // then
         assertTrue(result.contains(t));
         assertEquals(pvd, t.getGroupProvider());
     }
-    
+
     @Test
     void testUserNotPresent() {
         // given
         MailDomainGroupProvider pvd = new MailDomainGroupProvider(svc);
         AuthenticatedUser u = null;
         DataverseRequest req = new DataverseRequest(u, new IPv4Address(192, 168, 0, 1));
-        
+
         // when & then
         assertEquals(Collections.emptySet(), pvd.groupsFor(req));
     }
-    
+
     @Test
     void testContextIgnored() {
         // given
@@ -57,23 +57,23 @@ class MailDomainGroupProviderTest {
         AuthenticatedUser u = null;
         DataverseRequest req = new DataverseRequest(u, new IPv4Address(192, 168, 0, 1));
         Dataset a = new Dataset();
-        
+
         // when
         pvd.groupsFor(req, a);
         // then
         verify(pvd, times(1)).groupsFor(req);
     }
-    
+
     @Test
     void testUnsupportedAsEmpty() {
         // given
         MailDomainGroupProvider pvd = new MailDomainGroupProvider(svc);
-        
+
         // when & then
         assertEquals(Collections.emptySet(), pvd.groupsFor(new AuthenticatedUser(), new Dataset()));
         assertEquals(Collections.emptySet(), pvd.groupsFor(new AuthenticatedUser()));
     }
-    
+
     @Test
     void testUpdateProvider() {
         // given
@@ -85,16 +85,16 @@ class MailDomainGroupProviderTest {
                 assertNull(mdg.getGroupProvider());
             }
         }
-        
+
         // when
         pvd.updateProvider(test);
-        
+
         // then
         for (MailDomainGroup mdg : test) {
             if (mdg != null) {
                 assertEquals(pvd, mdg.getGroupProvider());
             }
         }
-        
+
     }
 }

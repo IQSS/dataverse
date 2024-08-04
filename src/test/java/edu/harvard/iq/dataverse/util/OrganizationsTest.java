@@ -22,7 +22,7 @@ public class OrganizationsTest {
         assertEquals("es", organizations.getLanguage(Organizations.ORGANIZATION_MODELS[1]));
         assertEquals("en", organizations.getLanguage(Organizations.TOCKENIZER_MODELS[0]));
     }
-    
+
     @Test
     public void testOrganizationSimpleName() {
         assertTrue(organizations.isOrganization("IBM"));

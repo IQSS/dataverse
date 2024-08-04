@@ -1,4 +1,5 @@
 package edu.harvard.iq.dataverse;
+
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,7 @@ public class Cart {
         Entry<String, String> entry = new AbstractMap.SimpleEntry<>(title, persistentId);
         return entry;
     }
-    
+
     public void addItem(String title, String persistentId) throws Exception {
         if (!checkCartForItem(title, persistentId)) {
             contents.add(createEntry(title, persistentId));
@@ -35,7 +36,7 @@ public class Cart {
     public List<Entry<String, String>> getContents() {
         return contents;
     }
-    
+
     public boolean checkCartForItem(String title, String persistentId) {
         return contents.contains(createEntry(title, persistentId));
     }

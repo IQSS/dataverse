@@ -35,9 +35,9 @@ import com.google.api.LabelDescriptor;
 public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(SetCurationStatusCommand.class.getName());
-    
+
     String label;
-    
+
     public SetCurationStatusCommand(DataverseRequest aRequest, Dataset dataset, String label) {
         super(aRequest, dataset);
         this.label = label;
@@ -71,7 +71,7 @@ public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
             }
         }
         Dataset updatedDataset = save(ctxt);
-        
+
         return updatedDataset;
     }
 
@@ -86,16 +86,16 @@ public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
         updateDatasetUser(ctxt);
 
         AuthenticatedUser requestor = getUser().isAuthenticated() ? (AuthenticatedUser) getUser() : null;
-        
+
         List<AuthenticatedUser> authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
         for (AuthenticatedUser au : authUsers) {
             ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.STATUSUPDATED, savedDataset.getLatestVersion().getId(), "", requestor, false);
         }
-        
+
         //  TODO: What should we do with the indexing result? Print it to the log?
         return savedDataset;
     }
-    
+
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         boolean retVal = true;

@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -43,12 +42,12 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
-    
+
     @EJB
     private SystemConfig systemConfig;
-    
+
     @EJB
-    StorageUseServiceBean storageUseService; 
+    StorageUseServiceBean storageUseService;
 
     public AuxiliaryFile find(Object pk) {
         return em.find(AuxiliaryFile.class, pk);
@@ -59,7 +58,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         return savedFile;
 
     }
-    
+
     /**
      * Save the physical file to storageIO, and save the AuxiliaryFile entity
      * to the database.  This should be an all or nothing transaction - if either
@@ -131,8 +130,8 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             }
             // We've just added this file to storage; increment the StorageUse
             // record if needed. 
-            if (auxFile.getFileSize() != null 
-                    && auxFile.getFileSize() > 0 
+            if (auxFile.getFileSize() != null
+                    && auxFile.getFileSize() > 0
                     && dataFile.getOwner() != null) {
                 storageUseService.incrementStorageSizeRecursively(dataFile.getOwner().getId(), auxFile.getFileSize());
             }
@@ -156,9 +155,9 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
     }
 
     public AuxiliaryFile lookupAuxiliaryFile(DataFile dataFile, String formatTag, String formatVersion) {
-        
+
         Query query = em.createNamedQuery("AuxiliaryFile.lookupAuxiliaryFile");
-                
+
         query.setParameter("dataFileId", dataFile.getId());
         query.setParameter("formatTag", formatTag);
         query.setParameter("formatVersion", formatVersion);
@@ -169,10 +168,10 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
+
 
     public List<AuxiliaryFile> findAuxiliaryFiles(DataFile dataFile, String origin) {
-        
+
         TypedQuery<AuxiliaryFile> query;
         if (origin == null) {
             query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFiles", AuxiliaryFile.class);
@@ -181,7 +180,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             query.setParameter("origin", origin);
         }
         query.setParameter("dataFileId", dataFile.getId());
-        
+
         List<AuxiliaryFile> retVal = query.getResultList();
         return retVal;
     }
@@ -206,7 +205,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
                 && dataFile.getOwner() != null) {
             storageUseService.incrementStorageSizeRecursively(dataFile.getOwner().getId(), (0L - auxFileSize));
         }
-        
+
     }
 
     public List<AuxiliaryFile> findAuxiliaryFiles(DataFile dataFile) {

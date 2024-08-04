@@ -35,7 +35,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @ViewScoped
 @Named("DashboardDatamovePage")
 public class DashboardDatamovePage implements java.io.Serializable {
-  
+
     @Inject
     DataverseSession session;
     @Inject
@@ -52,7 +52,7 @@ public class DashboardDatamovePage implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     private static final Logger logger = Logger.getLogger(DashboardDatamovePage.class.getCanonicalName());
 
     private AuthenticatedUser authUser = null;
@@ -83,7 +83,7 @@ public class DashboardDatamovePage implements java.io.Serializable {
     public List<Dataset> completeSelectedDataset(String query) {
         return datasetService.filterByPidQuery(query);
     }
-    
+
     // destination dataverse
 
     public UIInput getSelectedDataverseMenu() {
@@ -120,13 +120,13 @@ public class DashboardDatamovePage implements java.io.Serializable {
             // redirect to login OR give some type of ‘you must be logged in' message
         }
 
-        FacesContext.getCurrentInstance().addMessage(null, 
-            new FacesMessage(FacesMessage.SEVERITY_INFO, 
-                BundleUtil.getStringFromBundle("dashboard.card.datamove.manage"), 
+        FacesContext.getCurrentInstance().addMessage(null,
+            new FacesMessage(FacesMessage.SEVERITY_INFO,
+                BundleUtil.getStringFromBundle("dashboard.card.datamove.manage"),
                 BundleUtil.getStringFromBundle("dashboard.card.datamove.message", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion()))));
         return null;
     }
-    
+
     public void move() {
         Dataset ds = selectedSourceDataset;
         String dsPersistentId = ds != null ? ds.getGlobalId().asString() : null;
@@ -160,9 +160,9 @@ public class DashboardDatamovePage implements java.io.Serializable {
             commandEngine.submit(new MoveDatasetCommand(
                     dataverseRequest, ds, target, false
             ));
-            
+
             logger.info("Moved " + dsPersistentId + " from " + srcAlias + " to " + dstAlias);
-            
+
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.card.datamove.message.success", arguments));
         }
         catch (CommandException e) {

@@ -20,9 +20,9 @@ import java.util.zip.ZipOutputStream;
 public class ZipMaker {
 
     private static boolean DEBUG = false;
-    
+
     public static void main(String[] args) {
-        
+
     }
 
     public ZipMaker(List<String> filenames, String inputDirname, String outputZipFilename) {
@@ -32,10 +32,10 @@ public class ZipMaker {
 			ZipOutputStream zip_output_stream = new ZipOutputStream(fos);
 
             for (String fname : filenames) {
-            
+
                 String fullpath = new String(inputDirname + '/' + fname);
                 addToZipFile(fname, fullpath, zip_output_stream);
-    			
+
             }
 
 			zip_output_stream.close();
@@ -46,7 +46,7 @@ public class ZipMaker {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-        
+
     }
 
 
@@ -55,7 +55,7 @@ public static void addToZipFile(String fileName, String fullFilepath, ZipOutputS
         if (DEBUG) {
 		    System.out.println("Writing '" + fileName + "' to zip file");
         }
-        
+
 		File file = new File(fullFilepath);
 		FileInputStream file_input_stream = new FileInputStream(file);
 		ZipEntry zipEntry = new ZipEntry(fileName);

@@ -38,12 +38,12 @@ public class HarvestTimerInfo implements Serializable {
     private String name;
     private String schedulePeriod;
     private Integer scheduleHourOfDay;
-    
+
     public HarvestTimerInfo() {
-        
+
     }
-    
-   
+
+
     public HarvestTimerInfo(Long harvestingClientId, String name, String schedulePeriod, Integer scheduleHourOfDay, Integer scheduleDayOfWeek) {
         this.harvestingClientId = harvestingClientId;
         this.name = name;
@@ -51,15 +51,16 @@ public class HarvestTimerInfo implements Serializable {
         this.scheduleDayOfWeek = scheduleDayOfWeek;
         this.scheduleHourOfDay = scheduleHourOfDay;
     }
-    
-    
+
+
     public Long getHarvestingClientId() {
         return harvestingClientId;
     }
 
     public void setHarvestingClientId(Long harvestingClientId) {
         this.harvestingClientId = harvestingClientId;
-    }    
+    }
+
     public String getName() {
         return name;
     }
@@ -92,6 +93,6 @@ public class HarvestTimerInfo implements Serializable {
         this.scheduleDayOfWeek = scheduleDayOfWeek;
     }
     private Integer scheduleDayOfWeek;
-  
-    
+
+
 }

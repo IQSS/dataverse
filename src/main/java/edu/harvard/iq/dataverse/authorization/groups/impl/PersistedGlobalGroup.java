@@ -25,11 +25,11 @@ import jakarta.persistence.Table;
 @Entity
 @Table(indexes = {@Index(columnList = "dtype")})
 public abstract class PersistedGlobalGroup implements Group, Serializable {
-    
+
     @Id
     @GeneratedValue
     private Long id;
-    
+
     /**
      * A unique alias within the Dataverse system installation.
      */
@@ -45,7 +45,7 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
     public String getPersistedGroupAlias() {
         return persistedGroupAlias;
     }
-    
+
     public Long getId() {
         return id;
     }
@@ -53,7 +53,7 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     @Override
     public String getAlias() {
         return getGroupProvider().getGroupProviderAlias() + Group.PATH_SEPARATOR + persistedGroupAlias;
@@ -62,7 +62,7 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
     public void setDisplayName(String name) {
         this.displayName = name;
     }
-    
+
     @Override
     public String getDisplayName() {
         return displayName;
@@ -86,12 +86,12 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
     public String getIdentifier() {
         return Group.IDENTIFIER_PREFIX + getAlias();
     }
-    
-    
+
+
     @Override
     public String toString() {
         return "[PersistedGlobalGroup " + getIdentifier() + "]";
     }
-    
+
 
 }

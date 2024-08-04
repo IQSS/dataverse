@@ -92,10 +92,10 @@ public enum FeatureFlags {
      */
     DISABLE_RETURN_TO_AUTHOR_REASON("disable-return-to-author-reason"),
     ;
-    
+
     final String flag;
     final boolean defaultStatus;
-    
+
     /**
      * Construct a flag with default status "off".
      *
@@ -105,7 +105,7 @@ public enum FeatureFlags {
     FeatureFlags(String flag) {
         this(flag, false);
     }
-    
+
     /**
      * Construct a flag.
      * @param flag This flag name will be used to create a scoped String with {@link JvmSettings#FEATURE_FLAG},
@@ -118,7 +118,7 @@ public enum FeatureFlags {
         this.flag = flag;
         this.defaultStatus = defaultStatus;
     }
-    
+
     /**
      * Determine the status of this flag via {@link JvmSettings}.
      * @return True or false, depending on the configuration or {@link #defaultStatus} if not found.

@@ -42,6 +42,7 @@ public class DataCaptureModuleServiceBean implements Serializable {
             throw new DataCaptureModuleException(error, ex);
         }
     }
+
     public ScriptRequestResponse retreiveRequestedRsyncScript(String datasetIdentifier, String scriptRequestUrl) throws DataCaptureModuleException
     {
         logger.fine("retreiveRequestedRsyncScript using dataset identifier + " + datasetIdentifier + " to " + scriptRequestUrl);

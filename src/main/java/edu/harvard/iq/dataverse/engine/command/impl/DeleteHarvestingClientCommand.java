@@ -17,9 +17,9 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
  */
 @RequiredPermissions(Permission.EditDataverse)
 public class DeleteHarvestingClientCommand extends AbstractVoidCommand {
-    
+
     private final Dataverse motherDataverse;
-    private final HarvestingClient harvestingClient; 
+    private final HarvestingClient harvestingClient;
 
     public DeleteHarvestingClientCommand(DataverseRequest aRequest, HarvestingClient harvestingClient) {
         super(aRequest, harvestingClient.getDataverse());
@@ -29,11 +29,11 @@ public class DeleteHarvestingClientCommand extends AbstractVoidCommand {
 
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
-        
+
         if (harvestingClient == null) {
             throw new IllegalCommandException("DeleteHarvestingClientCommand: attempted to execute with null harvesting client; dataverse: " + motherDataverse.getAlias(), this);
         }
-        
+
         HarvestingClient merged = ctxt.em().merge(harvestingClient);
 
         // Purge all the SOLR documents associated with this client from the 
@@ -48,10 +48,10 @@ public class DeleteHarvestingClientCommand extends AbstractVoidCommand {
         for (DataFile harvestedFile : ctxt.files().findHarvestedFilesByClient(merged)) {
             DataFile mergedFile = ctxt.em().merge(harvestedFile);
             ctxt.em().remove(mergedFile);
-            harvestedFile = null; 
+            harvestedFile = null;
         }
-        
+
         ctxt.em().remove(merged);
     }
-    
+
 }

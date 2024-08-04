@@ -33,5 +33,5 @@ public interface XMLExporter extends Exporter {
      */
     public default String getMediaType() {
         return MediaType.APPLICATION_XML;
-    };
+    }
 }

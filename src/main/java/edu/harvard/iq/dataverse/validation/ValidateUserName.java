@@ -34,8 +34,8 @@ import jakarta.validation.constraints.Pattern;
 @Documented
 public @interface ValidateUserName {
     String message() default "";
-    
+
     Class<?>[] groups() default {};
-    
+
     Class<? extends Payload>[] payload() default {};
 }

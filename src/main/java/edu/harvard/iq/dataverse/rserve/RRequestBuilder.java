@@ -18,7 +18,7 @@ package edu.harvard.iq.dataverse.rserve;
 public class RRequestBuilder {
   private String mHost, mUser, mPassword, mScript;
   private int mPort;
-  
+
   /*
    * Construct a ZeligRequestBuilder Object
    * @return an object ready to be evaluated
@@ -27,6 +27,7 @@ public class RRequestBuilder {
     mHost = mUser = mPassword = "";
     mPort = -1;
   }
+
   /*
    * Add a Host Name to the Request
    */
@@ -34,6 +35,7 @@ public class RRequestBuilder {
     mHost = host;
     return this;
   }
+
   /*
    * Add a Username to the Request
    */
@@ -41,6 +43,7 @@ public class RRequestBuilder {
     mUser = user;
     return this;
   }
+
   /*
    * Add a Password to the Request
    */
@@ -48,6 +51,7 @@ public class RRequestBuilder {
     mPassword = password;
     return this;
   }
+
   /*
    * Add a Port Number to the
    */
@@ -55,6 +59,7 @@ public class RRequestBuilder {
     mPort = port;
     return this;
   }
+
   /*
    * Set the String to be Evaluated by the R Server
    */
@@ -62,6 +67,7 @@ public class RRequestBuilder {
     mScript = script;
     return this;
   }
+
   /*
    * Build
    */

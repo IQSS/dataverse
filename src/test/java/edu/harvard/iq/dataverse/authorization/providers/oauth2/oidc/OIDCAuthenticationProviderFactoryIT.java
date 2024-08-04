@@ -62,37 +62,37 @@ import static org.mockito.Mockito.when;
 @JvmSetting(key = JvmSettings.OIDC_CLIENT_SECRET, value = clientSecret)
 @JvmSetting(key = JvmSettings.OIDC_AUTH_SERVER_URL, method = "getAuthUrl")
 class OIDCAuthenticationProviderFactoryIT {
-    
+
     static final String clientId = "test";
     static final String clientSecret = "94XHrfNRwXsjqTqApRrwWmhDLDHpIYV8";
     static final String realm = "test";
     static final String realmAdminUser = "admin";
     static final String realmAdminPassword = "admin";
-    
+
     static final String adminUser = "kcadmin";
     static final String adminPassword = "kcpassword";
-    
+
     // The realm JSON resides in conf/keycloak/test-realm.json and gets avail here using <testResources> in pom.xml
     @Container
     static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:22.0")
         .withRealmImportFile("keycloak/test-realm.json")
         .withAdminUsername(adminUser)
         .withAdminPassword(adminPassword);
-    
+
     // simple method to retrieve the issuer URL, referenced to by @JvmSetting annotations (do no delete)
     private static String getAuthUrl() {
         return keycloakContainer.getAuthServerUrl() + "/realms/" + realm;
     }
-    
+
     OIDCAuthProvider getProvider() throws Exception {
         OIDCAuthProvider oidcAuthProvider = (OIDCAuthProvider) OIDCAuthenticationProviderFactory.buildFromSettings();
-        
+
         assumeTrue(oidcAuthProvider.getMetadata().getTokenEndpointURI().toString()
             .startsWith(keycloakContainer.getAuthServerUrl()));
-        
+
         return oidcAuthProvider;
     }
-    
+
     // NOTE: This requires the "direct access grants" for the client to be enabled!
     String getBearerTokenViaKeycloakAdminClient() throws Exception {
         try (Keycloak keycloak = KeycloakBuilder.builder()
@@ -108,7 +108,7 @@ class OIDCAuthenticationProviderFactoryIT {
             return keycloak.tokenManager().getAccessTokenString();
         }
     }
-    
+
     /**
      * This basic test covers configuring an OIDC provider via MPCONFIG and being able to use it.
      */
@@ -118,29 +118,29 @@ class OIDCAuthenticationProviderFactoryIT {
         OIDCAuthProvider oidcAuthProvider = getProvider();
         String token = getBearerTokenViaKeycloakAdminClient();
         assumeFalse(token == null);
-        
+
         Optional<UserInfo> info = Optional.empty();
-        
+
         // when
         try {
             info = oidcAuthProvider.getUserInfo(new BearerAccessToken(token));
         } catch (OAuth2Exception e) {
             System.out.println(e.getMessageBody());
         }
-        
+
         //then
         assertTrue(info.isPresent());
         assertEquals(realmAdminUser, info.get().getPreferredUsername());
     }
-    
+
     @Mock
     UserServiceBean userService;
     @Mock
     AuthenticationServiceBean authService;
-    
+
     @InjectMocks
     BearerTokenAuthMechanism bearerTokenAuthMechanism;
-    
+
     /**
      * This test covers using an OIDC provider as authorization party when accessing the Dataverse API with a
      * Bearer Token. See {@link BearerTokenAuthMechanism}. It needs to mock the auth services to avoid adding
@@ -152,33 +152,33 @@ class OIDCAuthenticationProviderFactoryIT {
         assumeFalse(userService == null);
         assumeFalse(authService == null);
         assumeFalse(bearerTokenAuthMechanism == null);
-        
+
         // given
         // Get the access token from the remote Keycloak in the container
         String accessToken = getBearerTokenViaKeycloakAdminClient();
         assumeFalse(accessToken == null);
-        
+
         OIDCAuthProvider oidcAuthProvider = getProvider();
         // This will also receive the details from the remote Keycloak in the container
         UserRecordIdentifier identifier = oidcAuthProvider.getUserIdentifier(new BearerAccessToken(accessToken)).get();
         String token = "Bearer " + accessToken;
         BearerTokenKeyContainerRequestTestFake request = new BearerTokenKeyContainerRequestTestFake(token);
         AuthenticatedUser user = new MockAuthenticatedUser();
-        
+
         // setup mocks (we don't want or need a database here)
         when(authService.getAuthenticationProviderIdsOfType(OIDCAuthProvider.class)).thenReturn(Set.of(oidcAuthProvider.getId()));
         when(authService.getAuthenticationProvider(oidcAuthProvider.getId())).thenReturn(oidcAuthProvider);
         when(authService.lookupUser(identifier)).thenReturn(user);
         when(userService.updateLastApiUseTime(user)).thenReturn(user);
-        
+
         // when (let's do this again, but now with the actual subject under test!)
         User lookedUpUser = bearerTokenAuthMechanism.findUserFromRequest(request);
-        
+
         // then
         assertNotNull(lookedUpUser);
         assertEquals(user, lookedUpUser);
     }
-    
+
     /**
      * This test covers the {@link OIDCAuthProvider#buildAuthzUrl(String, String)} and
      * {@link OIDCAuthProvider#getUserRecord(String, String, String)} methods that are used when
@@ -192,7 +192,7 @@ class OIDCAuthenticationProviderFactoryIT {
         // given
         String state = "foobar";
         String callbackUrl = "http://localhost:8080/oauth2callback.xhtml";
-        
+
         OIDCAuthProvider oidcAuthProvider = getProvider();
         String authzUrl = oidcAuthProvider.buildAuthzUrl(state, callbackUrl);
         //System.out.println(authzUrl);
@@ -202,24 +202,24 @@ class OIDCAuthenticationProviderFactoryIT {
             webClient.getOptions().setJavaScriptEnabled(false);
             // We *want* to know about the redirect, as it contains the data we need!
             webClient.getOptions().setRedirectEnabled(false);
-            
+
             HtmlPage loginPage = webClient.getPage(authzUrl);
             assumeTrue(loginPage.getTitleText().contains("Sign in to " + realm));
-            
+
             HtmlForm form = loginPage.getForms().get(0);
             HtmlInput username = form.getInputByName("username");
             HtmlInput password = form.getInputByName("password");
             HtmlSubmitInput submit = form.getInputByName("login");
-            
+
             username.type(realmAdminUser);
             password.type(realmAdminPassword);
-            
+
             FailingHttpStatusCodeException exception = assertThrows(FailingHttpStatusCodeException.class, submit::click);
             assertEquals(302, exception.getStatusCode());
-            
+
             WebResponse response = exception.getResponse();
             assertNotNull(response);
-            
+
             String callbackLocation = response.getResponseHeaderValue("Location");
             assertTrue(callbackLocation.startsWith(callbackUrl));
             //System.out.println(callbackLocation);
@@ -232,13 +232,13 @@ class OIDCAuthenticationProviderFactoryIT {
             //System.out.println(map);
             assertTrue(parameters.containsKey("code"));
             assertTrue(parameters.containsKey("state"));
-            
+
             OAuth2UserRecord userRecord = oidcAuthProvider.getUserRecord(
                 parameters.get("code"),
                 parameters.get("state"),
                 callbackUrl
             );
-            
+
             assertNotNull(userRecord);
             assertEquals(realmAdminUser, userRecord.getUsername());
         } catch (OAuth2Exception e) {

@@ -21,5 +21,5 @@ public class ListExplicitGroupsCommand extends AbstractCommand<List<ExplicitGrou
     public List<ExplicitGroup> execute(CommandContext ctxt) throws CommandException {
         return ctxt.explicitGroups().findByOwner(getAffectedDvObjects().get("").getId());
     }
-    
+
 }

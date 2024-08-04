@@ -404,6 +404,7 @@ public class MetricsServiceBean implements Serializable {
         return MetricsUtil.timeSeriesByTypeToJson(results);
 
     }
+
     /** Downloads
      * @param d
      * @throws ParseException */

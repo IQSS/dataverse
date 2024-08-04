@@ -23,7 +23,7 @@ import static edu.harvard.iq.dataverse.util.CollectionLiterals.*;
  * @author michael
  */
 public class GroupServiceBeanTest {
-    
+
     public GroupServiceBeanTest() {
     }
 
@@ -48,36 +48,36 @@ public class GroupServiceBeanTest {
             roleAssigneeSvc.add(g);
             g.updateAlias();
         });
-        
+
         // create some containment hierarchy.
         gA.add(gAa);
         gA.add(gAb);
         gAb.add(gAstar);
         gAa.add(gAstar);
         gAa.add(AuthenticatedUsers.get());
-        
+
         // Test
         GroupServiceBean sut = new GroupServiceBean();
         sut.roleAssigneeSvc = roleAssigneeSvc;
-        
+
         Set<Group> grps = setOf(AllUsers.get(), gA);
-                
+
         List<Group> result = sut.flattenGroupsCollection(grps).collect(toList());
-        
+
         assertEquals(result.size(), new HashSet<>(result).size(), "Groups should appear only once");
-        
+
         grps.addAll(listOf(gAa, gAb, gAstar, AuthenticatedUsers.get()));
         assertEquals(grps, new HashSet<>(result), "All groups should appear");
-        
+
     }
-    
+
     @Test
     public void testCollectAncestors() throws GroupException {
         // Setup
         MockRoleAssigneeServiceBean roleAssigneeSvc = new MockRoleAssigneeServiceBean();
         MockExplicitGroupService explicitGroupSvc = new MockExplicitGroupService();
         ExplicitGroupProvider prv = new ExplicitGroupProvider(null, roleAssigneeSvc);
-        
+
         ExplicitGroup gA = new ExplicitGroup(prv);
         gA.setDisplayName("A");
         ExplicitGroup gAa = new ExplicitGroup(prv);
@@ -95,27 +95,27 @@ public class GroupServiceBeanTest {
             roleAssigneeSvc.add(g);
             explicitGroupSvc.registerGroup(g);
         });
-        
+
         // create some containment hierarchy.
         gA.add(gAa);
         gA.add(gAb);
         gAb.add(gAstar);
         gAa.add(gAstar);
         gAa.add(AuthenticatedUsers.get());
-        
+
         // Test
         GroupServiceBean sut = new GroupServiceBean();
         sut.roleAssigneeSvc = roleAssigneeSvc;
         sut.explicitGroupService = explicitGroupSvc;
-        
+
         assertEquals(setOf(gA), sut.collectAncestors(setOf(gA)));
         assertEquals(setOf(gA, gAb), sut.collectAncestors(setOf(gAb)));
-        assertEquals(setOf(gA, gAa, AuthenticatedUsers.get()), 
+        assertEquals(setOf(gA, gAa, AuthenticatedUsers.get()),
                       sut.collectAncestors(setOf(AuthenticatedUsers.get())));
-        assertEquals(setOf(gA, gAb, gAa, gAstar), 
+        assertEquals(setOf(gA, gAb, gAa, gAstar),
                       sut.collectAncestors(setOf(gAstar)));
-        
+
     }
-    
-    
+
+
 }

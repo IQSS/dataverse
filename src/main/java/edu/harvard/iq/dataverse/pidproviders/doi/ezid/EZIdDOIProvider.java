@@ -19,18 +19,17 @@ import jakarta.ejb.Stateless;
  * @author skraffmiller
  */
 public class EZIdDOIProvider extends AbstractDOIProvider {
-    
 
 
     private static final Logger logger = Logger.getLogger(EZIdDOIProvider.class.getCanonicalName());
-    
+
     EZIDService ezidService;
-    
+
     public static final String TYPE = "ezid";
-    
+
     private String baseUrl;
-    
-    
+
+
     public EZIdDOIProvider(String id, String label, String providerAuthority, String providerShoulder, String identifierGenerationStyle,
             String datafilePidFormat, String managedList, String excludedList, String baseUrl, String username, String password) {
         super(id, label, providerAuthority, providerShoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
@@ -39,7 +38,7 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
         // login below does not work.
         this.baseUrl = baseUrl;
         this.ezidService = new EZIDService(baseUrl);
-        
+
         try {
 
             if (username != null && password != null) {
@@ -135,7 +134,7 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
             throw e;
         }
     }
-        
+
     @Override
     public void deleteIdentifier(DvObject dvObject) throws Exception {
                 logger.log(Level.FINE, "deleteIdentifier");
@@ -190,7 +189,7 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
             }
         }
     }
-    
+
     @Override
     public boolean publicizeIdentifier(DvObject dvObject) {
         logger.log(Level.FINE, "publicizeIdentifier - dvObject");
@@ -198,7 +197,7 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
             try {
                 createIdentifier(dvObject);
             } catch (Throwable e) {
-                return false; 
+                return false;
             }
         }
         return updateIdentifierStatus(dvObject, "public");
@@ -229,7 +228,7 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
             return false;
         }
     }
-    
+
     @Override
     public List<String> getProviderInformation() {
         return List.of(getId(), this.baseUrl);
@@ -264,7 +263,7 @@ public class EZIdDOIProvider extends AbstractDOIProvider {
             throw e;
         }
     }
-    
+
      /**
      * Returns a HashMap with the same values as {@code map}. This can be either
      * {@code map} itself, or a new instance with the same values.

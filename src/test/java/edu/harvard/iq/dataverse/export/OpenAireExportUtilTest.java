@@ -42,6 +42,7 @@ public class OpenAireExportUtilTest {
     private void setup() throws XMLStreamException {
         xmlWriter = xmlOutputFactory.createXMLStreamWriter(stringWriter);
     }
+
     @AfterEach
     private void teardown() throws XMLStreamException {
         stringWriter.flush();
@@ -180,7 +181,7 @@ public class OpenAireExportUtilTest {
                 + "</creators>",
                 stringWriter.toString());
     }
-    
+
     /**
      * Test: 2, Creator (with optional given name, family name, name identifier
      * and affiliation sub-properties) (M)
@@ -216,7 +217,7 @@ public class OpenAireExportUtilTest {
                 + "</creators>",
                 stringWriter.toString());
     }
-    
+
     /**
      * Test: 3, Title (with optional type sub-properties) (M)
      *
@@ -345,7 +346,7 @@ public class OpenAireExportUtilTest {
                 + "</contributors>",
                 stringWriter.toString());
     }
-    
+
     /**
      * Test: 7, Contributor ((with optional given name, family name, name
      * identifier and affiliation sub-properties)
@@ -390,7 +391,7 @@ public class OpenAireExportUtilTest {
                 + "</contributors>",
                 stringWriter.toString());
     }
-    
+
     /**
      * Test: 7, Contributor ((with optional given name, family name, name
      * identifier and affiliation sub-properties)

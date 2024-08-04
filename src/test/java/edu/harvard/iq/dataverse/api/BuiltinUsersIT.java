@@ -73,7 +73,7 @@ public class BuiltinUsersIT {
                 .statusCode(OK.getStatusCode());
 
     }
-    
+
         @Test
     public void testFindByToken() {
 
@@ -335,7 +335,7 @@ public class BuiltinUsersIT {
                     response.prettyPrint();
                     final List<String> actualErrors = JsonPath.from(response.body().asString()).get("data.errors");
                     assertTrue(actualErrors.containsAll(expectedErrors));
-                    assertTrue(expectedErrors.containsAll(actualErrors)); 
+                    assertTrue(expectedErrors.containsAll(actualErrors));
                 }
         );
     }
@@ -374,7 +374,7 @@ public class BuiltinUsersIT {
                     response.prettyPrint();
                     final List<String> actualErrors = JsonPath.from(response.body().asString()).get("data.errors");
                     assertTrue(actualErrors.containsAll(expectedErrors));
-                    assertTrue(expectedErrors.containsAll(actualErrors)); 
+                    assertTrue(expectedErrors.containsAll(actualErrors));
                 }
         );
     }

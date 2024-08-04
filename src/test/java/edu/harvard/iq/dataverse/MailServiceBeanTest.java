@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class MailServiceBeanTest {
-    
+
     @Nested
     class Delegation {
         /**
@@ -38,11 +38,12 @@ class MailServiceBeanTest {
         void setup() {
             BrandingUtilTest.setupMocks();
         }
+
         @AfterAll
         static void tearDown() {
             BrandingUtilTest.tearDownMocks();
         }
-        
+
         @ParameterizedTest
         @CsvSource(value = {
             // with name in admin mail address
@@ -57,7 +58,7 @@ class MailServiceBeanTest {
         void setContactDelegation(String fromMail, String rootDataverseName, String installationName, String expectedStartsWith) throws AddressException {
             BrandingUtilTest.setRootDataverseName(rootDataverseName);
             BrandingUtilTest.setInstallationName(installationName);
-            
+
             InternetAddress fromAddress = new InternetAddress(fromMail);
             MailServiceBean mailServiceBean = new MailServiceBean();
             try {
@@ -69,61 +70,61 @@ class MailServiceBeanTest {
             }
         }
     }
-    
+
     @Nested
     @LocalJvmSettings
     class LookupMailAddresses {
-        
+
         @Mock
         SettingsServiceBean settingsServiceBean;
-        
+
         @InjectMocks
         MailServiceBean mailServiceBean = new MailServiceBean();
-        
+
         private static final String email = "test@example.org";
-        
+
         @Test
         void lookupSystemWithoutAnySetting() {
             assertTrue(mailServiceBean.getSystemAddress().isEmpty());
         }
-        
+
         @Test
         void lookupSystemWithDBOnly() {
             Mockito.when(settingsServiceBean.getValueForKey(Key.SystemEmail)).thenReturn(email);
             assertEquals(email, mailServiceBean.getSystemAddress().get().getAddress());
         }
-        
+
         @Test
         @JvmSetting(key = JvmSettings.SYSTEM_EMAIL, value = email)
         void lookupSystemWithMPConfig() {
             assertEquals(email, mailServiceBean.getSystemAddress().get().getAddress());
         }
-        
+
         @Test
         @JvmSetting(key = JvmSettings.SYSTEM_EMAIL, value = email)
         void lookupSystemWhereMPConfigTakesPrecedenceOverDB() {
             Mockito.lenient().when(settingsServiceBean.getValueForKey(Key.SystemEmail)).thenReturn("foobar@example.org");
             assertEquals(email, mailServiceBean.getSystemAddress().get().getAddress());
         }
-        
+
         @Test
         void lookupSupportWithoutAnySetting() {
             assertTrue(mailServiceBean.getSupportAddress().isEmpty());
         }
-        
+
         @Test
         @JvmSetting(key = JvmSettings.SYSTEM_EMAIL, value = email)
         void lookupSupportNotSetButWithSystemPresent() {
             assertEquals(email, mailServiceBean.getSupportAddress().get().getAddress());
         }
-        
+
         @Test
         @JvmSetting(key = JvmSettings.SUPPORT_EMAIL, value = email)
         void lookupSupportWithoutSystemSet() {
             assertTrue(mailServiceBean.getSystemAddress().isEmpty());
             assertEquals(email, mailServiceBean.getSupportAddress().get().getAddress());
         }
-        
+
         @Test
         @JvmSetting(key = JvmSettings.SYSTEM_EMAIL, value = email)
         @JvmSetting(key = JvmSettings.SUPPORT_EMAIL, value = "support@example.org")
@@ -132,7 +133,7 @@ class MailServiceBeanTest {
             assertEquals("support@example.org", mailServiceBean.getSupportAddress().get().getAddress());
         }
     }
-    
+
     @Nested
     @LocalJvmSettings
     class SendSystemMail {
@@ -140,12 +141,12 @@ class MailServiceBeanTest {
         SettingsServiceBean settingsServiceBean;
         @InjectMocks
         MailServiceBean mailServiceBean = new MailServiceBean();
-        
+
         @Test
         @JvmSetting(key = JvmSettings.SYSTEM_EMAIL, value = "")
         void skipIfNoSystemAddress() {
             assertFalse(mailServiceBean.sendSystemEmail("target@example.org", "Test", "Test", false));
         }
     }
-    
+
 }

@@ -33,11 +33,11 @@ public class ExternalVocabularyValue implements Serializable {
         this.value = value;
     }
 
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(columnDefinition = "TEXT", unique = true, nullable = false)
     private String uri;
 

@@ -25,18 +25,18 @@ import jakarta.persistence.PersistenceContext;
 @Named
 @Stateless
 public class IpGroupsServiceBean {
-    
+
     private static final Logger logger = Logger.getLogger(IpGroupsServiceBean.class.getName());
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
 	protected EntityManager em;
-    
+
     @EJB
     ActionLogServiceBean actionLogSvc;
-	
+
     @EJB
     RoleAssigneeServiceBean roleAssigneeSvc;
-    
+
     /**
      * Stores (inserts/updates) the passed IP group.
      * @param grp The group to store.
@@ -50,7 +50,7 @@ public class IpGroupsServiceBean {
             alr.setInfo(grp.getDisplayName());
         }
         alr.setInfo(alr.getInfo() + "// " + grp.getRanges());
-        
+
         if (grp.getId() == null) {
             if (grp.getPersistedGroupAlias() != null) {
                 IpGroup existing = getByGroupName(grp.getPersistedGroupAlias());
@@ -59,7 +59,7 @@ public class IpGroupsServiceBean {
                     em.persist(grp);
                     actionLogSvc.log(alr);
                     return grp;
-                    
+
                 } else {
                     existing.setDescription(grp.getDescription());
                     existing.setDisplayName(grp.getDisplayName());
@@ -78,11 +78,11 @@ public class IpGroupsServiceBean {
             return em.merge(grp);
         }
     }
-    
+
     public IpGroup get(long id) {
        return em.find(IpGroup.class, id);
     }
-    
+
     public IpGroup getByGroupName(String alias) {
         try {
             return em.createNamedQuery("IpGroup.findByPersistedGroupAlias", IpGroup.class)
@@ -92,11 +92,11 @@ public class IpGroupsServiceBean {
             return null;
         }
     }
-    
+
     public List<IpGroup> findAll() {
         return em.createNamedQuery("IpGroup.findAll", IpGroup.class).getResultList();
     }
-    
+
     public Set<IpGroup> findAllIncludingIp(IpAddress ipa) {
         if (ipa instanceof IPv4Address) {
             IPv4Address ip4 = (IPv4Address) ipa;
@@ -119,7 +119,7 @@ public class IpGroupsServiceBean {
             throw new IllegalArgumentException( "Unknown IpAddress type: " + ipa.getClass() + " (for IpAddress:" + ipa + ")" );
         }
     }
-    
+
     /**
      * Deletes the group - if it has no assignments.
      * @param grp the group to be deleted
@@ -132,7 +132,7 @@ public class IpGroupsServiceBean {
         if (roleAssigneeSvc.getAssignmentsFor(grp.getIdentifier()).isEmpty()) {
             em.remove(grp);
             actionLogSvc.log(alr);
-            
+
         } else {
             String failReason = "Group " + grp.getAlias() + " has assignments and thus can't be deleted.";
             alr.setActionResult(ActionLogRecord.Result.BadRequest);

@@ -33,7 +33,7 @@ public class BatchServiceBean {
     DataverseServiceBean dataverseService;
     @EJB
     ImportServiceBean importService;
-    
+
 
     @Asynchronous
     public void processFilePath(String fileDir, String parentIdtf, DataverseRequest dataverseRequest, Dataverse owner, ImportUtil.ImportType importType, Boolean createDV) {
@@ -43,9 +43,9 @@ public class BatchServiceBean {
         try {
         JsonArrayBuilder status = Json.createArrayBuilder();
         Date timestamp = new Date();
-        
+
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
-        
+
         validationLog = new PrintWriter(new FileWriter( System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "validationLog" + formatter.format(timestamp) + ".txt"));
         cleanupLog = new PrintWriter(new FileWriter( System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "cleanupLog" + formatter.format(timestamp) + ".txt"));
         File dir = new File(fileDir);

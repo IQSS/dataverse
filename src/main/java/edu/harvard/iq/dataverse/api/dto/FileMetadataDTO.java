@@ -41,5 +41,5 @@ public class FileMetadataDTO {
     public void setCategory(String category) {
         this.category = category;
     }
-   
+
 }

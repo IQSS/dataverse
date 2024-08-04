@@ -42,44 +42,44 @@ public class UserNotificationServiceBean {
 
     @EJB
     SettingsServiceBean settingsService;
-    
+
     public List<UserNotification> findByUser(Long userId) {
         TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc", UserNotification.class);
         query.setParameter("userId", userId);
         return query.getResultList();
     }
-    
+
     public List<UserNotification> findByRequestor(Long userId) {
         TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.requestor.id =:userId order by un.sendDate desc", UserNotification.class);
         query.setParameter("userId", userId);
         return query.getResultList();
     }
-    
+
     public List<UserNotification> findByDvObject(Long dvObjId) {
         TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.objectId =:dvObjId order by o.sendDate desc", UserNotification.class);
         query.setParameter("dvObjId", dvObjId);
         return query.getResultList();
     }
-    
+
     public List<UserNotification> findUnreadByUser(Long userId) {
         TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.user.id =:userId and o.readNotification = 'false' order by o.sendDate desc", UserNotification.class);
         query.setParameter("userId", userId);
         return query.getResultList();
     }
-    
+
     public Long getUnreadNotificationCountByUser(Long userId) {
         if (userId == null) {
             return new Long("0");
         }
         Query query = em.createNativeQuery("select count(id) from usernotification as o where o.user_id = " + userId + " and o.readnotification = 'false';");
-        return (Long) query.getSingleResult();    
+        return (Long) query.getSingleResult();
     }
-    
+
     public List<UserNotification> findUnemailed() {
         TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.readNotification = 'false' and o.emailed = 'false'", UserNotification.class);
         return query.getResultList();
     }
-    
+
     public UserNotification find(Object pk) {
         return em.find(UserNotification.class, pk);
     }
@@ -87,7 +87,7 @@ public class UserNotificationServiceBean {
     public UserNotification save(UserNotification userNotification) {
         return em.merge(userNotification);
     }
-    
+
     public void delete(UserNotification userNotification) {
         em.remove(em.merge(userNotification));
     }
@@ -96,7 +96,7 @@ public class UserNotificationServiceBean {
     public void sendNotificationInNewTransaction(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
         sendNotification(dataverseUser, sendDate, type, objectId, "");
     }
-    
+
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
         sendNotification(dataverseUser, sendDate, type, objectId, "");
     }
@@ -112,6 +112,7 @@ public class UserNotificationServiceBean {
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, AuthenticatedUser requestor, boolean isHtmlContent) {
         sendNotification(dataverseUser, sendDate, type, objectId, comment, requestor, isHtmlContent, null);
     }
+
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, AuthenticatedUser requestor, boolean isHtmlContent, String additionalInfo) {
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
@@ -131,7 +132,7 @@ public class UserNotificationServiceBean {
             save(userNotification);
         }
     }
-    
+
 
     public boolean isEmailMuted(UserNotification userNotification) {
         final Type type = userNotification.getType();
@@ -143,7 +144,7 @@ public class UserNotificationServiceBean {
         }
         return alwaysMuted || (!neverMuted && user.hasEmailMuted(type));
     }
-    
+
     public boolean isNotificationMuted(UserNotification userNotification) {
         final Type type = userNotification.getType();
         final AuthenticatedUser user = userNotification.getUser();

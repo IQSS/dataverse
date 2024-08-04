@@ -21,7 +21,7 @@ import jakarta.faces.convert.FacesConverter;
  */
 @FacesConverter("roleAssigneeConverter")
 public class RoleAssigneeConverter implements Converter {
-    
+
     //@EJB
     RoleAssigneeServiceBean roleAssigneeService = CDI.current().select(RoleAssigneeServiceBean.class).get();
 

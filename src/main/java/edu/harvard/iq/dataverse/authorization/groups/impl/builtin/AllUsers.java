@@ -19,18 +19,18 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 public final class AllUsers implements Group {
 
     public static final AllUsers instance = new AllUsers();
-       
+
     private final String identifier = ":AllUsers";
-    
+
     private final String displayInfo = "Everyone (including guests)";
-    
+
     public static final AllUsers get() { return instance; }
-    
+
     /**
      * Prevent instance creation
      */
     private AllUsers() {}
-        
+
     @Override
     public boolean contains(DataverseRequest ra) {
         return (ra.getUser() instanceof User);
@@ -70,10 +70,10 @@ public final class AllUsers implements Group {
     public String getDescription() {
         return "All users, including guests";
     }
-    
+
     @Override
     public String toString() {
         return "[AllUsers " + getIdentifier() + "]";
     }
-    
+
 }

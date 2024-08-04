@@ -80,19 +80,20 @@ public class ReturnDatasetToAuthorCommandTest {
                     {
                         em = new NoOpTestEntityManager();
                     }
-                        
+
                     @Override
                     public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
                         return null;
                     }
-                    @Override 
+
+                    @Override
                     public WorkflowComment addWorkflowComment(WorkflowComment comment) {
                         return comment;
                     }
-                    
+
                     @Override
                     public void removeDatasetLocks(Dataset dataset, DatasetLock.Reason aReason) {
-                        
+
                     }
                 };
             }
@@ -223,14 +224,14 @@ public class ReturnDatasetToAuthorCommandTest {
         updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, ""));
         assertNotNull(updatedDataset);
     }
-    
-    
+
+
    @Test
     public void testAllGood() {
        dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
        Dataset updatedDataset = null;
        try {
-           testEngine.submit(new AddLockCommand(dataverseRequest, dataset, 
+           testEngine.submit(new AddLockCommand(dataverseRequest, dataset,
                               new DatasetLock(DatasetLock.Reason.InReview, dataverseRequest.getAuthenticatedUser())));
            updatedDataset = testEngine.submit(new ReturnDatasetToAuthorCommand(dataverseRequest, dataset, "Update Your Files, Dummy"));
        } catch (CommandException ex) {

@@ -38,23 +38,23 @@ import java.lang.annotation.Target;
 @ExtendWith(JvmSettingExtension.class)
 @ResourceLock(value = Resources.SYSTEM_PROPERTIES, mode = ResourceAccessMode.READ_WRITE)
 public @interface JvmSetting {
-    
+
     static final String PLACEHOLDER = "NULL";
-    
+
     /**
      * The key of the system property to be set.
      */
     edu.harvard.iq.dataverse.settings.JvmSettings key();
-    
+
     /**
      * The value of the system property to be set.
      */
     String value() default PLACEHOLDER;
-    
+
     String[] varArgs() default {};
-    
+
     String method() default PLACEHOLDER;
-    
+
     /**
      * Containing annotation of repeatable {@code @SetSystemProperty}.
      */

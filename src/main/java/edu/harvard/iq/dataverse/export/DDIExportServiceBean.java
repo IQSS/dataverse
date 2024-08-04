@@ -147,7 +147,7 @@ public class DDIExportServiceBean {
          */
         Set<String> includedFieldSet = null;
         Set<String> excludedFieldSet = null;
-        
+
         DatasetVersion releasedVersion = null;
 
         if (partialExclude != null && !"".equals(partialExclude)) {
@@ -272,7 +272,7 @@ public class DDIExportServiceBean {
         if (dv.isOrderedCategorical()) {
             writeAttribute(xmlw, "nature", "ordinal");
         }
-        
+
         if (dv.getInterval() != null) {
             String interval = dv.getIntervalLabel();
             if (interval != null) {
@@ -490,7 +490,6 @@ public class DDIExportServiceBean {
         }
 
 
-
         xmlw.writeEndElement(); //var
 
     }
@@ -522,7 +521,7 @@ public class DDIExportServiceBean {
         FileMetadata fm = fileService.findFileMetadata(fileMetadataId);
 
         createStdyDscr(xmlw, excludedFieldSet, includedFieldSet, fm.getDatasetVersion());
-        
+
         DataTable dt = fileService.findDataTableByFileId(df.getId());
 
         if (checkField("fileDscr", excludedFieldSet, includedFieldSet)) {
@@ -603,22 +602,22 @@ public class DDIExportServiceBean {
             return;
         }
     }
-    
+
     private void createDatasetDDI(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DatasetVersion version) throws XMLStreamException {
-        
+
         xmlw.writeStartElement("codeBook");
         xmlw.writeDefaultNamespace("http://www.icpsr.umich.edu/DDI");
         writeAttribute(xmlw, "version", "2.0");
-        
+
         createStdyDscr(xmlw, excludedFieldSet, includedFieldSet, version);
-        
+
         // Files: 
         
-        List<FileMetadata> tabularDataFiles = new ArrayList<>();  
+        List<FileMetadata> tabularDataFiles = new ArrayList<>();
         List<FileMetadata> otherDataFiles = new ArrayList<>();
-        
+
         List<FileMetadata> fileMetadatas = version.getFileMetadatas();
-        
+
         if (fileMetadatas == null || fileMetadatas.isEmpty()) {
             xmlw.writeEndElement(); // codeBook
             return;
@@ -631,13 +630,13 @@ public class DDIExportServiceBean {
                 otherDataFiles.add(fileMetadata);
             }
         }
-        
+
         if (checkField("fileDscr", excludedFieldSet, includedFieldSet)) {
             for (FileMetadata fileMetadata : tabularDataFiles) {
                 DataTable dt = fileService.findDataTableByFileId(fileMetadata.getDataFile().getId());
                 createFileDscr(xmlw, excludedFieldSet, includedFieldSet, fileMetadata.getDataFile(), dt, fileMetadata);
             }
-            
+
             // 2nd pass, to create data (variable) description sections: 
             xmlw.writeStartElement("dataDscr");
 
@@ -651,35 +650,35 @@ public class DDIExportServiceBean {
                     createVarGroupDDI(xmlw, excludedFieldSet, null, varGrp);
                 }
 
-                for (DataVariable var : vars) { 
+                for (DataVariable var : vars) {
                     createVarDDI(xmlw, excludedFieldSet, null, var, fileMetadata.getId());
                 }
             }
-            
+
             xmlw.writeEndElement(); // dataDscr
         }
-        
+
         if (checkField("othrMat", excludedFieldSet, includedFieldSet)) {
             for (FileMetadata fileMetadata : otherDataFiles) {
                 createOtherMat(xmlw, excludedFieldSet, includedFieldSet, fileMetadata);
             }
         }
-        
+
         xmlw.writeEndElement(); // codeBook
     }
-    
+
     private void createStdyDscr(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DatasetVersion version) throws XMLStreamException {
-        
+
         String title = version.getTitle();
-        String authors = version.getAuthorsStr(false); 
+        String authors = version.getAuthorsStr(false);
         String persistentAgency = version.getDataset().getProtocol();
         String persistentAuthority = version.getDataset().getAuthority();
-        String persistentId = version.getDataset().getIdentifier(); 
-        
-        
+        String persistentId = version.getDataset().getIdentifier();
+
+
         xmlw.writeStartElement("stdyDscr");
             xmlw.writeStartElement("citation");
-        
+
                 xmlw.writeStartElement("titlStmt");
 
                     xmlw.writeStartElement("titl");
@@ -694,27 +693,27 @@ public class DDIExportServiceBean {
                 xmlw.writeEndElement(); // titlStmt
         
                 xmlw.writeStartElement("rspStmt");
-        
+
                     xmlw.writeStartElement("AuthEnty");
                     xmlw.writeCharacters(authors);
                     xmlw.writeEndElement(); // AuthEnty
         
                 xmlw.writeEndElement(); // rspStmt
                 xmlw.writeStartElement("biblCit");
-                
+
                 xmlw.writeCharacters(version.getCitation());
-                
+
                 xmlw.writeEndElement(); // biblCit
         
             xmlw.writeEndElement(); // citation
         xmlw.writeEndElement(); // stdyDscr
         
     }
-    
+
     private void createOtherMat(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, FileMetadata fm) throws XMLStreamException {
         xmlw.writeStartElement("otherMat");
         writeAttribute(xmlw, "ID", "f" + fm.getDataFile().getId().toString());
-        
+
         xmlw.writeStartElement("labl");
         xmlw.writeCharacters(fm.getLabel());
         xmlw.writeEndElement(); // labl

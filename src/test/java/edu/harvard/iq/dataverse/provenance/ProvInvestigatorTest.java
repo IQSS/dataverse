@@ -23,20 +23,20 @@ import org.junit.jupiter.api.Test;
 
 //Fix this ignore when we classify our tests, these tests are slow and unimportant
 public class ProvInvestigatorTest {
-    
+
     private ProvInvestigator provUtilBean;
     JsonParser jsonParser;
     private static final Logger logger = Logger.getLogger(ProvInvestigatorTest.class.getCanonicalName());
-    
+
     @BeforeEach
     public void setUp() {
         provUtilBean = ProvInvestigator.getInstance();
         jsonParser = new JsonParser();
     }
-    
+
     @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
     @Test
-    public void testProvValidator() {   
+    public void testProvValidator() {
         String validJsonString = "{\n" +
             "    \"entity\": {\n" +
             "        \"ex:report2\": {\n" +
@@ -67,9 +67,9 @@ public class ProvInvestigatorTest {
             "        }\n" +
             "    }\n" +
             "}";
-        
-        assertTrue(provUtilBean.isProvValid(validJsonString)); 
-        
+
+        assertTrue(provUtilBean.isProvValid(validJsonString));
+
         //This string has the "entity" section misnamed to "entitddd"
         String invalidJsonString = "{\n" +
             "    \"entitddd\": {\n" +
@@ -101,26 +101,26 @@ public class ProvInvestigatorTest {
             "        }\n" +
             "    }\n" +
             "}";
-        
-        assertFalse(provUtilBean.isProvValid(invalidJsonString)); 
+
+        assertFalse(provUtilBean.isProvValid(invalidJsonString));
 
     }
-    
+
     @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
     @Test
     public void testProvNamesNotInsideEntity() throws IOException {
         //name and type on their own
         String jsonString = "{\"name\":\"testzame\",\"type\":\"ohno\"}";
         HashMap<String, ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
-        assertFalse(entities.size() > 0); 
-        
+        assertFalse(entities.size() > 0);
+
         //name and type in an individual entity but not inside the "entity" grouping
         jsonString = "{\"p1\":{\"name\":\"testzame\",\"name2\":\"ohno\"}}";
 
         entities = provUtilBean.startRecurseNames(jsonString);
-        assertFalse(entities.size() > 0); 
+        assertFalse(entities.size() > 0);
     }
-    
+
     @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
     @Test
     public void testProvNameJsonParserEmptyEntities() throws IOException {
@@ -153,11 +153,11 @@ public class ProvInvestigatorTest {
             "\"used\":{\n" +
             "}\n" +
             "}";
-        
+
         HashMap<String, ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
         assertTrue(entities.size() == 0);
     }
-    
+
     //Note: this test has entity tags in multiple places, all with unique names
     //Only one entity is added to our list per unique name.
     
@@ -226,14 +226,14 @@ public class ProvInvestigatorTest {
 "        }\n" +
 "    }\n" +
 "}";
-        
-        
+
+
         HashMap<String, ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
         assertTrue(entities.get("ex:report5").fileType.equals("report"));
         assertTrue(entities.get("ex:report2").fileName.equals("best"));
         assertTrue(entities.size() == 7);
     }
-    
+
     @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
     @Test
     public void testProvJsonWithEntitiesInMultiplePlacesWithSameNames() throws IOException {
@@ -267,12 +267,12 @@ public class ProvInvestigatorTest {
 "        }\n" +
 "    }\n" +
 "}";
-        
-        HashMap<String, ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);   
+
+        HashMap<String, ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
         assertTrue(entities.get("ex:report2").fileType.equals("not report"));
         assertTrue(entities.size() == 3); //ex:report2 & ex:report1 are repeated
     }
-    
+
     @Tag(Tags.NOT_ESSENTIAL_UNITTESTS)
     @Test
     public void testProvLongJsonWithEntities() throws IOException {
@@ -548,8 +548,8 @@ public class ProvInvestigatorTest {
             "      }\n" +
             "   }\n" +
             "}";
-        
-        
+
+
         HashMap<String, ProvEntityFileData> entities = provUtilBean.startRecurseNames(jsonString);
         assertTrue(entities.size() == 6);
     }

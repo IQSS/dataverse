@@ -26,10 +26,10 @@ import java.util.logging.Logger;
  * @author rmp553
  */
 public class DuplicateFileChecker {
-    
+
     private static final Logger logger = Logger.getLogger(DuplicateFileChecker.class.getCanonicalName());
     private DatasetVersionServiceBean datasetVersionService;
-    
+
     /**
      * Constructor
      * 
@@ -40,7 +40,7 @@ public class DuplicateFileChecker {
         if (datasetVersionService == null) {
             throw new NullPointerException("datasetVersionService cannot be null");
         }
-        
+
         this.datasetVersionService = datasetVersionService;
     } // end: constructor
     
@@ -54,17 +54,17 @@ public class DuplicateFileChecker {
      * @return 
      */
     public boolean isFileInSavedDatasetVersion(DatasetVersion datasetVersion, FileMetadata fileMetadata) {
-        
+
          if (datasetVersion == null) {
              throw new NullPointerException("datasetVersion cannot be null");
          }
-        
+
          if (fileMetadata == null) {
              throw new NullPointerException("fileMetadata cannot be null");
          }
          return this.isFileInSavedDatasetVersion(datasetVersion, fileMetadata.getDataFile().getChecksumValue());
      }
-    
+
     /**
      * See if this checksum already exists by a new query
      * 
@@ -76,15 +76,15 @@ public class DuplicateFileChecker {
         if (datasetVersion == null) {
              throw new NullPointerException("datasetVersion cannot be null");
         }
-        
+
         if (checkSum == null) {
             throw new NullPointerException("checkSum cannot be null");
         }
-        
+
         return datasetVersionService.doesChecksumExistInDatasetVersion(datasetVersion, checkSum);
-        
+
     }
-    
+
     /**
      * From dataset version:
      *  - Get the checksum of all the files 
@@ -94,27 +94,27 @@ public class DuplicateFileChecker {
      * 
      */
     public Map<String, Integer> getDatasetHashesFromDatabase(DatasetVersion datasetVersion) {
-     
+
         if (datasetVersion == null) {
              throw new NullPointerException("datasetVersion cannot be null");
          }
-        
+
         Map<String, Integer> checksumHashCounts = new HashMap<>();
 
         List<FileMetadata> fileMetadatas = new ArrayList<>(datasetVersion.getFileMetadatas());
-        
-        for (FileMetadata fm : fileMetadatas) {            
+
+        for (FileMetadata fm : fileMetadatas) {
             String checkSum = fm.getDataFile().getChecksumValue();
             if (checksumHashCounts.get(checkSum) != null) {
                 checksumHashCounts.put(checkSum, checksumHashCounts.get(checkSum).intValue() + 1);
             } else {
                 checksumHashCounts.put(checkSum, 1);
-            }   
+            }
         }
         return checksumHashCounts;
     }
-    
-    
+
+
     /** 
      * Original isDuplicate method from the DatasetPage and EditDatafilesPage
      * 
@@ -135,8 +135,8 @@ public class DuplicateFileChecker {
         String selectedCheckSum = fileMetadata.getDataFile().getChecksumValue();
         if (selectedCheckSum == null) {
             return false;
-        }        
-        
+        }
+
         Map<String, Integer> checkSumMap = new HashMap<String, Integer>();
 
         // TODO: 
@@ -152,9 +152,9 @@ public class DuplicateFileChecker {
         List<FileMetadata> wvCopy = new ArrayList<>(workingVersion.getFileMetadatas());
         Iterator<FileMetadata> fmIt = wvCopy.iterator();
 
-        while (fmIt.hasNext()) {            
+        while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
-            String currentCheckSum = fm.getDataFile().getChecksumValue();            
+            String currentCheckSum = fm.getDataFile().getChecksumValue();
             if (currentCheckSum != null) {
                 if (currentCheckSum.equals(selectedCheckSum)) {
                     DataFile existingFile = fm.getDataFile();
@@ -175,5 +175,5 @@ public class DuplicateFileChecker {
        // return checkSumMap.get(selectedCheckSum) != null; // && checkSumMap.get(selectedCheckSum).intValue() > 1;
             
     }
-    
+
 }

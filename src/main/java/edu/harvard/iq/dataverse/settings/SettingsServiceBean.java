@@ -36,9 +36,9 @@ import java.util.logging.Logger;
 @Stateless
 @Named
 public class SettingsServiceBean {
-    
+
     private static final Logger logger = Logger.getLogger(SettingsServiceBean.class.getCanonicalName());
-    
+
     /**
      * Some convenient keys for the settings. Note that the setting's 
      * name is really a {@code String}, but it's good to have the compiler look
@@ -140,19 +140,19 @@ public class SettingsServiceBean {
          * API endpoints that are not accessible. Comma separated list.
          */
         BlockedApiEndpoints,
-        
+
         /**
          * A key that, with the right {@link ApiBlockingFilter.BlockPolicy},
          * allows calling blocked APIs.
          */
         BlockedApiKey,
-        
-        
+
+
         /**
          * How to treat blocked APIs. One of drop, localhost-only, unblock-key
          */
         BlockedApiPolicy,
-        
+
         /**
          * For development only (see dev guide for details). Backed by an enum
          * of possible account types.
@@ -278,7 +278,7 @@ public class SettingsServiceBean {
          *             which is backward compatible with this setting.
          */
         @Deprecated(since = "6.2", forRemoval = true)
-        SystemEmail, 
+        SystemEmail,
         /* size limit for Tabular data file ingests */
         /* (can be set separately for specific ingestable formats; in which 
         case the actual stored option will be TabularIngestSizeLimit:{FORMAT_NAME}
@@ -304,7 +304,7 @@ public class SettingsServiceBean {
         Whether Harvesting (OAI) service is enabled
         */
         OAIServerEnabled,
-        
+
         /**
         * Whether Shibboleth passive authentication mode is enabled
         */
@@ -337,10 +337,10 @@ public class SettingsServiceBean {
          Location and name of installation logo customization file
         */
         LogoCustomizationFile,
-        
+
         // Option to override the navbar url underlying the "About" link
         NavbarAboutUrl,
-        
+
         // Option to override multiple guides with a single url
         NavbarGuidesUrl,
 
@@ -387,7 +387,7 @@ public class SettingsServiceBean {
          * The number of M characteristics
          */
         PVNumberOfCharacteristics,
-        
+
         /**
          * The number of consecutive digits allowed for a password
          */
@@ -407,7 +407,7 @@ public class SettingsServiceBean {
          * 
          */
         @Deprecated(forRemoval = true, since = "2024-02-13")
-        DataFilePIDFormat, 
+        DataFilePIDFormat,
         /* Json array of supported languages
         */
         Languages,
@@ -468,9 +468,9 @@ public class SettingsServiceBean {
          * inheritance. "*" means inherit assignments for all roles
          */
         InheritParentRoleAssignments,
-        
+
         /** Make Data Count Logging, Display, and Start Date */
-        MDCLogPath, 
+        MDCLogPath,
         DisplayMDCMetrics,
         MDCStartDate,
 
@@ -478,8 +478,8 @@ public class SettingsServiceBean {
          * Allow CORS flag (true or false). It is true by default
          *
          */
-        AllowCors, 
-        
+        AllowCors,
+
         /**
          * Lifespan, in minutes, of a login user session 
          * (both DataverseSession and the underlying HttpSession)
@@ -515,7 +515,7 @@ public class SettingsServiceBean {
         /**
          * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
          */
-        ChronologicalDateFacets, 
+        ChronologicalDateFacets,
         /**
          * Used where BrandingUtil.getInstallationBrandName is called, overides the default use of the root Dataverse collection name
          */
@@ -627,7 +627,7 @@ public class SettingsServiceBean {
         /*
          * Allow a custom JavaScript to control values of specific fields.
          */
-        ControlledVocabularyCustomJavaScript, 
+        ControlledVocabularyCustomJavaScript,
         /**
          * A compound setting for disabling signup for remote Auth providers:
          */
@@ -635,11 +635,11 @@ public class SettingsServiceBean {
         /**
          * The URL for the DvWebLoader tool (see github.com/gdcc/dvwebloader for details)
          */
-        WebloaderUrl, 
+        WebloaderUrl,
         /**
          * Enforce storage quotas:
          */
-        UseStorageQuotas, 
+        UseStorageQuotas,
         /** 
          * Placeholder storage quota (defines the same quota setting for every user; used to test the concept of a quota.
          */
@@ -686,13 +686,13 @@ public class SettingsServiceBean {
             return ":" + name();
         }
     }
-    
+
     @PersistenceContext
     EntityManager em;
-    
+
     @EJB
     ActionLogServiceBean actionLogSvc;
-    
+
     /**
      * Basic functionality - get the name, return the setting, or {@code null}.
      * @param name of the setting
@@ -708,7 +708,7 @@ public class SettingsServiceBean {
         }
         return (val != null) ? val : null;
     }
-    
+
     /**
      * Same as {@link #get(String)}, but with static checking.
      * @param key Enum value of the name.
@@ -717,8 +717,8 @@ public class SettingsServiceBean {
     public String getValueForKey(Key key) {
         return get(key.toString());
     }
-    
-    
+
+
     /**
      * Attempt to convert the value to an integer
      *  - Applicable for keys such as MaxFileUploadSizeInBytes
@@ -728,7 +728,7 @@ public class SettingsServiceBean {
      * @return 
      */
        public Long getValueForKeyAsLong(Key key) {
-        
+
         String val = this.getValueForKey(key);
 
         if (val == null) {
@@ -742,9 +742,9 @@ public class SettingsServiceBean {
             logger.log(Level.WARNING, "Incorrect setting.  Could not convert \"{0}\" from setting {1} to long.", new Object[]{val, key.toString()});
             return null;
         }
-        
+
     }
-    
+
        /**
         * Attempt to convert a value in a compound key to a long
         *  - Applicable for keys such as MaxFileUploadSizeInBytes after multistore capabilities were added in ~v4.20
@@ -783,7 +783,7 @@ public class SettingsServiceBean {
     	   }
 
        }
-       
+
     /**
      * Same, but with Booleans 
      * (returns null if not set; up to the calling method to decide what that should
@@ -816,6 +816,7 @@ public class SettingsServiceBean {
         }
 
     }
+
     /**
      * Return the value stored, or the default value, in case no setting by that
      * name exists. The main difference between this method and the other {@code get()}s
@@ -841,7 +842,7 @@ public class SettingsServiceBean {
         }
         return (val != null) ? val : defaultValue;
     }
-    
+
     public String getValueForKey(Key key, String defaultValue) {
         return get(key.toString(), defaultValue);
     }
@@ -849,24 +850,24 @@ public class SettingsServiceBean {
     public String getValueForKey(Key key, String lang, String defaultValue) {
         return get(key.toString(), lang, defaultValue);
     }
-     
+
     public Setting set(String name, String content) {
-        Setting s = null; 
-        
+        Setting s = null;
+
         List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
                 .setParameter("name", name)
                 .getResultList();
-        
+
         if (tokens.size() > 0) {
             s = tokens.get(0);
         }
-        
+
         if (s == null) {
             s = new Setting( name, content );
         } else {
             s.setContent(content);
         }
-        
+
         s = em.merge(s);
         actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
                             .setInfo(name + ": " + content));
@@ -874,33 +875,33 @@ public class SettingsServiceBean {
     }
 
     public Setting set(String name, String lang, String content) {
-        Setting s = null; 
-        
+        Setting s = null;
+
         List<Setting> tokens = em.createNamedQuery("Setting.findByNameAndLang", Setting.class)
                 .setParameter("name", name)
                 .setParameter("lang", lang)
                 .getResultList();
-        
+
         if (tokens.size() > 0) {
             s = tokens.get(0);
         }
-        
+
         if (s == null) {
             s = new Setting( name, lang, content );
         } else {
             s.setContent(content);
         }
-        
+
         em.merge(s);
         actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
                 .setInfo(name + ": " + lang + ": " + content));
         return s;
     }
-    
+
     public Setting setValueForKey(Key key, String content) {
         return set(key.toString(), content);
     }
-    
+
     /**
      * The correct way to decide whether a string value in the
      * settings table should be considered as {@code true}.
@@ -912,7 +913,7 @@ public class SettingsServiceBean {
         String val = get(name);
         return (val == null) ? defaultValue : StringUtil.isTrue(val);
     }
-    
+
     public boolean isTrueForKey(Key key, boolean defaultValue) {
         return isTrue(key.toString(), defaultValue);
     }
@@ -929,11 +930,11 @@ public class SettingsServiceBean {
         return Collections.list(new StringTokenizer(tokens, ",")).stream()
             .anyMatch(token -> ((String) token).trim().equals(value));
     }
-            
+
     public void deleteValueForKey(Key name) {
         delete(name.toString());
     }
-    
+
     public void delete(String name) {
         actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
                             .setInfo(name));
@@ -950,11 +951,11 @@ public class SettingsServiceBean {
                 .setParameter("lang", lang)
                 .executeUpdate();
     }
-    
+
     public Set<Setting> listAll() {
         return new HashSet<>(em.createNamedQuery("Setting.findAll", Setting.class).getResultList());
     }
-    
+
     public Map<String, String> getBaseMetadataLanguageMap(Map<String, String> languageMap, boolean refresh) {
         if (languageMap == null || refresh) {
             languageMap = new HashMap<String, String>();
@@ -963,7 +964,7 @@ public class SettingsServiceBean {
              * If not, we can't assume anything and should avoid assuming a metadata language
              */
             String mlString = getValueForKey(SettingsServiceBean.Key.MetadataLanguages, "");
-            
+
             if (mlString.isEmpty()) {
                 mlString = "[]";
             }
@@ -975,9 +976,9 @@ public class SettingsServiceBean {
         }
         return languageMap;
     }
-    
+
     public void initLocaleSettings(Map<String, String> configuredLocales) {
-        
+
         try {
             JSONArray entries = new JSONArray(getValueForKey(SettingsServiceBean.Key.Languages, "[]"));
             for (Object obj : entries) {
@@ -992,7 +993,7 @@ public class SettingsServiceBean {
             // do we want to know? - probably not
         }
     }
-    
+
 
     public Set<String> getConfiguredLanguages() {
         Set<String> langs = new HashSet<String>();

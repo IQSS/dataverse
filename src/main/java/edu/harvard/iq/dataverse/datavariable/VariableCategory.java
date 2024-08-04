@@ -36,9 +36,9 @@ public class VariableCategory  implements Comparable, Serializable {
      */
     public VariableCategory() {
     }
-    
+
     private static AlphaNumericComparator alphaNumericComparator = new AlphaNumericComparator();
-    
+
     /*
      * Definitions of class properties: 
      */
@@ -47,14 +47,14 @@ public class VariableCategory  implements Comparable, Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     /*
      * DataVariable for which this range is defined.
      */
     @ManyToOne
     @JoinColumn(nullable = false)
     private DataVariable dataVariable;
-    
+
     /*
      * Category Value: 
      */
@@ -64,24 +64,24 @@ public class VariableCategory  implements Comparable, Serializable {
      * Category Label:  
      */
     private String label;
-    
+
     /*
      * Is this a missing category?
      */
     private boolean missing;
-    
+
     /*
      * If this is an "Ordered Categorical Variable", aka an "Ordinal", it 
      * has an explicitly assigned order value:
      */
     private int catOrder;
-    
+
     /*
      * Frequency of this category:
      */
     private Double frequency;
-    
-    
+
+
     /*
      * Getter and Setter methods:
      */
@@ -94,23 +94,23 @@ public class VariableCategory  implements Comparable, Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public String getLabel() {
         return this.label;
     }
-    
+
     public void setLabel(String label) {
         this.label = label;
     }
-    
+
     public String getValue() {
         return this.value;
     }
-    
+
     public void setValue(String value) {
         this.value = value;
     }
-    
+
     public DataVariable getDataVariable() {
         return this.dataVariable;
     }
@@ -118,7 +118,7 @@ public class VariableCategory  implements Comparable, Serializable {
     public void setDataVariable(DataVariable dataVariable) {
         this.dataVariable = dataVariable;
     }
-    
+
     public boolean isMissing() {
         return this.missing;
     }
@@ -126,24 +126,24 @@ public class VariableCategory  implements Comparable, Serializable {
     public void setMissing(boolean missing) {
         this.missing = missing;
     }
-    
+
     public int getOrder() {
-        return catOrder; 
+        return catOrder;
     }
-    
+
     public void setOrder(int order) {
-        this.catOrder = order; 
+        this.catOrder = order;
     }
-    
+
     public Double getFrequency() {
         return this.frequency;
     }
-    
+
     public void setFrequency(Double frequency) {
         this.frequency = frequency;
     }
 
-    
+
     /* 
      * Helper methods: 
      */
@@ -170,7 +170,7 @@ public class VariableCategory  implements Comparable, Serializable {
         if (!(object instanceof VariableCategory)) {
             return false;
         }
-        
+
         // TODO: 
         // We should probably compare the values instead, similarly 
         // to comareTo() below. -- L.A., Jan. 2014
@@ -178,21 +178,21 @@ public class VariableCategory  implements Comparable, Serializable {
         if (this.id != other.id) {
             if (this.id == null || !this.id.equals(other.id)) {
                 return false;
-            }                    
+            }
         }
         return true;
     }
-    
+
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.VariableCategory[ value=" + value + " ]";
     }
-    
+
     @Override
     public int compareTo(Object obj) {
-        VariableCategory ss = (VariableCategory) obj;     
+        VariableCategory ss = (VariableCategory) obj;
         return alphaNumericComparator.compare(this.getValue(), ss.getValue());
-        
+
     }
-    
+
 }

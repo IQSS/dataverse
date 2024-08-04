@@ -48,64 +48,64 @@ public class DatasetFieldValueValidatorTest {
         boolean expResult = true;
         boolean result = instance.isValid(value, ctx);
         assertEquals(expResult, result);
-        
+
         //Make string too long - should fail.
         value.setValue("asdfgX");
         result = instance.isValid(value, ctx);
         assertEquals(false, result);
-        
+
         //Make string too long - should fail.
         value.setValue("asdf");
         result = instance.isValid(value, ctx);
         assertEquals(false, result);
-        
+
         //Now lets try Dates
-        dft.setFieldType(DatasetFieldType.FieldType.DATE);   
+        dft.setFieldType(DatasetFieldType.FieldType.DATE);
         dft.setValidationFormat(null);
         value.setValue("1999AD");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
-        
+        assertEquals(true, result);
+
         value.setValue("44BCE");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
-        
+        assertEquals(true, result);
+
         value.setValue("2004-10-27");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
-        
+        assertEquals(true, result);
+
         value.setValue("2002-08");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result);  
-        
+        assertEquals(true, result);
+
         value.setValue("[1999?]");
         result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
-        
+        assertEquals(true, result);
+
         value.setValue("Blergh");
         result = instance.isValid(value, ctx);
-        assertEquals(false, result);  
-        
+        assertEquals(false, result);
+
         //Float
-        dft.setFieldType(DatasetFieldType.FieldType.FLOAT); 
+        dft.setFieldType(DatasetFieldType.FieldType.FLOAT);
         value.setValue("44");
         result = instance.isValid(value, ctx);
         assertEquals(true, result);
-        
+
         value.setValue("44 1/2");
         result = instance.isValid(value, ctx);
         assertEquals(false, result);
-        
+
         //Integer
-        dft.setFieldType(DatasetFieldType.FieldType.INT); 
+        dft.setFieldType(DatasetFieldType.FieldType.INT);
         value.setValue("44");
         result = instance.isValid(value, ctx);
         assertEquals(true, result);
-        
+
         value.setValue("-44");
         result = instance.isValid(value, ctx);
         assertEquals(true, result);
-        
+
         value.setValue("12.14");
         result = instance.isValid(value, ctx);
         assertEquals(false, result);
@@ -158,7 +158,7 @@ public class DatasetFieldValueValidatorTest {
     }
 
     final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    
+
     @ParameterizedTest
     @CsvSource(
         {
@@ -173,15 +173,15 @@ public class DatasetFieldValueValidatorTest {
     public void testInvalidURL(boolean expected, String url) {
         // given
         String fieldName = "testField";
-        
+
         DatasetField field = new DatasetField();
         field.setDatasetFieldType(new DatasetFieldType(fieldName, DatasetFieldType.FieldType.URL, false));
         DatasetFieldValue sut = new DatasetFieldValue(field);
         sut.setValue(url);
-        
+
         // when
         Set<ConstraintViolation<DatasetFieldValue>> violations = validator.validate(sut);
-        
+
         // then
         assertEquals(expected, violations.size() < 1);
         violations.stream().findFirst().ifPresent(c -> {
@@ -190,21 +190,21 @@ public class DatasetFieldValueValidatorTest {
             assertTrue(c.getMessage().contains("URL"));
         });
     }
-    
+
     @Test
     public void testInvalidEmail() {
         // given
         String fieldName = "testField";
         String invalidMail = "myinvalidmail";
-        
+
         DatasetField field = new DatasetField();
         field.setDatasetFieldType(new DatasetFieldType(fieldName, DatasetFieldType.FieldType.EMAIL, false));
         DatasetFieldValue sut = new DatasetFieldValue(field);
         sut.setValue(invalidMail);
-        
+
         // when
         Set<ConstraintViolation<DatasetFieldValue>> violations = validator.validate(sut);
-        
+
         // then
         assertTrue(violations.size() == 1);
         violations.stream().findFirst().ifPresent(c -> {
@@ -213,6 +213,7 @@ public class DatasetFieldValueValidatorTest {
             assertTrue(c.getMessage().contains("email"));
         });
     }
+
     @Test
     public void testBoundingBoxValidity() {
         // valid tests

@@ -10,10 +10,10 @@ import java.util.List;
  * @author michael
  */
 public interface CredentialsAuthenticationProvider extends AuthenticationProvider {
-    
-    static class Credential { 
+
+    static class Credential {
         private final String key;
-        
+
         /**
          * When {@code true}, the login form will use the secret/password widget rather than the regular text field.
          */
@@ -23,10 +23,11 @@ public interface CredentialsAuthenticationProvider extends AuthenticationProvide
             this.key = key;
             this.secret = secret;
         }
+
         public Credential(String key) {
-            this(key, false); 
+            this(key, false);
         }
-       
+
         public String getKey() {
             return key;
         }
@@ -35,7 +36,7 @@ public interface CredentialsAuthenticationProvider extends AuthenticationProvide
             return secret;
         }
     }
-    
+
     /**
      * Returns the list of credential required for login, normally username and password.
      * The strings will be used by the application as titles to the text fields, and then
@@ -44,7 +45,7 @@ public interface CredentialsAuthenticationProvider extends AuthenticationProvide
      * @return the list of credentials required for login.
      */
     List<Credential> getRequiredCredentials();
-    
+
     /**
      * The main method of this interface - provide a consistent user id, within
      * the scope of this provider, for a user based on the request content.

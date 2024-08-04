@@ -34,26 +34,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author sarahferry
  */
 public class RestrictFileCommandTest {
-    
+
     TestDataverseEngine engine;
     private DataFile file;
     private Dataset dataset;
     boolean restrict = true;
     boolean unrestrict = false;
     static boolean publicInstall = false;
-    
-    
+
+
     public RestrictFileCommandTest() {
     }
-    
+
     @BeforeAll
     public static void setUpClass() {
     }
-    
+
     @AfterAll
     public static void tearDownClass() {
     }
-    
+
     @BeforeEach
     public void setUp() {
         dataset = makeDataset();
@@ -73,24 +73,24 @@ public class RestrictFileCommandTest {
                 };
             }
         });
-            
+
     }
-    
+
     @AfterEach
     public void tearDown() {
     }
-        
+
     @Test
     public void testRestrictUnpublishedFile() throws CommandException {
         file.setOwner(dataset);
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
         engine.submit(cmd);
-        
+
         assertTrue(file.isRestricted());
         assertTrue(file.getFileMetadata().isRestricted());
-        
+
     }
-    
+
     @Test
     public void testRestrictPublishedFile() throws Exception {
         dataset.setPublicationDate(new Timestamp(new Date().getTime()));
@@ -121,8 +121,8 @@ public class RestrictFileCommandTest {
         }
         assertTrue(fileFound);
     }
-    
-    
+
+
     @Test
     public void testRestrictNewFile() throws Exception {
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), restrict);
@@ -130,7 +130,7 @@ public class RestrictFileCommandTest {
         assertTrue(file.isRestricted());
         assertTrue(file.getFileMetadata().isRestricted());
     }
-    
+
     @Test
     public void testRestrictRestrictedFile() throws Exception {
         file.setOwner(dataset);
@@ -144,11 +144,11 @@ public class RestrictFileCommandTest {
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
-        
+
         assertEquals(expected, actual);
-        
+
     }
-    
+
     @Test
     public void testRestrictRestrictedNewFile() throws Exception {
         String expected = "File " + file.getDisplayName() + " is already restricted";
@@ -161,12 +161,12 @@ public class RestrictFileCommandTest {
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
-        
+
         assertEquals(expected, actual);
-        
+
     }
 
-    
+
     @Test
     public void testUnrestrictUnpublishedFile() throws CommandException {
         file.setOwner(dataset);
@@ -174,12 +174,12 @@ public class RestrictFileCommandTest {
         file.getFileMetadata().setRestricted(true);
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), unrestrict);
         engine.submit(cmd);
-        
+
         assertTrue(!file.isRestricted());
         assertTrue(!file.getFileMetadata().isRestricted());
-        
+
     }
-    
+
     @Test
     public void testUnrestrictPublishedFile() throws Exception {
         //see comments in testRestrictPublishedFile()
@@ -205,8 +205,8 @@ public class RestrictFileCommandTest {
         }
         assertTrue(fileFound);
     }
-    
-    
+
+
     @Test
     public void testUnrestrictNewFile() throws Exception {
         file.setRestricted(true);
@@ -216,7 +216,7 @@ public class RestrictFileCommandTest {
         assertTrue(!file.isRestricted());
         assertTrue(!file.getFileMetadata().isRestricted());
     }
-    
+
     @Test
     public void testUnrestrictUnrestrictedFile() throws Exception {
         file.setOwner(dataset);
@@ -228,14 +228,14 @@ public class RestrictFileCommandTest {
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
-        
+
         assertEquals(expected, actual);
-        
+
     }
-    
+
     @Test
     public void testUnrestrictUnrestrictedNewFile() throws Exception {
-        
+
         String expected = "File " + file.getDisplayName() + " is already unrestricted";
         String actual = null;
         RestrictFileCommand cmd = new RestrictFileCommand(file, makeRequest(), unrestrict);
@@ -244,9 +244,9 @@ public class RestrictFileCommandTest {
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
-        
+
         assertEquals(expected, actual);
-        
+
     }
 
     @Test
@@ -265,5 +265,5 @@ public class RestrictFileCommandTest {
         assertEquals(expected, actual);
         publicInstall = false;
     }
-    
+
 }

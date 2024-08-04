@@ -457,12 +457,12 @@ public class OpenAireExportUtil {
 
                                 if (DatasetFieldConstant.keywordTermURI.equals(next.getTypeName())) {
                                     keywordTermURI = next.getSinglePrimitive();
-                                }  
+                                }
 
                                 if (DatasetFieldConstant.keywordVocab.equals(next.getTypeName())) {
                                     subjectScheme = next.getSinglePrimitive();
                                 }
-                                
+
                                 if (DatasetFieldConstant.keywordVocabURI.equals(next.getTypeName())) {
                                     keywordVocabURI = next.getSinglePrimitive();
                                 }
@@ -1270,7 +1270,7 @@ public class OpenAireExportUtil {
         // write geoLocations
         geoLocations_check = writeOpenTag(xmlw, "geoLocations", geoLocations_check);
         writeGeolocationPlace(xmlw, geoLocationPlace, language);
-                
+
         // get DatasetFieldConstant.geographicBoundingBox
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             MetadataBlockDTO value = entry.getValue();
@@ -1303,14 +1303,14 @@ public class OpenAireExportUtil {
      */
     public static void writeGeolocationPlace(XMLStreamWriter xmlw, String geoLocationPlace, String language) throws XMLStreamException {
         boolean geoLocation_check = false;
-        
+
         if (StringUtils.isNotBlank(geoLocationPlace)) {
             geoLocation_check = writeOpenTag(xmlw, "geoLocation", geoLocation_check);
             writeFullElement(xmlw, null, "geoLocationPlace", null, geoLocationPlace, language);
         }
         writeEndTag(xmlw, geoLocation_check);
     }
-    
+
     /**
      * 18 GeoLocation (R)
      *

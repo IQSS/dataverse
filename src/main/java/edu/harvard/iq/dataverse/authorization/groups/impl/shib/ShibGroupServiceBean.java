@@ -71,6 +71,7 @@ public class ShibGroupServiceBean {
         actionLogSvc.log(alr);
         return merged;
     }
+
     public Set<ShibGroup> findFor(AuthenticatedUser authenticatedUser) {
         Set<ShibGroup> groupsForUser = new HashSet<>();
         String shibIdp = authenticatedUser.getShibIdentityProvider();

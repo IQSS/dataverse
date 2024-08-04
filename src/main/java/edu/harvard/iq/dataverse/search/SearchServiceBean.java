@@ -78,7 +78,7 @@ public class SearchServiceBean {
     SystemConfig systemConfig;
     @EJB
     SolrClientService solrClientService;
-    
+
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
      * access to Private Data for the correct user
@@ -102,7 +102,7 @@ public class SearchServiceBean {
     public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
         return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true, null, null);
     }
-    
+
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
      * access to Private Data for the correct user
@@ -128,14 +128,14 @@ public class SearchServiceBean {
      * @throws SearchException
      */
     public SolrQueryResponse search(
-            DataverseRequest dataverseRequest, 
-            List<Dataverse> dataverses, 
-            String query, 
-            List<String> filterQueries, 
-            String sortField, 
-            String sortOrder, 
-            int paginationStart, 
-            boolean onlyDatatRelatedToMe, 
+            DataverseRequest dataverseRequest,
+            List<Dataverse> dataverses,
+            String query,
+            List<String> filterQueries,
+            String sortField,
+            String sortOrder,
+            int paginationStart,
+            boolean onlyDatatRelatedToMe,
             int numResultsPerPage,
             boolean retrieveEntities,
             String geoPoint,
@@ -166,7 +166,7 @@ public class SearchServiceBean {
             List<Dataverse> dataverses,
             String query,
             List<String> filterQueries,
-            String sortField, 
+            String sortField,
             String sortOrder,
             int paginationStart,
             boolean onlyDatatRelatedToMe,
@@ -193,11 +193,11 @@ public class SearchServiceBean {
             // don't care, and it must cost some extra cycles -- L.A.
             solrQuery.setSort(new SortClause(sortField, sortOrder));
         }
-        
+
         solrQuery.setParam("fl", "*,score");
         solrQuery.setParam("qt", "/select");
         solrQuery.setParam("facet", "true");
-        
+
         /**
          * @todo: do we need facet.query?
          */
@@ -213,12 +213,11 @@ public class SearchServiceBean {
             // See https://solr.apache.org/guide/8_11/spatial-search.html#bbox
             solrQuery.addFilterQuery("{!bbox sfield=" + SearchFields.GEOLOCATION + "}");
         }
-        
+
         List<DataverseMetadataBlockFacet> metadataBlockFacets = new LinkedList<>();
 
         if (addFacets) {
 
-            
 
             // -----------------------------------
             // Facets to Retrieve
@@ -260,7 +259,7 @@ public class SearchServiceBean {
                     }
                 }
             }
-            
+
             solrQuery.addFacetField(SearchFields.FILE_TYPE);
             /**
             * @todo: hide the extra line this shows in the GUI... at least it's
@@ -345,7 +344,7 @@ public class SearchServiceBean {
             }
         }
 
-        
+
         /**
          * @todo: do sanity checking... throw error if negative
          */
@@ -387,15 +386,15 @@ public class SearchServiceBean {
         // Make the solr query
         // -----------------------------------
         QueryResponse queryResponse = null;
-        
+
         try {
             queryResponse = solrClientService.getSolrClient().query(solrQuery);
 
         } catch (RemoteSolrException ex) {
             String messageFromSolr = ex.getLocalizedMessage();
-            
+
             logger.fine("message from the solr exception: " + messageFromSolr + "; code: " + ex.code());
-            
+
             SolrQueryResponse exceptionSolrQueryResponse = new SolrQueryResponse(solrQuery);
 
             // We probably shouldn't be assuming that this is necessarily a 
@@ -412,7 +411,7 @@ public class SearchServiceBean {
                 // client code TBD (@todo)
                 exceptionSolrQueryResponse.setSolrTemporarilyUnavailable(true);
             }
-            
+
             String error = "Search Syntax Error: ";
             String stringToHide = "org.apache.solr.search.SyntaxError: ";
             if (messageFromSolr.startsWith(stringToHide)) {
@@ -441,9 +440,9 @@ public class SearchServiceBean {
         } catch (SolrServerException | IOException ex) {
             throw new SearchException("Internal Dataverse Search Engine Error", ex);
         }
-        
+
         int statusCode = queryResponse.getStatus();
-        
+
         logger.fine("status code of the query response: " + statusCode);
         logger.fine("_size from query response: " + queryResponse._size());
         logger.fine("qtime: " + queryResponse.getQTime());
@@ -503,11 +502,11 @@ public class SearchServiceBean {
             Long retentionEndDate = (Long) solrDocument.getFieldValue(SearchFields.RETENTION_END_DATE);
             //
             Boolean datasetValid = (Boolean) solrDocument.getFieldValue(SearchFields.DATASET_VALID);
-            
+
             List<String> matchedFields = new ArrayList<>();
-            
+
             SolrSearchResult solrSearchResult = new SolrSearchResult(query, name);
-            
+
             if (addHighlights) {
                 List<Highlight> highlights = new ArrayList<>();
                 Map<SolrField, Highlight> highlightsMap = new HashMap<>();
@@ -541,8 +540,8 @@ public class SearchServiceBean {
                 solrSearchResult.setHighlightsMap(highlightsMap);
                 solrSearchResult.setHighlightsAsMap(highlightsMap3);
             }
-            
-            
+
+
             /**
              * @todo put all this in the constructor?
              */
@@ -569,7 +568,7 @@ public class SearchServiceBean {
             solrSearchResult.setNameSort(nameSort);
             solrSearchResult.setReleaseOrCreateDate(release_or_create_date);
             solrSearchResult.setMatchedFields(matchedFields);
-            
+
             Map<String, String> parent = new HashMap<>();
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
             solrSearchResult.setDescriptionNoSnippet(description);
@@ -1001,9 +1000,9 @@ public class SearchServiceBean {
             user = GuestUser.get();
         }
 
-        AuthenticatedUser au = null; 
+        AuthenticatedUser au = null;
         Set<Group> groups;
-        
+
         if (user instanceof GuestUser) {
             // Yes, GuestUser may be part of one or more groups; such as IP Groups.
             groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
@@ -1014,7 +1013,7 @@ public class SearchServiceBean {
             }
 
             au = (AuthenticatedUser) user;
-            
+
             // ----------------------------------------------------
             // (3) Is this a Super User?
             // If so, they can see everything
@@ -1026,7 +1025,7 @@ public class SearchServiceBean {
 
                 return dangerZoneNoSolrJoin;
             }
-           
+
             // ----------------------------------------------------
             // (4) User is logged in AND onlyDatatRelatedToMe == true
             // Yes, give back everything -> the settings will be in
@@ -1041,14 +1040,14 @@ public class SearchServiceBean {
                     logger.fine("new post-4.2 behavior: MyData is using Solr permission docs");
                 }
             }
-            
+
             // ----------------------------------------------------
             // (5) Work with Authenticated User who is not a Superuser
             // ----------------------------------------------------
 
             groups = groupService.collectAncestors(groupService.groupsFor(dataverseRequest));
         }
-        
+
         if (FeatureFlags.AVOID_EXPENSIVE_SOLR_JOIN.enabled()) {
             /**
              * Instead of doing a super expensive join, we will rely on the 
@@ -1060,7 +1059,7 @@ public class SearchServiceBean {
              */
             StringBuilder sb = new StringBuilder();
             StringBuilder sbgroups = new StringBuilder();
-            
+
             // All users, guests and authenticated, should see all the 
             // documents marked as publicObject_b:true, at least:
             sb.append(SearchFields.PUBLIC_OBJECT + ":" + true);
@@ -1074,10 +1073,10 @@ public class SearchServiceBean {
             // An AuthenticatedUser should also be able to see all the content 
             // on which they have direct permissions:              
             if (au != null) {
-                groupCounter++; 
+                groupCounter++;
                 sbgroups.append(IndexServiceBean.getGroupPerUserPrefix() + au.getId());
             }
- 
+
             // In addition to the user referenced directly, we will also 
             // add joins on all the non-public groups that may exist for the
             // user:
@@ -1091,13 +1090,13 @@ public class SearchServiceBean {
                     sbgroups.append(IndexServiceBean.getGroupPrefix() + groupAlias);
                 }
             }
-            
+
             if (groupCounter > 1) {
                 // If there is more than one group, the parentheses must be added:
                 sbgroups.insert(0, "(");
                 sbgroups.append(")");
             }
-            
+
             if (groupCounter > 0) {
                 // If there are any groups for this user, an extra join must be
                 // added to the query, and the extra sub-query must be added to 
@@ -1107,12 +1106,12 @@ public class SearchServiceBean {
                 solrQuery.setParam("q1", SearchFields.DISCOVERABLE_BY + ":" + sbgroups.toString());
                 logger.info("The sub-query q1 set to " + SearchFields.DISCOVERABLE_BY + ":" + sbgroups.toString());
             }
-            
+
             String ret = sb.toString();
             logger.fine("Returning experimental query: " + ret);
             return ret;
         }
-        
+
         // END OF EXPERIMENTAL OPTIMIZATION 
         
         // Old, un-optimized way of handling permissions.
@@ -1123,9 +1122,9 @@ public class SearchServiceBean {
         // (1) Is this a GuestUser?
         // ----------------------------------------------------
         if (user instanceof GuestUser) {
-            
+
             StringBuilder sb = new StringBuilder();
-            
+
             String groupsFromProviders = "";
             for (Group group : groups) {
                 logger.fine("found group " + group.getIdentifier() + " with alias " + group.getAlias());

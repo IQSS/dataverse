@@ -37,8 +37,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
      */
     public enum FieldType {
         TEXT, TEXTBOX, DATE, EMAIL, URL, FLOAT, INT, NONE
-    };    
-    
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -84,47 +84,47 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
      * A watermark to be displayed in the UI.
      */
     private String watermark;
-    
+
     private String validationFormat;
 
     @OneToMany(mappedBy = "datasetFieldType")
     private Set<DataverseFacet> dataverseFacets;
-    
+
     @OneToMany(mappedBy = "datasetFieldType")
     private Set<DataverseFieldTypeInputLevel> dataverseFieldTypeInputLevels;
-    
+
     @Transient
     private String searchValue;
-    
+
     @Transient
     private List<String> listValues;
 
     @Transient
     private Map<String, ControlledVocabularyValue> controlledVocabularyValuesByStrValue;
-    
-    @Transient 
+
+    @Transient
     private boolean requiredDV;
-    
+
     public void setRequiredDV(boolean requiredDV) {
         this.requiredDV = requiredDV;
     }
-    
+
     public boolean isRequiredDV() {
         return this.requiredDV;
     }
-    
-    @Transient 
+
+    @Transient
     private boolean include;
-    
+
     public void setInclude(boolean include) {
         this.include = include;
     }
-    
+
     public boolean isInclude() {
         return this.include;
     }
-    
-    @Transient 
+
+    @Transient
     private List<SelectItem> optionSelectItems;
 
     public List<SelectItem> getOptionSelectItems() {
@@ -134,11 +134,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setOptionSelectItems(List<SelectItem> optionSelectItems) {
         this.optionSelectItems = optionSelectItems;
     }
-    
-    
-    
 
-    
+
     public DatasetFieldType() {}
 
     //For use in tests
@@ -150,7 +147,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.allowMultiples = allowMultiples;
         childDatasetFieldTypes = new LinkedList<>();
     }
-    
+
     private int displayOrder;
     private String displayFormat;
 
@@ -169,14 +166,14 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setDisplayFormat(String displayFormat) {
         this.displayFormat = displayFormat;
     }
-    
+
     public Boolean isSanitizeHtml() {
         if (this.fieldType.equals(FieldType.URL)) {
             return true;
         }
         return this.fieldType.equals(FieldType.TEXTBOX);
     }
-    
+
     public Boolean isEscapeOutputText() {
         if (this.fieldType.equals(FieldType.URL)) {
             return false;
@@ -186,7 +183,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         }
         return !(this.fieldType.equals(FieldType.TEXT) && this.displayFormat != null && this.displayFormat.contains("<a"));
     }
-    
+
     public String getName() {
         return name;
     }
@@ -210,7 +207,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
     public boolean isAllowControlledVocabulary() {
         return allowControlledVocabulary;
     }
@@ -240,7 +237,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setFieldType(FieldType fieldType) {
         this.fieldType = fieldType;
     }
-    
+
     public String getWatermark() {
         return watermark;
     }
@@ -260,7 +257,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setFacetable(boolean facetable) {
         this.facetable = facetable;
     }
-    
+
     public String getValidationFormat() {
         return validationFormat;
     }
@@ -282,7 +279,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setDisplayOnCreate(boolean displayOnCreate) {
         this.displayOnCreate = displayOnCreate;
     }
-    
+
     public boolean isControlledVocabulary() {
         return allowControlledVocabulary;
     }
@@ -310,7 +307,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public String getUri() {
     	return uri;
     }
-    
+
     public JsonLDTerm getJsonLDTerm() {
         if (uri != null) {
         return new JsonLDTerm(name, uri);
@@ -322,7 +319,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setUri(String uri) {
     	this.uri = uri;
     }
-    
+
     /**
      * The list of controlled vocabulary terms that may be used as values for
      * fields of this field type.
@@ -338,13 +335,13 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setControlledVocabularyValues(Collection<ControlledVocabularyValue> controlledVocabularyValues) {
         this.controlledVocabularyValues = controlledVocabularyValues;
     }
-    
+
     public ControlledVocabularyValue getControlledVocabularyValue(String strValue) {
         if (!isControlledVocabulary()) {
             throw new IllegalStateException("getControlledVocabularyValue() called on a non-controlled vocabulary type.");
         }
         if (controlledVocabularyValuesByStrValue == null) {
-            controlledVocabularyValuesByStrValue = new TreeMap<>();               
+            controlledVocabularyValuesByStrValue = new TreeMap<>();
             for (ControlledVocabularyValue cvv : getControlledVocabularyValues()) {
                 controlledVocabularyValuesByStrValue.put(cvv.getStrValue(), cvv);
             }
@@ -388,7 +385,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setDataverseFacets(Set<DataverseFacet> dataverseFacets) {
         this.dataverseFacets = dataverseFacets;
     }
-    
+
     public Set<DataverseFieldTypeInputLevel> getDataverseFieldTypeInputLevels() {
         return dataverseFieldTypeInputLevels;
     }
@@ -439,23 +436,23 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public boolean isPrimitive() {
         return this.childDatasetFieldTypes.isEmpty();
     }
-    
+
     public boolean isCompound() {
-         return !this.childDatasetFieldTypes.isEmpty();       
+         return !this.childDatasetFieldTypes.isEmpty();
     }
-    
+
     public boolean isChild() {
-        return this.parentDatasetFieldType != null;        
-    }    
-    
-    public boolean isSubField() {
-        return this.parentDatasetFieldType != null;        
+        return this.parentDatasetFieldType != null;
     }
-    
+
+    public boolean isSubField() {
+        return this.parentDatasetFieldType != null;
+    }
+
     public boolean isHasChildren() {
         return !this.childDatasetFieldTypes.isEmpty();
     }
-    
+
     public boolean isHasRequiredChildren() {
         if (this.childDatasetFieldTypes.isEmpty()) {
             return false;
@@ -519,7 +516,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public int compareTo(DatasetFieldType o) {
         return Integer.compare(this.getDisplayOrder(), (o.getDisplayOrder()));
     }
-    
+
     public String getDisplayName() {
         if (isHasParent() && !parentDatasetFieldType.getTitle().equals(title)) {
         return parentDatasetFieldType.getLocaleTitle() + " " + getLocaleTitle();
@@ -549,7 +546,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
                     parentAllowsMultiplesBoolean = parent.isAllowMultiples();
                 }
             }
-            
+
             boolean makeSolrFieldMultivalued;
             // http://stackoverflow.com/questions/5800762/what-is-the-use-of-multivalued-field-type-in-solr
             if (allowMultiples || parentAllowsMultiplesBoolean || isControlledVocabulary()) {
@@ -612,7 +609,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public String getTmpNullFieldTypeIdentifier() {
         return "NullFieldType_s";
     }
-    
+
     @Override
     public String toString() {
         return "[DatasetFieldType name:" + getName() + " id:" + getId() + "]";

@@ -40,14 +40,14 @@ public class ClientHarvestRun implements Serializable {
         this.id = id;
     }
 
-    public enum RunResultType { SUCCESS, FAILURE, INPROGRESS, INTERRUPTED };
-    
+    public enum RunResultType { SUCCESS, FAILURE, INPROGRESS, INTERRUPTED }
+
     private static String RESULT_LABEL_SUCCESS = "SUCCESS";
     private static String RESULT_LABEL_FAILURE = "FAILED";
     private static String RESULT_LABEL_INPROGRESS = "IN PROGRESS";
     private static String RESULT_DELETE_IN_PROGRESS = "DELETE IN PROGRESS";
     private static String RESULT_LABEL_INTERRUPTED = "INTERRUPTED";
-    
+
     @ManyToOne
     @JoinColumn(nullable = false)
     private HarvestingClient harvestingClient;
@@ -60,17 +60,17 @@ public class ClientHarvestRun implements Serializable {
         this.harvestingClient = harvestingClient;
     }
 
-    private RunResultType harvestResult; 
+    private RunResultType harvestResult;
 
     public RunResultType getResult() {
         return harvestResult;
     }
-    
+
     public String getResultLabel() {
         if (harvestingClient != null && harvestingClient.isDeleteInProgress()) {
             return RESULT_DELETE_IN_PROGRESS;
         }
-        
+
         if (isSuccess()) {
             return RESULT_LABEL_SUCCESS;
         } else if (isFailed()) {
@@ -82,14 +82,14 @@ public class ClientHarvestRun implements Serializable {
         }
         return null;
     }
-    
+
     public String getDetailedResultLabel() {
         if (harvestingClient != null && harvestingClient.isDeleteInProgress()) {
             return RESULT_DELETE_IN_PROGRESS;
         }
         if (isSuccess() || isInterrupted()) {
             String resultLabel = getResultLabel();
-            
+
             resultLabel = resultLabel.concat("; " + harvestedDatasetCount + " harvested, ");
             resultLabel = resultLabel.concat(deletedDatasetCount + " deleted, ");
             resultLabel = resultLabel.concat(failedDatasetCount + " failed.");
@@ -121,12 +121,12 @@ public class ClientHarvestRun implements Serializable {
     public void setFailed() {
         harvestResult = RunResultType.FAILURE;
     }
-    
+
     public boolean isInProgress() {
         return RunResultType.INPROGRESS == harvestResult ||
                 (harvestResult == null && startTime != null && finishTime == null);
     }
-    
+
     public void setInProgress() {
         harvestResult = RunResultType.INPROGRESS;
     }
@@ -134,11 +134,11 @@ public class ClientHarvestRun implements Serializable {
     public boolean isInterrupted() {
         return RunResultType.INTERRUPTED == harvestResult;
     }
-    
+
     public void setInterrupted() {
         harvestResult = RunResultType.INTERRUPTED;
     }
-    
+
     // Time of this harvest attempt:
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date startTime;

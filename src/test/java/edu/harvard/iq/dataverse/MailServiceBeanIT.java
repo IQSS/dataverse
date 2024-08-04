@@ -45,26 +45,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpHost", varArgs = "host")
 @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpPort", varArgs = "port")
 class MailServiceBeanIT {
-    
+
     private static final Integer PORT_SMTP = 1025;
     private static final Integer PORT_HTTP = 1080;
-    
+
     static MailServiceBean mailer;
     static Session session;
     static SettingsServiceBean settingsServiceBean = Mockito.mock(SettingsServiceBean.class);
     static DataverseServiceBean dataverseServiceBean = Mockito.mock(DataverseServiceBean.class);
-    
+
     @BeforeAll
     static void setUp() {
         // Setup mocks behavior, inject as deps
         Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.SystemEmail)).thenReturn("noreply@example.org");
         BrandingUtil.injectServices(dataverseServiceBean, settingsServiceBean);
-        
+
         // Must happen here, as we need Testcontainers to start the container first...
         session = new MailSessionProducer().getSession();
         mailer = new MailServiceBean(session, settingsServiceBean);
     }
-    
+
     /*
         Cannot use maildev/maildev here. Also MailCatcher doesn't provide official support for SMTPUTF8.
         Also maildev does advertise the feature and everything is fine over the wire, both JSON API and Web UI
@@ -76,21 +76,21 @@ class MailServiceBeanIT {
     static GenericContainer<?> maildev = new GenericContainer<>("dockage/mailcatcher")
         .withExposedPorts(PORT_HTTP, PORT_SMTP)
         .waitingFor(Wait.forHttp("/"));
-    
+
     static String tcSmtpHost() {
         return maildev.getHost();
     }
-    
+
     static String tcSmtpPort() {
         return maildev.getMappedPort(PORT_SMTP).toString();
     }
-    
+
     @BeforeAll
     static void setup() {
         RestAssured.baseURI = "http://" + tcSmtpHost();
         RestAssured.port = maildev.getMappedPort(PORT_HTTP);
     }
-    
+
     static List<String> mailTo() {
         return List.of(
             "pete@mailinator.com", // one example using ASCII only, make sure it works
@@ -103,7 +103,7 @@ class MailServiceBeanIT {
             "lótus.gonçalves@example.cóm"
         );
     }
-    
+
     @ParameterizedTest
     @MethodSource("mailTo")
     @JvmSetting(key = JvmSettings.MAIL_MTA_SUPPORT_UTF8, value = "true")
@@ -111,14 +111,14 @@ class MailServiceBeanIT {
         given().when().get("/messages")
             .then()
             .statusCode(200);
-        
+
         // given
         Session session = new MailSessionProducer().getSession();
         MailServiceBean mailer = new MailServiceBean(session, settingsServiceBean);
-        
+
         // when
         boolean sent = mailer.sendSystemEmail(mailAddress, "Test", "Test üüü", false);
-        
+
         // then
         assertTrue(sent);
         //RestAssured.get("/messages").body().prettyPrint();
@@ -127,7 +127,7 @@ class MailServiceBeanIT {
             .statusCode(200)
             .body("last().recipients.first()", equalTo("<" + mailAddress + ">"));
     }
-    
+
     @Test
     @JvmSetting(key = JvmSettings.SYSTEM_EMAIL, value = "test@example.org")
     @JvmSetting(key = JvmSettings.MAIL_MTA_SUPPORT_UTF8, value = "false")
@@ -136,8 +136,8 @@ class MailServiceBeanIT {
         Session session = new MailSessionProducer().getSession();
         MailServiceBean mailer = new MailServiceBean(session, settingsServiceBean);
         String to = "michélle.pereboom@example.com";
-        
+
         assertFalse(mailer.sendSystemEmail(to, "Test", "Test", false));
     }
-    
+
 }

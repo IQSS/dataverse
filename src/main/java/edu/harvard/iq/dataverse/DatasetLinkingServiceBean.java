@@ -27,7 +27,6 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
 
 
     public List<Dataset> findLinkedDatasets(Long dataverseId) {
@@ -49,7 +48,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
         }
         return retList;
     }
-    
+
     public void save(DatasetLinkingDataverse datasetLinkingDataverse) {
         if (datasetLinkingDataverse.getId() == null) {
             em.persist(datasetLinkingDataverse);
@@ -57,22 +56,22 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
             em.merge(datasetLinkingDataverse);
         }
     }
-    
+
     public DatasetLinkingDataverse findDatasetLinkingDataverse(Long datasetId, Long linkingDataverseId) {
         try {
             return em.createNamedQuery("DatasetLinkingDataverse.findByDatasetIdAndLinkingDataverseId", DatasetLinkingDataverse.class)
                 .setParameter("datasetId", datasetId)
                 .setParameter("linkingDataverseId", linkingDataverseId)
-                .getSingleResult();            
+                .getSingleResult();
         } catch (NoResultException e) {
-            logger.fine("no datasetLinkingDataverse found for datasetId " + datasetId + " and linkingDataverseId " + linkingDataverseId);        
+            logger.fine("no datasetLinkingDataverse found for datasetId " + datasetId + " and linkingDataverseId " + linkingDataverseId);
             return null;
         }
     }
-    
-    
+
+
     public boolean alreadyLinked(Dataverse dataverse, Dataset dataset) {
-        return findDatasetLinkingDataverse(dataset.getId(), dataverse.getId()) != null;        
+        return findDatasetLinkingDataverse(dataset.getId(), dataverse.getId()) != null;
     }
 
 }

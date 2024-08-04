@@ -17,7 +17,7 @@ public class ProvEntityFileDataConverter implements Converter {
 
     //@Inject
     ProvPopupFragmentBean provBean = CDI.current().select(ProvPopupFragmentBean.class).get();
-    
+
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
         return provBean.getEntityByEntityName(value);
@@ -30,6 +30,6 @@ public class ProvEntityFileDataConverter implements Converter {
         } else {
             return ((ProvEntityFileData) value).getEntityName();
         }
-        
+
     }
 }

@@ -55,7 +55,6 @@ import java.util.Set;
 import java.util.logging.Level;
 
 
-
 /**
  * 4.0 implementation of the Data Access "optional service" that offers 
  * access to "subsettable" (tabular) data files in alternative formats. 
@@ -67,31 +66,31 @@ import java.util.logging.Level;
  */
 public class DataConverter {
     private static Logger logger = Logger.getLogger(DataConverter.class.getPackage().getName());
-    
+
     public DataConverter() {
     }
-    
+
     public static String FILE_TYPE_TAB = "tab";
     public static String FILE_TYPE_RDATA = "RData";
-    
+
     public static String SERVICE_REQUEST_CONVERT = "convert";
-    
-    
+
+
     public static StorageIO<DataFile> performFormatConversion(DataFile file, StorageIO<DataFile> storageIO, String formatRequested, String formatType) {
         if (!file.isTabularData()) {
             return null;
         }
-        
+
         // if the format requested is "D00", and it's already a TAB file,
         // we don't need to do anything:
         if (formatRequested.equals(FILE_TYPE_TAB) && file.getContentType().equals("text/tab-separated-values")) {
 
             return storageIO;
         }
-        
+
         InputStream convertedFileStream = null;
         long convertedFileSize = 0;
-        
+
         // We may already have a cached copy of this
         // format:
         try {
@@ -187,7 +186,7 @@ public class DataConverter {
     private static File downloadFromByteChannel(ReadableByteChannel tabFileChannel, long size) {
         try {
             logger.fine("opening datafFileIO for the source tabular file...");
-            
+
             File tabFile = File.createTempFile("tempTabFile", ".tmp");
             try (FileChannel tempFileChannel = new FileOutputStream(tabFile).getChannel();) {
               tempFileChannel.transferFrom(tabFileChannel, 0, size);
@@ -195,7 +194,7 @@ public class DataConverter {
             }
         } catch (IOException ioex) {
             logger.warning("caught IOException trying to store tabular file as a temp file.");
-        } 
+        }
         return null;
     }
 
@@ -227,7 +226,7 @@ public class DataConverter {
         File formatConvertedFile;
         // create the service instance
         RemoteDataFrameService dfs = new RemoteDataFrameService();
-        
+
         if ("RData".equals(formatRequested)) {
             String origFormat = file.getOriginalFileFormat();
             Map<String, String> resultInfo;
@@ -239,7 +238,7 @@ public class DataConverter {
                 } else if (origFormat.contains("por")) {
                     origFormat = "por";
                 }
-                    
+
                 try {
                     StorageIO<DataFile> storageIO = file.getStorageIO();
                     long size = storageIO.getAuxObjectSize("orig");
@@ -251,7 +250,7 @@ public class DataConverter {
                     ex.printStackTrace();
                     return null;
                 }
-                
+
             } else {
                 List<DataVariable> dataVariables = file.getDataTable().getDataVariables();
                 Map<String, Map<String, String>> vls = getValueTableForRequestedVariables(dataVariables);
@@ -285,9 +284,9 @@ public class DataConverter {
             formatConvertedFile = dfs.runDataPreprocessing(file);
         } else {
             logger.warning("Unsupported file format requested: " + formatRequested);
-            return null; 
+            return null;
         }
-            
+
 
         if (formatConvertedFile == null || !formatConvertedFile.exists()) {
             logger.warning("Format-converted file was not properly created.");
@@ -312,7 +311,7 @@ public class DataConverter {
         }
         return allVarLabels;
     }
-        
+
     private static String generateAltFileName(String formatRequested, String xfileId) {
         String altFileName = xfileId;
 
@@ -326,5 +325,5 @@ public class DataConverter {
 
         return altFileName;
     }
-    
+
 }

@@ -36,7 +36,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.QueryParam;
 
 
-
 /**
  *
  * @author Leonid Andreev
@@ -57,9 +56,9 @@ import jakarta.ws.rs.QueryParam;
 @Path("ingest")
 public class TestIngest {
     private static final Logger logger = Logger.getLogger(TestIngest.class.getCanonicalName());
-    
-    @EJB 
-    DatasetServiceBean datasetService; 
+
+    @EJB
+    DatasetServiceBean datasetService;
     @EJB
     IngestServiceBean ingestService;
 
@@ -68,44 +67,44 @@ public class TestIngest {
     @Path("test/file")
     @GET
     @Produces({"text/plain"})
-    public String datafile(@QueryParam("fileName") String fileName, @QueryParam("fileType") String fileType, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
+    public String datafile(@QueryParam("fileName") String fileName, @QueryParam("fileType") String fileType, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         String output = "";
 
         if (StringUtil.isEmpty(fileName) || StringUtil.isEmpty(fileType)) {
             output = output.concat("Usage: /api/ingest/test/file?fileName=PATH&fileType=TYPE");
-            return output; 
+            return output;
         }
-        
-        BufferedInputStream fileInputStream = null; 
-        
-        
+
+        BufferedInputStream fileInputStream = null;
+
+
         try {
             fileInputStream = new BufferedInputStream(new FileInputStream(new File(fileName)));
         } catch (FileNotFoundException notfoundEx) {
-            fileInputStream = null; 
+            fileInputStream = null;
         }
-        
+
         if (fileInputStream == null) {
             output = output.concat("Could not open file " + fileName + ".");
             return output;
         }
-        
+
         TabularDataFileReader ingestPlugin = ingestService.getTabDataReaderByMimeType(fileType);
 
         if (ingestPlugin == null) {
             output = output.concat("Could not locate an ingest plugin for type " + fileType + ".");
             return output;
         }
-        
+
         TabularDataIngest tabDataIngest = null;
-        
+
         try {
             tabDataIngest = ingestPlugin.read(fileInputStream, false, null);
         } catch (IOException ingestEx) {
             output = output.concat("Caught an exception trying to ingest file " + fileName + ": " + ingestEx.getLocalizedMessage());
             return output;
         }
-        
+
         try {
             if (tabDataIngest != null) {
                 File tabFile = tabDataIngest.getTabDelimitedFile();
@@ -115,38 +114,38 @@ public class TestIngest {
                         && tabFile.exists()) {
 
                     String tabFilename = FileUtil.replaceExtension(fileName, "tab");
-                    
+
                     java.nio.file.Files.copy(Paths.get(tabFile.getAbsolutePath()), Paths.get(tabFilename), StandardCopyOption.REPLACE_EXISTING);
-                    
+
                     DataTable dataTable = tabDataIngest.getDataTable();
-                    
+
                     DataFile dataFile = new DataFile();
                     dataFile.setStorageIdentifier(tabFilename);
                     Dataset dataset = new Dataset();
                     dataFile.setOwner(dataset);
-                    
+
                     FileMetadata fileMetadata = new FileMetadata();
                     fileMetadata.setLabel(fileName);
-                    
+
                     dataFile.setDataTable(dataTable);
                     dataTable.setDataFile(dataFile);
-                    
+
                     fileMetadata.setDataFile(dataFile);
                     dataFile.getFileMetadatas().add(fileMetadata);
-                    
+
                     output = output.concat("NVARS: " + dataTable.getVarQuantity() + "\n");
                     output = output.concat("NOBS: " + dataTable.getCaseQuantity() + "\n");
-                    
+
                     try {
                         ingestService.produceSummaryStatistics(dataFile, tabFile);
                         output = output.concat("UNF: " + dataTable.getUnf() + "\n");
                     } catch (IOException ioex) {
                         output = output.concat("UNF: failed to calculate\n" + "\n");
                     }
-                    
+
                     for (int i = 0; i < dataTable.getVarQuantity(); i++) {
                         String vartype = "";
-                        
+
                         //if ("continuous".equals(dataTable.getDataVariables().get(i).getVariableIntervalType().getName())) {
                         if (dataTable.getDataVariables().get(i).isIntervalContinuous()) {
                             vartype = "numeric-continuous";
@@ -164,15 +163,15 @@ public class TestIngest {
                                 }
                             }
                         }
-                        
+
                         output = output.concat("VAR" + i + " ");
                         output = output.concat(dataTable.getDataVariables().get(i).getName() + " ");
                         output = output.concat(vartype + " ");
                         output = output.concat(dataTable.getDataVariables().get(i).getUnf());
-                        output = output.concat("\n"); 
-                        
+                        output = output.concat("\n");
+
                     }
-                
+
                 } else {
                     output = output.concat("Ingest failed to produce tab file or data table for file " + fileName + ".");
                     return output;
@@ -185,9 +184,9 @@ public class TestIngest {
             output = output.concat("Caught an exception trying to save ingested data for file " + fileName + ".");
             return output;
         }
-        
+
         return output;
     }
-    
-    
+
+
 }

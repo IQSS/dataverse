@@ -64,7 +64,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         long moveDvStart = System.currentTimeMillis();
         logger.info("Starting dataverse move...");
         boolean removeGuestbook = false, removeTemplate = false, removeFeatDv = false, removeMetadataBlock = false, removeLinkDv = false, removeLinkDs = false;
-        
+
         // first check if user is a superuser
         if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException(BundleUtil.getStringFromBundle("command.exception.only.superusers", Arrays.asList(this.toString())),
@@ -85,7 +85,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         if (moved.isReleased() && !destination.isReleased()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.failure.not.published", Arrays.asList(destination.getDisplayName())), this);
         }
-        
+
         logger.info("Getting dataset children of dataverse...");
         List<Dataset> datasetChildren = new ArrayList<>();
         List<Long> datasetChildrenIds = ctxt.dataverses().findAllDataverseDatasetChildren(moved.getId());
@@ -106,7 +106,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         if (destination.getOwners() != null) {
             ownersToCheck.addAll(destination.getOwners());
         }
-        
+
         // generate list of destination guestbooks to check against
         List<Guestbook> destinationGbs = null;
         if (moved.getGuestbooks() != null) {
@@ -135,7 +135,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
+
         // generate a list of templates in destination to check against
         List<Template> destinationTemplates = null;
         if (moved.getTemplates() != null) {
@@ -158,9 +158,9 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         if (moved.getMetadataBlocks() != null) {
             inheritMbValue = !destination.isMetadataBlockRoot();
         }
-                
+
         List<DataverseLinkingDataverse> linkingDataverses = new ArrayList();
-    
+
         logger.info("Checking templates and metadata blocks");
         for (Dataverse dv : dataverseChildren) {
             // if the dataverses default TEMPLATE is not contained in the 
@@ -204,13 +204,13 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                     dv.setMetadataBlocks(metadataBlocksToKeep);
                 }
             }
-            
+
             // get list of dataverses each child links to
             if (dv.getDataverseLinkingDataverses() != null) {
                 linkingDataverses.addAll(dv.getDataverseLinkingDataverses());
             }
         }
-        
+
         List<DatasetLinkingDataverse> linkingDatasets = new ArrayList();
         logger.info("Checking guestbooks...");
         for (Dataset ds : datasetChildren) {
@@ -224,13 +224,13 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 }
                 ds.setGuestbook(null);
             }
-            
+
             // get list of dataverses each child dataset links to
             if (ds.getDatasetLinkingDataverses() != null) {
                 linkingDatasets.addAll(ds.getDatasetLinkingDataverses());
             }
         }
-        
+
         // if a dataverse links to its destination dataverse or any of 
         // its destinations owners, remove the link
         logger.info("Checking linked dataverses....");
@@ -247,7 +247,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
+
         // if a dataset links to its destination dataverse or any of 
         // its destinations owners, remove the link
         logger.info("Checking linked datasets...");
@@ -272,32 +272,32 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
             }
             if (removeTemplate) {
                 errorString.append(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.error.template")).append(" ");
-            } 
-            if (removeFeatDv) {               
+            }
+            if (removeFeatDv) {
                errorString.append(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.error.featured")).append(" ");
             }
-            if (removeMetadataBlock) {                
+            if (removeMetadataBlock) {
                errorString.append(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.error.metadataBlock")).append(" ");
             }
-            if (removeLinkDv) {                
+            if (removeLinkDv) {
                 errorString.append(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.error.dataverseLink")).append(" ");
             }
             if (removeLinkDs) {
                 errorString.append(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.error.datasetLink")).append(" ");
-            }            
+            }
             errorString.append(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.error.forceMove")).append(" ");
             throw new IllegalCommandException(errorString.toString(), this);
         }
         // OK, move
         moved.setOwner(destination);
         ctxt.dataverses().save(moved);
-        
+
         long moveDvEnd = System.currentTimeMillis();
         logger.info("Dataverse move took " + (moveDvEnd - moveDvStart) + " milliseconds");
-        
+
 	//TODO: indexing should be moved to an on Success method
         ctxt.indexBatch().indexDataverseRecursively(moved);
-        
+
         //REindex datasets linked to moved dv
         if (moved.getDatasetLinkingDataverses() != null && !moved.getDatasetLinkingDataverses().isEmpty()) {
             for (DatasetLinkingDataverse dld : moved.getDatasetLinkingDataverses()) {

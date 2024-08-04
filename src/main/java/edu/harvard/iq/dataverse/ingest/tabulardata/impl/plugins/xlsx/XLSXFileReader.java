@@ -68,9 +68,9 @@ public class XLSXFileReader extends TabularDataFileReader {
     }
 
     private void init() throws IOException {
-        
+
     }
-    
+
     /**
      * Reads an XLSX file, converts it into a dataverse DataTable.
      *
@@ -84,7 +84,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         // @todo: implement handling of "saveWithVariableHeader" option
         
         init();
-        
+
         TabularDataIngest ingesteddata = new TabularDataIngest();
         DataTable dataTable = new DataTable();
 
@@ -97,7 +97,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         }
 
         if (dataTable.getCaseQuantity() == null || dataTable.getCaseQuantity().intValue() < 1) {
-            String errorMessage; 
+            String errorMessage;
             if (dataTable.getVarQuantity() == null || dataTable.getVarQuantity().intValue() < 1) {
                 errorMessage = BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.norows");
             } else {
@@ -105,14 +105,14 @@ public class XLSXFileReader extends TabularDataFileReader {
             }
             throw new IOException(errorMessage);
         }
-        
+
         // 2nd pass:
         
         File tabFileDestination = File.createTempFile("data-", ".tab");
         PrintWriter finalWriter = new PrintWriter(tabFileDestination.getAbsolutePath());
-        
+
         BufferedReader secondPassReader = new BufferedReader(new FileReader(firstPassTempFile));
-        
+
         int varQnty = dataTable.getVarQuantity().intValue();
         int lineCounter = 0;
         String line = null;
@@ -121,9 +121,9 @@ public class XLSXFileReader extends TabularDataFileReader {
 
         // add the variable header here, if needed
         if (storeWithVariableHeader) {
-            finalWriter.println(generateVariableHeader(dataTable.getDataVariables())); 
+            finalWriter.println(generateVariableHeader(dataTable.getDataVariables()));
         }
-        
+
         while ((line = secondPassReader.readLine()) != null) {
             // chop the line:
             line = line.replaceFirst("[\r\n]*$", "");
@@ -136,7 +136,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             if (valueTokens.length != varQnty) {
                 throw new IOException(BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.mismatch", Arrays.asList(Integer.toString(lineCounter + 1), Integer.toString(varQnty), Integer.toString(valueTokens.length))));
             }
-        
+
             for (int i = 0; i < varQnty; i++) {
                 if (dataTable.getDataVariables().get(i).isTypeNumeric()) {
                     if (valueTokens[i] == null || valueTokens[i].equals(".") || valueTokens[i].equals("") || valueTokens[i].equalsIgnoreCase("NA")) {
@@ -164,7 +164,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                         } catch (Exception ex) {
                             throw new IOException("Failed to parse a value recognized as numeric in the first pass! column: " + i + ", value: " + valueTokens[i]);
                         }
-                    }    
+                    }
                 } else {
                     // Treat as a String:
                     // Strings are stored in tab files quoted;                                                                                   
@@ -189,25 +189,25 @@ public class XLSXFileReader extends TabularDataFileReader {
                     }
                 }
             }
-            
+
             finalWriter.println(StringUtils.join(caseRow, "\t"));
             lineCounter++;
 
-            
+
         }
 
         secondPassReader.close();
         finalWriter.close();
-        
+
         if (dataTable.getCaseQuantity().intValue() != lineCounter) {
             throw new IOException(BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.linecount"));
         }
-        
+
         dataTable.setUnf("UNF:6:NOTCALCULATED");
-        
+
         ingesteddata.setTabDelimitedFile(tabFileDestination);
         ingesteddata.setDataTable(dataTable);
-        
+
         dbglog.fine("Produced temporary file " + ingesteddata.getTabDelimitedFile().getAbsolutePath());
         dbglog.fine("Found " + dataTable.getVarQuantity() + " variables, " + dataTable.getCaseQuantity() + " observations.");
         String varNames = null;
@@ -220,7 +220,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         }
         dbglog.fine("Variable names: " + varNames);
 
-        
+
         return ingesteddata;
 
     }
@@ -245,7 +245,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         parser.parse(sheetSource);
         sheet1.close();
     }
-    
+
     public XMLReader fetchSheetParser(SharedStrings sst, DataTable dataTable, PrintWriter tempOut) throws SAXException {
         // An attempt to use org.apache.xerces.parsers.SAXParser resulted 
         // in some weird conflict in the app; the default XMLReader obtained 
@@ -277,10 +277,10 @@ public class XLSXFileReader extends TabularDataFileReader {
         //private List<String> variableNames;
         private String[] variableNames;
         private int caseCount;
-        private int columnCount; 
+        private int columnCount;
         boolean[] isNumericVariable;
-        String[] dataRow; 
-        PrintWriter tempOut; 
+        String[] dataRow;
+        PrintWriter tempOut;
 
         private SheetHandler(SharedStrings sst) {
             this(sst, null, null);
@@ -289,31 +289,31 @@ public class XLSXFileReader extends TabularDataFileReader {
         private SheetHandler(SharedStrings sst, DataTable dataTable, PrintWriter tempOut) {
             this.sst = sst;
             this.dataTable = dataTable;
-            this.tempOut = tempOut; 
+            this.tempOut = tempOut;
             variableHeader = true;
             //variableNames = new ArrayList<String>(); 
-            caseCount = 0; 
-            columnCount = 0; 
+            caseCount = 0;
+            columnCount = 0;
         }
-        
+
         public void startElement(String uri, String localName, String name,
                 Attributes attributes) throws SAXException {
             dbglog.fine("entering startElement (" + name + ")");
 
             // first raw encountered: 
             if (variableHeader && name.equals("row")) {
-                Long varCount = null; 
+                Long varCount = null;
                 String rAttribute = attributes.getValue("t");
                 if (rAttribute == null) {
                     dbglog.warning("Null r attribute in the first row element!");
                 } else if (!rAttribute.equals("1")) {
                     dbglog.warning("Attribute r of the first row element is not \"1\"!");
                 }
-                
+
                 String spansAttribute = attributes.getValue("spans");
                 if (spansAttribute == null) {
                     dbglog.warning("Null spans attribute in the first row element!");
-                } 
+                }
                 int colIndex = spansAttribute.indexOf(':');
                 if (colIndex < 1 || (colIndex == spansAttribute.length() - 1)) {
                     dbglog.warning("Invalid spans attribute in the first row element: " + spansAttribute + "!");
@@ -321,38 +321,38 @@ public class XLSXFileReader extends TabularDataFileReader {
                 try {
                     varCount = new Long(spansAttribute.substring(colIndex + 1, spansAttribute.length()));
                 } catch (Exception ex) {
-                    varCount = null; 
+                    varCount = null;
                 }
-                
+
                 if (varCount == null || varCount.intValue() < 1) {
                     throw new SAXException("Could not establish column count, or invalid column count encountered.");
                 }
-                
+
                 dbglog.info("Established variable (column) count: " + varCount);
-                
+
                 dataTable.setVarQuantity(varCount);
                 variableNames = new String[varCount.intValue()];
             }
-            
+
             // c => cell
             if (name.equals("c")) {
                 // try and establish the location index (column number) of this
                 // cell, from the "r" attribute: 
                 
                 String indexAttribute = attributes.getValue("r");
-                
+
                 if (indexAttribute == null) {
                     dbglog.warning("Null r attribute in a cell element!");
-                } 
+                }
                 if (!indexAttribute.matches(".*[0-9]")) {
-                    dbglog.warning("Invalid index (r) attribute in a cell element: " + indexAttribute + "!"); 
+                    dbglog.warning("Invalid index (r) attribute in a cell element: " + indexAttribute + "!");
                 }
                 columnCount = getColumnCount(indexAttribute.replaceFirst("[0-9].*$", ""));
-                
+
                 if (columnCount < 0) {
                     throw new SAXException("Could not establish position index of a cell element unambiguously!");
                 }
-                
+
                 String cellType = attributes.getValue("t");
                 if (cellType != null && cellType.equals("s")) {
                     nextIsString = true;
@@ -383,16 +383,17 @@ public class XLSXFileReader extends TabularDataFileReader {
                     dbglog.warning("Unsupported column index tag: " + columnTag);
                 }
             }
-            
+
             return count;
         }
+
         /* Supports A-Z and AA-ZZ (0-701 column count/position) */
         private String getColumnLetterTag(int columnCount) {
             if (columnCount < 0 || columnCount > 25) {
                 if (columnCount > 25 && columnCount < 702) { //AA-ZZ
                     int code1 = 'A' + columnCount / 26 - 1;
                     int code2 = 'A' + columnCount % 26;
-                    char[] letterTag = new char[2]; 
+                    char[] letterTag = new char[2];
                     letterTag[0] = (char) code1;
                     letterTag[1] = (char) code2;
                     dbglog.fine(columnCount + ": " + new String(letterTag));
@@ -403,11 +404,11 @@ public class XLSXFileReader extends TabularDataFileReader {
                 }
             }
             int letterCode = 'A' + columnCount;
-            char[] letterTag = new char[1]; 
+            char[] letterTag = new char[1];
             letterTag[0] = (char) letterCode;
             return new String(letterTag);
         }
-        
+
         public void endElement(String uri, String localName, String name)
                 throws SAXException {
             dbglog.fine("entering endElement (" + name + ")");
@@ -424,7 +425,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             if (name.equals("v")) {
                 if (variableHeader) {
                     dbglog.fine("variable header mode; cell " + columnCount + ", cell contents: " + cellContents);
-                    
+
                     //variableNames.add(cellContents);
                     variableNames[columnCount] = cellContents;
                 } else {
@@ -432,7 +433,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                     dbglog.fine("data row mode; cell " + columnCount + ", cell contents: " + cellContents);
                 }
             }
-            
+
             if (name.equals("row")) {
                 if (variableHeader) {
                     // Initialize variables:
@@ -440,10 +441,10 @@ public class XLSXFileReader extends TabularDataFileReader {
                     List<DataVariable> variableList = new ArrayList<DataVariable>();
                     //columnCount = variableNames.size();
                     columnCount = dataTable.getVarQuantity().intValue();
-                    
+
                     for (int i = 0; i < columnCount; i++) {
                         String varName = variableNames[i];
-                        
+
 
                         if (varName == null || varName.equals("")) {
                             varName = getColumnLetterTag(i);
@@ -452,13 +453,13 @@ public class XLSXFileReader extends TabularDataFileReader {
                             // -- L.A. 4.0 alpha 1
                             //throw new IOException ("Invalid variable names in the first line!");
                         }
-                        
+
                         if (varName == null) {
                             throw new SAXException("Could not establish variable name for column " + i);
                         }
-                        
+
                         varName = varName.replaceAll("[ _\t\n\r]", "");
-                        
+
                         DataVariable dv = new DataVariable(i, dataTable);
                         dv.setName(varName);
                         dv.setLabel(varName);
@@ -467,18 +468,18 @@ public class XLSXFileReader extends TabularDataFileReader {
                         dv.setTypeCharacter();
                         dv.setIntervalDiscrete();
                     }
-        
+
                     dataTable.setDataVariables(variableList);
                     isNumericVariable = new boolean[columnCount];
-                    
+
                     for (int i = 0; i < columnCount; i++) {
                         // OK, let's assume that every variable is numeric; 
                         // but we'll go through the file and examine every value; the 
                         // moment we find a value that's not a legit numeric one, we'll 
                         // assume that it is in fact a String. 
-                        isNumericVariable[i] = true; 
+                        isNumericVariable[i] = true;
                     }
-                    variableHeader = false; 
+                    variableHeader = false;
                 } else {
                     dbglog.fine("row mode;");
                     // go through the values and make an educated guess about the 
@@ -491,8 +492,8 @@ public class XLSXFileReader extends TabularDataFileReader {
                             // this value is still a parsable number:
                             if (dataRow[i] != null && (!dataRow[i].equals(""))) {
 
-                                boolean isNumeric = false; 
-                        
+                                boolean isNumeric = false;
+
                                 if (dataRow[i].equalsIgnoreCase(".")
                                         || dataRow[i].equalsIgnoreCase("NaN")
                                         || dataRow[i].equalsIgnoreCase("NA")
@@ -504,19 +505,19 @@ public class XLSXFileReader extends TabularDataFileReader {
                                 } else {
                                     try {
                                         Double testDoubleValue = new Double(dataRow[i]);
-                                        isNumeric = true; 
+                                        isNumeric = true;
                                     } catch (Exception ex) {
                                         // the token failed to parse as a double number;
                                         // so we'll have to assume it's just a string variable.
                                     }
                                 }
                                 if (!isNumeric) {
-                                    isNumericVariable[i] = false; 
+                                    isNumericVariable[i] = false;
                                 }
                             }
-                        } 
+                        }
                     }
-                    
+
                     // print out the data row:
                     tempOut.println(StringUtils.join(dataRow, "\t"));
                     caseCount++;
@@ -524,10 +525,10 @@ public class XLSXFileReader extends TabularDataFileReader {
                 columnCount = 0;
                 dataRow = new String[dataTable.getVarQuantity().intValue()];
             }
-            
+
             if (name.equals("sheetData")) {
                 dataTable.setCaseQuantity(new Long(caseCount));
-            
+
                 // Re-type the variables that we've determined are numerics:
         
                 for (int i = 0; i < dataTable.getVarQuantity().intValue(); i++) {
@@ -536,8 +537,8 @@ public class XLSXFileReader extends TabularDataFileReader {
                         dataTable.getDataVariables().get(i).setIntervalContinuous();
                     }
                 }
-                
-                tempOut.close(); 
+
+                tempOut.close();
             }
         }
 
@@ -551,13 +552,13 @@ public class XLSXFileReader extends TabularDataFileReader {
     public static void main(String[] args) throws Exception {
         XLSXFileReader testReader = new XLSXFileReader(new XLSXFileReaderSpi());
         DataTable dataTable;
-        
+
         BufferedInputStream xlsxInputStream = new BufferedInputStream(new FileInputStream(new File(args[0])));
-        
+
         TabularDataIngest dataIngest = testReader.read(xlsxInputStream, false, null);
-        
+
         dataTable = dataIngest.getDataTable();
-        
+
         System.out.println("Produced temporary file " + dataIngest.getTabDelimitedFile().getAbsolutePath());
         System.out.println("Found " + dataTable.getVarQuantity() + " variables, " + dataTable.getCaseQuantity() + " observations.");
         System.out.println("Variable names:");
@@ -565,6 +566,6 @@ public class XLSXFileReader extends TabularDataFileReader {
             System.out.println(dataTable.getDataVariables().get(i).getName());
         }
     }
-    
+
 
 }

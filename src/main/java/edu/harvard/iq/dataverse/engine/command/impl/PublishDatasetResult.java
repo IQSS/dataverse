@@ -9,10 +9,10 @@ import edu.harvard.iq.dataverse.DatasetLock;
  * @author michael
  */
 public class PublishDatasetResult {
-    
+
     private final Dataset dataset;
     private final Status status;
-    
+
     public enum Status {
         /** Dataset has been published */
         Completed,
@@ -21,13 +21,13 @@ public class PublishDatasetResult {
         /** Publishing is being finalized asynchronously */
         Inprogress
     }
-        
+
 
     public PublishDatasetResult(Dataset dataset, Status status) {
         this.dataset = dataset;
         this.status = status;
     }
-    
+
     /**
      * @return the dataset that was published.
      */
@@ -46,11 +46,11 @@ public class PublishDatasetResult {
     public boolean isCompleted() {
         return status == Status.Completed;
     }
-    
+
     public boolean isWorkflow() {
         return status == Status.Workflow;
     }
-    
+
     public boolean isInProgress() {
         return status == Status.Inprogress;
     }

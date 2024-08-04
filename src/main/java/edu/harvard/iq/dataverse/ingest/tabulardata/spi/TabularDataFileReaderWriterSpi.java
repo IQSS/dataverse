@@ -35,7 +35,7 @@ import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 
 public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvider {
 
-    private static Logger dbgLog = 
+    private static Logger dbgLog =
     Logger.getLogger(TabularDataFileReaderWriterSpi.class.getPackage().getName());
     /**
      * A <code>String</code> array that contains human-readable format names
@@ -60,7 +60,7 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
      * class.
      */
     protected String[] suffixes = null;
-    
+
     /**
      * Gets the value of suffixes
      *
@@ -69,8 +69,8 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
     public String[] getFileSuffixes() {
         return suffixes == null ? null : (String[]) suffixes.clone();
     }
-    
-    
+
+
     /**
      * A <code>String</code> array that contains MIME types 
      * and are used by the <code>StatDataFileReader</code> or 
@@ -78,7 +78,7 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
      * class.
      */
     protected String[] MIMETypes = null;
-    
+
     /**
      * Gets the value of MIMETypes
      *
@@ -87,7 +87,7 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
     public String[] getMIMETypes() {
         return MIMETypes == null ? null : (String[]) MIMETypes.clone();
     }
-    
+
     /**
      * A <code>String</code> that contains the name of the plug-in class.
      */
@@ -102,7 +102,7 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
         return pluginClassName;
     }
 
-    
+
     public TabularDataFileReaderWriterSpi() {
     }
 
@@ -179,6 +179,7 @@ public abstract class TabularDataFileReaderWriterSpi extends IngestServiceProvid
         out.println();
         buff.rewind();
     }
+
     /**
      * Writes the <code>byte</code> array in hexadecimal.
      *

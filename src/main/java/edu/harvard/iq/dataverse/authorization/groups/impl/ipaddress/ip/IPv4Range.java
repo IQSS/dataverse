@@ -21,47 +21,47 @@ import jakarta.persistence.Table;
 @NamedQueries({
     @NamedQuery(name = "IPv4Range.findAllContainingAddressAsLong",
             query = "SELECT r FROM IPv4Range r WHERE r.bottomAsLong<=:addressAsLong AND r.topAsLong>=:addressAsLong"),
-    @NamedQuery(name = "IPv4Range.findGroupsContainingAddressAsLong", 
+    @NamedQuery(name = "IPv4Range.findGroupsContainingAddressAsLong",
                 query = "SELECT DISTINCT r.owner from IPv4Range r WHERE r.bottomAsLong<=:addressAsLong AND r.topAsLong>=:addressAsLong")
 })
 @Entity
 public class IPv4Range extends IpAddressRange implements java.io.Serializable {
-    
+
     @Id
     @GeneratedValue
     Long id;
-    
+
     /** The most significant bits of {@code this} range's top address, i.e the first two numbers of the IP address */
     BigInteger topAsLong;
-    
+
     /** The least significant bits, i.e the last tow numbers of the IP address */
     BigInteger bottomAsLong;
-    
+
     public IPv4Range() {}
-    
+
     public IPv4Range(IPv4Address bottom, IPv4Address top) {
         topAsLong = top.toBigInteger();
-        bottomAsLong = bottom.toBigInteger(); 
+        bottomAsLong = bottom.toBigInteger();
     }
-    
+
     @Override
     public IPv4Address getTop() {
         return new IPv4Address(getTopAsLong());
     }
-    
+
     public void setTop(IPv4Address aNewTop) {
         setTopAsLong(aNewTop.toBigInteger());
     }
-    
+
     @Override
     public IPv4Address getBottom() {
         return new IPv4Address(getBottomAsLong());
     }
-    
+
     public void setBottom(IPv4Address aNewBottom) {
         setTopAsLong(aNewBottom.toBigInteger());
     }
-    
+
     public BigInteger getTopAsLong() {
         return topAsLong;
     }
@@ -87,5 +87,5 @@ public class IPv4Range extends IpAddressRange implements java.io.Serializable {
         }
         return null;
     }
-    
+
 }

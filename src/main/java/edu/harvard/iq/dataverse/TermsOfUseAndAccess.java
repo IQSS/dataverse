@@ -25,12 +25,12 @@ import jakarta.persistence.NamedQuery;
     // is used to determine if the dataset terms were set by the multi license support update 
     // as part of the 5.10 release.
     
-    @NamedQuery(name = "TermsOfUseAndAccess.findByDatasetVersionIdAndDefaultTerms", 
+    @NamedQuery(name = "TermsOfUseAndAccess.findByDatasetVersionIdAndDefaultTerms",
                 query = "SELECT o FROM TermsOfUseAndAccess o, DatasetVersion dv WHERE "
                         + "dv.id =:id "
                         + "AND dv.termsOfUseAndAccess.id = o.id "
                         + "AND o.termsOfUse =:defaultTerms "
-                        + "AND o.confidentialityDeclaration IS null " 
+                        + "AND o.confidentialityDeclaration IS null "
                         + "AND o.specialPermissions IS null "
                         + "AND o.restrictions IS null "
                         + "AND o.citationRequirements IS null "
@@ -48,7 +48,7 @@ import jakarta.persistence.NamedQuery;
 @Entity
 @ValidateTermsOfUseAndAccess
 public class TermsOfUseAndAccess implements Serializable {
-    
+
     public static final String DEFAULT_NOTERMS = "This dataset is made available without information on how it can be used. You should communicate with the Contact(s) specified before use.";
 
     @Id
@@ -62,7 +62,7 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     @OneToOne(mappedBy = "termsOfUseAndAccess")
     private DatasetVersion datasetVersion;
 
@@ -73,7 +73,7 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setDatasetVersion(DatasetVersion datasetVersion) {
         this.datasetVersion = datasetVersion;
     }
-    
+
     @OneToOne(mappedBy = "termsOfUseAndAccess")
     private Template template;
 
@@ -84,56 +84,56 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setTemplate(Template template) {
         this.template = template;
     }
-    
+
     @ManyToOne
     @JoinColumn(name = "license_id")
     private License license;
 
-    @Column(columnDefinition = "TEXT")      
+    @Column(columnDefinition = "TEXT")
     private String termsOfUse;
-    
-    @Column(columnDefinition = "TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String termsOfAccess;
-    
-    @Column(columnDefinition = "TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String confidentialityDeclaration;
-    
-    @Column(columnDefinition = "TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String specialPermissions;
-    
-    @Column(columnDefinition = "TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String restrictions;
-    
-    @Column(columnDefinition = "TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String citationRequirements;
-    
-    @Column(columnDefinition = "TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String depositorRequirements;
-    
-    @Column(columnDefinition = "TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String conditions;
-    
-    @Column(columnDefinition = "TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String disclaimer;
-    
-    @Column(columnDefinition = "TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String dataAccessPlace;
-    
-    @Column(columnDefinition = "TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String originalArchive;
-    
-    @Column(columnDefinition = "TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String availabilityStatus;
-    
-    @Column(columnDefinition = "TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String contactForAccess;
-    
-    @Column(columnDefinition = "TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String sizeOfCollection;
-    
-    @Column(columnDefinition = "TEXT") 
+
+    @Column(columnDefinition = "TEXT")
     private String studyCompletion;
-    
+
     private boolean fileAccessRequest;
 
     public boolean isFileAccessRequest() {
@@ -143,7 +143,7 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
     }
-    
+
     public License getLicense() {
         return license;
     }
@@ -274,8 +274,8 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setStudyCompletion(String studyCompletion) {
         this.studyCompletion = studyCompletion;
     }
-    
-        
+
+
     public TermsOfUseAndAccess copyTermsOfUseAndAccess() {
 
         TermsOfUseAndAccess retVal = new TermsOfUseAndAccess();
@@ -312,7 +312,7 @@ public class TermsOfUseAndAccess implements Serializable {
         conditions = null;
         disclaimer = null;
     }
-    
+
     @Transient
     private String validationMessage;
 
@@ -323,7 +323,7 @@ public class TermsOfUseAndAccess implements Serializable {
     public void setValidationMessage(String validationMessage) {
         this.validationMessage = validationMessage;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -348,5 +348,5 @@ public class TermsOfUseAndAccess implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.TermsOfUseAndAccess[ id=" + id + " ]";
     }
-    
+
 }

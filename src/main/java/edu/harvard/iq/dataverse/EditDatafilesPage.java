@@ -104,11 +104,11 @@ public class EditDatafilesPage implements java.io.Serializable {
     public enum FileEditMode {
 
         EDIT, UPLOAD, CREATE, REPLACE
-    };
+    }
 
     public enum Referrer {
         DATASET, FILE
-    };
+    }
 
     @EJB
     DatasetServiceBean datasetService;
@@ -164,9 +164,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     private Referrer referrer = Referrer.DATASET;
     private List<Long> selectedFileIdsList = new ArrayList<>();
     private List<FileMetadata> fileMetadatas = new ArrayList<>();
-    ;
 
-    
+
     private Long ownerId;
     private Long versionId;
     private List<DataFile> newFiles = new ArrayList<>();
@@ -198,15 +197,15 @@ public class EditDatafilesPage implements java.io.Serializable {
     private Long maxIngestSizeInBytes = null;
     // CSV: 4.8 MB, DTA: 976.6 KB, XLSX: 5.7 MB, etc.
     private String humanPerFormatTabularLimits = null;
-    private Integer multipleUploadFilesLimit = null; 
-    
+    private Integer multipleUploadFilesLimit = null;
+
     //MutableBoolean so it can be passed from DatasetPage, supporting DatasetPage.cancelCreate()
     private MutableBoolean uploadInProgress = null;
 
     private final int NUMBER_OF_SCROLL_ROWS = 25;
 
     private DataFile singleFile = null;
-    private UploadSessionQuotaLimit uploadSessionQuota = null; 
+    private UploadSessionQuotaLimit uploadSessionQuota = null;
 
     public DataFile getSingleFile() {
         return singleFile;
@@ -349,17 +348,17 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         return this.maxFileUploadSizeInBytes == null;
     }
-    
+
     public Long getMaxTotalUploadSizeInBytes() {
         return maxTotalUploadSizeInBytes;
     }
-    
+
     public String getHumanMaxTotalUploadSizeInBytes() {
         return FileSizeChecker.bytesToHumanReadable(maxTotalUploadSizeInBytes);
     }
-    
+
     public boolean isStorageQuotaEnforced() {
-        return uploadSessionQuota != null; 
+        return uploadSessionQuota != null;
     }
 
     public Long getMaxIngestSizeInBytes() {
@@ -535,19 +534,19 @@ public class EditDatafilesPage implements java.io.Serializable {
                 this.maxTotalUploadSizeInBytes = uploadSessionQuota.getRemainingQuotaInBytes();
             }
         } else {
-            this.maxTotalUploadSizeInBytes = null; 
+            this.maxTotalUploadSizeInBytes = null;
         }
         this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
         this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
-        
+
         logger.fine("done");
 
         saveEnabled = true;
-        
+
         return null;
     }
-    
+
     public boolean isQuotaExceeded() {
         return systemConfig.isStorageQuotasEnforced() && uploadSessionQuota != null && uploadSessionQuota.getRemainingQuotaInBytes() == 0;
     }
@@ -590,7 +589,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!permissionService.on(dataset).has(Permission.EditDataset)) {
             return permissionsWrapper.notAuthorized();
         }
-        
+
         clone = workingVersion.cloneDatasetVersion();
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
         if (systemConfig.isStorageQuotasEnforced()) {
@@ -601,8 +600,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         this.maxIngestSizeInBytes = systemConfig.getTabularIngestSizeLimit();
         this.humanPerFormatTabularLimits = populateHumanPerFormatTabularLimits();
-        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();        
-        
+        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
+
         hasValidTermsOfAccess = isHasValidTermsOfAccess();
         if (!hasValidTermsOfAccess) {
             PrimeFaces.current().executeScript("PF('blockDatasetForm').show()");
@@ -630,7 +629,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                                                 permissionService,
                                                 commandEngine,
                                                 systemConfig);
-                        
+
             fileReplacePageHelper = new FileReplacePageHelper(addReplaceFileHelper,
                     dataset,
                     fileToReplace);
@@ -695,7 +694,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (isHasPublicStore()) {
             JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.label.fileAccess"), getBundleString("dataset.message.publicInstall"));
         }
-       
+
         return null;
     }
 
@@ -834,11 +833,11 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
     }
-    
+
     public boolean getHasValidTermsOfAccess() {
         return isHasValidTermsOfAccess(); //HasValidTermsOfAccess
     }
-    
+
     public void setHasValidTermsOfAccess(boolean value) {
         //dummy for ui
     }
@@ -1102,8 +1101,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
 
             // Try to save the NEW files permanently: 
-            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null, true); 
-            
+            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, null, true);
+
             // reset the working list of fileMetadatas, as to only include the ones
             // that have been added to the version successfully: 
             fileMetadatas.clear();
@@ -2075,7 +2074,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
             CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
 
-        
+
             dFileList = createDataFilesResult.getDataFiles();
             String createDataFilesError = editDataFilesPageHelper.getHtmlErrorMessage(createDataFilesResult);
             if (createDataFilesError != null) {
@@ -2196,8 +2195,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // Execute the CreateNewDataFiles command:
                 // -----------------------------------------------------------
                 
-                Dataverse parent = null; 
-                
+                Dataverse parent = null;
+
                 if (mode == FileEditMode.CREATE) {
                     // This is a file upload in the context of creating a brand new
                     // dataset that does not yet exist in the database. We must 
@@ -2206,9 +2205,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                     // scenario = Permission.AddDataset on the parent dataverse.
                     parent = workingVersion.getDataset().getOwner();
                 }
-                
+
                 try {
-  
+
                     Command<CreateDataFileResult> cmd = new CreateNewDataFilesCommand(dvRequestService.getDataverseRequest(), workingVersion, null, fileName, contentType, fullStorageIdentifier, uploadSessionQuota, checksumValue, checksumType, fileSize, parent);
                     CreateDataFileResult createDataFilesResult = commandEngine.submit(cmd);
                     datafiles = createDataFilesResult.getDataFiles();
@@ -2805,7 +2804,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 PrimeFaces.current().executeScript("PF('blockDatasetForm').show()");
                 PrimeFaces.current().executeScript("PF('accessPopup').show()");
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editTerms.label"), BundleUtil.getStringFromBundle("dataset.message.editTerms.message"));
-                return; 
+                return;
         }
         setFileMetadataSelectedForTagsPopup(fm);
         refreshCategoriesByName();
@@ -2844,7 +2843,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         Arrays.sort(selectedTabFileTags);
     }
-    
+
     private void refreshCategoriesByName() {
         categoriesByName = new ArrayList<>();
         List<String> datasetFileCategories = dataFileCategoryService.mergeDatasetFileCategories(dataset.getCategories());
@@ -2921,7 +2920,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         newCategoryName = "";
         return "";
     }
-    
+
     public void handleSelection(final AjaxBehaviorEvent event) {
         if (selectedTags != null) {
             selectedTags = selectedTags.clone();
@@ -3132,7 +3131,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         return settingsWrapper.isRsyncUpload() && DatasetUtil.isRsyncAppropriateStorageDriver(dataset);
     }
-    
+
     // Globus must be one of the upload methods listed in the :UploadMethods setting
     // and the dataset's store must be in the list allowed by the GlobusStores
     // setting
@@ -3140,7 +3139,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         return settingsWrapper.isGlobusUpload()
                 && settingsWrapper.isGlobusEnabledStorageDriver(dataset.getEffectiveStorageDriverId());
     }
-    
+
     public boolean webloaderUploadSupported() {
         return settingsWrapper.isWebloaderUpload() && StorageIO.isDirectUploadEnabled(dataset.getEffectiveStorageDriverId());
     }
@@ -3178,12 +3177,12 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
     }
-    
+
     //Determines whether this Dataset uses a public store and therefore doesn't support embargoed or restricted files
     public boolean isHasPublicStore() {
         return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.PublicInstall, StorageIO.isPublicStore(dataset.getEffectiveStorageDriverId()));
     }
-    
+
     public String getWebloaderUrlForDataset(Dataset d) {
         String localeCode = session.getLocaleCode();
         User user = session.getUser();

@@ -715,14 +715,14 @@ public class Metrics extends AbstractApiBean {
 
         return ok(jsonObj);
     }
-    
+
     @GET
     @Path("filedownloads")
     @Produces("text/csv, application/json")
     public Response getFileDownloadsAllTime(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         return getFileDownloadsToMonth(req, uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
-    
+
     @GET
     @Path("filedownloads/toMonth/{yyyymm}")
     @Produces("text/csv, application/json")
@@ -750,7 +750,7 @@ public class Metrics extends AbstractApiBean {
         }
         return ok(FileUtil.jsonArrayOfObjectsToCSV(jsonArr, MetricsUtil.ID, MetricsUtil.PID, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "filedownloads.csv");
     }
-    
+
     @GET
     @Path("filedownloads/monthly")
     @Produces("text/csv, application/json")
@@ -844,7 +844,7 @@ public class Metrics extends AbstractApiBean {
     public Response getUniqueFileDownloadsAllTime(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         return getUniqueFileDownloadsToMonth(req, uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
-    
+
     @GET
     @Path("uniquefiledownloads/toMonth/{yyyymm}")
     @Produces("text/csv, application/json")
@@ -872,7 +872,7 @@ public class Metrics extends AbstractApiBean {
         }
         return ok(FileUtil.jsonArrayOfObjectsToCSV(jsonArr, MetricsUtil.ID, MetricsUtil.PID, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "uniquefiledownloads.csv");
     }
-    
+
     @GET
     @Path("uniquefiledownloads/monthly")
     @Produces("text/csv, application/json")
@@ -898,7 +898,7 @@ public class Metrics extends AbstractApiBean {
         }
         return ok(FileUtil.jsonArrayOfObjectsToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.ID, MetricsUtil.PID, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "uniquefiledownloads.timeseries.csv");
     }
-    
+
     @GET
     @Path("tree")
     public Response getDataversesTree(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {

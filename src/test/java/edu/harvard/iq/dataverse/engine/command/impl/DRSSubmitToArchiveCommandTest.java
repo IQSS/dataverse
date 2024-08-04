@@ -84,7 +84,7 @@ public class DRSSubmitToArchiveCommandTest {
                 + "        \"adminCategory\": \"root\"\n"
                 + "    }\n"
                 + "}";
-        
+
         byte[] encoded = Base64.getDecoder().decode(privKeyString);
         try {
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -103,10 +103,10 @@ public class DRSSubmitToArchiveCommandTest {
              */
             String canonicalBody = new JsonCanonicalizer(fakeBody).getEncodedString();
             System.out.println("Canonical form:" + canonicalBody);
-            
+
             Algorithm algorithmRSA = Algorithm.RSA256(null, privKey);
             String token1 = DRSSubmitToArchiveCommand.createJWTString(algorithmRSA, "InstallationBrandName", fakeBody, 5);
-            
+
             System.out.println("JWT: " + token1);
             DecodedJWT jwt = JWT.decode(token1);
             System.out.println(jwt.getPayload());

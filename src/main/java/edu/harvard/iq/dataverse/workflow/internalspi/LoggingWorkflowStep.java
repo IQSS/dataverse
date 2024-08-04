@@ -14,15 +14,15 @@ import java.util.logging.Logger;
  * @author michael
  */
 public class LoggingWorkflowStep implements WorkflowStep {
-    
+
     private static final Logger logger = Logger.getLogger(LoggingWorkflowStep.class.getName());
-    
+
     private final Map<String, String> params;
 
     public LoggingWorkflowStep(Map<String, String> paramSet) {
         params = new HashMap<>(paramSet);
     }
-    
+
     @Override
     public WorkflowStepResult run(WorkflowContext context) {
         logger.info("Logging step:");
@@ -33,7 +33,7 @@ public class LoggingWorkflowStep implements WorkflowStep {
                     new Object[]{context.getNextVersionNumber(), context.getNextMinorVersionNumber(), context.isMinorRelease()});
         params.entrySet().forEach(kv -> logger.log(Level.INFO, "{0} -> {1}", new Object[]{kv.getKey(), kv.getValue()}));
         logger.info("/Logging Step");
-        
+
         return WorkflowStepResult.OK;
     }
 

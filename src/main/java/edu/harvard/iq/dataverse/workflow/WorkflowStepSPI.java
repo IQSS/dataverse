@@ -12,7 +12,7 @@ import java.util.Map;
  * @author michael
  */
 public interface WorkflowStepSPI {
-    
+
     WorkflowStep getStep(String stepType, Map<String, String> stepParameters);
-    
+
 }

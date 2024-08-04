@@ -22,7 +22,7 @@ import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 public class WorkflowUtil {
 
     private static final Logger logger = Logger.getLogger(WorkflowUtil.class.getName());
-    
+
     public static JsonArrayBuilder getAllWorkflowComments(DatasetVersion datasetVersion) {
         JsonArrayBuilder workflowCommentsAsJson = Json.createArrayBuilder();
         List<WorkflowComment> workflowComments = datasetVersion.getWorkflowComments();
@@ -82,6 +82,6 @@ public class WorkflowUtil {
         return new Failure("Workflow failure: Response from remote server could not be parsed:" + escapeHtml4(externalData), null);
 
     }
-    
-    
+
+
 }

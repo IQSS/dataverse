@@ -90,16 +90,16 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     ImportServiceBean importService;
-    
+
     @EJB
     SettingsServiceBean settingsService;
-    
+
     @EJB
     GuestbookResponseServiceBean guestbookResponseService;
-    
+
     @EJB
     GuestbookServiceBean guestbookService;
-    
+
     @EJB
     DataverseServiceBean dataverseService;
 
@@ -111,7 +111,7 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     SwordServiceBean swordService;
-    
+
     @POST
     @AuthRequired
     public Response addRoot(@Context ContainerRequestContext crc, String body) {
@@ -220,7 +220,7 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
     @GET
     @AuthRequired
     @Path("{identifier}/datasetSchema")
@@ -237,8 +237,7 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-            
-    
+
 
     @POST
     @AuthRequired
@@ -258,7 +257,7 @@ public class Dataverses extends AbstractApiBean {
             if (ds.getVersions().isEmpty()) {
                 return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeVersion"));
             }
-            
+
             if (!ds.getFiles().isEmpty() && !u.isSuperuser()) {
                 return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.superuserFiles"));
             }
@@ -316,7 +315,7 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
     @POST
     @AuthRequired
     @Path("{identifier}/datasets")
@@ -329,7 +328,7 @@ public class Dataverses extends AbstractApiBean {
 
             ds.setOwner(owner);
             ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false, licenseSvc);
-            
+
             ds.setOwner(owner);
 
             // clean possible dataset/version metadata
@@ -344,7 +343,7 @@ public class Dataverses extends AbstractApiBean {
             ds.setIdentifier(null);
             ds.setProtocol(null);
             ds.setGlobalIdCreateTime(null);
-            
+
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
             DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
@@ -509,7 +508,7 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
     @POST
     @AuthRequired
     @Path("{identifier}/datasets/:startmigration")
@@ -521,7 +520,7 @@ public class Dataverses extends AbstractApiBean {
                 return error(Status.FORBIDDEN, "Not a superuser");
             }
             Dataverse owner = findDataverseOrDie(parentIdtf);
-            
+
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
@@ -534,7 +533,7 @@ public class Dataverses extends AbstractApiBean {
             if (!dvObjectSvc.isGlobalIdLocallyUnique(ds.getGlobalId())) {
                 throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
-            
+
             //Throw BadRequestException if metadataLanguage isn't compatible with setting
             DataverseUtil.checkMetadataLangauge(ds, owner, settingsService.getBaseMetadataLanguageMap(null, true));
 
@@ -563,7 +562,7 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
     private Dataset parseDataset(String datasetJson) throws WrappedResponse {
         try {
             return jsonParser().parseDataset(JsonUtil.getJsonObject(datasetJson));
@@ -610,7 +609,7 @@ public class Dataverses extends AbstractApiBean {
             Dataverse collection = findDataverseOrDie(identifier);
             User user = getRequestUser(crc);
             DataverseRequest dvRequest = createDataverseRequest(user);
-    
+
             // TODO: The cases below use hard coded strings, because we have no place for definitions of those!
             //       They are taken from util.json.JsonParser / util.json.JsonPrinter. This shall be changed.
             //       This also should be extended to more attributes, like the type, theme, contacts, some booleans, etc.
@@ -649,13 +648,13 @@ public class Dataverses extends AbstractApiBean {
                 default:
                     return badRequest("'" + attribute + "' is not a supported attribute");
             }
-            
+
             // Off to persistence layer
             execCommand(new UpdateDataverseCommand(collection, null, null, dvRequest, null));
-    
+
             // Also return modified collection to user
             return ok("Update successful", JsonPrinter.json(collection));
-        
+
         // TODO: This is an anti-pattern, necessary due to this bean being an EJB, causing very noisy and unnecessary
         //       logging by the EJB container for bubbling exceptions. (It would be handled by the error handlers.)
         } catch (WrappedResponse e) {
@@ -1112,11 +1111,11 @@ public class Dataverses extends AbstractApiBean {
     @AuthRequired
     @Path("{identifier}/storagesize")
     public Response getStorageSize(@Context ContainerRequestContext crc, @PathParam("identifier") String dvIdtf, @QueryParam("includeCached") boolean includeCached) throws WrappedResponse {
-                
+
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.datasize"),
                 execCommand(new GetDataverseStorageSizeCommand(req, findDataverseOrDie(dvIdtf), includeCached)))), getRequestUser(crc));
     }
-    
+
     @GET
     @AuthRequired
     @Path("{identifier}/storage/quota")
@@ -1131,7 +1130,7 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
     @POST
     @AuthRequired
     @Path("{identifier}/storage/quota/{bytesAllocated}")
@@ -1143,7 +1142,7 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
     @DELETE
     @AuthRequired
     @Path("{identifier}/storage/quota")
@@ -1155,7 +1154,7 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-    
+
     /**
      *
      * @param crc
@@ -1402,7 +1401,7 @@ public class Dataverses extends AbstractApiBean {
                 req,
                 grpAliasInOwner))), getRequestUser(crc));
     }
-    
+
     @GET
     @AuthRequired
     @Path("{identifier}/guestbookResponses/")
@@ -1444,7 +1443,7 @@ public class Dataverses extends AbstractApiBean {
         };
         return Response.ok(stream).build();
     }
-    
+
     @PUT
     @AuthRequired
     @Path("{identifier}/groups/{aliasInOwner}")
@@ -1455,7 +1454,7 @@ public class Dataverses extends AbstractApiBean {
                 new UpdateExplicitGroupCommand(req,
                         groupDto.apply(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)))))), getRequestUser(crc));
     }
-    
+
     @PUT
     @AuthRequired
     @Path("{identifier}/defaultContributorRole/{roleAlias}")
@@ -1465,7 +1464,7 @@ public class Dataverses extends AbstractApiBean {
             @PathParam("roleAlias") String roleAlias) {
 
         DataverseRole defaultRole;
-        
+
         if (roleAlias.equals(DataverseRole.NONE)) {
             defaultRole = null;
         } else {
@@ -1488,7 +1487,7 @@ public class Dataverses extends AbstractApiBean {
 
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
-            
+
             String defaultRoleName = defaultRole == null ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.name") : defaultRole.getName();
 
             return response(req -> {

@@ -182,7 +182,7 @@ public class DatasetFieldCompoundValue implements Serializable {
                 }
                 //if a series of child values is comma delimited we want to strip off the final entry's comma
                 if (format.equals("#VALUE, ")) fixTrailingComma = true;
-                
+
                 // replace the special values in the format (note: we replace #VALUE last since we don't
                 // want any issues if the value itself has #NAME in it)
 
@@ -195,7 +195,7 @@ public class DatasetFieldCompoundValue implements Serializable {
                 fieldMap.put(childDatasetField, displayValue);
             }
         }
-        
+
         if (fixTrailingComma) {
             return (removeLastComma(fieldMap));
         }

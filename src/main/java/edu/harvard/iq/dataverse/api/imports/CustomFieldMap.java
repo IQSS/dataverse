@@ -43,9 +43,9 @@ public class CustomFieldMap implements Serializable {
     }
 
     private String sourceTemplate;
-    
+
     private String sourceDatasetField;
-    
+
     private String targetDatasetField;
 
     public String getSourceTemplate() {
@@ -72,6 +72,5 @@ public class CustomFieldMap implements Serializable {
         this.targetDatasetField = targetDatasetField;
     }
 
-   
-    
+
 }

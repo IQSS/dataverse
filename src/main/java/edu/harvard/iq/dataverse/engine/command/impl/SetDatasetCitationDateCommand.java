@@ -21,29 +21,29 @@ import org.apache.solr.client.solrj.SolrServerException;
  */
 @RequiredPermissions(Permission.PublishDataset)
 public class SetDatasetCitationDateCommand extends AbstractCommand<Dataset> {
-    
+
 
 	private final DatasetFieldType dsfType;
 	private final Dataset dataset;
-	
+
 	public SetDatasetCitationDateCommand(DataverseRequest aRequest, Dataset dataset, DatasetFieldType dsfType) {
 		super(aRequest, dataset);
 		this.dataset = dataset;
 		this.dsfType = dsfType;
 	}
-	
+
 	@Override
 	public Dataset execute(CommandContext ctxt) throws CommandException {
             if (dsfType == null || dsfType.getFieldType().equals(FieldType.DATE)) {
-                dataset.setCitationDateDatasetFieldType(dsfType);           
+                dataset.setCitationDateDatasetFieldType(dsfType);
             } else {
                 throw new IllegalCommandException("Provided DatasetFieldtype is not a Date", this);
             }
-            
+
             Dataset savedDataset = ctxt.datasets().merge(dataset);
             return savedDataset;
 	}
-        
+
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         boolean retVal = true;
@@ -52,6 +52,6 @@ public class SetDatasetCitationDateCommand extends AbstractCommand<Dataset> {
         ctxt.index().asyncIndexDataset(dataset, false);
 
         return retVal;
-    }	
+    }
 }
 

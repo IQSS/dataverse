@@ -14,9 +14,9 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  */
 @RequiredPermissions(Permission.ManageDataversePermissions)
 public class DeleteExplicitGroupCommand extends AbstractVoidCommand {
-    
+
     private final ExplicitGroup explicitGroup;
-    
+
     public DeleteExplicitGroupCommand(DataverseRequest aRequest, ExplicitGroup anExplicitGroup) {
         super(aRequest, anExplicitGroup.getOwner());
         explicitGroup = anExplicitGroup;
@@ -33,7 +33,7 @@ public class DeleteExplicitGroupCommand extends AbstractVoidCommand {
         ).executeUpdate();
 
         ctxt.explicitGroups().removeGroup(merged);
-        
+
     }
-    
+
 }

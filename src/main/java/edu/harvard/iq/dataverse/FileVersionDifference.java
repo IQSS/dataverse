@@ -16,23 +16,22 @@ import java.util.Objects;
  * @author skraffmi
  */
 public final class FileVersionDifference {
-    
+
     private  FileMetadata newFileMetadata;
-    private  FileMetadata originalFileMetadata;   
+    private  FileMetadata originalFileMetadata;
     private boolean details = false;
     private boolean same = false;
 
 
-
-    private List<FileDifferenceSummaryGroup> differenceSummaryGroups = new ArrayList<>();   
+    private List<FileDifferenceSummaryGroup> differenceSummaryGroups = new ArrayList<>();
     private List<FileDifferenceDetailItem> differenceDetailItems = new ArrayList<>();
-    
+
     public FileVersionDifference(FileMetadata newFileMetadata, FileMetadata originalFileMetadata) {
 
        this(newFileMetadata, originalFileMetadata, false);
-           
-    } 
-    
+
+    }
+
     public FileVersionDifference(FileMetadata newFileMetadata, FileMetadata originalFileMetadata, boolean details) {
 
         this.newFileMetadata = newFileMetadata;
@@ -42,9 +41,9 @@ public final class FileVersionDifference {
         this.same = compareMetadata(newFileMetadata, originalFileMetadata);
         //Compare versions - File Metadata first
 
-    } 
-    
-    
+    }
+
+
     public boolean compareMetadata(FileMetadata newFileMetadata, FileMetadata originalFileMetadata) {
 
         /*
@@ -61,20 +60,20 @@ public final class FileVersionDifference {
             //Don't add any groups
             return true;
         }
-        
+
         if (newFileMetadata.getDataFile() == null && originalFileMetadata != null) {
             //File Deleted
             updateDifferenceSummary("", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"), 0, 0, 1, 0);
             return false;
         }
-        
+
         if (this.originalFileMetadata == null && this.newFileMetadata.getDataFile() != null) {
             //File Added
             if (!details) return false;
             retVal = false;
             updateDifferenceSummary("", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"), 1, 0, 0, 0);
         }
-        
+
         //Check to see if File replaced
         if (originalFileMetadata != null &&
                  newFileMetadata.getDataFile() != null && originalFileMetadata.getDataFile() != null && !this.originalFileMetadata.getDataFile().equals(this.newFileMetadata.getDataFile())) {
@@ -82,7 +81,7 @@ public final class FileVersionDifference {
             updateDifferenceSummary("", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"), 0, 0, 0, 1);
             retVal = false;
         }
-        
+
         if (originalFileMetadata != null) {
             if (!newFileMetadata.getLabel().equals(originalFileMetadata.getLabel())) {
                 if (details) {
@@ -134,7 +133,7 @@ public final class FileVersionDifference {
                         BundleUtil.getStringFromBundle("file.versionDifferences.descriptionDetailTitle"), 0, 0, 1, 0);
                 retVal = false;
             }
-        } 
+        }
         //Provenance Description differences
         if (originalFileMetadata != null) {
             if ((newFileMetadata.getProvFreeForm() != null && !newFileMetadata.getProvFreeForm().isEmpty())
@@ -191,7 +190,7 @@ public final class FileVersionDifference {
                 if (!details) return false;
                 int added = 0;
                 int deleted = 0;
-                
+
                 added = newFileMetadata.getCategoriesByName().stream().map((tag) -> {
                     boolean found = false;
                     for (String tagOld : originalFileMetadata.getCategoriesByName()) {
@@ -202,7 +201,7 @@ public final class FileVersionDifference {
                     }
                     return found;
                 }).filter((found) -> (!found)).map((_item) -> 1).reduce(added, Integer::sum);
-                
+
                 for (String tag : originalFileMetadata.getCategoriesByName()) {
                     boolean found = false;
                     for (String tagNew : newFileMetadata.getCategoriesByName()) {
@@ -223,7 +222,7 @@ public final class FileVersionDifference {
                 }
                 retVal = false;
             }
-            
+
             /*
             Get Restriction Differences
             */
@@ -236,17 +235,17 @@ public final class FileVersionDifference {
         }
         return retVal;
     }
-    
+
      private void updateDifferenceSummary(String groupLabel, String itemLabel, int added, int changed, int deleted, int replaced) {
         updateDifferenceSummary(groupLabel, itemLabel, added, changed, deleted, replaced, false);
     }
-    
-    
+
+
     private void updateDifferenceSummary(String groupLabel, String itemLabel, int added, int changed, int deleted, int replaced, boolean multiple) {
         FileDifferenceSummaryGroup summaryGroup = new FileDifferenceSummaryGroup(groupLabel);
         FileDifferenceSummaryItem summaryItem = new FileDifferenceSummaryItem(itemLabel, added, changed, deleted, replaced, multiple);
-        
-        if (!this.differenceSummaryGroups.contains(summaryGroup)) {    
+
+        if (!this.differenceSummaryGroups.contains(summaryGroup)) {
             summaryGroup.getFileDifferenceSummaryItems().add(summaryItem);
             this.differenceSummaryGroups.add(summaryGroup);
         } else {
@@ -255,11 +254,11 @@ public final class FileVersionDifference {
             });
         }
     }
-    
+
     public FileMetadata getNewFileMetadata() {
         return this.newFileMetadata;
     }
-    
+
     public void setNewFileMetadata(FileMetadata in) {
          this.newFileMetadata = in;
     }
@@ -271,7 +270,7 @@ public final class FileVersionDifference {
     public void setOriginalFileMetadata(FileMetadata originalFileMetadata) {
         this.originalFileMetadata = originalFileMetadata;
     }
-    
+
     public boolean isSame() {
         return same;
     }
@@ -279,8 +278,8 @@ public final class FileVersionDifference {
     public void setSame(boolean same) {
         this.same = same;
     }
-    
-    
+
+
     public List<FileDifferenceSummaryGroup> getDifferenceSummaryGroups() {
         return differenceSummaryGroups;
     }
@@ -292,16 +291,15 @@ public final class FileVersionDifference {
     public  class FileDifferenceSummaryGroup {
 
 
-
         private String name;
         private List<FileDifferenceSummaryItem> fileDifferenceSummaryItems;
-        
+
         public FileDifferenceSummaryGroup(String name) {
             this.name = name;
             this.fileDifferenceSummaryItems = new ArrayList<>();
-            
+
         }
-        
+
         public String getName() {
             return name;
         }
@@ -317,23 +315,23 @@ public final class FileVersionDifference {
         public void setFileDifferenceSummaryItems(List<FileDifferenceSummaryItem> fileDifferenceSummaryItems) {
             this.fileDifferenceSummaryItems = fileDifferenceSummaryItems;
         }
-        
+
         @Override
         public String toString() {
-            
+
             String retval = getName();
             if (!retval.isEmpty()) {
                 retval += ": ";
             }
-            
+
             for (FileDifferenceSummaryItem item : this.fileDifferenceSummaryItems) {
                 retval += " " + item.toString();
             }
-            
+
             return retval;
         }
-        
-        
+
+
         @Override
         public int hashCode() {
             int hash = 5;
@@ -356,7 +354,7 @@ public final class FileVersionDifference {
             return Objects.equals(this.name, other.name);
         }
     }
-    
+
     public final class FileDifferenceDetailItem {
         private String displayName;
         private String originalValue;
@@ -367,9 +365,8 @@ public final class FileVersionDifference {
             this.originalValue = originalValue;
             this.newValue = newValue;
         }
-        
-        
-        
+
+
         public String getDisplayName() {
             return displayName;
         }
@@ -395,9 +392,8 @@ public final class FileVersionDifference {
         }
 
     }
-    
-    
-    
+
+
     public class FileDifferenceSummaryItem {
 
 
@@ -407,7 +403,7 @@ public final class FileVersionDifference {
         private int deleted;
         private int replaced;
         private boolean multiple;
-        
+
         public FileDifferenceSummaryItem(String name, int added, int changed, int deleted, int replaced, boolean multiple) {
             this.name = name;
             this.added = added;
@@ -416,7 +412,7 @@ public final class FileVersionDifference {
             this.replaced = replaced;
             this.multiple = multiple;
         }
-        
+
         public String getName() {
             return name;
         }
@@ -464,8 +460,8 @@ public final class FileVersionDifference {
         public void setMultiple(boolean multiple) {
             this.multiple = multiple;
         }
-        
-        
-    }    
-    
+
+
+    }
+
 }

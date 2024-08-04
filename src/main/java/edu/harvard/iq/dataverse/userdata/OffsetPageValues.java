@@ -10,7 +10,7 @@ package edu.harvard.iq.dataverse.userdata;
  * @author rmp553
  */
 public class OffsetPageValues {
- 
+
     private int offset;
     private int pageNumber;
 
@@ -23,8 +23,7 @@ public class OffsetPageValues {
         this.offset = offset;
     }
 
-    
- 
+
     /**
      *  Set offset
      *  @param offset
@@ -40,7 +39,7 @@ public class OffsetPageValues {
     public int getOffset() {
         return this.offset;
     }
-    
+
 
     /**
      *  Set pageNumber
@@ -57,5 +56,5 @@ public class OffsetPageValues {
     public int getPageNumber() {
         return this.pageNumber;
     }
-      
+
 }

@@ -9,13 +9,13 @@ import java.util.regex.Pattern;
  * validation of usernames.
  */
 public class UserNameValidator {
-    
+
     public static final int MIN_CHARS = 2;
     public static final int MAX_CHARS = 60;
-    
+
     // NOTE: the size is checked by either the @Size annotation of @ValidateUserName or programmatically below!
     public static final String USERNAME_PATTERN = "[a-zA-Z0-9\\_\\-\\.]*";
-    
+
     /*
      * If you would like to support accents or chinese characters in usernames, choose one of the below.
      *

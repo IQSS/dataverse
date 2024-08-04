@@ -10,10 +10,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author bencomp
  */
 public class DataFileServiceBeanTest {
-    
+
     public DataFileServiceBeanTest() {
     }
-    
+
     /**
      * A DataFile without content type.
      */
@@ -26,8 +26,8 @@ public class DataFileServiceBeanTest {
      * The Bean Under Test.
      */
     private DataFileServiceBean dataFileServiceBean;
-            
-    
+
+
     @BeforeEach
     public void setUp() {
         fileWoContentType = createDataFile(null);
@@ -190,7 +190,7 @@ public class DataFileServiceBeanTest {
         assertEquals("other", dataFileServiceBean.getFileThumbnailClass(fileWoContentType));
         assertEquals("other", dataFileServiceBean.getFileThumbnailClass(fileWithBogusContentType));
     }
-    
+
     /**
      * Create a DataFile with properties.
      * @param contentType the content media type as a string

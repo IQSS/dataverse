@@ -17,10 +17,10 @@ import jakarta.ws.rs.ext.Provider;
  */
 @Provider
 public class JsonParseExceptionHandler implements ExceptionMapper<JsonParseException> {
-    
+
     @Context
     HttpServletRequest request;
-    
+
     @Override
     public Response toResponse(JsonParseException ex) {
         return Response.status(Response.Status.BAD_REQUEST)

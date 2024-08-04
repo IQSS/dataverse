@@ -34,7 +34,7 @@ public class OpenApiIT {
         openApi.prettyPrint();
         openApi.then().assertThat()
             .statusCode(400);
-        
+
 
     }
 }

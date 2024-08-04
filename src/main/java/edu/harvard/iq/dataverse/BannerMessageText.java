@@ -30,18 +30,19 @@ public class BannerMessageText implements Serializable {
 
     @Column(columnDefinition = "TEXT")
     private String lang;
-    
+
     @ManyToOne
     @JoinColumn(nullable = false)
     private BannerMessage bannerMessage;
-    
+
     public BannerMessage getBannerMessage() {
         return bannerMessage;
     }
+
     public void setBannerMessage(BannerMessage bannerMessage) {
         this.bannerMessage = bannerMessage;
     }
-    
+
     public String getMessage() {
         return message;
     }
@@ -90,5 +91,5 @@ public class BannerMessageText implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.BannerMessageText[ id=" + id + " ]";
     }
-    
+
 }

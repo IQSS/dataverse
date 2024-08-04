@@ -387,7 +387,6 @@ public class EditDDI  extends AbstractApiBean {
     }
 
 
-
     private boolean AreDefaultValues(VariableMetadata varMet) {
         boolean thedefault = true;
 

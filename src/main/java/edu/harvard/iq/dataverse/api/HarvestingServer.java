@@ -46,15 +46,15 @@ public class HarvestingServer extends AbstractApiBean {
     @EJB
     OAISetServiceBean oaiSetService;
 
-    private static final Logger logger = Logger.getLogger(HarvestingServer.class.getName()); 
-    
+    private static final Logger logger = Logger.getLogger(HarvestingServer.class.getName());
+
     // TODO: this should be available to admin only.
     // TODO: if we decide to update the Harvesting Sets Page to use commands for 
     // Create, Modify, and Delete we should also add them here.
     
     @GET
     public Response oaiSets(@QueryParam("key") String apiKey) throws IOException {
-    
+
         List<OAISet> oaiSets = null;
         try {
             oaiSets = oaiSetService.findAll();
@@ -75,28 +75,28 @@ public class HarvestingServer extends AbstractApiBean {
 
         return ok(jsonObjectBuilder().add("oaisets", hcArr));
     }
-    
+
     @GET
     @Path("{specname}")
     public Response oaiSet(@PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException {
-        
-        OAISet set = null;  
+
+        OAISet set = null;
         try {
             set = oaiSetService.findBySpec(spec);
         } catch (Exception ex) {
             logger.warning("Exception caught looking up OAI set " + spec + ": " + ex.getMessage());
             return error(Response.Status.BAD_REQUEST, "Internal error: failed to look up OAI set " + spec + ".");
         }
-        
+
         if (set == null) {
             return error(Response.Status.NOT_FOUND, "OAI set " + spec + " not found.");
         }
-                
+
         try {
-            return ok(oaiSetAsJson(set));  
+            return ok(oaiSetAsJson(set));
         } catch (Exception ex) {
             logger.warning("Unknown exception caught while trying to format OAI set " + spec + " as json: " + ex.getMessage());
-            return error(Response.Status.BAD_REQUEST, 
+            return error(Response.Status.BAD_REQUEST,
                     "Internal error: failed to produce output for OAI set " + spec + ".");
         }
     }
@@ -119,12 +119,12 @@ public class HarvestingServer extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        if (!dvUser.isSuperuser()) {            
+        if (!dvUser.isSuperuser()) {
             return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.superUser.required"));
         }
 
         StringReader rdr = new StringReader(jsonBody);
-        
+
 	try (JsonReader jrdr = Json.createReader(rdr))
 	{
 		JsonObject json = jrdr.readObject();
@@ -155,7 +155,7 @@ public class HarvestingServer extends AbstractApiBean {
 		} else {
 			return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
 		}
-                
+
                 set.setSpec(name);
 		try {
 			defn = json.getString("definition");
@@ -173,7 +173,7 @@ public class HarvestingServer extends AbstractApiBean {
 		oaiSetService.save(set);
 		return created("/harvest/server/oaisets" + name, oaiSetAsJson(set));
 	}
-	
+
     }
 
     @PUT
@@ -187,12 +187,12 @@ public class HarvestingServer extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        if (!dvUser.isSuperuser()) {            
+        if (!dvUser.isSuperuser()) {
             return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.superUser.required"));
         }
 
         StringReader rdr = new StringReader(jsonBody);
-        
+
         try (JsonReader jrdr = Json.createReader(rdr)) {
             JsonObject json = jrdr.readObject();
             OAISet update;
@@ -228,60 +228,60 @@ public class HarvestingServer extends AbstractApiBean {
             return ok("/harvest/server/oaisets" + spec, oaiSetAsJson(update));
         }
     }
-    
+
     @DELETE
     @AuthRequired
     @Path("{specname}")
     public Response deleteOaiSet(@Context ContainerRequestContext crc, @PathParam("specname") String spec, @QueryParam("key") String apiKey) {
-        
+
         AuthenticatedUser dvUser;
         try {
             dvUser = getRequestAuthenticatedUserOrDie(crc);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        if (!dvUser.isSuperuser()) {   
+        if (!dvUser.isSuperuser()) {
             return badRequest(BundleUtil.getStringFromBundle("harvestserver.deleteSetDialog.setspec.superUser.required"));
         }
-        
-        OAISet set = null;  
+
+        OAISet set = null;
         try {
             set = oaiSetService.findBySpec(spec);
         } catch (Exception ex) {
             logger.warning("Exception caught looking up OAI set " + spec + ": " + ex.getMessage());
             return error(Response.Status.BAD_REQUEST, "Internal error: failed to look up OAI set " + spec + ".");
         }
-        
+
         if (set == null) {
             return error(Response.Status.NOT_FOUND, "OAI set " + spec + " not found.");
         }
-        
+
         try {
             oaiSetService.setDeleteInProgress(set.getId());
             oaiSetService.remove(set.getId());
         } catch (Exception ex) {
             return error(Response.Status.BAD_REQUEST, "Internal error: failed to delete OAI set " + spec + "; " + ex.getMessage());
         }
-        
+
         return ok("OAI Set " + spec + " deleted");
-    
+
     }
-    
+
     @GET
     @Path("{specname}/datasets")
     public Response oaiSetListDatasets(@PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException {
-        OAISet set = null;  
+        OAISet set = null;
         try {
             set = oaiSetService.findBySpec(spec);
         } catch (Exception ex) {
             logger.warning("Exception caught looking up OAI set " + spec + ": " + ex.getMessage());
             return error(Response.Status.BAD_REQUEST, "Internal error: failed to look up OAI set " + spec + ".");
         }
-        
+
         return ok("");
-        
+
     }
-    
+
     /* Auxiliary, helper methods: */
     public static JsonArrayBuilder oaiSetsAsJsonArray(List<OAISet> oaiSets) {
         JsonArrayBuilder hdArr = Json.createArrayBuilder();

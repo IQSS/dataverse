@@ -27,8 +27,8 @@ public class OpenApi extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        
-        
+
+
         String format = req.getParameter("format");
         String accept = req.getHeader("Accept");
 
@@ -62,7 +62,7 @@ public class OpenApi extends HttpServlet {
         } else if (YAML_FORMAT.equals(format)) {
             resp.setContentType(MediaType.TEXT_PLAIN_TYPE.toString());
         } else {
-            
+
             List<String> args = Arrays.asList(format);
             String bundleResponse = BundleUtil.getStringFromBundle("openapi.exception.invalid.format", args);
 
@@ -95,7 +95,7 @@ public class OpenApi extends HttpServlet {
                             bundleResponse);
         }
 
-        
+
     }
-    
+
 }

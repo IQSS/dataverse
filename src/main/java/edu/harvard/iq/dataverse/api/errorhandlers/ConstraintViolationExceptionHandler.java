@@ -15,24 +15,27 @@ import java.util.stream.Collectors;
 
 @Provider
 public class ConstraintViolationExceptionHandler implements ExceptionMapper<ConstraintViolationException> {
-    
+
     public class ValidationError {
         private String path;
         private String message;
-        
+
         public String getPath() { return path; }
+
         public void setPath(String path) { this.path = path; }
+
         public String getMessage() { return message; }
+
         public void setMessage(String message) { this.message = message; }
     }
-    
+
     @Override
     public Response toResponse(ConstraintViolationException exception) {
-        
+
         List<ValidationError> errors = exception.getConstraintViolations().stream()
             .map(this::toValidationError)
             .collect(Collectors.toList());
-        
+
         return Response.status(Response.Status.BAD_REQUEST)
                        .entity(Json.createObjectBuilder()
                            .add("status", "ERROR")
@@ -42,14 +45,14 @@ public class ConstraintViolationExceptionHandler implements ExceptionMapper<Cons
                            .build())
                        .type(MediaType.APPLICATION_JSON_TYPE).build();
     }
-    
+
     private ValidationError toValidationError(ConstraintViolation constraintViolation) {
         ValidationError error = new ValidationError();
         error.setPath(constraintViolation.getPropertyPath().toString());
         error.setMessage(constraintViolation.getMessage());
         return error;
     }
-    
+
     private JsonArray toJsonArray(List<ValidationError> list) {
         JsonArrayBuilder builder = Json.createArrayBuilder();
         list.stream()

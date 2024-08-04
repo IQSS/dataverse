@@ -25,7 +25,7 @@ public class UrlSignerUtilTest {
         final String badkey = "abracadabara open says me";
 
         Logger.getLogger(UrlSignerUtil.class.getName()).setLevel(Level.FINE);
-        
+
         String signedUrl1 = UrlSignerUtil.signUrl(url, longTimeout, user1, get, key);
         assertTrue(UrlSignerUtil.isValidUrl(signedUrl1, user1, get, key));
         assertTrue(UrlSignerUtil.isValidUrl(signedUrl1, user1, null, key));

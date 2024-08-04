@@ -32,15 +32,15 @@ import java.util.Date;
 @ViewScoped
 @Named
 public class ConfigureFragmentBean implements java.io.Serializable {
-    
+
     private static final Logger logger = Logger.getLogger(ConfigureFragmentBean.class.getName());
-    
+
     private ExternalTool tool = null;
     private Long fileId = null;
     private ExternalToolHandler toolHandler = null;
     private String messageApi = "";
     private Long fileMetadataId = null;
-    
+
     @EJB
     DataFileServiceBean datafileService;
     @Inject
@@ -49,14 +49,14 @@ public class ConfigureFragmentBean implements java.io.Serializable {
     AuthenticationServiceBean authService;
     @EJB
     UserNotificationServiceBean userNotificationService;
-    
+
     public String configureExternalAlert() {
         generateApiToken();
         PrimeFaces.current().executeScript("location.reload(true)");
         String httpString = "window.open('" + toolHandler.getToolUrlWithQueryParams() + "','_blank'" + ")";
         PrimeFaces.current().executeScript(httpString);
         return "";
-    }    
+    }
 
     /**
      * @param setTool the tool to set
@@ -64,14 +64,14 @@ public class ConfigureFragmentBean implements java.io.Serializable {
     public void setConfigurePopupTool(ExternalTool setTool) {
         tool = setTool;
     }
-    
+
     /**
      * @return the Tool
      */
     public ExternalTool getConfigurePopupTool() {
         return tool;
     }
-    
+
     public ExternalToolHandler getConfigurePopupToolHandler() {
         if (fileId == null) {
             //on first UI load, method is called before fileId is set. There may be a better way to handle this
@@ -80,10 +80,10 @@ public class ConfigureFragmentBean implements java.io.Serializable {
         if (toolHandler != null) {
             return toolHandler;
         }
-        
+
         //TODO: Pretty sure the below command is doing absolutely nothing --MAD
         datafileService.find(fileId);
-        
+
         ApiToken apiToken = new ApiToken();
         User user = session.getUser();
         if (user instanceof AuthenticatedUser) {
@@ -95,7 +95,7 @@ public class ConfigureFragmentBean implements java.io.Serializable {
             messageApi = "";
         }
 
-        
+
         toolHandler = new ExternalToolHandler(tool, datafileService.find(fileId), apiToken, datafileService.findFileMetadata(fileMetadataId), session.getLocaleCode());
 
         return toolHandler;
@@ -117,7 +117,7 @@ public class ConfigureFragmentBean implements java.io.Serializable {
         }
 
     }
-    
+
     public void setConfigureIds(Long setFileId, Long setFileMetadataId) {
 
         fileId = setFileId;

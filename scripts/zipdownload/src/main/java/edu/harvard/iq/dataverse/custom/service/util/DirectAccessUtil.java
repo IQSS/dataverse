@@ -41,17 +41,17 @@ import java.io.InputStream;
 public class DirectAccessUtil implements java.io.Serializable {
 
     private AmazonS3 s3 = null;
-    
+
     public InputStream openDirectAccess(String storageLocation) {
         InputStream inputStream = null;
 
         if (storageLocation.startsWith("s3://")) {
             createOrReuseAwsClient();
-            
+
             if (this.s3 == null) {
-                return null; 
+                return null;
             }
-            
+
             storageLocation = storageLocation.substring(5);
 
             String bucket = storageLocation.substring(0, storageLocation.indexOf('/'));
@@ -77,24 +77,24 @@ public class DirectAccessUtil implements java.io.Serializable {
             } catch (SdkClientException sce) {
                 System.err.println("Cannot get S3 object " + key + " from bucket " + bucket);
             }
-            
+
         } else if (storageLocation.startsWith("file://")) {
             // This could be a static method; since no reusable client/maintainable
             // state is required
             
             storageLocation = storageLocation.substring(7);
-            
+
             try {
                 inputStream = new FileInputStream(new File(storageLocation));
             } catch (IOException ioex) {
                 System.err.println("Cannot open file " + storageLocation);
             }
         }
-        
+
         // Unsupported storage location - return null
         return inputStream;
     }
-    
+
     private void createOrReuseAwsClient() {
         if (this.s3 == null) {
             try {

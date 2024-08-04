@@ -100,7 +100,7 @@ public class DatasetDTO implements java.io.Serializable {
     public void setMetadataLanguage(String metadataLanguage) {
         this.metadataLanguage = metadataLanguage;
     }
-    
+
     public String getMetadataLanguage() {
         return metadataLanguage;
     }

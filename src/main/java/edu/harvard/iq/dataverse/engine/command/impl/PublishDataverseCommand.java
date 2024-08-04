@@ -34,7 +34,7 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
         if (dataverse.isReleased()) {
             throw new IllegalCommandException("Dataverse " + dataverse.getAlias() + " has already been published.", this);
         }
-        
+
         Dataverse parent = dataverse.getOwner();
         // root dataverse doesn't have a parent
         if (parent != null) {
@@ -49,14 +49,14 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
             if (!(getUser().isSuperuser() && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
                 String executable = ctxt.systemConfig().getDataverseValidationExecutable();
                 boolean result = validateDataverseMetadataExternally(dataverse, executable, getRequest());
-            
+
                 if (!result) {
                     String rejectionMessage = ctxt.systemConfig().getDataverseValidationFailureMsg();
                     throw new IllegalCommandException(rejectionMessage, this);
                 }
             }
         }
-        
+
         //Before setting dataverse to released send notifications to users with download file
         List<RoleAssignment> ras = ctxt.roles().directRoleAssignments(dataverse);
         for (RoleAssignment ra : ras) {
@@ -70,11 +70,11 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
         dataverse.setPublicationDate(new Timestamp(new Date().getTime()));
         dataverse.setReleaseUser((AuthenticatedUser) getUser());
         Dataverse savedDataverse = ctxt.dataverses().save(dataverse);
-        
+
         return savedDataverse;
 
     }
-    
+
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         return ctxt.dataverses().index((Dataverse) r, true);

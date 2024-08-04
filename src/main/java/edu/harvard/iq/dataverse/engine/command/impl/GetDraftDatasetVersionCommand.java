@@ -26,5 +26,5 @@ public class GetDraftDatasetVersionCommand extends AbstractCommand<DatasetVersio
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         return ds.getOrCreateEditVersion();
     }
-    
+
 }

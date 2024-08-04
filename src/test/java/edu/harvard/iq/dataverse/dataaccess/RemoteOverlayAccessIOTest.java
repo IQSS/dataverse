@@ -117,7 +117,7 @@ public class RemoteOverlayAccessIOTest {
 
     @Test
     void testRemoteOverlayIdentifierFormats() throws IOException {
-        
+
         assertTrue(DataAccess.isValidDirectStorageIdentifier(datafile.getStorageIdentifier()));
         assertFalse(DataAccess.isValidDirectStorageIdentifier(badDatafile.getStorageIdentifier()));
         assertFalse(DataAccess.isValidDirectStorageIdentifier(datafile.getStorageIdentifier().replace("test", "bad")));

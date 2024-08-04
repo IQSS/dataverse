@@ -44,34 +44,34 @@ public class CSVFileReaderSpi extends TabularDataFileReaderSpi {
   public CSVFileReaderSpi() {
     super("HU-IQSS-DVN-project", "0.1", formatNames, extensions, mimeType, CSVFileReaderSpi.class.getName());
   }
-  
+
   public String getDescription(Locale locale) {
     return "HU-IQSS-Dataverse-project CSV";
   }
-  
+
   @Override
   public boolean canDecodeInput(Object source) throws IOException {
-    
+
     if (!(source instanceof BufferedInputStream))
       return false;
 
     return canDecodeInput((BufferedInputStream) source);
   }
-  
+
   @Override
   public boolean canDecodeInput(BufferedInputStream stream) throws IOException {
     return false;
   }
-  
+
   @Override
   public boolean canDecodeInput(File file) throws IOException {
     return true;
   }
-  
+
   public boolean fileIsValid() throws IOException {
-    return false; 
+    return false;
   }
-  
+
   @Override
   public TabularDataFileReader createReaderInstance(Object ext) throws IOException {
     return new CSVFileReader(this, ',');

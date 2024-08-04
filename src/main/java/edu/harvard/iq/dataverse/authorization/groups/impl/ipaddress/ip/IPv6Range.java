@@ -23,7 +23,7 @@ import jakarta.persistence.Table;
                           + "or (r.topA=:a and r.topB=:b and r.topC>:c) "
                           + "or (r.topA=:a and r.topB=:b and r.topC=:c and r.topD>=:d))"
                       + " and ( (r.bottomA<:a) "
-                          + "or (r.bottomA=:a and r.bottomB<:b) " 
+                          + "or (r.bottomA=:a and r.bottomB<:b) "
                           + "or (r.bottomA=:a and r.bottomB=:b and r.bottomC<:c) "
                           + "or (r.bottomA=:a and r.bottomB=:b and r.bottomC=:c and r.bottomD<=:d))"
                          )
@@ -34,18 +34,18 @@ public class IPv6Range extends IpAddressRange implements Serializable {
     @Id
     @GeneratedValue
     Long id;
-    
+
     // Low-level bit representation of the addresses.
     long topA, topB, topC, topD;
     long bottomA, bottomB, bottomC, bottomD;
-    
+
     public IPv6Range(IPv6Address bottom, IPv6Address top) {
         setTop(top);
         setBottom(bottom);
     }
-    
+
     public IPv6Range() {}
-    
+
     @Override
     public Boolean contains(IpAddress anAddress) {
         if (anAddress == null) return null;
@@ -65,7 +65,7 @@ public class IPv6Range extends IpAddressRange implements Serializable {
     public IPv6Address getBottom() {
         return new IPv6Address( new long[]{bottomA, bottomB, bottomC, bottomD} );
     }
-    
+
     public final void setTop(IPv6Address t) {
         long[] tArr = t.toLongArray();
         topA = tArr[0];
@@ -73,7 +73,7 @@ public class IPv6Range extends IpAddressRange implements Serializable {
         topC = tArr[2];
         topD = tArr[3];
     }
-    
+
     public final void setBottom(IPv6Address b) {
         long[] bArr = b.toLongArray();
         bottomA = bArr[0];
@@ -153,6 +153,6 @@ public class IPv6Range extends IpAddressRange implements Serializable {
     public void setBottomD(long bottomD) {
         this.bottomD = bottomD;
     }
-    
-    
+
+
 }

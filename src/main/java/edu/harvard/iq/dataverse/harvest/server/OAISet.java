@@ -42,10 +42,10 @@ import jakarta.validation.constraints.Size;
 public class OAISet implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     public OAISet() {
-    } 
-    
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -57,7 +57,7 @@ public class OAISet implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     @Column(columnDefinition = "TEXT")
     private String name;
     @Column(columnDefinition = "TEXT", nullable = false, unique = true)
@@ -65,18 +65,18 @@ public class OAISet implements Serializable {
     @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "{dataverse.nameIllegalCharacters}")})
     //    @Pattern(regexp=".*\\D.*", message="{setspec.notNumber}")})
     private String spec;
-    
+
     @Column(columnDefinition = "TEXT", nullable = false)
     private String definition;
-   
+
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
     @Version
     private Long version;
-    
+
     private boolean updateInProgress;
-    
+
     private boolean deleted;
 
     public boolean isUpdateInProgress() {
@@ -84,17 +84,17 @@ public class OAISet implements Serializable {
     }
 
     public void setUpdateInProgress(boolean updateInProgress) {
-        this.updateInProgress = updateInProgress; 
+        this.updateInProgress = updateInProgress;
     }
-    
+
     public boolean isDeleteInProgress() {
         return this.deleted;
     }
 
     public void setDeleteInProgress(boolean deleteInProgress) {
-        this.deleted = deleteInProgress; 
+        this.deleted = deleteInProgress;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -126,15 +126,15 @@ public class OAISet implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
     public Long getVersion() {
         return version;
     }
-    
+
     public void setVersion(Long version) {
         this.version = version;
     }
-    
+
     public boolean isDefaultSet() {
         return "".equals(this.spec);
     }
@@ -163,5 +163,5 @@ public class OAISet implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.harvest.server.OaiSet[ id=" + id + " ]";
     }
-    
+
 }

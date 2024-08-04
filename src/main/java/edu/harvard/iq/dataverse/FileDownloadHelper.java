@@ -26,6 +26,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.primefaces.PrimeFaces;
+
 //import org.primefaces.context.RequestContext;
 
 /**
@@ -37,26 +38,26 @@ import org.primefaces.PrimeFaces;
  @ViewScoped
  @Named
 public class FileDownloadHelper implements java.io.Serializable {
-     
+
     private static final Logger logger = Logger.getLogger(FileDownloadHelper.class.getCanonicalName());
     @Inject
     DataverseSession session;
-        
+
     @Inject
     DataverseRequestServiceBean dvRequestService;
 
     @EJB
     PermissionServiceBean  permissionService;
-    
+
     @EJB
     FileDownloadServiceBean  fileDownloadService;
-    
+
     @EJB
     GuestbookResponseServiceBean guestbookResponseService;
-    
+
     @EJB
     DataFileServiceBean datafileService;
-    
+
     @EJB
     GlobusServiceBean globusService;
 
@@ -125,7 +126,7 @@ public class FileDownloadHelper implements java.io.Serializable {
           */
          if (externalTool == null) {
              externalTool = guestbookResponse.getExternalTool();
-         } 
+         }
          if (fmd == null) {
              DatasetVersion dv = guestbookResponse.getDatasetVersion();
              for (FileMetadata fm : dv.getFileMetadatas()) {
@@ -140,7 +141,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          //requestContext.execute("PF('downloadPopup').hide()");
          PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
     }
-     
+
     public void writeGuestbookAndLaunchPackagePopup(GuestbookResponse guestbookResponse) {
 
             PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
@@ -149,7 +150,7 @@ public class FileDownloadHelper implements java.io.Serializable {
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
     }
 
-    
+
     public void writeGuestbookResponseAndRequestAccess(GuestbookResponse guestbookResponse) {
 
         if (!filesForRequestAccess.isEmpty()) {
@@ -159,7 +160,7 @@ public class FileDownloadHelper implements java.io.Serializable {
         PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
         fileDownloadService.writeGuestbookResponseAndRequestAccess(guestbookResponse);
     }
-    
+
      /**
       * Writes a guestbook entry for either popup scenario: guestbook or terms.
       */
@@ -178,21 +179,21 @@ public class FileDownloadHelper implements java.io.Serializable {
     public void setFilesForRequestAccess(List<DataFile> filesForRequestAccess) {
         this.filesForRequestAccess = filesForRequestAccess;
     }
-    
+
     public void addFileForRequestAccess(DataFile dataFile) {
         this.filesForRequestAccess.clear();
         this.filesForRequestAccess.add(dataFile);
     }
-    
+
     public void clearRequestAccessFiles() {
         this.filesForRequestAccess.clear();
     }
-    
+
     public void addMultipleFilesForRequestAccess(DataFile dataFile) {
         this.filesForRequestAccess.add(dataFile);
 
     }
-        
+
     private String selectedFileId = null;
 
     public String getSelectedFileId() {
@@ -202,7 +203,7 @@ public class FileDownloadHelper implements java.io.Serializable {
     public void setSelectedFileId(String selectedFileId) {
         this.selectedFileId = selectedFileId;
     }
-   
+
     /**
      *  WARNING: Before calling this, make sure the user has download
      *  permission for the file!!  (See DatasetPage.canDownloadFile())
@@ -214,11 +215,11 @@ public class FileDownloadHelper implements java.io.Serializable {
         if (fileMetadata == null) {
             return false;
         }
-       
+
         if ((fileMetadata.getId() == null) || (fileMetadata.getDataFile().getId() == null)) {
             return false;
         }
-        
+
         if (session.getUser() instanceof PrivateUrlUser) {
              // Always allow download for PrivateUrlUser
              return true;
@@ -231,7 +232,7 @@ public class FileDownloadHelper implements java.io.Serializable {
         //logger.info("calling candownloadfile on filemetadata "+fid);
         // Note that `isRestricted` at the FileMetadata level is for expressing intent by version. Enforcement is done with `isRestricted` at the DataFile level.
         boolean isRestrictedFile = fileMetadata.isRestricted() || fileMetadata.getDataFile().isRestricted();
-        
+
         // Has this file been checked? Look at the DatasetPage hash
         if (this.fileDownloadPermissionMap.containsKey(fid)) {
             // Yes, return previous answer
@@ -256,7 +257,7 @@ public class FileDownloadHelper implements java.io.Serializable {
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
         }
-        
+
         // See if the DataverseRequest, which contains IP Groups, has permission to download the file.
         if (permissionService.requestOn(dvRequestService.getDataverseRequest(), fileMetadata.getDataFile()).has(Permission.DownloadFile)) {
             logger.fine("The DataverseRequest (User plus IP address) has access to download the file.");
@@ -276,34 +277,34 @@ public class FileDownloadHelper implements java.io.Serializable {
         if (permissionToCheck == null) {
             return false;
         }
-        
+
         DvObject objectToCheck = null;
-        
+
         if (permissionToCheck.equals(Permission.EditDataset)) {
             objectToCheck = fileMetadata.getDatasetVersion().getDataset();
         } else if (permissionToCheck.equals(Permission.DownloadFile)) {
             objectToCheck = fileMetadata.getDataFile();
         }
-        
+
         if (objectToCheck == null) {
             return false;
         }
-        
+
         boolean hasPermission = this.permissionService.userOn(this.session.getUser(), objectToCheck).has(permissionToCheck);
-       
+
         // return true/false
         return hasPermission;
     }
-    
-    
-    public void requestAccess(DataFile file) {   
+
+
+    public void requestAccess(DataFile file) {
         //Called from download button fragment via either dataset page or file page
         // when there's only one file for the access request and there's no pop-up
-        processRequestAccess(file, true);        
+        processRequestAccess(file, true);
     }
-    
+
     public void handleCommandLinkClick(FileMetadata fmd) {
-        
+
         if (FileUtil.isRequestAccessPopupRequired(fmd.getDatasetVersion())) {
             addFileForRequestAccess(fmd.getDataFile());
             PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');");
@@ -334,7 +335,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("file.accessRequested.success"));
          }
      }
-    
+
      public void requestAccessIndirect() {
          //Called when there are multiple files and no popup
          // or there's a popup with singular or multiple files
@@ -342,9 +343,9 @@ public class FileDownloadHelper implements java.io.Serializable {
          // user clicks the request access button in the files fragment
          // (and has selected one or more files)
          requestAccessMultiple(this.filesForRequestAccess);
-     }    
-    
-    
+     }
+
+
      private boolean processRequestAccess(DataFile file, Boolean sendNotification) {
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
@@ -362,13 +363,13 @@ public class FileDownloadHelper implements java.io.Serializable {
          }
          JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("file.accessRequested.alreadyRequested", Arrays.asList(file.getDisplayName())));
          return false;
-     } 
+     }
 
     public GuestbookResponseServiceBean getGuestbookResponseService() {
         return this.guestbookResponseService;
     }
-    
-    
+
+
     //todo: potential cleanup - are these methods needed?
     public DataverseSession getSession() {
         return session;
@@ -377,5 +378,5 @@ public class FileDownloadHelper implements java.io.Serializable {
     public void setSession(DataverseSession session) {
         this.session = session;
     }
-    
+
 }

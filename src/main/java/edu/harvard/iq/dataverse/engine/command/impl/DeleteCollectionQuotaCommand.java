@@ -23,31 +23,31 @@ import java.util.logging.Logger;
 public class DeleteCollectionQuotaCommand  extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(DeleteCollectionQuotaCommand.class.getCanonicalName());
-    
+
     private final Dataverse targetDataverse;
-    
+
     public DeleteCollectionQuotaCommand(DataverseRequest aRequest, Dataverse target) {
         super(aRequest, target);
         targetDataverse = target;
-    } 
-        
+    }
+
     @Override
     public void executeImpl(CommandContext ctxt) throws CommandException {
         // first check if  user is a superuser
-        if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {      
+        if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException(BundleUtil.getStringFromBundle("dataverse.storage.quota.superusersonly"),
-                this, null, targetDataverse);                
+                this, null, targetDataverse);
         }
-        
+
         if (targetDataverse == null) {
             throw new IllegalCommandException("", this);
         }
-        
+
         StorageQuota storageQuota = targetDataverse.getStorageQuota();
-        
+
         if (storageQuota != null && storageQuota.getAllocation() != null) {
             ctxt.dataverses().disableStorageQuota(storageQuota);
-        } 
+        }
         // ... and if no quota was enabled on the collection - nothing to do = success
-    }    
+    }
 }

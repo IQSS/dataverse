@@ -24,22 +24,22 @@ import jakarta.ws.rs.core.Response;
  */
 @Stateless
 @Path("datatags")
-public class DataTagsAPI extends AbstractApiBean { 
-    
+public class DataTagsAPI extends AbstractApiBean {
+
     private static final String TAGGING_SERVER_ENDPOINT = "http://datatags.org/api/1/interviewLink";
     private static final String CALLBACK_URL = "http://dvn-build.hmdc.harvard.edu/api/datatags/receiveTags/" + java.util.UUID.randomUUID().toString();
     private static final String USER_REDIRECT_URL = "http://dvn-build.hmdc.harvard.edu/datatags-api-test-deposit-complete.xhtml";
-    
+
     private static final Map<String, DataTagsContainer> CACHE = new ConcurrentHashMap<>();
-    
-        
+
+
     private static final Logger logger = Logger.getLogger(DataTagsAPI.class.getName());
-    
-    
+
+
     @EJB
     DataTagsContainer container;
-    
-    
+
+
     /**
      * send GET request to tagging server API for URL for user
      * @return the URL at which the interview waits.
@@ -55,35 +55,34 @@ public class DataTagsAPI extends AbstractApiBean {
         logger.info(url);
         return url;
     }
-    
+
     public void setCache(String key, DataTagsContainer value) {
         CACHE.put(key, value);
     }
-    
+
     public Map<String, DataTagsContainer> getCache() {
         return CACHE;
     }
-    
+
     public DataTagsContainer getContainer() {
         return container;
     }
-    
+
     public String getCallbackURL() {
         return CALLBACK_URL;
     }
-    
 
-    
+
     @POST
     @Path("receiveTags/{uniqueCacheId}")
     public Response receiveTags(JsonObject tags, @PathParam("uniqueCacheId") String uniqueCacheId) {
-        
+
         // store json tags in the DataTagsContainer holding the dataset name
         container.setTag(tags);
         CACHE.put(uniqueCacheId, container);
-        
+
         // return an OK message with the redirect URL for the user to return to Dataverse through postBackTo or unacceptableDataset in DataTags
         return ok(USER_REDIRECT_URL);
     }
-    
+
 }

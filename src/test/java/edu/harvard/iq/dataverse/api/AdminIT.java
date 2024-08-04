@@ -55,7 +55,7 @@ public class AdminIT {
         Response nonSuperuser = UtilIT.listAuthenticatedUsers(testNonSuperuserApiToken);
         nonSuperuser.prettyPrint();
         nonSuperuser.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
-        
+
         Response createSuperuser = UtilIT.createRandomUser();
         String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
         String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
@@ -76,10 +76,10 @@ public class AdminIT {
         Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
         assertEquals(200, deleteSuperuser.getStatusCode());
     }
-    
+
     @Test
     public void testFilterAuthenticatedUsersForbidden() throws Exception {
-        
+
         // --------------------------------------------
         // Forbidden: Try *without* an API token
         // --------------------------------------------
@@ -92,18 +92,18 @@ public class AdminIT {
         // --------------------------------------------
         Response createUserResponse = UtilIT.createRandomUser();
         createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
-        
+
         String nonSuperuserApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
         String nonSuperUsername = UtilIT.getUsernameFromResponse(createUserResponse);
-        
+
         Response filterResponseBadToken = UtilIT.filterAuthenticatedUsers(nonSuperuserApiToken, null, null, null, null);
         filterResponseBadToken.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
-         
+
         // delete user
         Response deleteNonSuperuser = UtilIT.deleteUser(nonSuperUsername);
         assertEquals(200, deleteNonSuperuser.getStatusCode());
     }
-    
+
     /**
      * Run multiple test against API endpoint to search authenticated users
      * @throws Exception 
@@ -112,7 +112,7 @@ public class AdminIT {
     public void testFilterAuthenticatedUsers() throws Exception {
 
         Response createUserResponse;
-        
+
         // --------------------------------------------
         // Make 11 random users
         // --------------------------------------------
@@ -120,14 +120,14 @@ public class AdminIT {
 
         List<String> randomUsernames = new ArrayList<String>();
         for (int i = 0; i < 11; i++) {
-            
+
             createUserResponse = UtilIT.createRandomUser(randUserNamePrefix);
             createUserResponse.then().assertThat().statusCode(OK.getStatusCode());
             String newUserName = UtilIT.getUsernameFromResponse(createUserResponse);
             randomUsernames.add(newUserName);
-            
+
         }
-        
+
         // --------------------------------------------
         // Create superuser
         // --------------------------------------------
@@ -137,8 +137,8 @@ public class AdminIT {
         Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
         toggleSuperuser.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-        
+
+
         // --------------------------------------------
         // Search for the 11 new users and verify results
         // --------------------------------------------        
@@ -152,7 +152,7 @@ public class AdminIT {
                 .body("data.selectedPage", equalTo(1))
                 .body("data.pagination.pageCount", equalTo(1))
                 .body("data.pagination.numResults", equalTo(numResults));
-        
+
         String userIdentifier;
         for (int i = 0; i < numResults; i++) {
             userIdentifier = JsonPath.from(filterReponse01.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
@@ -161,7 +161,7 @@ public class AdminIT {
 
         List<Object> userList1 = JsonPath.from(filterReponse01.body().asString()).getList("data.users");
         assertEquals(userList1.size(), numResults);
-        
+
         // --------------------------------------------
         // Search for the 11 new users, but only return 5 per page
         // --------------------------------------------        
@@ -176,17 +176,17 @@ public class AdminIT {
                 .body("data.pagination.docsPerPage", equalTo(numUsersReturned))
                 .body("data.pagination.pageCount", equalTo(3))
                 .body("data.pagination.numResults", equalTo(numResults));
-        
+
         String userIdentifier2;
         for (int i = 0; i < numUsersReturned; i++) {
             userIdentifier2 = JsonPath.from(filterReponse02.getBody().asString()).getString("data.users[" + i + "].userIdentifier");
             assertTrue(randomUsernames.contains(userIdentifier2));
         }
-        
+
         List<Object> userList2 = JsonPath.from(filterReponse02.body().asString()).getList("data.users");
         assertEquals(userList2.size(), numUsersReturned);
 
-        
+
         // --------------------------------------------
         // Search for the 11 new users, return 5 per page, and start on NON-EXISTENT 4th page -- should revert to 1st page
         // --------------------------------------------        
@@ -203,14 +203,14 @@ public class AdminIT {
 
         List<Object> userList2a = JsonPath.from(filterReponse02a.body().asString()).getList("data.users");
         assertEquals(userList2a.size(), numUsersReturned);
-        
+
         // --------------------------------------------
         // Search for the 11 new users, return 5 per page, start on 3rd page
         // --------------------------------------------     
         Response filterReponse03 = UtilIT.filterAuthenticatedUsers(superuserApiToken, randUserNamePrefix, 3, 5, null);
         filterReponse03.then().assertThat().statusCode(OK.getStatusCode());
         filterReponse03.prettyPrint();
-        
+
         filterReponse03.then().assertThat()
                 .body("data.userCount", equalTo(numResults))
                 .body("data.selectedPage", equalTo(3))
@@ -218,7 +218,7 @@ public class AdminIT {
                 .body("data.pagination.hasNextPageNumber", equalTo(false))
                 .body("data.pagination.pageCount", equalTo(3))
                 .body("data.pagination.numResults", equalTo(numResults));
-       
+
         List<Object> userList3 = JsonPath.from(filterReponse03.body().asString()).getList("data.users");
         assertEquals(userList3.size(), 1);
 
@@ -228,7 +228,7 @@ public class AdminIT {
         Response filterReponse04 = UtilIT.filterAuthenticatedUsers(superuserApiToken, "zzz" + randUserNamePrefix, 1, 50, null);
         filterReponse04.then().assertThat().statusCode(OK.getStatusCode());
         filterReponse04.prettyPrint();
-        
+
         filterReponse04.then().assertThat()
                 .body("data.userCount", equalTo(0))
                 .body("data.selectedPage", equalTo(1));
@@ -236,7 +236,7 @@ public class AdminIT {
         List<Object> userList4 = JsonPath.from(filterReponse04.body().asString()).getList("data.users");
         assertEquals(userList4.size(), 0);
 
-        
+
         // --------------------------------------------
         // Run search that returns 1 user
         // --------------------------------------------     
@@ -244,7 +244,7 @@ public class AdminIT {
         Response filterReponse05 = UtilIT.filterAuthenticatedUsers(superuserApiToken, singleUsername, 1, 50, null);
         filterReponse05.then().assertThat().statusCode(OK.getStatusCode());
         filterReponse05.prettyPrint();
-        
+
         filterReponse05.then().assertThat()
                 .body("data.userCount", equalTo(1))
                 .body("data.selectedPage", equalTo(1));
@@ -257,21 +257,21 @@ public class AdminIT {
         // --------------------------------------------
         Response deleteUserResponse;
         for (String aUsername : randomUsernames) {
-            
+
             deleteUserResponse = UtilIT.deleteUser(aUsername);
             assertEquals(200, deleteUserResponse.getStatusCode());
-        
+
         }
-        
+
         // --------------------------------------------
         // Delete superuser
         // --------------------------------------------
         deleteUserResponse = UtilIT.deleteUser(superuserUsername);
         assertEquals(200, deleteUserResponse.getStatusCode());
-               
-        
+
+
     }
-    
+
     @Test
     public void testConvertShibUserToBuiltin() throws Exception {
 
@@ -523,7 +523,7 @@ public class AdminIT {
         assertEquals(200, deleteSuperuser.getStatusCode());
 
     }
-    
+
 
     @Test
     public void testCreateNonBuiltinUserViaApi() {
@@ -536,7 +536,6 @@ public class AdminIT {
         Response deleteUserToConvert = UtilIT.deleteUser(persistentUserId);
         assertEquals(200, deleteUserToConvert.getStatusCode());
     }
-    
 
 
     @Test
@@ -622,7 +621,7 @@ public class AdminIT {
                 .body("status", equalTo("ERROR"))
                 .body("message", equalTo("Unknown algorithm: Blank"))
                 .statusCode(BAD_REQUEST.getStatusCode());
-        
+
         //Not a Super user
         computeDataFileHashResponse = UtilIT.computeDataFileHashValue(origFileId.toString(), DataFile.ChecksumType.MD5.toString(), apiToken);
 
@@ -638,7 +637,7 @@ public class AdminIT {
         computeDataFileHashResponse.then().assertThat()
                 .body("data.message", equalTo("Datafile rehashing complete. " + origFileId.toString() + "  successfully rehashed. New hash value is: 003b8c67fbdfa6df31c0e43e65b93f0e"))
                 .statusCode(OK.getStatusCode());
-        
+
         //Not a Super user
         Response validationResponse = UtilIT.validateDataFileHashValue(origFileId.toString(), apiToken);
 
@@ -646,7 +645,7 @@ public class AdminIT {
                 .body("status", equalTo("ERROR"))
                 .body("message", equalTo("must be superuser"))
                 .statusCode(UNAUTHORIZED.getStatusCode());
-        
+
         //Bad File Id
         validationResponse = UtilIT.validateDataFileHashValue("BadFileId", superuserApiToken);
 
@@ -668,7 +667,7 @@ public class AdminIT {
                 .statusCode(OK.getStatusCode());
 
     }
-    
+
     @Test
     @Disabled
     public void testMigrateHDLToDOI() {
@@ -722,12 +721,12 @@ public class AdminIT {
                 .body("status", equalTo("ERROR"))
                 .body("message", equalTo("Forbidden. You must be a superuser."))
                 .statusCode(UNAUTHORIZED.getStatusCode());
-        
+
         Response createSuperuser = UtilIT.createRandomUser();
         String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
         String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
         UtilIT.makeSuperUser(superuserUsername);
-        
+
         Response migrateIdentifierResponse = UtilIT.migrateDatasetIdentifierFromHDLToPId(datasetId.toString(), superuserApiToken);
         migrateIdentifierResponse.prettyPrint();
         migrateIdentifierResponse.then().assertThat()
@@ -818,17 +817,18 @@ public class AdminIT {
           message
         );
     }
+
     @Test
     public void testClearThumbnailFailureFlag() {
         Response nonExistentFile = UtilIT.clearThumbnailFailureFlag(Long.MAX_VALUE);
         nonExistentFile.prettyPrint();
         nonExistentFile.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
-        
+
         Response clearAllFlags = UtilIT.clearThumbnailFailureFlags();
         clearAllFlags.prettyPrint();
         clearAllFlags.then().assertThat().statusCode(OK.getStatusCode());
     }
-    
+
     @Test
     public void testBannerMessages() {
 
@@ -841,13 +841,13 @@ public class AdminIT {
                 JsonPath.from(getBannerMessageResponse.getBody().asString()).getInt("data.size()");
 
         //We add a banner message with an error in the json file
-        String pathToJsonFile = "scripts/api/data/bannerMessageError.json";       
+        String pathToJsonFile = "scripts/api/data/bannerMessageError.json";
         Response addBannerMessageErrorResponse = UtilIT.addBannerMessage(pathToJsonFile);
         addBannerMessageErrorResponse.prettyPrint();
         addBannerMessageErrorResponse.then().assertThat()
                         .statusCode(BAD_REQUEST.getStatusCode())
                         .body("status", equalTo("ERROR"));
-        
+
         //We add a banner message with a correct json file
         pathToJsonFile = "scripts/api/data/bannerMessageTest.json";
         Response addBannerMessageResponse = UtilIT.addBannerMessage(pathToJsonFile);
@@ -857,8 +857,8 @@ public class AdminIT {
                 .body("status", equalTo("OK"))
                 .body("data.message", equalTo("Banner Message added successfully."));
         Long addedBanner = Long.valueOf(
-                        JsonPath.from(addBannerMessageResponse.getBody().asString()).getLong("data.id"));                
-        
+                        JsonPath.from(addBannerMessageResponse.getBody().asString()).getLong("data.id"));
+
         //We get the banner messages and check that the number of messages has increased by 1
         getBannerMessageResponse = UtilIT.getBannerMessages();
         getBannerMessageResponse.prettyPrint();
@@ -872,7 +872,7 @@ public class AdminIT {
         deleteBannerMessageResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("status", equalTo("OK"));
-        
+
     }
 
     /**

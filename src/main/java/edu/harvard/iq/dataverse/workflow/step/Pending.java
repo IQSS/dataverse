@@ -9,14 +9,15 @@ import java.util.Map;
  * @author michael
  */
 public class Pending implements WorkflowStepResult {
-    
+
     private final Map<String, String> data = new HashMap<>();
 
     public Pending(Map<String, String> someData) {
         data.putAll(someData);
     }
+
     public Pending() {}
-    
+
     public Map<String, String> getData() {
         return data;
     }
@@ -25,6 +26,6 @@ public class Pending implements WorkflowStepResult {
     public String toString() {
         return "WorkflowStepResult.Pending{" + "data=" + data + '}';
     }
-    
-    
+
+
 }

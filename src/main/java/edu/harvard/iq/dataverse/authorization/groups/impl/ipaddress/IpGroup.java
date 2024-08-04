@@ -27,28 +27,28 @@ import jakarta.persistence.Transient;
 })
 @Entity
 public class IpGroup extends PersistedGlobalGroup {
-    
+
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<IPv6Range> ipv6Ranges;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<IPv4Range> ipv4Ranges;
-    
+
     @Transient
     private IpGroupProvider provider;
-    
+
     public IpGroup() {}
-    
+
     public IpGroup(IpGroupProvider provider) {
         this.provider = provider;
     }
-    
+
     @Override
     public boolean contains(DataverseRequest rq) {
         IpAddress addr = rq.getSourceAddress();
         return (addr != null) && containsAddress(addr);
     }
-    
+
     public boolean containsAddress(IpAddress addr) {
         for (IpAddressRange r : ((addr instanceof IPv4Address) ? ipv4Ranges : ipv6Ranges)) {
            Boolean containment = r.contains(addr);
@@ -58,11 +58,11 @@ public class IpGroup extends PersistedGlobalGroup {
         }
         return false;
     }
-    
+
     public <T extends IpAddressRange> T add(T range) {
         if (ipv4Ranges == null) ipv4Ranges = new HashSet<>();
         if (ipv6Ranges == null) ipv6Ranges = new HashSet<>();
-        
+
         range.setOwner(this);
         if (range instanceof IPv4Range) {
             ipv4Ranges.add((IPv4Range) range);
@@ -71,21 +71,21 @@ public class IpGroup extends PersistedGlobalGroup {
         }
         return range;
     }
-    
+
     @SuppressWarnings("element-type-mismatch")
     public void remove(IpAddressRange range) {
         ((range instanceof IPv4Range) ? ipv4Ranges : ipv6Ranges).remove(range);
     }
-    
+
     @Override
     public boolean isEditable() {
         return true;
     }
-    
+
     public void setGroupProvider(IpGroupProvider prv) {
         provider = prv;
     }
-    
+
     @Override
     public GroupProvider getGroupProvider() {
         return provider;
@@ -120,6 +120,7 @@ public class IpGroup extends PersistedGlobalGroup {
         this.ipv6Ranges = ipv6Ranges;
         updateRangeOwnership(ipv6Ranges);
     }
+
     /**
      * Low-level JPA accessor
      * @return 
@@ -133,15 +134,15 @@ public class IpGroup extends PersistedGlobalGroup {
         this.ipv4Ranges = ipv4Ranges;
         updateRangeOwnership(ipv4Ranges);
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (o == null) return false;
         if (o == this) return true;
         if (!(o instanceof IpGroup)) return false;
-        
+
         IpGroup other = (IpGroup) o;
-        
+
         if (!Objects.equals(getId(), other.getId())) return false;
         if (!Objects.equals(getDescription(), other.getDescription())) return false;
         if (!Objects.equals(getDisplayName(), other.getDisplayName())) return false;
@@ -153,12 +154,12 @@ public class IpGroup extends PersistedGlobalGroup {
     public int hashCode() {
         return getPersistedGroupAlias().hashCode();
     }
-    
+
     @Override
     public String toString() {
         return "[IpGroup alias:" + getPersistedGroupAlias() + " id:" + getId() + " ranges:" + getIpv4Ranges() + "," + getIpv6Ranges() + "]";
     }
-    
+
     private void updateRangeOwnership(Collection<? extends IpAddressRange> ranges) {
         for (IpAddressRange rng : ranges) {
             rng.setOwner(this);

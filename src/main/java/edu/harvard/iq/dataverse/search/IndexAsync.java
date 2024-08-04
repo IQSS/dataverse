@@ -27,8 +27,8 @@ public class IndexAsync {
         IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(roleAssignment.getDefinitionPoint());
         logger.fine("output from indexing operations: " + indexResponse);
     }
-    
-    @Asynchronous 
+
+    @Asynchronous
     public void indexRoles(Collection<DvObject> dvObjects) {
         try {
             Thread.sleep(1000); //we wait to ensure a nested native query are up to date

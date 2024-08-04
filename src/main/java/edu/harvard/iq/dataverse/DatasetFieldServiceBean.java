@@ -62,14 +62,14 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     private static final Logger logger = Logger.getLogger(DatasetFieldServiceBean.class.getCanonicalName());
 
     @EJB
     SettingsServiceBean settingsService;
 
     private static final String NAME_QUERY = "SELECT dsfType from DatasetFieldType dsfType where dsfType.name= :fieldName";
-    
+
     /*
      * External vocabulary support: These fields cache information from the CVocConf
      * setting which controls how Dataverse connects specific metadata block fields
@@ -79,11 +79,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     
     //Configuration json keyed by the id of the 'parent' DatasetFieldType 
     Map<Long, JsonObject> cvocMap = null;
-    
+
     //Configuration json keyed by the id of the child DatasetFieldType specified as the 'term-uri-field'
     //Note that for primitive fields, the prent and term-uri-field are the same and these maps have the same entry
     Map<Long, JsonObject> cvocMapByTermUri = null;
-    
+
     //The hash of the existing CVocConf setting. Used to determine when the setting has changed and it needs to be re-parsed to recreate the cvocMaps
     String oldHash = null;
 
@@ -93,7 +93,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
     public List<DatasetFieldType> findAllFacetableFieldTypes() {
          return em.createNamedQuery("DatasetFieldType.findAllFacetable", DatasetFieldType.class)
-                .getResultList();   
+                .getResultList();
     }
 
     public List<DatasetFieldType> findFacetableFieldTypesByMetadataBlock(Long metadataBlockId) {
@@ -124,7 +124,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         } catch (NoResultException e) {
             return null;
         }
-       
+
     }
 
     /**
@@ -167,7 +167,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     public ControlledVocabularyValue findControlledVocabularyValue(Object pk) {
         return em.find(ControlledVocabularyValue.class, pk);
     }
-   
+
     /**
      * @param dsft The DatasetFieldType in which to look up a
      * ControlledVocabularyValue.
@@ -178,7 +178,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * @return The ControlledVocabularyValue found or null.
      */
     public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue, boolean lenient) {
-        TypedQuery<ControlledVocabularyValue> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabularyValue.class);       
+        TypedQuery<ControlledVocabularyValue> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabularyValue.class);
         typedQuery.setParameter("strvalue", strValue);
         typedQuery.setParameter("dsft", dsft);
         try {
@@ -202,7 +202,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             }
         }
     }
-    
+
     public ControlledVocabAlternate findControlledVocabAlternateByControlledVocabularyValueAndStrValue(ControlledVocabularyValue cvv, String strValue) {
         TypedQuery<ControlledVocabAlternate> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabAlternate AS o WHERE o.strValue = :strvalue AND o.controlledVocabularyValue = :cvv", ControlledVocabAlternate.class);
         typedQuery.setParameter("strvalue", strValue);
@@ -217,7 +217,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
            return (ControlledVocabAlternate) results.get(0);
         }
     }
-    
+
     /**
      * @param dsft The DatasetFieldType in which to look up a
      * ControlledVocabularyValue.
@@ -227,7 +227,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * @return The ControlledVocabularyValue found or null.
      */
     public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndIdentifier(DatasetFieldType dsft, String identifier) {
-        TypedQuery<ControlledVocabularyValue> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.identifier = :identifier AND o.datasetFieldType = :dsft", ControlledVocabularyValue.class);       
+        TypedQuery<ControlledVocabularyValue> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.identifier = :identifier AND o.datasetFieldType = :dsft", ControlledVocabularyValue.class);
         typedQuery.setParameter("identifier", identifier);
         typedQuery.setParameter("dsft", dsft);
         try {
@@ -256,11 +256,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     public ControlledVocabularyValue save(ControlledVocabularyValue cvv) {
         return em.merge(cvv);
     }
-    
+
     public ControlledVocabAlternate save(ControlledVocabAlternate alt) {
         return em.merge(alt);
-    } 
-    
+    }
+
 
     /**
      * This method returns a Map relating DatasetFieldTypes with any external
@@ -277,7 +277,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      * @return - a map of JsonObjects containing configuration information keyed by the DatasetFieldType id (Long)
      */
     public Map<Long, JsonObject> getCVocConf(boolean byTermUriField) {
-        
+
         //ToDo - change to an API call to be able to provide feedback if the json is invalid?
         String cvocSetting = settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf);
         if (cvocSetting == null || cvocSetting.isEmpty()) {
@@ -287,11 +287,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         String newHash = DigestUtils.md5Hex(cvocSetting);
         if (newHash.equals(oldHash)) {
             return byTermUriField ? cvocMapByTermUri : cvocMap;
-        } 
+        }
         oldHash = newHash;
         cvocMap = new HashMap<>();
         cvocMapByTermUri = new HashMap<>();
-        
+
         try (JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf)))) {
             JsonArray cvocConfJsonArray = jsonReader.readArray();
             for (JsonObject jo : cvocConfJsonArray.getValuesAs(JsonObject.class)) {
@@ -760,7 +760,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             logger.fine("Last segment: " + curPath.toString());
             logger.fine("Looking for : " + pathParts[index]);
             JsonValue jv = ((JsonObject) curPath).get(pathParts[index]);
-            ValueType type = jv.getValueType(); 
+            ValueType type = jv.getValueType();
             if (type.equals(JsonValue.ValueType.STRING)) {
                 return ((JsonString) jv).getString();
             } else if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
@@ -773,7 +773,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         return null;
 
     }
-   
+
     /**
      * Supports validation of externally controlled values. If the value is a URI it
      * must be in the namespace (start with) one of the uriSpace values of an
@@ -811,7 +811,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         }
         return valid;
     }
-    
+
     public List<String> getVocabScripts(Map<Long, JsonObject> cvocConf) {
         //ToDo - only return scripts that are needed (those fields are set on display pages, those blocks/fields are allowed in the Dataverse collection for create/edit)?
         Set<String> scripts = new HashSet<String>();

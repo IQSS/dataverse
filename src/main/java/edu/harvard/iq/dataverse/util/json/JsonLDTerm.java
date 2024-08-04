@@ -97,7 +97,7 @@ public class JsonLDTerm {
     public boolean inNamespace() {
         return (namespace != null);
     }
-    
+
     public JsonLDNamespace getNamespace() {
         return namespace;
     }

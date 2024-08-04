@@ -48,7 +48,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
             return;
         }
         PidProvider pidProvider = PidUtil.getPidProvider(target.getGlobalId().getProviderId());
-        
+
         try {
             Boolean doiRetString = pidProvider.updateIdentifier(target);
             if (doiRetString) {
@@ -63,9 +63,9 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                 // If they are, we need to assure that there's an existing PID or, as when
                 // creating PIDs, that it's possible.
                 
-                boolean canCreatePidsForFiles = 
+                boolean canCreatePidsForFiles =
                                 isFilePIDsEnabled && ctxt.dvObjects().getEffectivePidGenerator(target).canCreatePidsLike(target.getGlobalId());
-                
+
                 for (DataFile df : target.getFiles()) {
                     if (isFilePIDsEnabled && // using file PIDs and
                             (!(df.getIdentifier() == null || df.getIdentifier().isEmpty()) || // identifier exists, or

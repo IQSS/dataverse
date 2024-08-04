@@ -531,7 +531,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         return canManagePID() && !managedSet.contains(pid.asString())
                 && (getIdentifierGenerationStyle().equals("INDEPENDENT") || getId().equals(pid.getProviderId()));
     }
-    
+
     @Override
     public JsonObject getProviderSpecification() {
         JsonObjectBuilder providerSpecification = Json.createObjectBuilder();
@@ -547,7 +547,7 @@ public abstract class AbstractPidProvider implements PidProvider {
         providerSpecification.add("excludedSet", Strings.join(",", excludedSet.toArray()));
         return providerSpecification.build();
     }
-    
+
     @Override
     public boolean updateIdentifier(DvObject dvObject) {
         //By default, these are the same

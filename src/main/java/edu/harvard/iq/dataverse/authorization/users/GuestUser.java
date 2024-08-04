@@ -8,13 +8,13 @@ import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
  * @author michael
  */
 public class GuestUser implements User {
-    
+
     private static final GuestUser INSTANCE = new GuestUser();
-    
+
     public static GuestUser get() { return INSTANCE; }
-    
+
     private GuestUser() {}
-    
+
     @Override
     public String getIdentifier() {
         return ":guest";
@@ -27,7 +27,7 @@ public class GuestUser implements User {
 
     @Override
     public boolean isAuthenticated() { return false; }
-    
+
     @Override
     public boolean isSuperuser() {
         return false;
@@ -37,15 +37,15 @@ public class GuestUser implements User {
     public boolean equals(Object o) {
         return (o instanceof GuestUser);
     }
-    
+
     @Override
     public String toString() {
         return "[GuestUser :guest]";
     }
-    
+
     @Override
     public int hashCode() {
         return 7;
     }
-    
+
 }

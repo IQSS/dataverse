@@ -64,7 +64,7 @@ import org.eclipse.microprofile.config.ConfigProvider;
  * The servlet itself is somewhat influenced by the older OCLC OAIcat implementation.
  */
 public class OAIServlet extends HttpServlet {
-    @EJB 
+    @EJB
     OAISetServiceBean setService;
     @EJB
     OAIRecordServiceBean recordService;
@@ -72,7 +72,7 @@ public class OAIServlet extends HttpServlet {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
-    
+
     @EJB
     SystemConfig systemConfig;
     @EJB
@@ -81,15 +81,15 @@ public class OAIServlet extends HttpServlet {
     @Inject
     @ConfigProperty(name = "dataverse.oai.server.maxidentifiers", defaultValue = "100")
     private Integer maxListIdentifiers;
-    
+
     @Inject
     @ConfigProperty(name = "dataverse.oai.server.maxsets", defaultValue = "100")
     private Integer maxListSets;
-    
+
     @Inject
     @ConfigProperty(name = "dataverse.oai.server.maxrecords", defaultValue = "10")
     private Integer maxListRecords;
-    
+
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.web.servlet.OAIServlet");
     // If we are going to stick with this solution - of providing a minimalist 
     // xml record containing a link to the proprietary json metadata API for 
@@ -111,8 +111,8 @@ public class OAIServlet extends HttpServlet {
     */
     private static final String DATAVERSE_EXTENDED_METADATA_FORMAT = "dataverse_json";
     private static final String DATAVERSE_EXTENDED_METADATA_NAMESPACE = "https://dataverse.org/schema/core";
-    private static final String DATAVERSE_EXTENDED_METADATA_SCHEMA = "https://dataverse.org/schema/core.xsd";     
-    
+    private static final String DATAVERSE_EXTENDED_METADATA_SCHEMA = "https://dataverse.org/schema/core.xsd";
+
     private Context xoaiContext;
     private SetRepository setRepository;
     private ItemRepository itemRepository;
@@ -122,32 +122,32 @@ public class OAIServlet extends HttpServlet {
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        
+
         xoaiContext = createContext();
-        
+
         if (isDataverseOaiExtensionsSupported()) {
             xoaiContext = addDataverseJsonMetadataFormat(xoaiContext);
         }
-        
+
         setRepository = new DataverseXoaiSetRepository(setService);
         itemRepository = new DataverseXoaiItemRepository(recordService, datasetService, SystemConfig.getDataverseSiteUrlStatic());
 
-        repositoryConfiguration = createRepositoryConfiguration(); 
-                                
+        repositoryConfiguration = createRepositoryConfiguration();
+
         xoaiRepository = new Repository(repositoryConfiguration)
             .withSetRepository(setRepository)
             .withItemRepository(itemRepository);
-        
+
         dataProvider = new DataProvider(getXoaiContext(), getXoaiRepository());
     }
-    
+
     private Context createContext() {
-        
+
         Context context = new Context();
         addSupportedMetadataFormats(context);
         return context;
     }
-    
+
     private void addSupportedMetadataFormats(Context context) {
         for (String[] provider : ExportService.getInstance().getExportersLabels()) {
             String formatName = provider[1];
@@ -171,7 +171,7 @@ public class OAIServlet extends HttpServlet {
             }
         }
     }
-    
+
     private Context addDataverseJsonMetadataFormat(Context context) {
         MetadataFormat metadataFormat = MetadataFormat.metadataFormat(DATAVERSE_EXTENDED_METADATA_FORMAT);
         metadataFormat.withNamespace(DATAVERSE_EXTENDED_METADATA_NAMESPACE);
@@ -179,15 +179,15 @@ public class OAIServlet extends HttpServlet {
         context.withMetadataFormat(metadataFormat);
         return context;
     }
-    
+
     private boolean isDataverseOaiExtensionsSupported() {
         return true;
     }
-    
+
     private RepositoryConfiguration createRepositoryConfiguration() {
         Config config = ConfigProvider.getConfig();
         String repositoryName = config.getOptionalValue("dataverse.oai.server.repositoryname", String.class).orElse("");
-        
+
         if (repositoryName == null || repositoryName.isEmpty()) {
             String dataverseName = dataverseService.getRootDataverseName();
             repositoryName = StringUtils.isEmpty(dataverseName) || "Root".equals(dataverseName) ? "Test Dataverse OAI Archive" : dataverseName + " Dataverse OAI Archive";
@@ -203,7 +203,7 @@ public class OAIServlet extends HttpServlet {
         if (systemAddress.isPresent()) {
             systemEmailLabel = systemAddress.get().getAddress();
         }
-        
+
         RepositoryConfiguration configuration = new RepositoryConfiguration.RepositoryConfigurationBuilder()
                 .withAdminEmail(systemEmailLabel)
                 .withCompression("gzip")
@@ -219,11 +219,11 @@ public class OAIServlet extends HttpServlet {
                 .withDeleteMethod(DeletedRecord.TRANSIENT)
                 .withEnableMetadataAttributes(true)
                 .withRequireFromAfterEarliest(false)
-                .build();        
-        
-        return configuration; 
+                .build();
+
+        return configuration;
     }
-    
+
     /**
      * Handles the HTTP <code>POST</code> method.
      *
@@ -237,8 +237,8 @@ public class OAIServlet extends HttpServlet {
             throws ServletException, IOException {
         processRequest(request, response);
     }
-    
-    
+
+
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -252,11 +252,11 @@ public class OAIServlet extends HttpServlet {
             throws ServletException, IOException {
         processRequest(request, response);
     }
-          
-    
+
+
     private void processRequest(HttpServletRequest httpServletRequest, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         try {
             if (!isHarvestingServerEnabled()) {
                 response.sendError(
@@ -279,25 +279,25 @@ public class OAIServlet extends HttpServlet {
             try (XmlWriter xmlWriter = new XmlWriter(response.getOutputStream(), repositoryConfiguration);) {
                 xmlWriter.write(handle);
             }
-                       
+
         } catch (XMLStreamException | OAIException e) {
             throw new ServletException(e);
         }
-        
+
     }
-    
+
     protected Context getXoaiContext() {
         return xoaiContext;
     }
-    
+
     protected Repository getXoaiRepository() {
         return xoaiRepository;
     }
-    
+
     public boolean isHarvestingServerEnabled() {
         return systemConfig.isOAIServerEnabled();
     }
-    
+
     /**
      * Returns a short description of the servlet.
      *

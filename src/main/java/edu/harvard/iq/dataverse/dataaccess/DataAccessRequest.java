@@ -34,7 +34,7 @@ import edu.harvard.iq.dataverse.DataFile;
  */
 
 public class DataAccessRequest {
-    
+
     public DataAccessRequest() {
         this(null);
     }
@@ -52,7 +52,7 @@ public class DataAccessRequest {
     }
 
     public DataFile getFile() {
-        return this.file; 
+        return this.file;
     }
 
     public void setParameter(String name, String value) {
@@ -65,7 +65,7 @@ public class DataAccessRequest {
         if (requestParameters != null) {
             return requestParameters.get(name);
         }
-        return null; 
+        return null;
     }
 
     private DataAccessRequest(Object object) {

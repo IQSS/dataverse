@@ -30,15 +30,22 @@ public class DatasetFieldWalker {
 
     public interface Listener {
         void startField(DatasetField f);
+
         void addExpandedValuesArray(DatasetField f);
+
         void endField(DatasetField f);
+
         void externalVocabularyValue(DatasetFieldValue dsfv, JsonObject cvocEntry);
+
         void primitiveValue(DatasetFieldValue dsfv);
+
         void controlledVocabularyValue(ControlledVocabularyValue cvv);
+
         void startCompoundValue(DatasetFieldCompoundValue dsfcv);
+
         void endCompoundValue(DatasetFieldCompoundValue dsfcv);
     }
-    
+
     /**
      * Convenience method to walk over a field.
      * @param dsf the field to walk over.
@@ -63,30 +70,30 @@ public class DatasetFieldWalker {
             joe.walk(dsf, settingsService);
         }
     }
-    
+
     private Listener l;
     private Map<Long, JsonObject> cvocMap;
-    
-    
+
+
     public DatasetFieldWalker(Listener l, Map<Long, JsonObject> cvocMap) {
         this.l = l;
         this.cvocMap = cvocMap;
     }
-    
+
     public DatasetFieldWalker() {
         this(null, null);
     }
-    
+
     public void walk(DatasetField fld, SettingsServiceBean settingsService) {
         l.startField(fld);
         DatasetFieldType datasetFieldType = fld.getDatasetFieldType();
-        
+
         if (datasetFieldType.isControlledVocabulary()) {
-            for (ControlledVocabularyValue cvv 
+            for (ControlledVocabularyValue cvv
                     : sort(fld.getControlledVocabularyValues(), ControlledVocabularyValue.DisplayOrder)) {
                 l.controlledVocabularyValue(cvv);
             }
-            
+
         } else if (datasetFieldType.isPrimitive()) {
             for (DatasetFieldValue pv : sort(fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder)) {
                 if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false) && DatasetFieldType.FieldType.EMAIL.equals(pv.getDatasetField().getDatasetFieldType().getFieldType())) {
@@ -94,7 +101,7 @@ public class DatasetFieldWalker {
                 }
                 l.primitiveValue(pv);
             }
-            
+
         } else if (datasetFieldType.isCompound()) {
            for (DatasetFieldCompoundValue dsfcv : sort(fld.getDatasetFieldCompoundValues(), DatasetFieldCompoundValue.DisplayOrder)) {
                l.startCompoundValue(dsfcv);
@@ -104,7 +111,7 @@ public class DatasetFieldWalker {
                l.endCompoundValue(dsfcv);
            }
         }
-        l.addExpandedValuesArray(fld); 
+        l.addExpandedValuesArray(fld);
         if (datasetFieldType.isPrimitive() && cvocMap.containsKey(datasetFieldType.getId())) {
             for (DatasetFieldValue evv : sort(fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder)) {
                 if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false) && DatasetFieldType.FieldType.EMAIL.equals(evv.getDatasetField().getDatasetFieldType().getFieldType())) {
@@ -112,20 +119,20 @@ public class DatasetFieldWalker {
                 }
                 l.externalVocabularyValue(evv, cvocMap.get(datasetFieldType.getId()));
             }
-            
+
         }
         l.endField(fld);
     }
-    
-    
+
+
     public void setL(Listener l) {
         this.l = l;
     }
-    
+
     static private <T> Iterable<T> sort(List<T> list, Comparator<T> cmp) {
         ArrayList<T> tbs = new ArrayList<>(list);
         Collections.sort(tbs, cmp);
         return tbs;
     }
-    
+
 }

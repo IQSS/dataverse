@@ -25,7 +25,7 @@ class UrlTokenUtilTest {
     void testGetToolUrlWithOptionalQueryParameters() {
         // given
         String siteUrl = "https://librascholar.org";
-        
+
         DataFile dataFile = new DataFile();
         dataFile.setId(42L);
         FileMetadata fmd = new FileMetadata();
@@ -38,10 +38,10 @@ class UrlTokenUtilTest {
         List<FileMetadata> fmdl = new ArrayList<>();
         fmdl.add(fmd);
         dataFile.setFileMetadatas(fmdl);
-        
+
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
-    
+
         // when & then 1/2
         URLTokenUtil urlTokenUtil = new URLTokenUtil(dataFile, apiToken, fmd, "en");
         assertEquals("en", urlTokenUtil.replaceTokensWithValues("{localeCode}"));
@@ -49,7 +49,7 @@ class UrlTokenUtilTest {
         assertEquals("42 test en", urlTokenUtil.replaceTokensWithValues("{fileId} test {localeCode}"));
         assertEquals(siteUrl + "/api/files/42/metadata?key=" + apiToken.getTokenString(),
             urlTokenUtil.replaceTokensWithValues("{siteUrl}/api/files/{fileId}/metadata?key={apiToken}"));
-    
+
         // when & then 2/2
         URLTokenUtil urlTokenUtil2 = new URLTokenUtil(ds, apiToken, "en");
         assertEquals(siteUrl + "/api/datasets/50?key=" + apiToken.getTokenString(),

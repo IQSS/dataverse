@@ -15,13 +15,13 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  */
 @RequiredPermissions(Permission.EditDataverse)
 public class CreateHarvestingClientCommand extends AbstractCommand<HarvestingClient> {
-    
+
     private final Dataverse dv;
-    private final HarvestingClient harvestingClient; 
+    private final HarvestingClient harvestingClient;
 
     public CreateHarvestingClientCommand(DataverseRequest aRequest, HarvestingClient harvestingClient) {
         super(aRequest, harvestingClient.getDataverse());
-        this.harvestingClient = harvestingClient; 
+        this.harvestingClient = harvestingClient;
         dv = harvestingClient.getDataverse();
     }
 
@@ -36,5 +36,5 @@ public class CreateHarvestingClientCommand extends AbstractCommand<HarvestingCli
         
         return ctxt.em().merge(this.harvestingClient);
     }
-    
+
 }

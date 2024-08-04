@@ -13,18 +13,18 @@ import jakarta.json.JsonObjectBuilder;
  * @author michael
  */
 public class BriefJsonPrinter {
-	
+
 	public JsonObjectBuilder json(DatasetVersion dsv) {
-		return (dsv == null) 
+		return (dsv == null)
 				? null
 				: jsonObjectBuilder().add("id", dsv.getId())
 					.add("version", dsv.getVersion())
 					.add("versionState", dsv.getVersionState().name())
 					.add("title", dsv.getTitle());
 	}
-    
+
     public JsonObjectBuilder json(MetadataBlock blk) {
-		return (blk == null) 
+		return (blk == null)
 				? null
 				: jsonObjectBuilder().add("id", blk.getId())
 					.add("displayName", blk.getDisplayName())
@@ -32,7 +32,7 @@ public class BriefJsonPrinter {
 					.add("name", blk.getName())
 					;
 	}
-    
+
     public JsonObjectBuilder json(Workflow wf) {
         return jsonObjectBuilder().add("id", wf.getId())
                                   .add("name", wf.getName());

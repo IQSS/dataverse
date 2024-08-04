@@ -29,7 +29,7 @@ import jakarta.persistence.TemporalType;
     @NamedQuery(name = "DatasetLinkingDataverse.findByDatasetId",
                query = "select object(o) from DatasetLinkingDataverse as o where o.dataset.id =:datasetId order by o.id"),
     @NamedQuery(name = "DatasetLinkingDataverse.findByLinkingDataverseId",
-               query = "SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId order by o.id"),    
+               query = "SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId order by o.id"),
     @NamedQuery(name = "DatasetLinkingDataverse.findByDatasetIdAndLinkingDataverseId",
                query = "SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId AND o.dataset.id = :datasetId"),
     @NamedQuery(name = "DatasetLinkingDataverse.findIdsByLinkingDataverseId",
@@ -40,15 +40,15 @@ public class DatasetLinkingDataverse implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @OneToOne
     @JoinColumn(nullable = false)
     private Dataset dataset;
-    
+
     @OneToOne
     @JoinColumn(nullable = false)
     private Dataverse linkingDataverse;
-    
+
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date linkCreateTime;
@@ -109,5 +109,5 @@ public class DatasetLinkingDataverse implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.DatasetLinkingDataverse[ id=" + id + " ]";
     }
-    
+
 }

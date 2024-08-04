@@ -43,7 +43,7 @@ public class ReservePidCommand extends AbstractVoidCommand {
         }
 
         PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(dataset);
-        
+
         try {
             String returnString = pidProvider.createIdentifier(dataset);
             logger.fine(returnString);

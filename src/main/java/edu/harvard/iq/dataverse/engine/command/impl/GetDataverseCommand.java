@@ -33,5 +33,5 @@ public class GetDataverseCommand extends AbstractCommand<Dataverse> {
         return Collections.singletonMap("",
                 dv.isReleased() ? Collections.<Permission>emptySet()
                 : Collections.singleton(Permission.ViewUnpublishedDataverse));
-    }    
+    }
 }

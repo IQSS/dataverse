@@ -30,21 +30,21 @@ import jakarta.jms.QueueConnectionFactory;
 )
 @Singleton
 public class IngestQueueProducer {
-    
+
     @Resource(lookup = "java:app/jms/queue/ingest")
     Queue ingestQueue;
-    
+
     @Resource(lookup = "java:app/jms/factory/ingest")
     QueueConnectionFactory ingestQueueFactory;
-    
+
     @Produces
     public Queue getIngestQueue() {
         return ingestQueue;
     }
-    
+
     @Produces
     public QueueConnectionFactory getIngestQueueFactory() {
         return ingestQueueFactory;
     }
-    
+
 }

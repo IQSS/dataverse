@@ -40,12 +40,12 @@ public class RevokeAllRolesCommand extends AbstractVoidCommand {
             throw new PermissionException("Revoke Superuser status command can only be called by superusers.",
                     this, null, null);
         }
-        
+
         try {
             ctxt.roles().revokeAll(assignee);
-            
+
             ctxt.explicitGroups().revokeAllGroupsForAssignee(assignee);
-            
+
         } catch (Exception ex) {
             throw new CommandException("Failed to revoke role assignments and/or group membership", this);
         }

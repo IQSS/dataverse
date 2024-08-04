@@ -17,16 +17,15 @@ import jakarta.inject.Named;
 @ViewScoped
 @Named
 public class PackagePopupFragmentBean implements java.io.Serializable {
-    
+
     FileMetadata fm;
-    
+
     public void setFileMetadata(FileMetadata fileMetadata) {
         fm = fileMetadata;
     }
-    
+
     public FileMetadata getFileMetadata() {
         return fm;
     }
-    
+
 }
- 

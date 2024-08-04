@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
+
 //import jakarta.ejb.EJB;
 
 /**
@@ -27,7 +28,7 @@ import java.util.logging.Logger;
  * @author raprasad
  */
 public class IngestServiceShapefileHelper {
-    
+
     //@EJB
     //DataFileServiceBean fileService; 
 
@@ -47,8 +48,7 @@ public class IngestServiceShapefileHelper {
     private File zippedShapefile;
     private File rezipFolder;
 
-  
-    
+
     public List<DataFile> getDataFileList() {
         if (this.dataFileList == null) {
             return null;
@@ -58,9 +58,9 @@ public class IngestServiceShapefileHelper {
         }
         return this.dataFileList;
     }
-    
+
     private boolean isValidFile(File fileObject) {
-        
+
          if (fileObject == null) {
             logger.warning("fileObject was null");
             return false;
@@ -71,10 +71,10 @@ public class IngestServiceShapefileHelper {
         }
         return true;
     }
-    
-    
+
+
    private boolean isValidFolder(File fileObject) {
-        
+
          if (fileObject == null) {
             logger.warning("fileObject was null");
             return false;
@@ -85,11 +85,12 @@ public class IngestServiceShapefileHelper {
         }
         return true;
     }
+
     /*
         Constructor that accepts a file object
     */
    public IngestServiceShapefileHelper(File zippedShapefile, File rezipFolder) {
-        
+
         if ((!isValidFile(zippedShapefile)) || (!isValidFolder(rezipFolder))) {
             return;
         }
@@ -100,7 +101,7 @@ public class IngestServiceShapefileHelper {
         //this.processFile(zippedShapefile, rezipFolder);
 
     }
-    
+
    private FileInputStream getFileInputStream(File fileObject) {
        if (fileObject == null) {
            return null;
@@ -112,31 +113,31 @@ public class IngestServiceShapefileHelper {
             return null;
         }
    }
-   
+
    private void closeFileInputStream(FileInputStream fis) {
        if (fis == null) {
            return;
        }
         try {
-            fis.close();            
+            fis.close();
         } catch (IOException ex) {
             logger.info("Failed to close FileInputStream");
         }
    }
-   
+
     public boolean processFile() {
-       
+
        if ((!isValidFile(this.zippedShapefile)) || (!isValidFolder(this.rezipFolder))) {
             return false;
         }
-        
+
        // (1) Use the ShapefileHandler to the .zip for a shapefile
        //
         FileInputStream shpfileInputStream = this.getFileInputStream(zippedShapefile);
         if (shpfileInputStream == null) {
             return false;
         }
-        
+
         this.shpHandler = new ShapefileHandler(shpfileInputStream);
         if (!shpHandler.containsShapefile()) {
             logger.severe("Shapefile was incorrectly detected upon Ingest (FileUtil) and passed here");
@@ -144,7 +145,7 @@ public class IngestServiceShapefileHelper {
         }
 
         this.closeFileInputStream(shpfileInputStream);
-        
+
         //  (2) Rezip the shapefile pieces
         logger.info("rezipFolder: " + rezipFolder.getAbsolutePath());
         shpfileInputStream = this.getFileInputStream(zippedShapefile);
@@ -160,16 +161,16 @@ public class IngestServiceShapefileHelper {
             logger.severe("shpHandler message: " + shpHandler.errorMessage);
             return false;
         }
-        
+
         this.closeFileInputStream(shpfileInputStream);
-        
+
         return rezipSuccess;
-     
+
         //   return createDataFiles(rezipFolder);
         
     }
-    
-    
+
+
     public List<File> getFinalRezippedFiles() {
         if (this.shpHandler == null) {
             return null;

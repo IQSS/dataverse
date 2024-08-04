@@ -29,7 +29,7 @@ public class GetProvFreeFormCommand extends AbstractCommand<String> {
     @Override
     public String execute(CommandContext ctxt) throws CommandException {
         FileMetadata fileMetadata = dataFile.getFileMetadata();
-        
+
         //logger.info("prov free-form: " + fileMetadata.getProvFreeForm());
         return fileMetadata.getProvFreeForm();
     }

@@ -72,11 +72,11 @@ public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {
                 logger.info(error);
                 throw new IllegalCommandException(error, this);
             }
-            
+
             File directory = new File(
                 String.join(File.separator, JvmSettings.FILES_DIRECTORY.lookup(),
                     dataset.getAuthority(), dataset.getIdentifier()));
-            
+
             // TODO: The above goes directly to the filesystem directory configured by the
             //       old "dataverse.files.directory" JVM option (otherwise used for temp
             //       files only, after the Multistore implementation (#6488).
@@ -100,7 +100,7 @@ public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {
 
             File uploadDirectory = new File(String.join(File.separator, JvmSettings.FILES_DIRECTORY.lookup(),
                 dataset.getAuthority(), dataset.getIdentifier(), uploadFolder));
-            
+
             // TODO: see the comment above.
             if (!isValidDirectory(uploadDirectory)) {
                 String error = "Upload folder is not a valid directory.";

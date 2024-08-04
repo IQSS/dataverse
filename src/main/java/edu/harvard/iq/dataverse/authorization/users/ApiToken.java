@@ -64,7 +64,7 @@ public class ApiToken implements Serializable {
     public AuthenticatedUser getAuthenticatedUser() {
         return authenticatedUser;
     }
-    
+
     public boolean isDisabled() {
         return disabled;
     }
@@ -96,5 +96,5 @@ public class ApiToken implements Serializable {
     public boolean isExpired() {
         return getExpireTime().before(new Timestamp(System.currentTimeMillis()));
     }
-    
+
 }

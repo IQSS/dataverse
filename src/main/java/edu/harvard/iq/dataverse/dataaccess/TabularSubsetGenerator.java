@@ -65,9 +65,9 @@ public class TabularSubsetGenerator implements SubsetGenerator {
     //private static int MAX_COLUMN_BUFFER = 8192;
         
     public TabularSubsetGenerator() {
-        
+
     }
-    
+
     /**
      * This class used to be much more complex. There were methods for subsetting
      * from fixed-width field files; including using the optimized, "90 deg. rotated"
@@ -126,7 +126,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         }
 
     }
-    
+
     /*
      * Straightforward method for subsetting a column; inefficient on large 
      * files, OK to use on small files:
@@ -140,7 +140,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             if (skipHeader) {
                 skipFirstLine(scanner);
             }
-            
+
             for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
                 if (scanner.hasNext()) {
                     String[] line = (scanner.next()).split("\t", -1);
@@ -183,7 +183,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         return retVector;
 
     }
-    
+
     /*
      * Same deal as with the method above - straightforward, but (potentially) slow. 
      * Not a resource hog though - will only try to store one vector in memory. 
@@ -196,7 +196,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             if (skipHeader) {
                 skipFirstLine(scanner);
             }
-            
+
             for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
                 if (scanner.hasNext()) {
                     String[] line = (scanner.next()).split("\t", -1);
@@ -237,7 +237,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         return retVector;
 
     }
-    
+
     /*
      * Same deal as with the method above - straightforward, but (potentially) slow. 
      * Not a resource hog though - will only try to store one vector in memory. 
@@ -250,7 +250,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             if (skipHeader) {
                 skipFirstLine(scanner);
             }
-            
+
             for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
                 if (scanner.hasNext()) {
                     String[] line = (scanner.next()).split("\t", -1);
@@ -277,7 +277,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         return retVector;
 
     }
-    
+
     /*
      * Same deal as with the method above - straightforward, but (potentially) slow. 
      * Not a resource hog though - will only try to store one vector in memory. 
@@ -290,7 +290,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             if (skipHeader) {
                 skipFirstLine(scanner);
             }
-            
+
             for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
                 if (scanner.hasNext()) {
                     String[] line = (scanner.next()).split("\t", -1);
@@ -363,5 +363,5 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             throw new RuntimeException("Failed to read the variable name header line from the tab-delimited file!");
         }
         scanner.next();
-    }   
+    }
 }

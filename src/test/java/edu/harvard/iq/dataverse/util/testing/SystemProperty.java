@@ -41,12 +41,12 @@ public @interface SystemProperty {
      * The key of the system property to be set.
      */
     String key();
-    
+
     /**
      * The value of the system property to be set.
      */
     String value();
-    
+
     /**
      * Containing annotation of repeatable {@code @SystemProperty}.
      */

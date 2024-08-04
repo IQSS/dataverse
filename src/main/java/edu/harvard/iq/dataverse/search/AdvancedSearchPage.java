@@ -38,7 +38,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     @EJB
     DatasetFieldServiceBean datasetFieldService;
-    
+
     @Inject WidgetWrapper widgetWrapper;
     @Inject DataverseSession session;
 
@@ -63,7 +63,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private String fileFieldFileTags;
 
     Map<Long, JsonObject> cachedCvocMap = null;
-    
+
     public void init() {
 
         if (dataverseIdentifier != null) {
@@ -98,7 +98,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
         returnString += URLEncoder.encode(constructQuery(queryStrings, false, false), "UTF-8");
         returnString += "&alias=" + dataverse.getAlias() + "&faces-redirect=true";
         returnString = widgetWrapper.wrapURL(returnString);
-        
+
         logger.fine(returnString);
         return returnString;
     }
@@ -164,7 +164,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
         if (StringUtils.isNotBlank(fileFieldDescription)) {
             queryStrings.add(constructQuery(SearchFields.FILE_DESCRIPTION, fileFieldDescription));
         }
-        
+
         if (StringUtils.isNotBlank(filePersistentId)) {
             queryStrings.add(constructQuery(SearchFields.FILE_PERSISTENT_ID, filePersistentId));
         }
@@ -187,7 +187,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
         return constructQuery(queryStrings, true);
     }
-    
+
     public Dataverse getDataverse() {
         return dataverse;
     }
@@ -296,8 +296,8 @@ public class AdvancedSearchPage implements java.io.Serializable {
     public void setFileFieldDescription(String fileFieldDescription) {
         this.fileFieldDescription = fileFieldDescription;
     }
-    
-    
+
+
     public String getFilePersistentId() {
         return filePersistentId;
     }
@@ -337,8 +337,8 @@ public class AdvancedSearchPage implements java.io.Serializable {
     public void setFileFieldFileTags(String fileFieldFileTags) {
         this.fileFieldFileTags = fileFieldFileTags;
     }
-    
-    
+
+
     //External Vocabulary Support
 
     public Map<Long, JsonObject> getCVocConf() {
@@ -348,7 +348,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
         }
         return cachedCvocMap;
     }
-    
+
     public List<String> getVocabScripts() {
         return datasetFieldService.getVocabScripts(getCVocConf());
     }

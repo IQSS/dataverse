@@ -181,7 +181,7 @@ class FileDownloadHelperTest {
 
         Embargo emb = new Embargo(LocalDate.now().plusDays(3), "Still embargoed");
         dataFile.setEmbargo(emb);
-        
+
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
 
@@ -203,7 +203,7 @@ class FileDownloadHelperTest {
 
         Embargo emb = new Embargo(LocalDate.now().minusDays(3), "Was embargoed");
         dataFile.setEmbargo(emb);
-        
+
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
 
@@ -212,7 +212,7 @@ class FileDownloadHelperTest {
         fileMetadata.setRestricted(false);
         fileMetadata.setDataFile(dataFile);
         fileMetadata.setDatasetVersion(datasetVersion);
-        
+
         assertTrue(fileDownloadHelper.canDownloadFile(fileMetadata));
     }
 
@@ -306,10 +306,10 @@ class FileDownloadHelperTest {
         fileMetadata.setDatasetVersion(datasetVersion);
 
         mockPermissionResponseRequestOn(Permission.DownloadFile, hasPermission);
-        
+
         assertEquals(hasPermission, fileDownloadHelper.canDownloadFile(fileMetadata), "Initial response does not match expectation!");
     }
-    
+
     @ParameterizedTest
     @CsvSource({"false", "true"})
     void testCanDownloadFile_forRestrictedReleasedFileWithExpiredEmbargo(boolean hasPermission) {

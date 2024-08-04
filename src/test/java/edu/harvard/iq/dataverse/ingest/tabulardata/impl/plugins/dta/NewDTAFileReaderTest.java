@@ -35,7 +35,7 @@ public class NewDTAFileReaderTest {
         assertEquals("Domestic", origins.get(0).getLabel());
         assertEquals("Foreign", origins.get(1).getLabel());
     }
-    
+
     @Test
     public void testStrl() throws IOException {
         instance = new NewDTAFileReader(null, 118);
@@ -45,7 +45,7 @@ public class NewDTAFileReaderTest {
         assertEquals("STATA 14", table.getOriginalFormatVersion());
         assertEquals(7, table.getDataVariables().size());
         assertEquals(3, (long) table.getCaseQuantity());
-        
+
         String[] vars = {"make", "price", "mpg", "rep78", "trunk", "gear_ratio", "strls"};
         String[] actualVars = table.getDataVariables().stream().map((var) -> var.getName()).toArray(String[]::new);
         assertArrayEquals(vars, actualVars);
@@ -54,7 +54,7 @@ public class NewDTAFileReaderTest {
                           "\"Buick Regal\"	5189	20.0	3	16	2.93	\"ccc\"\n";
         assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
     }
-    
+
     @Test
     public void testDates() throws IOException {
         instance = new NewDTAFileReader(null, 118);
@@ -73,7 +73,7 @@ public class NewDTAFileReaderTest {
                           "2595-09-27 06:58:52.032	2018-06-20	2018-11-05	2018-06-01	2018-11-01	2018-07-01	2018\n";
         assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
     }
-    
+
     @Test
     void testNull() {
         instance = new NewDTAFileReader(null, 117);
@@ -120,7 +120,7 @@ public class NewDTAFileReaderTest {
         assertEquals("None matched", matching.get(0).getLabel());
         assertEquals("All matched", matching.get(1).getLabel());
     }
-    
+
     // TODO: Is there a way to exersise this code with a smaller file? 33k.dta is 21MB.
     @Disabled
     @Test
@@ -129,7 +129,7 @@ public class NewDTAFileReaderTest {
         // for i in `echo {0..33000}`; do echo -n "var$i,"; done > 33k.csv
         // Then open Stata 15, run `set maxvar 40000` and import.
     }
-    
+
     // TODO: Can we create a small file to check into the code base that exercises the characteristics issue?
     // FIXME: testCharacteristics is passing in DTA117FileReaderTest but not here.
     @Disabled

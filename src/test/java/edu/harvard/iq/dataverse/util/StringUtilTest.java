@@ -17,7 +17,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class StringUtilTest {
-    
+
     /**
      * Test of isEmpty method, of class StringUtil.
      */
@@ -33,7 +33,7 @@ class StringUtilTest {
     void testIsEmpty(boolean isValid, String inputString) {
         assertEquals(isValid, StringUtil.isEmpty(inputString));
     }
-    
+
     /**
      * Test of isAlphaNumeric method, of class StringUtil.
      */
@@ -48,7 +48,7 @@ class StringUtilTest {
     void testIsAlphaNumeric(boolean isValid, String inputString) {
         assertEquals(isValid, StringUtil.isAlphaNumeric(inputString));
     }
-    
+
     /**
      * Test of isAlphaNumericChar method, of class StringUtil.
      */
@@ -68,22 +68,22 @@ class StringUtilTest {
     void testIsAlphaNumericChar(boolean isValid, char inputChar) {
         assertEquals(isValid, StringUtil.isAlphaNumericChar(inputChar));
     }
-    
+
     @ParameterizedTest
     @CsvSource(value = {
         // interface-based partitioning
         "NULL, NULL, NULL",
         "NULL, '', NULL",
         "NULL, d, NULL",
-        
+
         "'', NULL, ''",
         "'', '', ''",
         "'', abcdfg, ''",
-        
+
         "abcdfg, NULL, ''",
         "abcdfg, '', ''",
         "abcdfg, d, dfg",
-        
+
         // functionality-based partitioning
         "abcdfg, NULL, ''",
         "abcdfg, h, ''",
@@ -103,13 +103,13 @@ class StringUtilTest {
             Arguments.of(Optional.of("some string with spaces"), "some string with spaces")
         );
     }
-    
+
     @ParameterizedTest
     @MethodSource("toOptionData")
     void testToOption(Optional<String> expected, String inputString) {
         assertEquals(expected, StringUtil.toOption(inputString));
     }
-    
+
     static Stream<Arguments> sanitizeData() {
         return Stream.of(
             Arguments.of("some\\path\\to\\a\\directory", "some/path/to/a/directory", false),
@@ -124,16 +124,16 @@ class StringUtilTest {
             Arguments.of("some/path/to/a/directory-", "some/path/to/a/directory", false),
             Arguments.of("some/path/to/a/directory.", "some/path/to/a/directory", false),
             Arguments.of("some/path/to/a/directory ", "some/path/to/a/directory", false),
-            
+
             Arguments.of("", null, false),
             Arguments.of("/", null, false),
-            
+
             // aggressively
             Arguments.of("some/path/to/a/dire{`~}ctory", "some/path/to/a/dire.ctory", true),
             Arguments.of("some/path/to/a/directory\\.\\.", "some/path/to/a/directory", true)
         );
     }
-    
+
     @ParameterizedTest
     @MethodSource("sanitizeData")
     void testSanitizeFileDirectory(String inputString, String expected, boolean aggressively) {
@@ -176,31 +176,31 @@ class StringUtilTest {
             assertEquals(StringUtil.htmlArray2textArray(Arrays.asList("be <b>bold</b>!")), Arrays.asList("be bold!"));
             assertEquals(StringUtil.htmlArray2textArray(null), Collections.emptyList());
         }
-        
+
         @Test
         public void testNullToEmpty() {
             assertEquals("hello", StringUtil.nullToEmpty("hello"));
             assertEquals("", StringUtil.nullToEmpty(null));
         }
-        
+
         @Test
         public void testSymmetricEncryption() {
             String source = "Hello, world! This is an encryption test";
             String password = "12345678";
             final String encrypted = StringUtil.encrypt(source, password);
             final String decrypted = StringUtil.decrypt(encrypted, password);
-            
+
             assertEquals(source, decrypted);
         }
-        
+
         @Test
         public void testIsTrue() {
             Stream.of("yes", "Yes", "  yes  ", "1", "allow", "tRuE")
                 .forEach(v -> assertTrue(StringUtil.isTrue(v)));
-            
+
             Stream.of("es", "no", " 0 s  ", "0", "x", "false")
                 .forEach(v -> assertFalse(StringUtil.isTrue(v)));
-            
+
             assertFalse(StringUtil.isTrue(null));
         }
 
@@ -221,7 +221,7 @@ class StringUtilTest {
             String expected = "";
             assertFalse(StringUtil.nonEmpty(expected));
         }
-        
+
         /**
          * full name or organization name cleanup.
          * 

@@ -25,7 +25,7 @@ public class BundleUtil {
     public static String getStringFromBundle(String key) {
         return getStringFromBundle(key, (List<String>) null);
     }
-    
+
     public static String getStringFromBundle(String key, Locale locale) {
         return getStringFromBundle(key, null, locale);
     }
@@ -82,7 +82,7 @@ public class BundleUtil {
     public static String getStringFromPropertyFile(String key, String propertyFileName) throws MissingResourceException {
         return getStringFromPropertyFile(key, propertyFileName, null);
     }
-    
+
     public static String getStringFromPropertyFile(String key, String propertyFileName, Locale locale) throws MissingResourceException {
         ResourceBundle bundle = getResourceBundle(propertyFileName, locale);
         if (bundle == null) {
@@ -181,7 +181,7 @@ public class BundleUtil {
         }
         return getStringFromBundleNoMissingCheck(key, null, bundle);
     }
-    
+
     /**
      * Return JVM default locale.
      *

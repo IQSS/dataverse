@@ -27,11 +27,11 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     @EJB
     DataverseServiceBean dataverseService;
-    
-    
+
+
     public List<Dataverse> findLinkedDataverses(Long linkingDataverseId) {
         List<Dataverse> retList = new ArrayList<>();
         TypedQuery<DataverseLinkingDataverse> typedQuery = em.createNamedQuery("DataverseLinkingDataverse.findByLinkingDataverseId", DataverseLinkingDataverse.class)
@@ -51,7 +51,7 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
         }
         return retList;
     }
-    
+
     public void save(DataverseLinkingDataverse dataverseLinkingDataverse) {
         if (dataverseLinkingDataverse.getId() == null) {
             em.persist(dataverseLinkingDataverse);
@@ -59,7 +59,7 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
             em.merge(dataverseLinkingDataverse);
         }
     }
-    
+
     public DataverseLinkingDataverse findDataverseLinkingDataverse(Long dataverseId, Long linkingDataverseId) {
         try {
             return em.createNamedQuery("DataverseLinkingDataverse.findByDataverseIdAndLinkingDataverseId", DataverseLinkingDataverse.class)
@@ -67,7 +67,7 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
                 .setParameter("linkingDataverseId", linkingDataverseId)
                 .getSingleResult();
         } catch (jakarta.persistence.NoResultException e) {
-            logger.fine("No DataverseLinkingDataverse found for dataverseId " + dataverseId + " and linkedDataverseId " + linkingDataverseId);        
+            logger.fine("No DataverseLinkingDataverse found for dataverseId " + dataverseId + " and linkedDataverseId " + linkingDataverseId);
             return null;
         }
     }

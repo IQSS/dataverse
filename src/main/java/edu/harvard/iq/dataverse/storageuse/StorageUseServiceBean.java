@@ -18,14 +18,14 @@ import java.util.logging.Logger;
 @Named
 public class StorageUseServiceBean  implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(StorageUseServiceBean.class.getCanonicalName());
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     public StorageUse findByDvContainerId(Long dvObjectId) {
         return em.createNamedQuery("StorageUse.findByDvContainerId", StorageUse.class).setParameter("dvObjectId", dvObjectId).getSingleResult();
     }
-    
+
     /**
      * Looks up the current storage use size, using a named query in a new 
      * transaction
@@ -37,7 +37,7 @@ public class StorageUseServiceBean  implements java.io.Serializable {
         Long res = em.createNamedQuery("StorageUse.findByteSizeByDvContainerId", Long.class).setParameter("dvObjectId", dvObjectId).getSingleResult();
         return res == null ? 0L : res;
     }
-    
+
     /**
      * Increments the recorded storage size for all the dvobject parents of a
      * datafile, recursively. 
@@ -68,5 +68,5 @@ public class StorageUseServiceBean  implements java.io.Serializable {
         // @todo throw an exception if the number of parent dvobjects updated by
         // the query is < 2 - ? 
     }
-    
+
 }

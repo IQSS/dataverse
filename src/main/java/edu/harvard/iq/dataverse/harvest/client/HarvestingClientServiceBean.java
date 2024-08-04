@@ -44,16 +44,16 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     IndexServiceBean indexService;
     @EJB
     DataverseTimerServiceBean dataverseTimerService;
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvestingClinetServiceBean");
-    
+
     public HarvestingClient find(Object pk) {
         return em.find(HarvestingClient.class, pk);
     }
-    
+
     public HarvestingClient findByNickname(String nickName) {
         try {
             return em.createNamedQuery("HarvestingClient.findByNickname", HarvestingClient.class)
@@ -64,16 +64,16 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
+
     public List<HarvestingClient> getAllHarvestingClients() {
         try {
             return em.createQuery("SELECT object(c) FROM HarvestingClient AS c WHERE c.harvestType='oai' ORDER BY c.name", HarvestingClient.class).getResultList();
         } catch (Exception ex) {
             logger.warning("Unknown exception caught while looking up configured Harvesting Clients: " + ex.getMessage());
         }
-        return null; 
+        return null;
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void resetHarvestInProgress(Long hcId) {
         HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
@@ -82,16 +82,16 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         }
         em.refresh(harvestingClient);
         harvestingClient.setHarvestingNow(false);
-        
+
         // And if there is an unfinished RunResult object, we'll
         // just mark it as a failure:
-        if (harvestingClient.getLastRun() != null 
+        if (harvestingClient.getLastRun() != null
                 && harvestingClient.getLastRun().isInProgress()) {
             harvestingClient.getLastRun().setFailed();
         }
-       
+
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setHarvestInProgress(Long hcId, Date startTime) {
         HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
@@ -109,7 +109,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         currentRun.setInProgress();
         harvestingClient.getRunHistory().add(currentRun);
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setDeleteInProgress(Long hcId) {
         HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
@@ -119,7 +119,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         em.refresh(harvestingClient); // why are we doing this?
         harvestingClient.setDeleteInProgress(true);
     }
-    
+
     // Deleting a client, with all the associated content, can take a while - 
     // hence it's an async action: 
     // TOFIGUREOUT:
@@ -140,7 +140,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
 
             // if this was a scheduled harvester, make sure the timer is deleted:
             dataverseTimerService.removeHarvestTimer(victim);
-                
+
             // purge indexed objects:
             indexService.deleteHarvestedDocuments(victim);
             // All the datasets harvested by this client will be cleanly deleted 
@@ -162,7 +162,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
             logger.warning(errorMessage);
         }
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setHarvestSuccess(Long hcId, Date currentTime, int harvestedCount, int failedCount, int deletedCount) {
         recordHarvestJobStatus(hcId, currentTime, harvestedCount, failedCount, deletedCount, ClientHarvestRun.RunResultType.SUCCESS);
@@ -171,24 +171,24 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setHarvestFailure(Long hcId, Date currentTime, int harvestedCount, int failedCount, int deletedCount) {
         recordHarvestJobStatus(hcId, currentTime, harvestedCount, failedCount, deletedCount, ClientHarvestRun.RunResultType.FAILURE);
-    } 
-    
+    }
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setPartiallyCompleted(Long hcId, Date finishTime, int harvestedCount, int failedCount, int deletedCount) {
         recordHarvestJobStatus(hcId, finishTime, harvestedCount, failedCount, deletedCount, ClientHarvestRun.RunResultType.INTERRUPTED);
     }
-    
+
     public void recordHarvestJobStatus(Long hcId, Date finishTime, int harvestedCount, int failedCount, int deletedCount, ClientHarvestRun.RunResultType result) {
         HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
         if (harvestingClient == null) {
             return;
         }
         em.refresh(harvestingClient);
-        
+
         ClientHarvestRun currentRun = harvestingClient.getLastRun();
-        
+
         if (currentRun != null && currentRun.isInProgress()) {
-            
+
             currentRun.setResult(result);
             currentRun.setFinishTime(finishTime);
             currentRun.setHarvestedDatasetCount(Long.valueOf(harvestedCount));
@@ -196,7 +196,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
             currentRun.setDeletedDatasetCount(Long.valueOf(deletedCount));
         }
     }
-    
+
     public Long getNumberOfHarvestedDatasetsByAllClients() {
         try {
             return (Long) em.createNativeQuery("SELECT count(d.id) FROM dataset d "
@@ -207,9 +207,9 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
             return 0L;
         }
     }
-    
+
     public Long getNumberOfHarvestedDatasetByClients(List<HarvestingClient> clients) {
-        String clientIds = null; 
+        String clientIds = null;
         for (HarvestingClient client : clients) {
             if (clientIds == null) {
                 clientIds = client.getId().toString();
@@ -217,10 +217,10 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
                 clientIds = clientIds.concat("," + client.getId().toString());
             }
         }
-        
+
         try {
             return (Long) em.createNativeQuery("SELECT count(d.id) FROM dataset d "
-                    + " WHERE d.harvestingclient_id in (" 
+                    + " WHERE d.harvestingclient_id in ("
                     + clientIds + ")").getSingleResult();
 
         } catch (Exception ex) {

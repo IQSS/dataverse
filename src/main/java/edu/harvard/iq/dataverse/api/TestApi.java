@@ -44,7 +44,7 @@ public class TestApi extends AbstractApiBean {
             return wr.getResponse();
         }
     }
-    
+
     @GET
     @Path("datasets/{id}/externalTool/{toolId}")
     public Response getExternalToolforDatasetById(@PathParam("id") String idSupplied, @PathParam("toolId") String toolId, @QueryParam("type") String typeSupplied) {
@@ -99,7 +99,7 @@ public class TestApi extends AbstractApiBean {
             return wr.getResponse();
         }
     }
-    
+
     @Path("files/{id}/externalTool/{toolId}")
     @GET
     public Response getExternalToolForFileById(@PathParam("id") String idSupplied, @QueryParam("type") String typeSupplied, @PathParam("toolId") String toolId) {

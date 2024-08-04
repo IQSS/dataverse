@@ -14,22 +14,22 @@ import jakarta.servlet.http.HttpServletRequest;
 @Named
 @RequestScoped
 public class DataverseRequestServiceBean {
-    
+
     @Inject
     DataverseSession dataverseSessionSvc;
-    
+
     @Inject
     private HttpServletRequest request;
-    
+
    private DataverseRequest dataverseRequest;
-    
+
     @PostConstruct
     protected void setup() {
         dataverseRequest = new DataverseRequest(dataverseSessionSvc.getUser(), request);
     }
-    
+
     public DataverseRequest getDataverseRequest() {
         return dataverseRequest;
     }
-    
+
 }

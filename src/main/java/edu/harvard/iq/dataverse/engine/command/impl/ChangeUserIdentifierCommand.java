@@ -34,7 +34,7 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
     final AuthenticatedUser au;
     final String newIdentifier;
     final String oldIdentifier;
-    
+
     public ChangeUserIdentifierCommand(DataverseRequest aRequest, AuthenticatedUser au, String newIdentifier) {
         super(
             aRequest,
@@ -44,20 +44,20 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
         this.newIdentifier = newIdentifier;
         this.oldIdentifier = au.getUserIdentifier();
     }
-    
+
     @Override
-    public void executeImpl(CommandContext ctxt) throws CommandException {  
-        
+    public void executeImpl(CommandContext ctxt) throws CommandException {
+
         AuthenticatedUser authenticatedUserTestNewIdentifier = ctxt.authentication().getAuthenticatedUser(newIdentifier);
         if (authenticatedUserTestNewIdentifier != null && !authenticatedUserTestNewIdentifier.equals(au)) {
             String logMsg = " User " + newIdentifier + " already exists. Cannot use this as new identifier";
             throw new IllegalCommandException("Validation of submitted data failed. Details: " + logMsg, this);
         }
-        
+
         List<RoleAssignment> raList = ctxt.roleAssignees().getAssignmentsFor(au.getIdentifier()); //only AuthenticatedUser supported
         BuiltinUser bu = ctxt.builtinUsers().findByUserName(oldIdentifier);
         au.setUserIdentifier(newIdentifier);
-        
+
         /*
         5/3/2019
         Related to 3575 and subsequent issues - we may decide to remove username from built in user as redundent
@@ -84,14 +84,14 @@ public class ChangeUserIdentifierCommand extends AbstractVoidCommand {
                 throw new IllegalCommandException("Validation of submitted data failed. Details: " + logMsg, this);
             }
         }
-        
+
         ctxt.actionLog().changeUserIdentifierInHistory("@" + oldIdentifier, "@" + newIdentifier);
-        
+
         for (RoleAssignment ra : raList) {
             ra.setAssigneeIdentifier("@" + newIdentifier);
         }
     }
-    
+
     @Override
     public String describe() {
         return "User " + oldIdentifier + " renamed to " + newIdentifier;

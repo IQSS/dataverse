@@ -35,7 +35,7 @@ pipeline {
       steps {
 	junit 'target/surefire-reports/*.xml'
 	step(
-	  [$class: 'JacocoPublisher', 
+	  [$class: 'JacocoPublisher',
 	  execPattern: 'target/*.exec',
 	  classPattern: 'target/classes',
 	  sourcePattern: 'src/main/java',

@@ -141,7 +141,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
             return BundleUtil.getStringFromBundle("dataset") + " " + BundleUtil.getStringFromBundle("contact.contact");
         }
     }
-    
+
     public String getMessageCC() {
         if (ccSupport()) {
             return BrandingUtil.getSupportTeamName(systemAddress);
@@ -223,15 +223,15 @@ public class SendFeedbackDialog implements java.io.Serializable {
         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("contact.sent"));
         return null;
     }
-    
+
     public boolean ccSupport() {
         return ccSupport(feedbackTarget);
     }
-    
+
     public static boolean ccSupport(DvObject feedbackTarget) {
         //Setting is enabled and this isn't already a direct message to support (no feedbackTarget)
         Optional<Boolean> ccSupport = JvmSettings.CC_SUPPORT_ON_CONTACT_EMAIL.lookupOptional(Boolean.class);
-        
+
         return feedbackTarget != null && ccSupport.isPresent() && ccSupport.get();
     }
 

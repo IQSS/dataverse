@@ -18,10 +18,10 @@ import jakarta.ejb.Startup;
 public class JsonPrinterHelper {
     @EJB
     SettingsServiceBean settingsSvc;
-    
+
     @EJB
     DatasetFieldServiceBean datasetFieldSvc;
-    
+
     @PostConstruct
     public void injectService() {
         JsonPrinter.injectSettingsService(settingsSvc, datasetFieldSvc);

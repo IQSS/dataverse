@@ -21,12 +21,13 @@ import java.util.Base64;
  * @author Michael Bar-Sinai
  */
 public final class PasswordEncryption implements java.io.Serializable {
-    
+
     public interface Algorithm {
         String encrypt(String plainText);
+
         boolean check(String plainText, String hashed);
     }
-    
+
     /**
      * The SHA algorithm, now considered not secure enough.
      */
@@ -41,7 +42,7 @@ public final class PasswordEncryption implements java.io.Serializable {
                 //String hash = Base64.encodeToString(raw, true);
                 String hash = Base64.getEncoder().encodeToString(raw);
                 return hash;
-                
+
             } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
                 throw new RuntimeException(e);
             }
@@ -52,7 +53,7 @@ public final class PasswordEncryption implements java.io.Serializable {
             return hashed.equals(encrypt(plainText));
         }
     };
-    
+
     /**
      * BCrypt, using a complexity factor of 10 (considered safe by 2015 standards).
      */
@@ -73,13 +74,13 @@ public final class PasswordEncryption implements java.io.Serializable {
             }
         }
     };
-    
+
     private static final Algorithm[] algorithms;
-    
+
     static {
         algorithms = new Algorithm[]{SHA, BCRYPT_10};
     }
-    
+
     /**
      * Prevent people instantiating this class.
      */
@@ -91,17 +92,17 @@ public final class PasswordEncryption implements java.io.Serializable {
     public static Algorithm get() {
         return getVersion(getLatestVersionNumber());
     }
-    
+
     public static int getLatestVersionNumber() {
         return algorithms.length - 1;
     }
-    
+
     public static Algorithm getVersion(int i) {
         return algorithms[i];
     }
-    
+
     public static String generateRandomPassword() {
         return RandomStringUtils.randomAlphanumeric(8);
     }
-    
+
 }

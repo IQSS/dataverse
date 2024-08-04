@@ -57,40 +57,40 @@ public class FileAccessRequest implements Serializable {
     @ManyToOne
     @JoinColumn(nullable = false)
     private DataFile dataFile;
-    
+
     @ManyToOne
     @JoinColumn(name = "authenticated_user_id", nullable = false)
     private AuthenticatedUser user;
-    
+
     @OneToOne
     @JoinColumn(nullable = true)
     private GuestbookResponse guestbookResponse;
-    
-    public enum RequestState {CREATED, GRANTED, REJECTED};
+
+    public enum RequestState {CREATED, GRANTED, REJECTED}
     //private RequestState state;
     @Enumerated(EnumType.STRING)
     @Column(name = "request_state", nullable = false)
     private RequestState requestState;
-    
+
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(name = "creation_time")
     private Date creationTime;
-    
+
     public FileAccessRequest() {
     }
-    
+
     public FileAccessRequest(DataFile df, AuthenticatedUser au) {
         setDataFile(df);
         setRequester(au);
         setState(RequestState.CREATED);
         setCreationTime(new Date());
     }
-    
+
     public FileAccessRequest(DataFile df, AuthenticatedUser au, GuestbookResponse gbr) {
         this(df, au);
         setGuestbookResponse(gbr);
     }
-     
+
     public Long getId() {
         return id;
     }
@@ -98,39 +98,39 @@ public class FileAccessRequest implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public DataFile getDataFile() {
         return dataFile;
     }
-    
+
     public final void setDataFile(DataFile df) {
         this.dataFile = df;
     }
-    
+
     public AuthenticatedUser getRequester() {
         return user;
     }
-    
+
     public final void setRequester(AuthenticatedUser au) {
         this.user = au;
     }
-    
+
     public GuestbookResponse getGuestbookResponse() {
         return guestbookResponse;
     }
-    
+
     public final void setGuestbookResponse(GuestbookResponse gbr) {
         this.guestbookResponse = gbr;
     }
-    
+
     public RequestState getState() {
         return this.requestState;
     }
-    
+
     public void setState(RequestState requestState) {
         this.requestState = requestState;
     }
-    
+
     public String getStateLabel() {
         if (isStateCreated()) {
             return "created";
@@ -141,13 +141,13 @@ public class FileAccessRequest implements Serializable {
         if (isStateRejected()) {
             return "rejected";
         }
-        return null; 
+        return null;
     }
-    
+
     public void setStateCreated() {
         this.requestState = RequestState.CREATED;
     }
-    
+
     public void setStateGranted() {
         this.requestState = RequestState.GRANTED;
     }
@@ -159,7 +159,7 @@ public class FileAccessRequest implements Serializable {
     public boolean isStateCreated() {
         return this.requestState == RequestState.CREATED;
     }
-   
+
     public boolean isStateGranted() {
         return this.requestState == RequestState.GRANTED;
     }
@@ -167,7 +167,7 @@ public class FileAccessRequest implements Serializable {
     public boolean isStateRejected() {
         return this.requestState == RequestState.REJECTED;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -182,7 +182,7 @@ public class FileAccessRequest implements Serializable {
     public void setCreationTime(Date creationTime) {
         this.creationTime = creationTime;
     }
-    
+
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
@@ -195,6 +195,6 @@ public class FileAccessRequest implements Serializable {
         }
         return true;
     }
-    
-    
+
+
 }

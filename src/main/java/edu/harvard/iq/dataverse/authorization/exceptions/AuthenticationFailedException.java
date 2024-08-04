@@ -8,7 +8,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
  * @author michael
  */
 public class AuthenticationFailedException extends AuthorizationException {
-    
+
     private final AuthenticationResponse response;
 
     public AuthenticationFailedException(AuthenticationResponse response, String message) {
@@ -24,5 +24,5 @@ public class AuthenticationFailedException extends AuthorizationException {
     public AuthenticationResponse getResponse() {
         return response;
     }
-    
+
 }

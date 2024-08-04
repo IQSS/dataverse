@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
@@ -21,9 +20,8 @@ import javax.xml.stream.XMLStreamException;
  */
 @AutoService(Exporter.class)
 public class DCTermsExporter implements XMLExporter {
-    
-    
-    
+
+
     @Override
     public String getFormatName() {
         return "dcterms";
@@ -48,22 +46,22 @@ public class DCTermsExporter implements XMLExporter {
     public Boolean isHarvestable() {
         return false;
     }
-    
+
     @Override
     public Boolean isAvailableToUsers() {
         return true;
     }
-    
+
     @Override
     public String getXMLNameSpace() {
-        return DublinCoreExportUtil.DCTERMS_XML_NAMESPACE;   
+        return DublinCoreExportUtil.DCTERMS_XML_NAMESPACE;
     }
-    
+
     @Override
     public String getXMLSchemaLocation() {
         return DublinCoreExportUtil.DCTERMS_XML_SCHEMALOCATION;
     }
-    
+
     @Override
     public String getXMLSchemaVersion() {
         return DublinCoreExportUtil.DEFAULT_XML_VERSION;

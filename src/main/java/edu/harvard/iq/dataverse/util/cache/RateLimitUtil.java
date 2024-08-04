@@ -30,6 +30,7 @@ public class RateLimitUtil {
         return (user != null ? user.getIdentifier() : GuestUser.get().getIdentifier()) +
             (action != null ? ":" + action : "");
     }
+
     static int getCapacity(SystemConfig systemConfig, User user, String action) {
         if (user != null && user.isSuperuser()) {
             return NO_LIMIT;
@@ -39,6 +40,7 @@ public class RateLimitUtil {
                 getCapacityByTierAndAction(systemConfig, authUser.getRateLimitTier(), action) :
                 getCapacityByTierAndAction(systemConfig, 0, action);
     }
+
     static boolean rateLimited(final Cache<String, String> rateLimitCache, final String key, int capacityPerHour) {
         if (capacityPerHour == NO_LIMIT) {
             return false;
@@ -65,7 +67,7 @@ public class RateLimitUtil {
         if (rateLimits.isEmpty()) {
             init(systemConfig);
         }
-        
+
         if (rateLimitMap.containsKey(getMapKey(tier, action))) {
             return rateLimitMap.get(getMapKey(tier, action));
         } else if (rateLimitMap.containsKey(getMapKey(tier))) {
@@ -74,6 +76,7 @@ public class RateLimitUtil {
             return getCapacityByTier(systemConfig, tier);
         }
     }
+
     static int getCapacityByTier(SystemConfig systemConfig, int tier) {
         int value = NO_LIMIT;
         String csvString = systemConfig.getRateLimitingDefaultCapacityTiers();
@@ -89,6 +92,7 @@ public class RateLimitUtil {
         }
         return value;
     }
+
     static void init(SystemConfig systemConfig) {
         getRateLimitsFromJson(systemConfig);
         /* Convert the List of Rate Limit Settings containing a list of Actions to a fast lookup Map where the key is:
@@ -102,7 +106,7 @@ public class RateLimitUtil {
             r.getActions().forEach(a -> rateLimitMap.put(getMapKey(r.getTier(), a), r.getLimitPerHour()));
         });
     }
-    
+
     @SuppressWarnings("java:S2133") // <- To enable casting to generic in JSON-B we need a class instance, false positive
     static void getRateLimitsFromJson(SystemConfig systemConfig) {
         String setting = systemConfig.getRateLimitsJson();
@@ -121,12 +125,15 @@ public class RateLimitUtil {
             }
         }
     }
+
     static String getMapKey(int tier) {
         return getMapKey(tier, null);
     }
+
     static String getMapKey(int tier, String action) {
         return tier + ":" + (action != null ? action : "");
     }
+
     static long longFromKey(Cache<String, String> cache, String key) {
         Object l = cache.get(key);
         return l != null ? Long.parseLong(String.valueOf(l)) : 0L;

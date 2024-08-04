@@ -38,14 +38,14 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
     public Dataset execute(CommandContext ctxt) throws CommandException {
 
         final Dataset dataset = getDataset();
-        
+
         if (!dataset.getLatestVersion().isInReview()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.reject.datasetNotInReview"), this);
         }
-        
+
         dataset.getOrCreateEditVersion().setLastUpdateTime(getTimestamp());
         dataset.setModificationTime(getTimestamp());
-        
+
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), getDataset(), DatasetLock.Reason.InReview));
         WorkflowComment workflowComment = new WorkflowComment(dataset.getOrCreateEditVersion(), WorkflowComment.Type.RETURN_TO_AUTHOR, comment, (AuthenticatedUser) this.getUser());
         ctxt.datasets().addWorkflowComment(workflowComment);
@@ -53,7 +53,7 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
         updateDatasetUser(ctxt);
         ctxt.em().flush();
         Dataset savedDataset = ctxt.em().merge(dataset);
-        
+
         /*
             So what we're doing here is sending notifications to the authors who do not have publish permissions
             First get users who can publish - or in this case review
@@ -68,11 +68,11 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
             ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.RETURNEDDS, savedDataset.getLatestVersion().getId(), comment);
         }
 
-        
+
         return savedDataset;
-        
+
     }
-    
+
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         boolean retVal = true;

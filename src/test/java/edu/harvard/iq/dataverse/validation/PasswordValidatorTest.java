@@ -49,7 +49,7 @@ public class PasswordValidatorTest {
         final int maxLength = 0;
         final int minLength = 8;
         final String dictionary = createDictionary("56pOtAtO", false);
-        
+
         // Format: int numberOfExpectedErrors, String password, int goodStrength, int maxLength, int minLength,
         //         String dictionaries, int numberOfCharacteristics, List<CharacterRule> characterRules,
         //         int numConsecutiveDigitsAllowed
@@ -105,7 +105,7 @@ public class PasswordValidatorTest {
             Arguments.of(3, "ma8312002138", goodStrength20, maxLength, 6, dictionary, numberOfCharactersDefault, characterRulesDefault, numConsecutiveDigitsAllowed)
         );
     }
-    
+
     @SuppressWarnings("unchecked")
     @ParameterizedTest
     @MethodSource("passwordParams")
@@ -122,7 +122,7 @@ public class PasswordValidatorTest {
 
         // when
         List<String> errors = passwordValidatorService.validate(password);
-        
+
         // then
         String message = "";
         if (numberOfExpectedErrors != errors.size()) {
@@ -152,7 +152,7 @@ public class PasswordValidatorTest {
         assert file != null;
         return file.getAbsolutePath();
     }
-    
+
     public static List<CharacterRule> getCharacterRulesHarvardLevel3() {
         List<CharacterRule> characterRules = new ArrayList<>();
         characterRules.add(new CharacterRule(EnglishCharacterData.UpperCase, 1));

@@ -203,7 +203,7 @@ public class ExternalToolServiceBean {
         JsonArray queryParams = toolParametersObj.getJsonArray("queryParameters");
         JsonArray allowedApiCallsArray = jsonObject.getJsonArray(ALLOWED_API_CALLS);
         JsonObject requirementsObj = jsonObject.getJsonObject(REQUIREMENTS);
- 
+
         boolean allRequiredReservedWordsFound = false;
         if (scope.equals(Scope.FILE)) {
             List<ReservedWord> requiredReservedWordCandidates = new ArrayList<>();

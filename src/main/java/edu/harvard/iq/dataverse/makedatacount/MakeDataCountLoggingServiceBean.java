@@ -33,7 +33,7 @@ import jakarta.ws.rs.core.UriInfo;
 @Named
 @RequestScoped
 public class MakeDataCountLoggingServiceBean {
-    
+
     @EJB
     SystemConfig systemConfig;
 
@@ -42,7 +42,7 @@ public class MakeDataCountLoggingServiceBean {
             LoggingUtil.saveLogFileAppendWithHeader(entry.toString(), systemConfig.getMDCLogPath(), getLogFileName(), LOG_HEADER);
         }
     }
-    
+
     public String getLogFileName() {
         return "counter_" + new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime())) + ".log";
     }
@@ -52,9 +52,9 @@ public class MakeDataCountLoggingServiceBean {
         // Log lines are tab delimited so tabs must be replaced. Replacing escape sequences with a space.
         return in != null ? in.replaceAll("\\s+", " ") : null;
     }
-    
+
     public static class MakeDataCountEntry {
-    
+
         private String eventTime;
         private String clientIp;
         private String sessionCookieId;
@@ -84,7 +84,7 @@ public class MakeDataCountLoggingServiceBean {
                 HttpServletRequest req = (HttpServletRequest) fc.getExternalContext().getRequest();
                 setRequestUrl(req.getRequestURI() + "?" + req.getQueryString());
                 setTargetUrl(req.getRequestURI() + "?" + req.getQueryString());
-                setUserAgent(req.getHeader("user-agent")); 
+                setUserAgent(req.getHeader("user-agent"));
                 HttpSession session = (HttpSession) fc.getExternalContext().getSession(false);
                 setSessionCookieId(session.getId());
             }
@@ -92,7 +92,7 @@ public class MakeDataCountLoggingServiceBean {
             if (publishedVersion != null) {
                 setIdentifier(publishedVersion.getDataset().getGlobalId().asString());
                 setAuthors(publishedVersion.getAuthorsStr(false).replace(";", "|"));
-                
+
                 //Note: These publisher/publisher-id values are fake. This is ok as currently Make Data Count
                 //derives this info from your DataCite credentials, and DataCite has said we can take this route.
                 //It may be possible to provide the correct information, which is client-id (DataCite client-id)
@@ -102,14 +102,14 @@ public class MakeDataCountLoggingServiceBean {
                 setPublisherId("tbd"); //"tbd" is a special case in counter processor that gives values that pass MDC.
                 setTitle(publishedVersion.getTitle());
                 setVersion(String.valueOf(publishedVersion.getVersionNumber()));
-                
+
                 Date releaseTime = publishedVersion.getReleaseTime();
                 if (null == releaseTime) { //Seems to be null when called from Datasets api
                     releaseTime = publishedVersion.getLastUpdateTime();
                 }
                 setPublicationYear(new SimpleDateFormat("yyyy").format(releaseTime));
-                
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");     
+
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
                     format.setTimeZone(TimeZone.getTimeZone("GMT"));
                 setPublicationDate(format.format(releaseTime));
             }
@@ -130,17 +130,17 @@ public class MakeDataCountLoggingServiceBean {
 
             setFilename(df.getStorageIdentifier());
             setSize(String.valueOf(df.getFilesize()));
-            
+
             //Note that at the time of writing, Guestbook is the only one calling this and it does a manual change on its end
             //This command: entry.setTargetUrl("/api/access/datafile/" + guestbookResponse.getDataFile().getId());
             //--MAD 4.10
-        }    
+        }
 
         //Exception thrown if no published metadata exists for DataFile
         //This is passed a DataFile to log the file downloaded. uriInfo and headers are passed in lieu of FacesContext
         public MakeDataCountEntry(UriInfo uriInfo, HttpHeaders headers, DataverseRequestServiceBean dvRequestService, DataFile df) throws UnsupportedOperationException {
             this(null, dvRequestService, df.getLatestPublishedFileMetadata().getDatasetVersion());
-            
+
             if (uriInfo != null) {
                 setRequestUrl(uriInfo.getRequestUri().toString());
                 setTargetUrl(uriInfo.getRequestUri().toString());
@@ -148,15 +148,15 @@ public class MakeDataCountLoggingServiceBean {
             if (null != headers && null != headers.getRequestHeader("user-agent")) {
                 setUserAgent(headers.getRequestHeader("user-agent").get(0));
             }
-            
-            setFilename(df.getStorageIdentifier()); 
+
+            setFilename(df.getStorageIdentifier());
             setSize(String.valueOf(df.getFilesize()));
         }
-        
+
         //Originally used when downloading dataset metadata
         public MakeDataCountEntry(UriInfo uriInfo, HttpHeaders headers, DataverseRequestServiceBean dvRequestService, Dataset ds) throws UnsupportedOperationException {
             this(null, dvRequestService, ds.getReleasedVersion());
-            
+
             if (uriInfo != null) {
                 setRequestUrl(uriInfo.getRequestUri().toString());
                 setTargetUrl(uriInfo.getRequestUri().toString());

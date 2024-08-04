@@ -41,12 +41,12 @@ public class BuiltinUser implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @ValidateUserName
-    @Column(nullable = false, unique = true)  
+    @Column(nullable = false, unique = true)
     private String userName;
-    
-    private int passwordEncryptionVersion; 
+
+    private int passwordEncryptionVersion;
 
     @OneToOne(mappedBy = "builtinUser", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private PasswordResetData passwordResetData;
@@ -70,53 +70,62 @@ public class BuiltinUser implements Serializable {
     private String affiliation;
     @Transient
     private String position;
-    
+
     @Deprecated()
     public String getEmail() {
         return email;
     }
+
     @Deprecated()
     public void setEmail(String email) {
        this.email = email;
     }
+
     @Deprecated()
     public String getFirstName() {
        return firstName;
     }
+
     @Deprecated()
     public void setFirstName(String firstName) {
        this.firstName = firstName;
     }
+
     @Deprecated()
     public String getLastName() {
        return lastName;
     }
+
     @Deprecated()
     public void setLastName(String lastName) {
        this.lastName = lastName;
     }
+
     @Deprecated()
     public String getAffiliation() {
        return affiliation;
     }
+
     @Deprecated()
     public void setAffiliation(String affiliation) {
        this.affiliation = affiliation;
     }
+
     @Deprecated()
     public String getPosition() {
        return position;
     }
+
     @Deprecated()
     public void setPosition(String position) {
        this.position = position;
     }
-    
+
     public void updateEncryptedPassword(String encryptedPassword, int algorithmVersion) {
         setEncryptedPassword(encryptedPassword);
         setPasswordEncryptionVersion(algorithmVersion);
     }
-    
+
     public Long getId() {
         return id;
     }
@@ -132,11 +141,11 @@ public class BuiltinUser implements Serializable {
     public void setUserName(String userName) {
         this.userName = userName;
     }
-    
+
     public String getEncryptedPassword() {
         return encryptedPassword;
     }
-    
+
     /**
      * JPA-use only. Humans should call {@link #updateEncryptedPassword(java.lang.String, int)}
      * and update the password and the algorithm at the same time.
@@ -177,7 +186,7 @@ public class BuiltinUser implements Serializable {
     public void setPasswordEncryptionVersion(int passwordEncryptionVersion) {
         this.passwordEncryptionVersion = passwordEncryptionVersion;
     }
-    
+
     /**
      * This only exists at this point to ease creation of users via API.
      * Previously we stored more information in the BuiltInUser, but this was

@@ -20,28 +20,29 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author michael
  */
 public class BitSetTest {
-	
+
 	enum TestEnum {
 		Hello, World, This, Is, A, Test;
 	}
-	
+
 	public BitSetTest() {
 	}
-	
+
 	@BeforeAll
 	public static void setUpClass() {
 	}
-	
+
 	@AfterAll
 	public static void tearDownClass() {
 	}
-	
+
 	BitSet sut;
+
 	@BeforeEach
 	public void setUp() {
 		sut = new BitSet();
 	}
-	
+
 	@AfterEach
 	public void tearDown() {
 	}
@@ -56,7 +57,7 @@ public class BitSetTest {
 			assertTrue(sut.isSet(i));
 		}
 	}
-    
+
     @Test
     public void testSetByParameter() {
         BitSet tSut = BitSet.emptySet();
@@ -68,7 +69,7 @@ public class BitSetTest {
         indices.forEach(i -> assertFalse(tSut.isSet(i)));
         assertTrue(tSut.isEmpty());
     }
-    
+
 	/**
 	 * Test of unset method, of class BitSet.
 	 */
@@ -140,15 +141,15 @@ public class BitSetTest {
 			}
 		}
 	}
-	
+
 	@Test
 	public void testAsEnumSet() {
 		EnumSet<TestEnum> est = EnumSet.of(TestEnum.Hello, TestEnum.This, TestEnum.Test);
-		
+
 		sut = BitSet.from(est);
 		assertEquals(est, sut.asSetOf(TestEnum.class));
 	}
-	
+
 	/**
 	 * Test of getBits method, of class BitSet.
 	 */
@@ -159,8 +160,8 @@ public class BitSetTest {
 		sut.set(2);
 		assertEquals(0b111, sut.getBits());
 	}
-	
-	
+
+
 	private BitSet randomSet() {
 		return new BitSet( new java.util.Random().nextLong() );
 	}

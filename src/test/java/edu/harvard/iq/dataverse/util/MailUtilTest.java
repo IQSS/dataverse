@@ -27,7 +27,7 @@ public class MailUtilTest {
     DataverseServiceBean dataverseSvc;
     @Mock
     SettingsServiceBean settingsSvc;
-    
+
     @BeforeEach
     public void setUp() {
         userNotification = new UserNotification();
@@ -73,13 +73,13 @@ public class MailUtilTest {
         userNotification.setType(UserNotification.Type.CREATEDV);
         assertEquals("LibraScholar: Your dataverse has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
-    
+
     @Test
     public void testSubjectRevokeRole() {
         userNotification.setType(UserNotification.Type.REVOKEROLE);
         assertEquals("LibraScholar: Your role has been revoked", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
-    
+
     @Test
     public void testSubjectRequestFileAccess() {
         userNotification.setType(UserNotification.Type.REQUESTFILEACCESS);
@@ -90,13 +90,13 @@ public class MailUtilTest {
         userNotification.setRequestor(requestor);
         assertEquals("LibraScholar: Tom Jones (@TJ-1234) requested access to dataset \"\"", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
-    
+
     @Test
     public void testSubjectGrantFileAccess() {
         userNotification.setType(UserNotification.Type.GRANTFILEACCESS);
         assertEquals("LibraScholar: You have been granted access to a restricted file", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
-    
+
     @Test
     public void testSubjectRejectFileAccess() {
         userNotification.setType(UserNotification.Type.REJECTFILEACCESS);
@@ -108,38 +108,38 @@ public class MailUtilTest {
         userNotification.setType(UserNotification.Type.CREATEDS);
         assertEquals("LibraScholar: Dataset \"\" has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
-    
+
     @Test
     public void testSubjectSubmittedDS() {
         userNotification.setType(UserNotification.Type.SUBMITTEDDS);
         assertEquals("LibraScholar: Dataset \"\" has been submitted for review", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
-    
+
     @Test
     public void testSubjectPublishedDS() {
         userNotification.setType(UserNotification.Type.PUBLISHEDDS);
         assertEquals("LibraScholar: Dataset \"\" has been published", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
-    
+
     @Test
     public void testSubjectReturnedDS() {
         userNotification.setType(UserNotification.Type.RETURNEDDS);
         assertEquals("LibraScholar: Dataset \"\" has been returned", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
-    
+
     @Test
     public void testSubjectChecksumFail() {
         userNotification.setType(UserNotification.Type.CHECKSUMFAIL);
         assertEquals("LibraScholar: Your upload failed checksum validation", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
-    
+
     @Test
     public void testSubjectFileSystemImport() {
         userNotification.setType(UserNotification.Type.FILESYSTEMIMPORT);
         //TODO SEK add a dataset version to get the Dataset Title which is actually used in the subject now
         assertEquals("Dataset LibraScholar has been successfully uploaded and verified", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }
-    
+
     @Test
     public void testSubjectChecksumImport() {
         userNotification.setType(UserNotification.Type.CHECKSUMIMPORT);

@@ -58,13 +58,13 @@ public class Meta {
 
     @EJB
     SearchServiceBean searchService;
-    
+
     @EJB
     DDIExportServiceBean ddiExportService;
-    
+
     @EJB
-    DataFileServiceBean datafileService; 
-    
+    DataFileServiceBean datafileService;
+
     @EJB
     DatasetServiceBean datasetService;
 
@@ -76,21 +76,21 @@ public class Meta {
     public String datafile(@PathParam("fileId") Long fileId, @QueryParam("fileMetadataId") Long fileMetadataId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
 
-        DataFile dataFile = null; 
-        
+        DataFile dataFile = null;
+
         //httpHeaders.add("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
         //httpHeaders.add("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
         response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
-        
+
         dataFile = datafileService.find(fileId);
         if (dataFile == null) {
             throw new NotFoundException();
         }
-        
+
         String fileName = dataFile.getFileMetadata().getLabel().replaceAll("\\.tab$", "-ddi.xml");
         response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + "\"");
         response.setHeader("Content-Type", "application/xml; name=\"" + fileName + "\"");
-        
+
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();
 
@@ -113,18 +113,18 @@ public class Meta {
 
         return retValue;
     }
-    
+
     @Deprecated
     @Path("dataset/{datasetId}")
     @GET
     @Produces({"application/xml"})
     public String dataset(@PathParam("datasetId") Long datasetId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException /*, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
- 
+
         Dataset dataset = datasetService.find(datasetId);
         if (dataset == null) {
             throw new NotFoundException();
         }
-        
+
         String retValue = "";
 
         ByteArrayOutputStream outStream = null;
@@ -147,5 +147,5 @@ public class Meta {
 
         return retValue;
     }
-    
+
 }

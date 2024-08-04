@@ -126,10 +126,10 @@ public class IndexServiceBean {
 
     @EJB
     VariableServiceBean variableService;
-    
+
     @EJB
     IndexBatchServiceBean indexBatchService;
-    
+
     @EJB
     DatasetFieldServiceBean datasetFieldService;
 
@@ -161,7 +161,7 @@ public class IndexServiceBean {
         // resources/META-INF/microprofile-config.properties.
         String protocol = JvmSettings.SOLR_PROT.lookup();
         String path = JvmSettings.SOLR_PATH.lookup();
-    
+
         String urlString = protocol + "://" + systemConfig.getSolrHostColonPort() + path;
         solrServer = new HttpSolrClient.Builder(urlString).build();
 
@@ -179,12 +179,12 @@ public class IndexServiceBean {
             solrServer = null;
         }
     }
-   
+
     @TransactionAttribute(REQUIRES_NEW)
     public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) throws SolrServerException, IOException {
         return indexDataverse(dataverse, false);
     }
-    
+
     public Future<String> indexDataverse(Dataverse dataverse) throws SolrServerException, IOException {
        return  indexDataverse(dataverse, true);
     }
@@ -310,7 +310,7 @@ public class IndexServiceBean {
                 }
             }
         }
-        
+
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         docs.add(solrInputDocument);
 
@@ -332,7 +332,7 @@ public class IndexServiceBean {
         return new AsyncResult<>(msg);
 
     }
-    
+
     @TransactionAttribute(REQUIRES_NEW)
     public void indexDatasetInNewTransaction(Long datasetId) { //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
@@ -340,7 +340,7 @@ public class IndexServiceBean {
         asyncIndexDataset(dataset, doNormalSolrDocCleanUp);
         dataset = null;
     }
-    
+
     // The following two variables are only used in the synchronized getNextToIndex method and do not need to be synchronized themselves
 
     // nextToIndex contains datasets mapped by dataset id that were added for future indexing while the indexing was already ongoing for a given dataset
@@ -350,17 +350,17 @@ public class IndexServiceBean {
     private static final Map<Long, Boolean> INDEXING_NOW = new ConcurrentHashMap<>();
     // semaphore for async indexing
     private static final Semaphore ASYNC_INDEX_SEMAPHORE = new Semaphore(JvmSettings.MAX_ASYNC_INDEXES.lookupOptional(Integer.class).orElse(4), true);
-    
+
     @Inject
     @Metric(name = "index_permit_wait_time", absolute = true, unit = MetricUnits.NANOSECONDS,
             description = "Displays how long does it take to receive a permit to index a dataset")
     Timer indexPermitWaitTimer;
-    
+
     @Inject
     @Metric(name = "index_time", absolute = true, unit = MetricUnits.NANOSECONDS,
             description = "Displays how long does it take to index a dataset")
     Timer indexTimer;
-    
+
     /**
      * Try to acquire a permit from the semaphore avoiding too many parallel indexes, potentially overwhelming Solr.
      * This method will time the duration waiting for the permit, allowing indexing performance to be measured.
@@ -458,7 +458,7 @@ public class IndexServiceBean {
             }
         }
     }
-    
+
     public void indexDvObject(DvObject objectIn) throws  SolrServerException, IOException {
         if (objectIn.isInstanceofDataset()) {
             asyncIndexDataset((Dataset) objectIn, true);
@@ -471,7 +471,7 @@ public class IndexServiceBean {
         doIndexDataset(dataset, doNormalSolrDocCleanUp);
         updateLastIndexedTime(dataset.getId());
     }
-    
+
     private void doIndexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
         logger.fine("indexing dataset " + dataset.getId());
         /**
@@ -631,7 +631,7 @@ public class IndexServiceBean {
                 }
             }
         }
-       
+
         Map<DatasetVersion.VersionState, Boolean> desiredCards = new LinkedHashMap<>();
         /**
          * @todo refactor all of this below and have a single method that takes
@@ -817,7 +817,7 @@ public class IndexServiceBean {
                 results.append("The latest version is a working copy (latestVersionState: ")
                         .append(latestVersionStateString).append(") and will be indexed as ")
                         .append(solrIdDraftDataset).append(" (limited visibility). Result: ").append(indexDraftResult).append("\n");
-                
+
                 desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
                 if (!reduceSolrDeletes && doNormalSolrDocCleanUp) {
                     String deleteDeaccessionedResult = removeDeaccessioned(dataset);
@@ -860,7 +860,7 @@ public class IndexServiceBean {
             logger.fine(result);
         }
     }
-    
+
     private void writeDebugInfo(StringBuilder debug, Dataset dataset) {
         List<DatasetVersion> versions = dataset.getVersions();
         int numPublishedVersions = 0;
@@ -944,7 +944,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dvIndexableCategoryName);
         solrInputDocument.addField(SearchFields.IDENTIFIER_OF_DATAVERSE, dvAlias);
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dvDisplayName);
-        
+
         Date datasetSortByDate = new Date();
         Date majorVersionReleaseDate = dataset.getMostRecentMajorVersionReleaseDate();
         if (majorVersionReleaseDate != null) {
@@ -1034,7 +1034,6 @@ public class IndexServiceBean {
             }
 
 
-
             Set<String> metadataBlocksWithValue = new HashSet<>();
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
@@ -1058,7 +1057,7 @@ public class IndexServiceBean {
                         String dateAsString = "";
                         if (!dsf.getValues_nondisplay().isEmpty()) {
                             dateAsString = dsf.getValues_nondisplay().get(0);
-                        }                      
+                        }
                         logger.fine("date as string: " + dateAsString);
                         if (dateAsString != null && !dateAsString.isEmpty()) {
                             SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
@@ -1202,7 +1201,7 @@ public class IndexServiceBean {
                         }
                     }
                 }
-                
+
                 //ToDo - define a geom/bbox type solr field and find those instead of just this one
                 if (dsfType.getName().equals(DatasetFieldConstant.geographicBoundingBox)) {
                     String minWestLon = null;
@@ -1276,8 +1275,8 @@ public class IndexServiceBean {
                 solrInputDocument.addField(SearchFields.METADATA_TYPES, metadataBlockName);
             }
         }
-        
-        List<String> dataversePaths = retrieveDVOPaths(dataset); 
+
+        List<String> dataversePaths = retrieveDVOPaths(dataset);
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         // solrInputDocument.addField(SearchFields.HOST_DATAVERSE,
         // dataset.getOwner().getName());
@@ -1308,7 +1307,7 @@ public class IndexServiceBean {
             boolean checkForDuplicateMetadata = false;
             if (datasetVersion.isDraft() && dataset.isReleased() && dataset.getReleasedVersion() != null) {
                 checkForDuplicateMetadata = true;
-                releasedFileMetadatas = dataset.getReleasedVersion().getFileMetadatas(); 
+                releasedFileMetadatas = dataset.getReleasedVersion().getFileMetadatas();
                 for (FileMetadata released : releasedFileMetadatas) {
                     fileMap.put(released.getDataFile().getId(), released);
                 }
@@ -1354,7 +1353,7 @@ public class IndexServiceBean {
                             logger.fine("This file's restricted status has changed since the released version; we want to index it!");
                         }
                     }
-                }        
+                }
                 if (indexThisMetadata) {
 
                     SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
@@ -1366,7 +1365,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
                     datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dvIndexableCategoryName);
                     if (end != null) {
-                        datafileSolrInputDocument.addField(SearchFields.EMBARGO_END_DATE, end.toEpochDay()); 
+                        datafileSolrInputDocument.addField(SearchFields.EMBARGO_END_DATE, end.toEpochDay());
                     }
                     if (start != null) {
                         datafileSolrInputDocument.addField(SearchFields.RETENTION_END_DATE, start.toEpochDay());
@@ -1594,14 +1593,14 @@ public class IndexServiceBean {
                     // names and labels:
                     if (fileMetadata.getDataFile().isTabularData()) {
                         List<DataVariable> variables = fileMetadata.getDataFile().getDataTable().getDataVariables();
-                        
+
                         Map<Long, VariableMetadata> variableMap = null;
                         List<VariableMetadata> variablesByMetadata = variableService.findVarMetByFileMetaId(fileMetadata.getId());
 
-                        variableMap = 
-                            variablesByMetadata.stream().collect(Collectors.toMap(VariableMetadata::getId, Function.identity())); 
-    
-                                      
+                        variableMap =
+                            variablesByMetadata.stream().collect(Collectors.toMap(VariableMetadata::getId, Function.identity()));
+
+
                         for (DataVariable var : variables) {
                             // Hard-coded search fields, for now:
                             // TODO: eventually: review, decide how datavariables should
@@ -1616,9 +1615,9 @@ public class IndexServiceBean {
                             if (var.getName() != null && !var.getName().equals("")) {
                                 datafileSolrInputDocument.addField(SearchFields.VARIABLE_NAME, var.getName());
                             }
-                            
-                            VariableMetadata vm = variableMap.get(var.getId()); 
-                            if (vm == null) {    
+
+                            VariableMetadata vm = variableMap.get(var.getId());
+                            if (vm == null) {
                                 //Variable Label
                                 if (var.getLabel() != null && !var.getLabel().equals("")) {
                                     datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, var.getLabel());
@@ -1645,7 +1644,7 @@ public class IndexServiceBean {
 
                             }
                         }
-                        
+
                         // TABULAR DATA TAGS:
                         // (not to be confused with the file categories, indexed above!)
                         for (DataFileTag tag : fileMetadata.getDataFile().getTags()) {
@@ -1669,8 +1668,8 @@ public class IndexServiceBean {
         final String msg = "indexed dataset " + datasetId + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
         return new SolrInputDocuments(docs, msg, datasetId);
     }
-    
-    private String addOrUpdateDataset(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {   
+
+    private String addOrUpdateDataset(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {
         final SolrInputDocuments docs = toSolrDocs(indexableDataset, datafilesInDraftVersion);
 
         try {
@@ -1756,7 +1755,7 @@ public class IndexServiceBean {
             return segments;
         }
     }
-        
+
     private boolean hasAnyLinkingDataverses(Dataverse dataverse) {
         Dataverse rootDataverse = findRootDataverseCached();
         List<Dataverse> ancestorList = dataverse.getOwners();
@@ -1768,10 +1767,10 @@ public class IndexServiceBean {
                     return true;
                 }
             }
-        }       
+        }
         return false;
     }
-    
+
     private List<Dataverse> findAllLinkingDataverses(DvObject dvObject) {
         /*
         here we find the linking dataverse of the input object
@@ -1779,10 +1778,10 @@ public class IndexServiceBean {
         */
         Dataset dataset = null;
         Dataverse dv = null;
-        Dataverse rootDataverse = findRootDataverseCached();        
+        Dataverse rootDataverse = findRootDataverseCached();
         List<Dataverse>linkingDataverses = new ArrayList();
         List<Dataverse> ancestorList = new ArrayList();
-        
+
         try {
             if (dvObject.isInstanceofDataset()) {
                 dataset = (Dataset) dvObject;
@@ -1798,16 +1797,16 @@ public class IndexServiceBean {
         } catch (Exception ex) {
             logger.info("failed to find Linking Dataverses for " + SearchFields.SUBTREE + ": " + ex);
         }
-        
+
         for (Dataverse owner : ancestorList) {
             if (!owner.equals(rootDataverse)) {
             linkingDataverses.addAll(dvLinkingService.findLinkingDataverses(owner.getId()));
             }
-        }       
-        
+        }
+
         return linkingDataverses;
     }
-    
+
     private List<String> findLinkingDataversePaths(List<Dataverse> linkingDVs) {
 
         List<String> pathListAccumulator = new ArrayList<>();
@@ -1845,16 +1844,16 @@ public class IndexServiceBean {
             //test to see if the terms of use are the default set in 5.10 - if so and there's no license then don't add license to solr doc.   
             //fixes 10513
             if (datasetVersionService.isVersionDefaultCustomTerms(datasetVersion)) {
-                return; 
+                return;
             }
-            
+
             String licenseName = "Custom Terms";
             if (datasetVersion.getTermsOfUseAndAccess().getLicense() != null) {
                 licenseName = datasetVersion.getTermsOfUseAndAccess().getLicense().getName();
             } else if (datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null) {
                 // this fixes #10513 for datasets harvested in oai_dc - these 
                 // have neither the license id, nor any actual custom terms 
-                return; 
+                return;
             }
             solrInputDocument.addField(SearchFields.DATASET_LICENSE, licenseName);
         }
@@ -1910,16 +1909,15 @@ public class IndexServiceBean {
     public static String getDEACCESSIONED_STRING() {
         return DEACCESSIONED_STRING;
     }
-    
-    
-    
+
+
     private void updatePathForExistingSolrDocs(DvObject object) throws SolrServerException, IOException {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, object.getId().toString()));
 
         QueryResponse res = solrClientService.getSolrClient().query(solrQuery);
-        
-        if (!res.getResults().isEmpty()) {            
+
+        if (!res.getResults().isEmpty()) {
             SolrDocument doc = res.getResults().get(0);
             SolrInputDocument sid = new SolrInputDocument();
 
@@ -1953,10 +1951,10 @@ public class IndexServiceBean {
                     }
                 }
             }
-        }            
+        }
     }
-    
-    
+
+
     private List<String> retrieveDVOPaths(DvObject dvo) {
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
         List<String> dataverseSegments = new ArrayList<>();
@@ -1973,7 +1971,7 @@ public class IndexServiceBean {
             }
         } catch (Exception ex) {
             logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
-        }        
+        }
         List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
         if (dataversePaths.size() > 0 && dvo.isInstanceofDataverse()) {
             // removing the dataverse's own id from the paths
@@ -2077,7 +2075,7 @@ public class IndexServiceBean {
         result.append(deleteFilesResult);
         return result.toString();
     }
-    
+
     // Only used when FeatureFlags.REDUCE_SOLR_DELETES is disabled
     private String deleteDraftFiles(List<String> solrDocIdsForDraftFilesToDelete) {
         String deleteDraftFilesResults = "";
@@ -2165,7 +2163,7 @@ public class IndexServiceBean {
         return datasetService.findIdStale();
     }
 
-  
+
     public List<String> findDataversesInSolrOnly() throws SearchException {
         try {
             /**
@@ -2198,6 +2196,7 @@ public class IndexServiceBean {
             throw ex;
         }
     }
+
     /**
      * Finds permissions documents in Solr that don't have corresponding dvObjects
      * in the database, and returns a list of their Solr "id" field.
@@ -2271,19 +2270,19 @@ public class IndexServiceBean {
             }
         } catch (SolrServerException | IOException ex) {
            throw new SearchException("Error searching Solr for permissions", ex);
- 
+
         }
         return permissionInSolrOnly;
     }
-    
+
     private List<String> findDvObjectInSolrOnly(String type) throws SearchException {
         SolrQuery solrQuery = new SolrQuery();
         int rows = 100;
-     
+
         solrQuery.setQuery("*").setRows(rows).setSort(SortClause.asc(SearchFields.ID));
         solrQuery.addFilterQuery(SearchFields.TYPE + ":" + type);
         List<String> dvObjectInSolrOnly = new ArrayList<>();
-       
+
         String cursorMark = CursorMarkParams.CURSOR_MARK_START;
         boolean done = false;
         while (!done) {

@@ -37,14 +37,14 @@ import org.apache.http.util.EntityUtils;
  *
  */
 public class DataCiteRESTfullClient implements Closeable {
-    
+
     private static final Logger logger = Logger.getLogger(DataCiteRESTfullClient.class.getCanonicalName());
 
     private String url;
     private CloseableHttpClient httpClient;
     private HttpClientContext context;
     private String encoding = "utf-8";
-    
+
     public DataCiteRESTfullClient(String url, String username, String password) {
         this.url = url;
         context = HttpClientContext.create();
@@ -131,7 +131,7 @@ public class DataCiteRESTfullClient implements Closeable {
             throw new RuntimeException("IOException when get metadata", ioe);
         }
     }
-    
+
     /**
      * testDOIExists
      *
@@ -214,7 +214,7 @@ public class DataCiteRESTfullClient implements Closeable {
 //		client2.close();
 }
 
-    
+
 //    private static String readAndClose(String file, String encoding) throws IOException{
 //        BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file),encoding));
 //        StringBuilder str = new StringBuilder();

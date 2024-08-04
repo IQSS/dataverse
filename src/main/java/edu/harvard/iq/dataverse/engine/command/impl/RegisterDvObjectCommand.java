@@ -31,7 +31,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         this.target = target;
         this.migrateHandle = false;
     }
-    
+
     public RegisterDvObjectCommand(DataverseRequest aRequest, DvObject target, Boolean migrateHandle) {
         super(aRequest, target);
         this.target = target;
@@ -40,7 +40,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
-        
+
         DvObjectContainer container = (target instanceof DvObjectContainer) ? (DvObjectContainer) target : target.getOwner();
         // Get the pidProvider that is configured to mint new IDs
         PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(container);
@@ -48,7 +48,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             //Only continue if you can successfully migrate the handle
             if (HandlePidProvider.HDL_PROTOCOL.equals(pidProvider.getProtocol()) || !processMigrateHandle(ctxt)) return;
         }
-        
+
         try {
             //Test to see if identifier already present
             //if so, leave.
@@ -121,12 +121,12 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             ctxt.solrIndex().indexPermissionsForOneDvObject(dataset);
         }
     }
-    
+
     private Boolean processMigrateHandle(CommandContext ctxt) {
         boolean retval = true;
         if (!target.isInstanceofDataset()) return false;
         if (!target.getProtocol().equals(HandlePidProvider.HDL_PROTOCOL)) return false;
-        
+
         AlternativePersistentIdentifier api = new AlternativePersistentIdentifier();
         api.setProtocol(target.getProtocol());
         api.setAuthority(target.getAuthority());
@@ -143,5 +143,5 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         target.setGlobalIdCreateTime(null);
         return retval;
     }
-        
+
 }

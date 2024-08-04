@@ -20,8 +20,8 @@ public interface Command<R> {
 	 * @throws CommandException If anything goes wrong.
 	 */
 	public R execute(CommandContext ctxt) throws CommandException;
-	
-	
+
+
 	/**
 	 * Retrieves the {@link DvObject}s this command works on. Used by the {@link DataverseEngine} 
 	 * to validate that the user
@@ -30,20 +30,20 @@ public interface Command<R> {
 	 * @return The DvObjects on which the command will work
 	 */
 	public Map<String, DvObject> getAffectedDvObjects();
-	
-	
+
+
 	/**
 	 * @return The request under which this command is being executed.
 	 */
 	public DataverseRequest getRequest();
-        
+
 	/**
 	 * @return A map of the permissions required for this command
 	 */        
     Map<String, Set<Permission>> getRequiredPermissions();
 
     public String describe();
-    
+
     /**
      * 
      * @param ctxt 

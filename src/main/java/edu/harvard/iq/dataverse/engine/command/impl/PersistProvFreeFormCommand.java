@@ -38,7 +38,7 @@ public class PersistProvFreeFormCommand extends AbstractCommand<DataFile> {
             Dataset dataset = dataFile.getOwner();
             DatasetVersion workingVersion = dataset.getOrCreateEditVersion();
 
-            if (workingVersion.isDraft()) { 
+            if (workingVersion.isDraft()) {
                 if (dataset.isReleased()) {
                     for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
                         if (dataFile.equals(fmw.getDataFile())) {
@@ -48,12 +48,12 @@ public class PersistProvFreeFormCommand extends AbstractCommand<DataFile> {
                 } else {
                     dataFile.getFileMetadata().setProvFreeForm(userInput);
                 }
-                
+
                 return dataFile;
             } else {
                 throw new CommandExecutionException("Exception occurred creating draft dataset", this);
             }
-        
+
         }
     }
 

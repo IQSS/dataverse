@@ -40,7 +40,7 @@ import jakarta.inject.Named;
 @Named
 public class GroupServiceBean {
     private static final Logger logger = Logger.getLogger(GroupServiceBean.class.getName());
-    
+
     @EJB
     IpGroupsServiceBean ipGroupsService;
     @EJB
@@ -49,17 +49,17 @@ public class GroupServiceBean {
     ExplicitGroupServiceBean explicitGroupService;
     @EJB
     MailDomainGroupServiceBean mailDomainGroupService;
-    
+
     private final Map<String, GroupProvider> groupProviders = new HashMap<>();
-    
+
     private IpGroupProvider ipGroupProvider;
     private ShibGroupProvider shibGroupProvider;
     private ExplicitGroupProvider explicitGroupProvider;
     private MailDomainGroupProvider mailDomainGroupProvider;
-    
+
     @EJB
     RoleAssigneeServiceBean roleAssigneeSvc;
-    
+
     @PostConstruct
     public void setup() {
         addGroupProvider(BuiltInGroupsProvider.get());
@@ -87,11 +87,11 @@ public class GroupServiceBean {
     public ShibGroupProvider getShibGroupProvider() {
         return shibGroupProvider;
     }
-    
+
     public MailDomainGroupProvider getMailDomainGroupProvider() {
         return mailDomainGroupProvider;
     }
-    
+
     /**
      * Finds all the groups {@code req} is part of in {@code dvo}'s context.
      * Recurses upwards in {@link ExplicitGroup}s, as needed.
@@ -103,7 +103,7 @@ public class GroupServiceBean {
         Set<Group> ret = groupProviders.values().stream()
                               .flatMap(gp -> (Stream<Group>) gp.groupsFor(req, dvo).stream())
                               .collect(toSet());
-        
+
         // ShibGroupProvider.groupsFor(), above, only returns the Shib Groups 
         // (as you would expect), but not the Explicit Groups that may include them 
         // (unlike the ExplicitGroupProvider, that returns all the ancestors too). 
@@ -114,8 +114,8 @@ public class GroupServiceBean {
         Set<ExplicitGroup> directAncestorsOfShibGroups = new HashSet<>();
         for (Group group : ret) {
 
-            if (group instanceof ShibGroup 
-                    || group instanceof IpGroup 
+            if (group instanceof ShibGroup
+                    || group instanceof IpGroup
                     || group instanceof MailDomainGroup) {
                 // if this is one of the non-explicit group types above, we 
                 // need to find if it is included in some explicit group; i.e., 
@@ -124,19 +124,19 @@ public class GroupServiceBean {
                 directAncestorsOfShibGroups.addAll(explicitGroupService.findDirectlyContainingGroups(group));
             }
         }
-        
+
         if (!directAncestorsOfShibGroups.isEmpty()) {
             // ... and now we can run the Monster Query in the ExplicitServiceBean
             // that will find ALL the hierarchical explicit group ancestors of 
             // these groups that include the shib groups fond
             
             Set<ExplicitGroup> allAncestorsOfShibGroups = explicitGroupService.findClosure(directAncestorsOfShibGroups);
-            
+
             if (allAncestorsOfShibGroups != null) {
                 ret.addAll(allAncestorsOfShibGroups);
             }
         }
-        
+
         // Perhaps the code above should be moved into the ShibGroupProvider (??)
         // Also, this most likely applies not just to ShibGroups, but to the 
         // all the groups that are not ExplicitGroups, i.e., IP- and domain-based 
@@ -144,7 +144,7 @@ public class GroupServiceBean {
         
         return ret;
     }
-    
+
     /**
      * All the groups a Role assignee belongs to. Does not take request-level groups
      * (such as IPGroups) into account.
@@ -175,13 +175,13 @@ public class GroupServiceBean {
                              .collect(toSet());
     }
 
-    
+
     public Set<Group> groupsFor(DataverseRequest req) {
         return groupProviders.values().stream()
                              .flatMap(gp -> (Stream<Group>) gp.groupsFor(req).stream())
                              .collect(toSet());
     }
-    
+
     /**
      * Collections of groups may include {@link ExplicitGroup}s, which have a 
      * recursive structure (more precisely, a Composite Pattern}. This has many 
@@ -203,23 +203,23 @@ public class GroupServiceBean {
             out.accept(g);
             if (g instanceof ExplicitGroup) {
                 collectGroupContent((ExplicitGroup) g, out);
-            } 
+            }
         });
         return out.build().distinct();
     }
-    
+
     private void collectGroupContent(ExplicitGroup eg, Stream.Builder<Group> out) {
         eg.getContainedRoleAssgineeIdentifiers().stream()
                 .map(idtf -> roleAssigneeSvc.getRoleAssignee(idtf))
                 .filter(asn -> asn instanceof Group)
                 .forEach(group -> out.accept((Group) group));
-        
+
         eg.getContainedExplicitGroups().forEach(meg -> {
             out.accept(meg);
             collectGroupContent(meg, out);
         });
     }
-    
+
     /**
      * Returns all the groups that are in, of are ancestors of a group in
      * the passed group collection.
@@ -229,11 +229,11 @@ public class GroupServiceBean {
      */
     public Set<Group> collectAncestors(Collection<Group> groups) {
         // Ancestors will be collected here.
-        Set<Group> retVal = new HashSet<>(); 
-        
+        Set<Group> retVal = new HashSet<>();
+
          // Groups whose ancestors were not collected yet.
         Set<Group> perimeter = new HashSet<>(groups);
-        
+
         while (!perimeter.isEmpty()) {
             Group next = perimeter.iterator().next();
             retVal.add(next);
@@ -244,10 +244,10 @@ public class GroupServiceBean {
                 }
             });
         }
-        
+
         return retVal;
     }
-    
+
     /**
      * Given a set of groups and a DV object, return all the groups that are
      * reachable from the set. Effectively, if the initial set has an {@link ExplicitGroup},
@@ -261,17 +261,17 @@ public class GroupServiceBean {
         // now, get the explicit group transitive closure.
         Set<ExplicitGroup> perimeter = new HashSet<>();
         Set<ExplicitGroup> visited = new HashSet<>();
-        
+
         groups.stream()
               .filter((g) -> (g instanceof ExplicitGroup))
               .forEachOrdered((g) -> perimeter.add((ExplicitGroup) g));
         visited.addAll(perimeter);
-        
+
         while (!perimeter.isEmpty()) {
             ExplicitGroup g = perimeter.iterator().next();
             perimeter.remove(g);
             groups.add(g);
-            
+
             Set<ExplicitGroup> discovered = explicitGroupProvider.groupsFor(g, dvo);
             discovered.removeAll(visited); // Ideally the conjunction is always empty, as we don't allow cycles.
             // Still, coding defensively here, in case someone gets too
@@ -280,17 +280,17 @@ public class GroupServiceBean {
             perimeter.addAll(discovered);
             visited.addAll(discovered);
         }
-        
+
         return groups;
     }
-    
+
     public Set<Group> findGlobalGroups() {
         Set<Group> groups = new HashSet<>();
-        groupProviders.values().forEach( 
+        groupProviders.values().forEach(
                 gp -> groups.addAll(gp.findGlobalGroups()));
         return groups;
     }
-    
+
     private void addGroupProvider(GroupProvider gp) {
         groupProviders.put(gp.getGroupProviderAlias(), gp);
     }

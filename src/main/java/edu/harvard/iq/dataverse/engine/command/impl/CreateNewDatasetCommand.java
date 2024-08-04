@@ -46,26 +46,26 @@ import java.time.Instant;
 
 public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     private static final Logger logger = Logger.getLogger(CreateNewDatasetCommand.class.getName());
-    
+
     private final Template template;
     private final Dataverse dv;
 
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         this(theDataset, aRequest, null);
     }
-    
+
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, Template template) {
         super(theDataset, aRequest);
         this.template = template;
         dv = theDataset.getOwner();
     }
-    
+
     public CreateNewDatasetCommand(Dataset theDataset, DataverseRequest aRequest, Template template, boolean validate) {
         super(theDataset, aRequest, false, validate);
         this.template = template;
         dv = theDataset.getOwner();
     }
-    
+
     /**
      * A new dataset must have a new identifier.
      * @param ctxt
@@ -87,7 +87,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
             }
         }
     }
-    
+
     @Override
     protected DatasetVersion getVersionToPersist(Dataset theDataset) {
         return theDataset.getOrCreateEditVersion();
@@ -104,7 +104,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
             registerExternalIdentifier(theDataset, ctxt, true);
         }
     }
-    
+
     @Override
     protected void postPersist(Dataset theDataset, CommandContext ctxt) {
         // set the role to be default contributor role for its dataverse
@@ -126,12 +126,12 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
             // linked here (?)
             theDataset.setPermissionModificationTime(getTimestamp());
         }
-        
+
         if (template != null) {
             ctxt.templates().incrementUsageCount(template.getId());
         }
     }
-    
+
     /* Emails those able to publish the dataset (except the creator themselves who already gets an email)
      * that a new dataset exists. 
      * NB: Needs dataset id so has to be postDBFlush (vs postPersist())
@@ -157,7 +157,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
         }
         }
     }
-    
+
     // Re-enabling the method below will change the permission setup to dynamic.
     // This will make it so that in an unpublished dataverse only users with the 
     // permission to view it will be allowed to create child datasets. 

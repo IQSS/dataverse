@@ -23,25 +23,27 @@ import jakarta.persistence.Version;
 public class DatasetRelMaterial {
 
 
-
     private String text;
+
     public String getText() {
         return this.text;
     }
+
     public void setText(String text) {
         this.text = text;
     }
 
     private int displayOrder;
+
     public int getDisplayOrder() {
         return this.displayOrder;
     }
+
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
     }
 
 
-    
       /**
      * Holds value of property version.
      */
@@ -63,8 +65,8 @@ public class DatasetRelMaterial {
     public void setVersion(Long version) {
         this.version = version;
     }
-    
-    
+
+
    public boolean isEmpty() {
         return ((text == null || text.trim().equals("")));
     }
@@ -85,5 +87,5 @@ public class DatasetRelMaterial {
         //if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) return false;
         return true;
     }
-    
+
 }

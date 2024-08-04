@@ -48,25 +48,25 @@ import javax.xml.xpath.XPathExpression;
  * @author pameyer
  */
 public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
-    
+
     final static Logger logger = Logger.getLogger(OrcidOAuth2AP.class.getName());
 
     public static final String PROVIDER_ID_PRODUCTION = "orcid";
     public static final String PROVIDER_ID_SANDBOX = "orcid-sandbox";
-    
+
     public OrcidOAuth2AP(String clientId, String clientSecret, String userEndpoint) {
-    
+
         if (userEndpoint != null && userEndpoint.startsWith("https://pub")) {
             this.scope = Arrays.asList("/authenticate");
         } else {
             this.scope = Arrays.asList("/read-limited");
         }
-        
+
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.baseUserEndpoint = userEndpoint;
     }
-    
+
     @Override
     public String getUserEndpoint(OAuth2AccessToken token) {
         try (StringReader sRdr = new StringReader(token.getRawResponse());
@@ -75,19 +75,19 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             return baseUserEndpoint.replace("{ORCID}", orcid);
         }
     }
-    
+
     @Override
     public DefaultApi20 getApiInstance() {
         return OrcidApi.instance(!baseUserEndpoint.contains("sandbox"));
     }
-    
+
     @Override
     final protected OAuth2UserRecord getUserRecord(@NotNull String responseBody, @NotNull OAuth2AccessToken accessToken, @NotNull OAuth20Service service)
         throws OAuth2Exception {
-        
+
         // parse the main response
         final ParsedUserResponse parsed = parseUserResponse(responseBody);
-        
+
         // mixin org data, but optional
         try {
             Optional<AuthenticatedUserDisplayInfo> orgData = getOrganizationalData(accessToken, service);
@@ -98,41 +98,41 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         } catch (IOException ex) {
             logger.log(Level.WARNING, "Could not get affiliation data from ORCiD due to an IO problem: {0}", ex.getLocalizedMessage());
         }
-        
+
         // mixin ORCiD not present in main response
         String orcidNumber = extractOrcidNumber(accessToken.getRawResponse());
-    
+
         return new OAuth2UserRecord(getId(), orcidNumber,
             parsed.username,
             OAuth2TokenData.from(accessToken),
             parsed.displayInfo,
             parsed.emails);
     }
-    
+
     @Override
     protected ParsedUserResponse parseUserResponse(String responseBody) {
         DocumentBuilderFactory dbFact = DocumentBuilderFactory.newInstance();
         try (StringReader reader = new StringReader(responseBody)) {
             DocumentBuilder db = dbFact.newDocumentBuilder();
             Document doc = db.parse(new InputSource(reader));
-            
+
             String firstName = getNodes(doc, "person:person", "person:name", "personal-details:given-names")
                                 .stream().findFirst().map(Node::getTextContent)
                                     .map(String::trim).orElse("");
             String familyName = getNodes(doc, "person:person", "person:name", "personal-details:family-name")
                                 .stream().findFirst().map(Node::getTextContent)
                                     .map(String::trim).orElse("");
-            
+
             // fallback - try to use the credit-name
             if ((firstName + familyName).equals("")) {
                 firstName = getNodes(doc, "person:person", "person:name", "personal-details:credit-name")
                                 .stream().findFirst().map(Node::getTextContent)
                                     .map(String::trim).orElse("");
             }
-            
+
             String primaryEmail = getPrimaryEmail(doc);
             List<String> emails = getAllEmails(doc);
-            
+
             // make the username up
             String username;
             if (primaryEmail.length() > 0) {
@@ -141,16 +141,16 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
                 username = firstName.split(" ")[0] + "." + familyName;
             }
             username = username.replaceAll("[^a-zA-Z0-9.]", "");
-            
+
             // returning the parsed user. The user-id-in-provider will be added by the caller, since ORCiD passes it
             // on the access token response.
             // Affilifation added after a later call.
             final ParsedUserResponse userResponse = new ParsedUserResponse(
                     new AuthenticatedUserDisplayInfo(firstName, familyName, primaryEmail, "", ""), null, username);
             userResponse.emails.addAll(emails);
-            
+
             return userResponse;
-            
+
         } catch (SAXException ex) {
             logger.log(Level.SEVERE, "XML error parsing response body from ORCiD: " + ex.getMessage(), ex);
         } catch (IOException ex) {
@@ -158,33 +158,33 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         } catch (ParserConfigurationException ex) {
             logger.log(Level.SEVERE, "While parsing the ORCiD response: Bad parse configuration. " + ex.getMessage(), ex);
         }
-        
+
         return null;
     }
-    
+
     private List<Node> getNodes(Node node, String... path) {
         return getNodes(node, Arrays.asList(path));
     }
-    
+
     private List<Node> getNodes(Node node, List<String> path) {
         NodeList childs = node.getChildNodes();
         final Stream<Node> nodeStream = IntStream.range(0, childs.getLength())
                 .mapToObj(childs::item)
                 .filter(n -> n.getNodeName().equals(path.get(0)));
-        
+
         if (path.size() == 1) {
             // accumulate and return mode
             return nodeStream.collect(Collectors.toList());
-            
+
         } else {
             // dig-in mode.
             return nodeStream.findFirst()
                              .map(n -> getNodes(n, path.subList(1, path.size())))
                              .orElse(Collections.<Node>emptyList());
         }
-        
+
     }
-    
+
     /**
      * retrieve email from ORCID 2.0 response document, or empty string if no primary email is present
      */
@@ -199,7 +199,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 	    // if there are no (or somehow more than 1) primary email(s), then we've already at failure value
 	    return primaryEmail;
     }
-    
+
     /**
      * retrieve all emails (including primary) from ORCID 2.0 response document
      */
@@ -212,7 +212,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 	    }
 	    return rs;
     }
-    
+
     /**
      * xpath search wrapper; return list of nodes matching an xpath expression (or null, 
      * if there are no matches)
@@ -224,7 +224,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
 	    try {
 		    XPathExpression srch = xp.compile(pattern);
 		    matches = (NodeList) srch.evaluate(doc, XPathConstants.NODESET);
-            
+
 	    } catch (javax.xml.xpath.XPathExpressionException xpe) {
 		    //no-op; intended for hard-coded xpath expressions that won't change at runtime
 	    }
@@ -263,7 +263,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     public String getLogo() {
         return "/resources/images/orcid_16x16.png";
     }
-    
+
     protected String extractOrcidNumber(String rawResponse) throws OAuth2Exception {
         try (JsonReader rdr = Json.createReader(new StringReader(rawResponse))) {
             JsonObject tokenData = rdr.readObject();
@@ -274,22 +274,22 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     }
 
     protected Optional<AuthenticatedUserDisplayInfo> getOrganizationalData(OAuth2AccessToken accessToken, OAuth20Service service) throws IOException {
-        
+
         OAuthRequest request = new OAuthRequest(Verb.GET, getUserEndpoint(accessToken).replace("/person", "/employments"));
         request.setCharset("UTF-8");
         service.signRequest(accessToken, request);
-        
+
         try {
             Response response = service.execute(request);
             int responseCode = response.getCode();
             String responseBody = response.getBody();
-    
+
             if (responseCode != 200 && responseBody != null) {
                 // This is bad, but not bad enough to stop a signup/in process.
                 logger.log(Level.WARNING, "Cannot get affiliation data from ORCiD. Response code: {0} body:\n{1}\n/body",
                     new Object[]{responseCode, responseBody});
                 return Optional.empty();
-                
+
             } else {
                 return Optional.of(parseActivitiesResponse(responseBody));
             }
@@ -298,27 +298,27 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             return Optional.empty();
         }
     }
-    
+
     protected AuthenticatedUserDisplayInfo parseActivitiesResponse(String responseBody) {
         DocumentBuilderFactory dbFact = DocumentBuilderFactory.newInstance();
-        
+
         try (StringReader reader = new StringReader(responseBody)) {
             DocumentBuilder db = dbFact.newDocumentBuilder();
             Document doc = db.parse(new InputSource(reader));
-            String organization = getNodes(doc, "activities:employments", 
+            String organization = getNodes(doc, "activities:employments",
                                   "employment:employment-summary", "employment:organization", "common:name")
                     .stream().findFirst().map(Node::getTextContent)
                     .map(String::trim).orElse(null);
-            
+
             String department = getNodes(doc, "activities:employments", "employment:employment-summary", "employment:department-name").stream()
                                     .findFirst().map(Node::getTextContent).map(String::trim).orElse(null);
             String role = getNodes(doc, "activities:employments", "employment:employment-summary", "employment:role-title").stream()
                                     .findFirst().map(Node::getTextContent).map(String::trim).orElse(null);
-            
+
             String position = Stream.of(role, department).filter(Objects::nonNull).collect(joining(", "));
-            
+
             return new AuthenticatedUserDisplayInfo(null, null, null, organization, position);
-            
+
         } catch (SAXException ex) {
             logger.log(Level.SEVERE, "XML error parsing response body from ORCiD: " + ex.getMessage(), ex);
         } catch (IOException ex) {
@@ -326,7 +326,7 @@ public class OrcidOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         } catch (ParserConfigurationException ex) {
             logger.log(Level.SEVERE, "While parsing the ORCiD response: Bad parse configuration. " + ex.getMessage(), ex);
         }
-        
-        return null;   
+
+        return null;
     }
 }

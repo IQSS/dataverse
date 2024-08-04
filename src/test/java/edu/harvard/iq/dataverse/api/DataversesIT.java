@@ -43,7 +43,7 @@ public class DataversesIT {
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
     }
-    
+
     @AfterAll
     public static void afterClass() {
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
@@ -142,8 +142,8 @@ public class DataversesIT {
         deleteDataverse.prettyPrint();
         deleteDataverse.then().assertThat().statusCode(OK.getStatusCode());
     }
-    
-    
+
+
     @Test
     public void testGetDataverseOwners() throws FileNotFoundException {
         Response createUser = UtilIT.createRandomUser();
@@ -151,24 +151,24 @@ public class DataversesIT {
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
         Response createDataverse1Response = UtilIT.createRandomDataverse(apiToken);
-        
+
         createDataverse1Response.prettyPrint();
         createDataverse1Response.then().assertThat().statusCode(CREATED.getStatusCode());
-        
+
         String first = UtilIT.getAliasFromResponse(createDataverse1Response);
-        
+
         Response getWithOwnersFirst = UtilIT.getDataverseWithOwners(first, apiToken, true);
         getWithOwnersFirst.prettyPrint();
-        
+
         Response createLevel1a = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-level1a", null, apiToken, first);
         createLevel1a.prettyPrint();
         String level1a = UtilIT.getAliasFromResponse(createLevel1a);
-        
+
         Response getWithOwners = UtilIT.getDataverseWithOwners(level1a, apiToken, true);
         getWithOwners.prettyPrint();
-        
+
         getWithOwners.then().assertThat().body("data.isPartOf.identifier", equalTo(first));
-        
+
     }
 
     /**
@@ -226,13 +226,13 @@ public class DataversesIT {
     }
 
     //Ensure that email is not returned when the ExcludeEmailFromExport setting is set
-    @Test 
-    public void testReturnEmail() throws FileNotFoundException {        
-        
+    @Test
+    public void testReturnEmail() throws FileNotFoundException {
+
         Response setToExcludeEmailFromExport = UtilIT.setSetting(SettingsServiceBean.Key.ExcludeEmailFromExport, "true");
         setToExcludeEmailFromExport.then().assertThat()
             .statusCode(OK.getStatusCode());
-        
+
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -261,7 +261,7 @@ public class DataversesIT {
                 .body("data.dataverseContacts[0].contactEmail", equalTo(emailAddressOfFirstDataverseContact))
                 .body("data.permissionRoot", equalTo(true))
                 .body("data.dataverseType", equalTo("UNCATEGORIZED"));
-        
+
         Response exportDataverseAsJson = UtilIT.exportDataverse(dataverseAlias, apiToken);
         exportDataverseAsJson.prettyPrint();
         exportDataverseAsJson.then().assertThat()
@@ -280,11 +280,11 @@ public class DataversesIT {
         List dataverseEmailNotAllowed = with(exportDataverseAsJson.body().asString())
                 .getJsonObject("data.dataverseContacts");
         assertNull(dataverseEmailNotAllowed);
-        
+
         Response removeExcludeEmail = UtilIT.deleteSetting(SettingsServiceBean.Key.ExcludeEmailFromExport);
         removeExcludeEmail.then().assertThat()
                 .statusCode(200);
-        
+
         Response exportDataverseAsJson2 = UtilIT.exportDataverse(dataverseAlias, apiToken);
         exportDataverseAsJson2.prettyPrint();
         exportDataverseAsJson2.then().assertThat()
@@ -297,27 +297,27 @@ public class DataversesIT {
                 .body("data.dataverseContacts[0].contactEmail", equalTo(emailAddressOfFirstDataverseContact))
                 .body("data.permissionRoot", equalTo(true))
                 .body("data.dataverseType", equalTo("UNCATEGORIZED"));
-        
+
         RestAssured.unregisterParser("text/plain");
         List dataverseEmailAllowed = with(exportDataverseAsJson2.body().asString())
                 .getJsonObject("data.dataverseContacts");
         assertNotNull(dataverseEmailAllowed);
-        
+
         Response deleteDataverse2 = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverse2.prettyPrint();
-        deleteDataverse2.then().assertThat().statusCode(OK.getStatusCode());        
+        deleteDataverse2.then().assertThat().statusCode(OK.getStatusCode());
         Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
     }
-    
+
     /**
      * Test the Dataverse page error message and link 
      * when the query string has a malformed url
      */
     @Test
     public void testMalformedFacetQueryString() {
-        
+
         Response createUser = UtilIT.createRandomUser();
         //        createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -338,8 +338,8 @@ public class DataversesIT {
 
         Response publishDataverse = UtilIT.publishDataverseViaSword(dvAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
-      
-        
+
+
         String expectedErrMsg = BundleUtil.getStringFromBundle("dataverse.search.facet.error", Arrays.asList("root"));
 
         // ----------------------------------
@@ -350,8 +350,8 @@ public class DataversesIT {
         String badQuery1 = "/?q=&fq0=authorName_ss%25253A%252522U.S.+Department+of+Commerce%25252C+Bureau+of+the+Census%25252C+Geography+Division%252522&types=dataverses%25253Adatasets&sort=dateSort&order=desc";
         Response resp1 = given()
                         .get(badQuery1);
-        
-        String htmlStr = resp1.asString();        
+
+        String htmlStr = resp1.asString();
         assertTrue(htmlStr.contains(expectedErrMsg));
 
         // ----------------------------------
@@ -363,13 +363,13 @@ public class DataversesIT {
         String badQuery2 = "/dataverse/" + dvAlias + "?fq0=authorName_ss:\"Bar,+Foo";
         Response resp2 = given()
                         .get(badQuery2);
-        
+
         expectedErrMsg = BundleUtil.getStringFromBundle("dataverse.search.facet.error", Arrays.asList(dvAlias));
 
-        String htmlStr2 = resp2.asString();        
+        String htmlStr2 = resp2.asString();
         assertTrue(htmlStr2.contains(expectedErrMsg));
-        
-        
+
+
         // ----------------------------------
         // Malformed query string 3 with Dataverse alias
         // - expect "clear your search" url to link to sub dataverse
@@ -377,13 +377,13 @@ public class DataversesIT {
         String badQuery3 = "/dataverse/" + dvAlias + "?q=&fq0=authorName_ss%3A\"\"Finch%2C+Fiona\"&types=dataverses%3Adatasets&sort=dateSort&order=desc";
         Response resp3 = given()
                         .get(badQuery3);
-        
-        String htmlStr3 = resp3.asString();        
+
+        String htmlStr3 = resp3.asString();
 
         expectedErrMsg = BundleUtil.getStringFromBundle("dataverse.search.facet.error", Arrays.asList(dvAlias));
         assertTrue(htmlStr3.contains(expectedErrMsg));
 
-    
+
         // ----------------------------------
         // Malformed query string 4 with Dataverse id
         //  - expect "clear your search" url to link to root
@@ -391,8 +391,8 @@ public class DataversesIT {
         String badQuery4 = "/dataverse.xhtml?id=" + dvId + "&q=&fq0=authorName_ss%3A\"\"Finch%2C+Fiona\"&types=dataverses%3Adatasets&sort=dateSort&order=desc";
         Response resp4 = given()
                         .get(badQuery4);
-        
-        String htmlStr4 = resp4.asString();        
+
+        String htmlStr4 = resp4.asString();
         System.out.println("------htmlStr4: " + resp4);
 
         // Solr searches using ?id={id} incorrectly searches the root
@@ -401,46 +401,46 @@ public class DataversesIT {
         assertTrue(htmlStr4.contains(expectedErrMsg));
 
     }
-    
+
     @Test
     public void testMoveDataverse() {
         Response createUser = UtilIT.createRandomUser();
-        
+
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        
+
         Response superuserResponse = UtilIT.makeSuperUser(username);
-        
+
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         assertTrue(createDataverseResponse.prettyPrint().contains("isReleased\": false"));
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
-        
+
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);//.publishDataverseViaSword(dataverseAlias, apiToken);
         assertEquals(200, publishDataverse.getStatusCode());
         assertTrue(publishDataverse.prettyPrint().contains("isReleased\": true"));
-        
+
         Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse2.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
         Response publishDataverse2 = UtilIT.publishDataverseViaNativeApi(dataverseAlias2, apiToken);
         assertEquals(200, publishDataverse2.getStatusCode());
-        
+
         Response moveResponse = UtilIT.moveDataverse(dataverseAlias, dataverseAlias2, true, apiToken);
 
         moveResponse.prettyPrint();
         moveResponse.then().assertThat().statusCode(OK.getStatusCode());
-        
+
         // because indexing happens asynchronously, we'll wait first, and then retry a few times, before failing
         int numberofAttempts = 0;
         boolean checkIndex = true;
         while (checkIndex) {
-            try {   
+            try {
                     try {
                         Thread.sleep(6000);
                     } catch (InterruptedException ex) {
-                    }                
+                    }
                 Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);
                 search.prettyPrint();
                 search.then().assertThat()
@@ -482,7 +482,7 @@ public class DataversesIT {
         updateDataverseDefaultRoleNoPerms.prettyPrint();
         updateDataverseDefaultRoleNoPerms.then().assertThat()
                 .statusCode(401);
-        
+
         // try role with no dataset permissions alias
         Response updateDataverseDefaultRoleBadRolePermissions = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "dvContributor", apiToken);
         updateDataverseDefaultRoleBadRolePermissions.prettyPrint();
@@ -496,7 +496,7 @@ public class DataversesIT {
         updateDataverseDefaultRole.then().assertThat()
                 .body("data.message", equalTo("Default contributor role for Dataverse " + dataverseAlias + " has been set to Curator."))
                 .statusCode(200);
-        
+
         //for test use an existing role. In practice this likely will be a custom role
         Response updateDataverseDefaultRoleNone = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "none", apiToken);
         updateDataverseDefaultRoleNone.prettyPrint();
@@ -512,7 +512,7 @@ public class DataversesIT {
                 .statusCode(404);
 
     }
-    
+
     @Test
     public void testDataFileAPIPermissions() {
 
@@ -527,22 +527,22 @@ public class DataversesIT {
 
         String pathToJsonFile = "src/test/resources/json/complete-dataset-with-files.json";
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
-        
+
         //should fail if non-super user and attempting to
         //create a dataset with files
         createDatasetResponse.prettyPrint();
         createDatasetResponse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
-        
+
         //should be ok to create a dataset without files...
         pathToJsonFile = "scripts/api/data/dataset-create-new.json";
         createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
-        
+
         createDatasetResponse.prettyPrint();
         createDatasetResponse.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
-        
+
         //As non-super user should be able to add a real file
         String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
         Response authorAttemptsToAddFileViaNative = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, apiToken);
@@ -550,7 +550,7 @@ public class DataversesIT {
         authorAttemptsToAddFileViaNative.prettyPrint();
         authorAttemptsToAddFileViaNative.then().assertThat()
                 .statusCode(OK.getStatusCode());
- 
+
     }
 
     @Test
@@ -633,7 +633,7 @@ public class DataversesIT {
         Integer datasetIdIntPidRel = JsonPath.from(importDDIPidRel.body().asString()).getInt("data.id");
         Response destroyDatasetResponsePidRel = UtilIT.destroyDataset(datasetIdIntPidRel, apiToken);
         assertEquals(200, destroyDatasetResponsePidRel.getStatusCode());
-        
+
         UtilIT.sleepForDeadlock(UtilIT.MAXIMUM_IMPORT_DURATION);
 
         Integer datasetIdIntRelease = JsonPath.from(importDDIRelease.body().asString()).getInt("data.id");
@@ -646,7 +646,7 @@ public class DataversesIT {
         Response deleteUserResponse = UtilIT.deleteUser(username);
         assertEquals(200, deleteUserResponse.getStatusCode());
     }
-    
+
     @Test
     public void testAttributesApi() throws Exception {
 
@@ -664,25 +664,25 @@ public class DataversesIT {
 
         String collectionAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
         String newCollectionAlias = collectionAlias + "RENAMED";
-        
+
         // Change the alias of the collection: 
         
         Response changeAttributeResp = UtilIT.setCollectionAttribute(collectionAlias, "alias", newCollectionAlias, apiToken);
         changeAttributeResp.prettyPrint();
-        
+
         changeAttributeResp.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("message.message", equalTo("Update successful"));
-        
+
         // Check on the collection, under the new alias: 
         
         Response collectionInfoResponse = UtilIT.exportDataverse(newCollectionAlias, apiToken);
         collectionInfoResponse.prettyPrint();
-        
+
         collectionInfoResponse.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.alias", equalTo(newCollectionAlias));
-        
+
         // Delete the collection (again, using its new alias):
         
         Response deleteCollectionResponse = UtilIT.deleteDataverse(newCollectionAlias, apiToken);

@@ -65,5 +65,5 @@ public class RoleDTO {
 		}
 		return r;
 	}
-	
+
 }

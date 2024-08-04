@@ -67,7 +67,7 @@ public class MetadataBlocksIT {
                 .body("data.fields.title.typeClass", CoreMatchers.is("primitive"))
                 .body("data.fields.title.isRequired", CoreMatchers.is(true));
     }
-    
+
     @Test
     void testDatasetWithAllDefaultMetadata() {
         // given

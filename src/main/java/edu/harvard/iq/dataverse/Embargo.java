@@ -69,7 +69,7 @@ public class Embargo {
     public String getFormattedDateAvailable() {
         return getDateAvailable().format(DateTimeFormatter.ISO_LOCAL_DATE.withLocale(BundleUtil.getCurrentLocale()));
     }
-    
+
     public String getReason() {
         return reason;
     }

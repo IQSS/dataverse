@@ -166,15 +166,15 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         logger.fine("preparing to delete file id " + fileIdLong);
                         DataFile fileToDelete = dataFileService.find(fileIdLong);
                         if (fileToDelete != null) {
-                            boolean deleteCommandSuccess = false; 
+                            boolean deleteCommandSuccess = false;
                             Dataset dataset = fileToDelete.getOwner();
                             Dataset datasetThatOwnsFile = fileToDelete.getOwner();
                             Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
-                            String deleteStorageLocation = null; 
-                            
-                            
+                            String deleteStorageLocation = null;
+
+
                             deleteStorageLocation = dataFileService.getPhysicalFileToDelete(fileToDelete);
-                            
+
                             /**
                              * @todo it would be nice to have this check higher
                              * up. Do we really need the file ID? Should the
@@ -187,11 +187,11 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                             }
                             try {
                                 commandEngine.submit(updateDatasetCommand);
-                                deleteCommandSuccess = true; 
+                                deleteCommandSuccess = true;
                             } catch (CommandException ex) {
                                 throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
                             }
-                            
+
                             if (deleteCommandSuccess) {
                                 if (deleteStorageLocation != null) {
                                     // Finalize the delete of the physical file 
@@ -248,16 +248,16 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId().asString());
             }
-            
+
             //---------------------------------------
             // Make sure that the upload type is not rsync - handled above for dual mode
             // ------------------------------------- 
 
-            if (dataset.getOrCreateEditVersion().isHasPackageFile()) {                
+            if (dataset.getOrCreateEditVersion().isHasPackageFile()) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile"));
             }
-            
-            
+
+
             // Right now we are only supporting UriRegistry.PACKAGE_SIMPLE_ZIP but
             // in the future maybe we'll support other formats? Rdata files? Stata files?
             /**
@@ -307,7 +307,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 
             try {
                 //CreateDataFileResult createDataFilesResponse =  FileUtil.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe, null, null, systemConfig);
-                UploadSessionQuotaLimit quota = null; 
+                UploadSessionQuotaLimit quota = null;
                 if (systemConfig.isStorageQuotasEnforced()) {
                     quota = dataFileService.getUploadSessionQuotaLimit(dataset);
                 }

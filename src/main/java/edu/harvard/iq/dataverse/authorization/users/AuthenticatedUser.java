@@ -76,13 +76,13 @@ import jakarta.validation.constraints.NotNull;
                 query = "select au from AuthenticatedUser au WHERE "
                         + "au.superuser = true "
                         + "order by au.id")
-    
+
 })
 @Entity
 public class AuthenticatedUser implements User, Serializable {
-    
+
     public static final String IDENTIFIER_PREFIX = "@";
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
@@ -106,19 +106,19 @@ public class AuthenticatedUser implements User, Serializable {
     private String email;
     private String affiliation;
     private String position;
-    
+
     @NotBlank(message = "{user.lastName}")
     private String lastName;
-    
+
     @NotBlank(message = "{user.firstName}")
     private String firstName;
-    
+
     @Column(nullable = true)
     private Timestamp emailConfirmed;
- 
+
     @Column(nullable = false)
     private Timestamp createdTime;
-    
+
     @Column(nullable = true)
     private Timestamp lastLoginTime;    // last user login timestamp
 
@@ -127,7 +127,7 @@ public class AuthenticatedUser implements User, Serializable {
     
     @Transient
     private Cart cart;
-    
+
     private boolean superuser;
 
     @Column(nullable = false)
@@ -141,10 +141,10 @@ public class AuthenticatedUser implements User, Serializable {
 
     @Column(columnDefinition = "TEXT", nullable = true)
     private String mutedNotifications;
-    
+
     @Transient
     private Set<Type> mutedEmailsSet = new HashSet<>();
-    
+
     @Transient
     private Set<Type> mutedNotificationsSet = new HashSet<>();
 
@@ -157,7 +157,7 @@ public class AuthenticatedUser implements User, Serializable {
         mutedNotifications = Type.toStringValue(mutedNotificationsSet);
         mutedEmails = Type.toStringValue(mutedEmailsSet);
     }
-    
+
     @PostLoad
     public void initialize() {
         mutedNotificationsSet = Type.tokenizeToSet(mutedNotifications);
@@ -186,7 +186,7 @@ public class AuthenticatedUser implements User, Serializable {
     public void setUserNotifications(List<UserNotification> notifications) {
         this.notifications = notifications;
     }
-    
+
     @OneToMany(mappedBy = "requestor", cascade = {CascadeType.REMOVE})
     private List<UserNotification> requests;
 
@@ -198,10 +198,10 @@ public class AuthenticatedUser implements User, Serializable {
         this.requests = requests;
     }
 
-    
+
     @OneToMany(mappedBy = "user", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLock> datasetLocks;
-	
+
     public List<DatasetLock> getDatasetLocks() {
         return datasetLocks;
     }
@@ -235,12 +235,12 @@ public class AuthenticatedUser implements User, Serializable {
         }
         return requestedDataFiles;
     }
-    
+
     @Override
     public AuthenticatedUserDisplayInfo getDisplayInfo() {
         return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position);
     }
-    
+
     /**
      * Takes the passed info object and updated the internal fields according to it.
      * @param inf the info from which we update the fields.
@@ -270,7 +270,7 @@ public class AuthenticatedUser implements User, Serializable {
     //For User List Admin dashboard
     @Transient
     private String roles;
-    
+
     public String getRoles() {
         return roles;
     }
@@ -278,10 +278,10 @@ public class AuthenticatedUser implements User, Serializable {
     public void setRoles(String roles) {
         this.roles = roles;
     }
-    
+
     //For User List Admin dashboard - AuthenticatedProviderId
     @Transient
-    private String authProviderId;    
+    private String authProviderId;
 
     public String getAuthProviderId() {
         return authProviderId;
@@ -290,10 +290,10 @@ public class AuthenticatedUser implements User, Serializable {
     public void setAuthProviderId(String authProviderId) {
         this.authProviderId = authProviderId;
     }
-    
-    
+
+
     @Transient
-    private String authProviderFactoryAlias;    
+    private String authProviderFactoryAlias;
 
     public String getAuthProviderFactoryAlias() {
         return authProviderFactoryAlias;
@@ -302,9 +302,8 @@ public class AuthenticatedUser implements User, Serializable {
     public void setAuthProviderFactoryAlias(String authProviderFactoryAlias) {
         this.authProviderFactoryAlias = authProviderFactoryAlias;
     }
-    
-    
-    
+
+
     @Override
     public boolean isAuthenticated() { return true; }
 
@@ -406,6 +405,7 @@ public class AuthenticatedUser implements User, Serializable {
     public int getRateLimitTier() {
         return rateLimitTier;
     }
+
     public void setRateLimitTier(int rateLimitTier) {
         this.rateLimitTier = rateLimitTier;
     }
@@ -420,14 +420,14 @@ public class AuthenticatedUser implements User, Serializable {
     public void setAuthenticatedUserLookup(AuthenticatedUserLookup authenticatedUserLookup) {
         this.authenticatedUserLookup = authenticatedUserLookup;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
         hash += (id != null ? id.hashCode() : 0);
         return hash;
-    }    
-    
+    }
+
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
@@ -436,7 +436,7 @@ public class AuthenticatedUser implements User, Serializable {
         }
         AuthenticatedUser other = (AuthenticatedUser) object;
         return Objects.equals(getId(), other.getId());
-    }    
+    }
 
     public String getShibIdentityProvider() {
         return shibIdentityProvider;
@@ -445,11 +445,11 @@ public class AuthenticatedUser implements User, Serializable {
     public void setShibIdentityProvider(String shibIdentityProvider) {
         this.shibIdentityProvider = shibIdentityProvider;
     }
-    
+
     public JsonObjectBuilder toJson() {
         //JsonObjectBuilder authenicatedUserJson = Json.createObjectBuilder();
         NullSafeJsonBuilder authenicatedUserJson = NullSafeJsonBuilder.jsonObjectBuilder();
-         
+
         authenicatedUserJson.add("id", this.id);
         authenicatedUserJson.add("userIdentifier", this.userIdentifier);
         authenicatedUserJson.add("lastName", this.lastName);
@@ -458,10 +458,10 @@ public class AuthenticatedUser implements User, Serializable {
         authenicatedUserJson.add("affiliation", UserUtil.getStringOrNull(this.affiliation));
         authenicatedUserJson.add("position", UserUtil.getStringOrNull(this.position));
         authenicatedUserJson.add("isSuperuser", this.superuser);
-              
-        authenicatedUserJson.add("authenticationProvider", this.authProviderFactoryAlias);   
+
+        authenicatedUserJson.add("authenticationProvider", this.authProviderFactoryAlias);
         authenicatedUserJson.add("roles", UserUtil.getStringOrNull(this.roles));
-        
+
         authenicatedUserJson.add("createdTime", UserUtil.getTimestampStringOrNull(this.createdTime));
         authenicatedUserJson.add("lastLoginTime", UserUtil.getTimestampStringOrNull(this.lastLoginTime));
         authenicatedUserJson.add("lastApiUseTime", UserUtil.getTimestampStringOrNull(this.lastApiUseTime));
@@ -473,7 +473,7 @@ public class AuthenticatedUser implements User, Serializable {
 
         return authenicatedUserJson;
     }
-    
+
      /**
      * May be used for translating API field names.  
      * 
@@ -482,8 +482,8 @@ public class AuthenticatedUser implements User, Serializable {
      * @return 
      */
     public static JsonObjectBuilder getBundleStrings() {
-     
-           return Json.createObjectBuilder()                   
+
+           return Json.createObjectBuilder()
                 .add("userId", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userId"))
                 .add("userIdentifier", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.userIdentifier"))
                 .add("lastName", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastName"))
@@ -492,66 +492,66 @@ public class AuthenticatedUser implements User, Serializable {
                 .add("affiliation", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.affiliation"))
                 .add("position", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.position"))
                 .add("isSuperuser", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.isSuperuser"))
-                
+
                 .add("authenticationProvider", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.authProviderFactoryAlias"))
                 .add("roles", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.roles"))
-                   
+
                 .add("createdTime", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.createdTime"))
                 .add("lastLoginTime", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastLoginTime"))
                 .add("lastApiUseTime", BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.lastApiUseTime"))
                 ;
-                       
+
     }
-    
+
     @Override
     public String toString() {
         return "[AuthenticatedUser identifier:" + getIdentifier() + "]";
     }
-    
+
     public String getSortByString() {
         return this.getLastName() + " " + this.getFirstName() + " " + this.getUserIdentifier();
     }
-    
+
     /**
      * 
      * @param lastLoginTime 
      */
     public void setLastLoginTime(Timestamp lastLoginTime) {
-        
+
         this.lastLoginTime = lastLoginTime;
     }
-    
+
     /**
      * @param lastLoginTime
      */
     public Timestamp getLastLoginTime() {
         return this.lastLoginTime;
     }
-    
-    
+
+
     public void setCreatedTime(Timestamp createdTime) {
         this.createdTime = createdTime;
     }
-    
+
     public Timestamp getCreatedTime() {
         return this.createdTime;
     }
 
-    
+
     /**
      * 
      * @param lastApiUseTime 
      */
-    public void setLastApiUseTime(Timestamp lastApiUseTime) {        
+    public void setLastApiUseTime(Timestamp lastApiUseTime) {
         this.lastApiUseTime = lastApiUseTime;
     }
-    
+
     /**
      * 
      * @param lastApiUseTime
      */
     public Timestamp getLastApiUseTime() {
-        
+
         return this.lastApiUseTime;
     }
 
@@ -562,14 +562,14 @@ public class AuthenticatedUser implements User, Serializable {
         }
         return null;
     }
-    
+
     public Cart getCart() {
         if (cart == null) {
             cart = new Cart();
         }
         return cart;
     }
-    
+
     public void setCart(Cart cart) {
         this.cart = cart;
     }
@@ -591,14 +591,14 @@ public class AuthenticatedUser implements User, Serializable {
         this.mutedNotificationsSet = mutedNotifications;
         this.mutedNotifications = Type.toStringValue(mutedNotifications);
     }
-    
+
     public boolean hasEmailMuted(Type type) {
         if (this.mutedEmailsSet == null || type == null) {
             return false;
         }
         return this.mutedEmailsSet.contains(type);
     }
-    
+
     public boolean hasNotificationMuted(Type type) {
         if (this.mutedNotificationsSet == null || type == null) {
             return false;

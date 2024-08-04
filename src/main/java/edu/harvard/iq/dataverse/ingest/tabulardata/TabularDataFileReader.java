@@ -38,37 +38,36 @@ import java.util.regex.Matcher;
  */
 public abstract class TabularDataFileReader {
 
-    
+
     /*
      * TODO: rename! -- L.A. 4.0 
      */
     public static String SDIO_VERSION = "4.0";
 
 
-    
     protected TabularDataFileReaderSpi originatingProvider;
 
     protected TabularDataFileReader(TabularDataFileReaderSpi originatingProvider) {
         this.originatingProvider = originatingProvider;
     }
-    
+
     public TabularDataFileReader() {
     }
 
     public TabularDataFileReaderSpi getOriginatingProvider() {
         return originatingProvider;
     }
-    
+
     public String getFormatName() throws IOException {
         return originatingProvider.getFormatNames()[0];
     }
-    
+
     public void dispose() {
-    
+
     }
-    
-    protected String dataLanguageEncoding; 
-    
+
+    protected String dataLanguageEncoding;
+
     public String getDataLanguageEncoding() {
         return dataLanguageEncoding;
     }
@@ -76,7 +75,7 @@ public abstract class TabularDataFileReader {
     public void setDataLanguageEncoding(String dataLanguageEncoding) {
         this.dataLanguageEncoding = dataLanguageEncoding;
     }
-    
+
     /**
      * Reads the statistical data file from a supplied
      * <code>BufferedInputStream</code> and 
@@ -104,7 +103,7 @@ public abstract class TabularDataFileReader {
     public abstract TabularDataIngest read(BufferedInputStream stream, boolean storeWithVariableHeader, File dataFile)
         throws IOException;
 
-    
+
     // should this be an abstract method as well? 
     
     public boolean isValid(File ddiFile) throws IOException {
@@ -153,7 +152,7 @@ public abstract class TabularDataFileReader {
         }
         return nullRemovedString;
     }
-    
+
     protected String escapeCharacterString(String rawString) {
         /*
          * Some special characters, like new lines and tabs need to 
@@ -169,17 +168,17 @@ public abstract class TabularDataFileReader {
         escapedString = escapedString.replaceAll("\t", Matcher.quoteReplacement("\\t"));
         escapedString = escapedString.replaceAll("\n", Matcher.quoteReplacement("\\n"));
         escapedString = escapedString.replaceAll("\r", Matcher.quoteReplacement("\\r"));
-        
+
         // the escaped version of the string is stored in the tab file 
         // enclosed in double-quotes; this is in order to be able 
         // to differentiate between an empty string (tab-delimited empty string in 
         // double quotes) and a missing value (tab-delimited empty string). 
      
         escapedString = "\"" + escapedString + "\"";
-        
+
         return escapedString;
     }
-    
+
     protected String generateVariableHeader(List<DataVariable> dvs) {
         String varHeader = null;
 

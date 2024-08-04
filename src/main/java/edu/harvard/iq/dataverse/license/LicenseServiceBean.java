@@ -65,20 +65,20 @@ public class LicenseServiceBean {
             return null;
         }
     }
-    
+
     public License getByPotentiallyLocalizedName(String name) {
         // First, try the name against the name column in the License table, 
         // verbatim: 
-        License license = getByNameOrUri(name); 
+        License license = getByNameOrUri(name);
         if (license != null) {
-            return license; 
+            return license;
         }
-        
+
         // Then, if still here, go through the list, see if any of the names
         // match this string as a translated name:
         List<License> allActiveLicenses = listAllActive();
         if (allActiveLicenses == null) {
-            return null; 
+            return null;
         }
         for (License activeLicense : allActiveLicenses) {
             // This is DatasetUtil.getLicenseName(), it will return the 
@@ -87,8 +87,8 @@ public class LicenseServiceBean {
                 return activeLicense;
             }
         }
-        
-        return null; 
+
+        return null;
     }
 
     public int setDefault(Long id) throws WrappedResponse {
@@ -106,7 +106,7 @@ public class LicenseServiceBean {
         License candidate = getById(id);
         if (candidate == null)
             return 0;
-        
+
         if (candidate.isActive() != state) {
             if (candidate.isDefault() && state == false) {
                 throw new WrappedResponse(
@@ -124,11 +124,11 @@ public class LicenseServiceBean {
         License candidate = getById(id);
         if (candidate == null)
             return 0;
-        
+
         return em.createNamedQuery("License.setSortOrder").setParameter("id", id).setParameter("sortOrder", sortOrder)
                 .executeUpdate();
     }
-    
+
     public License save(License license) throws WrappedResponse {
         if (license.getId() != null) {
             throw new WrappedResponse(new IllegalArgumentException("There shouldn't be an ID in the request body"), null);

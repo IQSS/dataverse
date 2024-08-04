@@ -45,31 +45,31 @@ import org.apache.solr.common.SolrDocumentList;
 public class OAISetServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     @EJB
     SystemConfig systemConfig;
-    
+
     @EJB
     OAIRecordServiceBean oaiRecordService;
-    
-    @EJB 
+
+    @EJB
     DatasetServiceBean datasetService;
-    
+
     @EJB
     SolrClientService solrClientService;
-    
+
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean");
-    
+
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-    
+
     public OAISet find(Object pk) {
         return em.find(OAISet.class, pk);
     }
-    
+
     public boolean setExists(String spec) {
         boolean specExists = false;
         OAISet set = findBySpec(spec);
-        
+
         if (set != null) {
             specExists = true;
         }
@@ -87,7 +87,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         }
         return oaiSet;
     }
-    
+
     // Find the default, "no name" set:
     public OAISet findDefaultSet() {
         String query = "SELECT o FROM OAISet o where o.spec = ''";
@@ -110,7 +110,7 @@ public class OAISetServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
+
     public List<OAISet> findAllNamedSets() {
         try {
             logger.info("setService, findAllNamedSets; query: select object(o) from OAISet as o where o.spec != '' order by o.spec");
@@ -121,7 +121,7 @@ public class OAISetServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
+
     /**
      * "Active" sets are the ones that have been successfully exported, and contain
      * a non-zero number of records. (Although a set that contains a number of 
@@ -134,13 +134,13 @@ public class OAISetServiceBean implements java.io.Serializable {
                 + "where r.setName = o.spec "
                 + "and o.spec != '' "
                 + "group by o order by o.spec";
-        
+
         Query query = em.createQuery(jpaQueryString);
         List<OAISet> queryResults = query.getResultList();
-        
+
         return queryResults;
     }
-    
+
     @Asynchronous
     public void remove(Long setId) {
         OAISet oaiSet = find(setId);
@@ -151,23 +151,23 @@ public class OAISetServiceBean implements java.io.Serializable {
         //OAISet merged = em.merge(oaiSet);
         em.remove(oaiSet);
     }
-    
+
     public OAISet findById(Long id) {
        return em.find(OAISet.class, id);
-    }   
-    
+    }
+
     @Asynchronous
     public void exportOaiSetAsync(OAISet oaiSet) {
         exportOaiSet(oaiSet);
     }
-    
+
     public void exportOaiSet(OAISet oaiSet) {
         exportOaiSet(oaiSet, logger);
     }
-    
+
     public void exportOaiSet(OAISet oaiSet, Logger exportLogger) {
         OAISet managedSet = find(oaiSet.getId());
-        
+
         String query = managedSet.getDefinition();
 
         List<Long> datasetIds;
@@ -183,7 +183,7 @@ public class OAISetServiceBean implements java.io.Serializable {
                 // including the unpublished drafts and deaccessioned ones.
                 // Those will be filtered out further down the line. 
                 datasetIds = datasetService.findAllLocalDatasetIds();
-                databaseLookup = true; 
+                databaseLookup = true;
             }
         } catch (OaiSetException ose) {
             datasetIds = null;
@@ -198,8 +198,8 @@ public class OAISetServiceBean implements java.io.Serializable {
         //}
         managedSet.setUpdateInProgress(false);
 
-    } 
-    
+    }
+
     public void exportAllSets() {
         String logTimestamp = logFormatter.format(new Date());
         Logger exportLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.OAISetServiceBean." + "UpdateAllSets." + logTimestamp);
@@ -219,24 +219,24 @@ public class OAISetServiceBean implements java.io.Serializable {
         } else {
             exportLogger = logger;
         }
-        
+
         List<OAISet> allSets = findAll();
-        
+
         if (allSets != null) {
             for (OAISet set : allSets) {
                 exportOaiSet(set, exportLogger);
             }
         }
-        
+
         if (fileHandlerSuceeded) {
             // no, we are not potentially de-referencing a NULL pointer - 
             // it's not NULL if fileHandlerSucceeded is true.
             fileHandler.close();
         }
     }
-        
+
     public int validateDefinitionQuery(String query) throws OaiSetException {
-        
+
         List<Long> resultIds = expandSetQuery(query);
         //logger.fine("Datasets found: "+StringUtils.join(resultIds, ","));
         
@@ -244,10 +244,10 @@ public class OAISetServiceBean implements java.io.Serializable {
             //logger.fine("returning "+resultIds.size());
             return resultIds.size();
         }
-        
+
         return 0;
     }
-    
+
     /**
      * @deprecated Consider using commented out solrQuery.addFilterQuery
      * examples instead.
@@ -265,10 +265,10 @@ public class OAISetServiceBean implements java.io.Serializable {
         // b) published and c) local: 
         // SearchFields.TYPE
         query = query.concat(" AND " + SearchFields.TYPE + ":" + SearchConstants.DATASETS + " AND " + SearchFields.IS_HARVESTED + ":" + false + " AND " + SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.PUBLISHED_STRING);
-        
+
         return query;
     }
-    
+
     public List<Long> expandSetQuery(String query) throws OaiSetException {
         // We do not allow "keyword" queries (like "king") - we require
         // that they search on specific fields, for ex., "authorName:king":
@@ -277,7 +277,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         }
         SolrQuery solrQuery = new SolrQuery();
         String restrictedQuery = addQueryRestrictions(query);
-        
+
         solrQuery.setQuery(restrictedQuery);
 
         // addFilterQuery equivalent to addQueryRestrictions
@@ -288,7 +288,7 @@ public class OAISetServiceBean implements java.io.Serializable {
 
         solrQuery.setRows(Integer.MAX_VALUE);
 
-        
+
         QueryResponse queryResponse = null;
         try {
             queryResponse = solrClientService.getSolrClient().query(solrQuery);
@@ -308,21 +308,21 @@ public class OAISetServiceBean implements java.io.Serializable {
             logger.warning("Internal Dataverse Search Engine Error");
             throw new OaiSetException("Internal Dataverse Search Engine Error");
         }
-        
+
         SolrDocumentList docs = queryResponse.getResults();
         Iterator<SolrDocument> iter = docs.iterator();
         List<Long> resultIds = new ArrayList<>();
-        
+
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
             resultIds.add(entityid);
         }
-        
+
         return resultIds;
-        
+
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setUpdateInProgress(Long setId) {
         OAISet oaiSet = find(setId);
@@ -332,20 +332,20 @@ public class OAISetServiceBean implements java.io.Serializable {
         em.refresh(oaiSet);
         oaiSet.setUpdateInProgress(true);
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void setDeleteInProgress(Long setId) {
         OAISet oaiSet = find(setId);
-        
+
         if (oaiSet == null) {
             return;
         }
         em.refresh(oaiSet);
         oaiSet.setDeleteInProgress(true);
     }
-    
+
     public void save(OAISet oaiSet) {
         em.merge(oaiSet);
     }
-    
+
 }

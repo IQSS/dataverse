@@ -45,7 +45,7 @@ public class ConfirmEmailServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     /**
      * A simple interface to check if a user email has been verified or not.
      * @param user
@@ -219,7 +219,7 @@ public class ConfirmEmailServiceBean {
         }
         return confirmEmailData;
     }
-    
+
     public boolean hasActiveVerificationToken(AuthenticatedUser au) {
         if (findSingleConfirmEmailDataByUser(au) == null) {
             return false;

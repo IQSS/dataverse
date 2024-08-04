@@ -16,5 +16,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface RequiredPermissions {
 	Permission[] value();
+
 	String dataverseName() default ""; // TODO change to "dvObjectName"
 }

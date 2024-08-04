@@ -6,11 +6,11 @@ package edu.harvard.iq.dataverse.authorization;
  * @author michael
  */
 public class AuthenticationProviderDisplayInfo {
-   
+
     private String title;
     private String subtitle;
     private String id;
-    
+
     public AuthenticationProviderDisplayInfo() {
     }
 
@@ -46,5 +46,5 @@ public class AuthenticationProviderDisplayInfo {
         this.id = id;
         return this;
     }
-    
+
 }

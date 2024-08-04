@@ -35,11 +35,11 @@ import jakarta.persistence.metamodel.Metamodel;
  * @author skraffmi
  */
 public class TestEntityManager implements EntityManager {
-    
+
     Set<Object> newlyPersistedObjects = new HashSet<>();
     Map<Class, Map<Object, Object>> tables = new HashMap<>();
     final AtomicLong nextId = new AtomicLong(0);
-    
+
     @Override
     public void persist(Object entity) {
         newlyPersistedObjects.add(entity);
@@ -311,5 +311,5 @@ public class TestEntityManager implements EntityManager {
     public <T> List<EntityGraph<? super T>> getEntityGraphs(Class<T> entityClass) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
 }

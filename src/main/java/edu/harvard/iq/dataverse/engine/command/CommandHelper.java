@@ -10,9 +10,9 @@ import java.util.*;
  * @author michael
  */
 public class CommandHelper {
-	
+
 	public static final CommandHelper CH = new CommandHelper();
-	
+
 	/**
      * Given a {@link Command} sub-class, returns the set of permissions needed
      * to be able to execute it. Needed permissions are specified by annotating
@@ -33,7 +33,7 @@ public class CommandHelper {
                 if (superClass != null) {
                     return permissionsRequired(superClass);
                 } else {
-                    throw new IllegalArgumentException("Command class " + cmdClass.getCanonicalName() 
+                    throw new IllegalArgumentException("Command class " + cmdClass.getCanonicalName()
                      + ", and its superclasses, do not declare required permissions.");
                 }
             }
@@ -42,14 +42,14 @@ public class CommandHelper {
                 retVal.put(rp.dataverseName(), asPermissionSet(rp.value()));
 			}
 			return retVal;
-			
+
 		} else {
 			Permission[] required = requiredPerms.value();
 			return Collections.singletonMap(requiredPerms.dataverseName(),
                     asPermissionSet(required));
 		}
 	}
-	
+
 	/**
      * Given a command, returns the set of permissions needed to be able to
      * execute it. Needed permissions are specified by annotating the command's
@@ -62,7 +62,7 @@ public class CommandHelper {
     public Map<String, Set<Permission>> permissionsRequired(Command c) {
 		return permissionsRequired(c.getClass());
 	}
-	
+
     private Set<Permission> asPermissionSet(Permission[] permissionArray) {
         return (permissionArray.length == 0) ? EnumSet.noneOf(Permission.class)
                 : (permissionArray.length == 1) ? EnumSet.of(permissionArray[0])

@@ -37,24 +37,24 @@ import java.util.logging.Logger;
  */
 public class OaiHandler implements Serializable {
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler");
-    
+
     public OaiHandler() {
-        
+
     }
-    
+
     public OaiHandler(String baseOaiUrl) {
-        this.baseOaiUrl = baseOaiUrl; 
+        this.baseOaiUrl = baseOaiUrl;
     }
-    
+
     public OaiHandler(String baseOaiUrl, String metadataPrefix) {
         this.baseOaiUrl = baseOaiUrl;
-        this.metadataPrefix = metadataPrefix; 
+        this.metadataPrefix = metadataPrefix;
     }
-      
+
     public OaiHandler(HarvestingClient harvestingClient) throws OaiHandlerException {
         this.baseOaiUrl = harvestingClient.getHarvestingUrl();
         this.metadataPrefix = harvestingClient.getMetadataPrefix();
-        
+
         if (StringUtils.isEmpty(baseOaiUrl)) {
             throw new OaiHandlerException("Valid OAI url is needed to create a handler");
         }
@@ -63,78 +63,78 @@ public class OaiHandler implements Serializable {
             throw new OaiHandlerException("HarvestingClient must have a metadataPrefix to create a handler");
         }
         this.metadataPrefix = harvestingClient.getMetadataPrefix();
-        
+
         if (!StringUtils.isEmpty(harvestingClient.getHarvestingSet())) {
             this.setName = harvestingClient.getHarvestingSet();
         }
-        
+
         this.fromDate = harvestingClient.getLastNonEmptyHarvestTime();
-        
+
         this.customHeaders = makeCustomHeaders(harvestingClient.getCustomHttpHeaders());
-        
+
         this.harvestingClient = harvestingClient;
     }
-    
-    private String baseOaiUrl; 
+
+    private String baseOaiUrl;
     private String dataverseApiUrl; // if the remote server is a Dataverse and we access its native metadata
-    private String metadataPrefix; 
-    private String setName; 
+    private String metadataPrefix;
+    private String setName;
     private Date   fromDate;
     private Boolean setListTruncated = false;
     private Map<String, String> customHeaders = null;
-    
-    private ServiceProvider serviceProvider; 
-    
-    private HarvestingClient harvestingClient; 
-    
+
+    private ServiceProvider serviceProvider;
+
+    private HarvestingClient harvestingClient;
+
     public String getSetName() {
-        return setName; 
+        return setName;
     }
-    
+
     public String getBaseOaiUrl() {
-        return baseOaiUrl; 
+        return baseOaiUrl;
     }
-    
+
     public Date getFromDate() {
         return fromDate;
     }
-    
+
     public String getMetadataPrefix() {
-        return metadataPrefix; 
+        return metadataPrefix;
     }
-    
+
     public HarvestingClient getHarvestingClient() {
         return this.harvestingClient;
     }
-    
+
     public void withSetName(String setName) {
         this.setName = setName;
     }
-        
+
     public void withMetadataPrefix(String metadataPrefix) {
         this.metadataPrefix = metadataPrefix;
     }
-    
+
     public void withFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
-    
+
     public void setHarvestingClient(HarvestingClient harvestingClient) {
-        this.harvestingClient = harvestingClient; 
+        this.harvestingClient = harvestingClient;
     }
-    
+
     public boolean isSetListTruncated() {
         return setListTruncated;
     }
-    
+
     public Map<String, String> getCustomHeaders() {
         return this.customHeaders;
     }
-    
+
     public void setCustomHeaders(Map<String, String> customHeaders) {
        this.customHeaders = customHeaders;
     }
-    
+
     public ServiceProvider getServiceProvider() throws OaiHandlerException {
         if (serviceProvider == null) {
             if (baseOaiUrl == null) {
@@ -144,41 +144,41 @@ public class OaiHandler implements Serializable {
 
             context.withBaseUrl(baseOaiUrl);
             context.withGranularity(Granularity.Second);
-            
+
             JdkHttpOaiClient.Builder xoaiClientBuilder = JdkHttpOaiClient.newBuilder().withBaseUrl(getBaseOaiUrl());
             if (getCustomHeaders() != null) {
                 for (String headerName : getCustomHeaders().keySet()) {
                     logger.fine("adding custom header; name: " + headerName + ", value: " + getCustomHeaders().get(headerName));
-                }   
+                }
                 xoaiClientBuilder = xoaiClientBuilder.withCustomHeaders(getCustomHeaders());
             }
             context.withOAIClient(xoaiClientBuilder.build());
             serviceProvider = new ServiceProvider(context);
         }
-        
+
         return serviceProvider;
     }
-    
+
     public ArrayList<String> runListSets() throws OaiHandlerException {
-    
-        ServiceProvider sp = getServiceProvider(); 
-        
+
+        ServiceProvider sp = getServiceProvider();
+
         Iterator<Set> setIter;
-        
+
         long startMilSec = new Date().getTime();
-        
+
         try {
             setIter = sp.listSets();
         } catch (NoSetHierarchyException nshe) {
-            return null; 
+            return null;
         } catch (InvalidOAIResponse ior) {
             throw new OaiHandlerException("No valid response received from the OAI server.");
         }
-        
+
         ArrayList<String> sets = new ArrayList<>();
 
         int count = 0;
-        
+
         while (setIter.hasNext()) {
             count++;
             Set set = setIter.next();
@@ -194,10 +194,10 @@ public class OaiHandler implements Serializable {
                 // Have we been waiting more than 30 seconds?
                 if (new Date().getTime() - startMilSec > 30000) {
                     setListTruncated = true;
-                    break; 
+                    break;
                 }
             }
-                         
+
             if (!StringUtils.isEmpty(setSpec)) {
                 sets.add(setSpec);
             }
@@ -206,15 +206,15 @@ public class OaiHandler implements Serializable {
         if (sets.size() < 1) {
             return null;
         }
-        return sets; 
-        
+        return sets;
+
     }
-    
+
     public List<String> runListMetadataFormats() throws OaiHandlerException {
         ServiceProvider sp = getServiceProvider();
-                
+
         Iterator<MetadataFormat> mfIter;
-        
+
         try {
             mfIter = sp.listMetadataFormats();
         } catch (IdDoesNotExistException idnee) {
@@ -228,9 +228,9 @@ public class OaiHandler implements Serializable {
             // But it's ok. 
             throw new OaiHandlerException("Id does not exist exception");
         } catch (InvalidOAIResponse ior) {
-            throw new OaiHandlerException("No valid response received from the OAI server."); 
+            throw new OaiHandlerException("No valid response received from the OAI server.");
         }
-        
+
         List<String> formats = new ArrayList<>();
 
         while (mfIter.hasNext()) {
@@ -242,12 +242,12 @@ public class OaiHandler implements Serializable {
         }
 
         if (formats.size() < 1) {
-            return null; 
+            return null;
         }
-        
+
         return formats;
     }
-    
+
     public Iterator<Header> runListIdentifiers() throws OaiHandlerException {
         ListIdentifiersParameters parameters = buildListIdentifiersParams();
         try {
@@ -255,17 +255,17 @@ public class OaiHandler implements Serializable {
         } catch (BadArgumentException bae) {
             throw new OaiHandlerException("BadArgumentException thrown when attempted to run ListIdentifiers");
         }
-                
+
     }
-    
-    public FastGetRecord runGetRecord(String identifier, HttpClient httpClient) throws OaiHandlerException { 
+
+    public FastGetRecord runGetRecord(String identifier, HttpClient httpClient) throws OaiHandlerException {
         if (StringUtils.isEmpty(this.baseOaiUrl)) {
             throw new OaiHandlerException("Attempted to execute GetRecord without server URL specified.");
         }
         if (StringUtils.isEmpty(this.metadataPrefix)) {
             throw new OaiHandlerException("Attempted to execute GetRecord without metadataPrefix specified");
         }
-        
+
         try {
             return new FastGetRecord(this, identifier, httpClient);
         } catch (ParserConfigurationException pce) {
@@ -278,11 +278,11 @@ public class OaiHandler implements Serializable {
             throw new OaiHandlerException("IOException executing GetRecord: " + ioe.getMessage());
         }
     }
-    
-    
+
+
     private ListIdentifiersParameters buildListIdentifiersParams() throws OaiHandlerException {
         ListIdentifiersParameters mip = ListIdentifiersParameters.request();
-        
+
         if (StringUtils.isEmpty(this.metadataPrefix)) {
             throw new OaiHandlerException("Attempted to create a ListIdentifiers request without metadataPrefix specified");
         }
@@ -295,28 +295,28 @@ public class OaiHandler implements Serializable {
         if (!StringUtils.isEmpty(this.setName)) {
             mip.withSetSpec(this.setName);
         }
-        
+
         return mip;
     }
-    
+
     public String getProprietaryDataverseMetadataURL(String identifier) {
 
         if (dataverseApiUrl == null) {
             dataverseApiUrl = baseOaiUrl.replaceFirst("/oai", "");
         }
-        
+
         StringBuilder requestURL = new StringBuilder(dataverseApiUrl);
         requestURL.append(DATAVERSE_PROPRIETARY_METADATA_API).append(identifier);
 
         return requestURL.toString();
     }
-    
+
     public void runIdentify() {
         // not implemented yet
         // (we will need it, both for validating the remote server,
         // and to learn about its extended capabilities)
     }
-    
+
     public Map<String, String> makeCustomHeaders(String headersString) {
         if (headersString != null) {
             String[] parts = headersString.split("\\\\n");
@@ -327,10 +327,10 @@ public class OaiHandler implements Serializable {
                 if (parts[i].indexOf(':') > 0) {
                     String headerName = parts[i].substring(0, parts[i].indexOf(':'));
                     String headerValue = parts[i].substring(parts[i].indexOf(':') + 1).strip();
-                    
+
                     ret.put(headerName, headerValue);
                     count++;
-                } 
+                }
                 // simply skipping it if malformed; or we could throw an exception - ?
             }
             if (ret.size() > 0) {
@@ -338,6 +338,6 @@ public class OaiHandler implements Serializable {
                 return ret;
             }
         }
-        return null; 
+        return null;
     }
 }

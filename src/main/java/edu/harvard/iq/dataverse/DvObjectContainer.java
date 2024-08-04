@@ -24,39 +24,39 @@ import org.apache.commons.lang3.StringUtils;
  */
 @MappedSuperclass
 public abstract class DvObjectContainer extends DvObject {
-    
+
     public static final String UNDEFINED_CODE = "undefined"; //Used in dataverse.xhtml as a non-null selection option value (indicating inheriting the default)
     
     public void setOwner(Dataverse owner) {
         super.setOwner(owner);
     }
-	
+
 	@Override
 	public Dataverse getOwner() {
 		return super.getOwner() != null ? (Dataverse) super.getOwner() : null;
 	}
-    
+
     protected abstract boolean isPermissionRoot();
-    
+
     @Override
     public boolean isEffectivelyPermissionRoot() {
         return isPermissionRoot() || (getOwner() == null);
     }
 
     private String storageDriver = null;
-    
+
     private String metadataLanguage = null;
-    
+
     private Boolean guestbookAtRequest = null;
-    
+
     private String pidGeneratorSpecs = null;
-    
+
     @Transient
     private PidProvider pidGenerator = null;
-   
+
     @OneToOne(mappedBy = "dvObjectContainer", cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval = true)
     private StorageUse storageUse;
-    
+
     public String getEffectiveStorageDriverId() {
         String id = storageDriver;
         if (StringUtils.isBlank(id)) {
@@ -68,7 +68,7 @@ public abstract class DvObjectContainer extends DvObject {
         }
         return id;
     }
-    
+
     public String getStorageDriverId() {
         if (storageDriver == null) {
             return DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER;
@@ -83,7 +83,7 @@ public abstract class DvObjectContainer extends DvObject {
             this.storageDriver = storageDriver;
         }
     }
-    
+
     public String getEffectiveMetadataLanguage() {
         String ml = metadataLanguage;
         if (StringUtils.isBlank(ml)) {
@@ -95,7 +95,7 @@ public abstract class DvObjectContainer extends DvObject {
         }
         return ml;
     }
-    
+
     public String getMetadataLanguage() {
         if (metadataLanguage == null) {
             return UNDEFINED_CODE;
@@ -110,11 +110,11 @@ public abstract class DvObjectContainer extends DvObject {
             this.metadataLanguage = ml;
         }
     }
-    
+
     public static boolean isMetadataLanguageSet(String mdLang) {
         return mdLang != null && !mdLang.equals(UNDEFINED_CODE);
     }
-    
+
     public boolean getEffectiveGuestbookEntryAtRequest() {
         boolean gbAtRequest = false;
         if (guestbookAtRequest == null) {
@@ -131,7 +131,7 @@ public abstract class DvObjectContainer extends DvObject {
         }
         return gbAtRequest;
     }
-    
+
     public String getGuestbookEntryAtRequest() {
         if (guestbookAtRequest == null) {
             return UNDEFINED_CODE;
@@ -147,7 +147,7 @@ public abstract class DvObjectContainer extends DvObject {
             this.guestbookAtRequest = Boolean.valueOf(Boolean.parseBoolean(gbAtRequest));
         }
     }
-    
+
 
     /* Dataverse collections can be configured to allow use of Curation labels and have this inheritable value to decide which set of labels to use.
      * This mechanism is similar to that for the storageDriver except that there is an addition option to disable use of labels. 
@@ -176,7 +176,7 @@ public abstract class DvObjectContainer extends DvObject {
     public void setCurationLabelSetName(String setName) {
         this.externalLabelSetName = setName;
     }
-    
+
     /**
      * Should only be used in constructors for DvObjectContainers (Datasets and 
      * Collections), to make sure new entries are created and persisted in the 
@@ -187,7 +187,7 @@ public abstract class DvObjectContainer extends DvObject {
         this.storageUse = storageUse;
     }
 
-    
+
     /* Dataverse collections and dataset can be configured to use different PidProviders as PID generators for contained objects (datasets or data files). 
      * This mechanism is similar to others except that the stored value is a JSON object defining the protocol, authority, shoulder, and, optionally, the separator for the PidProvider. 
      */
@@ -209,7 +209,7 @@ public abstract class DvObjectContainer extends DvObject {
             return getEffectivePidGenerator().getId();
         }
     }
-   
+
     //Used in JSF when setting the PidGenerator
     public void setPidGeneratorId(String pidGeneratorId) {
         // Note that the "default" provider will not be found so will result in

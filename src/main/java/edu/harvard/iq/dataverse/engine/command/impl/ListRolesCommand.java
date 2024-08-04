@@ -17,9 +17,9 @@ import java.util.Set;
  */
 @RequiredPermissions(Permission.ManageDataversePermissions)
 public class ListRolesCommand extends AbstractCommand<Set<DataverseRole>> {
-    
+
     private final Dataverse definitionPoint;
-    
+
     public ListRolesCommand(DataverseRequest aRequest, Dataverse aDefinitionPoint) {
         super(aRequest, aDefinitionPoint);
         definitionPoint = aDefinitionPoint;
@@ -30,5 +30,5 @@ public class ListRolesCommand extends AbstractCommand<Set<DataverseRole>> {
         return ctxt.roles().availableRoles(definitionPoint.getId());
     }
 
-    
+
 }

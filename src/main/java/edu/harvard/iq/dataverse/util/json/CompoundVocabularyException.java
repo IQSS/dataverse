@@ -15,10 +15,10 @@ import java.util.List;
  */
 public class CompoundVocabularyException extends JsonParseException {
     private String message;
-    private List<ControlledVocabularyException> exList = new ArrayList<>(); 
+    private List<ControlledVocabularyException> exList = new ArrayList<>();
     private List<DatasetFieldCompoundValue> validValues;
 
-    
+
      public CompoundVocabularyException(String message) {
         super(message);
     }
@@ -36,12 +36,12 @@ public class CompoundVocabularyException extends JsonParseException {
     public List<ControlledVocabularyException> getExList() {
         return exList;
     }
-    
+
     @Override
     public String getMessage() {
         return message;
     }
-    
+
     public List<DatasetFieldCompoundValue> getValidValues() {
         return validValues;
     }

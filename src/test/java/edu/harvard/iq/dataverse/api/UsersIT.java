@@ -37,7 +37,7 @@ public class UsersIT {
                 .statusCode(200);
 */
     }
-    
+
     @Test
     public void testChangeAuthenticatedUserIdentifier() {
         Response createSuperuser = UtilIT.createRandomUser();
@@ -46,30 +46,30 @@ public class UsersIT {
         Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
         toggleSuperuser.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         assertEquals(200, createUser.getStatusCode());
         String usernameOfUser = UtilIT.getUsernameFromResponse(createUser);
         String userApiToken = UtilIT.getApiTokenFromResponse(createUser);
-        
+
         Response createUserForAlreadyExists = UtilIT.createRandomUser();
         createUserForAlreadyExists.prettyPrint();
         assertEquals(200, createUserForAlreadyExists.getStatusCode());
         String usernameOfUserAlreadyExists = UtilIT.getUsernameFromResponse(createUserForAlreadyExists);
-        
+
         String newUsername = "newUser_" + UtilIT.getRandomString(4);
         Response changeAuthIdResponse = UtilIT.changeAuthenticatedUserIdentifier(usernameOfUser, newUsername, superuserApiToken);
         changeAuthIdResponse.prettyPrint();
         changeAuthIdResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         //No api token
         Response changeAuthIdResponseNoToken = UtilIT.changeAuthenticatedUserIdentifier(usernameOfUser, newUsername, null);
         changeAuthIdResponseNoToken.prettyPrint();
         changeAuthIdResponseNoToken.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode());
-        
+
         //Users own api token
         Response changeAuthIdResponseNormalToken = UtilIT.changeAuthenticatedUserIdentifier(usernameOfUser, newUsername, userApiToken);
         changeAuthIdResponseNormalToken.prettyPrint();
@@ -81,20 +81,20 @@ public class UsersIT {
         changeAuthIdResponseBadAlreadyExists.prettyPrint();
         changeAuthIdResponseBadAlreadyExists.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
-        
+
         String newUsernameBad = ""; //one character, should fail before bean validation even
         //Without second param url is not found.
         Response changeAuthIdResponseBad = UtilIT.changeAuthenticatedUserIdentifier(newUsername, newUsernameBad, superuserApiToken);
         changeAuthIdResponseBad.prettyPrint();
         changeAuthIdResponseBad.then().assertThat()
                 .statusCode(NOT_FOUND.getStatusCode());
-        
+
         String newUsernameBad2 = "q"; //one character, should fail bean validation
         Response changeAuthIdResponseBad2 = UtilIT.changeAuthenticatedUserIdentifier(newUsername, newUsernameBad2, superuserApiToken);
         changeAuthIdResponseBad2.prettyPrint();
         changeAuthIdResponseBad2.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
-        
+
         //if this fails likely one of the converts that said they failed actually didn't!
         Response deleteUserToConvert = UtilIT.deleteUser(newUsername);
         assertEquals(200, deleteUserToConvert.getStatusCode());
@@ -102,7 +102,7 @@ public class UsersIT {
         Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
         assertEquals(200, deleteSuperuser.getStatusCode());
     }
-    
+
     @Test
     public void testMergeAccounts() {
         Response createSuperuser = UtilIT.createRandomUser();
@@ -111,20 +111,20 @@ public class UsersIT {
         Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
         toggleSuperuser.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String usernameConsumed = UtilIT.getUsernameFromResponse(createUser);
         String normalApiToken = UtilIT.getApiTokenFromResponse(createUser);
-        
-        
+
+
         Response createDataverse = UtilIT.createRandomDataverse(normalApiToken);
         createDataverse.prettyPrint();
         createDataverse.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
 
         String dataverseAlias = JsonPath.from(createDataverse.body().asString()).getString("data.alias");
-        
+
         Response createDataverseSuper = UtilIT.createRandomDataverse(superuserApiToken);
         createDataverseSuper.prettyPrint();
         createDataverseSuper.then().assertThat()
@@ -139,18 +139,18 @@ public class UsersIT {
         Response datasetAsJson = UtilIT.nativeGet(datasetId, normalApiToken);
         datasetAsJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         String randomString = UtilIT.getRandomIdentifier();
 
         Response mergeAccounts = UtilIT.mergeAccounts(randomString, usernameConsumed, superuserApiToken);
         assertEquals(400, mergeAccounts.getStatusCode());
         mergeAccounts.prettyPrint();
-        
+
         Response targetUser = UtilIT.createRandomUser();
         targetUser.prettyPrint();
         String targetname = UtilIT.getUsernameFromResponse(targetUser);
         String targetToken = UtilIT.getApiTokenFromResponse(targetUser);
-        
+
         pathToJsonFile = "scripts/api/data/dataset-create-new.json";
         Response createDatasetResponseSuper = UtilIT.createDatasetViaNativeApi(dataverseAliasSuper, pathToJsonFile, superuserApiToken);
         createDatasetResponseSuper.prettyPrint();
@@ -161,7 +161,7 @@ public class UsersIT {
 
         Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), tab3PathToFile, superuserApiToken);
         Integer tabFile3IdRestrictedNew = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        
+
         //Sleep while dataset locked for ingest
         assertTrue(UtilIT.sleepForLock(datasetIdNew.longValue(), "Ingest", superuserApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if Ingest Lock exceeds max duration " + tabFile3NameRestrictedNew);
 
@@ -174,11 +174,11 @@ public class UsersIT {
         //Update Dataset to allow requests
         Response allowAccessRequestsResponse = UtilIT.allowAccessRequests(datasetIdNew.toString(), true, superuserApiToken);
         assertEquals(200, allowAccessRequestsResponse.getStatusCode());
-        
+
         Response publishDataverseResponseSuper = UtilIT.publishDataverseViaNativeApi(dataverseAliasSuper, superuserApiToken);
         assertEquals(200, publishDataverseResponseSuper.getStatusCode());
         publishDataverseResponseSuper.prettyPrint();
-        
+
         //Meanwhile add another file to be downloaded
         
         String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
@@ -190,20 +190,20 @@ public class UsersIT {
                 );
 
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, json.build(), superuserApiToken);
-        
+
         Integer downloadableFileId = JsonPath.from(addResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        
+
         //Must republish to get it to work
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetIdNew, "major", superuserApiToken);
         assertEquals(200, publishDataset.getStatusCode());
 
         Response requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), normalApiToken);
         assertEquals(200, requestFileAccessResponse.getStatusCode());
-        
+
         Response downloadThatFile = UtilIT.downloadFile(downloadableFileId, normalApiToken);
         assertEquals(200, downloadThatFile.getStatusCode());
-        
-        
+
+
         String aliasInOwner = "groupFor" + dataverseAlias;
         String displayName = "Group for " + dataverseAlias;
         String user2identifier = "@" + usernameConsumed;
@@ -218,45 +218,44 @@ public class UsersIT {
         addToGroup.prettyPrint();
         addToGroup.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-              
+
+
         mergeAccounts = UtilIT.mergeAccounts(targetname, usernameConsumed, superuserApiToken);
         assertEquals(200, mergeAccounts.getStatusCode());
         mergeAccounts.prettyPrint();
-        
+
         //No api token
         Response mergeResponseNoToken = UtilIT.mergeAccounts(targetname, usernameConsumed, null);
         mergeResponseNoToken.prettyPrint();
         mergeResponseNoToken.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode());
-        
+
         //Users own api token
         Response mergeResponseNormalToken = UtilIT.mergeAccounts(targetname, usernameConsumed, normalApiToken);
         mergeResponseNormalToken.prettyPrint();
         mergeResponseNormalToken.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode());
-        
+
         //After merging user see that old one is gone and new one exists
         Response getConsumedUserResponse = UtilIT.getAuthenticatedUser(usernameConsumed, normalApiToken);
         assertEquals(400, getConsumedUserResponse.getStatusCode());
-        
+
         Response getPersistedUserResponse = UtilIT.getAuthenticatedUser(targetname, normalApiToken);
         assertEquals(200, getPersistedUserResponse.getStatusCode());
-        
+
         //Make sure that you can publish the dataverse/dataset as the newly assigned user
         
         Response publishDataverseResponse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, targetToken);
         assertEquals(200, publishDataverseResponse.getStatusCode());
         publishDataverseResponse.prettyPrint();
-        
+
         Response publishDatasetResponse = UtilIT.publishDatasetViaNativeApi(datasetId, "major", targetToken);
         assertEquals(200, publishDatasetResponse.getStatusCode());
         publishDatasetResponse.prettyPrint();
-        
-        
-        
+
+
     }
-    
+
     /** Note: the below commands do not actually live in Users.java. They live in Admin.java */
 
     @Test
@@ -281,11 +280,11 @@ public class UsersIT {
         Response setAllowApiTokenLookupViaApi = UtilIT.setSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi, "true");
         setAllowApiTokenLookupViaApi.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         password = "sha-1Pass";
         Response getApiTokenUsingUsername = UtilIT.getApiTokenUsingUsername(usernameOfNonBcryptUserToConvert, password);
         assertEquals(200, getApiTokenUsingUsername.getStatusCode());
-        
+
         Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
         removeAllowApiTokenLookupViaApi.then().assertThat()
                 .statusCode(200);
@@ -312,13 +311,13 @@ public class UsersIT {
         makeShibUser.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.affiliation", equalTo("TestShib Test IdP"));
-        
+
         String newUsername = "newUser_" + UtilIT.getRandomString(4);
         System.out.println("newUsername for change shib user: " + newUsername);
         Response renameShib = UtilIT.changeAuthenticatedUserIdentifier(usernameOfNonBcryptUserToConvert, newUsername, superuserApiToken);
         renameShib.prettyPrint();
         renameShib.then().assertThat()
-                .statusCode(OK.getStatusCode()); 
+                .statusCode(OK.getStatusCode());
 
     }
 
@@ -349,21 +348,21 @@ public class UsersIT {
                 .body("message", equalTo("username '" + uppercaseUsername + "' already exists"));
         ;
     }
-    
+
     @Test
     public void testAPITokenEndpoints() {
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         assertEquals(200, createUser.getStatusCode());
-        
+
         String userApiToken = UtilIT.getApiTokenFromResponse(createUser);
 
         Response getExpiration = UtilIT.getTokenExpiration("BAD-TOKEN-692134794");
         getExpiration.prettyPrint();
         getExpiration.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode());
-        
+
         getExpiration = UtilIT.getTokenExpiration(userApiToken);
         getExpiration.prettyPrint();
         getExpiration.then().assertThat()
@@ -387,7 +386,7 @@ public class UsersIT {
         assertEquals(200, createUser.getStatusCode());
 
         String userApiTokenForDelete = UtilIT.getApiTokenFromResponse(createUser);
-        
+
         /*
         Add tests for Private URL
         */
@@ -402,7 +401,7 @@ public class UsersIT {
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
-        
+
         Response createPrivateUrl = UtilIT.privateUrlCreate(datasetId, apiToken, false);
         createPrivateUrl.prettyPrint();
         assertEquals(OK.getStatusCode(), createPrivateUrl.getStatusCode());
@@ -412,7 +411,7 @@ public class UsersIT {
         assertEquals(OK.getStatusCode(), shouldExist.getStatusCode());
 
         String tokenForPrivateUrlUser = JsonPath.from(shouldExist.body().asString()).getString("data.token");
-        
+
         getExpiration = UtilIT.getTokenExpiration(tokenForPrivateUrlUser);
         getExpiration.prettyPrint();
         getExpiration.then().assertThat()
@@ -430,9 +429,9 @@ public class UsersIT {
         getExpiration.prettyPrint();
         getExpiration.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode());
-        
+
     }
-    
+
     @Test
     public void testDeleteAuthenticatedUser() {
 

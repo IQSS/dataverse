@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.api.dto;
 
 import com.google.gson.Gson;
@@ -14,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
 /**
  *
  * @author ellenk
@@ -22,42 +22,45 @@ public class FieldDTO {
 
     public FieldDTO() {
     }
-    
+
     public static FieldDTO createPrimitiveFieldDTO(String typeName, String value) {
         FieldDTO primitive = new FieldDTO();
         primitive.typeName = typeName;
         primitive.setSinglePrimitive(value);
         return primitive;
     }
+
     public static FieldDTO createMultiplePrimitiveFieldDTO(String typeName, List<String> values) {
         FieldDTO primitive = new FieldDTO();
         primitive.typeName = typeName;
         primitive.setMultiplePrimitive(values);
         return primitive;
     }
+
  public static FieldDTO createMultipleVocabFieldDTO(String typeName, List<String> values) {
         FieldDTO primitive = new FieldDTO();
         primitive.typeName = typeName;
         primitive.setMultipleVocab(values);
         return primitive;
-    }   
+    }
+
     public static FieldDTO createVocabFieldDTO(String typeName, String value) {
         FieldDTO field = new FieldDTO();
         field.typeName = typeName;
         field.setSingleVocab(value);
         return field;
-        
+
     }
-   
+
     public static FieldDTO createCompoundFieldDTO(String typeName, FieldDTO... value) {
         FieldDTO field = new FieldDTO();
         field.typeName = typeName;
         field.setSingleCompound(value);
         return field;
-        
+
     }
-    
-     
+
+
     /**
      * Creates a FieldDTO that contains a size=1 list of compound values 
      * @param typeName
@@ -69,14 +72,15 @@ public class FieldDTO {
         field.typeName = typeName;
         field.setMultipleCompound(value);
         return field;
-    } 
+    }
+
     public static FieldDTO createMultipleCompoundFieldDTO(String typeName, List<HashSet<FieldDTO>> compoundList) {
         FieldDTO field = new FieldDTO();
         field.typeName = typeName;
         field.setMultipleCompound(compoundList);
         return field;
     }
-    
+
     String typeName;
     Boolean multiple;
     String typeClass;
@@ -113,14 +117,14 @@ public class FieldDTO {
     }
 
     public String getSinglePrimitive() {
-        
+
         return value == null ? "" : value.getAsString();
     }
-    
+
     String getSingleVocab() {
         return value == null ? "" : value.getAsString();
     }
-    
+
     public Set<FieldDTO> getSingleCompound() {
         Gson gson = new Gson();
         JsonObject elem = (JsonObject) value;
@@ -191,27 +195,29 @@ public class FieldDTO {
         multiple = false;
         this.value = gson.toJsonTree(value);
     }
-    
+
     public void setSingleCompound(FieldDTO... compoundField) {
         Gson gson = new Gson();
         this.typeClass = "compound";
         this.multiple = false;
-       
+
         JsonObject obj = new JsonObject();
         for (FieldDTO fieldDTO : compoundField) {
             if (fieldDTO != null) {
                 obj.add(fieldDTO.typeName, gson.toJsonTree(fieldDTO, FieldDTO.class));
             }
         }
-  
+
         this.value = obj;
     }
+
     public void setMultiplePrimitive(String[] value) {
         Gson gson = new Gson();
         typeClass = "primitive";
         multiple = true;
         this.value = gson.toJsonTree(Arrays.asList(value));
     }
+
     public void setMultiplePrimitive(List<String> value) {
         Gson gson = new Gson();
         typeClass = "primitive";
@@ -241,10 +247,11 @@ public class FieldDTO {
                 }
             }
             mapList.add(fieldMap);
-        
+
         this.value = gson.toJsonTree(mapList);
 
     }
+
     /**
      * Set value to a list of compound fields (each member of the list is a set of fields)
      * @param compoundFieldList 
@@ -277,7 +284,7 @@ public class FieldDTO {
             } else if (typeClass.equals("controlledVocabulary")) {
                 return getMultipleVocab();
             } else return getMultiplePrimitive();
-            
+
 
         } else {
             if (typeClass.equals("compound")) {
@@ -293,7 +300,7 @@ public class FieldDTO {
     public boolean isControlledVocabularyField() {
         return getTypeClass().equals("controlledVocabulary");
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 3;

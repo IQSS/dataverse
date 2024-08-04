@@ -17,17 +17,17 @@ import java.util.logging.Logger;
  */
 public class DataverseXoaiSetRepository implements SetRepository {
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiSetRepository");
-    
+
     private OAISetServiceBean setService;
 
     public DataverseXoaiSetRepository(OAISetServiceBean setService) {
         this.setService = setService;
     }
-    
+
     public OAISetServiceBean getSetService() {
         return setService;
     }
-    
+
     public void setSetService(OAISetServiceBean setService) {
         this.setService = setService;
     }
@@ -36,7 +36,7 @@ public class DataverseXoaiSetRepository implements SetRepository {
     @Override
     public boolean supportSets() {
         List<OAISet> dataverseOAISets = setService.findAllActiveNamedSets();
-        
+
         if (dataverseOAISets == null || dataverseOAISets.isEmpty()) {
             return false;
         }
@@ -44,11 +44,11 @@ public class DataverseXoaiSetRepository implements SetRepository {
     }
 
     @Override
-    public List<Set> getSets() { 
+    public List<Set> getSets() {
         logger.fine("calling retrieveSets()");
         List<OAISet> dataverseOAISets = setService.findAllActiveNamedSets();
         List<Set> XOAISets = new ArrayList<Set>();
-        
+
         if (dataverseOAISets != null) {
             for (int i = 0; i < dataverseOAISets.size(); i++) {
                 OAISet dataverseSet = dataverseOAISets.get(i);
@@ -62,7 +62,7 @@ public class DataverseXoaiSetRepository implements SetRepository {
                 XOAISets.add(xoaiSet);
             }
         }
-        
+
         return XOAISets;
     }
 
@@ -70,5 +70,5 @@ public class DataverseXoaiSetRepository implements SetRepository {
     public boolean exists(String setSpec) {
         return setService.setExists(setSpec);
     }
-    
+
 }

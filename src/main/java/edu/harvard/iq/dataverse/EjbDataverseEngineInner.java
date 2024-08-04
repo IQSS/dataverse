@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.command.Command;

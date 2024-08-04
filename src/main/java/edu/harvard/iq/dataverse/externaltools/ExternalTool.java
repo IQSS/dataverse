@@ -247,7 +247,7 @@ public class ExternalTool implements Serializable {
         }
         return false;
     }
-    
+
     public boolean isQueryTool() {
         for (ExternalToolType externalToolType : externalToolTypes) {
             if (externalToolType.getType().equals(Type.QUERY)) {
@@ -256,7 +256,7 @@ public class ExternalTool implements Serializable {
         }
         return false;
     }
-    
+
     public boolean isPreviewTool() {
         for (ExternalToolType externalToolType : externalToolTypes) {
             if (externalToolType.getType().equals(Type.PREVIEW)) {
@@ -323,7 +323,7 @@ public class ExternalTool implements Serializable {
         String description = "";
         if (this.toolName != null) {
             description = (BundleUtil.getStringFromBundle("externaltools." + this.toolName + ".description"));
-        } 
+        }
         if (StringUtil.isEmpty(description)) {
             description = this.getDescription();
         }
@@ -334,7 +334,7 @@ public class ExternalTool implements Serializable {
         String displayName = "";
         if (this.toolName != null) {
             displayName = (BundleUtil.getStringFromBundle("externaltools." + this.toolName + ".displayname"));
-        } 
+        }
         if (StringUtil.isEmpty(displayName)) {
             displayName = this.getDisplayName();
         }
@@ -364,7 +364,7 @@ public class ExternalTool implements Serializable {
     }
 
     public boolean accessesAuxFiles() {
-        String reqs = getRequirements(); 
+        String reqs = getRequirements();
         return reqs != null && reqs.contains(AUX_FILES_EXIST);
     }
 

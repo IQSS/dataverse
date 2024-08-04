@@ -25,6 +25,7 @@ import jakarta.persistence.PersistenceContext;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import jakarta.faces.event.AbortProcessingException;
 import jakarta.faces.event.AjaxBehaviorEvent;
+
 /**
  *
  * @author skraffmiller
@@ -38,7 +39,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
 
     @EJB
     TemplateServiceBean templateService;
-    
+
     @EJB
     EjbDataverseEngine engineService;
 
@@ -53,16 +54,16 @@ public class ManageTemplatesPage implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
-    
+
     @Inject
     DataverseRequestServiceBean dvRequestService;
-    
+
     @Inject
     PermissionsWrapper permissionsWrapper;
-    
+
     @Inject
     LicenseServiceBean licenseServiceBean;
-    
+
     @Inject
     SettingsWrapper settingsWrapper;
 
@@ -81,12 +82,12 @@ public class ManageTemplatesPage implements java.io.Serializable {
         }
         if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
             return permissionsWrapper.notAuthorized();
-        }  
+        }
         dvpage.setDataverse(dataverse);
         if (dataverse.getOwner() != null && dataverse.getMetadataBlocks().equals(dataverse.getOwner().getMetadataBlocks())) {
-           setInheritTemplatesAllowed(true); 
+           setInheritTemplatesAllowed(true);
         }
- 
+
         templates = new LinkedList<>();
         setInheritTemplatesValue(!dataverse.isTemplateRoot());
         if (inheritTemplatesValue && dataverse.getOwner() != null) {
@@ -147,7 +148,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
             if (dataverse.getDefaultTemplate() != null && dataverse.getDefaultTemplate().equals(selectedTemplate)) {
                 dataverse.setDefaultTemplate(null);
             }
-            dataverse.getTemplates().remove(selectedTemplate);  
+            dataverse.getTemplates().remove(selectedTemplate);
             dataverseWDefaultTemplate = templateService.findDataversesByDefaultTemplateId(selectedTemplate.getId());
         } else {
             System.out.print("selected template is null");
@@ -225,6 +226,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
     public void setInheritTemplatesAllowed(boolean inheritTemplatesAllowed) {
         this.inheritTemplatesAllowed = inheritTemplatesAllowed;
     }
+
     public Template getSelectedTemplate() {
         return selectedTemplate;
     }

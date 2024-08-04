@@ -29,38 +29,38 @@ import jakarta.persistence.OneToOne;
 })
 @Entity
 public class PendingWorkflowInvocation implements Serializable {
-    
+
     @Id
     String invocationId;
-    
+
     @ManyToOne
     Workflow workflow;
-    
+
     @OneToOne
     Dataset dataset;
-    
+
     long nextVersionNumber;
     long nextMinorVersionNumber;
-    
+
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<String, String> localData;
-    
+
     int pendingStepIdx;
-    
+
     String userId;
     String ipAddress;
     int typeOrdinal;
     boolean datasetExternallyReleased;
-    
+
     long lockid;
 
     public static final String AUTHORIZED = "authorized";
-                
+
     /** Empty constructor for JPA */
     public PendingWorkflowInvocation() {
-        
+
     }
-    
+
     public PendingWorkflowInvocation(Workflow wf, WorkflowContext ctxt, Pending result) {
         invocationId = ctxt.getInvocationId();
         workflow = wf;
@@ -74,14 +74,14 @@ public class PendingWorkflowInvocation implements Serializable {
         datasetExternallyReleased = ctxt.getDatasetExternallyReleased();
         lockid = ctxt.getLockId();
     }
-    
+
     public WorkflowContext reCreateContext(RoleAssigneeServiceBean roleAssignees) {
         DataverseRequest aRequest = new DataverseRequest((User) roleAssignees.getRoleAssignee(userId), IpAddress.valueOf(ipAddress));
-        final WorkflowContext workflowContext = new WorkflowContext(aRequest, dataset, nextVersionNumber, 
+        final WorkflowContext workflowContext = new WorkflowContext(aRequest, dataset, nextVersionNumber,
                 nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], null, null, datasetExternallyReleased, invocationId, lockid);
         return workflowContext;
     }
-    
+
     public String getInvocationId() {
         return invocationId;
     }
@@ -161,10 +161,11 @@ public class PendingWorkflowInvocation implements Serializable {
     public void setTypeOrdinal(int typeOrdinal) {
         this.typeOrdinal = typeOrdinal;
     }
-    
+
     public long getLockId() {
         return lockid;
     }
+
     public void setLockId(long lockId) {
         this.lockid = lockId;
     }

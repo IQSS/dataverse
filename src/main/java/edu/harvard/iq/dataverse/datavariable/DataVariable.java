@@ -37,7 +37,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(indexes = {@Index(columnList = "datatable_id")})
 public class DataVariable implements Serializable {
-    
+
     /*
      * Class property definitions: 
      */
@@ -46,7 +46,7 @@ public class DataVariable implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     /*
      * dataTable: DataTable to which this variable belongs.
      */
@@ -70,7 +70,7 @@ public class DataVariable implements Serializable {
      * weighted: indicates if this variable is weighted.
      */
     private boolean weighted;
-    
+
     /*
      * fileStartPosition: this property is specific to fixed-width data; 
      * this is a byte offset where the data column begins.
@@ -82,7 +82,7 @@ public class DataVariable implements Serializable {
      * ends in the fixed-width data file.
      */
     private java.lang.Long fileEndPosition;
-    
+
 
     public enum VariableInterval { DISCRETE, CONTINUOUS, NOMINAL, DICHOTOMOUS }; // former VariableIntervalType
     /*
@@ -92,7 +92,7 @@ public class DataVariable implements Serializable {
     //@ManyToOne
     private VariableInterval interval;
 
-    
+
     public enum VariableType { NUMERIC, CHARACTER }; // former VariableFormatType
 
     /*
@@ -124,7 +124,7 @@ public class DataVariable implements Serializable {
      * Used for "time", "date", etc.
      */
     private String formatCategory;
-    
+
     /*
      * recordSegmentNumber: this property is specific to fixed-width data 
      * files.
@@ -138,7 +138,7 @@ public class DataVariable implements Serializable {
      */
     @OneToMany(mappedBy = "dataVariable", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<VariableRange> invalidRanges;
-    
+
     /*
      * invalidRangeItems: a collection of individual value range items defined 
      * as "invalid" for this variable.
@@ -146,20 +146,20 @@ public class DataVariable implements Serializable {
      */
      @OneToMany(mappedBy = "dataVariable", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<VariableRangeItem> invalidRangeItems;
-      
+
     /*
      * Summary Statistics for this variable.
      * Note that SummaryStatistic is itself an entity.
      */
     @OneToMany(mappedBy = "dataVariable", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<SummaryStatistic> summaryStatistics;
-    
+
     /*
      * unf: printable representation of the UNF, Universal Numeric Fingerprint
      * of this variable.
      */
     private String unf = "UNF:pending";
-    
+
     /*
      * Variable Categories, for categorical variables.
      * VariableCategory is itself an entity. 
@@ -171,7 +171,7 @@ public class DataVariable implements Serializable {
     /*
      * The boolean "ordered": identifies ordered categorical variables ("ordinals"). 
      */
-    private boolean orderedFactor = false; 
+    private boolean orderedFactor = false;
 
     /**
      * On ingest, we set "factor" to true only if the format is RData and the
@@ -179,8 +179,7 @@ public class DataVariable implements Serializable {
      */
     private boolean factor;
 
-  
-    
+
     /*
      * weightedVariables: <NOT YET IMPLEMENTED!>
      * Note that WeightedVarRelationship is a custom entity, with a custom
@@ -196,7 +195,7 @@ public class DataVariable implements Serializable {
      * physical file. 
      */
     private int fileOrder;
-    
+
     /*
      * number of decimal points, where applicable.
      */
@@ -204,10 +203,10 @@ public class DataVariable implements Serializable {
 
     @OneToMany(mappedBy = "dataVariable", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<VariableMetadata> variableMetadatas;
-    
+
     public DataVariable() {
     }
-    
+
     /** Creates a new instance of DataVariable
      * @param order
      * @param table */
@@ -219,7 +218,7 @@ public class DataVariable implements Serializable {
         categories = new ArrayList<>();
         variableMetadatas = new ArrayList<>();
     }
-    
+
     /*
      * Getter and Setter functions: 
      */
@@ -230,7 +229,7 @@ public class DataVariable implements Serializable {
     public void setDataTable(DataTable dataTable) {
         this.dataTable = dataTable;
     }
-    
+
     public Long getId() {
         return this.id;
     }
@@ -242,7 +241,7 @@ public class DataVariable implements Serializable {
     public String getName() {
         return this.name;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
@@ -274,7 +273,7 @@ public class DataVariable implements Serializable {
     public java.lang.Long getFileEndPosition() {
         return this.fileEndPosition;
     }
-    
+
     public void setFileEndPosition(java.lang.Long fileEndPosition) {
         this.fileEndPosition = fileEndPosition;
     }
@@ -290,15 +289,15 @@ public class DataVariable implements Serializable {
     public String getFormat() {
         return this.format;
     }
-    
+
     public void setFormat(String format) {
         this.format = format;
     }
-    
+
     public VariableInterval getInterval() {
         return this.interval;
     }
-    
+
     public void setInterval(VariableInterval interval) {
         this.interval = interval;
     }
@@ -319,61 +318,61 @@ public class DataVariable implements Serializable {
         if (isIntervalDichotomous()) {
             return "dichotomous";
         }
-        return null; 
+        return null;
     }
-    
+
     public void setIntervalDiscrete() {
         this.interval = VariableInterval.DISCRETE;
     }
-    
+
     public void setIntervalContinuous() {
         this.interval = VariableInterval.CONTINUOUS;
     }
-    
+
     public void setIntervalNominal() {
         this.interval = VariableInterval.NOMINAL;
     }
-    
+
     public void setIntervalDichotomous() {
         this.interval = VariableInterval.DICHOTOMOUS;
     }
-    
+
     public boolean isIntervalDiscrete() {
         return this.interval == VariableInterval.DISCRETE;
     }
-    
+
     public boolean isIntervalContinuous() {
         return this.interval == VariableInterval.CONTINUOUS;
     }
-    
+
     public boolean isIntervalNominal() {
         return this.interval == VariableInterval.NOMINAL;
     }
-    
+
     public boolean isIntervalDichotomous() {
         return this.interval == VariableInterval.DICHOTOMOUS;
     }
-    
+
     public VariableType getType() {
         return this.type;
     }
-    
+
     public void setType(VariableType type) {
         this.type = type;
     }
-    
+
     public void setTypeNumeric() {
         this.type = VariableType.NUMERIC;
     }
-    
+
     public void setTypeCharacter() {
         this.type = VariableType.CHARACTER;
     }
-    
+
     public boolean isTypeNumeric() {
         return this.type == VariableType.NUMERIC;
     }
-    
+
     public boolean isTypeCharacter() {
         return this.type == VariableType.CHARACTER;
     }
@@ -382,15 +381,15 @@ public class DataVariable implements Serializable {
         return this.recordSegmentNumber;
     }
 
-    
+
     public void setRecordSegmentNumber(java.lang.Long recordSegmentNumber) {
         this.recordSegmentNumber = recordSegmentNumber;
     }
-    
+
     public Collection<VariableRange> getInvalidRanges() {
         return this.invalidRanges;
     }
-    
+
     public void setInvalidRanges(Collection<VariableRange> invalidRanges) {
         this.invalidRanges = invalidRanges;
     }
@@ -399,19 +398,19 @@ public class DataVariable implements Serializable {
     public Collection<VariableRangeItem> getInvalidRangeItems() {
         return this.invalidRangeItems;
     }
-    
+
     public void setInvalidRangeItems(java.util.Collection<VariableRangeItem> invalidRangeItems) {
         this.invalidRangeItems = invalidRangeItems;
     }
-    
+
     public Collection<SummaryStatistic> getSummaryStatistics() {
         return this.summaryStatistics;
     }
-    
+
     public void setSummaryStatistics(Collection<SummaryStatistic> summaryStatistics) {
         this.summaryStatistics = summaryStatistics;
     }
-    
+
     public String getUnf() {
         return this.unf;
     }
@@ -419,11 +418,11 @@ public class DataVariable implements Serializable {
     public void setUnf(String unf) {
         this.unf = unf;
     }
-    
+
     public Collection<VariableCategory> getCategories() {
         return this.categories;
     }
-    
+
     public void setCategories(List<VariableCategory> categories) {
         this.categories = categories;
     }
@@ -435,14 +434,14 @@ public class DataVariable implements Serializable {
     public boolean isCategorical() {
         return (categories != null && categories.size() > 0);
     }
-    
+
     // Only R supports the concept of ordered categorical.
     public boolean isOrderedCategorical() {
-        return isCategorical() && orderedFactor; 
+        return isCategorical() && orderedFactor;
     }
-    
+
     public void setOrderedCategorical(boolean ordered) {
-        orderedFactor = ordered; 
+        orderedFactor = ordered;
     }
 
     public boolean isFactor() {
@@ -470,7 +469,7 @@ public class DataVariable implements Serializable {
     public void setFileOrder(int fileOrder) {
         this.fileOrder = fileOrder;
     }
-    
+
      public String getFormatCategory() {
         return formatCategory;
     }
@@ -478,7 +477,7 @@ public class DataVariable implements Serializable {
     public void setFormatCategory(String formatCategory) {
         this.formatCategory = formatCategory;
     }
-    
+
     public Long getNumberOfDecimalPoints() {
         return numberOfDecimalPoints;
     }
@@ -520,11 +519,11 @@ public class DataVariable implements Serializable {
         }
         return true;
     }
-    
+
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.DataVariable[ id=" + id + " ]";
     }
-    
-    
+
+
 }

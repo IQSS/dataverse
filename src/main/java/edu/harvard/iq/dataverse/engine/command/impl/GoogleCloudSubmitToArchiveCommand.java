@@ -55,9 +55,9 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
             JsonObjectBuilder statusObject = Json.createObjectBuilder();
             statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
             statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
-            
+
             String cloudKeyFile = JvmSettings.FILES_DIRECTORY.lookup() + File.separator + "googlecloudkey.json";
-            
+
             try (FileInputStream cloudKeyStream = new FileInputStream(cloudKeyFile)) {
                 storage = StorageOptions.newBuilder()
                         .setCredentials(ServiceAccountCredentials.fromStream(cloudKeyStream))
@@ -163,7 +163,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                         sb.append(bucketName + "/" + spaceName);
                         statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
                         statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, sb.toString());
-                        
+
                     }
                 } else {
                     logger.warning("GoogleCloud Submision Workflow aborted: Dataset locked for pidRegister");

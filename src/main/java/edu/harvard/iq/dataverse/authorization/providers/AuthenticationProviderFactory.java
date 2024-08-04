@@ -16,12 +16,12 @@ public interface AuthenticationProviderFactory {
      * @return The alias of the factory.
      */
     String getAlias();
-    
+
     /**
      * @return A human readable display string describing this factory.
      */
     String getInfo();
-    
+
     /**
      * Instantiates an {@link AuthenticationProvider} based on the row passed.
      * @param aRow The row on which the created provider is based.
@@ -29,5 +29,5 @@ public interface AuthenticationProviderFactory {
      * @throws AuthorizationSetupException If {@code aRow} contains malformed data.
      */
     AuthenticationProvider buildProvider(AuthenticationProviderRow aRow) throws AuthorizationSetupException;
-    
+
 }

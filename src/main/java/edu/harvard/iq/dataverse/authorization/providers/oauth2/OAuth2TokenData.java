@@ -32,39 +32,39 @@ import jakarta.persistence.NamedQuery;
                  query = "SELECT d FROM OAuth2TokenData d WHERE d.user.id=:userId AND d.oauthProviderId=:providerId"),
     @NamedQuery(name = "OAuth2TokenData.deleteByUserIdAndProviderId",
                  query = "DELETE FROM OAuth2TokenData d WHERE d.user.id=:userId AND d.oauthProviderId=:providerId")
-        
+
 })
 @Entity
 public class OAuth2TokenData implements Serializable {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @ManyToOne
     private AuthenticatedUser user;
-    
+
     private String oauthProviderId;
-    
+
     private Timestamp expiryDate;
-    
+
     /**
      * "Please don't put a maximum size on the storage for an access token" at
      * https://stackoverflow.com/questions/4408945/what-is-the-length-of-the-access-token-in-facebook-oauth2/16365828#16365828
      */
     @Column(columnDefinition = "TEXT")
     private String accessToken;
-    
+
     @Column(length = 64)
     private String refreshToken;
-    
+
     @Column(length = 32)
     private String tokenType;
-    
+
     @Column(columnDefinition = "TEXT")
     private String rawResponse;
-    
-    
+
+
     /**
      * Creates a new {@link OAuth2TokenData} instance, based on the data in 
      * the passed {@link OAuth2AccessToken}.
@@ -80,10 +80,10 @@ public class OAuth2TokenData implements Serializable {
             retVal.setExpiryDate(new Timestamp( System.currentTimeMillis() + accessTokenResponse.getExpiresIn()));
         }
         retVal.setRawResponse(accessTokenResponse.getRawResponse());
-        
+
         return retVal;
     }
-    
+
     public Long getId() {
         return id;
     }
@@ -172,7 +172,6 @@ public class OAuth2TokenData implements Serializable {
         }
         return true;
     }
-    
-    
-    
+
+
 }

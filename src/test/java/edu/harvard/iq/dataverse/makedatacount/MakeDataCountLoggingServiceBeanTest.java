@@ -28,19 +28,19 @@ import org.junit.jupiter.api.Test;
  * @author matthew
  */
 public class MakeDataCountLoggingServiceBeanTest {
-  
+
     @Test
-    public void testMainAndFileConstructor() {        
+    public void testMainAndFileConstructor() {
         MockDataverseRequestServiceBean dvReqServ = new MockDataverseRequestServiceBean();
         AuthenticatedUser au = MocksFactory.makeAuthenticatedUser("First", "Last");
         DataverseRequest req = new DataverseRequest(au, IpAddress.valueOf("0.0.0.0"));
         dvReqServ.setDataverseRequest(req);
-        
+
         MockDatasetVersion dvVersion = new MockDatasetVersion();
         Dataset dataset = new Dataset();
         dataset.setAuthority("Authority");
         dataset.setProtocol("Protocol");
-        dataset.setIdentifier("Identifier"); 
+        dataset.setIdentifier("Identifier");
         GlobalId id = dataset.getGlobalId();
         dataset.setGlobalId(id);
         dvVersion.setDataset(dataset);
@@ -48,11 +48,11 @@ public class MakeDataCountLoggingServiceBeanTest {
         dvVersion.setTitle("Title\tWith Tab");
         dvVersion.setVersionNumber(1L);
         dvVersion.setReleaseTime(new Date());
-        
+
         DataFile df = new DataFile();
         df.setStorageIdentifier("StorageId");
         df.setFilesize(1L);
-        
+
         MakeDataCountEntry entry = new MakeDataCountEntry(null, dvReqServ, dvVersion, df);
         //Instead of going through the absurdity of mocking FacesContext and ExternalContext and Request,
         //we will just pass null and init the values pulled from that manually
@@ -60,7 +60,7 @@ public class MakeDataCountLoggingServiceBeanTest {
         entry.setTargetUrl("TargetUrl");
         entry.setUserAgent("UserAgent");
         entry.setSessionCookieId("SeshCookieId");
-        
+
         //lastly setting attributes we don't actually use currently in our logging/constructors, just in case
         entry.setUserCookieId("UserCookId");
         entry.setOtherId(null); // null pointer check for sanitize method
@@ -70,7 +70,7 @@ public class MakeDataCountLoggingServiceBeanTest {
         assertThat(entry.getOtherId(), is("OtherId X"));
         // check other replacements for author list ";" becomes "|"
         assertThat(entry.getAuthors(), is("OneAuthor| TwoAuthor"));
-        
+
         //And test. "-" is the default
         assertThat(entry.getEventTime(), is(not("-")));
         assertThat(entry.getClientIp(), is(not("-")));
@@ -90,12 +90,12 @@ public class MakeDataCountLoggingServiceBeanTest {
         assertThat(entry.getOtherId(), is(not("-")));
         assertThat(entry.getTargetUrl(), is(not("-")));
         assertThat(entry.getPublicationDate(), is(not("-")));
-        
+
         //19 entries are required for the Counter Processor logging 
-        assertThat(entry.toString().split("\t").length, is(19)); 
-        
+        assertThat(entry.toString().split("\t").length, is(19));
+
     }
-    
+
     //Testing that when you init with no objects everything defaults to "-"
     @Test
     public void testDefaultConstructor() {
@@ -118,44 +118,44 @@ public class MakeDataCountLoggingServiceBeanTest {
         assertThat(entry.getOtherId(), is("-"));
         assertThat(entry.getTargetUrl(), is("-"));
         assertThat(entry.getPublicationDate(), is("-"));
-        
-        assertThat(entry.toString().split("\t").length, is(19)); 
+
+        assertThat(entry.toString().split("\t").length, is(19));
     }
-    
+
     static class MockDataverseRequestServiceBean extends DataverseRequestServiceBean {
         DataverseRequest mockDataverseRequest;
-        
+
         @Override
         public DataverseRequest getDataverseRequest() {
             return mockDataverseRequest;
         }
-        
+
         public void setDataverseRequest(DataverseRequest request) {
             mockDataverseRequest = request;
         }
     }
-    
+
     static class MockDatasetVersion extends DatasetVersion {
         String authorStr = "";
         String title = "";
-        
-        @Override 
+
+        @Override
         public String getAuthorsStr(boolean affiliation) {
             return authorStr;
         }
-        
+
         public void setAuthorsStr(String str) {
             authorStr = str;
         }
-        
-        @Override 
+
+        @Override
         public String getTitle() {
             return authorStr;
         }
-        
+
         public void setTitle(String str) {
             title = str;
         }
     }
-    
+
 }

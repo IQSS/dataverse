@@ -17,25 +17,25 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class JsfHelperTest {
-	
+
 	enum TestEnum { Lorem, Ipsum, Dolor, Sit, Amet }
-	
+
 	@BeforeAll
 	public static void setUpClass() {
 	}
-	
+
 	@AfterAll
 	public static void tearDownClass() {
 	}
-	
+
 	@BeforeEach
 	public void setUp() {
 	}
-	
+
 	@AfterEach
 	public void tearDown() {
 	}
-	
+
 	static Stream<Arguments> parameters() {
 		return Stream.of(
 			Arguments.of(TestEnum.Lorem, "Lorem", TestEnum.Dolor),
@@ -56,5 +56,5 @@ public class JsfHelperTest {
 
 		assertEquals(inputEnum, instance.enumValue(inputString, TestEnum.class, defaultEnumValue));
 	}
-	
+
 }

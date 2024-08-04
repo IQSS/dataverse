@@ -14,7 +14,7 @@ import jakarta.validation.Validator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class UserNameValidatorTest {
-    
+
     public static Stream<Arguments> usernameExamples() {
         return Stream.of(
             // good usernames
@@ -44,39 +44,39 @@ public class UserNameValidatorTest {
             Arguments.of(false, null)
         );
     }
-    
+
     @ParameterizedTest
     @MethodSource("usernameExamples")
     public void testUsernames(boolean expected, String username) {
         assertEquals(expected, UserNameValidator.isUserNameValid(username));
     }
-    
+
     /**
      * This is a simple test class, as we defined the annotation for fields only.
      */
     private final class SubjectClass {
         @ValidateUserName
         String username;
-        
+
         SubjectClass(String username) {
             this.username = username;
         }
     }
-    
+
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    
+
     @ParameterizedTest
     @MethodSource("usernameExamples")
     public void testConstraint(boolean expected, String username) {
         // given
         UserNameValidatorTest.SubjectClass sut = new UserNameValidatorTest.SubjectClass(username);
-        
+
         //when
         Set<ConstraintViolation<UserNameValidatorTest.SubjectClass>> violations = validator.validate(sut);
-        
+
         // then
         assertEquals(expected, violations.size() < 1);
         // TODO: one might add tests for the two violations (size and illegal chars) here...
     }
-    
+
 }

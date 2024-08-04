@@ -18,11 +18,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author michael
  */
 public class UpdatePermissionRootCommandTest {
-    
+
     private DataverseServiceBean mockBean;
     TestCommandContext testCommandContext;
     boolean serviceBeanCalled;
-    
+
     @BeforeEach
     public void setUp() {
         mockBean = new DataverseServiceBean() {
@@ -31,11 +31,12 @@ public class UpdatePermissionRootCommandTest {
                 serviceBeanCalled = true;
                 return dv;
             }
+
             @Override
             public boolean index(Dataverse dataverse, boolean indexPermisions) {
                     // no-op. The superclass accesses databases which we don't have.
                     return true;
-            }            
+            }
         };
         testCommandContext = new TestCommandContext() {
             @Override
@@ -45,48 +46,48 @@ public class UpdatePermissionRootCommandTest {
         };
         serviceBeanCalled = false;
     }
-    
+
     @Test
     public void testNoChange() throws CommandException {
         Dataverse dv = MocksFactory.makeDataverse();
         DataverseEngine ngn = new TestDataverseEngine(testCommandContext);
         dv.setPermissionRoot(false);
-        
+
         UpdatePermissionRootCommand sut = new UpdatePermissionRootCommand(false, MocksFactory.makeRequest(), dv);
         Dataverse result = ngn.submit(sut);
-        
+
         assertFalse(result.isPermissionRoot());
         assertFalse(serviceBeanCalled);
-        
+
         dv.setPermissionRoot(true);
-        
+
         sut = new UpdatePermissionRootCommand( true, MocksFactory.makeRequest(), dv );
         result = ngn.submit(sut);
-        
+
         assertTrue(result.isPermissionRoot());
         assertFalse(serviceBeanCalled);
     }
-    
+
     @Test
     public void testChange() throws CommandException {
         Dataverse dv = MocksFactory.makeDataverse();
         DataverseEngine ngn = new TestDataverseEngine(testCommandContext);
         dv.setPermissionRoot(false);
-        
+
         UpdatePermissionRootCommand sut = new UpdatePermissionRootCommand(true, MocksFactory.makeRequest(), dv);
         Dataverse result = ngn.submit(sut);
-        
+
         assertTrue(result.isPermissionRoot());
         assertTrue(serviceBeanCalled);
-        
+
         dv.setPermissionRoot(true);
-        
+
         sut = new UpdatePermissionRootCommand( false, MocksFactory.makeRequest(), dv );
         result = ngn.submit(sut);
-        
+
         assertFalse(result.isPermissionRoot());
         assertTrue(serviceBeanCalled);
     }
-    
-    
+
+
 }

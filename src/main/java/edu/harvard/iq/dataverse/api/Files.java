@@ -77,13 +77,13 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Path("files")
 public class Files extends AbstractApiBean {
-    
+
     @EJB
     DatasetServiceBean datasetService;
     @EJB
     DatasetVersionServiceBean datasetVersionService;
     @EJB
-    DataverseServiceBean dataverseService;    
+    DataverseServiceBean dataverseService;
     @EJB
     IngestServiceBean ingestService;
     @Inject
@@ -104,19 +104,20 @@ public class Files extends AbstractApiBean {
     DataFileServiceBean dataFileServiceBean;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
-    
-    
-    
+
+
     private void msg(String m) {
         System.out.println(m);
     }
+
     private void dashes() {
         msg("----------------");
     }
+
     private void msgt(String m) {
         dashes(); msg(m); dashes();
     }
-    
+
     /**
      * Restrict or Unrestrict an Existing File
      * @author sarahferry
@@ -166,8 +167,8 @@ public class Files extends AbstractApiBean {
         String text = restrict ? "restricted." : "unrestricted.";
         return ok("File " + dataFile.getDisplayName() + " " + text);
     }
-        
-    
+
+
     //TODO: This api would be improved by reporting the new fileId after replace
     
     /**
@@ -184,13 +185,13 @@ public class Files extends AbstractApiBean {
     @Path("{id}/replace")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces("application/json")
-    @Operation(summary = "Replace a file on a dataset", 
+    @Operation(summary = "Replace a file on a dataset",
                description = "Replace a file to a dataset")
     @APIResponse(responseCode = "200",
                description = "File replaced successfully on the dataset")
-    @Tag(name = "replaceFilesInDataset", 
+    @Tag(name = "replaceFilesInDataset",
          description = "Replace a file to a dataset")
-    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA)) 
+    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
     public Response replaceFileInDataset(
                     @Context ContainerRequestContext crc,
                     @PathParam("id") String fileIdOrPersistentId,
@@ -253,7 +254,7 @@ public class Files extends AbstractApiBean {
             newFilename = contentDispositionHeader.getFileName();
             newFileContentType = formDataBodyPart.getMediaType().toString();
         }
-        
+
         // (4) Create the AddReplaceFileHelper object
         msg("REPLACE!");
 
@@ -294,9 +295,9 @@ public class Files extends AbstractApiBean {
         }
         msg("we're back.....");
         if (addFileHelper.hasError()) {
-            msg("yes, has error");          
+            msg("yes, has error");
             return error(addFileHelper.getHttpErrorCode(), addFileHelper.getErrorMessagesAsString("\n"));
-        
+
         } else {
             msg("no error");
             String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.replace");
@@ -321,7 +322,7 @@ public class Files extends AbstractApiBean {
 
             }
         }
-            
+
     } // end: replaceFileInDataset
 
     /**
@@ -356,7 +357,7 @@ public class Files extends AbstractApiBean {
             } catch (EJBException ex) {
                 return error(BAD_REQUEST, "Delete failed for file ID " + fileIdOrPersistentId + "(EJBException): " + ex.getMessage());
             }
-    
+
             if (deletePhysicalFile) {
                 try {
                     fileService.finalizeFileDelete(dataFile.getId(), fileService.getPhysicalFileToDelete(dataFile));
@@ -371,7 +372,7 @@ public class Files extends AbstractApiBean {
 
         return ok(deletePhysicalFile);
     }
-    
+
     //Much of this code is taken from the replace command, 
     //simplified as we aren't actually switching files
     @POST
@@ -380,9 +381,9 @@ public class Files extends AbstractApiBean {
     public Response updateFileMetadata(@Context ContainerRequestContext crc, @FormDataParam("jsonData") String jsonData,
                     @PathParam("id") String fileIdOrPersistentId
         ) throws DataFileTagException, CommandException {
-        
+
         FileMetadata upFmd = null;
-        
+
         try {
             DataverseRequest req;
             try {
@@ -417,7 +418,7 @@ public class Files extends AbstractApiBean {
                 JsonObject jsonObj = null;
                 try {
                     jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
-                    if ((jsonObj.has("restrict")) && (!jsonObj.get("restrict").isJsonNull())) { 
+                    if ((jsonObj.has("restrict")) && (!jsonObj.get("restrict").isJsonNull())) {
                         Boolean restrict = jsonObj.get("restrict").getAsBoolean();
 
                         if (restrict != df.getFileMetadata().isRestricted()) {
@@ -451,7 +452,7 @@ public class Files extends AbstractApiBean {
                        break;
                     }
                 }
-                
+
                 if (upFmd == null) {
                     return error(BAD_REQUEST, "An error has occurred attempting to update the requested DataFile. It is not part of the current version of the Dataset.");
                 }
@@ -561,15 +562,15 @@ public class Files extends AbstractApiBean {
         if (fileMetadata.getDatasetVersion().isReleased()) {
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, dataFile);
             mdcLogService.logEntry(entry);
-        } 
-                    
+        }
+
         return Response.ok(Json.createObjectBuilder()
                 .add("status", ApiConstants.STATUS_OK)
                 .add("data", json(fileMetadata, returnOwners, returnDatasetVersion)).build())
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }
-    
+
 
     @GET
     @AuthRequired
@@ -589,8 +590,8 @@ public class Files extends AbstractApiBean {
                 return error(BAD_REQUEST, "Error attempting get the requested data file.");
             }
             FileMetadata fm;
-            
-            if (null != getDraft && getDraft) { 
+
+            if (null != getDraft && getDraft) {
                 try {
                     fm = execCommand(new GetDraftFileMetadataIfAvailableCommand(req, findDataFileOrDie(fileIdOrPersistentId)));
                 } catch (WrappedResponse w) {
@@ -604,16 +605,16 @@ public class Files extends AbstractApiBean {
                 MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountLoggingServiceBean.MakeDataCountEntry(uriInfo, headers, dvRequestService, df);
                 mdcLogService.logEntry(entry);
             }
-            
+
             String jsonString = fm.asGsonObject(true).toString();
-            
+
             return Response
                 .status(Response.Status.OK)
                 .entity(jsonString)
                 .type(MediaType.TEXT_PLAIN) //Our plain text string is already json
                 .build();
     }
-    
+
     @GET
     @AuthRequired
     @Path("{id}/metadata/draft")
@@ -693,7 +694,7 @@ public class Files extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        
+
         DataFile dataFile;
         try {
             dataFile = findDataFileOrDie(id);
@@ -702,39 +703,39 @@ public class Files extends AbstractApiBean {
         }
 
         Dataset dataset = dataFile.getOwner();
-        
+
         if (dataset == null) {
             return error(BAD_REQUEST, "Failed to locate the parent dataset for the datafile.");
         }
-        
+
         if (dataFile.isTabularData()) {
             return error(BAD_REQUEST, "The datafile is already ingested as Tabular.");
         }
-        
+
         boolean ingestLock = dataset.isLockedFor(DatasetLock.Reason.Ingest);
-        
+
         if (ingestLock) {
             return error(FORBIDDEN, "Dataset already locked with an Ingest lock");
         }
-        
+
         if (!FileUtil.canIngestAsTabular(dataFile)) {
             return error(BAD_REQUEST, "Tabular ingest is not supported for this file type (id: " + id + ", type: " + dataFile.getContentType() + ")");
         }
-        
+
         dataFile.SetIngestScheduled();
-                
+
         if (dataFile.getIngestRequest() == null) {
             dataFile.setIngestRequest(new IngestRequest(dataFile));
         }
 
         dataFile.getIngestRequest().setForceTypeCheck(true);
-        
+
         // update the datafile, to save the newIngest request in the database:
         dataFile = fileService.save(dataFile);
-        
+
         // queue the data ingest job for asynchronous execution: 
         String status = ingestService.startIngestJobs(dataset.getId(), new ArrayList<>(Arrays.asList(dataFile)), u);
-        
+
         if (!StringUtil.isEmpty(status)) {
             // This most likely indicates some sort of a problem (for example, 
             // the ingest job was not put on the JMS queue because of the size
@@ -844,7 +845,7 @@ public class Files extends AbstractApiBean {
         eth = new ExternalToolHandler(externalTool, target.getDataFile(), apiToken, target, locale);
         return ok(eth.createPostBody(eth.getParams(JsonUtil.getJsonObject(externalTool.getToolParameters())), JsonUtil.getJsonArray(externalTool.getAllowedApiCalls())));
     }
-    
+
     @GET
     @Path("fixityAlgorithm")
     public Response getFixityAlgorithm() {

@@ -55,7 +55,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
         String dpnContext = requestedSettings.get(DURACLOUD_CONTEXT) != null ? requestedSettings.get(DURACLOUD_CONTEXT)
                 : DEFAULT_CONTEXT;
         String host = requestedSettings.get(DURACLOUD_HOST);
-        
+
         if (host != null) {
             Dataset dataset = dv.getDataset();
             // ToDo - change after HDC 3A changes to status reporting
@@ -93,7 +93,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                 JsonObjectBuilder statusObject = Json.createObjectBuilder();
                 statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_FAILURE);
                 statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, "Bag not transferred");
-                
+
                 try {
                     /*
                      * If there is a failure in creating a space, it is likely that a prior version
@@ -126,7 +126,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                                     e.printStackTrace();
                                 }
                             }
-                        }); 
+                        });
                         dcThread.start();
                         // Have seen Pipe Closed errors for other archivers when used as a workflow
                         // without this delay loop
@@ -199,7 +199,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                         sb.append("/" + spaceName + "/" + fileName);
                         statusObject.add(DatasetVersion.ARCHIVAL_STATUS, DatasetVersion.ARCHIVAL_STATUS_SUCCESS);
                         statusObject.add(DatasetVersion.ARCHIVAL_STATUS_MESSAGE, sb.toString());
-                        
+
                         logger.fine("DuraCloud Submission step complete: " + sb.toString());
                     } catch (ContentStoreException | IOException e) {
                         // TODO Auto-generated catch block

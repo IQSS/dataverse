@@ -12,7 +12,7 @@ import java.io.IOException;
  *           Yes, non-hot-reloadable settings may be a problem. The code should be refactored in these cases.
  */
 public interface JvmSettingBroker {
-    
+
     /**
      * Receive the value of a {@link edu.harvard.iq.dataverse.settings.JvmSettings} given as its {@link String}
      * representation. The reason for this is that we may have inserted variable names already.
@@ -21,7 +21,7 @@ public interface JvmSettingBroker {
      * @throws IOException When communication goes sideways.
      */
     String getJvmSetting(String key) throws IOException;
-    
+
     /**
      * Set the value of a {@link edu.harvard.iq.dataverse.settings.JvmSettings} (given as its {@link String}
      * representation). The reason for this is that we may have inserted variable names already.
@@ -30,7 +30,7 @@ public interface JvmSettingBroker {
      * @throws IOException When communication goes sideways.
      */
     void setJvmSetting(String key, String value) throws IOException;
-    
+
     /**
      * Remove the value of a {@link edu.harvard.iq.dataverse.settings.JvmSettings} (given as its {@link String}
      * representation). For some tests, one might want to clear a certain setting again and potentially have it set
@@ -39,5 +39,5 @@ public interface JvmSettingBroker {
      * @throws IOException When communication goes sideways.
      */
     String deleteJvmSetting(String key) throws IOException;
-    
+
 }

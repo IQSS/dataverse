@@ -16,24 +16,31 @@ public class RateLimitSetting {
     public void setTier(int tier) {
         this.tier = tier;
     }
+
     public int getTier() {
         return this.tier;
     }
+
     public void setLimitPerHour(int limitPerHour) {
         this.limitPerHour = limitPerHour;
     }
+
     public int getLimitPerHour() {
         return this.limitPerHour;
     }
+
     public void setActions(List<String> actions) {
         this.actions = actions;
     }
+
     public List<String> getActions() {
         return this.actions;
     }
+
     public void setDefaultLimit(int defaultLimitPerHour) {
         this.defaultLimitPerHour = defaultLimitPerHour;
     }
+
     public int getDefaultLimitPerHour() {
         return this.defaultLimitPerHour;
     }

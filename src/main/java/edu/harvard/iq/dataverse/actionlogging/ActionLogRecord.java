@@ -21,57 +21,57 @@ import jakarta.persistence.TemporalType;
 @Entity
 @Table(indexes = {@Index(columnList = "useridentifier"), @Index(columnList = "actiontype"), @Index(columnList = "starttime")})
 public class ActionLogRecord implements java.io.Serializable {
-    
+
     public enum Result {
         OK, BadRequest, PermissionError, InternalError
     }
-    
+
     public enum ActionType {
         /** login, logout */
         SessionManagement,
-        
+
         /** Command execution */
         Command,
-        
-        BuiltinUser, 
-        
+
+        BuiltinUser,
+
         /** A setting being updated */
         Setting,
-        
+
         Auth,
-        
+
         Admin,
 
         ExternalTool,
-        
+
         GlobalGroups
     }
-    
+
     @Id
     @Column(length = 36)
     private String id;
-    
+
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date startTime;
-    
+
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date endTime;
-    
+
     @Enumerated(EnumType.STRING)
     private Result actionResult;
-    
+
     private String userIdentifier;
-    
+
     @Enumerated(EnumType.STRING)
     private ActionType actionType;
-    
+
     private String actionSubType;
-    
+
     @Column(columnDefinition = "TEXT")
     private String info;
-    
+
     public ActionLogRecord() {}
-    
+
     /**
      * @param anActionType
      * @param anActionSubType
@@ -82,14 +82,14 @@ public class ActionLogRecord implements java.io.Serializable {
         actionSubType = anActionSubType;
         startTime = new Date();
     }
-    
+
     @Override
     public String toString() {
-        return "[ActionLogRecord id:" + getId() + " type:" + getActionType() 
+        return "[ActionLogRecord id:" + getId() + " type:" + getActionType()
                     + "/" + getActionSubType()
                     + " result:" + getActionResult() + "]";
     }
-    
+
     @PrePersist
     void prepresist() {
         if (id == null) {
@@ -204,7 +204,6 @@ public class ActionLogRecord implements java.io.Serializable {
         }
         return Objects.equals(this.info, other.info);
     }
-    
-    
-    
+
+
 }

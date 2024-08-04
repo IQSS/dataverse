@@ -48,19 +48,19 @@ public class GuestbookResponse implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-            
+
     @ManyToOne
     @JoinColumn(nullable = false)
     private Guestbook guestbook;
-    
+
     @ManyToOne
     @JoinColumn(nullable = false)
     private DataFile dataFile;
-    
+
     @ManyToOne
     @JoinColumn(nullable = false)
     private Dataset dataset;
-    
+
     @ManyToOne
     @JoinColumn(nullable = true)
     private DatasetVersion datasetVersion;
@@ -72,7 +72,7 @@ public class GuestbookResponse implements Serializable {
     @OneToMany(mappedBy = "guestbookResponse", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.LAZY)
     //private FileAccessRequest fileAccessRequest;
     private List<FileAccessRequest> fileAccessRequests;
-     
+
     @OneToMany(mappedBy = "guestbookResponse", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     @OrderBy("id")
     private List<CustomQuestionResponse> customQuestionResponses;
@@ -89,7 +89,7 @@ public class GuestbookResponse implements Serializable {
 
     @Size(max = 255, message = "{guestbook.response.nameLength}")
     private String position;
-    
+
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date responseTime;
 
@@ -114,13 +114,13 @@ public class GuestbookResponse implements Serializable {
 
     */
       
-    @Transient 
+    @Transient
     private boolean writeResponse = true;
 
     @Transient
     private String selectedFileIds;
-    
-    @Transient 
+
+    @Transient
     private String fileFormat;
 
     /**
@@ -131,7 +131,7 @@ public class GuestbookResponse implements Serializable {
     @Transient
     private ExternalTool externalTool;
 
-    
+
     public boolean isWriteResponse() {
         return writeResponse;
     }
@@ -143,11 +143,11 @@ public class GuestbookResponse implements Serializable {
     public String getSelectedFileIds() {
         return this.selectedFileIds;
     }
-    
+
     public void setSelectedFileIds(String selectedFileIds) {
         this.selectedFileIds = selectedFileIds;
     }
-    
+
     public String getFileFormat() {
         return this.fileFormat;
     }
@@ -155,7 +155,7 @@ public class GuestbookResponse implements Serializable {
     public void setFileFormat(String downloadFormat) {
         this.fileFormat = downloadFormat;
     }
-    
+
     public ExternalTool getExternalTool() {
         return externalTool;
     }
@@ -166,7 +166,7 @@ public class GuestbookResponse implements Serializable {
 
     public GuestbookResponse() {
     }
-    
+
     public GuestbookResponse(GuestbookResponse source) {
         //makes a clone of a response for adding of studyfiles in case of multiple downloads
         this.setName(source.getName());
@@ -182,17 +182,17 @@ public class GuestbookResponse implements Serializable {
         if (!source.getCustomQuestionResponses().isEmpty()) {
             for (CustomQuestionResponse customQuestionResponse : source.getCustomQuestionResponsesSorted()) {
                 CustomQuestionResponse customQuestionResponseAdd = new CustomQuestionResponse();
-                customQuestionResponseAdd.setResponse(customQuestionResponse.getResponse());  
+                customQuestionResponseAdd.setResponse(customQuestionResponse.getResponse());
                 customQuestionResponseAdd.setCustomQuestion(customQuestionResponse.getCustomQuestion());
                 customQuestionResponseAdd.setGuestbookResponse(this);
                 customQuestionResponses.add(customQuestionResponseAdd);
-            }           
+            }
         }
         this.setCustomQuestionResponses(customQuestionResponses);
         this.setGuestbook(source.getGuestbook());
     }
-    
-    
+
+
     public String getEmail() {
         return email;
     }
@@ -240,7 +240,7 @@ public class GuestbookResponse implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public Date getResponseTime() {
         return responseTime;
     }
@@ -256,23 +256,23 @@ public class GuestbookResponse implements Serializable {
     public List<CustomQuestionResponse> getCustomQuestionResponses() {
         return customQuestionResponses;
     }
-    
+
     public List<CustomQuestionResponse> getCustomQuestionResponsesSorted() {
-        
+
         Collections.sort(customQuestionResponses, (CustomQuestionResponse cqr1, CustomQuestionResponse cqr2) -> {
             int a = cqr1.getCustomQuestion().getDisplayOrder();
             int b = cqr2.getCustomQuestion().getDisplayOrder();
             return Integer.valueOf(a).compareTo(b);
         });
-       
-       
+
+
        return customQuestionResponses;
     }
 
     public void setCustomQuestionResponses(List<CustomQuestionResponse> customQuestionResponses) {
         this.customQuestionResponses = customQuestionResponses;
     }
-    
+
     public List<FileAccessRequest> getFileAccessRequests() {
         return fileAccessRequests;
     }
@@ -280,7 +280,7 @@ public class GuestbookResponse implements Serializable {
     public void setFileAccessRequest(List<FileAccessRequest> fARs) {
         this.fileAccessRequests = fARs;
     }
-    
+
     public Dataset getDataset() {
         return dataset;
     }
@@ -296,7 +296,7 @@ public class GuestbookResponse implements Serializable {
     public void setDataFile(DataFile dataFile) {
         this.dataFile = dataFile;
     }
-       
+
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;
     }
@@ -312,29 +312,29 @@ public class GuestbookResponse implements Serializable {
     public void setAuthenticatedUser(AuthenticatedUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
     }
-    
+
     public String getEventType() {
         return this.eventType;
     }
 
     public void setEventType(String eventType) {
         this.eventType = eventType;
-        
+
     }
-    
+
     public String getSessionId() {
         return this.sessionId;
     }
 
     public void setSessionId(String sessionId) {
-        
+
         this.sessionId = sessionId;
     }
-    
+
     public String toHtmlFormattedResponse() {
         return toHtmlFormattedResponse(null);
     }
-    
+
     public String toHtmlFormattedResponse(AuthenticatedUser requestor) {
 
         StringBuilder sb = new StringBuilder();
@@ -346,7 +346,7 @@ public class GuestbookResponse implements Serializable {
         sb.append("  " + BundleUtil.getStringFromBundle("email") + ": " + getEmail() + "</li>\n<li>");
         sb.append("  " + BundleUtil.getStringFromBundle("institution") + ": " + wrapNullAnswer(getInstitution()) + "</li>\n<li>");
         sb.append("  " + BundleUtil.getStringFromBundle("position") + ": " + wrapNullAnswer(getPosition()) + "</li>");
-        
+
         //Add requestor information to response to help dataset admin with request processing
         if (requestor != null) {
             sb.append("\n<li>" + BundleUtil.getStringFromBundle("dataset.guestbookResponse.requestor.id") + ": " + requestor.getId() + "</li>");
@@ -367,7 +367,7 @@ public class GuestbookResponse implements Serializable {
         sb.append("</ul>");
         return sb.toString();
     }
-    
+
     private String wrapNullAnswer(String answer) {
         //This assumes we don't have to distinguish null from when the user actually answers "(No Reponse)". The db still has the real value
         if (answer == null) {
@@ -375,7 +375,7 @@ public class GuestbookResponse implements Serializable {
         }
         return answer;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -400,6 +400,6 @@ public class GuestbookResponse implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dvn.core.vdc.GuestBookResponse[ id=" + id + " ]";
     }
-    
+
 }
 

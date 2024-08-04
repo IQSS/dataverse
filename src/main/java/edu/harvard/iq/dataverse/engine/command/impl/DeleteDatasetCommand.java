@@ -22,7 +22,7 @@ public class DeleteDatasetCommand extends AbstractVoidCommand {
         super(aRequest, dataset);
         this.doomed = dataset;
     }
-   
+
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         // TODO: REMOVE THIS COMMAND

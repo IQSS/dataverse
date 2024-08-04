@@ -35,9 +35,9 @@ import jakarta.persistence.Table;
 @Entity
 @Table(indexes = {@Index(columnList = "datasetfieldtype_id"), @Index(columnList = "displayorder")})
 public class ControlledVocabularyValue implements Serializable {
-    
+
     private static final Logger logger = Logger.getLogger(ControlledVocabularyValue.class.getCanonicalName());
-    
+
     public static final Comparator<ControlledVocabularyValue> DisplayOrder = new Comparator<ControlledVocabularyValue>() {
         @Override
         public int compare(ControlledVocabularyValue o1, ControlledVocabularyValue o2) {
@@ -52,7 +52,7 @@ public class ControlledVocabularyValue implements Serializable {
         this.strValue = strValue;
         this.datasetFieldType = datasetFieldType;
     }
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -64,18 +64,19 @@ public class ControlledVocabularyValue implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    @Column(columnDefinition = "TEXT", nullable = false) 
+
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String strValue;
 
     public String getStrValue() {
         return strValue;
     }
+
     public void setStrValue(String strValue) {
         this.strValue = strValue;
-        
+
     }
-    
+
     private String identifier;
 
     public String getIdentifier() {
@@ -85,24 +86,27 @@ public class ControlledVocabularyValue implements Serializable {
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
-    
-    
-    
+
+
     private int displayOrder;
+
     public int getDisplayOrder() { return this.displayOrder;}
-    public void setDisplayOrder(int displayOrder) {this.displayOrder = displayOrder;} 
-       
-    
+
+    public void setDisplayOrder(int displayOrder) {this.displayOrder = displayOrder;}
+
+
     @ManyToOne
     // @JoinColumn( nullable = false ) TODO this breaks for the N/A value. need to create an N/A type for that value.
     private DatasetFieldType datasetFieldType;
+
     public DatasetFieldType getDatasetFieldType() {
         return datasetFieldType;
     }
+
     public void setDatasetFieldType(DatasetFieldType datasetFieldType) {
         this.datasetFieldType = datasetFieldType;
     }
-  
+
     @OneToMany(mappedBy = "controlledVocabularyValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     private Collection<ControlledVocabAlternate> controlledVocabAlternates = new ArrayList<>();
 
@@ -117,9 +121,9 @@ public class ControlledVocabularyValue implements Serializable {
     public String getLocaleStrValue() {
         return getLocaleStrValue(null);
     }
-    
+
     public String getLocaleStrValue(String language) {
-        
+
         if (language != null && language.isBlank()) {
             //null picks up current UI lang
             language = null;
@@ -133,7 +137,7 @@ public class ControlledVocabularyValue implements Serializable {
         }
         return getLocaleStrValue(strValue, this.datasetFieldType.getName(), getDatasetFieldType().getMetadataBlock().getName(), language == null ? null : new Locale(language), true);
     }
-    
+
     public static String getLocaleStrValue(String strValue, String fieldTypeName, String metadataBlockName,
             Locale locale, boolean sendDefault) {
         String key = strValue.toLowerCase().replace(" ", "_");
@@ -167,11 +171,11 @@ public class ControlledVocabularyValue implements Serializable {
         }
         ControlledVocabularyValue other = (ControlledVocabularyValue) object;
         return Objects.equals(getId(), other.getId());
-    }    
-    
+    }
+
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.ControlledVocabularyValue[ id=" + id + " ]";
-    }     
-    
+    }
+
 }

@@ -76,7 +76,7 @@ import javax.xml.stream.XMLInputFactory;
 */
 
 public class FastGetRecord {
-   
+
     private static final String XML_METADATA_TAG = "metadata";
     private static final String XML_METADATA_TAG_OPEN = "<" + XML_METADATA_TAG + ">";
     private static final String XML_METADATA_TAG_CLOSE = "</" + XML_METADATA_TAG + ">";
@@ -85,7 +85,7 @@ public class FastGetRecord {
     private static final String XML_XMLNS_XSI_ATTRIBUTE = " " + XML_XMLNS_XSI_ATTRIBUTE_TAG + "\"http://www.w3.org/2001/XMLSchema-instance\">";
     private static final String XML_COMMENT_START = "<!--";
     private static final String XML_COMMENT_END = "-->";
-    
+
     /**
      * Client-side GetRecord verb constructor
      *
@@ -102,10 +102,10 @@ public class FastGetRecord {
     TransformerException {
         harvestRecord(oaiHandler.getBaseOaiUrl(), identifier, oaiHandler.getMetadataPrefix(), oaiHandler.getCustomHeaders(), httpClient);
     }
-    
+
     private String errorMessage = null;
-    private File savedMetadataFile = null; 
-    private XMLInputFactory xmlInputFactory = null; 
+    private File savedMetadataFile = null;
+    private XMLInputFactory xmlInputFactory = null;
     private boolean recordDeleted = false;
 
     // TODO: logging
@@ -129,7 +129,7 @@ public class FastGetRecord {
         xmlInputFactory = javax.xml.stream.XMLInputFactory.newInstance();
         String requestURL = getRequestURL(baseURL, identifier, metadataPrefix);
         InputStream in;
-        
+
         // This was one other place where the Harvester code was still using 
         // the obsolete java.net.ttpUrlConnection that didn't get replaced with
         // the new java.net.http.HttpClient during the first pas of the XOAI 
@@ -139,37 +139,37 @@ public class FastGetRecord {
         if (httpClient == null) {
             throw new IOException("Null Http Client, cannot make a GetRecord call to obtain the metadata.");
         }
-        
+
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                 .uri(URI.create(requestURL))
                 .GET()
                 .header("User-Agent", "XOAI Service Provider v5 (Dataverse)")
                 .header("Accept-Encoding", "compress, gzip");
-        
+
         if (customHeaders != null) {
             for (String headerName : customHeaders.keySet()) {
                 requestBuilder.header(headerName, customHeaders.get(headerName));
             }
         }
-        
+
         HttpRequest request = requestBuilder.build();
         HttpResponse<InputStream> response;
 
-        try {            
+        try {
              response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new IOException("Failed to connect to the remote dataverse server to obtain GetRecord metadata");
         }
-        
+
         int responseCode = response.statusCode();
-        
+
         if (responseCode == HTTP_OK) {
             InputStream inputStream = response.body();
             Optional<String> contentEncoding = response.headers().firstValue("Content-Encoding");
-            
+
             // support for the standard gzip encoding:
-            in = inputStream; 
+            in = inputStream;
             if (contentEncoding.isPresent()) {
                 if (contentEncoding.get().equals("compress")) {
                     ZipInputStream zis = new ZipInputStream(inputStream);
@@ -197,18 +197,18 @@ public class FastGetRecord {
             FileOutputStream tempFileStream = null;
             PrintWriter metadataOut = null;
 
-            savedMetadataFile = File.createTempFile("meta", ".tmp");            
+            savedMetadataFile = File.createTempFile("meta", ".tmp");
 
             int mopen = 0;
             int mclose = 0;
- 
+
             while ((line = rd.readLine()) != null) {
                 if (!metadataFlag) {
                     if (line.matches(".*" + XML_METADATA_TAG_OPEN + ".*")) {
                         String lineCopy = line;
 
                         int i = line.indexOf(XML_METADATA_TAG_OPEN);
-                        if (line.length() > i + XML_METADATA_TAG_OPEN.length()) { 
+                        if (line.length() > i + XML_METADATA_TAG_OPEN.length()) {
                             line = line.substring(i + XML_METADATA_TAG_OPEN.length());
                             // TODO: check if there's anything useful (non-white space, etc.)
                             // in the remaining part of the line?
@@ -217,9 +217,9 @@ public class FastGetRecord {
                                     line = line.substring(i);
                                 }
                             } else {
-                                line = null; 
+                                line = null;
                             }
-                        
+
                         } else {
                             line = null;
                         }
@@ -231,9 +231,9 @@ public class FastGetRecord {
                         //metadataOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); /* ? */
 
                         metadataFlag = true;
-                    } 
+                    }
                 }
-                
+
                 //System.out.println(line);
 
                 if (line != null) {
@@ -291,13 +291,13 @@ public class FastGetRecord {
                             // the first "real" XML element (of the form
                             // <!-- ... -->). So we need to skip these!
 
-                            int j = 0; 
+                            int j = 0;
                             while (((j = line.indexOf('<', offset)) > -1)
                                 && line.length() >= j + XML_COMMENT_START.length()
                                 && XML_COMMENT_START.equals(line.substring(j, j + XML_COMMENT_START.length()))) {
 
-                                offset = j; 
-                                
+                                offset = j;
+
                                 //OK, this is a comment allright.
 
                                 // is it terminated on the same line?
@@ -360,7 +360,7 @@ public class FastGetRecord {
                                     }
 
                                     schemaChecked = true;
-                                } 
+                                }
                             } else {
                                 // there was no "real" XML elements, only comments.
                                 // We'll perform this schema check in the next 
@@ -516,7 +516,7 @@ public class FastGetRecord {
             }
         }
     }
-    
+
     // (from Gustavo's ddiServiceBean -- L.A.)
     //
     /* We had to add this method because the ref getElementText has a bug where it

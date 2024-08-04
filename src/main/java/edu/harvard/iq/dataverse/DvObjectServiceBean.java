@@ -40,11 +40,12 @@ public class DvObjectServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     @EJB
     PidProviderFactoryBean pidProviderFactoryBean;
-    
+
     private static final Logger logger = Logger.getLogger(DvObjectServiceBean.class.getCanonicalName());
+
     /**
      * @param dvoc The object we check
      * @return {@code true} iff the passed object is the owner of any
@@ -69,25 +70,25 @@ public class DvObjectServiceBean implements java.io.Serializable {
     public List<DvObject> findAll() {
         return em.createNamedQuery("DvObject.findAll", DvObject.class).getResultList();
     }
-    
-    
+
+
     public List<DvObject> findByOwnerId(Long ownerId) {
         return em.createNamedQuery("DvObject.findByOwnerId").setParameter("ownerId", ownerId).getResultList();
     }
-    
+
     public List<DvObject> findByAuthenticatedUserId(AuthenticatedUser user) {
-        Query query = em.createNamedQuery("DvObject.findByAuthenticatedUserId"); 
+        Query query = em.createNamedQuery("DvObject.findByAuthenticatedUserId");
         query.setParameter("ownerId", user.getId());
         query.setParameter("releaseUserId", user.getId());
         return query.getResultList();
     }
-    
+
     public boolean checkExists(Long id) {
         Query query = em.createNamedQuery("DvObject.checkExists");
         query.setParameter("id", id);
         Long result = (Long) query.getSingleResult();
         return result > 0;
-    }   
+    }
 
     public DvObject findByGlobalId(String globalIdString, DvObject.DType dtype) {
         try {
@@ -99,7 +100,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         }
 
     }
-    
+
     public DvObject findByAltGlobalId(String globalIdString, DvObject.DType dtype) {
         try {
             GlobalId gid = PidUtil.parseAsGlobalID(globalIdString);
@@ -172,7 +173,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         }
         return foundDvObject;
     }
-    
+
     public DvObject findByGlobalId(GlobalId globalId) {
         try {
             return (DvObject) em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
@@ -183,7 +184,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
+
     public boolean isGlobalIdLocallyUnique(GlobalId globalId) {
         return em.createNamedQuery("DvObject.findByProtocolIdentifierAuthority")
             .setParameter("identifier", globalId.getIdentifier())
@@ -241,13 +242,13 @@ public class DvObjectServiceBean implements java.io.Serializable {
         int numRowsUpdated = clearIndexTimes.executeUpdate();
         return numRowsUpdated;
     }
-    
+
     private String getDvObjectIdListClause(List<Long> dvObjectIdList) {
         if (dvObjectIdList == null) {
             return null;
         }
         List<String> outputList = new ArrayList<>();
-        
+
         for (Long id : dvObjectIdList) {
             if (id != null) {
                 outputList.add(id.toString());
@@ -255,10 +256,10 @@ public class DvObjectServiceBean implements java.io.Serializable {
         }
         if (outputList.isEmpty()) {
             return null;
-        }        
-        return " (" + StringUtils.join(outputList, ",") + ")";        
+        }
+        return " (" + StringUtils.join(outputList, ",") + ")";
     }
-    
+
     public List<Object[]> getDvObjectInfoForMyData(List<Long> dvObjectIdList) {
         //msgt("getAssigneeAndRoleIdListFor");
 
@@ -266,16 +267,16 @@ public class DvObjectServiceBean implements java.io.Serializable {
         if (dvObjectClause == null) {
             return null;
         }
-        
+
         String qstr = "SELECT dv.id, dv.dtype, dv.owner_id"; // dv.modificationtime,
         qstr += " FROM dvobject dv";
         qstr += " WHERE  dv.id IN " + dvObjectClause;
         qstr += ";";
 
         return em.createNativeQuery(qstr).getResultList();
-        
+
     }
-    
+
     /**
      * Used for retrieving DvObject based on a list of parent Ids
      *  MyData use case: The Dataverse has file permissions and we want to know 
@@ -292,29 +293,29 @@ public class DvObjectServiceBean implements java.io.Serializable {
         if (dvObjectClause == null) {
             return null;
         }
-        
+
         String qstr = "SELECT dv.id, dv.dtype, dv.owner_id"; // dv.modificationtime,
         qstr += " FROM dvobject dv";
         qstr += " WHERE  dv.owner_id IN " + dvObjectClause;
         qstr += ";";
 
         return em.createNativeQuery(qstr).getResultList();
-        
+
     }
-    
+
     /**
      * Used to exclude Harvested Data from the Mydata page
      * 
      * @return 
      */
     public List<Long> getAllHarvestedDataverseIds() {
-        
+
         String qstr = "SELECT h.dataverse_id FROM harvestingclient h;";
 
         return em.createNativeQuery(qstr).getResultList();
-        
+
     }
-    
+
     /**
      * Used to calculate the dvObject tree paths for the search results on the
      * dataverse page. (In order to determine if "linked" or not).
@@ -327,9 +328,9 @@ public class DvObjectServiceBean implements java.io.Serializable {
         if (objectIds == null || objectIds.size() < 1) {
             return null;
         }
-        
+
         String datasetIdStr = StringUtils.join(objectIds, ", ");
-        
+
         String qstr = "WITH RECURSIVE path_elements AS ((" +
             " SELECT id, owner_id FROM dvobject WHERE id in (" + datasetIdStr + "))" +
             " UNION\n" +
@@ -337,19 +338,19 @@ public class DvObjectServiceBean implements java.io.Serializable {
             "SELECT id, owner_id FROM path_elements WHERE owner_id IS NOT NULL;"; // ORDER by id ASC;";
         
         List<Object[]> searchResults;
-        
+
         try {
             searchResults = em.createNativeQuery(qstr).getResultList();
         } catch (Exception ex) {
             searchResults = null;
         }
-        
+
         if (searchResults == null || searchResults.size() < 1) {
             return null;
         }
-        
+
         Map<Long, Long> treeMap = new HashMap<>();
-        
+
         for (Object[] result : searchResults) {
             Long objectId;
             Long ownerId;
@@ -363,7 +364,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 if (objectId == null) {
                     continue;
                 }
-                
+
                 ownerId = (Long) result[1];
                 logger.fine("OBJECT PATH: id: " + objectId + ", owner: " + ownerId);
                 if (ownerId != null && (ownerId != 1L)) {
@@ -371,30 +372,30 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 }
             }
         }
-        
+
         Map<Long, String> ret = new HashMap<>();
-        
+
         for (Long objectId : objectIds) {
             String treePath = "/" + objectId;
             Long treePosition = treeMap.get(objectId);
-            
+
             while (treePosition != null) {
                 treePath = "/" + treePosition + treePath;
                 treePosition = treeMap.get(treePosition);
             }
-            
+
             logger.fine("OBJECT PATH: returning " + treePath + " for " + objectId);
             ret.put(objectId, treePath);
         }
-        return ret;        
+        return ret;
     }
-    
+
     public String generateNewIdentifierByStoredProcedure() {
         StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
         query.execute();
         return (String) query.getOutputParameterValue(1);
     }
-    
+
     /** @deprecated Backward-compatibility method to get the effective pid generator for a DvObjectContainer.
      * If the dvObjectContainer method fails, this method will check for the old global default settings.
      * If/when those are no longer supported, this method can be removed and replaced with calls directly 
@@ -409,5 +410,5 @@ public class DvObjectServiceBean implements java.io.Serializable {
         }
         return pidGenerator;
     }
-    
+
 }

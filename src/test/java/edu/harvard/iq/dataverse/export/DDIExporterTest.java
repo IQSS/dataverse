@@ -56,7 +56,7 @@ public class DDIExporterTest {
         Instant instant = Instant.ofEpochMilli(json.getAsJsonPrimitive().getAsLong());
         return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
     }).create();
-    
+
     /*
      * Setup and teardown mocks for BrandingUtil for atomicity.
      * Setup the mocked DatasetFieldSvc
@@ -68,6 +68,7 @@ public class DDIExporterTest {
         mockDatasetFieldSvc();
         DdiExportUtil.injectSettingsService(settingsService);
     }
+
     @AfterAll
     private static void tearDownAll() {
         BrandingUtilTest.tearDownMocks();
@@ -78,14 +79,14 @@ public class DDIExporterTest {
     public void testExportDataset() throws JsonParseException, IOException, ExportException {
         //given
         String datasetDtoJsonString = Files.readString(Path.of("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json"), StandardCharsets.UTF_8);
-        
+
         JsonObject datasetDtoJson = Json.createReader(new StringReader(datasetDtoJsonString)).readObject();
-        
+
         ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
         Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(datasetDtoJson);
         Mockito.when(exportDataProviderStub.getDatasetFileDetails()).thenReturn(Json.createArrayBuilder().build());
-        
-        
+
+
         //when
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         new DDIExporter().exportDataset(exportDataProviderStub, byteArrayOutputStream);
@@ -103,11 +104,11 @@ public class DDIExporterTest {
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
 
         JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
-        
+
         ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
         Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
         Mockito.when(exportDataProviderStub.getDatasetFileDetails()).thenReturn(Json.createArrayBuilder().build());
-        
+
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DDIExporter instance = new DDIExporter();
         instance.exportDataset(exportDataProviderStub, byteArrayOutputStream);
@@ -123,11 +124,11 @@ public class DDIExporterTest {
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
 
         JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
-        
+
         ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
         Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
         Mockito.when(exportDataProviderStub.getDatasetFileDetails()).thenReturn(Json.createArrayBuilder().build());
-        
+
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DDIExporter instance = new DDIExporter();
         instance.exportDataset(exportDataProviderStub, byteArrayOutputStream);
@@ -136,7 +137,7 @@ public class DDIExporterTest {
         assertFalse(byteArrayOutputStream.toString().contains("finch@mailinator.com"));
 
     }
-    
+
     private static void mockDatasetFieldSvc() {
         DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", FieldType.TEXTBOX, false));
         DatasetFieldType authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", FieldType.TEXT, true));
@@ -157,7 +158,7 @@ public class DDIExporterTest {
             t.setParentDatasetFieldType(authorType);
         }
         authorType.setChildDatasetFieldTypes(authorChildTypes);
-    
+
         DatasetFieldType datasetContactType = datasetFieldTypeSvc.add(new DatasetFieldType("datasetContact", FieldType.TEXT, true));
         Set<DatasetFieldType> datasetContactTypes = new HashSet<>();
         datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactEmail", FieldType.TEXT, false)));
@@ -167,7 +168,7 @@ public class DDIExporterTest {
             t.setParentDatasetFieldType(datasetContactType);
         }
         datasetContactType.setChildDatasetFieldTypes(datasetContactTypes);
-    
+
         DatasetFieldType dsDescriptionType = datasetFieldTypeSvc.add(new DatasetFieldType("dsDescription", FieldType.TEXT, true));
         Set<DatasetFieldType> dsDescriptionTypes = new HashSet<>();
         dsDescriptionTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("dsDescriptionValue", FieldType.TEXT, false)));
@@ -175,10 +176,10 @@ public class DDIExporterTest {
             t.setParentDatasetFieldType(dsDescriptionType);
         }
         dsDescriptionType.setChildDatasetFieldTypes(dsDescriptionTypes);
-    
+
         DatasetFieldType keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", DatasetFieldType.FieldType.TEXT, true));
         DatasetFieldType descriptionType = datasetFieldTypeSvc.add(new DatasetFieldType("description", DatasetFieldType.FieldType.TEXTBOX, false));
-    
+
         DatasetFieldType subjectType = datasetFieldTypeSvc.add(new DatasetFieldType("subject", DatasetFieldType.FieldType.TEXT, true));
         subjectType.setAllowControlledVocabulary(true);
         subjectType.setControlledVocabularyValues(Arrays.asList(
@@ -186,7 +187,7 @@ public class DDIExporterTest {
             new ControlledVocabularyValue(2l, "law", subjectType),
             new ControlledVocabularyValue(3l, "cs", subjectType)
         ));
-    
+
         DatasetFieldType pubIdType = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIdType", DatasetFieldType.FieldType.TEXT, false));
         pubIdType.setAllowControlledVocabulary(true);
         pubIdType.setControlledVocabularyValues(Arrays.asList(
@@ -194,17 +195,17 @@ public class DDIExporterTest {
             new ControlledVocabularyValue(2l, "doi", pubIdType),
             new ControlledVocabularyValue(3l, "url", pubIdType)
         ));
-    
+
         DatasetFieldType compoundSingleType = datasetFieldTypeSvc.add(new DatasetFieldType("coordinate", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> childTypes = new HashSet<>();
         childTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("lat", DatasetFieldType.FieldType.TEXT, false)));
         childTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("lon", DatasetFieldType.FieldType.TEXT, false)));
-    
+
         for (DatasetFieldType t : childTypes) {
             t.setParentDatasetFieldType(compoundSingleType);
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
-        
+
         datasetFieldTypeSvc.setMetadataBlock("citation");
     }
 }

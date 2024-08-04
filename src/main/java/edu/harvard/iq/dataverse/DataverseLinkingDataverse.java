@@ -33,7 +33,7 @@ import jakarta.persistence.TemporalType;
     @NamedQuery(name = "DataverseLinkingDataverse.findByDataverseId",
                query = "select object(o) from DataverseLinkingDataverse as o where o.dataverse.id =:dataverseId order by o.id"),
     @NamedQuery(name = "DataverseLinkingDataverse.findByLinkingDataverseId",
-               query = "select object(o) from DataverseLinkingDataverse as o where o.linkingDataverse.id =:linkingDataverseId order by o.id"),      
+               query = "select object(o) from DataverseLinkingDataverse as o where o.linkingDataverse.id =:linkingDataverseId order by o.id"),
     @NamedQuery(name = "DataverseLinkingDataverse.findByDataverseIdAndLinkingDataverseId",
                query = "SELECT OBJECT(o) FROM DataverseLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId AND o.dataverse.id = :dataverseId"),
     @NamedQuery(name = "DataverseLinkingDataverse.findIdsByLinkingDataverseId",
@@ -48,14 +48,14 @@ public class DataverseLinkingDataverse implements Serializable {
     @OneToOne
     @JoinColumn(nullable = false)
     private Dataverse dataverse;
-    
+
     @OneToOne
     @JoinColumn(nullable = false)
     private Dataverse linkingDataverse;
-    
+
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date linkCreateTime;
-    
+
     public Long getId() {
         return id;
     }
@@ -112,5 +112,5 @@ public class DataverseLinkingDataverse implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.DataverseLinkedDataverse[ id=" + id + " ]";
     }
-    
+
 }

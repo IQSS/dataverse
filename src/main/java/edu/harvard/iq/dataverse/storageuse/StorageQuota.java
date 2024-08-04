@@ -20,8 +20,8 @@ import java.util.logging.Logger;
  */
 @Entity
 public class StorageQuota implements Serializable {
-    private static final Logger logger = Logger.getLogger(StorageQuota.class.getCanonicalName()); 
-    
+    private static final Logger logger = Logger.getLogger(StorageQuota.class.getCanonicalName());
+
     /**
      * Only Collection quotas are supported, for now
      */
@@ -38,7 +38,7 @@ public class StorageQuota implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     /**
      * For defining quotas for Users and/or Groups 
      * (Not supported as of yet)
@@ -56,12 +56,12 @@ public class StorageQuota implements Serializable {
     @OneToOne
     @JoinColumn(name = "definitionPoint_id", nullable = true)
     private DvObject definitionPoint;
-    
+
     @Column(nullable = true)
-    private Long allocation; 
-    
+    private Long allocation;
+
     public StorageQuota() {}
-    
+
     /**
      * Could be uncommented if/when we want to add per-user quotas (see above)
     public String getAssigneeIdentifier() {
@@ -79,15 +79,15 @@ public class StorageQuota implements Serializable {
     public void setDefinitionPoint(DvObject definitionPoint) {
         this.definitionPoint = definitionPoint;
     }
-    
+
     public Long getAllocation() {
-        return allocation; 
+        return allocation;
     }
-    
+
     public void setAllocation(Long allocation) {
-        this.allocation = allocation; 
+        this.allocation = allocation;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -112,5 +112,5 @@ public class StorageQuota implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.storageuse.StorageQuota[ id=" + id + " ]";
     }
-    
+
 }

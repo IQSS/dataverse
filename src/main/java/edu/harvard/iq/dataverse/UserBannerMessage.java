@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -25,15 +24,15 @@ public class UserBannerMessage implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @OneToOne
     @JoinColumn(nullable = false)
     private AuthenticatedUser user;
-    
+
     @OneToOne
     @JoinColumn(nullable = false)
     private BannerMessage bannerMessage;
-    
+
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date bannerDismissalTime;
@@ -94,5 +93,5 @@ public class UserBannerMessage implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.UserBannerMessage[ id=" + id + " ]";
     }
-    
+
 }

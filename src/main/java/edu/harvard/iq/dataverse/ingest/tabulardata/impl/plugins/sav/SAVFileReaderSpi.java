@@ -48,18 +48,18 @@ import org.apache.commons.codec.binary.Hex;
  * @author asone
  */
 public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
-    
+
     private static Logger dbgLog = Logger.getLogger(
             SAVFileReaderSpi.class.getPackage().getName());
 
-    
+
     private static int SAV_HEADER_SIZE = 4;
     private static String SAV_FILE_SIGNATURE = "$FL2";
 
     private static String[] formatNames = {"sav", "SAV"};
     private static String[] extensions = {"sav"};
     private static String[] mimeType = {"application/x-spss-sav"};
-    
+
     public SAVFileReaderSpi() {
         super("HU-IQSS-DataVerse-project",
             "4.0",
@@ -69,7 +69,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
             "edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReaderSpi");
          dbgLog.fine("SAVFileReaderSpi is called");
     }
-    
+
 
     @Override
     public boolean canDecodeInput(Object source) throws IOException {
@@ -129,7 +129,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
         dbgLog.fine("\napplying the sav test: inputstream case\n");
 
         byte[] b = new byte[SAV_HEADER_SIZE];
-        
+
         if (stream.markSupported()) {
             stream.mark(0);
         }
@@ -191,7 +191,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
         buff.get(hdr4, 0, 4);
         String hdr4sav = new String(hdr4);
         dbgLog.fine("from string[hdr4]=" + new String(Hex.encodeHex(hdr4)).toUpperCase());
-        
+
         if (hdr4sav.equals("$FL2")) {
             dbgLog.fine("this file is spss-sav type");
             return true;
@@ -207,7 +207,7 @@ public class SAVFileReaderSpi extends TabularDataFileReaderSpi {
     public String getDescription(Locale locale) {
         return "HU-IQSS-DataVerse-project SPSS/SAV File Ingest plugin";
     }
-    
+
     @Override
     public TabularDataFileReader createReaderInstance(Object ext) throws IIOException {
         return new SAVFileReader(this);

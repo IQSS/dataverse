@@ -66,34 +66,34 @@ public class DataverseServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DataverseServiceBean.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
-    
+
     @EJB
-    SolrIndexServiceBean solrIndexService; 
+    SolrIndexServiceBean solrIndexService;
 
     @EJB
     AuthenticationServiceBean authService;
-    
+
     @EJB
     DatasetServiceBean datasetService;
-    
+
     @EJB
     DataverseLinkingServiceBean dataverseLinkingService;
 
     @EJB
     DatasetLinkingServiceBean datasetLinkingService;
-    
+
     @EJB
     GroupServiceBean groupService;
-    
+
     @EJB
     DataverseRoleServiceBean rolesService;
-    
+
     @EJB
     PermissionServiceBean permissionService;
-    
+
     @EJB
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;
-    
+
     @EJB
     SystemConfig systemConfig;
 
@@ -103,25 +103,25 @@ public class DataverseServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    private static final String BASE_QUERY_DATASET_TITLES_WITHIN_DV = "select v.value, o.id\n" 
+    private static final String BASE_QUERY_DATASET_TITLES_WITHIN_DV = "select v.value, o.id\n"
                 + "from datasetfieldvalue v, dvobject o "
-                + "where " 
-                + "v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 " 
+                + "where "
+                + "v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
                 + "and datasetversion_id = (select max(id) from datasetversion where dataset_id = o.id))";
 
     public Dataverse save(Dataverse dataverse) {
-       
+
         dataverse.setModificationTime(new Timestamp(new Date().getTime()));
         Dataverse savedDataverse = em.merge(dataverse);
         return savedDataverse;
     }
-    
+
     public boolean index(Dataverse dataverse) {
         return index(dataverse, false);
 
     }
-        
-    public boolean index(Dataverse dataverse, boolean indexPermissions) {    
+
+    public boolean index(Dataverse dataverse, boolean indexPermissions) {
         /**
          * @todo check the result to see if indexing was successful or not
          * added logging of exceptions 
@@ -139,7 +139,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
 
         return true;
-    }    
+    }
 
     public Dataverse find(Object pk) {
         return em.find(Dataverse.class, pk);
@@ -148,10 +148,11 @@ public class DataverseServiceBean implements java.io.Serializable {
     public List<Dataverse> findAll() {
         return em.createNamedQuery("Dataverse.findAll").getResultList();
     }
-    
+
     public List<Long> findIdStale() {
         return em.createNamedQuery("Dataverse.findIdStale").getResultList();
     }
+
     public List<Long> findIdStalePermission() {
         return em.createNamedQuery("Dataverse.findIdStalePermission").getResultList();
     }
@@ -184,13 +185,13 @@ public class DataverseServiceBean implements java.io.Serializable {
         typedQuery.setParameter("partitionId", partitionId);
         return typedQuery.getResultList();
     }
-    
+
     public List<Long> findDataverseIdsForIndexing(boolean skipIndexed) {
         if (skipIndexed) {
             return em.createQuery("SELECT o.id FROM Dataverse o WHERE o.indexTime IS null ORDER BY o.id", Long.class).getResultList();
         }
         return em.createQuery("SELECT o.id FROM Dataverse o ORDER BY o.id", Long.class).getResultList();
-        
+
     }
 
     public List<Dataverse> findByCreatorId(Long creatorId) {
@@ -204,12 +205,12 @@ public class DataverseServiceBean implements java.io.Serializable {
     public List<Dataverse> findByOwnerId(Long ownerId) {
         return em.createNamedQuery("Dataverse.findByOwnerId").setParameter("ownerId", ownerId).getResultList();
     }
-    
+
     public List<Long> findIdsByOwnerId(Long ownerId) {
         String qr = "select o.id from Dataverse as o where o.owner.id =:ownerId order by o.id";
         return em.createQuery(qr, Long.class).setParameter("ownerId", ownerId).getResultList();
     }
-    
+
     public List<Dataverse> findPublishedByOwnerId(Long ownerId) {
         String qr = "select object(o) from Dataverse as o where o.owner.id =:ownerId and o.publicationDate is not null order by o.name";
         return em.createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
@@ -223,20 +224,20 @@ public class DataverseServiceBean implements java.io.Serializable {
     public Dataverse findRootDataverse() {
         return em.createNamedQuery("Dataverse.findRoot", Dataverse.class).getSingleResult();
     }
-    
-    
+
+
     //Similarly - if the above throws that exception, do we need to catch it here?
     //ToDo - consider caching?
     public String getRootDataverseName() {
         Dataverse root = findRootDataverse();
         String rootDataverseName = root.getName();
-        return StringUtil.isEmpty(rootDataverseName) ? "" : rootDataverseName; 
+        return StringUtil.isEmpty(rootDataverseName) ? "" : rootDataverseName;
     }
-    
+
     public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
-        List<Dataverse> retVal = new ArrayList<>();       
+        List<Dataverse> retVal = new ArrayList<>();
         List<Dataverse> previousLevel = findPublishedByOwnerId(ownerId);
-        
+
         retVal.addAll(previousLevel);
         /*
         if (!previousLevel.isEmpty()) {
@@ -266,14 +267,14 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
+
 	public boolean hasData(Dataverse dv) {
 		TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
 								.setParameter("id", dv.getId());
-		
+
 		return (amountQry.getSingleResult() > 0);
 	}
-	
+
     public boolean isRootDataverseExists() {
         long count = em.createQuery("SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null", Long.class).getSingleResult();
         return (count == 1);
@@ -302,28 +303,28 @@ public class DataverseServiceBean implements java.io.Serializable {
     public List<MetadataBlock> findAllMetadataBlocks() {
         return em.createQuery("select object(o) from MetadataBlock as o order by o.id", MetadataBlock.class).getResultList();
     }
-    
+
     public List<MetadataBlock> findSystemMetadataBlocks() {
         String qr = "select object(o) from MetadataBlock as o where o.owner.id=null  order by o.id";
         return em.createQuery(qr, MetadataBlock.class).getResultList();
     }
-    
+
     public List<MetadataBlock> findMetadataBlocksByDataverseId(Long dataverse_id) {
         String qr = "select object(o) from MetadataBlock as o where o.owner.id=:dataverse_id order by o.id";
         return em.createQuery(qr, MetadataBlock.class)
                 .setParameter("dataverse_id", dataverse_id).getResultList();
     }
-    
+
     public DataverseFacet findFacet(Long id) {
         return em.find(DataverseFacet.class, id);
     }
-    
+
     public List<DataverseFacet> findAllDataverseFacets() {
         return em.createQuery("select object(o) from DataverseFacet as o order by o.display", DataverseFacet.class).getResultList();
     }
-    
+
     public String getDataverseLogoThumbnailAsBase64(Dataverse dataverse, User user) {
-        
+
         if (dataverse == null) {
             return null;
         }
@@ -339,14 +340,14 @@ public class DataverseServiceBean implements java.io.Serializable {
 
                 }
             }
-        } 
+        }
         return null;
     }
-    
+
     public String getDataverseLogoThumbnailAsBase64ById(Long dvId) {
-     
+
         File dataverseLogoFile = getLogoById(dvId);
-        
+
         if (dataverseLogoFile != null) {
             String logoThumbNailPath;
 
@@ -357,73 +358,73 @@ public class DataverseServiceBean implements java.io.Serializable {
 
                 }
             }
-        } 
+        }
         return null;
     }
-        
+
     private File getLogo(Dataverse dataverse) {
         if (dataverse.getId() == null) {
-            return null; 
+            return null;
         }
-        
-        DataverseTheme theme = dataverse.getDataverseTheme(); 
+
+        DataverseTheme theme = dataverse.getDataverseTheme();
         if (theme != null && theme.getLogo() != null && !theme.getLogo().isEmpty()) {
             return ThemeWidgetFragment.getLogoDir(dataverse.getLogoOwnerId()).resolve(theme.getLogo()).toFile();
         }
-            
-        return null;         
+
+        return null;
     }
-    
+
     private File getLogoById(Long id) {
         if (id == null) {
-            return null; 
+            return null;
         }
-        
+
         String logoFileName;
-        
+
         try {
                 logoFileName = (String) em.createNativeQuery("SELECT logo FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
-            
+
         } catch (Exception ex) {
             return null;
         }
-        
+
         if (logoFileName != null && !logoFileName.isEmpty()) {
             Properties p = System.getProperties();
             String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
-  
+
             if (domainRoot != null && !"".equals(domainRoot)) {
-                return new File(domainRoot + File.separator + 
-                    "docroot" + File.separator + 
-                    "logos" + File.separator + 
-                    id + File.separator + 
+                return new File(domainRoot + File.separator +
+                    "docroot" + File.separator +
+                    "logos" + File.separator +
+                    id + File.separator +
                     logoFileName);
             }
         }
-            
-        return null;         
+
+        return null;
     }
-    
+
     public DataverseTheme findDataverseThemeByIdQuick(Long id) {
         if (id == null) {
-            return null; 
+            return null;
         }
-        
+
         Object[] result;
-        
+
         try {
                 result = (Object[]) em.createNativeQuery("SELECT logo, logoFormat FROM dataversetheme WHERE dataverse_id = " + id).getSingleResult();
-            
+
         } catch (Exception ex) {
             return null;
         }
-        
+
         if (result == null) {
             return null;
         }
-        
+
         DataverseTheme theme = new DataverseTheme();
-        
+
         if (result[0] != null) {
             theme.setLogo((String) result[0]);
         }
@@ -439,7 +440,7 @@ public class DataverseServiceBean implements java.io.Serializable {
                     break;
             }
         }
-        
+
         return theme;
     }
 
@@ -458,7 +459,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     public List<Dataverse> findDataversesThatLinkToThisDatasetId(long datasetId) {
         return datasetLinkingService.findLinkingDataverses(datasetId);
     }
-    
+
     public List<Dataverse> filterByAliasQuery(String filterQuery) {
         //Query query = em.createNativeQuery("select o from Dataverse o where o.alias LIKE '" + filterQuery + "%' order by o.alias");
         //Query query = em.createNamedQuery("Dataverse.filterByAlias", Dataverse.class).setParameter("alias", filterQuery.toLowerCase() + "%");
@@ -473,15 +474,15 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
         return ret;
     }
-    
+
     public List<Dataverse> filterDataversesForLinking(String query, DataverseRequest req, Dataset dataset) {
 
         List<Dataverse> dataverseList = new ArrayList<>();
 
         List<Dataverse> results = filterDataversesByNamePattern(query);
-        
+
         if (results == null || results.size() == 0) {
-            return null; 
+            return null;
         }
 
         List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
@@ -492,7 +493,7 @@ public class DataverseServiceBean implements java.io.Serializable {
                 remove.add(removeIt);
             });
         }
-        
+
         for (Dataverse res : results) {
             if (!remove.contains(res)) {
                 if (this.permissionService.requestOn(req, res).has(Permission.PublishDataset)) {
@@ -503,19 +504,19 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         return dataverseList;
     }
-    
+
     public List<Dataverse> filterDataversesForHosting(String pattern, DataverseRequest req) {
 
         // Find the dataverses matching the search parameters: 
         
         List<Dataverse> searchResults = filterDataversesByNamePattern(pattern);
-        
+
         if (searchResults == null || searchResults.size() == 0) {
-            return null; 
+            return null;
         }
-        
+
         logger.fine("search query found " + searchResults.size() + " results");
-        
+
         // Filter the results and drop the dataverses where the user is not allowed to 
         // add datasets:
         
@@ -523,21 +524,21 @@ public class DataverseServiceBean implements java.io.Serializable {
             logger.fine("will skip permission check...");
             return searchResults;
         }
-        
+
         List<Dataverse> finalResults = new ArrayList<>();
-        
+
         for (Dataverse res : searchResults) {
             if (this.permissionService.requestOn(req, res).has(Permission.AddDataset)) {
                 finalResults.add(res);
             }
         }
-        
+
         logger.fine("returning " + finalResults.size() + " final results");
 
         return finalResults;
     }
-    
-    
+
+
     /* 
         This method takes a search parameter and expands it into a list of 
         Dataverses with matching names. 
@@ -551,7 +552,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     public List<Dataverse> filterDataversesByNamePattern(String pattern) {
 
         pattern = pattern.toLowerCase();
-        
+
         String pattern1 = pattern + "%";
         String pattern2 = "% " + pattern + "%";
 
@@ -559,7 +560,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         if (pattern.length() == 1) {
             pattern1 = pattern;
             pattern2 = pattern + " %";
-        } 
+        }
         /*if (pattern.length() == 2) {
             pattern2 = pattern + "%";
         }*/
@@ -571,9 +572,9 @@ public class DataverseServiceBean implements java.io.Serializable {
                 + "or (LOWER(dv.name) NOT LIKE :dataverse and ((LOWER(dv.name) LIKE :pattern1) "
                 + "     or (LOWER(dv.name) LIKE :pattern2))) "
                 + "order by dv.alias";
-                
+
         List<Dataverse> searchResults = null;
-        
+
         try {
             searchResults = em.createQuery(qstr, Dataverse.class)
                     .setParameter("dataverse", "%dataverse")
@@ -583,10 +584,10 @@ public class DataverseServiceBean implements java.io.Serializable {
         } catch (Exception ex) {
             searchResults = null;
         }
-        
+
         return searchResults;
     }
-    
+
     /**
      * Used to identify and properly display Harvested objects on the dataverse page.
      * 
@@ -631,11 +632,11 @@ public class DataverseServiceBean implements java.io.Serializable {
     public String getParentAliasString(SolrSearchResult solrSearchResult) {
         Long dvId = solrSearchResult.getEntityId();
         String retVal = "";
-        
+
         if (dvId == null) {
             return retVal;
         }
-        
+
         String searchResult;
         try {
             searchResult = (String) em.createNativeQuery("select  t0.ALIAS FROM DATAVERSE t0, DVOBJECT t1,  DVOBJECT t2 WHERE (t0.ID = t1.ID) AND (t2.OWNER_ID = t1.ID)  AND (t2.ID =" + dvId + ")").getSingleResult();
@@ -651,19 +652,19 @@ public class DataverseServiceBean implements java.io.Serializable {
         if (searchResult != null) {
             return searchResult;
         }
-        
+
         return retVal;
     }
-    
-    
+
+
     public void populateDvSearchCard(SolrSearchResult solrSearchResult) {
-  
+
         Long dvId = solrSearchResult.getEntityId();
-        
+
         if (dvId == null) {
             return;
         }
-        
+
         Long parentDvId = null;
         String parentId = solrSearchResult.getParent().get("id");
         if (parentId != null) {
@@ -673,9 +674,9 @@ public class DataverseServiceBean implements java.io.Serializable {
                 parentDvId = null;
             }
         }
-        
+
         Object[] searchResult;
-        
+
         try {
             if (parentDvId == null) {
                 searchResult = (Object[]) em.createNativeQuery("SELECT t0.AFFILIATION, t0.ALIAS FROM DATAVERSE t0 WHERE t0.ID = " + dvId).getSingleResult();
@@ -689,7 +690,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         if (searchResult == null) {
             return;
         }
-        
+
         if (searchResult[0] != null) {
             solrSearchResult.setDataverseAffiliation((String) searchResult[0]);
         }
@@ -697,20 +698,20 @@ public class DataverseServiceBean implements java.io.Serializable {
         if (searchResult[1] != null) {
             solrSearchResult.setDataverseAlias((String) searchResult[1]);
         }
-        
+
         if (parentDvId != null) {
             if (searchResult[2] != null) {
                 solrSearchResult.setDataverseParentAlias((String) searchResult[2]);
             }
         }
     }
-    
+
     // function to recursively find ids of all children of a dataverse that 
     // are also of type dataverse
     public List<Long> findAllDataverseDataverseChildren(Long dvId) {
         // get list of Dataverse children
         List<Long> dataverseChildren = findIdsByOwnerId(dvId);
-        
+
         if (dataverseChildren == null) {
             return dataverseChildren;
         } else {
@@ -722,7 +723,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             return dataverseChildren;
         }
     }
-    
+
     // function to recursively find ids of all children of a dataverse that are 
     // of type dataset
     public List<Long> findAllDataverseDatasetChildren(Long dvId) {
@@ -730,7 +731,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         List<Long> dataverseChildren = findIdsByOwnerId(dvId);
         // get list of Dataset children
         List<Long> datasetChildren = datasetService.findIdsByOwnerId(dvId);
-        
+
         if (dataverseChildren == null) {
             return datasetChildren;
         } else {
@@ -740,7 +741,7 @@ public class DataverseServiceBean implements java.io.Serializable {
             return datasetChildren;
         }
     }
-    
+
     public String addRoleAssignmentsToChildren(Dataverse owner, ArrayList<String> rolesToInherit,
             boolean inheritAllRoles) {
         /*
@@ -878,7 +879,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         logger.info(result);
         return (result);
     }
-    
+
     // A quick custom query that finds all the (direct children) dataset titles 
     // with a dataverse and returns a list of (dataset_id, title) pairs. 
     public List<Object[]> getDatasetTitlesWithinDataverse(Long dataverseId) {
@@ -888,18 +889,18 @@ public class DataverseServiceBean implements java.io.Serializable {
         return em.createNativeQuery(cqString).getResultList();
     }
 
-        
+
     public  String getCollectionDatasetSchema(String dataverseAlias) {
-        
+
         Dataverse testDV = this.findByAlias(dataverseAlias);
-        
+
         while (!testDV.isMetadataBlockRoot()) {
             if (testDV.getOwner() == null) {
                 break; // we are at the root; which by defintion is metadata blcok root, regarldess of the value
             }
             testDV = testDV.getOwner();
         }
-        
+
         /* Couldn't get the 'return base if no extra required fields to work with the path provided
         leaving it as 'out of scope' for now SEK 11/27/2023
 
@@ -918,7 +919,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         */
         List<MetadataBlock> selectedBlocks = new ArrayList<>();
         List<DatasetFieldType> requiredDSFT = new ArrayList<>();
-        
+
         selectedBlocks.addAll(testDV.getMetadataBlocks());
 
         for (MetadataBlock mdb : selectedBlocks) {
@@ -950,10 +951,10 @@ public class DataverseServiceBean implements java.io.Serializable {
                         requiredDSFT.add(dsft);
                     }
                 }
-            }            
+            }
 
         }
-        
+
         String reqMDBNames = "";
         List<MetadataBlock> hasReqFields = new ArrayList<>();
         String retval = datasetSchemaPreface;
@@ -973,23 +974,23 @@ public class DataverseServiceBean implements java.io.Serializable {
                 retval += ",";
             }
             retval += getCustomMDBSchema(mdb, requiredDSFT);
-            countMDB++;            
+            countMDB++;
         }
-        
+
         retval += "\n                     }";
-        
+
         retval += endOfjson.replace("blockNames", reqMDBNames);
 
         return retval;
-    
-    }    
-    
+
+    }
+
     private String getCustomMDBSchema(MetadataBlock mdb, List<DatasetFieldType> requiredDSFT) {
         String retval = "";
         boolean mdbHasReqField = false;
         int numReq = 0;
         List<DatasetFieldType> requiredThisMDB = new ArrayList<>();
-        
+
         for (DatasetFieldType dsft : requiredDSFT) {
 
             if (dsft.getMetadataBlock().equals(mdb)) {
@@ -1000,7 +1001,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
         if (mdbHasReqField) {
         retval += startOfMDB.replace("blockName", mdb.getName());
-        
+
         retval += minItemsTemplate.replace("numMinItems", Integer.toString(requiredThisMDB.size()));
         int count = 0;
         for (DatasetFieldType dsft :requiredThisMDB) {
@@ -1012,22 +1013,22 @@ public class DataverseServiceBean implements java.io.Serializable {
                reqValImp = StringUtils.substring(reqValImp, 0, reqValImp.length() - 1);
                retval += reqValImp + "\n";
                retval += endOfReqVal;
-            }            
+            }
         }
-        
+
         }
-        
+
         return retval;
     }
-    
+
     public String isDatasetJsonValid(String dataverseAlias, String jsonInput) {
         JSONObject rawSchema = new JSONObject(new JSONTokener(getCollectionDatasetSchema(dataverseAlias)));
-        
-        try {               
+
+        try {
             Schema schema = SchemaLoader.load(rawSchema);
             schema.validate(new JSONObject(jsonInput)); // throws a ValidationException if this object is invalid
         } catch (ValidationException vx) {
-            logger.info(BundleUtil.getStringFromBundle("dataverses.api.validate.json.failed") + " " + vx.getErrorMessage()); 
+            logger.info(BundleUtil.getStringFromBundle("dataverses.api.validate.json.failed") + " " + vx.getErrorMessage());
             String accumulatedexceptions = "";
             for (ValidationException va : vx.getCausingExceptions()) {
                 accumulatedexceptions = accumulatedexceptions + va;
@@ -1038,15 +1039,15 @@ public class DataverseServiceBean implements java.io.Serializable {
             } else {
                 return BundleUtil.getStringFromBundle("dataverses.api.validate.json.failed") + " " + vx.getErrorMessage();
             }
-            
-        } catch (Exception ex) {            
+
+        } catch (Exception ex) {
             logger.info(BundleUtil.getStringFromBundle("dataverses.api.validate.json.exception") + ex.getLocalizedMessage());
             return BundleUtil.getStringFromBundle("dataverses.api.validate.json.exception") + ex.getLocalizedMessage();
-        } 
+        }
 
         return BundleUtil.getStringFromBundle("dataverses.api.validate.json.succeeded");
     }
-    
+
     static String getBaseSchemaStringFromFile(String pathToJsonFile) {
         File datasetSchemaJson = new File(pathToJsonFile);
         try {
@@ -1060,63 +1061,63 @@ public class DataverseServiceBean implements java.io.Serializable {
             return null;
         }
     }
-    
-    private  String datasetSchemaPreface = 
+
+    private  String datasetSchemaPreface =
     "{\n" +
     "    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n" +
     "    \"$defs\": {\n" +
-    "    \"field\": {\n" + 
+    "    \"field\": {\n" +
     "        \"type\": \"object\",\n" +
     "        \"required\": [\"typeClass\", \"multiple\", \"typeName\"],\n" +
-    "        \"properties\": {\n" + 
+    "        \"properties\": {\n" +
     "            \"value\": {\n" +
     "                \"anyOf\": [\n" +
     "                    {\n" +
     "                        \"type\": \"array\"\n" +
     "                    },\n" +
-    "                    {\n" + 
+    "                    {\n" +
     "                        \"type\": \"string\"\n" +
     "                    },\n" +
     "                    {\n" +
     "                        \"$ref\": \"#/$defs/field\"\n" +
-    "                    }\n" + 
-    "                ]\n" + 
-    "            },\n" + 
+    "                    }\n" +
+    "                ]\n" +
+    "            },\n" +
     "            \"typeClass\": {\n" +
     "                \"type\": \"string\"\n" +
     "            },\n" +
     "            \"multiple\": {\n" +
     "                \"type\": \"boolean\"\n" +
     "            },\n" +
-    "            \"typeName\": {\n" + 
+    "            \"typeName\": {\n" +
     "                \"type\": \"string\"\n" +
     "            }\n" +
     "        }\n" +
-    "    }\n" + 
-    "},\n" + 
+    "    }\n" +
+    "},\n" +
     "\"type\": \"object\",\n" +
-    "\"properties\": {\n" + 
-    "    \"datasetVersion\": {\n" + 
+    "\"properties\": {\n" +
+    "    \"datasetVersion\": {\n" +
     "        \"type\": \"object\",\n" +
-    "        \"properties\": {\n" + 
-    "           \"license\": {\n" + 
-    "                \"type\": \"object\",\n" + 
-    "                \"properties\": {\n" + 
+    "        \"properties\": {\n" +
+    "           \"license\": {\n" +
+    "                \"type\": \"object\",\n" +
+    "                \"properties\": {\n" +
     "                    \"name\": {\n" +
-    "                        \"type\": \"string\"\n" + 
-    "                    },\n" + 
-    "                    \"uri\": {\n" + 
-    "                        \"type\": \"string\",\n" + 
-    "                        \"format\": \"uri\"\n" + 
-    "                   }\n" + 
-    "                },\n" + 
-    "                \"required\": [\"name\", \"uri\"]\n" + 
-    "            },\n" + 
-    "            \"metadataBlocks\": {\n" + 
-    "                \"type\": \"object\",\n" + 
+    "                        \"type\": \"string\"\n" +
+    "                    },\n" +
+    "                    \"uri\": {\n" +
+    "                        \"type\": \"string\",\n" +
+    "                        \"format\": \"uri\"\n" +
+    "                   }\n" +
+    "                },\n" +
+    "                \"required\": [\"name\", \"uri\"]\n" +
+    "            },\n" +
+    "            \"metadataBlocks\": {\n" +
+    "                \"type\": \"object\",\n" +
     "               \"properties\": {\n" +
     "";
-    
+
     private String startOfMDB = "" +
 "                           \"blockName\": {\n" +
 "                            \"type\": \"object\",\n" +
@@ -1126,7 +1127,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 "                                    \"items\": {\n" +
 "                                        \"$ref\": \"#/$defs/field\"\n" +
 "                                    },";
-    
+
     private String reqValTemplate = "                                        {\n" +
 "                                            \"contains\": {\n" +
 "                                                \"properties\": {\n" +
@@ -1136,7 +1137,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 "                                                }\n" +
 "                                            }\n" +
 "                                        },";
-    
+
     private String minItemsTemplate = "\n                                    \"minItems\": numMinItems,\n" +
 "                                    \"allOf\": [\n";
     private String endOfReqVal = "                                    ]\n" +
@@ -1144,7 +1145,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 "                            },\n" +
 "                            \"required\": [\"fields\"]\n" +
 "                        }";
-    
+
     private String endOfjson = ",\n" +
 "                    \"required\": [blockNames]\n" +
 "                }\n" +
@@ -1154,15 +1155,15 @@ public class DataverseServiceBean implements java.io.Serializable {
 "    },\n" +
 "    \"required\": [\"datasetVersion\"]\n" +
 "}\n";
-    
+
     public void saveStorageQuota(Dataverse target, Long allocation) {
         StorageQuota storageQuota = target.getStorageQuota();
-        
+
         if (storageQuota != null) {
             storageQuota.setAllocation(allocation);
             em.merge(storageQuota);
         } else {
-            storageQuota = new StorageQuota(); 
+            storageQuota = new StorageQuota();
             storageQuota.setDefinitionPoint(target);
             storageQuota.setAllocation(allocation);
             target.setStorageQuota(storageQuota);
@@ -1170,7 +1171,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
         em.flush();
     }
-    
+
     public void disableStorageQuota(StorageQuota storageQuota) {
         if (storageQuota != null && storageQuota.getAllocation() != null) {
             storageQuota.setAllocation(null);

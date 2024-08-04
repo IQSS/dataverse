@@ -8,48 +8,48 @@ package edu.harvard.iq.dataverse.authorization;
  * @author michael
  */
 public class AuthenticationResponse {
-    
+
     public static AuthenticationResponse makeSuccess(String userId, AuthenticatedUserDisplayInfo disInf) {
         return new AuthenticationResponse()
                .setStatus(Status.SUCCESS)
                .setUserId(userId)
                .setUserDisplayInfo(disInf);
     }
-    
+
     public static AuthenticationResponse makeBreakout(String userId, String redirectUrl) {
         return new AuthenticationResponse()
                .setStatus(Status.BREAKOUT)
                .setUserId(userId)
                .setMessage(redirectUrl);
     }
-    
+
     public static AuthenticationResponse makeFail(String message) {
         return new AuthenticationResponse()
                .setStatus(Status.FAIL)
                .setMessage(message);
     }
-    
+
     public static AuthenticationResponse makeError(String message, Throwable t) {
         return new AuthenticationResponse()
                .setStatus(Status.ERROR)
                .setMessage(message)
                .setError(t);
     }
-    
-    public enum Status { 
+
+    public enum Status {
         /** Authentication succeeded - go on to the next phase */
         SUCCESS,
-        
+
         /** UserProvider wants to take the user through some process. Go to link in the message field */
         BREAKOUT,
-        
+
         /** Authentication failed (e.g wrong password) */
         FAIL,
-        
+
         /** Can't authenticate (e.g database is down) */
         ERROR
     }
-    
+
     private Status status;
     private String message;
     private Throwable error;
@@ -100,7 +100,6 @@ public class AuthenticationResponse {
         this.userDisplayInfo = userDisplayInfo;
         return this;
     }
-    
-    
-    
+
+
 }

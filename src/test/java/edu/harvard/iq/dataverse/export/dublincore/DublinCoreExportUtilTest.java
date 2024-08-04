@@ -38,20 +38,20 @@ public class DublinCoreExportUtilTest {
         String datasetVersionAsJson = Files.readString(datasetVersionJson, StandardCharsets.UTF_8);
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject obj = jsonReader.readObject();
-        
+
         Path dubCoreFile = Path.of("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finchDC.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(Files.readString(dubCoreFile, StandardCharsets.UTF_8));
         logger.fine(datasetAsDdi);
-        
+
         OutputStream output = new ByteArrayOutputStream();
-        
+
         // when
         DublinCoreExportUtil.datasetJson2dublincore(obj, output, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
         String result = XmlPrinter.prettyPrintXml(output.toString());
-        
+
         // then
         logger.fine(result);
         XmlAssert.assertThat(result).and(datasetAsDdi).ignoreWhitespace().areSimilar();
     }
-    
+
 }

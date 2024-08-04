@@ -11,7 +11,7 @@ import java.util.Map;
  * @author michael
  */
 public interface WorkflowStep {
-    
+
     /**
      * Performs the step of the workflow. Each step is run in its own transaction.
      * 
@@ -23,7 +23,7 @@ public interface WorkflowStep {
      * @return A step result.
      */
     WorkflowStepResult run(WorkflowContext context);
-    
+
     /**
      * Resumes a step when an external system has returned a response after finishing
      * the (lengthy) processing on its side.
@@ -34,7 +34,7 @@ public interface WorkflowStep {
      * @return a step result. Any result is acceptable, including another {@link Pending}.
      */
     WorkflowStepResult resume(WorkflowContext context, Map<String, String> internalData, String externalData);
-    
+
     /**
      * Attempt to roll back this step, if possible. The caller of this method assumes
      * that the step was completed successfully. Each step is rolled back in its own transaction.
@@ -43,5 +43,5 @@ public interface WorkflowStep {
      * @param reason original reason for rolling back the workflow.
      */
     void rollback(WorkflowContext context, Failure reason);
-    
+
 }

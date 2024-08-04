@@ -12,10 +12,10 @@ import java.util.Set;
  * @author michael
  */
 public class PermissionException extends CommandException {
-	
+
 	private final Set<Permission> required;
 	private final DvObject dvObject;
-	
+
 	public PermissionException(String message, Command failedCommand, Set<Permission> required, DvObject aDvObject) {
 		super(message, failedCommand);
 		this.required = required;
@@ -29,5 +29,5 @@ public class PermissionException extends CommandException {
 	public DvObject getDvObject() {
 		return dvObject;
 	}
-	
+
 }

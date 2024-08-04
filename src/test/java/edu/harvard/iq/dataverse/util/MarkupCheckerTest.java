@@ -42,7 +42,7 @@ public class MarkupCheckerTest {
     public void testStripAllTags(String unsafe, String safe) {
         assertEquals(safe, MarkupChecker.stripAllTags(unsafe));
     }
-    
+
     /**
      * Test of stripAllTags method, of class MarkupChecker.
      */

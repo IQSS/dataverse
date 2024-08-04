@@ -52,5 +52,5 @@ public class CreateRoleCommand extends AbstractCommand<DataverseRole> {
         dv.addRole(created);
         return ctxt.roles().save(created);
     }
-    
+
 }

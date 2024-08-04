@@ -18,7 +18,7 @@ import org.rosuda.REngine.REXP;
  */
 
 public class RRequest {
-  
+
   private static final Logger LOG = Logger.getLogger(RRequest.class.getPackage().getName());
 
   private RConnection mRC;
@@ -32,16 +32,17 @@ public class RRequest {
    * @param script a string representing the entire script to be executed
    */
   public RRequest(String host, int port, String user, String pass, String script) {
-    
+
     // Login info
     mHost = host;
     mPort = port;
     mUser = user;
     mPassword = pass;
-    
+
     // Script info
     mScript = script;
   }
+
   /*
    * Set the value of the Script
    */
@@ -49,16 +50,17 @@ public class RRequest {
     mScript = script;
     return this;
   }
+
   /**
    * Evaluate script
    * @return R-Expression
    */
   public REXP eval() {
     REXP result = null;
-    
+
     try {
       open();
-      
+
       result = mRC.eval(mScript);
     }
     catch (RserveException e) {
@@ -67,9 +69,10 @@ public class RRequest {
     finally {
       close();
     }
-    
+
     return result;
   }
+
   /*
    * Return a String Representing the Object
    * @return a string... representing the object
@@ -78,6 +81,7 @@ public class RRequest {
   public String toString() {
     return "Host: " + mHost + "\nPort: " + String.valueOf(mPort) + "\n";
   }
+
   /*
    * Open the R Connection
    */
@@ -87,41 +91,43 @@ public class RRequest {
     try {
       // Attempt connection
       mRC = new RConnection(mHost, mPort);
-      
+
       // Attempt login
       mRC.login(mUser, mPassword);
-      
+
       // SERVER VERSION
       LOG.fine("SERVER VERSION = " + mRC.getServerVersion());
-      
+
       // Output everything is cool message
       LOG.fine(String.format("RRequest: Successful Connection to RSERVE on %s %d", mHost, mPort));
     }
     catch (RserveException exc) {
       mRC = null;
       int code = exc.getRequestReturnCode();
-      
+
       // If bad hostname *OR* bad port
       if (code == -1)
         LOG.fine("RRequest: Connection refused because of bad HOSTNAME or PORT");
-      
+
       // If bad username *OR* bad password
       if (code == 65)
         LOG.fine("RRequest: Connection refused because of bad USERNAME or PASSWORD");
-   
+
       // Output warning message
       LOG.warning(String.format("RRequest: Failed Connection to RSERVE on %s %d", mHost, mPort));
-      
+
       // Stack trace...
       exc.printStackTrace();
     }
   }
+
   /*
    * Close the R Connection
    */
   private void close() {
     mRC.close();
   }
+
   /*
    * Get R Connection
    */

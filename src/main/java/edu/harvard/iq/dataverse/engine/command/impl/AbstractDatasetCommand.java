@@ -83,7 +83,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
             createDatasetUser(ctxt);
         }
     }
-    
+
     protected void createDatasetUser(CommandContext ctxt) {
         DatasetVersionUser datasetDataverseUser = new DatasetVersionUser();
         datasetDataverseUser.setDatasetVersion(getDataset().getLatestVersion());
@@ -91,7 +91,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         datasetDataverseUser.setAuthenticatedUser((AuthenticatedUser) getUser());
         ctxt.em().persist(datasetDataverseUser);
     }
-    
+
     /**
      * Validates the fields of the {@link DatasetVersion} passed. Throws an
      * informational error if validation fails.
@@ -117,11 +117,11 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                 String validationMessage = constraintViolations.stream()
                     .map(cv -> cv.getMessage() + " (Invalid value:" + cv.getInvalidValue() + ")")
                     .collect(joining(", ", "Validation Failed: ", "."));
-                
+
                 validationMessage += constraintViolations.stream()
                     .filter(cv -> cv.getRootBean() instanceof TermsOfUseAndAccess)
                     .map(cv -> cv.toString());
-                
+
                 for (ConstraintViolation cv : constraintViolations) {
                     if (cv.getRootBean() instanceof TermsOfUseAndAccess) {
                         throw new IllegalCommandException(validationMessage, this);
@@ -132,7 +132,6 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
             }
         }
     }
-
 
 
     /**

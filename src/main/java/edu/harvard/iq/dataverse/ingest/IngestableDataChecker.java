@@ -82,7 +82,7 @@ public class IngestableDataChecker implements java.io.Serializable {
         stataReleaseNumber.put((byte) 111, "rel_7scnd");
         stataReleaseNumber.put((byte) 113, "rel_8_or_9");
         stataReleaseNumber.put((byte) 114, "rel_10");
-        stataReleaseNumber.put((byte) 115, "rel_12"); 
+        stataReleaseNumber.put((byte) 115, "rel_12");
         // 116 was an in-house experimental version that was never 
         // released.
         // STATA v.13 introduced a new format, 117. It's a completely
@@ -110,6 +110,7 @@ public class IngestableDataChecker implements java.io.Serializable {
             }
         }
     }
+
     private boolean windowsNewLine = true;
 
     // constructors
@@ -117,6 +118,7 @@ public class IngestableDataChecker implements java.io.Serializable {
     public IngestableDataChecker() {
         this.testFormatSet = defaultFormatSet;
     }
+
     // using a user-defined customized format set
 
     public IngestableDataChecker(String[] requestedFormatSet) {
@@ -153,14 +155,14 @@ public class IngestableDataChecker implements java.io.Serializable {
         buff.rewind();
         boolean DEBUG = false;
 
-        
+
         // -----------------------------------------
         // Avoid java.nio.BufferUnderflowException
         // -----------------------------------------
         if (buff.capacity() < 4) {
             return null;
         }
-        
+
         if (DEBUG) {
             out.println("applying the sav test\n");
         }
@@ -182,11 +184,11 @@ public class IngestableDataChecker implements java.io.Serializable {
                 out.println("this file is NOT spss-sav type");
             }
         }
-        
+
         return result;
     }
 
-    
+
     /**
      * test this byte buffer against STATA DTA spec
      *
@@ -203,16 +205,16 @@ public class IngestableDataChecker implements java.io.Serializable {
         // -----------------------------------------
         // Avoid java.nio.BufferUnderflowException
         // -----------------------------------------
-        if (buff.capacity() < 4) {            
+        if (buff.capacity() < 4) {
             return result;
         }
-        
+
         // We first check if it's a "classic", old DTA format 
         // (up to version 115): 
         
         byte[] hdr4 = new byte[4];
         buff.get(hdr4, 0, 4);
-        
+
         if (DEBUG) {
             for (int i = 0; i < hdr4.length; ++i) {
                 dbgLog.info(String.format("%d\t%02X\n", i, hdr4[i]));
@@ -243,12 +245,12 @@ public class IngestableDataChecker implements java.io.Serializable {
             }
             result = "application/x-stata";
         }
-        
+
         if ((result == null) && (buff.capacity() >= STATA_13_HEADER.length())) {
             // Let's see if it's a "new" STATA (v.13+) format: 
             buff.rewind();
-            byte[] headerBuffer = null; 
-            String headerString = null; 
+            byte[] headerBuffer = null;
+            String headerString = null;
             try {
                 headerBuffer = new byte[STATA_13_HEADER.length()];
                 buff.get(headerBuffer, 0, STATA_13_HEADER.length());
@@ -258,11 +260,11 @@ public class IngestableDataChecker implements java.io.Serializable {
                 // we don't have to do anything... null will 
                 // be returned, below. 
             }
-            
+
             if (STATA_13_HEADER.equals(headerString)) {
                 result = "application/x-stata-13";
             }
-            
+
         }
 
         if ((result == null) && (buff.capacity() >= STATA_14_HEADER.length())) {
@@ -406,7 +408,7 @@ public class IngestableDataChecker implements java.io.Serializable {
 
 	    if (pos1 > bufferCapacity - 1) {
 		dbgLog.fine("Subsettable Checker: request to go beyond buffer capacity (" + pos1 + ")");
-		return result; 
+		return result;
 	    }
 
             buff.position(pos1);
@@ -427,7 +429,7 @@ public class IngestableDataChecker implements java.io.Serializable {
 
 	    if (pos2 > bufferCapacity - 2) {
 		dbgLog.fine("Subsettable Checker: request to read 2 bytes beyond buffer capacity (" + pos2 + ")");
-		return result; 
+		return result;
 	    }
 
 
@@ -443,7 +445,7 @@ public class IngestableDataChecker implements java.io.Serializable {
 
 	    if (pos3 > bufferCapacity - 3) {
 		dbgLog.fine("Subsettable Checker: request to read 3 bytes beyond buffer capacity (" + pos3 + ")");
-		return result; 
+		return result;
 	    }
 
 
@@ -527,11 +529,11 @@ public class IngestableDataChecker implements java.io.Serializable {
     public String testRDAformat(MappedByteBuffer buff) {
         String result = null;
         buff.rewind();
-        
+
         if (buff.capacity() < 4) {
             return null;
         }
-        
+
         boolean DEBUG = false;
         if (DEBUG) {
             out.println("applying the RData test\n");
@@ -610,7 +612,7 @@ public class IngestableDataChecker implements java.io.Serializable {
         String readableFormatType = null;
         FileChannel srcChannel = null;
         FileInputStream inp = null;
-        
+
         try {
             // set-up a FileChannel instance for a given file object
             inp = new FileInputStream(fh);
@@ -620,13 +622,13 @@ public class IngestableDataChecker implements java.io.Serializable {
 
             // create a read-only MappedByteBuffer
             MappedByteBuffer buff = srcChannel.map(FileChannel.MapMode.READ_ONLY, 0, buffer_size);
-            
+
             //this.printHexDump(buff, "hex dump of the byte-buffer");
 
             buff.rewind();
             dbgLog.fine("before the for loop");
             for (String fmt : this.getTestFormatSet()) {
-                
+
                 // get a test method
                 Method mthd = testMethods.get(fmt);
                 //dbgLog.info("mthd: " + mthd.getName());
@@ -667,15 +669,15 @@ public class IngestableDataChecker implements java.io.Serializable {
                     dbgLog.info("BufferUnderflowException " + e);
                     e.printStackTrace();
                 }
-                
+
                 if (readableFormatType != null) {
                     break;
                 }
             }
-            
+
             // help garbage-collect the mapped buffer sooner, to avoid the jvm  
             // holding onto the underlying file unnecessarily:
-            buff = null; 
+            buff = null;
 
         } catch (FileNotFoundException fe) {
             dbgLog.fine("exception detected: file was not foud");

@@ -40,7 +40,7 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
     private String apiUrl;
     private String username;
     private String password;
-    
+
     private DOIDataCiteRegisterService doiDataCiteRegisterService;
 
     public DataCiteDOIProvider(String id, String label, String providerAuthority, String providerShoulder,
@@ -312,8 +312,8 @@ public class DataCiteDOIProvider extends AbstractDOIProvider {
         }
         return status;
     }
-    
-    
+
+
     @Override
     public boolean updateIdentifier(DvObject dvObject) {
         logger.log(Level.FINE, "updateIdentifierStatus");

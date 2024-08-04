@@ -17,7 +17,7 @@ import jakarta.json.JsonReader;
  * @author michael
  */
 public class GoogleOAuth2AP extends AbstractOAuth2AuthenticationProvider {
-    
+
     public GoogleOAuth2AP(String aClientId, String aClientSecret) {
         id = "google";
         title = BundleUtil.getStringFromBundle("auth.providers.title.google");
@@ -26,7 +26,7 @@ public class GoogleOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         scope = Arrays.asList("https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email");
         baseUserEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo";
     }
-    
+
     @Override
     public DefaultApi20 getApiInstance() {
         return GoogleApi20.instance();
@@ -37,7 +37,7 @@ public class GoogleOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         try (StringReader rdr = new StringReader(responseBody);
               JsonReader jrdr = Json.createReader(rdr)) {
             JsonObject response = jrdr.readObject();
-            
+
             AuthenticatedUserDisplayInfo displayInfo = new AuthenticatedUserDisplayInfo(
                     response.getString("given_name", ""),
                     response.getString("family_name", ""),
@@ -68,5 +68,5 @@ public class GoogleOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     public boolean isDisplayIdentifier() {
         return false;
     }
-    
+
 }

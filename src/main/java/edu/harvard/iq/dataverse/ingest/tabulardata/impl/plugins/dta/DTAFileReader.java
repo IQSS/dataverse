@@ -83,7 +83,7 @@ public class DTAFileReader extends TabularDataFileReader {
     // static fields, STATA-specific constants, etc. 
     // (should it all be isolated in some other class?) 
 
-    private static Map<Integer, String> STATA_RELEASE_NUMBER = 
+    private static Map<Integer, String> STATA_RELEASE_NUMBER =
             new HashMap<>();
     private static Map<String, Integer> release105type = new LinkedHashMap<>();
     private static Map<String, Integer> release111type = new LinkedHashMap<>();
@@ -91,27 +91,27 @@ public class DTAFileReader extends TabularDataFileReader {
     private static Map<Integer, Map<String, Integer>> CONSTATNT_TABLE = new LinkedHashMap<>();
 
     private static Map<String, Integer> release104constant = new LinkedHashMap<>();
-                                        
+
     private static Map<String, Integer> release105constant = new LinkedHashMap<>();
-                                        
+
     private static Map<String, Integer> release108constant = new LinkedHashMap<>();
-                                        
+
     private static Map<String, Integer> release110constant = new LinkedHashMap<>();
-                                        
+
     private static Map<String, Integer> release111constant = new LinkedHashMap<>();
-                                        
+
     private static Map<String, Integer> release113constant = new LinkedHashMap<>();
-                                        
+
     private static Map<String, Integer> release114constant = new LinkedHashMap<>();
-      
+
     private static Map<String, Integer> release115constant = new LinkedHashMap<>();
-    
+
     private static Map<Byte, Integer> byteLengthTable105 = new HashMap<>();
     private static Map<Byte, Integer> byteLengthTable111 = new HashMap<>();
-                                        
+
     private static Map<Byte, String> variableTypeTable105 = new LinkedHashMap<>();
     private static Map<Byte, String> variableTypeTable111 = new LinkedHashMap<>();
-    
+
     private static Map<String, Integer> variableTypeMap = new LinkedHashMap<>();
 
     private static final int[] LENGTH_HEADER = {60, 109};
@@ -120,9 +120,9 @@ public class DTAFileReader extends TabularDataFileReader {
     private static final int[] LENGTH_FORMAT_FIELD = {7, 12, 49};
     private static final int[] LENGTH_EXPANSION_FIELD = {0, 2, 4};
     private static final int[] DBL_MV_PWR = {333, 1023};
- 
+
     static {
-        
+
         STATA_RELEASE_NUMBER.put(104, "rel_3");
         STATA_RELEASE_NUMBER.put(105, "rel_4or5");
         STATA_RELEASE_NUMBER.put(108, "rel_6");
@@ -144,7 +144,7 @@ public class DTAFileReader extends TabularDataFileReader {
         release105type.put("LONG", 108);
         release105type.put("FLOAT", 102);
         release105type.put("DOUBLE0", 100);
-        
+
         release111type.put("STRING", 0);
         release111type.put("BYTE", -5);
         release111type.put("INT", -4);
@@ -152,8 +152,7 @@ public class DTAFileReader extends TabularDataFileReader {
         release111type.put("FLOAT", -2);
         release111type.put("DOUBLE", -1);
 
-        
-        
+
         release104constant.put("HEADER", LENGTH_HEADER[0]);
         release104constant.put("LABEL", LENGTH_LABEL[0]);
         release104constant.put("NAME", LENGTH_NAME[0]);
@@ -169,7 +168,7 @@ public class DTAFileReader extends TabularDataFileReader {
         release105constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[1]);
         release105constant.put("DBL_MV_PWR", DBL_MV_PWR[0]);
         CONSTATNT_TABLE.put(105, release105constant);
-        
+
         release108constant.put("HEADER", LENGTH_HEADER[1]);
         release108constant.put("LABEL", LENGTH_LABEL[1]);
         release108constant.put("NAME", LENGTH_NAME[0]);
@@ -177,7 +176,7 @@ public class DTAFileReader extends TabularDataFileReader {
         release108constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[1]);
         release108constant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
         CONSTATNT_TABLE.put(108, release108constant);
-        
+
         release110constant.put("HEADER", LENGTH_HEADER[1]);
         release110constant.put("LABEL", LENGTH_LABEL[1]);
         release110constant.put("NAME", LENGTH_NAME[1]);
@@ -185,7 +184,7 @@ public class DTAFileReader extends TabularDataFileReader {
         release110constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[2]);
         release110constant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
         CONSTATNT_TABLE.put(110, release110constant);
-        
+
         release111constant.put("HEADER", LENGTH_HEADER[1]);
         release111constant.put("LABEL", LENGTH_LABEL[1]);
         release111constant.put("NAME", LENGTH_NAME[1]);
@@ -193,7 +192,7 @@ public class DTAFileReader extends TabularDataFileReader {
         release111constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[2]);
         release111constant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
         CONSTATNT_TABLE.put(111, release111constant);
-        
+
         release113constant.put("HEADER", LENGTH_HEADER[1]);
         release113constant.put("LABEL", LENGTH_LABEL[1]);
         release113constant.put("NAME", LENGTH_NAME[1]);
@@ -201,7 +200,7 @@ public class DTAFileReader extends TabularDataFileReader {
         release113constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[2]);
         release113constant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
         CONSTATNT_TABLE.put(113, release113constant);
-        
+
         release114constant.put("HEADER", LENGTH_HEADER[1]);
         release114constant.put("LABEL", LENGTH_LABEL[1]);
         release114constant.put("NAME", LENGTH_NAME[1]);
@@ -209,7 +208,7 @@ public class DTAFileReader extends TabularDataFileReader {
         release114constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[2]);
         release114constant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
         CONSTATNT_TABLE.put(114, release114constant);
-        
+
         release115constant.put("HEADER", LENGTH_HEADER[1]);
         release115constant.put("LABEL", LENGTH_LABEL[1]);
         release115constant.put("NAME", LENGTH_NAME[1]);
@@ -217,26 +216,26 @@ public class DTAFileReader extends TabularDataFileReader {
         release115constant.put("EXPANSION", LENGTH_EXPANSION_FIELD[2]);
         release115constant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
         CONSTATNT_TABLE.put(115, release115constant);
-        
+
         byteLengthTable105.put((byte) 98, 1);
         byteLengthTable105.put((byte) 105, 2);
         byteLengthTable105.put((byte) 108, 4);
         byteLengthTable105.put((byte) 102, 4);
         byteLengthTable105.put((byte) 100, 8);
-        
+
         byteLengthTable111.put((byte) -5, 1);
         byteLengthTable111.put((byte) -4, 2);
         byteLengthTable111.put((byte) -3, 4);
         byteLengthTable111.put((byte) -2, 4);
         byteLengthTable111.put((byte) -1, 8);
 
-       
+
         variableTypeTable105.put((byte) 98, "Byte");
         variableTypeTable105.put((byte) 105, "Integer");
         variableTypeTable105.put((byte) 108, "Long");
         variableTypeTable105.put((byte) 102, "Float");
         variableTypeTable105.put((byte) 100, "Double");
-        
+
         variableTypeTable111.put((byte) -5, "Byte");
         variableTypeTable111.put((byte) -4, "Integer");
         variableTypeTable111.put((byte) -3, "Long");
@@ -250,13 +249,12 @@ public class DTAFileReader extends TabularDataFileReader {
         variableTypeMap.put("Float", -2);
         variableTypeMap.put("Double", -1);
         variableTypeMap.put("String", 0);
-        
+
 
     }
 
-   
-    private static String[] MIME_TYPE = {"application/x-stata"};
 
+    private static String[] MIME_TYPE = {"application/x-stata"};
 
 
     /** format-related constants */
@@ -274,8 +272,7 @@ public class DTAFileReader extends TabularDataFileReader {
     private byte BYTE_MISSING_VALUE = Byte.MAX_VALUE;
     private short INT_MISSIG_VALUE = Short.MAX_VALUE;
     private int LONG_MISSING_VALUE = Integer.MAX_VALUE;
-    
-  
+
 
     private static final List<Float> FLOAT_MISSING_VALUES = Arrays.asList(
         0x1.000p127f, 0x1.001p127f, 0x1.002p127f, 0x1.003p127f,
@@ -310,12 +307,11 @@ public class DTAFileReader extends TabularDataFileReader {
     private static SimpleDateFormat sdf_yw = new SimpleDateFormat("yyyy-'W'ww");
 
 
-
     // stata's calendar
     private static Calendar GCO_STATA = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
 
     private static String[] DATE_TIME_FORMAT = {
-        "%tc", "%td", "%tw", "%tq", "%tm", "%th", "%ty", 
+        "%tc", "%td", "%tw", "%tq", "%tm", "%th", "%ty",
         "%d", "%w", "%q", "%m", "h", "%tb"
     };
     // New "business calendar format" has been added in Stata 12. -- L.A. 
@@ -330,7 +326,7 @@ public class DTAFileReader extends TabularDataFileReader {
     private static long STATA_BIAS_TO_EPOCH;
 
     static {
-     
+
         sdf_ymdhmsS.setTimeZone(TimeZone.getTimeZone("GMT"));
         sdf_ymd.setTimeZone(TimeZone.getTimeZone("GMT"));
         sdf_hms.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -354,27 +350,25 @@ public class DTAFileReader extends TabularDataFileReader {
         }
 
     }
-    
-
 
 
     // instance fields //
 
     private static Logger dbgLog = Logger.getLogger(DTAFileReader.class.getPackage().getName());
 
-    
+
     // TODO: 
     // add a comment explaining what this table is for: 
     // -- L.A. 4.0
-    private String[] valueLabelsLookupTable = null; 
-    
+    private String[] valueLabelsLookupTable = null;
+
     /* 
      * StrinLengthTable stores the byte lengths of string variables (these are 
      * the same fixed values for every string column). 
      * -- L.A. 4.0
      */
     private Map<Integer, Integer> StringLengthTable = new LinkedHashMap<>();
-    
+
 
     private Map<String, Integer> typeOffsetTable;
 
@@ -383,7 +377,6 @@ public class DTAFileReader extends TabularDataFileReader {
     private Map<Byte, Integer> byteLengthTable;
 
     private Map<Byte, String> variableTypeTable;
-
 
 
     private NumberFormat twoDigitFormatter = new DecimalFormat("00");
@@ -404,7 +397,6 @@ public class DTAFileReader extends TabularDataFileReader {
 
     private int bytes_per_row;
 
-    
 
     /* variableTypes is a list of string values representing the type of 
      * data values *stored* in the file - "byte", "integer", "float", "string", 
@@ -421,13 +413,13 @@ public class DTAFileReader extends TabularDataFileReader {
      */
     
     private String[] variableTypes = null;
-    
-    private String[] dateVariableFormats = null; 
-  
+
+    private String[] dateVariableFormats = null;
+
     private int value_label_table_length;
-    
+
     private static final String MissingValueForTabDelimitedFile = "";
-  
+
     // Constructor -----------------------------------------------------------//
 
     /**
@@ -448,7 +440,7 @@ public class DTAFileReader extends TabularDataFileReader {
     private void init() throws IOException {
         //
         if (dbgLog.isLoggable(Level.INFO)) dbgLog.info("release number=" + releaseNumber);
-        
+
         if (releaseNumber < 111) {
             typeOffsetTable = release105type;
             variableTypeTable = variableTypeTable105;
@@ -461,25 +453,25 @@ public class DTAFileReader extends TabularDataFileReader {
             INT_MISSIG_VALUE -= MISSING_VALUE_BIAS;
             LONG_MISSING_VALUE -= MISSING_VALUE_BIAS;
         }
-        
+
         if (releaseNumber <= 105) {
             value_label_table_length = 2;
         } else {
             value_label_table_length = 4;
         }
-        
+
         if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("type-offset table to be used:\n" + typeOffsetTable);
 
         constantTable = CONSTATNT_TABLE.get(releaseNumber);
 
         headerLength = constantTable.get("HEADER") - DTA_MAGIC_NUMBER_LENGTH;
-        
+
         dataLabelLength = headerLength - (NVAR_FIELD_LENGTH +
             NOBS_FIELD_LENGTH + TIME_STAMP_LENGTH);
         if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("data_label_length=" + dataLabelLength);
 
         if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("constant table to be used:\n" + constantTable);
-       
+
 
         doubleNumberFormatter.setGroupingUsed(false);
         doubleNumberFormatter.setMaximumFractionDigits(340);
@@ -507,7 +499,7 @@ public class DTAFileReader extends TabularDataFileReader {
     @Override
     public TabularDataIngest read(BufferedInputStream stream, boolean storeWithVariableHeader, File dataFile) throws IOException {
         dbgLog.info("***** DTAFileReader: read() start *****");
-        
+
         if (dataFile != null) {
             throw new IOException("this plugin does not support external raw data files");
         }
@@ -526,11 +518,10 @@ public class DTAFileReader extends TabularDataFileReader {
         } catch (IllegalArgumentException iaex) {
             throw new IOException(iaex.getMessage());
         }
-        
+
         dbgLog.info("***** DTAFileReader: read() end *****");
         return ingesteddata;
     }
-
 
 
     private void decodeHeader(BufferedInputStream stream) throws IOException {
@@ -628,7 +619,7 @@ public class DTAFileReader extends TabularDataFileReader {
         short shrt_nvar = bbnvar.getShort();
         dataTable.setVarQuantity(new Long(shrt_nvar));
         int nvar = shrt_nvar;
-        
+
         if (dbgLog.isLoggable(Level.INFO)) {
             dbgLog.info("number of variables(nvar)=" + nvar);
         }
@@ -730,7 +721,6 @@ public class DTAFileReader extends TabularDataFileReader {
     }
 
 
-
     private void decodeDescriptors(BufferedInputStream stream) throws IOException {
 
         dbgLog.fine("decodeDescriptors(): start");
@@ -795,7 +785,7 @@ public class DTAFileReader extends TabularDataFileReader {
 
 
         bytes_per_row = 0;
-        
+
         for (int i = 0; i < typeList.length; i++) {
             if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "-th value=" + typeList[i]);
             DataVariable dataVariable = dataTable.getDataVariables().get(i);
@@ -813,17 +803,17 @@ public class DTAFileReader extends TabularDataFileReader {
                 bytes_per_row += byteLengthTable.get(typeList[i]);
                 variableTypes[i] = variableTypeTable.get(typeList[i]);
                 String typeLabel = variableTypes[i];
-                
+
                 if (typeLabel != null) {
                     dataVariable.setTypeNumeric();
                     if (typeLabel.equals("Byte") || typeLabel.equals("Integer") || typeLabel.equals("Long")) {
                         // these are treated as discrete:
                         dataVariable.setIntervalDiscrete();
-                        
+
                     } else if (typeLabel.equals("Float") || typeLabel.equals("Double")) {
                         // these are treated as contiuous:
                         dataVariable.setIntervalContinuous();
-                        
+
                     } else {
                         throw new IOException("Unrecognized type label: " + typeLabel + " for Stata type value byte " + typeList[i] + ".");
                     }
@@ -892,11 +882,10 @@ public class DTAFileReader extends TabularDataFileReader {
     }
 
 
-
     private void decodeDescriptorVarNameList(BufferedInputStream stream, int nvar) throws IOException {
         int length_var_name = constantTable.get("NAME");
         int length_var_name_list = length_var_name * nvar;
-        
+
         if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("length_var_name_list=" + length_var_name_list);
 
         byte[] variableNameBytes = new byte[length_var_name_list];
@@ -981,7 +970,7 @@ public class DTAFileReader extends TabularDataFileReader {
                     offset_end), "ISO-8859-1");
             String variableFormat = getNullStrippedString(vari);
             if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "-th format=[" + variableFormat + "]");
-                        
+
             String variableFormatKey = null;
             if (variableFormat.startsWith("%t")) {
                 variableFormatKey = variableFormat.substring(0, 3);
@@ -1008,7 +997,7 @@ public class DTAFileReader extends TabularDataFileReader {
                 // format token (??), we should put the actual format of the 
                 // values that we store in the tab file. And the internal 
                 // STATA format we'll keep in this array for now: 
-                dateVariableFormats[i] = variableFormat; 
+                dateVariableFormats[i] = variableFormat;
                 //dataTable.getDataVariables().get(i).setFormatSchemaName(variableFormat);
                 // TODO: make sure we do save the real format (as .setFormat() somewhere else!)
                 dataVariable.setFormatCategory(DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
@@ -1016,18 +1005,18 @@ public class DTAFileReader extends TabularDataFileReader {
                         DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
                 dataVariable.setTypeCharacter();
                 dataVariable.setIntervalDiscrete();
-            } 
+            }
 
-            
+
             offset_start = offset_end;
         }
 
 
     }
-    
+
     private void decodeDescriptorValueLabel(BufferedInputStream stream, int nvar) throws IOException {
         valueLabelsLookupTable = new String[nvar];
-        
+
         int length_label_name = constantTable.get("NAME");
         int length_label_name_list = length_label_name * nvar;
         dbgLog.fine("length_label_name=" + length_label_name_list);
@@ -1091,7 +1080,7 @@ public class DTAFileReader extends TabularDataFileReader {
             offset_end += length_var_label;
             String vari = new String(Arrays.copyOfRange(variableLabelBytes, offset_start,
                     offset_end), "ISO-8859-1");
-            
+
             String variableLabelParsed = getNullStrippedString(vari);
             if (dbgLog.isLoggable(Level.FINE)) {
                 dbgLog.fine(i + "-th label=[" + variableLabelParsed + "]");
@@ -1104,7 +1093,7 @@ public class DTAFileReader extends TabularDataFileReader {
         dbgLog.fine("decodeVariableLabels(): end");
 
     }
-    
+
 
     /* 
      * We don't seem to be using any of these "expansion fields" - whatever 
@@ -1116,11 +1105,11 @@ public class DTAFileReader extends TabularDataFileReader {
     private void decodeExpansionFields(BufferedInputStream stream) throws IOException {
 
         dbgLog.fine("***** decodeExpansionFields(): start *****");
-        
+
         if (stream == null) {
             throw new IllegalArgumentException("stream == null!");
         }
-        
+
         // Added since release 105
         // [1-byte byte_field][short(2)/int(4)_field][variable_field whose
         // length is specified by the previous short/int field]
@@ -1130,7 +1119,7 @@ public class DTAFileReader extends TabularDataFileReader {
         while (true) {
             byte[] firstByte = new byte[1];
             byte[] lengthBytes = new byte[int_type_expansion_field];
-          
+
             int nbyte = stream.read(firstByte, 0, 1);
             dbgLog.fine("read 1st byte");
             int nbytes = stream.read(lengthBytes, 0, int_type_expansion_field);
@@ -1150,7 +1139,7 @@ public class DTAFileReader extends TabularDataFileReader {
             } else {
                 field_length = bb_field_length.getInt();
             }
-            
+
             if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("field_length=" + field_length);
             if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("firstByte[0]=" + firstByte[0]);
             if ((field_length + firstByte[0]) == 0) {
@@ -1160,14 +1149,14 @@ public class DTAFileReader extends TabularDataFileReader {
                 byte[] stringField = new byte[field_length];
                 nbyte = stream.read(stringField, 0, field_length);
 
-              
+
             }
         }
 
         dbgLog.fine("decodeExpansionFields(): end");
 
     }
-    
+
     /**
      *
      * @param stream
@@ -1191,8 +1180,8 @@ public class DTAFileReader extends TabularDataFileReader {
         }
         dbgLog.fine("decodeValueLabels(): end");
     }
-    
-    
+
+
     void parseValueLabelsRelease105(BufferedInputStream stream) throws IOException {
 
         dbgLog.fine("parseValueLabelsRelease105(): start");
@@ -1237,7 +1226,7 @@ public class DTAFileReader extends TabularDataFileReader {
         // of variables and create the dataverse variable categories from 
         // them. -- L.A. 4.0       
         Map<String, Map<String, String>> tempValueLabelTable = new LinkedHashMap<>();
-        
+
         for (int i = 0; i < nvar; i++) {
             if (dbgLog.isLoggable(Level.FINE)) {
                 dbgLog.fine("\n\n" + i + "th value-label table header");
@@ -1352,16 +1341,16 @@ public class DTAFileReader extends TabularDataFileReader {
             // through them and put them on the temporary lookup map: 
             
             tempValueLabelTable.put(labelName, new LinkedHashMap<>());
-            
+
             for (int j = 0; j < no_value_label_pairs; j++) {
                 if (dbgLog.isLoggable(Level.FINE)) {
                     dbgLog.fine(j + "-th pair:" + valueList[j] + "[" + labelList[j] + "]");
                 }
-                
+
                 // TODO: do we need any null/empty string checks here? -- L.A. 4.0
                 tempValueLabelTable.get(labelName).put(Integer.toString(valueList[j]), labelList[j]);
             }
-            
+
 
             if (stream.available() == 0) {
                 // reached the end of the file
@@ -1387,7 +1376,7 @@ public class DTAFileReader extends TabularDataFileReader {
                     // -- L.A.
                     for (String value : tempValueLabelTable.get(valueLabelsLookupTable[i]).keySet()) {
                         VariableCategory cat = new VariableCategory();
-                        
+
                         cat.setValue(value);
                         cat.setLabel(tempValueLabelTable.get(valueLabelsLookupTable[i]).get(value));
 
@@ -1450,7 +1439,7 @@ public class DTAFileReader extends TabularDataFileReader {
         
         Map<String, Map<String, String>> tempValueLabelTable = new LinkedHashMap<>();
 
-        
+
         for (int i = 0; i < nvar; i++) {
             if (dbgLog.isLoggable(Level.FINE)) {
                 dbgLog.fine("\n\n" + i + "th value-label table header");
@@ -1650,7 +1639,7 @@ public class DTAFileReader extends TabularDataFileReader {
                     // -- L.A.
                     for (String value : tempValueLabelTable.get(valueLabelsLookupTable[i]).keySet()) {
                         VariableCategory cat = new VariableCategory();
-                        
+
                         cat.setValue(value);
                         cat.setLabel(tempValueLabelTable.get(valueLabelsLookupTable[i]).get(value));
 
@@ -1661,7 +1650,7 @@ public class DTAFileReader extends TabularDataFileReader {
                 }
             }
         }
-        
+
         dbgLog.fine("parseValueLabelsRelease108(): end");
     }
 
@@ -1722,7 +1711,7 @@ public class DTAFileReader extends TabularDataFileReader {
         
         // add the variable header here, if needed
         if (saveWithVariableHeader) {
-            pwout.println(generateVariableHeader(dataTable.getDataVariables())); 
+            pwout.println(generateVariableHeader(dataTable.getDataVariables()));
         }
 
         for (int i = 0; i < nobs; i++) {
@@ -1746,10 +1735,10 @@ public class DTAFileReader extends TabularDataFileReader {
 
 
                 // 4.0 Check if this is a time/date variable: 
-                boolean isDateTimeDatum = false; 
+                boolean isDateTimeDatum = false;
                 String formatCategory = dataTable.getDataVariables().get(columnCounter).getFormatCategory();
                 if (formatCategory != null && (formatCategory.equals("time") || formatCategory.equals("date"))) {
-                    isDateTimeDatum = true; 
+                    isDateTimeDatum = true;
                 }
 
                 String variableFormat = dateVariableFormats[columnCounter];
@@ -2037,11 +2026,11 @@ public class DTAFileReader extends TabularDataFileReader {
             decodedDateTime = sdf_ymdhmsS.format(new Date(milliSeconds));
             format = sdf_ymdhmsS.toPattern();
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tc: result=" + decodedDateTime + ", format = " + format);
-            
+
         } else if (FormatType.matches("^%t?d.*")) {
             milliSeconds = Long.parseLong(rawDatum) * MILLISECONDS_PER_DAY + STATA_BIAS_TO_EPOCH;
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("milliSeconds=" + milliSeconds);
-            
+
             decodedDateTime = sdf_ymd.format(new Date(milliSeconds));
             format = sdf_ymd.toPattern();
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("td:" + decodedDateTime + ", format = " + format);
@@ -2073,7 +2062,7 @@ public class DTAFileReader extends TabularDataFileReader {
             } catch (ParseException ex) {
                 throw new IOException(ex);
             }
-            
+
             decodedDateTime = sdf_ymd.format(tempDate.getTime());
             format = sdf_ymd.toPattern();
 
@@ -2100,7 +2089,7 @@ public class DTAFileReader extends TabularDataFileReader {
             long year = 1960L + years;
             String monthYear = Long.toString(year) + month;
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("rawDatum=" + rawDatum + ": monthYear=" + monthYear);
-            
+
             decodedDateTime = monthYear;
             format = "yyyy-MM-dd";
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("tm:" + decodedDateTime + ", format:" + format);
@@ -2171,11 +2160,11 @@ public class DTAFileReader extends TabularDataFileReader {
             long year = 1960L + years;
             String halfYear = Long.toString(year) + half;
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("rawDatum=" + rawDatum + ": halfYear=" + halfYear);
-            
+
             decodedDateTime = halfYear;
             format = "yyyy-MM-dd";
             if (dbgLog.isLoggable(Level.FINER)) dbgLog.finer("th:" + decodedDateTime + ", format:" + format);
-            
+
         } else if (FormatType.matches("^%t?y.*")) {
             // year type's origin is 0 AD
             decodedDateTime = rawDatum;

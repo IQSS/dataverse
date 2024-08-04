@@ -28,32 +28,32 @@ import jakarta.persistence.Query;
 @Named
 @Stateless
 public class DatasetExternalCitationsServiceBean implements java.io.Serializable {
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
-    
+
     @EJB
     DatasetServiceBean datasetService;
 
   //Array of relationship types that are considered to be citations
-  static ArrayList<String> inboundRelationships = new ArrayList<String>( 
+  static ArrayList<String> inboundRelationships = new ArrayList<String>(
           Arrays.asList(
           "cites",
           "references",
           "supplements"));
-  static ArrayList<String> outboundRelationships = new ArrayList<String>( 
+  static ArrayList<String> outboundRelationships = new ArrayList<String>(
           Arrays.asList(
           "is-cited-by",
           "is-referenced-by",
           "is-supplemented-by"));
-  
+
     public List<DatasetExternalCitations> parseCitations(JsonArray citations) {
         List<DatasetExternalCitations> datasetExternalCitations = new ArrayList<>();
         for (JsonValue citationValue : citations) {
             DatasetExternalCitations exCit = new DatasetExternalCitations();
             JsonObject citation = (JsonObject) citationValue;
             String subjectUri = citation.getJsonObject("attributes").getString("subj-id");
-            
+
             String objectUri = citation.getJsonObject("attributes").getString("obj-id");
             String relationship = citation.getJsonObject("attributes").getString("relation-type-id");
             if (inboundRelationships.contains(relationship)) {
@@ -64,7 +64,7 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
                     exCit.setDataset(localDs);
                 }
                 exCit.setCitedByUrl(subjectUri);
-                
+
                 if (localDs != null && !exCit.getCitedByUrl().isEmpty()) {
                     datasetExternalCitations.add(exCit);
                 }
@@ -77,7 +77,7 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
                     exCit.setDataset(localDs);
                 }
                 exCit.setCitedByUrl(objectUri);
-                
+
                 if (localDs != null && !exCit.getCitedByUrl().isEmpty()) {
                     datasetExternalCitations.add(exCit);
                 }
@@ -85,8 +85,8 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
         }
         return datasetExternalCitations;
     }
-    
-    public DatasetExternalCitations save(DatasetExternalCitations datasetExternalCitations) {  
+
+    public DatasetExternalCitations save(DatasetExternalCitations datasetExternalCitations) {
         //Replace existing if necessary
         Dataset dataset = datasetExternalCitations.getDataset();
         String citedByUrl = datasetExternalCitations.getCitedByUrl();
@@ -98,7 +98,7 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
         DatasetExternalCitations savedDatasetExternalCitations = em.merge(datasetExternalCitations);
         return savedDatasetExternalCitations;
     }
-    
+
     private DatasetExternalCitations getDatasetExternalCitationsByDatasetCitingPID(Dataset dataset, String PID) {
         DatasetExternalCitations dsExtCit = null;
         String queryStr = "SELECT d FROM DatasetExternalCitations d WHERE d.dataset.id = " + dataset.getId() + " and d.citedByUrl = '" + PID + "'";
@@ -113,7 +113,7 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
         }
         return null;
     }
-    
+
     public List<DatasetExternalCitations> getDatasetExternalCitationsByDataset(Dataset dataset) {
         List<DatasetExternalCitations> retVal = new ArrayList();
         String queryStr = "SELECT d FROM DatasetExternalCitations d WHERE d.dataset.id = " + dataset.getId();
@@ -126,8 +126,8 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
             dec.setCitedByUrl(row.getCitedByUrl());
             retVal.add(dec);
         }
-        
+
         return retVal;
     }
-    
+
 }

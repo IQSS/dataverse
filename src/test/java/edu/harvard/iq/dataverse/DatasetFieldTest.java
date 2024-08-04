@@ -14,7 +14,7 @@ class DatasetFieldTest {
     @Test
     void testCreateNewEmptyDatasetField_withEmptyTemplate() {
         Template template = new Template();
-        
+
         DatasetField field = DatasetField.createNewEmptyDatasetField(new DatasetFieldType("subject", FieldType.TEXT, false), template);
         assertTrue(field.getTemplate() == template);
         assertTrue(template.getDatasetFields().isEmpty());
@@ -43,7 +43,7 @@ class DatasetFieldTest {
 
         // Fields are not equal before both have IDs set
         assertNotEquals(field1, field2);
-        
+
         field2.setId(100L);
 
         assertEquals(field1, field2);

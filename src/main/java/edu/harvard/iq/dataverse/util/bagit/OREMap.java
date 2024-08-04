@@ -42,17 +42,17 @@ public class OREMap {
     static SettingsServiceBean settingsService;
     static DatasetFieldServiceBean datasetFieldService;
     static SystemConfig systemConfig;
-    
+
     private static final Logger logger = Logger.getLogger(OREMap.class.getCanonicalName());
-    
+
     public static final String NAME = "OREMap";
-    
+
     //NOTE: Update this value whenever the output of this class is changed
     private static final String DATAVERSE_ORE_FORMAT_VERSION = "Dataverse OREMap Format v1.0.0";
     private static final String DATAVERSE_SOFTWARE_NAME = "Dataverse";
     private static final String DATAVERSE_SOFTWARE_URL = "https://github.com/iqss/dataverse";
-    
-    
+
+
     private Map<String, String> localContext = new TreeMap<String, String>();
     private DatasetVersion version;
     private Boolean excludeEmail = null;
@@ -75,18 +75,18 @@ public class OREMap {
     public JsonObject getOREMap() {
         return getOREMap(false);
     }
-    
+
     public JsonObject getOREMap(boolean aggregationOnly) {
         return getOREMapBuilder(aggregationOnly).build();
     }
-    
+
     public JsonObjectBuilder getOREMapBuilder(boolean aggregationOnly) {
 
         //Set this flag if it wasn't provided
         if (excludeEmail == null) {
             excludeEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
         }
-        
+
         // Add namespaces we'll definitely use to Context
         // Additional namespaces are added as needed below
         localContext.putIfAbsent(JsonLDNamespace.ore.getPrefix(), JsonLDNamespace.ore.getUrl());
@@ -129,7 +129,7 @@ public class OREMap {
             deaccBuilder.add(JsonLDTerm.DVCore("reason").getLabel(), version.getVersionNote());
             addIfNotNull(deaccBuilder, JsonLDTerm.DVCore("forwardUrl"), version.getArchiveNote());
             aggBuilder.add(JsonLDTerm.schemaOrg("creativeWorkStatus").getLabel(), deaccBuilder);
-            
+
         } else {
             aggBuilder.add(JsonLDTerm.schemaOrg("creativeWorkStatus").getLabel(), vs.name());
         }
@@ -171,7 +171,7 @@ public class OREMap {
         if (DvObjectContainer.isMetadataLanguageSet(mdl)) {
             aggBuilder.add(JsonLDTerm.schemaOrg("inLanguage").getLabel(), mdl);
         }
-        
+
         // The aggregation aggregates aggregatedresources (Datafiles) which each have
         // their own entry and metadata
         JsonArrayBuilder aggResArrayBuilder = Json.createArrayBuilder();
@@ -209,11 +209,11 @@ public class OREMap {
                         logger.warning("Missing Original file format for id: " + df.getId());
                     }
 
-                    
+
                 }
-                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fileName); 
+                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fileName);
                 addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.isRestricted());
-                Embargo embargo = df.getEmbargo(); 
+                Embargo embargo = df.getEmbargo();
                 if (embargo != null) {
                     String date = embargo.getFormattedDateAvailable();
                     String reason = embargo.getReason();
@@ -306,7 +306,7 @@ public class OREMap {
                     .add(JsonLDTerm.schemaOrg("name").getLabel(), DATAVERSE_SOFTWARE_NAME)
                     .add(JsonLDTerm.schemaOrg("version").getLabel(), systemConfig.getVersion(true))
                     .add(JsonLDTerm.schemaOrg("url").getLabel(), DATAVERSE_SOFTWARE_URL);
-            
+
             //Now the OREMAP object itself
             JsonObjectBuilder oremapBuilder = Json.createObjectBuilder()
                     .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
@@ -411,7 +411,7 @@ public class OREMap {
         }
         return null;
     }
-    
+
     public static JsonValue getJsonLDForField(DatasetField field, Boolean excludeEmail, Map<Long, JsonObject> cvocMap,
             Map<String, String> localContext) {
 

@@ -34,7 +34,7 @@ import org.apache.solr.common.SolrInputDocument;
 public class SolrIndexServiceBean {
 
     private static final Logger logger = Logger.getLogger(SolrIndexServiceBean.class.getCanonicalName());
-    
+
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
@@ -368,7 +368,7 @@ public class SolrIndexServiceBean {
             return indexPermissionsOnSelfAndChildren(definitionPoint);
         }
     }
-    
+
     /**
      * We use the database to determine direct children since there is no
      * inheritance
@@ -420,7 +420,7 @@ public class SolrIndexServiceBean {
              */
             IndexResponse indexResponse = indexPermissionsForOneDvObject(dvObject);
         }
-        
+
         return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
                 + ": " + dvObjectsToReindexPermissionsFor.size()
         );
@@ -532,7 +532,7 @@ public class SolrIndexServiceBean {
         long rootDvId = dataverseService.findRootDataverse().getId();
         List<Long> missingDataversePermissionIds = dataverseService.findIdStalePermission();
         List<Long> missingDatasetPermissionIds = datasetService.findIdStalePermission();
-        for (Long id : missingDataversePermissionIds) {          
+        for (Long id : missingDataversePermissionIds) {
             if (!id.equals(rootDvId)) {
             indexingRequired.add(id);
             }
@@ -541,5 +541,5 @@ public class SolrIndexServiceBean {
         return indexingRequired;
     }
 
-  
+
 }

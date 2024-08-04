@@ -355,7 +355,7 @@ public class ExportService {
     // in a file in the dataset directory / container based on its DOI:
     private void cacheExport(Dataset dataset, InternalExportDataProvider dataProvider, String format, Exporter exporter)
             throws ExportException {
-        
+
         OutputStream outputStream = null;
         try {
             boolean tempFileUsed = false;

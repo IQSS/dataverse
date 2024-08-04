@@ -39,10 +39,10 @@ public class HarvestingDataverseConfig implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public static final String HARVEST_TYPE_OAI = "oai";
     public static final String HARVEST_TYPE_NESSTAR = "nesstar";
-    
+
     public static final String HARVEST_STYLE_DATAVERSE = "dataverse";
     // pre-4.0 remote Dataverse:
     public static final String HARVEST_STYLE_VDC = "vdc";
@@ -55,13 +55,13 @@ public class HarvestingDataverseConfig implements Serializable {
     public static final String REMOTE_ARCHIVE_URL_LEVEL_DATAVERSE = "dataverse";
     public static final String REMOTE_ARCHIVE_URL_LEVEL_DATASET = "dataset";
     public static final String REMOTE_ARCHIVE_URL_LEVEL_FILE = "file";
-    
+
     public HarvestingDataverseConfig() {
         this.harvestType = HARVEST_TYPE_OAI; // default harvestType
         this.harvestStyle = HARVEST_STYLE_DATAVERSE; // default harvestStyle
     }
 
-    
+
     @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "dataverse_id")
     private  Dataverse dataverse;
@@ -93,7 +93,7 @@ public class HarvestingDataverseConfig implements Serializable {
     public void setHarvestStyle(String harvestStyle) {
         this.harvestStyle = harvestStyle;
     }
-    
+
     private String harvestingUrl;
 
     public String getHarvestingUrl() {
@@ -103,28 +103,28 @@ public class HarvestingDataverseConfig implements Serializable {
     public void setHarvestingUrl(String harvestingUrl) {
         this.harvestingUrl = harvestingUrl.trim();
     }
-    
-    private String archiveUrl; 
-    
+
+    private String archiveUrl;
+
     public String getArchiveUrl() {
         return this.archiveUrl;
     }
-    
+
     public void setArchiveUrl(String archiveUrl) {
-        this.archiveUrl = archiveUrl; 
+        this.archiveUrl = archiveUrl;
     }
 
     @Column(columnDefinition = "TEXT")
-    private String archiveDescription; 
-    
+    private String archiveDescription;
+
     public String getArchiveDescription() {
         return this.archiveDescription;
     }
-    
+
     public void setArchiveDescription(String archiveDescription) {
-        this.archiveDescription = archiveDescription; 
+        this.archiveDescription = archiveDescription;
     }
-    
+
     private String harvestingSet;
 
     public String getHarvestingSet() {
@@ -135,10 +135,7 @@ public class HarvestingDataverseConfig implements Serializable {
         this.harvestingSet = harvestingSet;
     }
 
-    
-    
 
-    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -163,5 +160,5 @@ public class HarvestingDataverseConfig implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.HarvestingDataverse[ id=" + id + " ]";
     }
-    
+
 }

@@ -38,6 +38,7 @@ import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.MessageListener;
 import jakarta.jms.ObjectMessage;
+
 /**
  *
  * This is an experimental, JMS-based implementation of asynchronous 
@@ -61,16 +62,16 @@ public class IngestMessageBean implements MessageListener {
     @EJB UserNotificationServiceBean userNotificationService;
     @EJB AuthenticationServiceBean authenticationServiceBean;
 
-   
+
     public IngestMessageBean() {
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void onMessage(Message message) {
         IngestMessage ingestMessage = null;
 
         AuthenticatedUser authenticatedUser = null;
-        
+
         try {
             ObjectMessage om = (ObjectMessage) message;
             ingestMessage = (IngestMessage) om.getObject();
@@ -95,7 +96,7 @@ public class IngestMessageBean implements MessageListener {
 
             StringBuilder sbIngestedFiles = new StringBuilder();
             sbIngestedFiles.append("<ul>");
-            
+
             while (iter.hasNext()) {
                 datafile_id = iter.next();
 
@@ -189,6 +190,6 @@ public class IngestMessageBean implements MessageListener {
             }
         }
     }
- 
-    
+
+
 }

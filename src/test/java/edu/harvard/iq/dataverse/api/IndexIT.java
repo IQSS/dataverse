@@ -34,7 +34,7 @@ public class IndexIT {
 
     }
 
-  
+
     @Test
     public void testIndexStatus() {
 
@@ -60,7 +60,7 @@ public class IndexIT {
         Response uploadMd5File = UtilIT.uploadRandomFile(dataset1PersistentId, apiToken);
         uploadMd5File.prettyPrint();
         assertEquals(CREATED.getStatusCode(), uploadMd5File.getStatusCode());
-   
+
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .queryParam("sync", "true")
@@ -75,7 +75,7 @@ public class IndexIT {
                 .body("data.contentInIndexButNotDatabase.files", CoreMatchers.equalTo(emptyList))
                 .body("data.permissionsInDatabaseButStaleInOrMissingFromIndex.dvobjects", CoreMatchers.equalTo(emptyList))
                 .body("data.permissionsInIndexButNotDatabase.permissions", CoreMatchers.equalTo(emptyList));
-        
+
         Response getDatasetJsonAfterMd5File = UtilIT.nativeGet(datasetId, apiToken);
         getDatasetJsonAfterMd5File.prettyPrint();
         getDatasetJsonAfterMd5File.then().assertThat()
@@ -91,15 +91,15 @@ public class IndexIT {
 
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
-     
+
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverseResponse.prettyPrint();
-      
+
         Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.prettyPrint();
-      
+
     }
-   
+
     @AfterEach
     public void tearDownDataverse() {
         }

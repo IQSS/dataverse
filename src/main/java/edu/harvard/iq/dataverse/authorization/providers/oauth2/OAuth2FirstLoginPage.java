@@ -69,7 +69,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     @EJB
     OAuth2TokenDataServiceBean oauth2Tokens;
-    
+
     @Inject
     DataverseSession session;
 
@@ -190,14 +190,14 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         userNotificationService.sendNotification(user,
                 new Timestamp(new Date().getTime()),
                 UserNotification.Type.CREATEACC, null);
-        
+
         final OAuth2TokenData tokenData = newUser.getTokenData();
         if (tokenData != null) {
             tokenData.setUser(user);
             tokenData.setOauthProviderId(newUser.getServiceId());
             oauth2Tokens.store(tokenData);
         }
-        
+
         return "/dataverse.xhtml?faces-redirect=true";
     }
 

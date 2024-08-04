@@ -25,7 +25,7 @@ public class PersistProvJsonCommand extends AbstractCommand<DataFile> {
     private final String jsonInput;
     private final String entityName;
     private final boolean saveContext;
-    
+
     public PersistProvJsonCommand(DataverseRequest aRequest, DataFile dataFile, String jsonInput, String entityName, boolean saveContext) {
         super(aRequest, dataFile);
         this.dataFile = dataFile;
@@ -53,12 +53,12 @@ public class PersistProvJsonCommand extends AbstractCommand<DataFile> {
             String error = "Exception caught persisting PROV-JSON: " + ex;
             throw new IllegalCommandException(error, this);
         }
-        
+
         dataFile.setProvEntityName(entityName);
         if (saveContext) {
             dataFile = ctxt.files().save(dataFile);
         }
-        
+
         return dataFile;
     }
 

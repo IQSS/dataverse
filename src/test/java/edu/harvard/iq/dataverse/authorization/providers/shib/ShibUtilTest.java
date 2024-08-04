@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 public class ShibUtilTest {
-    
+
     @ParameterizedTest
     @CsvSource(value = {
         "John,Harvard,John,Harvard,NULL",
@@ -42,7 +42,7 @@ public class ShibUtilTest {
         assertEquals(expectedFirstName, actualValues.getFirstName());
         assertEquals(expectedLastName, actualValues.getLastName());
     }
-    
+
 
     public static class ShibUtilNoParamTest {
 

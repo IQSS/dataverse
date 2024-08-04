@@ -16,12 +16,12 @@ import org.junit.jupiter.api.BeforeEach;
  * @author michael
  */
 public class BuiltinAuthenticationProviderTest {
-    
+
     BuiltinAuthenticationProvider sut = null;
     PasswordValidatorServiceBean passwordValidatorService;
     MockBuiltinUserServiceBean bean = null;
     AuthenticationServiceBean authBean = null;
-    
+
     @BeforeEach
     public void setup() {
         bean = new MockBuiltinUserServiceBean();
@@ -81,9 +81,9 @@ public class BuiltinAuthenticationProviderTest {
         assertTrue(bean.users.isEmpty());
         bean.save(u);
         assertFalse(bean.users.isEmpty());
-        
+
         sut.deleteUser(u.getUserName());
-        
+
         assertTrue(bean.users.isEmpty());
     }
 
@@ -99,7 +99,7 @@ public class BuiltinAuthenticationProviderTest {
         assertTrue(sut.verifyPassword(user.getUserName(), newPassword));
     }
 
-    
+
     private BuiltinUser makeBuiltInUser() {
         BuiltinUser user = new BuiltinUser();
         user.setUserName("username");
@@ -131,35 +131,35 @@ public class BuiltinAuthenticationProviderTest {
         req.putCredential(crdPassword, "password");
         AuthenticationResponse result = sut.authenticate(req);
         assertEquals(AuthenticationResponse.Status.SUCCESS, result.getStatus());
-        
+
         req = new AuthenticationRequest();
         req.putCredential(crdUsername, "xxxxxxxx");
         req.putCredential(crdPassword, "password");
         result = sut.authenticate(req);
         assertEquals(AuthenticationResponse.Status.FAIL, result.getStatus());
-        
+
         req = new AuthenticationRequest();
         req.putCredential(crdUsername, "username");
         req.putCredential(crdPassword, "xxxxxxxx");
         result = sut.authenticate(req);
         assertEquals(AuthenticationResponse.Status.FAIL, result.getStatus());
-        
+
         BuiltinUser u2 = makeBuiltInUser();
         u2.setUserName("u2");
         u2.updateEncryptedPassword(PasswordEncryption.getVersion(0).encrypt("password"), 0);
         bean.save(u2);
-        
+
         req = new AuthenticationRequest();
         req.putCredential(crdUsername, "u2");
         req.putCredential(crdPassword, "xxxxxxxx");
         result = sut.authenticate(req);
         assertEquals(AuthenticationResponse.Status.FAIL, result.getStatus());
-        
+
         req = new AuthenticationRequest();
         req.putCredential(crdUsername, "u2");
         req.putCredential(crdPassword, "password");
         result = sut.authenticate(req);
         assertEquals(AuthenticationResponse.Status.BREAKOUT, result.getStatus());
     }
-    
+
 }

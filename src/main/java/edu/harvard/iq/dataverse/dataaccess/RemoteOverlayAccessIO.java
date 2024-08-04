@@ -48,7 +48,7 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
     public RemoteOverlayAccessIO() {
         super();
     }
-    
+
     public RemoteOverlayAccessIO(T dvObject, DataAccessRequest req, String driverId) throws IOException {
         super(dvObject, req, driverId);
         this.setIsLocalFile(false);
@@ -124,10 +124,10 @@ public class RemoteOverlayAccessIO<T extends DvObject> extends AbstractRemoteOve
                     logger.fine("Setting size");
                     this.setSize(retrieveSizeFromMedia());
                 }
-                if (dataFile.getContentType() != null 
+                if (dataFile.getContentType() != null
                         && dataFile.getContentType().equals("text/tab-separated-values")
-                        && dataFile.isTabularData() 
-                        && dataFile.getDataTable() != null 
+                        && dataFile.isTabularData()
+                        && dataFile.getDataTable() != null
                         && (!this.noVarHeader())
                         && (!dataFile.getDataTable().isStoredWithVariableHeader())) {
 

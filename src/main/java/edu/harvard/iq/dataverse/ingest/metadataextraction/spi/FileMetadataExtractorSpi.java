@@ -20,14 +20,14 @@ import java.util.Locale;
  */
 
 public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
-    private static Logger dbgLog = 
+    private static Logger dbgLog =
     Logger.getLogger(FileMetadataExtractorSpi.class.getPackage().getName());
 
-    
+
     protected FileMetadataExtractorSpi() {
     }
 
-    
+
     protected String vendorName;
     protected String version;
 
@@ -43,7 +43,7 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
     }
 
     public abstract String getDescription(Locale locale);
-    
+
     protected String[] names = null;
 
     public String[] getFormatNames() {
@@ -51,25 +51,25 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
     }
 
     protected String[] suffixes = null;
-    
+
     public String[] getFileSuffixes() {
         return suffixes == null ? null : (String[]) suffixes.clone();
     }
-    
-    
+
+
     protected String[] MIMETypes = null;
-    
+
     public String[] getMIMETypes() {
         return MIMETypes == null ? null : (String[]) MIMETypes.clone();
     }
-    
+
     protected String pluginClassName = null;
 
     public String getPluginClassName() {
         return pluginClassName;
     }
 
-   
+
     public FileMetadataExtractorSpi(
             String vendorName,
             String version,
@@ -78,7 +78,7 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
             String[] MIMETypes,
             String pluginClassName
             ) {
-        
+
         this(vendorName, version);
 
         if (names == null) {
@@ -123,7 +123,7 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
         System.out.println();
         buff.rewind();
     }
-    
+
     public void printHexDump(byte[] buff, String hdr) {
         int counter = 0;
         if (hdr != null) {
@@ -144,18 +144,19 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
     }
 
     public abstract boolean canDecodeInput(Object source) throws IOException;
-    
-    
+
+
     public abstract boolean canDecodeInput(File file) throws IOException;
+
     public abstract boolean canDecodeInput(BufferedInputStream stream) throws IOException;
-    
+
     public abstract FileMetadataExtractor createIngesterInstance(Object extension)
         throws IOException;
-    
+
     public FileMetadataExtractor createIngesterInstance() throws IOException {
         return createIngesterInstance(null);
     }
-    
+
     public boolean isOwnReader(FileMetadataExtractor reader) {
         if (reader == null) {
             throw new IllegalArgumentException("reader == null!");
@@ -164,5 +165,5 @@ public abstract class FileMetadataExtractorSpi extends IngestServiceProvider {
         return name.equals(pluginClassName);
     }
 
-    
+
 }

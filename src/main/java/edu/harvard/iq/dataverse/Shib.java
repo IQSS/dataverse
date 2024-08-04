@@ -120,7 +120,7 @@ public class Shib implements java.io.Serializable {
         REGULAR_LOGIN_INTO_EXISTING_SHIB_ACCOUNT,
         PROMPT_TO_CREATE_NEW_ACCOUNT,
         PROMPT_TO_CONVERT_EXISTING_ACCOUNT,
-    };
+    }
 
     public void init() {
         state = State.INIT;
@@ -253,7 +253,7 @@ public class Shib implements java.io.Serializable {
         if (au != null) {
             //See if there's another account with this email
             AuthenticatedUser auEmail = authSvc.getAuthenticatedUserByEmail(emailAddress);
-            if (auEmail != null && !auEmail.equals(au)) {   
+            if (auEmail != null && !auEmail.equals(au)) {
                 //If this email already belongs to another account throw a message for user to contact support
                 JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("shib.duplicate.email.error"));
                 return;

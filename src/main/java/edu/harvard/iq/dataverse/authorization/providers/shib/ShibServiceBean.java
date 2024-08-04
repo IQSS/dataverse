@@ -60,7 +60,7 @@ public class ShibServiceBean {
         MISSING_REQUIRED_ATTR,
         ONE_AFFILIATION,
         TWO_AFFILIATIONS,
-    };
+    }
 
     public DevShibAccountType getDevShibAccountType() {
         DevShibAccountType saneDefault = DevShibAccountType.PRODUCTION;

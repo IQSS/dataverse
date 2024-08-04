@@ -98,12 +98,12 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     throw new NotFoundException("Datafile " + dataFile.getId() + ": Failed to locate and/or open physical file.");
                 }
 
-                
+
                 boolean redirectSupported = false;
                 String auxiliaryTag = null;
                 String auxiliaryType = null;
-                String auxiliaryFileName = null; 
-                
+                String auxiliaryFileName = null;
+
                 // Before we do anything else, check if this download can be handled 
                 // by a redirect to remote storage (only supported on S3, as of 5.4):
                 
@@ -150,7 +150,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         if (auxVersion != null) {
                             auxiliaryTag = auxiliaryTag + "_" + auxVersion;
                         }
-                    
+
                         if (storageIO.downloadRedirectEnabled(auxiliaryTag) && isAuxiliaryObjectCached(storageIO, auxiliaryTag)) {
                             String fileExtension = getFileExtension(di.getAuxiliaryFile());
                             auxiliaryFileName = storageIO.getFileName() + "." + auxiliaryTag + fileExtension;
@@ -167,7 +167,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
                                 if ("original".equals(di.getConversionParamValue())) {
                                     auxiliaryTag = StoredOriginalFile.SAVED_ORIGINAL_FILENAME_EXTENSION;
-                                    auxiliaryType = dataFile.getOriginalFileFormat(); 
+                                    auxiliaryType = dataFile.getOriginalFileFormat();
                                     auxiliaryFileName = dataFile.getOriginalFileName();
                                 } else {
                                     // format conversions - can redirect, but only if 
@@ -192,8 +192,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 // ... defaults to redirectSupported = true
                             } else {
                                 // This must be a subset request then - can't do. 
-                                redirectSupported = false; 
-                            } 
+                                redirectSupported = false;
+                            }
                         } else {
                             // "straight" download of the full tab-delimited file. 
                             // can redirect, but only if stored with the variable 
@@ -357,7 +357,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                             logger.fine("adding variable id " + variable.getId() + " to the list.");
                                             variablePositionIndex.add(variable.getFileOrder());
                                             if (!dataFile.getDataTable().isStoredWithVariableHeader()) {
-                                                subsetVariableHeader = subsetVariableHeader == null 
+                                                subsetVariableHeader = subsetVariableHeader == null
                                                         ? variable.getName()
                                                         : subsetVariableHeader.concat("\t" + variable.getName());
                                             }
@@ -372,16 +372,16 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     try {
                                         File tempSubsetFile = File.createTempFile("tempSubsetFile", ".tmp");
                                         TabularSubsetGenerator tabularSubsetGenerator = new TabularSubsetGenerator();
-                                        
+
                                         long numberOfLines = dataFile.getDataTable().getCaseQuantity();
                                         if (dataFile.getDataTable().isStoredWithVariableHeader()) {
                                             numberOfLines++;
                                         }
-                                        
-                                        tabularSubsetGenerator.subsetFile(storageIO.getInputStream(), 
-                                                tempSubsetFile.getAbsolutePath(), 
-                                                variablePositionIndex, 
-                                                numberOfLines, 
+
+                                        tabularSubsetGenerator.subsetFile(storageIO.getInputStream(),
+                                                tempSubsetFile.getAbsolutePath(),
+                                                variablePositionIndex,
+                                                numberOfLines,
                                                 "\t");
 
                                         if (tempSubsetFile.exists()) {
@@ -390,7 +390,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
                                             InputStreamIO subsetStreamIO = new InputStreamIO(subsetStream, subsetSize);
                                             logger.fine("successfully created subset output stream.");
-                                            
+
                                             if (subsetVariableHeader != null) {
                                                 subsetVariableHeader = subsetVariableHeader.concat("\n");
                                                 subsetStreamIO.setVarHeader(subsetVariableHeader);
@@ -448,7 +448,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     auxStreamIO.setMimeType(di.getAuxiliaryFile().getContentType());
                     storageIO = auxStreamIO;
 
-                } 
+                }
 
                 try (InputStream instream = storageIO.getInputStream()) {
                     if (instream != null) {
@@ -466,7 +466,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         httpHeaders.add("Content-Type", mimeType + "; name=\"" + finalFileName + "\"");
 
                         long contentSize;
-                        
+
                         // User may have requested a rangeHeader of bytes.
                         // Ranges are only supported when the size of the content 
                         // stream is known (i.e., it's not a dynamically generated 
@@ -478,7 +478,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             rangeHeader = headers.getHeaderString("Range");
                         }
                         long offset = 0;
-                        long leftToRead = -1L; 
+                        long leftToRead = -1L;
                         // Moving the "left to read" var. here; - since we may need 
                         // to start counting our rangeHeader bytes outside the main .write()
                         // loop, if it's a tabular file with a header. 
@@ -490,7 +490,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 logger.fine("Exception caught processing Range header: " + ex.getLocalizedMessage());
                                 throw new ClientErrorException("Error due to Range header: " + ex.getLocalizedMessage(), Response.Status.REQUESTED_RANGE_NOT_SATISFIABLE);
                             }
-                            
+
                             if (ranges.isEmpty()) {
                                 logger.fine("Content size (retrieved from the AccessObject): " + contentSize);
                                 httpHeaders.add("Content-Length", contentSize);
@@ -499,7 +499,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 long rangeContentSize = ranges.get(0).getLength();
                                 logger.fine("Content size (Range header in use): " + rangeContentSize);
                                 httpHeaders.add("Content-Length", rangeContentSize);
-                                
+
                                 offset = ranges.get(0).getStart();
                                 leftToRead = rangeContentSize;
                                 httpHeaders.add("Accept-Ranges", "bytes");
@@ -513,7 +513,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             if (rangeHeader != null) {
                                 throw new NotFoundException("Range headers are not supported on dynamically-generated content, such as tabular subsetting.");
                             }
-                            
+
                         }
 
                         // (the httpHeaders map must be modified *before* writing any
@@ -559,7 +559,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                             logger.fine("Writing this many bytes of the variable header line: " + leftToRead);
                                             outstream.write(Arrays.copyOfRange(storageIO.getVarHeader().getBytes(), (int) offset, (int) offset + (int) leftToRead));
                                             // set "left to read" to zero, indicating that we are done:
-                                            leftToRead = 0; 
+                                            leftToRead = 0;
                                         } else {
                                             // write the requested portion of the header:
                                             logger.fine("Writing this many bytes of the variable header line: " + (headerLength - offset));
@@ -568,7 +568,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                             leftToRead -= (headerLength - offset);
                                             offset = 0;
                                         }
-                                        
+
                                     }
                                 }
                             }
@@ -638,10 +638,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         try {
             return storageIO.isAuxObjectCached(auxiliaryTag);
         } catch (IOException cachedIOE) {
-            return false; 
+            return false;
         }
     }
-    
+
     // TODO: Return ".md" for "text/markdown" as well as other extensions in MimeTypeDetectionByFileExtension.properties
     private String getFileExtension(AuxiliaryFile auxFile) {
         String fileExtension = "";

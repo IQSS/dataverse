@@ -33,7 +33,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
     InternalExportDataProvider(DatasetVersion dv) {
         this.dv = dv;
     }
-    
+
     InternalExportDataProvider(DatasetVersion dv, InputStream is) {
         this.dv = dv;
         this.is = is;
@@ -70,7 +70,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
         return DOIDataCiteRegisterService.getMetadataFromDvObject(
                 dv.getDataset().getGlobalId().asString(), new DataCitation(dv).getDataCiteMetadata(), dv.getDataset());
     }
-    
+
     @Override
     public JsonArray getDatasetFileDetails() {
         JsonArrayBuilder jab = Json.createArrayBuilder();
@@ -80,7 +80,7 @@ public class InternalExportDataProvider implements ExportDataProvider {
         }
         return jab.build();
     }
-    
+
     @Override
     public Optional<InputStream> getPrerequisiteInputStream() {
         return Optional.ofNullable(is);

@@ -45,7 +45,7 @@ public class FileAccessIOTest {
     private DataFile dataFile;
 
     private String dummyDriverId = "dummmy";
-    
+
     private Path fileSystemPath = new File("/tmp/files/tmp/dataset/Dataset").toPath();
 
     public FileAccessIOTest() {
@@ -63,7 +63,7 @@ public class FileAccessIOTest {
         dataFile = MocksFactory.makeDataFile();
         dataFile.setOwner(dataset);
         dataFile.setStorageIdentifier("DataFile");
-        
+
         datasetAccess = new FileAccessIO<>(dataset, null, dummyDriverId);
         dataFileAccess = new FileAccessIO<>(dataFile, null, dummyDriverId);
         dataverseAccess = new FileAccessIO<>(dataverse, null, dummyDriverId);
@@ -144,7 +144,7 @@ public class FileAccessIOTest {
     @Test
     public void testGetAuxObjectSize() throws IOException {
         assertEquals(21, datasetAccess.getAuxObjectSize("Dataset"));
-        
+
     }
 
     /**
@@ -290,7 +290,7 @@ public class FileAccessIOTest {
         }
         assertEquals("This is a test string\n", sb.toString());
     }
-    
+
     @Test
     public void testFileIdentifierFormats() throws IOException {
         System.setProperty("dataverse.files.filetest.type", "file");
@@ -312,7 +312,7 @@ public class FileAccessIOTest {
         }
         //breakout
         assertFalse(DataAccess.isValidDirectStorageIdentifier("filetest://../" + FileUtil.generateStorageIdentifier()));
-        
+
         System.clearProperty("dataverse.files.filetest.type");
         System.clearProperty("dataverse.files.filetest.label");
         System.clearProperty("dataverse.files.filetest.directory");

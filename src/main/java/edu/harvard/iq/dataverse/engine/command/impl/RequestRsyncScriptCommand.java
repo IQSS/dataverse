@@ -43,7 +43,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
     }
 
     @Override
-    public ScriptRequestResponse execute(CommandContext ctxt) throws CommandException {       
+    public ScriptRequestResponse execute(CommandContext ctxt) throws CommandException {
         if (request == null) {
             throw new IllegalCommandException("DataverseRequest cannot be null.", this);
         }

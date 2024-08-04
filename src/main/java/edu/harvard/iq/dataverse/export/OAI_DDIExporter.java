@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
@@ -24,7 +23,7 @@ import javax.xml.stream.XMLStreamException;
  */
 @AutoService(Exporter.class)
 public class OAI_DDIExporter implements XMLExporter {
-    
+
     @Override
     public String getFormatName() {
         // TODO: Consider adding this "short form" to the "Export Metadata" dropdown in the GUI.
@@ -51,22 +50,22 @@ public class OAI_DDIExporter implements XMLExporter {
     public Boolean isHarvestable() {
         return true;
     }
-    
+
     @Override
     public Boolean isAvailableToUsers() {
         return false;
     }
-    
+
     @Override
     public String getXMLNameSpace() {
         return DDIExporter.DEFAULT_XML_NAMESPACE;
     }
-    
+
     @Override
     public String getXMLSchemaLocation() {
         return DDIExporter.DEFAULT_XML_SCHEMALOCATION;
     }
-    
+
     @Override
     public String getXMLSchemaVersion() {
         return DDIExporter.DEFAULT_XML_VERSION;

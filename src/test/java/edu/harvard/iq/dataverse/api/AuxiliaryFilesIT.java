@@ -303,7 +303,7 @@ public class AuxiliaryFilesIT {
                 .body("data[0].contentType", equalTo("text/plain"))
                 .body("data[0].isPublic", equalTo(true))
                 .body("data[0].type", equalTo("someType"));
-        
+
         Response listAllAuxFiles = UtilIT.listAllAuxFiles(fileId, apiToken);
         listAllAuxFiles.prettyPrint();
         listAllAuxFiles.then().assertThat()

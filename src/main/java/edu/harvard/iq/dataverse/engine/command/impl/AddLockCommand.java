@@ -19,7 +19,7 @@ public class AddLockCommand extends AbstractCommand<DatasetLock> {
 
     private final Dataset dataset;
     private final DatasetLock lock;
-    
+
     public AddLockCommand(DataverseRequest aRequest, Dataset aDataset, DatasetLock aLock) {
         super(aRequest, aDataset);
         dataset = aDataset;
@@ -28,10 +28,10 @@ public class AddLockCommand extends AbstractCommand<DatasetLock> {
 
     @Override
     public DatasetLock execute(CommandContext ctxt) throws CommandException {
-        
+
         ctxt.datasets().addDatasetLock(dataset, lock);
-        
+
         return lock;
     }
-    
+
 }

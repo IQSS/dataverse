@@ -52,7 +52,7 @@ public class DataverseUserPageTest {
         Arguments.of(true, null, false, true, 2),
         Arguments.of(true, null, true, false, 3),
         Arguments.of(true, null, true, true, 4),
-        Arguments.of(false, new Timestamp(0), false, false, 5), 
+        Arguments.of(false, new Timestamp(0), false, false, 5),
         Arguments.of(false, new Timestamp(0), false, true, 6),
         Arguments.of(false, new Timestamp(0), true, false, 7),
         Arguments.of(false, new Timestamp(0), true, true, 8)
@@ -63,7 +63,7 @@ public class DataverseUserPageTest {
   @MethodSource("provider_testShowVerifyEmailButton")
   public void testShowVerifyEmailButton(boolean expected, Timestamp emailConfirmed, boolean confirmEmailData, boolean emailVerified, int counter) {
     user.setEmailConfirmed(emailConfirmed);
-    
+
     dataverseUserPage.setCurrentUser(user);
 
     if (confirmEmailData) {
@@ -72,9 +72,9 @@ public class DataverseUserPageTest {
     } else {
       Mockito.when(mockConfirmEmailService.findSingleConfirmEmailDataByUser(user)).thenReturn(null);
     }
-    
+
     if (emailConfirmed != null) {
-        
+
     Mockito.when(mockConfirmEmailService.hasVerifiedEmail(user))
           .thenReturn(true);
     } else {

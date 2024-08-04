@@ -30,9 +30,9 @@ import jakarta.inject.Named;
 @RequestScoped
 @Named
 public class ThumbnailServiceWrapper implements java.io.Serializable {
-    
+
     private static final Logger logger = Logger.getLogger(ThumbnailServiceWrapper.class.getCanonicalName());
-    
+
     @Inject
     PermissionsWrapper permissionsWrapper;
     @EJB
@@ -43,7 +43,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
     DatasetVersionServiceBean datasetVersionService;
     @EJB
     DataFileServiceBean dataFileService;
-    
+
     private Map<Long, String> dvobjectThumbnailsMap = new HashMap<>();
     private Map<Long, DvObject> dvobjectViewMap = new HashMap<>();
     private Map<Long, Boolean> hasThumbMap = new HashMap<>();
@@ -56,9 +56,9 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
         // thumbnails)
         
         if (result.isHarvested()) {
-            return null; 
+            return null;
         }
-        
+
         Long imageFileId = result.getEntity().getId();
 
         if (imageFileId != null) {
@@ -72,7 +72,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
             }
 
             String cardImageUrl = null;
-            
+
             if (result.getTabularDataTags() != null) {
                 for (String tabularTagLabel : result.getTabularDataTags()) {
                     DataFileTag tag = new DataFileTag();
@@ -89,7 +89,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
             if ((!((DataFile) result.getEntity()).isRestricted()
                         || permissionsWrapper.hasDownloadFilePermission(result.getEntity()))
                     && isThumbnailAvailable((DataFile) result.getEntity())) {
-                
+
                 cardImageUrl = ImageThumbConverter.getImageThumbnailAsBase64(
                         (DataFile) result.getEntity(),
                         ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
@@ -129,9 +129,9 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
         // thumbnails)
 
         if (result.isHarvested()) {
-            return null; 
+            return null;
         }
-        
+
         // Check if the search result ("card") contains an entity, before 
         // attempting to convert it to a Dataset. It occasionally happens that 
         // solr has indexed datasets that are no longer in the database. If this
@@ -142,12 +142,12 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
         }
         Dataset dataset = (Dataset) result.getEntity();
         dataset.setId(result.getEntityId());
-        
+
         Long versionId = result.getDatasetVersionId();
 
         return getDatasetCardImageAsUrl(dataset, versionId, result.isPublishedState(), ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
     }
-    
+
     public String getDatasetCardImageAsUrl(Dataset dataset, Long versionId, boolean autoselect, int size) {
         Long datasetId = dataset.getId();
         if (datasetId != null) {
@@ -167,7 +167,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
 
         if (dataset.isUseGenericThumbnail()) {
             this.dvobjectThumbnailsMap.put(datasetId, "");
-            return null; 
+            return null;
         }
         DataFile thumbnailFile = dataset.getThumbnailFile();
 
@@ -196,20 +196,20 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
         logger.fine("getDatasetCardImageAsUrl: " + url);
         this.dvobjectThumbnailsMap.put(datasetId, url);
         return url;
-        
+
     }
-    
+
     // it's the responsibility of the user - to make sure the search result
     // passed to this method is of the Dataverse type!
     public String getDataverseCardImageAsBase64Url(SolrSearchResult result) {
         return dataverseService.getDataverseLogoThumbnailAsBase64ById(result.getEntityId());
     }
-    
+
     public void resetObjectMaps() {
         dvobjectThumbnailsMap = new HashMap<>();
         dvobjectViewMap = new HashMap<>();
         hasThumbMap = new HashMap<>();
     }
 
-    
+
 }

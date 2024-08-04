@@ -37,7 +37,7 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
 
    final DatasetVersion theVersion;
    final boolean deleteDOIIdentifier;
-    
+
     public DeaccessionDatasetVersionCommand(DataverseRequest aRequest, DatasetVersion deaccessionVersion, boolean deleteDOIIdentifierIn) {
         super(aRequest, deaccessionVersion.getDataset());
         theVersion = deaccessionVersion;
@@ -47,7 +47,7 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        Dataset ds = theVersion.getDataset();        
+        Dataset ds = theVersion.getDataset();
 
         theVersion.setVersionState(DatasetVersion.VersionState.DEACCESSIONED);
         /* We do not want to delete the identifier if the dataset is completely deaccessioned
@@ -71,12 +71,12 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
             }
         }*/
         DatasetVersion managed = ctxt.em().merge(theVersion);
-        
+
         boolean doNormalSolrDocCleanUp = true;
 
-        
+
         ExportService instance = ExportService.getInstance();
-        
+
 
         if (managed.getDataset().getReleasedVersion() != null) {
             try {

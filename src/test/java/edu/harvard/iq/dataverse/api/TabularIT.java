@@ -204,7 +204,7 @@ public class TabularIT {
             System.out.println(i + "\t" + filename + "\t" + Arrays.toString(justErrors) + "\t" + firstLine);
         }
     }
-    
+
     @Disabled
     @Test
     public void testStata14Multiple() {

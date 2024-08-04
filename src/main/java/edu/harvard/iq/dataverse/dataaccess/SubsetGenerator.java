@@ -27,7 +27,7 @@ package edu.harvard.iq.dataverse.dataaccess;
  */
 import java.io.InputStream;
 import java.util.*;
-    
+
 /**
  * original author:
  * @author Akio Sone
@@ -36,7 +36,7 @@ import java.util.*;
  * @author Leonid Andreev
  */
 public interface SubsetGenerator {
-        
+
     public  void subsetFile(String infile, String outfile, List<Integer> columns, Long numCases);
 
     public void subsetFile(String infile, String outfile, List<Integer> columns, Long numCases,

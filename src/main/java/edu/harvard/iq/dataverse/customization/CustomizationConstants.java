@@ -10,7 +10,7 @@ package edu.harvard.iq.dataverse.customization;
  * @author rmp553
  */
 public class CustomizationConstants {
- 
+
     public static String fileTypeHomePage = "homePage";
 
     public static String fileTypeHeader = "header";
@@ -24,4 +24,4 @@ public class CustomizationConstants {
     public static String fileTypeLogo = "logo";
 
 
-} // end CustomizationConstants
+}// end CustomizationConstants

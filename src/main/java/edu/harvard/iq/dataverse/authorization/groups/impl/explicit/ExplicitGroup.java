@@ -72,26 +72,26 @@ import org.hibernate.validator.constraints.NotBlank;
 @Table(indexes = {@Index(columnList = "owner_id"),
                   @Index(columnList = "groupaliasinowner")})
 public class ExplicitGroup implements Group, java.io.Serializable {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
-    
+
     /**
      * Authenticated users directly added to the group.
      */
     @ManyToMany
     private Set<AuthenticatedUser> containedAuthenticatedUsers;
-    
+
     /**
      * Explicit groups that belong to {@code this} explicit gorups.
      */
     @ManyToMany
-    @JoinTable(name = "explicitgroup_explicitgroup", 
+    @JoinTable(name = "explicitgroup_explicitgroup",
             joinColumns = @JoinColumn(name = "explicitgroup_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "containedexplicitgroups_id", referencedColumnName = "id"))
     Set<ExplicitGroup> containedExplicitGroups;
-    
+
     /**
      * All the role assignees that belong to this group
      * and are not {@link authenticatedUser}s or {@ExplicitGroup}s, are stored
@@ -101,31 +101,31 @@ public class ExplicitGroup implements Group, java.io.Serializable {
      */
     @ElementCollection
     private Set<String> containedRoleAssignees;
-    
+
     @Column(length = 1024)
     private String description;
-    
+
     @NotBlank
     private String displayName;
-    
+
     /**
      * The DvObject under which this group is defined.
      */
     @ManyToOne
     DvObject owner;
-    
+
     /** Given alias of the group, e.g by the user that created it. Unique in the owner. */
     @NotBlank
     @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "{dataverse.nameIllegalCharacters}")
     private String groupAliasInOwner;
-    
+
     /** Alias of the group. Calculated from the group's name and its owner id. Unique in the table. */
     @Column(unique = true)
     private String groupAlias;
-    
+
     @Transient
     private ExplicitGroupProvider provider;
-    
+
     public ExplicitGroup(ExplicitGroupProvider prv) {
         provider = prv;
         containedAuthenticatedUsers = new HashSet<>();
@@ -150,7 +150,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
      * Constructor for JPA.
      */
     protected ExplicitGroup() {}
-    
+
     public void add(User u) {
         if (u == null) throw new IllegalArgumentException("Cannot add a null user to an explicit group.");
         if (u instanceof AuthenticatedUser) {
@@ -159,7 +159,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
             containedRoleAssignees.add(u.getIdentifier());
         }
     }
-    
+
     /**
      * Adds the {@link RoleAssignee} to {@code this} group. 
      * 
@@ -168,14 +168,14 @@ public class ExplicitGroup implements Group, java.io.Serializable {
      *         or is defined in a dataverse that is not an ancestor of {@code this.owner}.
      */
     public void add(RoleAssignee ra) throws GroupException {
-        
+
         if (ra.equals(this)) {
             throw new GroupException(this, "A group cannot be added to itself.");
         }
-        
+
         if (ra instanceof User) {
             add((User) ra);
-            
+
         } else {
             if (ra instanceof ExplicitGroup) {
                 // validate no circular deps
@@ -191,15 +191,15 @@ public class ExplicitGroup implements Group, java.io.Serializable {
             } else {
                 containedRoleAssignees.add(ra.getIdentifier());
             }
-            
+
         }
-        
+
     }
-    
+
     public void remove(RoleAssignee roleAssignee) {
         removeByRoleAssgineeIdentifier(roleAssignee.getIdentifier());
     }
-    
+
     /**
      * Returns all the role assignee identifiers in this group. <br>
      * <b>Note</b> some of the identifiers may be stale (i.e. group deleted but 
@@ -216,10 +216,10 @@ public class ExplicitGroup implements Group, java.io.Serializable {
         for (AuthenticatedUser au : containedAuthenticatedUsers) {
             retVal.add(au.getIdentifier());
         }
-        
+
         return retVal;
     }
-    
+
     public void removeByRoleAssgineeIdentifier(String idtf) {
         if (containedRoleAssignees.contains(idtf)) {
             containedRoleAssignees.remove(idtf);
@@ -238,7 +238,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
             }
         }
     }
-    
+
     /**
      * Returns a set of all direct members of the group, including 
      * logical role assignees.
@@ -246,7 +246,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
      */
     public Set<RoleAssignee> getDirectMembers() {
         Set<RoleAssignee> res = new HashSet<>();
-        
+
         res.addAll(getContainedExplicitGroups());
         res.addAll(containedAuthenticatedUsers);
         for (String idtf : containedRoleAssignees) {
@@ -255,10 +255,10 @@ public class ExplicitGroup implements Group, java.io.Serializable {
                 res.add(ra);
             }
         }
-        
+
         return res;
     }
-    
+
     @Override
     public String getDescription() {
         return description;
@@ -272,7 +272,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     public boolean contains(DataverseRequest req) {
         return containsDirectly(req) || containsIndirectly(req);
     }
-    
+
     /**
      * Looks at structural containment: whether {@code ra} is part of the
      * group's structure. It mostly the same as {@link #contains(edu.harvard.iq.dataverse.engine.command.DataverseRequest)},
@@ -289,29 +289,29 @@ public class ExplicitGroup implements Group, java.io.Serializable {
             if (containedAuthenticatedUsers.contains((AuthenticatedUser) ra)) {
                 return true;
             }
-            
+
         } else if (ra instanceof ExplicitGroup) {
-            if (containedExplicitGroups.contains((ExplicitGroup) ra)) { 
+            if (containedExplicitGroups.contains((ExplicitGroup) ra)) {
                 return true;
             }
-            
+
         } else {
             if (containedRoleAssignees.contains(ra.getIdentifier())) {
                 return true;
             }
         }
-        
+
         // no direct containment. Recurse.
         for (ExplicitGroup eg : containedExplicitGroups) {
             if (eg.structuralContains(ra)) {
                 return true;
             }
         }
-        
+
         return false;
-        
+
     }
-    
+
     /**
      * @param req
      * @return {@code true} iff the request is contained in the group or in an included non-explicit group.
@@ -322,13 +322,13 @@ public class ExplicitGroup implements Group, java.io.Serializable {
             AuthenticatedUser au = (AuthenticatedUser) ra;
             if (containedAuthenticatedUsers.contains(au)) {
                 return true;
-            }    
-        } 
-        
+            }
+        }
+
         if (containedRoleAssignees.contains(ra.getIdentifier())) {
             return true;
         }
-        
+
         for (String craIdtf : containedRoleAssignees) {
             // Need to retrieve the actual role assingee, and let it's logic decide.
             RoleAssignee cra = provider.findRoleAssignee(craIdtf);
@@ -339,7 +339,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
                         return true;
                     }
                 } // if cra is a user, we would have returned after the .contains() test.
-            } 
+            }
         }
        // If we get here, the request is not in this group.
        return false;
@@ -363,21 +363,21 @@ public class ExplicitGroup implements Group, java.io.Serializable {
      * groupAliasInOwner fields. JPA-related activities call this automatically.
      */
     public void updateAlias() {
-        groupAlias = ((getOwner() != null) 
-                           ? Long.toString(getOwner().getId()) + "-" 
+        groupAlias = ((getOwner() != null)
+                           ? Long.toString(getOwner().getId()) + "-"
                            : "") + getGroupAliasInOwner();
     }
-    
+
     @PrePersist
     void prepersist() {
         updateAlias();
     }
-    
+
     @PostLoad
     void postload() {
         updateAlias();
     }
-    
+
     @Override
     public boolean isEditable() {
         return true;
@@ -387,7 +387,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     public ExplicitGroupProvider getGroupProvider() {
         return provider;
     }
-    
+
     void setProvider(ExplicitGroupProvider c) {
         provider = c;
     }
@@ -410,7 +410,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     public void setGroupAliasInOwner(String groupAliasInOwner) {
         this.groupAliasInOwner = groupAliasInOwner;
     }
-    
+
     @Override
     public String getAlias() {
         return groupAlias;
@@ -465,7 +465,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
                     && Objects.equals(this.owner, other.owner);
         }
     }
-    
+
     /**
      * Low-level call to return the role assignee identifier strings. Note that
      * the role assignees themselves might be stale, which is why this call is here - 
@@ -475,7 +475,7 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     Set<String> getContainedRoleAssignees() {
         return containedRoleAssignees;
     }
-    
+
     @Override
     public String toString() {
         return "[ExplicitGroup " + groupAlias + "]";

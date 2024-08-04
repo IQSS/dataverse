@@ -23,7 +23,7 @@ public class CitationServlet extends HttpServlet {
 
     @EJB
     DvObjectServiceBean dvObjectService;
-    
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -35,7 +35,7 @@ public class CitationServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String persistentId = request.getParameter("persistentId");
         if (persistentId != null) {
             DvObject dob = dvObjectService.findByGlobalId(PidUtil.parseAsGlobalID(persistentId));

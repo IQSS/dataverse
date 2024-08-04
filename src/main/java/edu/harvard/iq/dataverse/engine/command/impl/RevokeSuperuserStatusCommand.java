@@ -26,7 +26,7 @@ import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 public class RevokeSuperuserStatusCommand extends AbstractVoidCommand {
 
     private final AuthenticatedUser targetUser;
-    
+
     public RevokeSuperuserStatusCommand(AuthenticatedUser targetUser, DataverseRequest aRequest) {
         super(aRequest, (Dataset) null);
         this.targetUser = targetUser;
@@ -48,5 +48,5 @@ public class RevokeSuperuserStatusCommand extends AbstractVoidCommand {
             throw new CommandException("Failed to revoke the superuser status for user " + targetUser.getIdentifier(), this);
         }
     }
-    
+
 }

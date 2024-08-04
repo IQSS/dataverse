@@ -27,14 +27,14 @@ import java.util.List;
 public class ListVersionsCommand extends AbstractCommand<List<DatasetVersion>> {
 
     private final Dataset ds;
-    private final Integer limit; 
+    private final Integer limit;
     private final Integer offset;
-    private final Boolean deepLookup; 
-    
+    private final Boolean deepLookup;
+
     public ListVersionsCommand(DataverseRequest aRequest, Dataset aDataset) {
         this(aRequest, aDataset, null, null);
     }
-    
+
     public ListVersionsCommand(DataverseRequest aRequest, Dataset aDataset, Integer offset, Integer limit) {
         this(aRequest, aDataset, null, null, false);
     }
@@ -42,18 +42,18 @@ public class ListVersionsCommand extends AbstractCommand<List<DatasetVersion>> {
     public ListVersionsCommand(DataverseRequest aRequest, Dataset aDataset, Integer offset, Integer limit, boolean deepLookup) {
         super(aRequest, aDataset);
         ds = aDataset;
-        this.offset = offset; 
-        this.limit = limit; 
-        this.deepLookup = deepLookup; 
+        this.offset = offset;
+        this.limit = limit;
+        this.deepLookup = deepLookup;
     }
 
     @Override
     public List<DatasetVersion> execute(CommandContext ctxt) throws CommandException {
-        
+
         boolean includeUnpublished = ctxt.permissions().request(getRequest()).on(ds).has(Permission.EditDataset);
-        
-        if (offset == null && limit == null) { 
-            
+
+        if (offset == null && limit == null) {
+
             List<DatasetVersion> outputList = new LinkedList<>();
             for (DatasetVersion dsv : ds.getVersions()) {
                 if (dsv.isReleased() || includeUnpublished) {

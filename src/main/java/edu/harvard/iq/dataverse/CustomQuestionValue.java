@@ -14,11 +14,11 @@ public class CustomQuestionValue implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(nullable = false)
     @NotBlank(message = "{custom.response}")
     private String valueString;
-    
+
     private int displayOrder;
 
     public int getDisplayOrder() {
@@ -44,7 +44,7 @@ public class CustomQuestionValue implements Serializable {
     public void setValueString(String valueString) {
         this.valueString = valueString;
     }
-    
+
     @ManyToOne
     @JoinColumn(nullable = false)
     private CustomQuestion customQuestion;
@@ -81,6 +81,6 @@ public class CustomQuestionValue implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dvn.core.vdc.CustomQuestionValue[ id=" + id + " ]";
     }
-    
+
 }
 

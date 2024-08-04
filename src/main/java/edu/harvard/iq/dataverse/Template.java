@@ -111,7 +111,7 @@ public class Template implements Serializable {
     public String getCreateDate() {
         return DateUtil.formatDate(createTime);
     }
-    
+
     @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
     @JoinColumn(name = "termsOfUseAndAccess_id")
     private TermsOfUseAndAccess termsOfUseAndAccess;
@@ -131,18 +131,18 @@ public class Template implements Serializable {
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
     }
-    
+
     @Column(columnDefinition = "TEXT", nullable = true)
     private String instructions;
 
     @Transient
     private Map<String, String> instructionsMap = null;
-    
+
     @Transient
     private TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForView = new TreeMap<>();
     @Transient
     private TreeMap<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new TreeMap<>();
-    
+
     @Transient
     private boolean isDefaultForDataverse;
 
@@ -153,7 +153,7 @@ public class Template implements Serializable {
     public void setIsDefaultForDataverse(boolean isDefaultForDataverse) {
         this.isDefaultForDataverse = isDefaultForDataverse;
     }
-    
+
     @Transient
     private List<Dataverse> dataversesHasAsDefault;
 
@@ -164,7 +164,7 @@ public class Template implements Serializable {
     public void setDataversesHasAsDefault(List<Dataverse> dataversesHasAsDefault) {
         this.dataversesHasAsDefault = dataversesHasAsDefault;
     }
-    
+
 
     public TreeMap<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
         return metadataBlocksForView;
@@ -269,13 +269,13 @@ public class Template implements Serializable {
         //TODO: A lot of clean up on the logic of this method
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
-        List<DatasetField> filledInFields = this.getDatasetFields(); 
+        List<DatasetField> filledInFields = this.getDatasetFields();
 
         Map<String, String> instructionsMap = getInstructionsMap();
-        
+
         List<MetadataBlock> viewMDB = new ArrayList<>();
         List<MetadataBlock> editMDB = this.getDataverse().getMetadataBlocks(false);
-            
+
         //The metadatablocks in this template include any from the Dataverse it is associated with 
         //plus any others where the template has a displayable field (i.e. from before a block was dropped in the dataverse/collection)
         viewMDB.addAll(this.getDataverse().getMetadataBlocks(true));
@@ -305,7 +305,7 @@ public class Template implements Serializable {
             }
 
         }
-        
+
         for (MetadataBlock mdb : editMDB) {
             if (!systemMDBlocks.contains(mdb)) {
                 List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
@@ -318,7 +318,7 @@ public class Template implements Serializable {
                 metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
             }
         }
-        
+
     }
 
     // TODO: clean up init methods and get them to work, cascading all the way down.
@@ -365,7 +365,7 @@ public class Template implements Serializable {
         }
         terms.setTemplate(newTemplate);
         newTemplate.setTermsOfUseAndAccess(terms);
-        
+
         newTemplate.getInstructionsMap().putAll(source.getInstructionsMap());
         newTemplate.updateInstructions();
         return newTemplate;
@@ -388,7 +388,7 @@ public class Template implements Serializable {
         }
         this.datasetFields = datasetFields;
     }
-    
+
     public List<DatasetField> getFlatDatasetFields() {
         return getFlatDatasetFields(getDatasetFields());
     }
@@ -406,7 +406,7 @@ public class Template implements Serializable {
         }
         return retList;
     }
-    
+
     //Cache values in map for reading
     public Map<String, String> getInstructionsMap() {
         if (instructionsMap == null)
@@ -444,7 +444,7 @@ public class Template implements Serializable {
         });
         instructions = JsonUtil.prettyPrint(builder.build());
     }
-    
+
 
     @Override
      public int hashCode() {
@@ -464,6 +464,6 @@ public class Template implements Serializable {
             return false;
         }
         return true;
-    } 
+    }
 
 }

@@ -75,7 +75,7 @@ import org.passay.dictionary.sort.ArraysSort;
 public class PasswordValidatorServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(PasswordValidatorServiceBean.class.getCanonicalName());
-    
+
     //FIXME: hardcoding this dictionary... I think its overwritten but should remove or something.
     private static String DICTIONARY_FILES = "weak_passwords.txt";
 
@@ -252,7 +252,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         }
         return rule;
     }
-    
+
         /**
      * dictionarySubstringRule
      * <p>
@@ -389,7 +389,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
         else {
             int minLength = getMinLength();
             if (goodStrength <= minLength) {
-                int reset = minLength + 1;                
+                int reset = minLength + 1;
                 logger.log(Level.WARNING, BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnSetStrength", Arrays.asList(Integer.toString(goodStrength), Integer.toString(minLength), Integer.toString(reset))));
                 goodStrength = reset;
             }
@@ -439,7 +439,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             validators.remove(ValidatorTypes.StandardValidator);
         }
     }
-    
+
     public void setCharacterRules(List<CharacterRule> characterRules) {
         if (!characterRules.equals(this.characterRules)) {
             this.characterRules = characterRules;

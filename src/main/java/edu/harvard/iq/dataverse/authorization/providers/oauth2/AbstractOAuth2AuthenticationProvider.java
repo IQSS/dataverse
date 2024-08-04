@@ -44,6 +44,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
             username = aUsername;
             emails.addAll(emails);
         }
+
         public ParsedUserResponse(AuthenticatedUserDisplayInfo displayInfo, String userIdInProvider, String username) {
             this(displayInfo, userIdInProvider, username, Collections.emptyList());
         }
@@ -85,7 +86,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
             return "ParsedUserResponse{" + "displayInfo=" + displayInfo + ", userIdInProvider=" + userIdInProvider + ", username=" + username + ", emails=" + emails + '}';
         }
     }
-    
+
     protected String id;
     protected String title;
     protected String subTitle;
@@ -93,20 +94,20 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     protected String clientSecret;
     protected String baseUserEndpoint;
     protected String redirectUrl;
-    
+
     /**
      * List of scopes to be requested for authorization at identity provider.
      * Defaults to empty so no scope will be requested (use case: public info from GitHub)
      */
     protected List<String> scope = Arrays.asList("");
-    
+
     /**
      * TODO: when refactoring the package to be about token flow auth, this hard dependency should be removed.
      */
     public abstract DefaultApi20 getApiInstance();
-    
+
     protected abstract ParsedUserResponse parseUserResponse(String responseBody);
-    
+
     /**
      * Build an Authorization URL for this identity provider
      * @param state A randomized state, necessary to secure the authorization flow. @see OAuth2LoginBackingBean.createState()
@@ -114,14 +115,14 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
      */
     public String buildAuthzUrl(String state, String callbackUrl) {
         OAuth20Service svc = this.getService(callbackUrl);
-        
+
         AuthorizationUrlBuilder aub = svc.createAuthorizationUrlBuilder().state(state);
         // Do not include scope if empty string (necessary for GitHub)
         if (!this.getSpacedScope().isEmpty()) { aub.scope(this.getSpacedScope()); }
-        
+
         return aub.build();
     }
-    
+
     /**
      * Build an OAuth20Service based on client ID & secret, also inserting the
      * callback URL. Build uses the real API object for the target service like GitHub etc.
@@ -134,7 +135,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
                     .callback(callbackUrl)
                     .build(getApiInstance());
     }
-    
+
     /**
      * Receive user data from OAuth2 provider after authn/z has been successfull. (Callback view uses this)
      * Request a token and access the resource, parse output and return user details.
@@ -149,10 +150,10 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
      */
     public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl)
         throws IOException, OAuth2Exception, InterruptedException, ExecutionException {
-        
+
         OAuth20Service service = getService(redirectUrl);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
-        
+
         // We need to check if scope is null first: GitHub is used without scope, so the responses scope is null.
         // Checking scopes via Stream to be independent from order.
         if ((accessToken.getScope() != null && !getScope().stream().allMatch(accessToken.getScope()::contains)) ||
@@ -176,7 +177,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
             throw new OAuth2Exception(responseCode, body, BundleUtil.getStringFromBundle("auth.providers.exception.userinfo", Arrays.asList(this.getTitle())));
         }
     }
-    
+
     /**
      * Get the user record from the response body.
      * Might be overriden by subclasses to add information from the access token response not included
@@ -189,7 +190,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
      */
     protected OAuth2UserRecord getUserRecord(@NotNull String responseBody, @NotNull OAuth2AccessToken accessToken, @NotNull OAuth20Service service)
         throws OAuth2Exception {
-        
+
         final ParsedUserResponse parsed = parseUserResponse(responseBody);
         return new OAuth2UserRecord(getId(), parsed.userIdInProvider,
             parsed.username,
@@ -214,7 +215,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public AuthenticationProviderDisplayInfo getInfo() {
         return new AuthenticationProviderDisplayInfo(getId(), getTitle(), getSubTitle());
     }
-    
+
     /**
      * Used in {@link LoginPage#listAuthenticationProviders()} for sorting the providers in the UI
      * TODO: this might be extended to use a value set by the admin when configuring the provider via JSON.
@@ -222,7 +223,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
      */
     @Override
     public int getOrder() { return 100; }
-    
+
     @Override
     public String getId() {
         return id;
@@ -231,7 +232,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public String getTitle() {
         return title;
     }
-    
+
     public String getClientId() {
         return clientId;
     }
@@ -243,7 +244,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public String getUserEndpoint(OAuth2AccessToken token) {
         return baseUserEndpoint;
     }
-    
+
     public String getRedirectUrl() {
         return redirectUrl;
     }
@@ -267,9 +268,9 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public String getSubTitle() {
         return subTitle;
     }
-    
+
     public List<String> getScope() { return scope; }
-    
+
     public String getSpacedScope() { return String.join(" ", getScope()); }
 
     @Override
@@ -312,5 +313,5 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         RANDOM_EMAIL1,
         RANDOM_EMAIL2,
         RANDOM_EMAIL3,
-    };
+    }
 }

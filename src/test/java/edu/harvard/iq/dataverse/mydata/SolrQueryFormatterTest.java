@@ -94,7 +94,7 @@ public class SolrQueryFormatterTest {
             makeQueryTest2(sqf, 11, "parentId", 4);
 
         }
-    
+
         private void makeQueryTest2(SolrQueryFormatter sqf, int numIds, String paramName, int numParamOccurrences) {
 
             Long[] idList = this.getListOfLongs(numIds);
@@ -104,7 +104,7 @@ public class SolrQueryFormatterTest {
             msgt("query clause: " + queryClause);
             assertEquals(StringUtils.countMatches(queryClause, paramName), numParamOccurrences);
         }
-        
+
         private void makeQueryTest(SolrQueryFormatter sqf, int numIds, String paramName, String expectedQuery) {
 
             Long[] idList = this.getListOfLongs(numIds);
@@ -209,7 +209,7 @@ public class SolrQueryFormatterTest {
             Arguments.of(null, "paramName", null, "sliceOfIds cannot be null", NullPointerException.class),
             Arguments.of(null, "paramName", "", "sliceOfIds cannot be null", NullPointerException.class),
             Arguments.of(null, "paramName", "dvObjectType", "sliceOfIds cannot be null", NullPointerException.class),
-            
+
             Arguments.of(list(), null, null, "paramName cannot be null", NullPointerException.class),
             Arguments.of(list(), null, "", "paramName cannot be null", NullPointerException.class),
             Arguments.of(list(), null, "dvObjectType", "paramName cannot be null", NullPointerException.class),
@@ -219,7 +219,7 @@ public class SolrQueryFormatterTest {
             Arguments.of(list(), "paramName", null, "sliceOfIds must have at least 1 value", IllegalStateException.class),
             Arguments.of(list(), "paramName", "", "sliceOfIds must have at least 1 value", IllegalStateException.class),
             Arguments.of(list(), "paramName", "dvObjectType", "sliceOfIds must have at least 1 value", IllegalStateException.class),
-            
+
             Arguments.of(list((Long) null), null, null, "paramName cannot be null", NullPointerException.class),
             Arguments.of(list((Long) null), null, "", "paramName cannot be null", NullPointerException.class),
             Arguments.of(list((Long) null), null, "dvObjectType", "paramName cannot be null", NullPointerException.class),
@@ -229,7 +229,7 @@ public class SolrQueryFormatterTest {
             Arguments.of(list((Long) null), "paramName", null, "(paramName:())", null),
             Arguments.of(list((Long) null), "paramName", "", "(paramName:() AND dvObjectType:())", null),
             Arguments.of(list((Long) null), "paramName", "dvObjectType", "(paramName:() AND dvObjectType:(dvObjectType))", null),
-            
+
             Arguments.of(list(1L), null, null, "paramName cannot be null", NullPointerException.class),
             Arguments.of(list(1L), null, "", "paramName cannot be null", NullPointerException.class),
             Arguments.of(list(1L), null, "dvObjectType", "paramName cannot be null", NullPointerException.class),
@@ -239,7 +239,7 @@ public class SolrQueryFormatterTest {
             Arguments.of(list(1L), "paramName", null, "(paramName:(1))", null),
             Arguments.of(list(1L), "paramName", "", "(paramName:(1) AND dvObjectType:())", null),
             Arguments.of(list(1L), "paramName", "dvObjectType", "(paramName:(1) AND dvObjectType:(dvObjectType))", null),
-            
+
             Arguments.of(list(1L, null), null, null, "paramName cannot be null", NullPointerException.class),
             Arguments.of(list(1L, null), null, "", "paramName cannot be null", NullPointerException.class),
             Arguments.of(list(1L, null), null, "dvObjectType", "paramName cannot be null", NullPointerException.class),
@@ -251,7 +251,7 @@ public class SolrQueryFormatterTest {
             Arguments.of(list(1L, null), "paramName", "dvObjectType", "(paramName:(1) AND dvObjectType:(dvObjectType))", null)
         );
     }
-    
+
     /**
      * @param expectedResult May either be (i) the expected query part or (ii) the expected exception message
      */
@@ -260,16 +260,16 @@ public class SolrQueryFormatterTest {
     void testFormatIdsForSolrClause(List<Long> sliceOfIds, String paramName, String dvObjectType,
                                     String expectedResult, Class<Throwable> expectedException) {
         SolrQueryFormatter sqf = new SolrQueryFormatter();
-        
+
         if (expectedException == null) {
             assertEquals(expectedResult, sqf.formatIdsForSolrClause(sliceOfIds, paramName, dvObjectType));
             return;
         }
-        
+
         Throwable e = assertThrows(expectedException, () -> sqf.formatIdsForSolrClause(sliceOfIds, paramName, dvObjectType));
         assertEquals(expectedResult, e.getMessage());
     }
-    
+
     static List<Long> list(Long... args) {
         return Arrays.asList(args);
     }

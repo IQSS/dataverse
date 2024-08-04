@@ -84,11 +84,11 @@ public class DateUtil {
         // YYYT
         date = parseDate(dateString, YEAR_PATTERN);
         return date;
-        
+
     }
 
     public static Date parseDate(String dateString, String format) {
-        
+
         try {
             SimpleDateFormat sdf = new SimpleDateFormat(format);
             Date date = sdf.parse(dateString);

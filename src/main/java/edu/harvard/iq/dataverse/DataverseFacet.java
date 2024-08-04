@@ -82,8 +82,8 @@ public class DataverseFacet implements Serializable {
 
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
-    } 
-  
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -104,6 +104,6 @@ public class DataverseFacet implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.DataverseFacet[ id=" + id + " ]";
     }
-    
+
 }
 

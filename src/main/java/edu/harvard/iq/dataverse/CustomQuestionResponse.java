@@ -31,7 +31,7 @@ public class CustomQuestionResponse implements Serializable {
     @ManyToOne
     @JoinColumn(nullable = false)
     private CustomQuestion customQuestion;
-    
+
     @Column(name = "response", columnDefinition = "TEXT", nullable = true)
     private String response;
 
@@ -42,7 +42,7 @@ public class CustomQuestionResponse implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public GuestbookResponse getGuestbookResponse() {
         return guestbookResponse;
     }
@@ -58,8 +58,8 @@ public class CustomQuestionResponse implements Serializable {
     public void setResponse(String response) {
         this.response = response;
     }
-    
-    
+
+
     public CustomQuestion getCustomQuestion() {
         return customQuestion;
     }
@@ -67,7 +67,7 @@ public class CustomQuestionResponse implements Serializable {
     public void setCustomQuestion(CustomQuestion customQuestion) {
         this.customQuestion = customQuestion;
     }
-    
+
     @Transient
     private List<SelectItem> responseSelectItems;
 

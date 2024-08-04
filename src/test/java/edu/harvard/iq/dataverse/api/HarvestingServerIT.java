@@ -49,13 +49,13 @@ public class HarvestingServerIT {
 	// enable harvesting server
 	//  Gave some thought to storing the original response, and resetting afterwards - but that appears to be more complexity than it's worth
 	Response enableHarvestingServerResponse = UtilIT.setSetting(SettingsServiceBean.Key.OAIServerEnabled, "true");
-        
+
         // Create users:
         setupUsers();
-        
+
         // Create and publish some datasets: 
         setupDatasets();
-        
+
     }
 
     @AfterAll
@@ -72,7 +72,7 @@ public class HarvestingServerIT {
         Response u1a = UtilIT.makeSuperUser(un1);
         adminUserAPIKey = UtilIT.getApiTokenFromResponse(cu1);
     }
-    
+
     private static void setupDatasets() {
         // create dataverse:
         Response createDataverseResponse = UtilIT.createRandomDataverse(adminUserAPIKey);
@@ -98,14 +98,14 @@ public class HarvestingServerIT {
         singleSetDatasetIdentifier = singleSetDatasetPersistentId.substring(singleSetDatasetPersistentId.lastIndexOf('/') + 1);
 
         logger.info("identifier: " + singleSetDatasetIdentifier);
-        
+
         // Publish command is executed asynchronously, i.e. it may 
         // still be running after we received the OK from the publish API. 
         // The oaiExport step also requires the metadata exports to be done and this
         // takes longer than just publish/reindex.
         // So wait for all of this to finish.
         UtilIT.sleepForReexport(singleSetDatasetPersistentId, adminUserAPIKey, 10);
-        
+
         // ... And let's create 5 more datasets for a multi-dataset experiment:
         
         for (int i = 0; i < 5; i++) {
@@ -122,18 +122,18 @@ public class HarvestingServerIT {
             assertEquals(200, publishDataset.getStatusCode());
 
             UtilIT.sleepForReexport(thisDatasetPersistentId, adminUserAPIKey, 10);
-            
+
             extraDatasetsIdentifiers.add(thisDatasetPersistentId.substring(thisDatasetPersistentId.lastIndexOf('/') + 1));
         }
-        
-        
+
+
     }
 
     private String jsonForTestSpec(String name, String def) {
         String r = String.format("{\"name\":\"%s\",\"definition\":\"%s\"}", name, def);//description is optional
         return r;
     }
-    
+
     private String jsonForEditSpec(String name, String def, String desc) {
         String r = String.format("{\"name\":\"%s\",\"definition\":\"%s\",\"description\":\"%s\"}", name, def, desc);
         return r;
@@ -144,9 +144,9 @@ public class HarvestingServerIT {
         // confirm that the response is in fact XML:
         XmlPath responseXmlPath = oaiResponse.getBody().xmlPath();
         assertNotNull(responseXmlPath);
-        
+
         String dateString = responseXmlPath.getString("OAI-PMH.responseDate");
-        assertNotNull(dateString); 
+        assertNotNull(dateString);
         // TODO: validate the formatting of the date string in the record
         // header, above. (could be slightly tricky - since this formatting
         // is likely locale-specific)
@@ -155,8 +155,8 @@ public class HarvestingServerIT {
         assertEquals(verb, responseXmlPath.getString("OAI-PMH.request.@verb"));
         return responseXmlPath;
     }
-    
-    @Test 
+
+    @Test
     public void testOaiIdentify() {
         // Run Identify:
         Response identifyResponse = UtilIT.getOaiIdentify();
@@ -172,7 +172,7 @@ public class HarvestingServerIT {
         assertEquals("transient", responseXmlPath.getString("OAI-PMH.Identify.deletedRecord"));
         assertEquals("YYYY-MM-DDThh:mm:ssZ", responseXmlPath.getString("OAI-PMH.Identify.granularity"));
     }
-    
+
     @Test
     public void testOaiListMetadataFormats() {
         // Run ListMeatadataFormats:
@@ -182,7 +182,7 @@ public class HarvestingServerIT {
         // Validate the response: 
         
         XmlPath responseXmlPath = validateOaiVerbResponse(listFormatsResponse, "ListMetadataFormats");
-        
+
         // Check the payload of the response atgainst the list of metadata formats
         // we are currently offering under OAI; will need to be explicitly 
         // modified if/when we add more harvestable formats.
@@ -191,28 +191,28 @@ public class HarvestingServerIT {
 
         assertNotNull(listFormats);
         assertEquals(5, listFormats.size());
-        
+
         // The metadata formats are reported in an unpredictable ordder. We
         // want to sort the prefix names for comparison purposes, and for that 
         // they need to be saved in a modifiable list: 
-        List<String> metadataPrefixes = new ArrayList<>(); 
-        
+        List<String> metadataPrefixes = new ArrayList<>();
+
         for (int i = 0; i < listFormats.size(); i++) {
             metadataPrefixes.add(responseXmlPath.getString("OAI-PMH.ListMetadataFormats.metadataFormat[" + i + "].metadataPrefix"));
         }
         Collections.sort(metadataPrefixes);
-        
+
         assertEquals("[Datacite, dataverse_json, oai_datacite, oai_dc, oai_ddi]", metadataPrefixes.toString());
-        
+
 
     }
-    
-    
+
+
     @Test
     public void testNativeSetAPI() {
         String setName = UtilIT.getRandomString(6);
         String def = "*";
-        
+
         // This test focuses on the Create/List/Edit functionality of the 
         // Dataverse OAI Sets API (/api/harvest/server):
  
@@ -236,31 +236,31 @@ public class HarvestingServerIT {
                 .body(jsonForTestSpec(setName, def))
                 .post(createPath);
         assertEquals(201, createSetResponse.getStatusCode());
-        
+
         // API Test 4. Retrieve the set we've just created, validate the response
         getSetResponse = given().get(setPath);
-        
+
         System.out.println("getSetResponse.getStatusCode(): " + getSetResponse.getStatusCode());
         System.out.println("getSetResponse, full:  " + getSetResponse.prettyPrint());
         assertEquals(200, getSetResponse.getStatusCode());
-        
+
         getSetResponse.then().assertThat()
                 .body("status", equalTo(ApiConstants.STATUS_OK))
                 .body("data.definition", equalTo("*"))
                 .body("data.description", equalTo(""))
                 .body("data.name", equalTo(setName));
-        
-        
+
+
         // API Test 5. Retrieve all sets, check that our new set is listed 
         Response responseAll = given()
                 .get("/api/harvest/server/oaisets");
-        
+
         System.out.println("responseAll.getStatusCode(): " + responseAll.getStatusCode());
         System.out.println("responseAll full:  " + responseAll.prettyPrint());
         assertEquals(200, responseAll.getStatusCode());
         assertTrue(responseAll.body().jsonPath().getList("data.oaisets").size() > 0);
         assertTrue(responseAll.body().jsonPath().getList("data.oaisets.name", String.class).contains(setName));
-        
+
         // API Test 6. Try to create a set with the same name, should fail
         createSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
@@ -272,14 +272,14 @@ public class HarvestingServerIT {
         // is under /api/admin, no need to try to access it as a non-admin user
         Response r4 = UtilIT.exportOaiSet(setName);
         assertEquals(200, r4.getStatusCode());
-                
+
         // API TEST 8. Try to delete the set as normal user, should fail
         Response deleteResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, normalUserAPIKey)
                 .delete(setPath);
         logger.info("deleteResponse.getStatusCode(): " + deleteResponse.getStatusCode());
         assertEquals(400, deleteResponse.getStatusCode());
-        
+
         // API TEST 9. Delete as admin user, should work
         deleteResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
@@ -288,7 +288,7 @@ public class HarvestingServerIT {
         assertEquals(200, deleteResponse.getStatusCode());
 
     }
-    
+
     @Test
     public void testSetEditAPIandOAIlistSets() throws InterruptedException {
         // This test focuses on testing the Edit functionality of the Dataverse
@@ -321,10 +321,10 @@ public class HarvestingServerIT {
         // I. Test the Modify/Edit (POST method) functionality of the 
         // Dataverse OAI Sets API
         
-        String persistentId = extraDatasetsIdentifiers.get(0); 
+        String persistentId = extraDatasetsIdentifiers.get(0);
         String newDefinition = "dsPersistentId:" + persistentId;
         String newDescription = "updated";
-        
+
         // API Test 1. Try to modify the set as normal user, should fail
         Response editSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, normalUserAPIKey)
@@ -332,7 +332,7 @@ public class HarvestingServerIT {
                 .put(setPath);
         logger.info("non-admin user editSetResponse.getStatusCode(): " + editSetResponse.getStatusCode());
         assertEquals(400, editSetResponse.getStatusCode());
-        
+
         // API Test 2. Try to modify as admin, but with invalid (empty) values, 
         // should fail
         editSetResponse = given()
@@ -341,7 +341,7 @@ public class HarvestingServerIT {
                 .put(setPath);
         logger.info("invalid values editSetResponse.getStatusCode(): " + editSetResponse.getStatusCode());
         assertEquals(400, editSetResponse.getStatusCode());
-        
+
         // API Test 3. Try to modify as admin, with sensible values
         editSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
@@ -350,14 +350,14 @@ public class HarvestingServerIT {
         logger.info("admin user editSetResponse status code: " + editSetResponse.getStatusCode());
         logger.info("admin user editSetResponse.prettyPrint(): " + editSetResponse.prettyPrint());
         assertEquals(OK.getStatusCode(), editSetResponse.getStatusCode());
-        
+
         // API Test 4. List the set, confirm that the new values are shown
         getSetResponse = given().get(setPath);
-        
+
         System.out.println("getSetResponse.getStatusCode(): " + getSetResponse.getStatusCode());
         System.out.println("getSetResponse, full:  " + getSetResponse.prettyPrint());
         assertEquals(200, getSetResponse.getStatusCode());
-        
+
         getSetResponse.then().assertThat()
                 .body("status", equalTo(ApiConstants.STATUS_OK))
                 .body("data.definition", equalTo(newDefinition))
@@ -367,11 +367,11 @@ public class HarvestingServerIT {
         // II. Test the ListSets functionality of the OAI server 
         
         Response listSetsResponse = UtilIT.getOaiListSets();
-        
+
         // 1. Validate the service section of the OAI response: 
         
         XmlPath responseXmlPath = validateOaiVerbResponse(listSetsResponse, "ListSets");
-        
+
         // 2. The set hasn't been exported yet, so it shouldn't be listed in 
         // ListSets (#3322). Let's confirm that: 
         
@@ -379,7 +379,7 @@ public class HarvestingServerIT {
         // 2a. Confirm that our set is listed:
         assertNotNull(listSets, "Unexpected response from ListSets");
         assertEquals(0, listSets.size(), "An unexported OAI set is listed in ListSets");
-        
+
         // export the set: 
         
         Response exportSetResponse = UtilIT.exportOaiSet(setName);
@@ -390,19 +390,19 @@ public class HarvestingServerIT {
         
         listSetsResponse = UtilIT.getOaiListSets();
         responseXmlPath = validateOaiVerbResponse(listSetsResponse, "ListSets");
-        
+
         // 3. Validate the payload of the response, by confirming that the set 
         // we created and modified, above, is being listed by the OAI server 
         // and its xml record is properly formatted
         
         listSets = responseXmlPath.getList("OAI-PMH.ListSets.set.list().findAll{it.setName=='" + setName + "'}", Node.class);
-        
+
         // 3a. Confirm that our set is listed:
         assertNotNull(listSets, "Unexpected response from ListSets");
         assertEquals(1, listSets.size(), "Newly-created set isn't properly listed by the OAI server");
         // 3b. Confirm that the set entry contains the updated description: 
         assertEquals(newDescription, listSets.get(0).getPath("setDescription.metadata.element.field", String.class), "Incorrect description in the ListSets entry");
-        
+
         // ok, the xml record looks good! 
 
         // Cleanup. Delete the set with the DELETE API
@@ -445,12 +445,12 @@ public class HarvestingServerIT {
         Response getSet = given()
                 .get(apiPath);
         assertEquals(200, getSet.getStatusCode());
-        
+
         // Export the set. 
         
         Response exportSetResponse = UtilIT.exportOaiSet(setName);
         assertEquals(200, exportSetResponse.getStatusCode());
-                
+
         // Strictly speaking, exporting an OAI set is an asynchronous operation. 
         // So the code below was written to expect to have to wait for up to 10 
         // additional seconds for it to complete. In retrospect, this is 
@@ -468,12 +468,12 @@ public class HarvestingServerIT {
             // OAI Test 1. Run ListIdentifiers on this newly-created set:
             Response listIdentifiersResponse = UtilIT.getOaiListIdentifiers(setName, "oai_dc");
             assertEquals(OK.getStatusCode(), listIdentifiersResponse.getStatusCode());
-            
+
             // Validate the service section of the OAI response: 
             XmlPath responseXmlPath = validateOaiVerbResponse(listIdentifiersResponse, "ListIdentifiers");
-            
+
             List ret = responseXmlPath.getList("OAI-PMH.ListIdentifiers.header");
-                        
+
             if (ret == null || ret.isEmpty()) {
                 // OK, we'll sleep for another second
                 i++;
@@ -496,21 +496,21 @@ public class HarvestingServerIT {
                 break;
             }
             Thread.sleep(1000L);
-        } while (i < maxWait); 
-        
+        } while (i < maxWait);
+
         System.out.println("Waited " + i + " seconds for OIA export.");
         //Fail if we didn't find the exported record before the timeout
         assertTrue(i < maxWait);
-        
-        
+
+
         // OAI Test 2. Run ListRecords, request oai_dc:
         Response listRecordsResponse = UtilIT.getOaiListRecords(setName, "oai_dc");
         assertEquals(OK.getStatusCode(), listRecordsResponse.getStatusCode());
-        
+
         // Validate the service section of the OAI response: 
         
         XmlPath responseXmlPath = validateOaiVerbResponse(listRecordsResponse, "ListRecords");
-        
+
         // Validate the payload of the response: 
         // (the header portion must be identical to that of ListIdentifiers above, 
         // plus the response must contain a metadata section with a valid oai_dc 
@@ -531,10 +531,10 @@ public class HarvestingServerIT {
         String persistentIdUrl = singleSetDatasetPersistentId.replace("doi:", "https://doi.org/");
         assertEquals(persistentIdUrl, responseXmlPath.getString("OAI-PMH.ListRecords.record.metadata.dc.identifier"));
         assertEquals("Darwin's Finches", responseXmlPath.getString("OAI-PMH.ListRecords.record.metadata.dc.title"));
-        assertEquals("Finch, Fiona", responseXmlPath.getString("OAI-PMH.ListRecords.record.metadata.dc.creator"));        
-        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.", 
+        assertEquals("Finch, Fiona", responseXmlPath.getString("OAI-PMH.ListRecords.record.metadata.dc.creator"));
+        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
                 responseXmlPath.getString("OAI-PMH.ListRecords.record.metadata.dc.description"));
-        assertEquals("Medicine, Health and Life Sciences", 
+        assertEquals("Medicine, Health and Life Sciences",
                 responseXmlPath.getString("OAI-PMH.ListRecords.record.metadata.dc.subject"));
         // ok, looks legit!
         
@@ -553,10 +553,10 @@ public class HarvestingServerIT {
         
         Response getRecordResponse = UtilIT.getOaiRecord(singleSetDatasetPersistentId, "oai_dc");
         System.out.println("GetRecord response in its entirety: " + getRecordResponse.getBody().prettyPrint());
-         
+
         // Validate the service section of the OAI response: 
         responseXmlPath = validateOaiVerbResponse(getRecordResponse, "GetRecord");
-        
+
         // Validate the payload of the response:
         
         // Note that for a set with a single record the output of ListRecrods is
@@ -570,18 +570,18 @@ public class HarvestingServerIT {
         // b) metadata section: 
         assertEquals(persistentIdUrl, responseXmlPath.getString("OAI-PMH.GetRecord.record.metadata.dc.identifier"));
         assertEquals("Darwin's Finches", responseXmlPath.getString("OAI-PMH.GetRecord.record.metadata.dc.title"));
-        assertEquals("Finch, Fiona", responseXmlPath.getString("OAI-PMH.GetRecord.record.metadata.dc.creator"));        
-        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.", 
+        assertEquals("Finch, Fiona", responseXmlPath.getString("OAI-PMH.GetRecord.record.metadata.dc.creator"));
+        assertEquals("Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
                 responseXmlPath.getString("OAI-PMH.GetRecord.record.metadata.dc.description"));
         assertEquals("Medicine, Health and Life Sciences", responseXmlPath.getString("OAI-PMH.GetRecord.record.metadata.dc.subject"));
-        
+
         // ok, looks legit!
         
         // Now, let's clear this dataset from Solr: 
         Response solrClearResponse = UtilIT.indexClearDataset(singleSetDatasetDatabaseId);
         assertEquals(200, solrClearResponse.getStatusCode());
         solrClearResponse.prettyPrint();
-        
+
         // Now, let's re-export the set. The search query that defines the set 
         // will no longer find it (todo: confirm this first?). However, since 
         // the dataset still exists in the database; and would in real life 
@@ -613,7 +613,7 @@ public class HarvestingServerIT {
         // ... and, most importantly, make sure the record does not have a 
         // `status="deleted"` attribute:
         assertNull(responseXmlPath.getString("OAI-PMH.ListIdentifiers.header.@status"));
-        
+
         // TODO: (?) we could also destroy the dataset for real now, and make 
         // sure the "deleted" attribute has been added to the OAI record. 
         
@@ -624,11 +624,11 @@ public class HarvestingServerIT {
         Response destroyDatasetResponse = UtilIT.destroyDataset(singleSetDatasetPersistentId, adminUserAPIKey);
         assertEquals(200, destroyDatasetResponse.getStatusCode());
         destroyDatasetResponse.prettyPrint();
-        
+
         // Confirm that it no longer exists: 
         Response datasetNotFoundResponse = UtilIT.nativeGet(singleSetDatasetDatabaseId, adminUserAPIKey);
         assertEquals(404, datasetNotFoundResponse.getStatusCode());
-        
+
         // Repeat the whole production with re-exporting set and checking 
         // ListIdentifiers:
         
@@ -636,7 +636,7 @@ public class HarvestingServerIT {
         assertEquals(200, exportSetResponse.getStatusCode());
         Thread.sleep(1000L); // wait for just a second, to be safe 
         System.out.println("re-exported the dataset again, with the control dataset destroyed");
-        
+
         // OAI Test 6. Check ListIdentifiers again:
         
         listIdentifiersResponse = UtilIT.getOaiListIdentifiers(setName, "oai_dc");
@@ -650,12 +650,12 @@ public class HarvestingServerIT {
         assertEquals(1, ret.size());
         assertEquals(singleSetDatasetPersistentId, responseXmlPath
                 .getString("OAI-PMH.ListIdentifiers.header.identifier"));
-  
+
         // ... BUT, it should be marked as "deleted" now:
         assertEquals(responseXmlPath.getString("OAI-PMH.ListIdentifiers.header.@status"), "deleted");
 
     }
-    
+
     // This test will attempt to create a set with multiple records (enough 
     // to trigger a paged respons) and test the resumption token functionality). 
     // Note that this test requires the OAI service to be configured with some
@@ -715,14 +715,14 @@ public class HarvestingServerIT {
         // Validate the payload of the ListIdentifiers response:
         // 1a) There should be 2 items listed:
         assertEquals(2, ret.size(), "Wrong number of items on the first ListIdentifiers page");
-        
+
         // 1b) The response contains a resumptionToken for the next page of items:
         String resumptionToken = responseXmlPath.getString("OAI-PMH.ListIdentifiers.resumptionToken");
         assertNotNull(resumptionToken, "No resumption token in the ListIdentifiers response (has the jvm option dataverse.oai.server.maxidentifiers been configured?)");
-        
+
         // 1c) The total number of items in the set (5) is listed correctly:
         assertEquals(5, responseXmlPath.getInt("OAI-PMH.ListIdentifiers.resumptionToken.@completeListSize"));
-        
+
         // 1d) ... and the offset (cursor) is at the right position (0): 
         assertEquals(0, responseXmlPath.getInt("OAI-PMH.ListIdentifiers.resumptionToken.@cursor"));
 
@@ -733,7 +733,7 @@ public class HarvestingServerIT {
         // served as expected. 
         
         Set<String> persistentIdsInListIdentifiers = new HashSet<>();
-        
+
         for (String persistentId : ret) {
             persistentIdsInListIdentifiers.add(persistentId.substring(persistentId.lastIndexOf('/') + 1));
         }
@@ -757,27 +757,27 @@ public class HarvestingServerIT {
         if (logger.isLoggable(Level.FINE)) {
             logger.info("listIdentifiersResponse.prettyPrint: " + listIdentifiersResponse.prettyPrint());
         }
-        
+
         // Validate the payload of the ListIdentifiers response:
         // 2a) There should still be 2 items listed:
         assertEquals(2, ret.size(), "Wrong number of items on the second ListIdentifiers page");
-        
+
         // 2b) The response should contain a resumptionToken for the next page of items:
         resumptionToken = responseXmlPath.getString("OAI-PMH.ListIdentifiers.resumptionToken");
         assertNotNull(resumptionToken, "No resumption token in the ListIdentifiers response");
-        
+
         // 2c) The total number of items in the set (5) is listed correctly:
         assertEquals(5, responseXmlPath.getInt("OAI-PMH.ListIdentifiers.resumptionToken.@completeListSize"));
-        
+
         // 2d) ... and the offset (cursor) is at the right position (2): 
         assertEquals(2, responseXmlPath.getInt("OAI-PMH.ListIdentifiers.resumptionToken.@cursor"));
-        
+
         // Record the identifiers listed on this results page:
         
         for (String persistentId : ret) {
             persistentIdsInListIdentifiers.add(persistentId.substring(persistentId.lastIndexOf('/') + 1));
         }
-        
+
         // And now the next and the final ListIdentifiers page.
         // This time around we should get an *empty* resumptionToken (indicating
         // that there are no more results):
@@ -796,36 +796,36 @@ public class HarvestingServerIT {
         if (logger.isLoggable(Level.FINE)) {
             logger.info("listIdentifiersResponse.prettyPrint: " + listIdentifiersResponse.prettyPrint());
         }
-        
+
         // Validate the payload of the ListIdentifiers response:
         // 3a) There should be only 1 item listed:
         assertEquals(1, ret.size(), "Wrong number of items on the final ListIdentifiers page");
-        
+
         // 3b) The response contains a resumptionToken for the next page of items:
         resumptionToken = responseXmlPath.getString("OAI-PMH.ListIdentifiers.resumptionToken");
         assertNotNull(resumptionToken, "No resumption token in the final ListIdentifiers response");
         assertEquals("", resumptionToken, "Non-empty resumption token in the final ListIdentifiers response");
-        
+
         // 3c) The total number of items in the set (5) is still listed correctly:
         assertEquals(5, responseXmlPath.getInt("OAI-PMH.ListIdentifiers.resumptionToken.@completeListSize"));
-        
+
         // 3d) ... and the offset (cursor) is at the right position (4): 
         assertEquals(4, responseXmlPath.getInt("OAI-PMH.ListIdentifiers.resumptionToken.@cursor"));
-        
+
         // Record the last identifier listed on this final page:
         persistentIdsInListIdentifiers.add(ret.get(0).substring(ret.get(0).lastIndexOf('/') + 1));
-        
+
         // Finally, let's confirm that the expected 5 datasets have been listed
         // as part of this Set: 
         
-        boolean allDatasetsListed = true; 
-        
+        boolean allDatasetsListed = true;
+
         for (String persistentId : extraDatasetsIdentifiers) {
-            allDatasetsListed = allDatasetsListed && persistentIdsInListIdentifiers.contains(persistentId); 
+            allDatasetsListed = allDatasetsListed && persistentIdsInListIdentifiers.contains(persistentId);
         }
-        
+
         assertTrue(allDatasetsListed, "Control datasets not properly listed in the paged ListIdentifiers response");
-        
+
         // OK, it is safe to assume ListIdentifiers works as it should in page mode.
         
         // We will now repeat the exact same tests for ListRecords (again, no 
@@ -846,23 +846,23 @@ public class HarvestingServerIT {
         if (logger.isLoggable(Level.FINE)) {
             logger.info("listRecordsResponse.prettyPrint: " + listRecordsResponse.prettyPrint());
         }
-        
+
         // Validate the payload of the ListRecords response:
         // 4a) There should be 2 items listed:
         assertEquals(2, ret.size(), "Wrong number of items on the first ListRecords page");
-        
+
         // 4b) The response contains a resumptionToken for the next page of items:
         resumptionToken = responseXmlPath.getString("OAI-PMH.ListRecords.resumptionToken");
         assertNotNull(resumptionToken, "No resumption token in the ListRecords response (has the jvm option dataverse.oai.server.maxrecords been configured?)");
-        
+
         // 4c) The total number of items in the set (5) is listed correctly:
         assertEquals(5, responseXmlPath.getInt("OAI-PMH.ListRecords.resumptionToken.@completeListSize"));
-        
+
         // 4d) ... and the offset (cursor) is at the right position (0): 
         assertEquals(0, responseXmlPath.getInt("OAI-PMH.ListRecords.resumptionToken.@cursor"));
-        
+
         Set<String> persistentIdsInListRecords = new HashSet<>();
-        
+
         for (String persistentId : ret) {
             persistentIdsInListRecords.add(persistentId.substring(persistentId.lastIndexOf('/') + 1));
         }
@@ -886,27 +886,27 @@ public class HarvestingServerIT {
         if (logger.isLoggable(Level.FINE)) {
             logger.info("listRecordsResponse.prettyPrint: " + listRecordsResponse.prettyPrint());
         }
-        
+
         // Validate the payload of the ListRecords response:
         // 4a) There should still be 2 items listed:
         assertEquals(2, ret.size(), "Wrong number of items on the second ListRecords page");
-        
+
         // 4b) The response should contain a resumptionToken for the next page of items:
         resumptionToken = responseXmlPath.getString("OAI-PMH.ListRecords.resumptionToken");
         assertNotNull(resumptionToken, "No resumption token in the ListRecords response");
-        
+
         // 4c) The total number of items in the set (5) is listed correctly:
         assertEquals(5, responseXmlPath.getInt("OAI-PMH.ListRecords.resumptionToken.@completeListSize"));
-        
+
         // 4d) ... and the offset (cursor) is at the right position (2): 
         assertEquals(2, responseXmlPath.getInt("OAI-PMH.ListRecords.resumptionToken.@cursor"));
-        
+
         // Record the identifiers listed on this results page:
         
         for (String persistentId : ret) {
             persistentIdsInListRecords.add(persistentId.substring(persistentId.lastIndexOf('/') + 1));
         }
-        
+
         // And now the next and the final ListRecords page.
         // This time around we should get an *empty* resumptionToken (indicating
         // that there are no more results):
@@ -925,36 +925,36 @@ public class HarvestingServerIT {
         if (logger.isLoggable(Level.FINE)) {
             logger.info("listRecordsResponse.prettyPrint: " + listRecordsResponse.prettyPrint());
         }
-        
+
         // Validate the payload of the ListRecords response:
         // 6a) There should be only 1 item listed:
         assertEquals(1, ret.size(), "Wrong number of items on the final ListRecords page");
-        
+
         // 6b) The response contains a resumptionToken for the next page of items:
         resumptionToken = responseXmlPath.getString("OAI-PMH.ListRecords.resumptionToken");
         assertNotNull(resumptionToken, "No resumption token in the final ListRecords response");
         assertEquals("", resumptionToken, "Non-empty resumption token in the final ListRecords response");
-        
+
         // 6c) The total number of items in the set (5) is still listed correctly:
         assertEquals(5, responseXmlPath.getInt("OAI-PMH.ListRecords.resumptionToken.@completeListSize"));
-        
+
         // 6d) ... and the offset (cursor) is at the right position (4): 
         assertEquals(4, responseXmlPath.getInt("OAI-PMH.ListRecords.resumptionToken.@cursor"));
-        
+
         // Record the last identifier listed on this final page:
         persistentIdsInListRecords.add(ret.get(0).substring(ret.get(0).lastIndexOf('/') + 1));
-        
+
         // Finally, let's confirm again that the expected 5 datasets have been listed
         // as part of this Set: 
         
-        allDatasetsListed = true; 
-        
+        allDatasetsListed = true;
+
         for (String persistentId : extraDatasetsIdentifiers) {
-            allDatasetsListed = allDatasetsListed && persistentIdsInListRecords.contains(persistentId); 
+            allDatasetsListed = allDatasetsListed && persistentIdsInListRecords.contains(persistentId);
         }
-        
+
         assertTrue(allDatasetsListed, "Control datasets not properly listed in the paged ListRecords response");
-        
+
         // OK, it is safe to assume ListRecords works as it should in page mode
         // as well. 
         

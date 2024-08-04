@@ -52,7 +52,7 @@ public enum Permission implements java.io.Serializable {
     // Delete
     DeleteDataverse(BundleUtil.getStringFromBundle("permission.deleteDataverse"), true, Dataverse.class),
     DeleteDatasetDraft(BundleUtil.getStringFromBundle("permission.deleteDataset"), true, Dataset.class);
-    
+
 
     // FUTURE:
     //RestrictMetadata("Mark metadata as restricted", DvObject.class),
@@ -67,7 +67,7 @@ public enum Permission implements java.io.Serializable {
      * Which types of {@link DvObject}s this permission applies to.
      */
     private final Set<Class<? extends DvObject>> appliesTo;
-    
+
     /**
      * Can this permission be applied only to {@link AuthenticatedUser}s, or to any user?
      */
@@ -100,6 +100,6 @@ public enum Permission implements java.io.Serializable {
     public boolean requiresAuthenticatedUser() {
         return requiresAuthenticatedUser;
     }
-    
-   
+
+
 }

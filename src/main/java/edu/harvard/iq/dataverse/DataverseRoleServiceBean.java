@@ -23,6 +23,7 @@ import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+
 //import jakarta.validation.constraints.NotNull;
 
 /**
@@ -69,7 +70,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     public RoleAssignment save(RoleAssignment assignment) {
         return save(assignment, true);
     }
-    
+
     public RoleAssignment save(RoleAssignment assignment, boolean createIndex) {
         if (assignment.getId() == null) {
             em.persist(assignment);
@@ -124,7 +125,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
             .setParameter("alias", alias)
             .getSingleResult();
     }
-    
+
     public DataverseRole findCustomRoleByAliasAndOwner(String alias, Long ownerId) {
         return em.createNamedQuery("DataverseRole.findCustomRoleByAliasAndOwner", DataverseRole.class)
             .setParameter("alias", alias)
@@ -229,7 +230,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 
         return ras;
     }
-    
+
     /**
      * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
      * No traversal on the containment hierarchy is done.
@@ -247,7 +248,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
                             .getResultList();
         return unfiltered.stream().filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId())).collect(Collectors.toList());
     }
-    
+
     /**
      * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
      * No traversal on the containment hierarchy is done.
@@ -263,10 +264,10 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         if (dvos.isEmpty()) {
             return new ArrayList<>();
         }
-        
+
         List<String> raIds = roleAssignees.stream().map(roas -> roas.getIdentifier()).collect(Collectors.toList());
         List<Long> dvoIds = dvos.stream().filter(dvo -> !(dvo.getId() == null)).map(dvo -> dvo.getId()).collect(Collectors.toList());
-        
+
         return em.createNamedQuery("RoleAssignment.listByAssigneeIdentifiers", RoleAssignment.class)
                         .setParameter("assigneeIdentifiers", raIds)
                         .setParameter("definitionPointIds", dvoIds)

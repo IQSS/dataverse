@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -26,13 +25,13 @@ public class BannerMessage implements Serializable {
 
     @Column
     private boolean dismissibleByUser;
-    
+
     @Column
     private boolean active;
 
     @OneToMany(mappedBy = "bannerMessage", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<BannerMessageText> bannerMessageTexts;
-    
+
     @OneToMany(mappedBy = "bannerMessage", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<UserBannerMessage> userBannerMessages;
 
@@ -43,16 +42,16 @@ public class BannerMessage implements Serializable {
     public void setBannerMessageTexts(Collection<BannerMessageText> bannerMessageTexts) {
         this.bannerMessageTexts = bannerMessageTexts;
     }
-    
-    
-    public String getDisplayValue() {        
+
+
+    public String getDisplayValue() {
         String retVal = null;
         for (BannerMessageText msgTxt : this.getBannerMessageTexts()) {
             if (msgTxt.getLang().equals(BundleUtil.getCurrentLocale().getLanguage())) {
                 retVal = msgTxt.getMessage();
             }
         }
-        return retVal;               
+        return retVal;
     }
 
     public boolean isDismissibleByUser() {
@@ -70,7 +69,7 @@ public class BannerMessage implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public boolean isActive() {
         return active;
     }
@@ -103,5 +102,5 @@ public class BannerMessage implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.BannerMessage[ id=" + id + " ]";
     }
-    
+
 }

@@ -99,7 +99,7 @@ public class ManageGroupsPage implements java.io.Serializable {
         renderDeletePopup = false;
         return null;
     }
-    
+
     private boolean renderDeletePopup = false;
 
     public boolean isRenderDeletePopup() {
@@ -109,7 +109,7 @@ public class ManageGroupsPage implements java.io.Serializable {
     public void setRenderDeletePopup(boolean renderDeletePopup) {
         this.renderDeletePopup = renderDeletePopup;
     }
-    
+
     public void clickDeleteGroup(ExplicitGroup selectedGroup) {
         setRenderDeletePopup(true);
         this.selectedGroup = selectedGroup;

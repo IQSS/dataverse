@@ -43,7 +43,6 @@ public class ExternalToolHandler extends URLTokenUtil {
 
     private String requestMethod;
 
-    
 
     /**
      * File level tool

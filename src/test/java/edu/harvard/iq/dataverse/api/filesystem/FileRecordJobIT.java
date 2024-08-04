@@ -1312,6 +1312,7 @@ public class FileRecordJobIT {
             return null;
         }
     }
+
     /**
      * Kick off a job with a specified mode: MERGE, UPDATE, REPLACE
      * @param mode

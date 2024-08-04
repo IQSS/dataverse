@@ -79,7 +79,7 @@ public class ExternalToolHandlerTest {
         assertNotNull(expectedException1);
         assertEquals("A FileMetadata is required.", expectedException1.getMessage());
 
-        
+
         // Two query parameters.
         externalTool.setToolParameters(Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
@@ -209,8 +209,8 @@ public class ExternalToolHandlerTest {
         assertEquals("Unknown reserved word: {junk}", expectedException.getMessage());
 
     }
-    
-    
+
+
     @Test
     @JvmSetting(key = JvmSettings.SITE_URL, value = "https://librascholar.org")
     public void testGetToolUrlWithAllowedApiCalls() {

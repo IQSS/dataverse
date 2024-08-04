@@ -54,7 +54,7 @@ public class Pids extends AbstractApiBean {
         String baseUrl = JvmSettings.DATACITE_REST_API_URL.lookup();
         String username = JvmSettings.DATACITE_USERNAME.lookup();
         String password = JvmSettings.DATACITE_PASSWORD.lookup();
-        
+
         try {
             GlobalId globalId = PidUtil.parseAsGlobalID(persistentId);
             JsonObjectBuilder result = PidUtil.queryDoi(globalId, baseUrl, username, password);
@@ -142,7 +142,7 @@ public class Pids extends AbstractApiBean {
         }
         return ok(PidUtil.getProviders());
     }
-    
+
     @GET
     @AuthRequired
     // The :.+ suffix allows PIDs with a / char to be entered w/o escaping

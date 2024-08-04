@@ -14,14 +14,14 @@ public class MockDatasetFieldSvc extends DatasetFieldServiceBean {
 
     Map<String, DatasetFieldType> fieldTypes = new HashMap<>();
     long nextId = 1;
-    
-    static MetadataBlock test = null; 
+
+    static MetadataBlock test = null;
 
     public void setMetadataBlock(String name) {
         test = new MetadataBlock();
         test.setName(name);
     }
-    
+
     public DatasetFieldType add(DatasetFieldType t) {
         if (t.getId() == null) {
             t.setId(nextId++);
@@ -50,7 +50,7 @@ public class MockDatasetFieldSvc extends DatasetFieldServiceBean {
         cvv.setStrValue(strValue);
         return cvv;
     }
-    
+
     public Map<Long, JsonObject> getCVocConf(boolean byTermUriField) {
         return new HashMap<Long, JsonObject>();
     }

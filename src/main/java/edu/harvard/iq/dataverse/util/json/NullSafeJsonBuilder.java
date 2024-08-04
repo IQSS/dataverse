@@ -19,13 +19,13 @@ import jakarta.json.JsonValue;
  * @author michael
  */
 public class NullSafeJsonBuilder implements JsonObjectBuilder {
-	
+
 	public static NullSafeJsonBuilder jsonObjectBuilder() {
 		return new NullSafeJsonBuilder();
 	}
-	
+
 	private final JsonObjectBuilder delegate;
-	
+
 	public NullSafeJsonBuilder() {
 		delegate = Json.createObjectBuilder();
 	}
@@ -38,23 +38,23 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 
 	@Override
 	public NullSafeJsonBuilder add(String name, String value) {
-		if (value != null) 
+		if (value != null)
 			 delegate.add(name, value);
 		return this;
 	}
 
 	@Override
 	public NullSafeJsonBuilder add(String name, BigInteger value) {
-		if (value != null) 
+		if (value != null)
 			 delegate.add(name, value);
 		return this;
 	}
 
 	@Override
 	public NullSafeJsonBuilder add(String name, BigDecimal value) {
-		if (value != null) 
+		if (value != null)
 			delegate.add(name, value);
-		
+
 		return this;
 	}
 
@@ -67,7 +67,7 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 	public NullSafeJsonBuilder add(String name, Long value) {
         return (value != null) ? add(name, value.longValue()) : this;
     }
-    
+
 	@Override
 	public NullSafeJsonBuilder add(String name, long value) {
 		delegate.add(name, value);
@@ -85,7 +85,7 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 		delegate.add(name, value);
 		return this;
 	}
-    
+
 	@Override
 	public NullSafeJsonBuilder addNull(String name) {
 		delegate.addNull(name);
@@ -94,25 +94,25 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 
 	@Override
 	public NullSafeJsonBuilder add(String name, JsonObjectBuilder builder) {
-		if (builder != null) 
+		if (builder != null)
 			 delegate.add(name, builder);
 		return this;
 	}
 
 	@Override
 	public NullSafeJsonBuilder add(String name, JsonArrayBuilder builder) {
-		if (builder != null) 
+		if (builder != null)
 			delegate.add(name, builder);
 		return this;
 	}
-	
+
 	public NullSafeJsonBuilder addStrValue(String name, DatasetField field) {
 		if (field != null) {
 			delegate.add(name, field.getValue());
 		}
 		return this;
 	}
-	
+
 	@Override
 	public JsonObject build() {
 		return delegate.build();

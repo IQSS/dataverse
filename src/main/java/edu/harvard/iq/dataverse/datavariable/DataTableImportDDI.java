@@ -25,7 +25,7 @@ public class DataTableImportDDI {
     public static final String VAR_INTERVAL_CONTIN = "contin";
     public static final String VAR_INTERVAL_NOMINAL = "nominal";
     public static final String VAR_INTERVAL_DICHOTOMOUS = "dichotomous";
-    
+
     public static final String VAR_TYPE_NUMERIC = "numeric";
     public static final String VAR_TYPE_CHARACTER = "character";
 
@@ -37,7 +37,6 @@ public class DataTableImportDDI {
     public static final String CAT_STAT_TYPE_FREQUENCY = "freq";
 
 
-    
     public static final String NOTE_TYPE_UNF = "VDC:UNF";
 
     // Method processDataDscr takes XMLStreamReader xmlr that has just 
@@ -100,7 +99,7 @@ public class DataTableImportDDI {
 
         // interval type (DB value may be different than DDI value)
         String _interval = xmlr.getAttributeValue(null, "intrvl");
-        
+
         if (VAR_INTERVAL_CONTIN.equals(_interval)) {
             dv.setIntervalContinuous();
         } else if (VAR_INTERVAL_NOMINAL.equals(_interval)) {
@@ -240,21 +239,20 @@ public class DataTableImportDDI {
 
     private void processVarFormat(XMLStreamReader xmlr, DataVariable dv) throws XMLStreamException {
         String type = xmlr.getAttributeValue(null, "type");
-        type = (type == null ? VAR_TYPE_NUMERIC : type); 
+        type = (type == null ? VAR_TYPE_NUMERIC : type);
 
         if (VAR_TYPE_CHARACTER.equals(type)) {
             dv.setTypeCharacter();
         } else {
             dv.setTypeNumeric(); // default is numeric
         }
-        
-        dv.setFormat(xmlr.getAttributeValue(null, "formatname"));
-        
-        String varFormatCategoryAtt = xmlr.getAttributeValue(null, "category");
-        String varFormatText = parseText(xmlr); 
 
-        
-        
+        dv.setFormat(xmlr.getAttributeValue(null, "formatname"));
+
+        String varFormatCategoryAtt = xmlr.getAttributeValue(null, "category");
+        String varFormatText = parseText(xmlr);
+
+
         /* 
          * A somewhat hackish way of recognizing "boolean" variables; 
          * This is not a universally accepted convention - we (the DVN team)
@@ -291,7 +289,7 @@ public class DataTableImportDDI {
         VariableCategory cat = new VariableCategory();
         cat.setMissing("Y".equals(xmlr.getAttributeValue(null, "missing"))); // default is N, so null sets missing to false
         cat.setDataVariable(dv);
-                
+
         if (dv.getCategories() == null || dv.getCategories().isEmpty()) {
             // if this is the first category we encounter, we'll assume that this
             // categorical data/"factor" variable is ordered. 
@@ -299,9 +297,9 @@ public class DataTableImportDDI {
             // *any* categories with no order attribute defined. 
             
             dv.setOrderedCategorical(true);
-        } 
-        
-        
+        }
+
+
         // Process extra level order values, if available; 
         // Currently (as of 3.6) only available in R Data ingests.
         // TODO: 
@@ -309,14 +307,14 @@ public class DataTableImportDDI {
         // simply by the order in which the categories appear in the 
         // DDI. (-- L.A. 4.0 beta 9)
         
-        String order = null; 
+        String order = null;
         order = xmlr.getAttributeValue(null, "order");
-        Integer orderValue = null; 
+        Integer orderValue = null;
         if (order != null) {
             try {
                 orderValue = new Integer(order);
             } catch (NumberFormatException ex) {
-                orderValue = null; 
+                orderValue = null;
             }
         }
 
@@ -367,7 +365,7 @@ public class DataTableImportDDI {
         }
     }
 
-        
+
     private String parseNoteByType(XMLStreamReader xmlr, String type) throws XMLStreamException {
         if (type.equalsIgnoreCase(xmlr.getAttributeValue(null, "type"))) {
             return parseText(xmlr);
@@ -395,7 +393,7 @@ public class DataTableImportDDI {
         }
         return tempString;
      }
-    
+
      /* We had to add this method because the ref getElementText has a bug where it
      * would append a null before the text, if there was an escaped apostrophe; it appears
      * that the code finds an null ENTITY_REFERENCE in this case which seems like a bug;

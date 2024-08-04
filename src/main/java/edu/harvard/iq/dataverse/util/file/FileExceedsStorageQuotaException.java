@@ -18,5 +18,5 @@ public class FileExceedsStorageQuotaException extends Exception {
     public FileExceedsStorageQuotaException(String message, Throwable cause) {
         super(message, cause);
     }
-    
+
 }

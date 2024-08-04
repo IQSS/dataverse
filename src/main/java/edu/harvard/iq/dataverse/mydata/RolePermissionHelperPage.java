@@ -26,17 +26,17 @@ import jakarta.inject.Named;
 @ViewScoped
 @Named("RolePermissionHelperPage")
 public class RolePermissionHelperPage implements java.io.Serializable {
-    
+
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
-    @Inject DataverseSession session;    
+    @Inject DataverseSession session;
 
     @EJB
     DataverseRoleServiceBean dataverseRoleService;
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
-    
-    
+
+
     private DataverseRolePermissionHelper rolePermissionHelper;// = new DataverseRolePermissionHelper();
     
     
@@ -48,20 +48,20 @@ public class RolePermissionHelperPage implements java.io.Serializable {
 
         return null;
     }
-    
-        
+
+
     public DataverseRolePermissionHelper getRolePermissionHelper() {
         return this.rolePermissionHelper;
     }
-    
+
     private void msg(String s) {
         System.out.println(s);
     }
-    
+
     private void msgt(String s) {
         msg("-------------------------------");
         msg(s);
         msg("-------------------------------");
     }
-    
+
 }

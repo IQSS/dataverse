@@ -152,6 +152,7 @@ public class BagItFileHandler {
         public BagItFileHandlerException(String message) {
             super(message);
         }
+
         public BagItFileHandlerException(String message, Throwable e) {
             super(message, e);
         }

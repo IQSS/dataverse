@@ -6,14 +6,14 @@ package edu.harvard.iq.dataverse.workflow.step;
  * @author michael
  */
 public class Failure implements WorkflowStepResult {
-    
+
     private final String reason;
     private final String message;
-    
+
     public Failure(String reason) {
         this(reason, null);
     }
-    
+
     /**
      * Constructs a new failure message.
      * @param reason Technical reason (for logs etc.).
@@ -23,7 +23,7 @@ public class Failure implements WorkflowStepResult {
         this.reason = reason;
         this.message = message;
     }
-    
+
     /**
      * Holds the technical reason for the failure, useful for debugging the problem.
      * @return the technical reason for the problem.
@@ -44,6 +44,6 @@ public class Failure implements WorkflowStepResult {
     public String toString() {
         return "WorkflowStepResult.Failure{" + "reason=" + reason + ", message=" + message + '}';
     }
-    
-    
+
+
 }

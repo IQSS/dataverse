@@ -30,7 +30,7 @@ public class ApiTokenPage implements java.io.Serializable {
     AuthenticationServiceBean authSvc;
 
     ApiToken apiToken;
-    
+
     public boolean checkForApiToken() {
         if (session.getUser().isAuthenticated()) {
             AuthenticatedUser au = (AuthenticatedUser) session.getUser();
@@ -72,10 +72,10 @@ public class ApiTokenPage implements java.io.Serializable {
 
             ApiToken newToken = authSvc.generateApiTokenForUser(au);
             authSvc.save(newToken);
-            
+
         }
     }
-    
+
     public String getApiTokenExpiration() {
         if (session.getUser().isAuthenticated()) {
             AuthenticatedUser au = (AuthenticatedUser) session.getUser();
@@ -90,11 +90,11 @@ public class ApiTokenPage implements java.io.Serializable {
             return "";
         }
     }
-    
+
     public Boolean tokenIsExpired() {
         return apiToken.isExpired();
     }
-    
+
     public void revoke() {
         if (session.getUser().isAuthenticated()) {
             AuthenticatedUser au = (AuthenticatedUser) session.getUser();
@@ -103,5 +103,5 @@ public class ApiTokenPage implements java.io.Serializable {
                 authSvc.removeApiToken(au);
             }
         }
-    }   
+    }
 }

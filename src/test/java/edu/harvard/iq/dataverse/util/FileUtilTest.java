@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class FileUtilTest {
-    
+
     static Stream<Arguments> dataFilenames() {
         return Stream.of(
             Arguments.of(null, null, null),
@@ -37,25 +37,25 @@ public class FileUtilTest {
             Arguments.of("50by1000.bib", "50by1000.tab", FileUtil.FileCitationExtension.BIBTEX)
         );
     }
-    
+
     @ParameterizedTest
     @MethodSource("dataFilenames")
     void testGetCiteDataFileFilename(String expectedFileName, String actualFileName, FileCitationExtension citationExtension) {
         assertEquals(expectedFileName, FileUtil.getCiteDataFileFilename(actualFileName, citationExtension));
     }
-    
+
     static Stream<Arguments> dataReplaceNames() {
         return Stream.of(
             // functional approach: what should the method do
             // replace no extension with an empty extension
             Arguments.of("no-extension.", "no-extension", ""),
-        
+
             // replace extension x with same extension
             Arguments.of("extension.x", "extension.x", "x"),
-        
+
             // replace extension x with another extension y
             Arguments.of("extension.y", "extension.x", "y"),
-        
+
             // interface approach: what are possible inputs
             // will not pass as null is not handled
             //Arguments.of(null, null, null),
@@ -67,7 +67,7 @@ public class FileUtilTest {
             Arguments.of(".y", "", "y")
         );
     }
-    
+
     @ParameterizedTest
     @MethodSource("dataReplaceNames")
     void testReplaceExtension(String expectedString, String originalName, String newExtension) {
@@ -306,7 +306,7 @@ public class FileUtilTest {
                 fail("File does not exist: " + file.toPath().toString());
             }
         }
-        
+
         @Test
         public void testDetermineFileTypeFromName() {
             //Verify that name of the local file isn't used in determining the type (as we often use *.tmp when the real name has a different extension)
@@ -332,7 +332,7 @@ public class FileUtilTest {
                 fail("File does not exist: " + file.toPath().toString());
             }
         }
-        
+
         @Test
         public void testDetermineFileTypeFromNameLocalFile() {
             //Verify that name of the local file isn't used in determining the type (as we often use *.tmp when the real name has a different extension)
@@ -413,7 +413,7 @@ public class FileUtilTest {
     public void testDetermineFileTypeROCrate() {
         final String roCrateContentType = "application/ld+json; profile=\"http://www.w3.org/ns/json-ld#flattened http://www.w3.org/ns/json-ld#compacted https://w3id.org/ro/crate\"";
         final DataFile rocrate = new DataFile(roCrateContentType);
-        
+
         assertEquals(roCrateContentType, rocrate.getContentType());
         assertEquals("RO-Crate metadata", FileUtil.getUserFriendlyFileType(rocrate));
         assertEquals("Metadata", FileUtil.getIndexableFacetFileType(rocrate));
@@ -428,7 +428,7 @@ public class FileUtilTest {
         // test ";" removal
         final String dockerFileWithProfile = "application/x-docker-file; profile=\"http://www.w3.org/ns/json-ld#flattened http://www.w3.org/ns/json-ld#compacted https://w3id.org/ro/crate\"";
         final DataFile dockerDataFile = new DataFile(dockerFileWithProfile);
-        
+
         assertEquals(dockerFileWithProfile, dockerDataFile.getContentType());
         assertEquals("Docker Image File", FileUtil.getUserFriendlyFileType(dockerDataFile));
         assertEquals("Code", FileUtil.getIndexableFacetFileType(dockerDataFile));

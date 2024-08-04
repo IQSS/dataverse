@@ -9,7 +9,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class PasswordValidatorTest {
-    
+
     static Stream<Arguments> testCases() {
         return Stream.of(
             // Check if PasswordValidator correctly validates correct passwords
@@ -39,7 +39,7 @@ public class PasswordValidatorTest {
             Arguments.of("?!abcdef", false, true, false, false, 8, 30)
         );
     }
-    
+
     @ParameterizedTest
     @MethodSource("testCases")
     void testValidatePassword(String password, boolean expected, boolean mustContainSpecialCharacters,

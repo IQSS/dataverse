@@ -144,7 +144,7 @@ public class CSVFileReader extends TabularDataFileReader {
 
         int i = 0;
         String variableNameHeader = null;
-        
+
         for (String varName : headers.keySet()) {
             // @todo: is .keySet() guaranteed to return the names in the right order?
             if (varName == null || varName.isEmpty()) {
@@ -161,13 +161,13 @@ public class CSVFileReader extends TabularDataFileReader {
 
             dv.setTypeCharacter();
             dv.setIntervalDiscrete();
-            
+
             if (saveWithVariableHeader) {
                     variableNameHeader = variableNameHeader == null
-                            ? varName 
+                            ? varName
                             : variableNameHeader.concat("\t" + varName);
                 }
-            
+
             i++;
         }
 
@@ -218,7 +218,7 @@ public class CSVFileReader extends TabularDataFileReader {
                                            && (varString.isEmpty()
                                                || varString.equals("null")
                                                || (StringUtils.isNumeric(varString)
-                                                    || (varString.substring(0, 1).matches("[+-]") 
+                                                    || (varString.substring(0, 1).matches("[+-]")
                                                         && StringUtils.isNumeric(varString.substring(1)))));
                     if (isNumericVariable[i]) {
                         // If variable might be "numeric" test to see if this value is a parsable number:
@@ -352,7 +352,7 @@ public class CSVFileReader extends TabularDataFileReader {
         try (BufferedReader secondPassReader = new BufferedReader(new FileReader(firstPassTempFile))) {
             parser = new CSVParser(secondPassReader, inFormat.withHeader());
             String[] caseRow = new String[headers.size()];
-            
+
             // Save the variable name header, if requested
             if (saveWithVariableHeader) {
                 if (variableNameHeader == null) {

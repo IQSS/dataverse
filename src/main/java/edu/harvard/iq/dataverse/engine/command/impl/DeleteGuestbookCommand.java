@@ -23,7 +23,7 @@ public class DeleteGuestbookCommand extends AbstractCommand<Dataverse> {
 
     private final Guestbook doomed;
     private final Dataverse editedDv;
-    
+
     public DeleteGuestbookCommand(DataverseRequest aRequest, Dataverse editedDv, Guestbook doomed) {
         super(aRequest, editedDv);
         this.editedDv = editedDv;
@@ -37,5 +37,5 @@ public class DeleteGuestbookCommand extends AbstractCommand<Dataverse> {
         ctxt.em().remove(doomedAndMerged);
         return merged;
     }
-    
+
 }

@@ -20,15 +20,15 @@ import jakarta.json.JsonObject;
 public class DataTagsAPITestingBean implements Serializable {
 
     private String datasetName;
-    
+
 
     @EJB
     DataTagsAPI dt;
-    
-    
+
+
     public String requestInterview() {
         String url = dt.requestInterview();
-        Logger.getLogger(DataTagsAPITestingBean.class.getName()).info("Dataset name: " + datasetName);        
+        Logger.getLogger(DataTagsAPITestingBean.class.getName()).info("Dataset name: " + datasetName);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(url);
         } catch (IOException ex) {
@@ -36,13 +36,13 @@ public class DataTagsAPITestingBean implements Serializable {
         }
         return url;
     }
-    
+
     public void setDatasetName(String name) {
         datasetName = name;
         dt.getContainer().setDatasetName(datasetName);
         dt.setCache(dt.getCallbackURL().substring(47), dt.getContainer());
     }
-    
+
     public String getDatasetName() {
         if (!dt.getCache().isEmpty()) {
             return dt.getCache().get(dt.getCallbackURL().substring(47)).getDatasetName();
@@ -50,11 +50,11 @@ public class DataTagsAPITestingBean implements Serializable {
             return "";
         }
     }
-    
-    
+
+
     public JsonObject getTags() {
        return dt.getCache().get(dt.getCallbackURL().substring(47)).getTag();
     }
-    
-    
+
+
 }

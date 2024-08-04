@@ -13,10 +13,10 @@ import jakarta.persistence.PersistenceContext;
  */
 @Stateless
 public class ActionLogServiceBean {
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     /**
      * Log the record. Set default values.
      * @param rec 
@@ -26,7 +26,7 @@ public class ActionLogServiceBean {
         if (rec.getEndTime() == null) {
             rec.setEndTime(new Date());
         }
-        if (rec.getActionResult() == null 
+        if (rec.getActionResult() == null
                 && rec.getActionType() != ActionLogRecord.ActionType.Command) {
             rec.setActionResult(ActionLogRecord.Result.OK);
         }
@@ -43,7 +43,6 @@ public class ActionLogServiceBean {
                         + "WHERE useridentifier='" + oldIdentifier + "'"
         ).executeUpdate();
     }
-   
 
-    
+
 }

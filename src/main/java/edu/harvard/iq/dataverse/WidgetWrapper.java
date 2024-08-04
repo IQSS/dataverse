@@ -20,7 +20,7 @@ public class WidgetWrapper implements java.io.Serializable {
 
     private final static String WIDGET_PARAMETER = "widget";
     private final static char WIDGET_SEPARATOR = '@';
-    
+
     private Boolean widgetView;
     private String widgetHome;
     private String widgetScope;
@@ -31,7 +31,7 @@ public class WidgetWrapper implements java.io.Serializable {
             String widgetParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(WIDGET_PARAMETER);
             // you are in widget view ONLY if this param is supplied AND you have the separator 
             widgetView = widgetParam != null && widgetParam.indexOf(WIDGET_SEPARATOR) != -1;
-                     
+
             if (widgetView) {
                 widgetScope = widgetParam.substring(0, widgetParam.indexOf(WIDGET_SEPARATOR));
                 widgetHome = widgetParam.substring(widgetParam.indexOf(WIDGET_SEPARATOR) + 1);
@@ -51,7 +51,7 @@ public class WidgetWrapper implements java.io.Serializable {
 
     public boolean isWidgetTarget(DvObject dvo) {
         if (isWidgetView()) {
-                       
+
             while (dvo != null) {
                 if (dvo instanceof DataFile) {
                     if ("datafile".equals(widgetScope)) {
@@ -59,7 +59,7 @@ public class WidgetWrapper implements java.io.Serializable {
                     }
                 } else if (dvo instanceof Dataset) {
                     switch (widgetScope) {
-                        case "dataverse": 
+                        case "dataverse":
                             break; // keep looping
                         case "dataset":
                             if (((Dataset) dvo).getGlobalId().asString().equals(widgetHome)) {
@@ -77,8 +77,8 @@ public class WidgetWrapper implements java.io.Serializable {
                         return false; // scope is for lower type dvObject
                     }
                 }
-                
-                dvo = dvo.getOwner();                
+
+                dvo = dvo.getOwner();
             }
         }
 

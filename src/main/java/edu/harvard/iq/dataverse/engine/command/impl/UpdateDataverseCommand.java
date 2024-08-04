@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 @RequiredPermissions(Permission.EditDataverse)
 public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
         private static final Logger logger = Logger.getLogger(UpdateDataverseCommand.class.getName());
-	
+
 	private final Dataverse editedDv;
 	private final List<DatasetFieldType> facetList;
     private final List<Dataverse> featuredDataverseList;
@@ -34,14 +34,14 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 
     private boolean datasetsReindexRequired = false;
 
-	public UpdateDataverseCommand(Dataverse editedDv, List<DatasetFieldType> facetList, List<Dataverse> featuredDataverseList, 
+	public UpdateDataverseCommand(Dataverse editedDv, List<DatasetFieldType> facetList, List<Dataverse> featuredDataverseList,
                     DataverseRequest aRequest, List<DataverseFieldTypeInputLevel> inputLevelList) {
             super(aRequest, editedDv);
             this.editedDv = editedDv;
             // add update template uses this command but does not
             // update facet list or featured dataverses
             if (facetList != null) {
-               this.facetList = new ArrayList<>(facetList); 
+               this.facetList = new ArrayList<>(facetList);
             } else {
                this.facetList = null;
             }
@@ -51,16 +51,16 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
                 this.featuredDataverseList = null;
             }
             if (inputLevelList != null) {
-               this.inputLevelList = new ArrayList<>(inputLevelList); 
+               this.inputLevelList = new ArrayList<>(inputLevelList);
             } else {
                this.inputLevelList = null;
             }
 	}
-	
+
 	@Override
 	public Dataverse execute(CommandContext ctxt) throws CommandException {
             logger.fine("Entering update dataverse command");
-            
+
             // Perform any optional validation steps, if defined:
             if (ctxt.systemConfig().isExternalDataverseValidationEnabled()) {
                 // For admins, an override of the external validation step may be enabled: 
@@ -74,16 +74,16 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
                     }
                 }
             }
-            
+
             Dataverse oldDv = ctxt.dataverses().find(editedDv.getId());
-            
+
             DataverseType oldDvType = oldDv.getDataverseType();
             String oldDvAlias = oldDv.getAlias();
             String oldDvName = oldDv.getName();
-            oldDv = null; 
-            
+            oldDv = null;
+
             Dataverse result = ctxt.dataverses().save(editedDv);
-            
+
             if (facetList != null) {
                 ctxt.facets().deleteFacetsFor(result);
                 int i = 0;
@@ -101,11 +101,11 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
             }
             if (inputLevelList != null) {
                 ctxt.fieldTypeInputLevels().deleteFacetsFor(result);
-                for (DataverseFieldTypeInputLevel obj : inputLevelList) {               
+                for (DataverseFieldTypeInputLevel obj : inputLevelList) {
                     ctxt.fieldTypeInputLevels().create(obj);
                 }
             }
-            
+
             // We don't want to reindex the children datasets unnecessarily: 
             // When these values are changed we need to reindex all children datasets
             // This check is not recursive as all the values just report the immediate parent
@@ -114,13 +114,13 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
                 || !oldDvAlias.equals(editedDv.getAlias())) {
                 datasetsReindexRequired = true;
             }
-            
+
             return result;
 	}
-        
+
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
-        
+
         // first kick of async index of datasets
         // TODO: is this actually needed? Is there a better way to handle
         // It appears that we at some point lost some extra logic here, where
@@ -128,14 +128,14 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
         // of fields have been changed (since these values are included in the 
         // indexed solr documents for dataasets). So I'm putting that back. -L.A.
         Dataverse result = (Dataverse) r;
-        
+
         if (datasetsReindexRequired) {
             List<Dataset> datasets = ctxt.datasets().findByOwnerId(result.getId());
             ctxt.index().asyncIndexDatasetList(datasets, true);
         }
-        
+
         return ctxt.dataverses().index((Dataverse) r);
-    }  
+    }
 
 }
 

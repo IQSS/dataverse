@@ -38,7 +38,7 @@ import jakarta.persistence.Transient;
 public class MetadataBlock implements Serializable, Comparable {
 
     private static final long serialVersionUID = 1L;
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -50,10 +50,11 @@ public class MetadataBlock implements Serializable, Comparable {
 
     @Column(name = "namespaceuri", columnDefinition = "TEXT")
     private String namespaceUri;
-    
+
     public Long getId() {
         return id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -61,6 +62,7 @@ public class MetadataBlock implements Serializable, Comparable {
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -68,11 +70,11 @@ public class MetadataBlock implements Serializable, Comparable {
     public String getNamespaceUri() {
         return namespaceUri;
     }
-    
+
     public void setNamespaceUri(String namespaceUri) {
         this.namespaceUri = namespaceUri;
     }
-    
+
     private String getAssignedNamespaceUri() {
         String nsUri = getNamespaceUri();
         // Standard blocks will have a namespaceUri
@@ -84,7 +86,7 @@ public class MetadataBlock implements Serializable, Comparable {
         }
         return nsUri;
     }
-    
+
     public JsonLDNamespace getJsonLDNamespace() {
         return JsonLDNamespace.defineNamespace(name, getAssignedNamespaceUri());
     }
@@ -92,14 +94,15 @@ public class MetadataBlock implements Serializable, Comparable {
     @OneToMany(mappedBy = "metadataBlock", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder")
     private List<DatasetFieldType> datasetFieldTypes;
+
     public List<DatasetFieldType> getDatasetFieldTypes() {
         return datasetFieldTypes;
     }
-    
+
     public void setDatasetFieldTypes(List<DatasetFieldType> datasetFieldTypes) {
         this.datasetFieldTypes = datasetFieldTypes;
     }
-    
+
     public boolean isDisplayOnCreate() {
         for (DatasetFieldType dsfType : datasetFieldTypes) {
             if (dsfType.isDisplayOnCreate()) {
@@ -112,15 +115,16 @@ public class MetadataBlock implements Serializable, Comparable {
     public String getDisplayName() {
         return displayName;
     }
+
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
-    
+
     public boolean isRequired() {
         // eventually this will be dynamic, for now only citation is required
         return "citation".equals(name);
     }
-    
+
     @OneToOne
     @JoinColumn(name = "owner_id", unique = false, nullable = true, insertable = true, updatable = true)
     private Dataverse owner;
@@ -132,7 +136,7 @@ public class MetadataBlock implements Serializable, Comparable {
     public void setOwner(Dataverse owner) {
         this.owner = owner;
     }
- 
+
     @Transient
     private boolean empty;
 
@@ -143,26 +147,26 @@ public class MetadataBlock implements Serializable, Comparable {
     public void setEmpty(boolean empty) {
         this.empty = empty;
     }
-    
+
     @Transient
     private boolean selected;
 
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
-    
-    public boolean isSelected() {         
+
+    public boolean isSelected() {
         return selected;
     }
-    
+
     @Transient
     private boolean hasRequired;
 
     public void setHasRequired(boolean hasRequired) {
         this.hasRequired = hasRequired;
     }
-    
-    public boolean isHasRequired() {         
+
+    public boolean isHasRequired() {
         return hasRequired;
     }
 
@@ -176,11 +180,11 @@ public class MetadataBlock implements Serializable, Comparable {
     public void setShowDatasetFieldTypes(boolean showDatasetFieldTypes) {
         this.showDatasetFieldTypes = showDatasetFieldTypes;
     }
-    
-    public boolean isShowDatasetFieldTypes() {         
+
+    public boolean isShowDatasetFieldTypes() {
         return showDatasetFieldTypes;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -195,8 +199,8 @@ public class MetadataBlock implements Serializable, Comparable {
         }
         MetadataBlock other = (MetadataBlock) object;
         return !(!Objects.equals(this.id, other.id) && (this.id == null || !this.id.equals(other.id)));
-    }    
-    
+    }
+
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.MetadataBlock[ id=" + id + " ]";

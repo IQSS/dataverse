@@ -50,5 +50,5 @@ public class VariableCategoryDTO {
     public void setFrequency(Double frequency) {
         this.frequency = frequency;
     }
-    
+
 }

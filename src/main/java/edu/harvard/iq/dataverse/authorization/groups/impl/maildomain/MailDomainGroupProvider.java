@@ -13,15 +13,15 @@ import java.util.logging.Logger;
  * Creates and manages mail domain based groups
  */
 public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
-    
+
     private static final Logger logger = Logger.getLogger(MailDomainGroupProvider.class.getName());
-    
+
     private final MailDomainGroupServiceBean emailGroupSvc;
 
     public MailDomainGroupProvider(MailDomainGroupServiceBean emailGroupSvc) {
         this.emailGroupSvc = emailGroupSvc;
     }
-       
+
     @Override
     public String getGroupProviderAlias() {
         return "maildomain";
@@ -31,7 +31,7 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
     public String getGroupProviderInfo() {
         return "Groups users by their email address domain.";
     }
-    
+
     /**
      * This method is meant for group management. This is a global, unmanageable thing, so this will just result in an empty set.
      * @return empty set
@@ -40,7 +40,7 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
     public Set<MailDomainGroup> groupsFor(RoleAssignee ra, DvObject o) {
         return Collections.emptySet();
     }
-    
+
     /**
      * This method is meant for group management. This is a global, unmanageable thing, so this will just result in an empty set.
      * @return empty set
@@ -49,7 +49,7 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
     public Set<MailDomainGroup> groupsFor(RoleAssignee ra) {
         return Collections.emptySet();
     }
-    
+
     /**
      * Lookup for a request. We don't need the context, so just move to groupsFor(DataverseRequest)
      * @param req The request whose group memberships we evaluate.
@@ -60,7 +60,7 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
     public Set<MailDomainGroup> groupsFor(DataverseRequest req, DvObject dvo) {
         return groupsFor(req);
     }
-    
+
     /**
      * Lookup the user group on each request by using the email address domain.
      * @param req
@@ -75,7 +75,7 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
             return Collections.emptySet();
         }
     }
-    
+
     @Override
     public MailDomainGroup get(String groupAlias) {
         return updateProvider(emailGroupSvc.findByAlias(groupAlias).orElse(null));
@@ -89,7 +89,7 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
     public Set<MailDomainGroup> findGlobalGroups() {
         return updateProvider(new HashSet<>(emailGroupSvc.findAll()));
     }
-    
+
     /**
      * Update an existing instance (if found) or create a new (if groupName = null).
      * @param groupAlias String with the group alias of the group to update or empty if new entity
@@ -100,18 +100,18 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
         grp.setGroupProvider(this);
         return emailGroupSvc.saveOrUpdate(groupAlias, grp);
     }
-    
+
     public void delete(String groupAlias) {
         emailGroupSvc.delete(groupAlias);
     }
-    
+
     /**
      * Enable triggering an update of groups from the database. Used in the API to refresh after changes.
      */
     public void updateGroups() {
         emailGroupSvc.updateGroups();
     }
-    
+
     /**
      * Sets the provider of the passed explicit group to {@code this}.
      * @param eg the collection
@@ -119,12 +119,12 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
      */
     MailDomainGroup updateProvider(MailDomainGroup eg) {
         if (eg == null) {
-            return null; 
+            return null;
         }
         eg.setGroupProvider(this);
         return eg;
     }
-    
+
     /**
      * Sets the provider of the explicit groups to {@code this}.
      * @param <T> Collection's type

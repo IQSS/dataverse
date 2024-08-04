@@ -54,7 +54,7 @@ import java.util.logging.Logger;
 @Named
 @Dependent
 public class FileRecordReader extends AbstractItemReader {
-    
+
     public static final String SEP = File.separator;
 
     @Inject
@@ -66,7 +66,7 @@ public class FileRecordReader extends AbstractItemReader {
     @Inject
     @BatchProperty
     String excludes;
-    
+
     @EJB
     DatasetServiceBean datasetServiceBean;
 
@@ -97,10 +97,10 @@ public class FileRecordReader extends AbstractItemReader {
 
     @Override
     public void open(Serializable checkpoint) throws Exception {
-    
+
         // Retrieve via MPCONFIG. Has sane default /tmp/dataverse from META-INF/microprofile-config.properties
         String baseDir = JvmSettings.FILES_DIRECTORY.lookup();
-        
+
         directory = new File(baseDir + SEP + dataset.getAuthority() + SEP + dataset.getIdentifier() + SEP + uploadFolder);
         // TODO: 
         // The above goes directly to the filesystem directory configured by the 
@@ -112,7 +112,7 @@ public class FileRecordReader extends AbstractItemReader {
         // designated isStorageLocationDesignator() - i.e., if a different identifier
         // needs to be used to name the storage directory, instead of the main/current
         // persistent identifier above. 
-        getJobLogger().log(Level.INFO, "Reading dataset directory: " + directory.getAbsolutePath() 
+        getJobLogger().log(Level.INFO, "Reading dataset directory: " + directory.getAbsolutePath()
                 + " (excluding: " + excludes + ")");
         if (isValidDirectory(directory)) {
             files = getFiles(directory);
@@ -188,9 +188,9 @@ public class FileRecordReader extends AbstractItemReader {
         }
         return true;
     }
-    
+
     private Logger getJobLogger() {
         return Logger.getLogger("job-" + jobContext.getInstanceId());
     }
-    
+
 }

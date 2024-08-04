@@ -19,7 +19,7 @@ import jakarta.faces.convert.FacesConverter;
  */
 @FacesConverter("templateConverter")
 public class TemplateConverter implements Converter {
-    
+
     //@EJB
     TemplateServiceBean templateService = CDI.current().select(TemplateServiceBean.class).get();
 
@@ -35,5 +35,5 @@ public class TemplateConverter implements Converter {
             return ((Template) value).getId().toString();
         }
     }
-    
+
 }

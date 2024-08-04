@@ -14,13 +14,13 @@ import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
  * @author michael
  */
 public class BuiltinAuthenticationProviderFactory implements AuthenticationProviderFactory {
-    
+
     private final BuiltinAuthenticationProvider provider;
 
     public BuiltinAuthenticationProviderFactory(BuiltinUserServiceBean busBean, PasswordValidatorServiceBean passwordValidatorService, AuthenticationServiceBean authBean) {
         provider = new BuiltinAuthenticationProvider(busBean, passwordValidatorService, authBean);
     }
-    
+
     @Override
     public String getAlias() {
         return "BuiltinAuthenticationProvider";
@@ -35,5 +35,5 @@ public class BuiltinAuthenticationProviderFactory implements AuthenticationProvi
     public AuthenticationProvider buildProvider(AuthenticationProviderRow aRow) throws AuthorizationSetupException {
         return provider;
     }
-    
+
 }

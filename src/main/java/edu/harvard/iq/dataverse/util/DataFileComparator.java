@@ -28,18 +28,19 @@ public class DataFileComparator implements Comparator<FileMetadata> {
         this.ascending = ascending;
         return this;
     }
-    
+
     public boolean getByFolder() {
         return this.byFolder;
     }
+
     public int getByCategory() {
         return FileMetadata.getCategorySortOrder().size();
     }
-    
+
     public String getField() {
         return this.field;
     }
-    
+
     public boolean getAsc() {
         return this.ascending;
     }
@@ -66,7 +67,7 @@ public class DataFileComparator implements Comparator<FileMetadata> {
             }
         }
         Map<String, Long> categoryMap = FileMetadata.getCategorySortOrder();
-        
+
         if (byCategory) {
             // Then by category if set
             if (categoryMap != null) {

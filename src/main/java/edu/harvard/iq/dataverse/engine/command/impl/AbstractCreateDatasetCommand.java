@@ -22,12 +22,12 @@ import java.util.logging.Logger;
  */
 @RequiredPermissions(Permission.AddDataset)
 public abstract class AbstractCreateDatasetCommand extends AbstractDatasetCommand<Dataset> {
-    
+
     private static final Logger logger = Logger.getLogger(AbstractCreateDatasetCommand.class.getCanonicalName());
-    
+
     final protected boolean harvested;
     final protected boolean validate;
-    
+
     public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         this(theDataset, aRequest, false);
     }
@@ -43,15 +43,15 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         harvested = isHarvested;
         this.validate = validate;
     }
-   
+
     protected void additionalParameterTests(CommandContext ctxt) throws CommandException {
         // base class - do nothing.
     }
-    
+
     protected DatasetVersion getVersionToPersist(Dataset theDataset) {
         return theDataset.getLatestVersion();
     }
-    
+
     /**
      * Called after the dataset has been persisted, but before the persistence context
      * has been flushed. 
@@ -62,39 +62,39 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
     protected void postPersist(Dataset theDataset, CommandContext ctxt) throws CommandException {
         // base class - default to nothing.
     }
-    
+
 
     protected void postDBFlush(Dataset theDataset, CommandContext ctxt) throws CommandException {
         // base class - default to nothing.
     }
-    
+
     protected abstract void handlePid(Dataset theDataset, CommandContext ctxt) throws CommandException;
-    
+
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        
+
         additionalParameterTests(ctxt);
-        
+
         Dataset theDataset = getDataset();
         PidProvider pidProvider = ctxt.dvObjects().getEffectivePidGenerator(theDataset);
-        
+
         if (isEmpty(theDataset.getIdentifier())) {
             pidProvider.generatePid(theDataset);
         }
-        
+
         DatasetVersion dsv = getVersionToPersist(theDataset);
         // This re-uses the state setup logic of CreateDatasetVersionCommand, but
         // without persisting the new version, or altering its files. 
         new CreateDatasetVersionCommand(getRequest(), theDataset, dsv, validate).prepareDatasetAndVersion();
-        
+
         if (!harvested) {
             checkSystemMetadataKeyIfNeeded(dsv, null);
         }
 
         registerExternalVocabValuesIfAny(ctxt, dsv);
-        
+
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
-        
+
         theDataset.setCreateDate(getTimestamp());
 
         theDataset.setModificationTime(getTimestamp());
@@ -102,7 +102,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             dataFile.setCreator((AuthenticatedUser) getRequest().getUser());
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
-        
+
         if (theDataset.getProtocol() == null) {
             theDataset.setProtocol(pidProvider.getProtocol());
         }
@@ -116,28 +116,28 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         if (theDataset.getIdentifier() == null) {
             pidProvider.generatePid(theDataset);
         }
-        
+
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)
         handlePid(theDataset, ctxt);
-        
+
         ctxt.em().persist(theDataset);
-        
+
         postPersist(theDataset, ctxt);
-        
+
         createDatasetUser(ctxt);
-        
+
         theDataset = ctxt.em().merge(theDataset); // store last updates
         
         // DB updates - done.
         
         // Now we need the acutal dataset id, so we can start indexing.
         ctxt.em().flush();
-        
+
         //Use for code that requires database ids
         postDBFlush(theDataset, ctxt);
-        
+
         ctxt.index().asyncIndexDataset(theDataset, true);
-                 
+
         return theDataset;
     }
 

@@ -18,11 +18,11 @@ import java.util.Set;
  * @author michael
  */
 public class BuiltInGroupsProvider implements GroupProvider<Group> {
-    
+
     private static final BuiltInGroupsProvider instance = new BuiltInGroupsProvider();
-    
+
     private BuiltInGroupsProvider() {}
-    
+
     public static BuiltInGroupsProvider get() {
         return instance;
     }
@@ -46,7 +46,7 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
     public Set<Group> groupsFor(RoleAssignee ra, DvObject dvo) {
         return groupsFor(ra);
     }
-    
+
     @Override
     public Set<Group> groupsFor(DataverseRequest req) {
         return groupsFor(req.getUser());
@@ -62,7 +62,7 @@ public class BuiltInGroupsProvider implements GroupProvider<Group> {
             return Collections.emptySet();
         }
     }
-    
+
     @Override
     public Group get(String groupAlias) {
         return groupAlias.equals(AllUsers.get().getAlias()) ? AllUsers.get()

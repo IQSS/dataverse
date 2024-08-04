@@ -46,28 +46,28 @@ public class OptionalFileParams {
 
     private String description;
     public static final String DESCRIPTION_ATTR_NAME = "description";
-    
+
     private String label;
     public static final String LABEL_ATTR_NAME = "label";
-    
+
     private String directoryLabel;
     public static final String DIRECTORY_LABEL_ATTR_NAME = "directoryLabel";
 
     private List<String> categories;
     public static final String CATEGORIES_ATTR_NAME = "categories";
-    
+
     private List<String> dataFileTags;
     public static final String FILE_DATA_TAGS_ATTR_NAME = "dataFileTags";
-    
+
     private String provFreeForm;
     public static final String PROVENANCE_FREEFORM_ATTR_NAME = "provFreeForm";
-    
+
     private boolean restrict = false;
     public static final String RESTRICT_ATTR_NAME = "restrict";
 
     private boolean tabIngest = true;
     public static final String TAB_INGEST_ATTR_NAME = "tabIngest";
-    
+
     private String storageIdentifier;
     public static final String STORAGE_IDENTIFIER_ATTR_NAME = "storageIdentifier";
     private String fileName;
@@ -83,29 +83,28 @@ public class OptionalFileParams {
 
     public OptionalFileParams() {
     }
-    
+
     public OptionalFileParams(String jsonData) throws DataFileTagException {
-        
+
         if (jsonData != null) {
             loadParamsFromJson(jsonData);
         }
     }
 
-    
+
     public OptionalFileParams(String description,
-                    List<String> newCategories, 
+                    List<String> newCategories,
                     List<String> potentialFileDataTags)  throws DataFileTagException {
-        
+
         this.description = description;
         setCategories(newCategories);
         this.addFileDataTags(potentialFileDataTags);
     }
 
 
-    
     public OptionalFileParams(String description,
             List<String> newCategories,
-            List<String> potentialFileDataTags, 
+            List<String> potentialFileDataTags,
             boolean restrict) throws DataFileTagException {
 
         this.description = description;
@@ -145,7 +144,7 @@ public class OptionalFileParams {
     public String getDescription() {
         return this.description;
     }
-    
+
     public String getLabel() {
         return label;
     }
@@ -153,7 +152,7 @@ public class OptionalFileParams {
     public void setLabel(String label) {
         this.label = label;
     }
-    
+
     public String getDirectoryLabel() {
         return directoryLabel;
     }
@@ -161,7 +160,7 @@ public class OptionalFileParams {
     public void setDirectoryLabel(String directoryLabel) {
         this.directoryLabel = directoryLabel;
     }
-    
+
     public String getProvFreeform() {
         return provFreeForm;
     }
@@ -173,7 +172,7 @@ public class OptionalFileParams {
     public void setRestriction(boolean restrict) {
         this.restrict = restrict;
     }
-    
+
     public boolean getRestriction() {
         return this.restrict;
     }
@@ -192,14 +191,14 @@ public class OptionalFileParams {
         }
         return true;
     }
- 
+
     public boolean hasFileDataTags() {
         if ((dataFileTags == null) || (this.dataFileTags.isEmpty())) {
             return false;
         }
         return true;
     }
- 
+
     public boolean hasDescription() {
         if ((description == null) || (this.description.isEmpty())) {
             return false;
@@ -213,14 +212,14 @@ public class OptionalFileParams {
         }
         return true;
     }
-    
+
     public boolean hasLabel() {
         if ((label == null) || (this.label.isEmpty())) {
             return false;
         }
         return true;
     }
-    
+
     public boolean hasProvFreeform() {
         if ((provFreeForm == null) || (this.provFreeForm.isEmpty())) {
             return false;
@@ -256,7 +255,7 @@ public class OptionalFileParams {
 		this.checkSumValue = checkSum;
 		this.checkSumType = type;
 	}
-	
+
 	public boolean hasCheckSum() {
 		return ((checkSumValue != null) && (!checkSumValue.isEmpty()));
 	}
@@ -264,7 +263,7 @@ public class OptionalFileParams {
 	public String getCheckSum() {
 		return checkSumValue;
 	}
-	
+
     public ChecksumType getCheckSumType() {
         return checkSumType;
     }
@@ -292,7 +291,7 @@ public class OptionalFileParams {
     public List<String> getCategories() {
         return this.categories;
     }
-    
+
 
     /**
      *  Set dataFileTags
@@ -311,7 +310,7 @@ public class OptionalFileParams {
     }
 
     private void loadParamsFromJson(String jsonData) throws DataFileTagException {
-        
+
         msgt("jsonData: " + jsonData);
         if (jsonData == null || jsonData.isEmpty()) {
             return;
@@ -324,9 +323,9 @@ public class OptionalFileParams {
         // get description as string
         // -------------------------------
         if ((jsonObj.has(DESCRIPTION_ATTR_NAME)) && (!jsonObj.get(DESCRIPTION_ATTR_NAME).isJsonNull())) {
-            
+
             this.description = jsonObj.get(DESCRIPTION_ATTR_NAME).getAsString();
-        }       
+        }
 
         // -------------------------------
         // get directory label as string
@@ -335,7 +334,7 @@ public class OptionalFileParams {
 
             this.directoryLabel = jsonObj.get(DIRECTORY_LABEL_ATTR_NAME).getAsString();
         }
-        
+
         // -------------------------------
         // get directory label as string
         // -------------------------------
@@ -343,7 +342,7 @@ public class OptionalFileParams {
 
             this.label = jsonObj.get(LABEL_ATTR_NAME).getAsString();
         }
-        
+
         // -------------------------------
         // get freeform provenance as string
         // -------------------------------
@@ -351,12 +350,12 @@ public class OptionalFileParams {
 
             this.provFreeForm = jsonObj.get(PROVENANCE_FREEFORM_ATTR_NAME).getAsString();
         }
-        
+
         // -------------------------------
         // get restriction as boolean
         // -------------------------------
         if ((jsonObj.has(RESTRICT_ATTR_NAME)) && (!jsonObj.get(RESTRICT_ATTR_NAME).isJsonNull())) {
-            
+
             this.restrict = Boolean.valueOf(jsonObj.get(RESTRICT_ATTR_NAME).getAsString());
         }
 
@@ -367,7 +366,7 @@ public class OptionalFileParams {
 
             this.tabIngest = Boolean.valueOf(jsonObj.get(TAB_INGEST_ATTR_NAME).getAsString());
         }
-        
+
         // -------------------------------
         // get storage identifier as string
         // -------------------------------
@@ -382,7 +381,7 @@ public class OptionalFileParams {
             }
 
         }
-        
+
         // -------------------------------
         // get file name as string
         // -------------------------------
@@ -390,7 +389,7 @@ public class OptionalFileParams {
 
             this.fileName = jsonObj.get(FILE_NAME_ATTR_NAME).getAsString();
         }
-        
+
         // -------------------------------
         // get mimetype as string
         // -------------------------------
@@ -398,7 +397,7 @@ public class OptionalFileParams {
 
             this.mimeType = jsonObj.get(MIME_TYPE_ATTR_NAME).getAsString();
         }
-        
+
         // -------------------------------
         // get md5 checkSum as string
         // -------------------------------
@@ -416,12 +415,12 @@ public class OptionalFileParams {
             this.checkSumType = ChecksumType.fromString(((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_TYPE).getAsString());
 
         }
-        
+
         // -------------------------------
         // get tags 
         // -------------------------------
         Gson gson = new Gson();
-        
+
         //Type objType = new TypeToken<List<String[]>>() {}.getType();
         Type listType = new TypeToken<List<String>>() {}.getType();
         Type treeType = new TypeToken<List<LinkedTreeMap>>() {}.getType();
@@ -431,7 +430,7 @@ public class OptionalFileParams {
         if ((jsonObj.has(CATEGORIES_ATTR_NAME)) && (!jsonObj.get(CATEGORIES_ATTR_NAME).isJsonNull())) {
 
             List<String> catList = new ArrayList();
-            
+
             try {
                 //We try to parse this as a treeMap if the syntax passed was "categories":[{"name","A Category"}]
                 List<LinkedTreeMap> testLinked = gson.fromJson(jsonObj.get(CATEGORIES_ATTR_NAME), treeType);
@@ -451,37 +450,37 @@ public class OptionalFileParams {
         // Load tabular tags
         //----------------------
         if ((jsonObj.has(FILE_DATA_TAGS_ATTR_NAME)) && (!jsonObj.get(FILE_DATA_TAGS_ATTR_NAME).isJsonNull())) {
-            
+
             // Get potential tags from JSON
-            List<String> potentialTags = gson.fromJson(jsonObj.get(FILE_DATA_TAGS_ATTR_NAME), listType); 
+            List<String> potentialTags = gson.fromJson(jsonObj.get(FILE_DATA_TAGS_ATTR_NAME), listType);
 
             // Add valid potential tags to the list
-            addFileDataTags(potentialTags);            
-           
+            addFileDataTags(potentialTags);
+
         }
-       
+
     }
-  
+
     private void addFileDataTags(List<String> potentialTags) throws DataFileTagException {
-        
+
         if (potentialTags == null) {
             return;
         }
 
         potentialTags = Util.removeDuplicatesNullsEmptyStrings(potentialTags);
-                
+
         if (potentialTags.isEmpty()) {
             return;
         }
-        
+
          // Make a new list
         this.dataFileTags = new ArrayList<>();
-           
+
         // Add valid potential tags to the list
         for (String tagToCheck : potentialTags) {
             if (DataFileTag.isDataFileTag(tagToCheck)) {
                 this.dataFileTags.add(tagToCheck);
-            } else {                    
+            } else {
                 String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.invalid_datafile_tag");
                 throw new DataFileTagException(errMsg + " [" + tagToCheck + "]. Please use one of the following: " + DataFileTag.getListofLabelsAsString());
             }
@@ -491,7 +490,7 @@ public class OptionalFileParams {
             dataFileTags = null;
         }
     }
-    
+
     private void msg(String s) {
             System.out.println(s);
     }
@@ -508,17 +507,17 @@ public class OptionalFileParams {
      * Note that this call may have issues seeing fileMetadata generated before it by Dataset.getEditVersion()
      */
     public void addOptionalParams(DataFile df) throws DataFileTagException {
-        if (df == null) {            
+        if (df == null) {
             throw new NullPointerException("The datafile cannot be null!");
         }
-        
+
         FileMetadata fm = df.getFileMetadata();
-        
+
         addOptionalParams(fm);
     }
-    
+
     public void addOptionalParams(FileMetadata fm) throws DataFileTagException {
-        
+
         // ---------------------------
         // Add description
         // ---------------------------
@@ -532,34 +531,34 @@ public class OptionalFileParams {
         if (hasDirectoryLabel()) {
             fm.setDirectoryLabel(this.getDirectoryLabel());
         }
-        
+
         // ---------------------------
         // Add directory label (path)
         // ---------------------------
         if (hasLabel()) {
             fm.setLabel(this.getLabel());
         }
-        
+
         // ---------------------------
         // Add freeform provenance
         // ---------------------------
         if (hasProvFreeform()) {
             fm.setProvFreeForm(this.getProvFreeform());
         }
-        
+
         // ---------------------------
         // Add categories
         // ---------------------------
         replaceCategoriesInDataFile(fm);
-       
+
 
         // ---------------------------
         // Add DataFileTags
         // ---------------------------
         replaceFileDataTagsInFile(fm.getDataFile());
-       
+
     }
-    
+
 
     /**
      *  Replace Categories in the DataFile.
@@ -569,29 +568,29 @@ public class OptionalFileParams {
      * 
      */
     private void replaceCategoriesInDataFile(FileMetadata fileMetadata) {
-        
-        if (fileMetadata == null) {            
+
+        if (fileMetadata == null) {
             throw new NullPointerException("The fileMetadata cannot be null!");
         }
-        
+
         // Is there anything to add?
         //
         if (!hasCategories()) {
             return;
         }
-        
+
         //List<String> currentCategories = fileMetadata.getCategoriesByName();
 
         // Add categories to the file metadata object
         //
         fileMetadata.setCategories(new ArrayList()); //clear categories
         
-        this.getCategories().stream().forEach((catText) -> {               
+        this.getCategories().stream().forEach((catText) -> {
             fileMetadata.addCategoryByName(catText);  // fyi: "addCategoryByName" checks for dupes
         });
     }
 
-    
+
     /**
      * Replace File Data Tags in Tabular File.
      * 
@@ -611,14 +610,14 @@ public class OptionalFileParams {
         if (df == null) {
             throw new NullPointerException("The DataFile (df) cannot be null!");
         }
-        
+
         // --------------------------------------------------
         // Is there anything to add?
         // --------------------------------------------------
         if (!hasFileDataTags()) {
             return;
         }
-        
+
         // --------------------------------------------------
         // Is this a tabular file?
         // --------------------------------------------------
@@ -627,7 +626,7 @@ public class OptionalFileParams {
 
             throw new DataFileTagException(errMsg);
         }
-        
+
         // --------------------------------------------------
         // Get existing tag list and convert it to list of strings (labels)
         // --------------------------------------------------
@@ -640,7 +639,7 @@ public class OptionalFileParams {
         // Iterate through and add any new labels
         // --------------------------------------------------
         DataFileTag newTagObj;
-        for (String tagLabel : this.getDataFileTags()) {    
+        for (String tagLabel : this.getDataFileTags()) {
             if (DataFileTag.isDataFileTag(tagLabel)) {
 
                 newTagObj = new DataFileTag();
@@ -649,8 +648,8 @@ public class OptionalFileParams {
                 df.addTag(newTagObj);
 
             }
-        }                
-        
+        }
+
     }
 
 }

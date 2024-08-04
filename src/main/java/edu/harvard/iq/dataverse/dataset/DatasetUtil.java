@@ -122,14 +122,14 @@ public class DatasetUtil {
         }
 
         StorageIO<Dataset> dataAccess = null;
-                
+
         try {
             dataAccess = DataAccess.getStorageIO(dataset);
         }
         catch (IOException ioex) {
             logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
         }
-        
+
         InputStream in = null;
         try {
             if (dataAccess == null) {
@@ -138,11 +138,11 @@ public class DatasetUtil {
                 in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + ".thumb" + size);
             }
         } catch (IOException ex) {
-            in = null; 
+            in = null;
             logger.fine("Dataset-level thumbnail file does not exist, or failed to open; will try to find an image file that can be used as the thumbnail.");
         }
 
-        
+
         if (in != null) {
             try {
                 byte[] bytes = IOUtils.toByteArray(in);
@@ -214,12 +214,12 @@ public class DatasetUtil {
             storageIO.deleteAuxObject(datasetLogoThumbnail + thumbExtension + ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
         } catch (IOException ex) {
-            logger.fine("Failed to delete dataset logo: " + ex.getMessage() + 
+            logger.fine("Failed to delete dataset logo: " + ex.getMessage() +
                     " (this is most likely harmless; this method is often called without checking if the custom dataset logo was in fact present)");
             return false;
         }
         return true;
-                
+
         //TODO: Is this required? 
 //        File originalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
 //        boolean originalFileDeleted = originalFile.delete();
@@ -254,12 +254,12 @@ public class DatasetUtil {
             logger.fine("getting a published version of the dataset");
             // We want to use published files only when automatically selecting 
             // dataset thumbnails.
-            datasetVersion = dataset.getReleasedVersion(); 
+            datasetVersion = dataset.getReleasedVersion();
         }
-        
+
         // No published version? - No [auto-selected] thumbnail for you.
         if (datasetVersion == null) {
-            return null; 
+            return null;
         }
 
         for (FileMetadata fmd : datasetVersion.getFileMetadatas()) {
@@ -285,7 +285,7 @@ public class DatasetUtil {
         }
 
         StorageIO<Dataset> dataAccess = null;
-                
+
         try {
              dataAccess = DataAccess.getStorageIO(dataset);
         }
@@ -293,7 +293,7 @@ public class DatasetUtil {
             //TODO: Add a suitable warning message
             logger.warning("Failed to save the file, storage id " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
         }
-        
+
         //File originalFile = new File(datasetDirectory.toString(), datasetLogoFilenameFinal);
         try {
             //this goes through Swift API/local storage/s3 to write the dataset thumbnail into a container
@@ -366,7 +366,7 @@ public class DatasetUtil {
                 logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
             }
         }
-        
+
         thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFileForResize.toPath().toString());
         if (thumbFileLocation == null) {
             logger.warning("Rescale Thumbnail Image to card failed");
@@ -382,7 +382,7 @@ public class DatasetUtil {
                 logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
             }
         }
-        
+
         //This deletes the tempfiles created for rescaling and encoding
         boolean tmpFileWasDeleted = tmpFile.delete();
         boolean originalTempFileWasDeleted = tmpFileForResize.delete();
@@ -393,7 +393,7 @@ public class DatasetUtil {
         } catch (IOException ioex) {
             logger.fine("Failed to delete temporary thumbnail file");
         }
-        
+
         logger.fine("Thumbnail saved to " + thumbFileLocation + ". Temporary file deleted : " + tmpFileWasDeleted + ". Original file deleted : " + originalTempFileWasDeleted);
         return dataset;
     }
@@ -422,7 +422,7 @@ public class DatasetUtil {
             return nonDefaultDatasetThumbnail;
         }
     }
-    
+
     public static InputStream getLogoAsInputStream(Dataset dataset) {
         if (dataset == null) {
             return null;
@@ -553,7 +553,7 @@ public class DatasetUtil {
         //will fix both
        return dataset.getEffectiveStorageDriverId().equals(DataAccess.S3);
     }
-    
+
     /**
      * Given a dataset version, return it's size in human readable units such as
      * 42.9 MB.There is a GetDatasetStorageSizeCommand but it's overly complex
@@ -582,26 +582,26 @@ public class DatasetUtil {
         }
         return bytes;
     }
-    
+
     public static boolean validateDatasetMetadataExternally(Dataset ds, String executable, DataverseRequest request) {
-        String sourceAddressLabel = "0.0.0.0"; 
+        String sourceAddressLabel = "0.0.0.0";
         String userIdentifier = "guest";
-        
+
         if (request != null) {
             IpAddress sourceAddress = request.getSourceAddress();
             if (sourceAddress != null) {
                 sourceAddressLabel = sourceAddress.toString();
             }
-            
+
             AuthenticatedUser user = request.getAuthenticatedUser();
-            
+
             if (user != null) {
                 userIdentifier = user.getUserIdentifier();
             }
         }
-        
-        String jsonMetadata; 
-        
+
+        String jsonMetadata;
+
         // We are sending the dataset metadata encoded in our standard json 
         // format, with a couple of extra elements added, such as the ids of 
         // the home collection and the user, in order to make it easier 
@@ -615,32 +615,32 @@ public class DatasetUtil {
                     .build().toString();
         } catch (Exception ex) {
             logger.warning("Failed to export dataset metadata as json; " + ex.getMessage() == null ? "" : ex.getMessage());
-            return false; 
+            return false;
         }
-        
+
         if (StringUtil.isEmpty(jsonMetadata)) {
             logger.warning("Failed to export dataset metadata as json.");
-            return false; 
+            return false;
         }
-       
+
         // save the metadata in a temp file: 
         
         try {
             File tempFile = File.createTempFile("datasetMetadataCheck", ".tmp");
             FileUtils.writeStringToFile(tempFile, jsonMetadata);
-            
+
             // run the external executable: 
             String[] params = {executable, tempFile.getAbsolutePath()};
             Process p = Runtime.getRuntime().exec(params);
-            p.waitFor(); 
-            
+            p.waitFor();
+
             return p.exitValue() == 0;
- 
+
         } catch (IOException | InterruptedException ex) {
             logger.warning("Failed run the external executable.");
-            return false; 
+            return false;
         }
-        
+
     }
 
     public static License getLicense(DatasetVersion dsv) {
@@ -665,7 +665,7 @@ public class DatasetUtil {
         License license = DatasetUtil.getLicense(dsv);
         return getLocalizedLicenseName(license);
     }
-    
+
     public static String getLocalizedLicenseName(License license) {
         return license != null ? getLocalizedLicenseDetails(license, "NAME")
                 : BundleUtil.getStringFromBundle("license.custom");
@@ -692,7 +692,7 @@ public class DatasetUtil {
     }
 
     public static String getLicenseDescription(DatasetVersion dsv) {
-        
+
         DatasetVersionServiceBean datasetVersionService = CDI.current().select(DatasetVersionServiceBean.class).get();
         /*
         Special case where there are default custom terms indicating that no actual choice has been made...
@@ -701,13 +701,13 @@ public class DatasetUtil {
             return BundleUtil.getStringFromBundle("license.none.chosen.description");
         }
         License license = DatasetUtil.getLicense(dsv);
-        
+
         return license != null ? getLocalizedLicenseDetails(license, "DESCRIPTION") : BundleUtil.getStringFromBundle("license.custom.description");
     }
 
     public enum LicenseOption {
         NAME, DESCRIPTION
-    };
+    }
 
     public static String getLocalizedLicenseDetails(License license, String keyPart) {
         String licenseName = license.getName();

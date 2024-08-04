@@ -59,7 +59,7 @@ public class TestCommandContext implements CommandContext {
     public IndexServiceBean index() {
         return null;
     }
-        
+
     @Override
 	public IndexBatchServiceBean indexBatch() {
 		return null;
@@ -124,7 +124,7 @@ public class TestCommandContext implements CommandContext {
     public PidProviderFactoryBean pidProviderFactory() {
         return null;
     }
-    
+
     @Override
     public SettingsServiceBean settings() {
         return settings;
@@ -174,7 +174,7 @@ public class TestCommandContext implements CommandContext {
     public ExplicitGroupServiceBean explicitGroups() {
         return null;
     }
-    
+
     @Override
     public GroupServiceBean groups() {
         return null;
@@ -214,17 +214,17 @@ public class TestCommandContext implements CommandContext {
     public DataCaptureModuleServiceBean dataCaptureModule() {
         return null;
     }
-    
+
     @Override
     public FileDownloadServiceBean fileDownload() {
         return null;
     }
-    
+
     @Override
     public ConfirmEmailServiceBean confirmEmail() {
         return null;
     }
-    
+
     @Override
     public ActionLogServiceBean actionLog() {
         return null;
@@ -234,7 +234,7 @@ public class TestCommandContext implements CommandContext {
     public MetadataBlockServiceBean metadataBlocks() {
         return null;
     }
-    
+
     @Override
     public StorageUseServiceBean storageUse() {
         return null;

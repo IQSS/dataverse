@@ -146,7 +146,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         releaseconstant.put("FORMAT", LENGTH_FORMAT_FIELD[1]);
         releaseconstant.put("EXPANSION", LENGTH_EXPANSION_FIELD[2]);
         releaseconstant.put("DBL_MV_PWR", DBL_MV_PWR[1]);
-        
+
         // 1, 2 and 4-byte integers: 
         byteLengthTable.put("Byte", 1);
         byteLengthTable.put("Integer", 2);
@@ -165,7 +165,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         variableTypeTable.put(65527, "Float");
         variableTypeTable.put(65526, "Double");
     }
-    
+
     private static String unfVersionNumber = "6";
 
     private static final List<Float> FLOAT_MISSING_VALUES = Arrays.asList(
@@ -258,7 +258,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
     private String[] valueLabelsLookupTable = null;
 
     private Map<String, Integer> constantTable;
-    
+
     private Map<String, String> cachedGSOs;
 
     private NumberFormat twoDigitFormatter = new DecimalFormat("00");
@@ -291,8 +291,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
     private String[] variableTypes = null;
 
-    private String[] dateVariableFormats = null; 
-          
+    private String[] dateVariableFormats = null;
+
     private static final String MissingValueForTabDelimitedFile = "";
 
     private String[] MIME_TYPE = {
@@ -301,11 +301,11 @@ public class NewDTAFileReader extends TabularDataFileReader {
         "application/x-stata-14",
         "application/x-stata-15"
     };
-         
+
     // Constructor -----------------------------------------------------------//
     public NewDTAFileReader(TabularDataFileReaderSpi originator, int DTAVersion) {
         super(originator);
-        
+
         this.DTAVersion = DTAVersion;
         STATA_RELEASE_NUMBER.put(DTAVersion, "v." + (DTAVersion - 104));
 
@@ -363,9 +363,9 @@ public class NewDTAFileReader extends TabularDataFileReader {
         // "characteristics" - STATA-proprietary information
         // (we are skipping it)
         readCharacteristics(dataReader);
-        
-        String variableHeaderLine = null; 
-        
+
+        String variableHeaderLine = null;
+
         if (storeWithVariableHeader) {
             variableHeaderLine = generateVariableHeader(dataTable.getDataVariables());
         }
@@ -422,7 +422,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
         dataTable.setCaseQuantity(obsNumber);
 
         dataTable.setOriginalFileFormat(MIME_TYPE[0]);
-        
+
         dataTable.setOriginalFormatVersion("STATA " + (DTAVersion - 104));
         dataTable.setUnf("UNF:pending");
 
@@ -626,17 +626,17 @@ public class NewDTAFileReader extends TabularDataFileReader {
         long terminatingShort = reader.readULong(DTAVersion == 119 ? 4 : 2);
         reader.readClosingTag(TAG_SORT_ORDER);
     }
-    
+
     // Variable Formats are used exclusively for time and date variables. 
     private void readDisplayFormats(DataReader reader) throws IOException {
         logger.fine("Formats section; at offset " + reader.getByteOffset() + "; dta map offset: " + dtaMap.getOffset_fmts());
         reader.readOpeningTag(TAG_DISPLAY_FORMATS);
         dateVariableFormats = new String[dataTable.getVarQuantity().intValue()];
 
-        for (int i = 0; i < dataTable.getVarQuantity(); i++) { 
+        for (int i = 0; i < dataTable.getVarQuantity(); i++) {
             String variableFormat = reader.readString(DTAVersion == 117 ? 49 : 57);
             logger.fine("variable " + i + ": displayFormat=" + variableFormat);
-            
+
             String variableFormatKey;
             if (variableFormat.startsWith("%t")) {
                 variableFormatKey = variableFormat.substring(0, 3);
@@ -739,9 +739,9 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
         // add the variable header here, if needed
         if (variableHeaderLine != null) {
-            pwout.println(variableHeaderLine); 
+            pwout.println(variableHeaderLine);
         }
-        
+
         logger.fine("Beginning to read data stream.");
 
         for (int i = 0; i < nobs; i++) {
@@ -928,7 +928,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                     // Reading the (v,o) pair: 
                     long v;
                     long o;
-                    
+
                     if (DTAVersion == 117) {
                         v = reader.readUInt();
                         byte_offset += 4;
@@ -964,7 +964,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                     throw new IOException(errorMessage);
 
                 }
-            } 
+            }
 
             if (byte_offset != bytes_per_row) {
                 throw new IOException("Unexpected number of bytes read for data row " + i + "; " + bytes_per_row + " expected, " + byte_offset + " read.");
@@ -1010,7 +1010,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
             int nobs = dataTable.getCaseQuantity().intValue();
 
             String[] line;
-            
+
             //@todo: adjust for the case of storing the file with the variable header
 
             for (int obsindex = 0; obsindex < nobs; obsindex++) {
@@ -1130,7 +1130,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
 
         String gsoString;
         if (binary) {
-            gsoString = new String(contents, "utf8"); 
+            gsoString = new String(contents, "utf8");
         } else {
             gsoString = new String(contents, 0, (int) length - 1, "US-ASCII");
         }
@@ -1161,8 +1161,8 @@ public class NewDTAFileReader extends TabularDataFileReader {
             long label_table_length = reader.readUInt();
 
             String label_table_name = reader.readString(DTAVersion == 117 ? 33 : 129);
-            
-            reader.readBytes(3); 
+
+            reader.readBytes(3);
 
             // read the value_label_table that follows. 
             // should be label_table_length. 
@@ -1172,12 +1172,12 @@ public class NewDTAFileReader extends TabularDataFileReader {
             long value_category_offset = 8;
 
             long[] value_label_offsets = new long[number_of_categories];
-            long[] value_label_offsets_sorted = null; 
+            long[] value_label_offsets_sorted = null;
             long[] category_values = new long[number_of_categories];
             String[] category_value_labels = new String[number_of_categories];
 
             boolean alreadySorted = true;
-            
+
             for (int i = 0; i < number_of_categories; i++) {
                 value_label_offsets[i] = reader.readUInt();
                 logger.fine("offset " + i + ": " + value_label_offsets[i]);
@@ -1214,7 +1214,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
             if ((int) text_length != 0) { //If length is 0 we don't need to read any bytes
                 labelBytes = reader.readBytes((int) text_length);
             }
-            
+
             for (int i = 0; i < number_of_categories; i++) {
                 label_offset = value_label_offsets[i];
 
@@ -1242,7 +1242,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 throw new IOException("<read mismatch in readLabels() 2>");
             }
             reader.readClosingTag(TAG_VALUE_LABELS_LBL_DEF);
-            
+
             List<DataVariable> dataVariables = dataTable.getDataVariables();
             // Find the variables that may be linking to this Category Values Table 
             // and create VariableCategory objects for the corresponding 
@@ -1251,7 +1251,7 @@ public class NewDTAFileReader extends TabularDataFileReader {
                 DataVariable dataVariable = dataVariables.get(i);
                 if (label_table_name.equals(valueLabelsLookupTable[i])) {
                     logger.fine("cross-linking value label table for " + label_table_name);
-                    
+
                     for (int j = 0; j < number_of_categories; j++) {
                         VariableCategory cat = new VariableCategory();
 

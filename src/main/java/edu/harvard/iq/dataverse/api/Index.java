@@ -215,7 +215,7 @@ public class Index extends AbstractApiBean {
             return error(Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
         }
     }
-    
+
     @GET
     @Path("{type}/{id}")
     public Response indexTypeById(@PathParam("type") String type, @PathParam("id") Long id) {
@@ -229,7 +229,7 @@ public class Index extends AbstractApiBean {
                     
                     try {
                         Future<String> indexDataverseFuture = indexService.indexDataverse(dataverse);
-                    } catch (IOException | SolrServerException e) {                                                
+                    } catch (IOException | SolrServerException e) {
                         return error(Status.BAD_REQUEST, writeFailureToLog(e.getLocalizedMessage(), dataverse));
                     }
                     return ok("starting reindex of dataverse " + id);
@@ -260,7 +260,7 @@ public class Index extends AbstractApiBean {
                  */
                 boolean doNormalSolrDocCleanUp = true;
                 indexService.asyncIndexDataset(datasetThatOwnsTheFile, doNormalSolrDocCleanUp);
-                
+
                 return ok("started reindexing " + type + "/" + id);
             } else {
                 return error(Status.BAD_REQUEST, "illegal type: " + type);
@@ -386,6 +386,7 @@ public class Index extends AbstractApiBean {
             return ok(indexResponse.getMessage());
         }
     }
+
     /**
      * Checks whether there are inconsistencies between the Solr index and 
      * the database, and reports back the status by content type
@@ -408,6 +409,7 @@ public class Index extends AbstractApiBean {
             return ok("Index Status Batch Job initiated, check log for job status.");
         }
     }
+
      /**
      * Deletes "orphan" Solr documents (that don't match anything in the database).
      * @param sync - optional parameter, if set, then run the command 
@@ -438,7 +440,7 @@ public class Index extends AbstractApiBean {
             return ok("Clear Orphans Batch Job initiated, check log for job status.");
         }
     }
-  
+
     /**
      * We use the output of this method to generate our Solr schema.xml
      *
@@ -730,18 +732,18 @@ public class Index extends AbstractApiBean {
         }
         return ok(data);
     }
-    
+
     private String writeFailureToLog(String localizedMessage, DvObject dvo) {
         String retVal = "";
         String logString = "";
         if (dvo.isInstanceofDataverse()) {
             retVal = "Dataverse Indexing failed. ";
-           logString += retVal + " You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dvo.getId().toString(); 
+           logString += retVal + " You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dvo.getId().toString();
         }
-        
+
         if (dvo.isInstanceofDataset()) {
             retVal += " Dataset Indexing failed. ";
-            logString += retVal + " You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dvo.getId().toString(); 
+            logString += retVal + " You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dvo.getId().toString();
         }
         retVal += " \r\n " + localizedMessage;
         LoggingUtil.writeOnSuccessFailureLog(null, logString, dvo);

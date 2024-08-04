@@ -104,9 +104,9 @@ public class SearchIT {
         grantUser2AccessOnDataset.prettyPrint();
         assertEquals(200, grantUser2AccessOnDataset.getStatusCode());
 
-        String searchPart = "id:dataset_" + datasetId1 + "_draft";        
+        String searchPart = "id:dataset_" + datasetId1 + "_draft";
         assertTrue(UtilIT.sleepForSearch(searchPart, apiToken2, "", 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Failed test if search exceeds max duration " + searchPart);
-        
+
         Response shouldBeVisibleToUser2 = UtilIT.search("id:dataset_" + datasetId1 + "_draft", apiToken2);
         shouldBeVisibleToUser2.prettyPrint();
         shouldBeVisibleToUser2.then().assertThat()
@@ -203,7 +203,7 @@ public class SearchIT {
         assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
-    
+
     @Test
     public void testAdditionalDatasetContent6300() {
 
@@ -315,8 +315,8 @@ public class SearchIT {
                 .statusCode(OK.getStatusCode());
 
     }
-    
-    
+
+
     /*
      * Note: this test does a lot of checking for permissions with / without privlidged api key.
      * Thumbnails access is the same with/without that access as of 4.9.4 --MAD
@@ -374,7 +374,7 @@ public class SearchIT {
                 .statusCode(200);
 
         String thumbnailUrl = RestAssured.baseURI + "/api/datasets/" + datasetId + "/thumbnail";
-        
+
         File trees = new File("scripts/search/data/binary/trees.png");
         String treesAsBase64 = null;
         treesAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(trees, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
@@ -382,15 +382,15 @@ public class SearchIT {
         if (treesAsBase64 == null) {
             Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file trees.png");
         }
-        
+
         InputStream inputStream1creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
         assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream1creator));
 
         InputStream inputStream1guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
         assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream1guest));
- 
 
-        Response getThumbnailImage1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); 
+
+        Response getThumbnailImage1 = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken);
         getThumbnailImage1.prettyPrint();
         getThumbnailImage1.then().assertThat()
                 .contentType("")
@@ -444,7 +444,7 @@ public class SearchIT {
                 .body("data.dataFileId", CoreMatchers.equalTo(null))
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
-        
+
         //We now need to publish for the dataset to get the thumbnail
         Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         publishDataverse.prettyPrint();
@@ -455,7 +455,7 @@ public class SearchIT {
         publishDataset.prettyPrint();
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         Response getThumbnail3 = UtilIT.getDatasetThumbnailMetadata(datasetId, apiToken);
         System.out.println("getThumbnail3: ");
         getThumbnail3.prettyPrint();
@@ -468,7 +468,7 @@ public class SearchIT {
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
 
-        
+
         Response getThumbnailImageA = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); //
         getThumbnailImageA.prettyPrint();
         getThumbnailImageA.then().assertThat()
@@ -661,13 +661,13 @@ public class SearchIT {
                 .body("data.isUseGenericThumbnail", CoreMatchers.equalTo(true))
                 .body("data.datasetLogoPresent", CoreMatchers.equalTo(false))
                 .statusCode(200);
-        
+
         InputStream inputStream5creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
         assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream5creator));
 
         InputStream inputStream5guest = UtilIT.getInputStreamFromUnirest(thumbnailUrl, noSpecialAcessApiToken);
         assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream5guest));
-        
+
         Response getThumbnailImageB = UtilIT.getDatasetThumbnail(datasetPersistentId, apiToken); //
         getThumbnailImageB.prettyPrint();
         getThumbnailImageB.then().assertThat()
@@ -757,7 +757,7 @@ public class SearchIT {
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         publishDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -788,15 +788,15 @@ public class SearchIT {
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        
+
         //(String alias, String category, String apiToken, String parentDV)
         Response createDataverseResponse2 = UtilIT.createSubDataverse("subDV" + UtilIT.getRandomIdentifier(), null, apiToken, dataverseAlias);
         createDataverseResponse2.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
-         
-        String searchPart = "*"; 
+
+        String searchPart = "*";
         assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + dataverseAlias, 1, UtilIT.GENERAL_LONG_DURATION), "Missing subDV");
-        
+
         Response searchUnpublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree=" + dataverseAlias2);
         searchUnpublishedSubtree2.prettyPrint();
         searchUnpublishedSubtree2.then().assertThat()
@@ -833,27 +833,27 @@ public class SearchIT {
         Response publishDataverse2 = UtilIT.publishDataverseViaNativeApi(dataverseAlias2, apiToken);
         publishDataverse2.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         Response searchPublishedSubtree = UtilIT.search(searchPart, apiToken, "&subtree=" + dataverseAlias);
         searchPublishedSubtree.prettyPrint();
         searchPublishedSubtree.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
-        
+
         Response searchPublishedSubtree2 = UtilIT.search(searchPart, apiToken, "&subtree=" + dataverseAlias2);
         searchPublishedSubtree2.prettyPrint();
         searchPublishedSubtree2.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
-        
+
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias2, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
         System.out.println("id: " + datasetId);
         String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
         System.out.println("datasetPid: " + datasetPid);
-        
+
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -861,7 +861,7 @@ public class SearchIT {
         assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + dataverseAlias, 2, UtilIT.GENERAL_LONG_DURATION), "Did not find 2 children");
         assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + dataverseAlias2, 1, UtilIT.GENERAL_LONG_DURATION), "Did not find 1 child");
     }
-    
+
     //If this test fails it'll fail inconsistently as it tests underlying async role code
     //Hopefully it will not fail as we fixed the issue in https://github.com/IQSS/dataverse/issues/3471
     @Test
@@ -874,7 +874,7 @@ public class SearchIT {
         String apiTokenSuper = UtilIT.getApiTokenFromResponse(createSuperUser);
         Response makeSuperUser = UtilIT.makeSuperUser(usernameSuper);
         assertEquals(200, makeSuperUser.getStatusCode());
-        
+
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         String username = UtilIT.getUsernameFromResponse(createUser);
@@ -883,37 +883,37 @@ public class SearchIT {
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
         String parentDataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        
+
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(parentDataverseAlias, apiToken);
         publishDataverse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         String subDataverseAlias = "dv" + UtilIT.getRandomIdentifier();
         Response createSubDataverseResponse = UtilIT.createSubDataverse(subDataverseAlias, null, apiTokenSuper, parentDataverseAlias);
         createSubDataverseResponse.prettyPrint();
 
-        Response grantRoleOnDataverseResponse = UtilIT.grantRoleOnDataverse(subDataverseAlias, "curator", "@" + username, apiTokenSuper); 
+        Response grantRoleOnDataverseResponse = UtilIT.grantRoleOnDataverse(subDataverseAlias, "curator", "@" + username, apiTokenSuper);
         grantRoleOnDataverseResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-        String searchPart = "*"; 
-        
+
+        String searchPart = "*";
+
         assertTrue(UtilIT.sleepForSearch(searchPart, apiToken, "&subtree=" + parentDataverseAlias, 1, UtilIT.GENERAL_LONG_DURATION), "Failed test if search exceeds max duration " + searchPart);
-        
+
         Response searchPublishedSubtreeSuper = UtilIT.search(searchPart, apiTokenSuper, "&subtree=" + parentDataverseAlias);
         searchPublishedSubtreeSuper.prettyPrint();
         searchPublishedSubtreeSuper.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
-        
+
         Response searchPublishedSubtreeCurator = UtilIT.search(searchPart, apiToken, "&subtree=" + parentDataverseAlias);
         searchPublishedSubtreeCurator.prettyPrint();
         searchPublishedSubtreeCurator.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
-        
+
     }
-    
+
     @Test
     public void testSubtreePermissions() {
 
@@ -932,7 +932,7 @@ public class SearchIT {
         System.out.println("id: " + datasetId);
         String datasetPid = JsonPath.from(createDatasetResponse.getBody().asString()).getString("data.persistentId");
         System.out.println("datasetPid: " + datasetPid);
-        
+
         Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse2.prettyPrint();
         String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
@@ -947,24 +947,24 @@ public class SearchIT {
         Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
         datasetAsJson.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         Response datasetAsJson2 = UtilIT.nativeGet(datasetId2, apiToken);
         datasetAsJson2.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         // Wait a little while for the index to pick up the datasets, otherwise timing issue with searching for it.
         UtilIT.sleepForReindex(datasetId2.toString(), apiToken, 3);
 
         String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
-        String identifier2 = JsonPath.from(datasetAsJson2.getBody().asString()).getString("data.identifier"); 
+        String identifier2 = JsonPath.from(datasetAsJson2.getBody().asString()).getString("data.identifier");
 
-        String searchPart = "*"; 
+        String searchPart = "*";
 
         Response searchFakeSubtree = UtilIT.search(searchPart, apiToken, "&subtree=fake");
         searchFakeSubtree.prettyPrint();
         searchFakeSubtree.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
-        
+
         Response searchFakeSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree=fake");
         searchFakeSubtreeNoAPI.prettyPrint();
         searchFakeSubtreeNoAPI.then().assertThat()
@@ -975,20 +975,20 @@ public class SearchIT {
         searchUnpublishedSubtree.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
-        
+
         Response searchUnpublishedSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree=" + dataverseAlias);
         searchUnpublishedSubtreeNoAPI.prettyPrint();
         searchUnpublishedSubtreeNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 // TODO: investigate if this is a bug that nothing was found.
                 .body("data.total_count", CoreMatchers.equalTo(0));
-        
+
         Response searchUnpublishedSubtrees = UtilIT.search(searchPart, apiToken, "&subtree=" + dataverseAlias + "&subtree=" + dataverseAlias2);
         searchUnpublishedSubtrees.prettyPrint();
         searchUnpublishedSubtrees.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(2));
-        
+
         Response searchUnpublishedSubtreesNoAPI = UtilIT.search(searchPart, null, "&subtree=" + dataverseAlias + "&subtree=" + dataverseAlias2);
         searchUnpublishedSubtreesNoAPI.prettyPrint();
         searchUnpublishedSubtreesNoAPI.then().assertThat()
@@ -1017,7 +1017,7 @@ public class SearchIT {
         searchUnpublishedNoSubtreeForDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
-        
+
         UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchUnpublishedNoSubtreeForDatasetNoAPI = UtilIT.search(identifier.replace("FK2/", ""), null, "");
         searchUnpublishedNoSubtreeForDatasetNoAPI.prettyPrint();
@@ -1035,7 +1035,7 @@ public class SearchIT {
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken);
         publishDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         Response publishDataverse2 = UtilIT.publishDataverseViaNativeApi(dataverseAlias2, apiToken);
         publishDataverse2.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -1049,27 +1049,27 @@ public class SearchIT {
         searchPublishedSubtree.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
-        
+
         Response searchPublishedSubtreeNoAPI = UtilIT.search(searchPart, null, "&subtree=" + dataverseAlias);
         searchPublishedSubtreeNoAPI.prettyPrint();
         searchPublishedSubtreeNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(1));
-        
+
         Response searchPublishedSubtrees = UtilIT.search(searchPart, apiToken, "&subtree=" + dataverseAlias + "&subtree=" + dataverseAlias2);
         searchPublishedSubtrees.prettyPrint();
         searchPublishedSubtrees.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(2));
-        
+
         assertTrue(UtilIT.sleepForSearch(searchPart, null, "&subtree=" + dataverseAlias2, 1, UtilIT.MAXIMUM_INGEST_LOCK_DURATION), "Missing dataset w/no apiKey");
-        
+
         Response searchPublishedSubtreesNoAPI = UtilIT.search(searchPart, null, "&subtree=" + dataverseAlias + "&subtree=" + dataverseAlias2);
         searchPublishedSubtreesNoAPI.prettyPrint();
         searchPublishedSubtreesNoAPI.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.total_count", CoreMatchers.equalTo(2));
-        
+
         UtilIT.sleepForReindex(String.valueOf(datasetId), apiToken, 5);
         Response searchPublishedRootSubtreeForDataset = UtilIT.search(identifier.replace("FK2/", ""), apiToken, "&subtree=root");
         searchPublishedRootSubtreeForDataset.prettyPrint();

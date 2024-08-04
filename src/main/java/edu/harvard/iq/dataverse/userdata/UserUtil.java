@@ -16,41 +16,41 @@ import java.util.stream.Collectors;
  * @author rmp553
  */
 public class UserUtil {
-    
-    
+
+
     /**
      * Convenience method to format dbResult
      * @param dbResult
      * @return 
      */
     public static String getStringOrNull(Object dbResult) {
-        
+
         if (dbResult == null) {
             return null;
         }
         return (String) dbResult;
     }
-    
+
     /**
      * Convenience method to format dbResult
      * @param dbResult
      * @return 
      */
     public static String getStringOrBlankForNull(Object dbResult) {
-        
+
         if (dbResult == null) {
             return "";
         }
         return (String) dbResult;
     }
-    
+
     /**
      * Convenience method to format dbResult
      * @param dbResult
      * @return 
      */
     public static String getTimestampStringOrNull(Object dbResult) {
-        
+
         if (dbResult == null) {
             return null;
         }
@@ -63,7 +63,7 @@ public class UserUtil {
      * @return 
      */
     public static Timestamp getTimestampOrNull(Object dbResult) {
-        
+
         if (dbResult == null) {
             return null;
         }

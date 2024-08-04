@@ -31,12 +31,12 @@ public class DatasetTest {
         assertTrue(sut.isLockedFor(DatasetLock.Reason.Ingest), "Verify that the dataset now has an ingest lock");
         assertFalse(sut.isLockedFor(DatasetLock.Reason.Workflow), "Verify that the dataset does not have a workflow lock");
     }
-    
+
     @Test
     public void testLocksManagement() {
         Dataset sut = new Dataset();
         assertFalse(sut.isLocked(), "Initially verify that the dataset is not locked");
-        
+
         DatasetLock dlIngest = new DatasetLock(DatasetLock.Reason.Ingest, MocksFactory.makeAuthenticatedUser("jane", "doe"));
         dlIngest.setId(MocksFactory.nextId());
         sut.addLock(dlIngest);
@@ -46,17 +46,17 @@ public class DatasetTest {
         dlInReview.setId(MocksFactory.nextId());
         sut.addLock(dlInReview);
         assertEquals(2, sut.getLocks().size(), "After adding a review lock, verify that the dataset is locked by two locks");
-        
+
         DatasetLock retrievedDl = sut.getLockFor(DatasetLock.Reason.Ingest);
         assertEquals(dlIngest, retrievedDl);
         sut.removeLock(dlIngest);
         assertNull(sut.getLockFor(DatasetLock.Reason.Ingest), "After removing the ingest lock, verify that the dataset does not have any ingest locks");
-        
+
         assertTrue(sut.isLocked(), "After removing the ingest lock, verify that the dataset is still locked (review lock)");
-        
+
         sut.removeLock(dlInReview);
         assertFalse(sut.isLocked(), "After removing the review lock, verify that the dataset is not locked anymore");
-        
+
     }
 
     // ****************************************************************************************
@@ -240,5 +240,5 @@ public class DatasetTest {
 
         assertTrue(dataset.isDeaccessioned());
     }
- 
+
 }

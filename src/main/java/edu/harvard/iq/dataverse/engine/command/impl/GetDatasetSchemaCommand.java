@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 
@@ -20,19 +19,19 @@ import java.util.logging.Logger;
  */
 @RequiredPermissions(Permission.AddDataset)
 public class GetDatasetSchemaCommand extends AbstractCommand<String> {
-    
+
     private static final Logger logger = Logger.getLogger(GetDatasetSchemaCommand.class.getCanonicalName());
-    
+
     private final Dataverse dataverse;
-    
+
     public GetDatasetSchemaCommand(DataverseRequest aRequest, Dataverse target) {
         super(aRequest, target);
         dataverse = target;
     }
 
     @Override
-    public String execute(CommandContext ctxt) throws CommandException {            
-            return ctxt.dataverses().getCollectionDatasetSchema(dataverse.getAlias());                   
+    public String execute(CommandContext ctxt) throws CommandException {
+            return ctxt.dataverses().getCollectionDatasetSchema(dataverse.getAlias());
     }
-    
+
 }

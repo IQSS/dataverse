@@ -29,7 +29,7 @@ import jakarta.ws.rs.core.Response;
 @Stateless
 @Path("roles")
 public class Roles extends AbstractApiBean {
-	
+
 	@GET
     @AuthRequired
 	@Path("{id}")
@@ -37,11 +37,11 @@ public class Roles extends AbstractApiBean {
         return response(() -> {
             final User user = getRequestUser(crc);
             final DataverseRole role = findRoleOrDie(id);
-            return (permissionSvc.userOn(user, role.getOwner()).has(Permission.ManageDataversePermissions)) 
+            return (permissionSvc.userOn(user, role.getOwner()).has(Permission.ManageDataversePermissions))
                     ? ok(json(role)) : permissionError("Permission required to view roles.");
         });
 	}
-	
+
     @DELETE
     @AuthRequired
     @Path("{id}")
@@ -56,7 +56,7 @@ public class Roles extends AbstractApiBean {
             return ok("role " + role.getName() + " deleted.");
         }, getRequestUser(crc));
     }
-	
+
 	@POST
     @AuthRequired
 	public Response createNewRole(@Context ContainerRequestContext crc,
@@ -66,5 +66,5 @@ public class Roles extends AbstractApiBean {
                                   new CreateRoleCommand(roleDto.asRole(),
                                                         req, findDataverseOrDie(dvoIdtf))))), getRequestUser(crc));
 	}
-    
+
 }

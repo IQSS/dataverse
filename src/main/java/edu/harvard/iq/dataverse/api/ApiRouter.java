@@ -18,7 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 public class ApiRouter implements Filter {
     private static final Logger logger = Logger.getLogger(ApiRouter.class.getName());
-    
+
     @Override
     public void init(FilterConfig fc) throws ServletException {
     }
@@ -39,5 +39,5 @@ public class ApiRouter implements Filter {
     @Override
     public void destroy() {
     }
-    
+
 }

@@ -33,10 +33,10 @@ import org.apache.solr.client.solrj.SolrServerException;
  */
 @RequiredPermissions(Permission.PublishDataverse)
 public class LinkDataverseCommand extends AbstractCommand<DataverseLinkingDataverse> {
-    
+
     private final Dataverse linkedDataverse;
     private final Dataverse linkingDataverse;
-    
+
     public LinkDataverseCommand(DataverseRequest aRequest, Dataverse dataverse, Dataverse linkedDataverse) {
         super(aRequest, dataverse);
         this.linkedDataverse = linkedDataverse;
@@ -58,15 +58,15 @@ public class LinkDataverseCommand extends AbstractCommand<DataverseLinkingDatave
         if (ctxt.dvLinking().alreadyLinked(linkingDataverse, linkedDataverse)) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataverse.linked.error.alreadyLinked", Arrays.asList(linkedDataverse.getName(), linkingDataverse.getName())), this);
         }
-        
+
         DataverseLinkingDataverse dataverseLinkingDataverse = new DataverseLinkingDataverse();
         dataverseLinkingDataverse.setDataverse(linkedDataverse);
         dataverseLinkingDataverse.setLinkingDataverse(linkingDataverse);
         dataverseLinkingDataverse.setLinkCreateTime(new Timestamp(new Date().getTime()));
         ctxt.dvLinking().save(dataverseLinkingDataverse);
         return dataverseLinkingDataverse;
-    }  
-    
+    }
+
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         DataverseLinkingDataverse result = (DataverseLinkingDataverse) r;
@@ -82,5 +82,5 @@ public class LinkDataverseCommand extends AbstractCommand<DataverseLinkingDatave
 
         return true;
     }
-    
+
 }

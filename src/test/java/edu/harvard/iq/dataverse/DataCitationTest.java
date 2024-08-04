@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * @author pkiraly@gwdg.de
  */
 public class DataCitationTest {
-    
+
     /**
      * This test relies on {@link BrandingUtil}. We need to provide mocks for it.
      */
@@ -37,6 +37,7 @@ public class DataCitationTest {
     static void setup() {
         BrandingUtilTest.setupMocks();
     }
+
     /**
      * After this test is done, the mocks should be turned of
      * (so we keep atomicity and no one relies on them being present).
@@ -45,7 +46,7 @@ public class DataCitationTest {
     static void tearDown() {
         BrandingUtilTest.tearDownMocks();
     }
-    
+
     /**
      * Test the public properties of DataCitation class via their getters
      * @throws ParseException
@@ -270,7 +271,7 @@ public class DataCitationTest {
             "</record>" +
             "</records>" +
             "</xml>";
-    
+
         // similar = the content of the nodes in the documents are the same, but minor differences exist
         //           e.g. sequencing of sibling elements, values of namespace prefixes, use of implied attribute values
         // https://www.xmlunit.org/api/java/2.8.2/org/custommonkey/xmlunit/Diff.html
@@ -299,7 +300,7 @@ public class DataCitationTest {
            "</record>" +
            "</records>" +
            "</xml>";
-    
+
         // similar = the content of the nodes in the documents are the same, but minor differences exist
         //           e.g. sequencing of sibling elements, values of namespace prefixes, use of implied attribute values
         // https://www.xmlunit.org/api/java/2.8.2/org/custommonkey/xmlunit/Diff.html
@@ -409,7 +410,7 @@ public class DataCitationTest {
     }
 
     private DatasetVersion createATestDatasetVersion(String withTitle, boolean withAuthor) throws ParseException {
-        
+
         Dataverse dataverse = new Dataverse();
         dataverse.setName("LibraScholar");
 

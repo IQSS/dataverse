@@ -180,6 +180,6 @@ public class DataVariableDTO {
     public void setNumberOfDecimalPoints(Long numberOfDecimalPoints) {
         this.numberOfDecimalPoints = numberOfDecimalPoints;
     }
-    
-    
+
+
 }

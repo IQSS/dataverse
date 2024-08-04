@@ -41,12 +41,12 @@ import java.util.logging.Logger;
 public class JhoveFileType implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(JhoveFileType.class.getCanonicalName());
 
-     
+
     public JhoveFileType() {
-        
+
     }
-    
-    
+
+
     public static String getJhoveConfigFile() {
         Properties p = System.getProperties();
         String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
@@ -56,12 +56,12 @@ public class JhoveFileType implements java.io.Serializable {
         }
         return domainRoot + File.separator + "config" + File.separator + "jhove.conf";
     }
-    
+
     private static final int[] ORIGINAL_RELEASE_DATE = {2013, 8, 30};
     private static final String ORIGINAL_COPR_RIGHTS = "Copyright"
         + "2004-2007 by the President and Fellows of Harvard College. "
         + "Released under the GNU Lesser General Public License.";
-    
+
     /**
      * A method that returns Jhove's RepInfo
      */
@@ -69,13 +69,13 @@ public class JhoveFileType implements java.io.Serializable {
     public RepInfo checkFileType(File file) {
         RepInfo info = null;
         boolean DEBUG = false;
-        
+
         try {
             // initialize the application spec object
             // name, release number, build date, usage, Copyright infor
             // TODO: Should the release number come from pom.xml as we upgrade from 1.11.0 to 1.20.1?
             App jhoveApp = new App("Jhove", "1.20.1",
-                           ORIGINAL_RELEASE_DATE, "Java JhoveFileType", 
+                           ORIGINAL_RELEASE_DATE, "Java JhoveFileType",
                            ORIGINAL_COPR_RIGHTS);
 
             //String configFile = JhoveBase.getConfigFileFromProperties();
@@ -86,11 +86,11 @@ public class JhoveFileType implements java.io.Serializable {
             if (configFile == null) {
                 logger.info("Called getJhoveConfigFile but the result was null! Configuring JHOVE is highly recommended to determine file types.");
             }
-        
+
             // create an instance of jhove engine
             JhoveBase jb = new JhoveBase();
             if (DEBUG) {
-                jb.setLogLevel("INFO"); 
+                jb.setLogLevel("INFO");
             } else {
                 jb.setLogLevel("SEVERE");
             }
@@ -106,7 +106,7 @@ public class JhoveFileType implements java.io.Serializable {
             
             // String moduleName = null;
             Module module = jb.getModule(null);
-            
+
             if (DEBUG) {
                 if (module != null) {
                     logger.fine("Module " + module.getName());
@@ -114,11 +114,11 @@ public class JhoveFileType implements java.io.Serializable {
                     logger.fine("module is null!");
                 }
             }
-            
+
             if (DEBUG) {
                 logger.fine("file name=" + file.getAbsolutePath());
             }
-            
+
             // get a RepInfo instance
             if (file.exists() && file.isFile() && (file.length() > 0L)) {
                 //info = jb.processRepInfo(jhoveApp, module, file);
@@ -126,10 +126,10 @@ public class JhoveFileType implements java.io.Serializable {
                 info.setSize(file.length());
                 if (module != null) {
                     if (!jb.processFile(jhoveApp, module, false, file, info)) {
-                        info = null; 
+                        info = null;
                     } else {
                         if (DEBUG) {
-                            logger.fine("mime type (module specified above)=" + info.getMimeType()); 
+                            logger.fine("mime type (module specified above)=" + info.getMimeType());
                         }
                     }
                 } else {
@@ -172,7 +172,7 @@ public class JhoveFileType implements java.io.Serializable {
                                 continue;
                             }
                         }
-                    } 
+                    }
                 }
             } else {
                 logger.warning("Jhove: the specified file does not exist or not a file or empty");
@@ -184,7 +184,7 @@ public class JhoveFileType implements java.io.Serializable {
         }
         return info;
     }
-    
+
     /**
      * A convenience method that returns the value of the mime type tag only
      */
@@ -192,14 +192,14 @@ public class JhoveFileType implements java.io.Serializable {
     public String getFileMimeType(File file) {
         String mimeType = null;
         boolean DEBUG = false;
-        
+
         if (file.exists() && file.isFile() && (file.length() > 0L)) {
             RepInfo info = checkFileType(file);
             if (info != null) {
                 mimeType = info.getMimeType();
             }
         }
-        
+
         return mimeType;
     }
 }

@@ -22,11 +22,11 @@ import jakarta.validation.Payload;
 @Constraint(validatedBy = {FileDirectoryNameValidator.class})
 @Documented
 public @interface ValidateDataFileDirectoryName {
-    
+
     String message() default "Failed Validation for Validate Data File Directory Name";
 
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
-    
+
 }

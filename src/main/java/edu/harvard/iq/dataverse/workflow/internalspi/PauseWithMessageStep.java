@@ -18,16 +18,16 @@ import java.util.logging.Logger;
  * @author michael
  */
 public class PauseWithMessageStep implements WorkflowStep {
-    
+
     /** Constant used by testing to simulate a failed step. */
     public static final String FAILURE_RESPONSE = "fail";
-    
+
     private final Map<String, String> params = new HashMap<>();
 
     public PauseWithMessageStep(Map<String, String> paramSet) {
         params.putAll(paramSet);
     }
-    
+
     @Override
     public WorkflowStepResult run(WorkflowContext context) {
         final Pending result = new Pending();
@@ -44,5 +44,5 @@ public class PauseWithMessageStep implements WorkflowStep {
     public void rollback(WorkflowContext context, Failure reason) {
         // nothing to roll back
     }
-    
+
 }

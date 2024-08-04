@@ -85,7 +85,7 @@ public class RolePermissionFragment implements java.io.Serializable {
 
     /* Inherit assignments related code */
     boolean inheritAssignments;
-    
+
     public boolean isInheritAssignments() {
         return inheritAssignments;
     }
@@ -97,7 +97,7 @@ public class RolePermissionFragment implements java.io.Serializable {
     public void updatePermissionRoot(AjaxBehaviorEvent event) throws AbortProcessingException {
         try {
             dvObject = commandEngine.submit(
-                    new UpdatePermissionRootCommand(!inheritAssignments, 
+                    new UpdatePermissionRootCommand(!inheritAssignments,
                                                     dvRequestService.getDataverseRequest(),
                                                     (Dataverse) dvObject));
             inheritAssignments = !((DvObjectContainer) dvObject).isPermissionRoot();
@@ -127,9 +127,9 @@ public class RolePermissionFragment implements java.io.Serializable {
         }
         return returnList;
     }
-    
+
     private final List<RoleAssignee> roleAssigneeList = new ArrayList<>();
-    
+
     public List<RoleAssignee> completeRoleAssignee(String query) {
         if (roleAssigneeList.isEmpty()) {
             for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
@@ -144,7 +144,7 @@ public class RolePermissionFragment implements java.io.Serializable {
             }
         }
         return returnList;
-    }    
+    }
 
     public List<DataverseRole> getAvailableRoles() {
         List<DataverseRole> roles = new LinkedList<>();
@@ -178,12 +178,13 @@ public class RolePermissionFragment implements java.io.Serializable {
         DataFile file = (DataFile) dvObject;
         file.setRestricted(!file.isRestricted());
     }
-    
+
     public void grantAccess(ActionEvent evt) {
         //RoleAssignee assignRoleRoleAssignee = roleAssigneeService.getRoleAssignee(assignRoleUsername);
 	// Find the built in file downloader role (currently by alias)        
         assignRole(assignRoleRoleAssignee, roleService.findBuiltinRoleByAlias("fileDownloader"));
     }
+
     public void assignRole(ActionEvent evt) {
         //RoleAssignee assignRoleRoleAssignee = roleAssigneeService.getRoleAssignee(assignRoleUsername);
         assignRole(assignRoleRoleAssignee, roleService.find(assignRoleRoleId));
@@ -230,7 +231,7 @@ public class RolePermissionFragment implements java.io.Serializable {
     public void setAssignRoleRoleAssignee(RoleAssignee assignRoleRoleAssignee) {
         this.assignRoleRoleAssignee = assignRoleRoleAssignee;
     }
-    
+
     public Long getAssignRoleRoleId() {
         return assignRoleRoleId;
     }
@@ -294,16 +295,16 @@ public class RolePermissionFragment implements java.io.Serializable {
         setRole(new DataverseRole());
         role.setOwner(dvObject);
     }
-    
+
     public void cloneRole(String roleId) {
         DataverseRole clonedRole = new DataverseRole();
         clonedRole.setOwner(dvObject);
-        
+
         DataverseRole originalRole = roleService.find(Long.parseLong(roleId));
         clonedRole.addPermissions(originalRole.permissions());
         setRole(clonedRole);
     }
-    
+
 
     public void editRole(String roleId) {
         setRole(roleService.find(Long.parseLong(roleId)));

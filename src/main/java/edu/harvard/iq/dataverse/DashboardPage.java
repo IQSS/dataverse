@@ -37,7 +37,7 @@ public class DashboardPage implements java.io.Serializable {
     OAISetServiceBean oaiSetService;
     @EJB
     SystemConfig systemConfig;
-     
+
     @Inject
     DataverseSession session;
     @Inject
@@ -84,66 +84,66 @@ public class DashboardPage implements java.io.Serializable {
     public void setDataverseId(Long dataverseId) {
         this.dataverseId = dataverseId;
     }
-    
+
     public int getNumberOfConfiguredHarvestClients() {
         List<HarvestingClient> configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         if (configuredHarvestingClients == null || configuredHarvestingClients.isEmpty()) {
             return 0;
         }
-        
+
         return configuredHarvestingClients.size();
     }
-    
+
     public long getNumberOfHarvestedDatasets() {
-        
+
         Long numOfDatasets = harvestingClientService.getNumberOfHarvestedDatasetsByAllClients();
-        
+
         if (numOfDatasets != null && numOfDatasets > 0L) {
             return numOfDatasets;
         }
-        
+
         return 0L;
     }
-    
+
     public boolean isHarvestServerEnabled() {
         if (systemConfig.isOAIServerEnabled()) {
             return true;
         }
         return false;
     }
-    
+
     public int getNumberOfOaiSets() {
         List<OAISet> configuredHarvestingSets = oaiSetService.findAll();
         if (configuredHarvestingSets == null || configuredHarvestingSets.isEmpty()) {
             return 0;
         }
-        
+
         return configuredHarvestingSets.size();
     }
-    
+
     @Deprecated
     public String getHarvestClientsInfoLabel() {
         List<HarvestingClient> configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
         if (configuredHarvestingClients == null || configuredHarvestingClients.isEmpty()) {
             return BundleUtil.getStringFromBundle("harvestclients.noClients.label");
         }
-        
+
         String infoLabel;
-        
+
         if (configuredHarvestingClients.size() == 1) {
             infoLabel = configuredHarvestingClients.size() + " configured harvesting client; ";
         } else {
             infoLabel = configuredHarvestingClients.size() + " harvesting clients configured; ";
-        }        
-        
+        }
+
         Long numOfDatasets = harvestingClientService.getNumberOfHarvestedDatasetsByAllClients();
-        
+
         if (numOfDatasets != null && numOfDatasets > 0L) {
             return infoLabel + numOfDatasets + " harvested datasets";
         }
         return infoLabel + "no datasets harvested.";
     }
-    
+
     @Deprecated
     public String getHarvestServerInfoLabel() {
         if (!systemConfig.isOAIServerEnabled()) {
@@ -151,17 +151,17 @@ public class DashboardPage implements java.io.Serializable {
         }
 
         String infoLabel = "OAI server enabled; ";
-        
+
         List<OAISet> configuredHarvestingSets = oaiSetService.findAll();
         if (configuredHarvestingSets == null || configuredHarvestingSets.isEmpty()) {
             infoLabel = infoLabel.concat(BundleUtil.getStringFromBundle("harvestserver.service.empty"));
             return infoLabel;
         }
-        
+
         infoLabel = infoLabel.concat(configuredHarvestingSets.size() + " configured OAI sets. ");
         return infoLabel;
     }
-    
+
     public boolean isSessionUserAuthenticated() {
 
         if (session == null) {
@@ -184,4 +184,3 @@ public class DashboardPage implements java.io.Serializable {
     }
 
 }
-    

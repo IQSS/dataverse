@@ -20,7 +20,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
         @EJB
         DataverseServiceBean dataverseSvc;
         @EJB SettingsServiceBean settingsSvc;
-        
+
         @PostConstruct
         public void injectService() {
             BrandingUtil.injectServices(dataverseSvc, settingsSvc);

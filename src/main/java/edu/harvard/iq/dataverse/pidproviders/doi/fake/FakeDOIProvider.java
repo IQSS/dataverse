@@ -26,7 +26,7 @@ public class FakeDOIProvider extends AbstractDOIProvider {
         }
         return true;
     }
-    
+
     @Override
     public boolean alreadyRegistered(GlobalId globalId, boolean noProviderDefault) {
         boolean existsLocally = !pidProviderService.isGlobalIdLocallyUnique(globalId);
@@ -71,7 +71,7 @@ public class FakeDOIProvider extends AbstractDOIProvider {
         }
         return true;
     }
-    
+
     @Override
     protected String getProviderKeyName() {
         return "FAKE";

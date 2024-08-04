@@ -37,17 +37,17 @@ import java.util.logging.Logger;
 
 public class DataverseXoaiItemRepository implements ItemRepository {
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.xoai.DataverseXoaiItemRepository");
-    
+
     private final OAIRecordServiceBean recordService;
     private final DatasetServiceBean datasetService;
-    private final String serverUrl; 
+    private final String serverUrl;
 
     public DataverseXoaiItemRepository(OAIRecordServiceBean recordService, DatasetServiceBean datasetService, String serverUrl) {
         this.recordService = recordService;
         this.datasetService = datasetService;
-        this.serverUrl = serverUrl; 
+        this.serverUrl = serverUrl;
     }
-    
+
     @Override
     public ItemIdentifier getItemIdentifier(String identifier) throws IdDoesNotExistException {
         // This method is called when ListMetadataFormats request specifies 
@@ -65,24 +65,24 @@ public class DataverseXoaiItemRepository implements ItemRepository {
                 }
             }
         }
-        
+
         throw new IdDoesNotExistException();
     }
-    
+
     @Override
     public Item getItem(String identifier, MetadataFormat metadataFormat) throws HandlerException {
         logger.fine("getItem; calling findOaiRecordsByGlobalId, identifier " + identifier);
-        
+
         if (metadataFormat == null) {
             throw new NoMetadataFormatsException("Metadata Format is Required");
         }
-        
+
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsByGlobalId(identifier);
         if (oaiRecords != null && !oaiRecords.isEmpty()) {
-            DataverseXoaiItem xoaiItem = null; 
+            DataverseXoaiItem xoaiItem = null;
             for (OAIRecord oaiRecord : oaiRecords) {
                 if (xoaiItem == null) {
-                    xoaiItem = new DataverseXoaiItem(oaiRecord); 
+                    xoaiItem = new DataverseXoaiItem(oaiRecord);
                     xoaiItem = addMetadata(xoaiItem, metadataFormat);
                 } else {
                     // Adding extra set specs to the XOAI Item, if this oaiRecord
@@ -102,30 +102,30 @@ public class DataverseXoaiItemRepository implements ItemRepository {
 
     @Override
     public ResultsPage<ItemIdentifier> getItemIdentifiers(List<ScopedFilter> filters, MetadataFormat metadataFormat, int maxResponseLength, ResumptionToken.Value resumptionToken) throws HandlerException {
-        
+
         return (ResultsPage<ItemIdentifier>) getRepositoryRecords(metadataFormat, maxResponseLength, resumptionToken, false);
 
     }
- 
+
     @Override
     public ResultsPage<Item> getItems(List<ScopedFilter> filters, MetadataFormat metadataFormat, int maxResponseLength, ResumptionToken.Value resumptionToken) throws HandlerException {
-        
+
         return (ResultsPage<Item>) getRepositoryRecords(metadataFormat, maxResponseLength, resumptionToken, true);
     }
-    
+
     private ResultsPage<? extends ItemIdentifier> getRepositoryRecords(
-            MetadataFormat metadataFormat, 
-            int maxResponseLength, 
+            MetadataFormat metadataFormat,
+            int maxResponseLength,
             ResumptionToken.Value resumptionToken,
             boolean fullItems) throws HandlerException {
-                
+
         int offset = Long.valueOf(resumptionToken.getOffset()).intValue();
         String setSpec = resumptionToken.getSetSpec();
         Instant from = resumptionToken.getFrom();
         Instant until = resumptionToken.getUntil();
-        
-        boolean hasMore = false; 
-        
+
+        boolean hasMore = false;
+
         logger.fine("calling " + (fullItems ? "getItems" : "getItemIdentifiers")
                 + "; offset=" + offset
                 + ", length=" + maxResponseLength
@@ -134,33 +134,33 @@ public class DataverseXoaiItemRepository implements ItemRepository {
                 + ", until=" + until);
 
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsBySetName(setSpec, from, until);
-        
+
         List<DataverseXoaiItem> xoaiItems = new ArrayList<>();
 
         if (oaiRecords != null && !oaiRecords.isEmpty()) {
             logger.fine("total " + oaiRecords.size() + " records returned");
-            
+
             for (int i = offset; i < offset + maxResponseLength && i < oaiRecords.size(); i++) {
                 OAIRecord record = oaiRecords.get(i);
                 DataverseXoaiItem xoaiItem = new DataverseXoaiItem(record);
-                
+
                 if (fullItems) {
                     // If we are cooking "full" Items (for the ListRecords verb),
                     // add the metadata to the item object (if not a deleted
                     // record, if available, etc.):
                     xoaiItem = addMetadata(xoaiItem, metadataFormat);
                 }
-                
+
                 xoaiItems.add(xoaiItem);
             }
-            
+
             // Run a second pass, looking for records in this set that occur
             // in *other* sets. Then we'll add these multiple sets to the 
             // formatted output in the header:
             addExtraSets(xoaiItems, setSpec, from, until);
-            
+
             hasMore = offset + maxResponseLength < oaiRecords.size();
-            
+
             ResultsPage<DataverseXoaiItem> result = new ResultsPage(resumptionToken, hasMore, xoaiItems, oaiRecords.size());
             logger.fine("returning result with " + xoaiItems.size() + " items.");
             return result;
@@ -168,17 +168,17 @@ public class DataverseXoaiItemRepository implements ItemRepository {
 
         return new ResultsPage(resumptionToken, false, xoaiItems, 0);
     }
-    
+
     private void addExtraSets(Object xoaiItemsList, String setSpec, Instant from, Instant until) {
-        
+
         List<DataverseXoaiItem> xoaiItems = (List<DataverseXoaiItem>) xoaiItemsList;
-        
+
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsNotInThisSet(setSpec, from, until);
-        
+
         if (oaiRecords == null || oaiRecords.isEmpty()) {
             return;
         }
-                
+
         // Make a second pass through the list of xoaiItems already found for this set, 
         // and add any other sets in which this item occurs:
         
@@ -188,18 +188,18 @@ public class DataverseXoaiItemRepository implements ItemRepository {
             // or until we are past this oaiRecord (both lists are sorted alphabetically by
             // the identifier:
             DataverseXoaiItem xitem = xoaiItems.get(i);
-            
+
             while (j < oaiRecords.size() && xitem.getIdentifier().compareTo(oaiRecords.get(j).getGlobalId()) > 0) {
                 j++;
             }
-            
+
             while (j < oaiRecords.size() && xitem.getIdentifier().equals(oaiRecords.get(j).getGlobalId())) {
                 xoaiItems.get(i).getSets().add(new Set(oaiRecords.get(j).getSetName()));
                 j++;
             }
         }
     }
-    
+
     private DataverseXoaiItem addMetadata(DataverseXoaiItem xoaiItem, MetadataFormat metadataFormat) {
         // This may be a "deleted" record - i.e., a oaiRecord kept in 
         // the OAI set for a dataset that's no longer in this Dataverse. 
@@ -238,7 +238,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
         }
         return xoaiItem;
     }
-    
+
     private Metadata getDatasetMetadata(Dataset dataset, String metadataPrefix) throws ExportException, IOException {
         Metadata metadata;
 
@@ -250,7 +250,7 @@ public class DataverseXoaiItemRepository implements ItemRepository {
             metadata = new Metadata(
                     new EchoElement("<dataverse_json>custom metadata</dataverse_json>"))
                     .withAttribute("directApiCall", customDataverseJsonApiUri(dataset.getGlobalId().asString()));
-            
+
         } else {
             InputStream pregeneratedMetadataStream;
             pregeneratedMetadataStream = ExportService.getInstance().getExport(dataset, metadataPrefix);
@@ -259,12 +259,12 @@ public class DataverseXoaiItemRepository implements ItemRepository {
         }
         return metadata;
     }
-    
+
     private String customDataverseJsonApiUri(String identifier) {
-        String ret = serverUrl  
+        String ret = serverUrl
                 + "/api/datasets/export?exporter=dataverse_json&amp;persistentId="
                 + identifier;
-        
+
         return ret;
     }
 }

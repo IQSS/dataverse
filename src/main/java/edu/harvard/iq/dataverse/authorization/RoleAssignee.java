@@ -24,11 +24,11 @@ public interface RoleAssignee extends Comparable<RoleAssignee> {
     public String getIdentifier();
 
     public RoleAssigneeDisplayInfo getDisplayInfo();
-    
+
     default String getSortByString() {
         return this.getDisplayInfo().getTitle();
     }
-       
+
     @Override
     default  int compareTo(RoleAssignee o) {
         return this.getSortByString().toUpperCase().compareTo(o.getSortByString().toUpperCase());

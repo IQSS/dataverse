@@ -7,10 +7,10 @@ import edu.harvard.iq.dataverse.engine.command.Command;
  * @author michael
  */
 public class CommandException extends Exception {
-	
+
 	private final Command failedCommand;
-	
-	
+
+
 	public CommandException(String message, Command aCommand) {
 		super(message);
 		failedCommand = aCommand;
@@ -24,5 +24,5 @@ public class CommandException extends Exception {
 	public Command getFailedCommand() {
 		return failedCommand;
 	}
-	
+
 }

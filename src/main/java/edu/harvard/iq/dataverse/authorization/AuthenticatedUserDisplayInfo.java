@@ -14,7 +14,7 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
     @NotBlank(message = "{user.firstName}")
     private String firstName;
     private String position;
-    
+
     /*
      * @todo Shouldn't we persist the displayName too? It still exists on the
      * authenticateduser table.
@@ -23,7 +23,7 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
         super(firstName + " " + lastName, emailAddress, affiliation);
         this.firstName = firstName;
         this.lastName = lastName;
-        this.position = position;        
+        this.position = position;
     }
 
     public AuthenticatedUserDisplayInfo() {
@@ -33,7 +33,7 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
         position = "";
     }
 
-    
+
     /**
      * Copy constructor (old school!)
      * @param src the display info {@code this} will be a copy of.
@@ -41,7 +41,7 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
     public AuthenticatedUserDisplayInfo(AuthenticatedUserDisplayInfo src) {
         this(src.getFirstName(), src.getLastName(), src.getEmailAddress(), src.getAffiliation(), src.getPosition());
     }
-    
+
     public String getLastName() {
         return lastName;
     }
@@ -98,6 +98,6 @@ public class AuthenticatedUserDisplayInfo extends RoleAssigneeDisplayInfo {
         }
         return Objects.equals(this.position, other.position) && super.equals(obj);
     }
-    
+
 }
 

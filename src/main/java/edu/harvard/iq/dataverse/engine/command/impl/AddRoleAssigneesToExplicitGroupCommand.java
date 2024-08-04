@@ -24,10 +24,10 @@ import jakarta.ejb.EJBException;
  */
 @RequiredPermissions(Permission.ManageDataversePermissions)
 public class AddRoleAssigneesToExplicitGroupCommand extends AbstractCommand<ExplicitGroup> {
-    
+
     private final Set<String> roleAssigneeIdentifiers;
     private final ExplicitGroup explicitGroup;
-     
+
     public AddRoleAssigneesToExplicitGroupCommand(DataverseRequest aRequest, ExplicitGroup anExplicitGroup, Set<String> someRoleAssigneeIdentifiers) {
         super(aRequest, anExplicitGroup.getOwner());
         roleAssigneeIdentifiers = someRoleAssigneeIdentifiers;
@@ -36,7 +36,7 @@ public class AddRoleAssigneesToExplicitGroupCommand extends AbstractCommand<Expl
 
     @Override
     public ExplicitGroup execute(CommandContext ctxt) throws CommandException {
-        
+
         List<String> nonexistentRAs = new LinkedList<>();
         for (String rai : roleAssigneeIdentifiers) {
             RoleAssignee ra = null;
@@ -62,13 +62,13 @@ public class AddRoleAssigneesToExplicitGroupCommand extends AbstractCommand<Expl
                     Logger.getLogger(AddRoleAssigneesToExplicitGroupCommand.class.getName())
                             .log(Level.WARNING, "Error adding role assignee " + rai + " to group"
                                                 + " " + explicitGroup.getIdentifier(), ex);
-                    throw new IllegalCommandException("Error adding " + rai 
-                            + " to group " + explicitGroup.getIdentifier() + ": " 
+                    throw new IllegalCommandException("Error adding " + rai
+                            + " to group " + explicitGroup.getIdentifier() + ": "
                             + ex.getMessage(), this );
                 }
             }
         }
-        
+
         if (nonexistentRAs.isEmpty()) {
             return ctxt.explicitGroups().persist(explicitGroup);
         } else {
@@ -80,5 +80,5 @@ public class AddRoleAssigneesToExplicitGroupCommand extends AbstractCommand<Expl
             throw new IllegalCommandException("The following role assignees were not found: " + sb.toString(), this );
         }
     }
-    
+
 }

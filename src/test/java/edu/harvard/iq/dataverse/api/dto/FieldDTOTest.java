@@ -24,31 +24,32 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class FieldDTOTest {
     FieldDTO author;
+
     public FieldDTOTest() {
     }
-    
+
     @BeforeAll
     public static void setUpClass() {
     }
-    
+
     @AfterAll
     public static void tearDownClass() {
     }
-    
+
     @BeforeEach
     public void setUp() {
-       
+
         Set<FieldDTO> authorFields = new HashSet<>();
-        
-      
+
+
         author = FieldDTO.createCompoundFieldDTO("author",
                 FieldDTO.createPrimitiveFieldDTO("authorAffiliation", "Top"),
                 FieldDTO.createPrimitiveFieldDTO("authorIdentifier", "ellenId"),
                 FieldDTO.createVocabFieldDTO("authorIdentifierScheme", "ORCID"));
-        
-        
+
+
     }
-    
+
     @AfterEach
     public void tearDown() {
     }
@@ -61,7 +62,7 @@ public class FieldDTOTest {
         FieldDTO affil = FieldDTO.createPrimitiveFieldDTO("authorAffiliation", "Top");
         System.out.println(affil.getSinglePrimitive());
         assertEquals("Top", affil.getSinglePrimitive());
-        
+
     }
 
     /**
@@ -77,12 +78,12 @@ public class FieldDTOTest {
         value.add("Mosaic");
         value.add("EventList");
         astroType.setMultipleVocab(value);
-        
+
         assertEquals(value, astroType.getMultipleVocab());
         String jsonStr = gson.toJson(astroType);
         FieldDTO astroType2 = gson.fromJson(jsonStr, FieldDTO.class);
         assertEquals(astroType, astroType2);
-        
+
     }
 
     /**
@@ -98,24 +99,24 @@ public class FieldDTOTest {
     @Test
     public void testSetMultipleCompound() {
          HashSet<FieldDTO> author1Fields = new HashSet<>();
-        
+
         author1Fields.add(FieldDTO.createPrimitiveFieldDTO("authorAffiliation", "Top"));
         author1Fields.add(FieldDTO.createPrimitiveFieldDTO("authorIdentifier", "ellenId"));
         author1Fields.add(FieldDTO.createVocabFieldDTO("authorIdentifierScheme", "ORCID"));
-          
+
         HashSet<FieldDTO> author2Fields = new HashSet<>();
-        
+
         author2Fields.add(FieldDTO.createPrimitiveFieldDTO("authorAffiliation", "Bottom"));
         author2Fields.add(FieldDTO.createPrimitiveFieldDTO("authorIdentifier", "ernieId"));
         author2Fields.add(FieldDTO.createVocabFieldDTO("authorIdentifierScheme", "DAISY"));
-       
+
         List<HashSet<FieldDTO>> authorList = new ArrayList<>();
         authorList.add(author1Fields);
         authorList.add(author2Fields);
         FieldDTO compoundField = new FieldDTO();
         compoundField.setTypeName("author");
         compoundField.setMultipleCompound(authorList);
-        
+
         assertEquals(compoundField.getMultipleCompound(), authorList);
     }
 
@@ -125,16 +126,16 @@ public class FieldDTOTest {
     @Test
     public void testSetSingleCompound() {
         Set<FieldDTO> authorFields = new HashSet<>();
-        
+
         authorFields.add(FieldDTO.createPrimitiveFieldDTO("authorAffiliation", "Top"));
         authorFields.add(FieldDTO.createPrimitiveFieldDTO("authorIdentifier", "ellenId"));
         authorFields.add(FieldDTO.createVocabFieldDTO("authorIdentifierScheme", "ORCID"));
-        
+
         FieldDTO compoundField = new FieldDTO();
         compoundField.setSingleCompound(authorFields.toArray(new FieldDTO[]{}));
         Set<FieldDTO>  returned = compoundField.getSingleCompound();
         assertEquals(returned, authorFields);
-       
+
     }
 
     /**
@@ -142,24 +143,24 @@ public class FieldDTOTest {
      */
     @Test
     public void testJsonTree() {
-       
+
          Gson gson = new Gson();
         FieldDTO test1 = new FieldDTO();
-       
+
         test1.value = gson.toJsonTree("ellen", String.class);
         JsonElement elem = gson.toJsonTree(test1, FieldDTO.class);
-        
+
         FieldDTO field1 = gson.fromJson(elem.getAsJsonObject(), FieldDTO.class);
-       
+
     }
-    
+
 
     /**
      * Test of getMultipleCompound method, of class FieldDTO.
      */
     @Test
     public void testGetMultipleCompound() {
-       
+
     }
 
     /**
@@ -175,5 +176,5 @@ public class FieldDTOTest {
     @Test
     public void testToString() {
     }
-    
+
 }

@@ -20,7 +20,7 @@ import jakarta.json.JsonObjectBuilder;
  * @author rmp553
  */
 public class UserListResult {
-    
+
     private static final Logger logger = Logger.getLogger(UserListResult.class.getName());
 
     private String searchTerm;
@@ -31,36 +31,36 @@ public class UserListResult {
     private boolean success;
 
     private String errorMessage;
-        
-    
+
+
     public UserListResult(String searchTerm, Pager pager, List<AuthenticatedUser> userList) {
-        
-        
+
+
         if (searchTerm == null) {
             searchTerm = "";
         }
         this.searchTerm = searchTerm;
-        
+
         this.pager = pager;
         if (this.pager == null) {
             logger.severe("Pager should never be null!");
         }
-        
+
         this.userList = userList;
         if (this.userList == null) {
             this.userList = new ArrayList<>();  // new empty list
         }
-       
+
     }
 
     public Integer getSelectedPageNumber() {
-        
+
         if (pager == null) {
             return 1;
         }
         return pager.getSelectedPageNumber();
     }
-    
+
     /**
      *  Set searchTerm
      *  @param searchTerm
@@ -76,7 +76,7 @@ public class UserListResult {
     public String getSearchTerm() {
         return this.searchTerm;
     }
-    
+
 
     /**
      *  Set pager
@@ -93,7 +93,7 @@ public class UserListResult {
     public Pager getPager() {
         return this.pager;
     }
-    
+
 
     /**
      *  Set userList
@@ -110,8 +110,8 @@ public class UserListResult {
     public List<AuthenticatedUser> getUserList() {
         return this.userList;
     }
-    
-    
+
+
     /**
      *  Set success
      *  @param success
@@ -127,8 +127,7 @@ public class UserListResult {
     public boolean getSuccess() {
         return this.success;
     }
-    
-   
+
 
     /**
      *  Set errorMessage
@@ -146,7 +145,7 @@ public class UserListResult {
         return this.errorMessage;
     }
 
-    
+
     /**
      * TO DO!
      * Return this object as a JsonObjectBuilder object
@@ -154,16 +153,16 @@ public class UserListResult {
      * @return 
      */
     public JsonObjectBuilder toJSON() {
-        
+
         if (userList.isEmpty()) {
             return getNoResultsJSON();
         }
         if (pager == null) {
             logger.severe("Pager should never be null!");
             return getNoResultsJSON();
-           
+
         }
-        
+
         JsonObjectBuilder jsonOverallData = Json.createObjectBuilder();
         jsonOverallData.add("userCount", pager.getNumResults())
                        .add("selectedPage", pager.getSelectedPageNumber())
@@ -173,39 +172,37 @@ public class UserListResult {
                        ;
         return jsonOverallData;
     }
-    
 
-    
+
     private JsonArrayBuilder getUsersAsJSONArray() {
-        
+
          // -------------------------------------------------
         // No results..... Return count of 0 and empty array
         // -------------------------------------------------
         if ((userList == null) || (userList.isEmpty())) {
             return Json.createArrayBuilder(); // return an empty array
         }
-        
+
         // -------------------------------------------------
         // We have results, format them into a JSON object
         // -------------------------------------------------
         JsonArrayBuilder jsonUserListArray = Json.createArrayBuilder();
 
-        for (AuthenticatedUser oneUser : userList) {    
+        for (AuthenticatedUser oneUser : userList) {
             jsonUserListArray.add(oneUser.toJson());
-        }            
+        }
         return jsonUserListArray;
     }
-    
-    
+
+
     private JsonObjectBuilder getNoResultsJSON() {
-        
+
          return Json.createObjectBuilder()
                         .add("userCount", 0)
                         .add("selectedPage", 1)
                         .add("bundleStrings", AuthenticatedUser.getBundleStrings())
                         .add("users", Json.createArrayBuilder()); // empty array
     }
-    
-   
+
 
 }

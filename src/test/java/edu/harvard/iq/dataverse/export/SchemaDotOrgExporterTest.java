@@ -82,9 +82,9 @@ public class SchemaDotOrgExporterTest {
         JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
         ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
         Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
-        
+
         JsonObject json2 = createExportFromJson(exportDataProviderStub);
-        
+
         assertEquals("http://schema.org", json2.getString("@context"));
         assertEquals("Dataset", json2.getString("@type"));
         assertEquals("https://doi.org/10.5072/FK2/IMK5A4", json2.getString("@id"));
@@ -146,7 +146,7 @@ public class SchemaDotOrgExporterTest {
         try (PrintWriter printWriter = new PrintWriter("/tmp/dvjsonld.json")) {
             printWriter.println(JsonUtil.prettyPrint(json2));
         }
-        
+
     }
 
     /**
@@ -164,12 +164,12 @@ public class SchemaDotOrgExporterTest {
     JsonObject json = JsonUtil.getJsonObject(datasetVersionAsJson);
     ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
     Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(json);
-    
+
     JsonObject json2 = createExportFromJson(exportDataProviderStub);
 
     assertTrue(json2.getString("description").endsWith("at..."));
     }
-    
+
     private JsonObject createExportFromJson(ExportDataProvider provider) throws JsonParseException, ParseException {
         License license = new License("CC0 1.0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("http://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true, 1l);
         license.setDefault(true);
@@ -280,7 +280,7 @@ public class SchemaDotOrgExporterTest {
 
     private static void mockDatasetFieldSvc() {
         datasetFieldTypeSvc.setMetadataBlock("citation");
-    
+
         DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", DatasetFieldType.FieldType.TEXTBOX, false));
         DatasetFieldType authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> authorChildTypes = new HashSet<>();
@@ -300,7 +300,7 @@ public class SchemaDotOrgExporterTest {
             t.setParentDatasetFieldType(authorType);
         }
         authorType.setChildDatasetFieldTypes(authorChildTypes);
-    
+
         DatasetFieldType datasetContactType = datasetFieldTypeSvc.add(new DatasetFieldType("datasetContact", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> datasetContactTypes = new HashSet<>();
         datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactEmail", DatasetFieldType.FieldType.TEXT, false)));
@@ -310,7 +310,7 @@ public class SchemaDotOrgExporterTest {
             t.setParentDatasetFieldType(datasetContactType);
         }
         datasetContactType.setChildDatasetFieldTypes(datasetContactTypes);
-    
+
         DatasetFieldType dsDescriptionType = datasetFieldTypeSvc.add(new DatasetFieldType("dsDescription", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> dsDescriptionTypes = new HashSet<>();
         dsDescriptionTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("dsDescriptionValue", DatasetFieldType.FieldType.TEXT, false)));
@@ -318,7 +318,7 @@ public class SchemaDotOrgExporterTest {
             t.setParentDatasetFieldType(dsDescriptionType);
         }
         dsDescriptionType.setChildDatasetFieldTypes(dsDescriptionTypes);
-    
+
         DatasetFieldType keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> keywordChildTypes = new HashSet<>();
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordValue", DatasetFieldType.FieldType.TEXT, false)));
@@ -326,16 +326,16 @@ public class SchemaDotOrgExporterTest {
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabulary", DatasetFieldType.FieldType.TEXT, false)));
         keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabularyURI", DatasetFieldType.FieldType.TEXT, false)));
         keywordType.setChildDatasetFieldTypes(keywordChildTypes);
-    
+
         DatasetFieldType topicClassificationType = datasetFieldTypeSvc.add(new DatasetFieldType("topicClassification", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> topicClassificationTypes = new HashSet<>();
         topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassValue", DatasetFieldType.FieldType.TEXT, false)));
         topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassVocab", DatasetFieldType.FieldType.TEXT, false)));
         topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassVocabURI", DatasetFieldType.FieldType.TEXT, false)));
         topicClassificationType.setChildDatasetFieldTypes(topicClassificationTypes);
-    
+
         DatasetFieldType descriptionType = datasetFieldTypeSvc.add(new DatasetFieldType("description", DatasetFieldType.FieldType.TEXTBOX, false));
-    
+
         DatasetFieldType subjectType = datasetFieldTypeSvc.add(new DatasetFieldType("subject", DatasetFieldType.FieldType.TEXT, true));
         subjectType.setAllowControlledVocabulary(true);
         subjectType.setControlledVocabularyValues(Arrays.asList(
@@ -343,7 +343,7 @@ public class SchemaDotOrgExporterTest {
             new ControlledVocabularyValue(2l, "law", subjectType),
             new ControlledVocabularyValue(3l, "cs", subjectType)
         ));
-    
+
         DatasetFieldType pubIdType = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIdType", DatasetFieldType.FieldType.TEXT, false));
         pubIdType.setAllowControlledVocabulary(true);
         pubIdType.setControlledVocabularyValues(Arrays.asList(
@@ -351,17 +351,17 @@ public class SchemaDotOrgExporterTest {
             new ControlledVocabularyValue(2l, "doi", pubIdType),
             new ControlledVocabularyValue(3l, "url", pubIdType)
         ));
-    
+
         DatasetFieldType compoundSingleType = datasetFieldTypeSvc.add(new DatasetFieldType("coordinate", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> childTypes = new HashSet<>();
         childTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("lat", DatasetFieldType.FieldType.TEXT, false)));
         childTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("lon", DatasetFieldType.FieldType.TEXT, false)));
-    
+
         for (DatasetFieldType t : childTypes) {
             t.setParentDatasetFieldType(compoundSingleType);
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
-    
+
         DatasetFieldType contributorType = datasetFieldTypeSvc.add(new DatasetFieldType("contributor", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> contributorChildTypes = new HashSet<>();
         contributorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("contributorName", DatasetFieldType.FieldType.TEXT, false)));
@@ -382,13 +382,13 @@ public class SchemaDotOrgExporterTest {
             t.setParentDatasetFieldType(contributorType);
         }
         contributorType.setChildDatasetFieldTypes(contributorChildTypes);
-    
+
         DatasetFieldType grantNumberType = datasetFieldTypeSvc.add(new DatasetFieldType("grantNumber", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> grantNumberChildTypes = new HashSet<>();
         grantNumberChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("grantNumberAgency", DatasetFieldType.FieldType.TEXT, false)));
         grantNumberChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("grantNumberValue", DatasetFieldType.FieldType.TEXT, false)));
         grantNumberType.setChildDatasetFieldTypes(grantNumberChildTypes);
-    
+
         DatasetFieldType publicationType = datasetFieldTypeSvc.add(new DatasetFieldType("publication", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> publicationChildTypes = new HashSet<>();
         publicationChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("publicationCitation", DatasetFieldType.FieldType.TEXT, false)));
@@ -411,13 +411,13 @@ public class SchemaDotOrgExporterTest {
         publicationURLType.setDisplayFormat("<a href=\"#VALUE\" target=\"_blank\">#VALUE</a>");
         publicationChildTypes.add(datasetFieldTypeSvc.add(publicationURLType));
         publicationType.setChildDatasetFieldTypes(publicationChildTypes);
-    
+
         DatasetFieldType timePeriodCoveredType = datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCovered", DatasetFieldType.FieldType.NONE, true));
         Set<DatasetFieldType> timePeriodCoveredChildTypes = new HashSet<>();
         timePeriodCoveredChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCoveredStart", DatasetFieldType.FieldType.DATE, false)));
         timePeriodCoveredChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCoveredEnd", DatasetFieldType.FieldType.DATE, false)));
         timePeriodCoveredType.setChildDatasetFieldTypes(timePeriodCoveredChildTypes);
-    
+
         DatasetFieldType geographicCoverageType = datasetFieldTypeSvc.add(new DatasetFieldType("geographicCoverage", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> geographicCoverageChildTypes = new HashSet<>();
         DatasetFieldType countries = datasetFieldTypeSvc.add(new DatasetFieldType("country", DatasetFieldType.FieldType.TEXT, false));

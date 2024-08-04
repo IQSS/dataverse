@@ -14,10 +14,10 @@ import jakarta.ws.rs.core.Response;
  */
 @Path("mail")
 public class Mail extends AbstractApiBean {
-    
+
     @EJB
     MailServiceBean mailService;
-    
+
     @GET
     @Path("notifications")
     public Response sendMail() {
@@ -26,5 +26,5 @@ public class Mail extends AbstractApiBean {
         actionLogSvc.log(alr);
         return ok("bulk send notification is deprecated");
     }
-    
+
 }

@@ -18,7 +18,7 @@ import jakarta.json.JsonReader;
  * @author michael
  */
 public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
-    
+
     public GitHubOAuth2AP(String aClientId, String aClientSecret) {
         id = "github";
         title = BundleUtil.getStringFromBundle("auth.providers.title.github");
@@ -26,15 +26,15 @@ public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
         clientSecret = aClientSecret;
         baseUserEndpoint = "https://api.github.com/user";
     }
-    
+
     @Override
     public DefaultApi20 getApiInstance() {
         return GitHubApi.instance();
     }
-    
+
     @Override
     protected ParsedUserResponse parseUserResponse(String responseBody) {
-        
+
         try (StringReader rdr = new StringReader(responseBody);
               JsonReader jrdr = Json.createReader(rdr)) {
             JsonObject response = jrdr.readObject();
@@ -50,13 +50,13 @@ public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
             Integer persistentUserId = response.getInt("id");
             String username = response.getString("login");
             return new ParsedUserResponse(
-                    displayInfo, 
-                    persistentUserId.toString(), 
+                    displayInfo,
+                    persistentUserId.toString(),
                     username,
                     displayInfo.getEmailAddress().length() > 0 ? Collections.singletonList(displayInfo.getEmailAddress())
                                                              : Collections.emptyList() );
         }
-        
+
     }
 
     @Override
@@ -83,5 +83,5 @@ public class GitHubOAuth2AP extends AbstractOAuth2AuthenticationProvider {
     public String getLogo() {
         return null;
     }
-    
+
 }

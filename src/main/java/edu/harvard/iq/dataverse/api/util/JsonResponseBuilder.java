@@ -20,13 +20,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class JsonResponseBuilder {
-    
+
     private JsonObjectBuilder entityBuilder = Json.createObjectBuilder();
     private Response.ResponseBuilder jerseyResponseBuilder;
     private boolean alreadyLogged = false;
-    
+
     private JsonResponseBuilder() {}
-    
+
     /**
      * Create an error response from an numeric error code (should be >= 400)
      * @param httpStatusCode Numerical HTTP status code
@@ -37,17 +37,17 @@ public class JsonResponseBuilder {
         if (httpStatusCode < 400) {
             throw new IllegalArgumentException("A status code < 400 cannot be an error indicating response.");
         }
-        
+
         JsonResponseBuilder b = new JsonResponseBuilder();
         b.jerseyResponseBuilder = Response.status(httpStatusCode);
         b.entityBuilder.add("status", "ERROR");
         b.entityBuilder.add("code", httpStatusCode);
         // include default message if present
         getDefaultMessage(httpStatusCode).ifPresent(v -> b.entityBuilder.add("message", v));
-        
+
         return b;
     }
-    
+
     /**
      * Create an error response from a Response.Status.
      * @param status A JAX-RS Response.Status object
@@ -59,7 +59,7 @@ public class JsonResponseBuilder {
         b.jerseyResponseBuilder = Response.status(status);
         return b;
     }
-    
+
     /**
      * Create an error response from an existing response.
      * @param fromResponse An existing JAX-RS Response
@@ -71,7 +71,7 @@ public class JsonResponseBuilder {
         b.jerseyResponseBuilder = Response.fromResponse(fromResponse);
         return b;
     }
-    
+
     /**
      * Add a human friendly message to the response
      * @param message A human readable message
@@ -81,7 +81,7 @@ public class JsonResponseBuilder {
         this.entityBuilder.add("message", message);
         return this;
     }
-    
+
     /**
      * Set an identifier for this (usually included in logs, too).
      * @param id A String containing an (ideally unique) identifier
@@ -91,7 +91,7 @@ public class JsonResponseBuilder {
         this.entityBuilder.add("incidentId", id);
         return this;
     }
-    
+
     /**
      * Add a UUID random identifier for errors. Will overwrite existing.
      * @return The enhanced builder
@@ -100,7 +100,7 @@ public class JsonResponseBuilder {
         this.entityBuilder.add("incidentId", UUID.randomUUID().toString());
         return this;
     }
-    
+
     /**
      * Add more details about the original request: what URL was used,
      * what HTTP method involved?
@@ -112,7 +112,7 @@ public class JsonResponseBuilder {
         this.entityBuilder.add("requestMethod", request.getMethod());
         return this;
     }
-    
+
     /**
      * Add more details about the original request: what content type was sent?
      * @param request The original request (usually provided from a context)
@@ -123,7 +123,7 @@ public class JsonResponseBuilder {
         this.entityBuilder.add("requestContentType", ((type == null) ? JsonValue.NULL : Json.createValue(type)));
         return this;
     }
-    
+
     /**
      * Add more details about internal errors (exceptions) to the response.
      * Will include a detail about the cause if exception has one.
@@ -137,7 +137,7 @@ public class JsonResponseBuilder {
         }
         return this;
     }
-    
+
     /**
      * Finish building a Jersey JAX-RS response with JSON message
      * @return JAX-RS response including JSON message
@@ -147,7 +147,7 @@ public class JsonResponseBuilder {
             .entity(this.entityBuilder.build())
             .build();
     }
-    
+
     /**
      * For usage in non-Jersey areas like servlet filters, blocks, etc.,
      * apply the response to the Servlet provided response object.
@@ -158,7 +158,7 @@ public class JsonResponseBuilder {
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
         apply(httpServletResponse);
     }
-    
+
     /**
      * For usage in non-Jersey areas like servlet filters, blocks, etc.,
      * apply the response to the Servlet provided response object.
@@ -172,7 +172,7 @@ public class JsonResponseBuilder {
         response.getWriter().print(entityBuilder.build().toString());
         response.getWriter().flush();
     }
-    
+
     /**
      * Log this JSON response as a useful log message.
      * Should be done before calling build(), but after adding any decorations.
@@ -189,7 +189,7 @@ public class JsonResponseBuilder {
     public JsonResponseBuilder log(Logger logger, Level level) {
         return this.log(logger, level, Optional.empty());
     }
-    
+
     /**
      * Log this JSON response as a useful log message.
      * Should be done before calling build(), but after adding any decorations.
@@ -211,16 +211,17 @@ public class JsonResponseBuilder {
     public JsonResponseBuilder log(Logger logger, Level level, Optional<Throwable> ex) {
         return log(logger, level, ex, false);
     }
+
     public JsonResponseBuilder log(Logger logger, Level level, Optional<Throwable> ex, boolean includeStackTrace) {
         if (!logger.isLoggable(level) || alreadyLogged)
             return this;
-        
+
         StringBuilder metadata = new StringBuilder("");
         this.entityBuilder.build()
             .forEach((k, v) -> metadata.append("_" + k + "=" + v.toString() + ";"));
         // remove trailing ;
         metadata.deleteCharAt(metadata.length() - 1);
-        
+
         if (ex.isPresent()) {
             ex.get().printStackTrace();
             metadata.append("|");
@@ -235,7 +236,7 @@ public class JsonResponseBuilder {
         return this;
     }
 
-    
+
     /**
      * Build a complete request URL for logging purposes.
      * Masks query parameter "unblock-key" if present to avoid leaking secrets.
@@ -267,10 +268,10 @@ public class JsonResponseBuilder {
             String maskedQueryString = queryString.replaceAll(ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM + "=.+?\\b", ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM + "=****");
             url.append("?").append(maskedQueryString);
         }
-        
+
         return url.toString();
     }
-    
+
     public static Optional<String> getDefaultMessage(int httpStatusCode) {
         switch (httpStatusCode) {
             case 500: return Optional.of("Internal server error. More details available at the server logs.");

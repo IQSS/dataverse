@@ -64,7 +64,7 @@ public class AuthenticatedUserLookup implements Serializable {
      * Constructor for JPA
      */
     public AuthenticatedUserLookup() {}
-    
+
     public AuthenticatedUser getAuthenticatedUser() {
         return authenticatedUser;
     }
@@ -88,7 +88,6 @@ public class AuthenticatedUserLookup implements Serializable {
     public void setPersistentUserId(String persistentUserId) {
         this.persistentUserId = persistentUserId;
     }
-    
-    
+
 
 }

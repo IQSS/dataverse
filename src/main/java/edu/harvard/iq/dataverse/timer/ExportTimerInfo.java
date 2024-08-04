@@ -32,9 +32,9 @@ import java.io.Serializable;
  * can be added here. 
  */
 public class ExportTimerInfo implements Serializable {
-    
-    String serverId; 
-    
+
+    String serverId;
+
     public String getServerId() {
         return serverId;
     }
@@ -42,13 +42,13 @@ public class ExportTimerInfo implements Serializable {
     public void setServerId(String serverId) {
         this.serverId = serverId;
     }
-    
+
     public ExportTimerInfo() {
-        
+
     }
-    
+
     public ExportTimerInfo(String serverId) {
         this.serverId = serverId;
     }
-    
+
 }

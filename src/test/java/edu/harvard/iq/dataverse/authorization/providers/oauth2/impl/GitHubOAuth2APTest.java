@@ -59,7 +59,7 @@ public class GitHubOAuth2APTest extends GitHubOAuth2AP {
         assertEquals("21006", result.userIdInProvider);
 
     }
-    
+
     public OAuth2UserRecord getExampleUserRecord() {
         ParsedUserResponse res = parseUserResponse(GITHUB_RESPONSE);
         return new OAuth2UserRecord(this.getId(), res.userIdInProvider, res.username, null, res.displayInfo, res.emails);

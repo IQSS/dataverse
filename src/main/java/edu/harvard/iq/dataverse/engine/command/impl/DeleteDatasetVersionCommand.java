@@ -60,7 +60,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                         // if file is draft (ie. new to this version, delete
                         // and remove fileMetadata from list (so that it won't try to merge)
                         ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
-                        fmIt.remove(); 
+                        fmIt.remove();
                     }
                 }
 

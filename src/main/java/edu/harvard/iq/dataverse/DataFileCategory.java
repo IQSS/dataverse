@@ -58,11 +58,11 @@ public class DataFileCategory implements Serializable {
     public void setDataset(Dataset dataset) {
         this.dataset = dataset;
     }
-    
+
     @Expose
     @Column(nullable = false)
     private String name;
-    
+
     public String getName() {
         return this.name;
     }
@@ -70,28 +70,28 @@ public class DataFileCategory implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-    
+
     /* 
      * DataFiles which belong to this category: 
      */
     @ManyToMany(mappedBy = "fileCategories")
-    private Collection<FileMetadata> fileMetadatas = null; 
-    
+    private Collection<FileMetadata> fileMetadatas = null;
+
     public Collection<FileMetadata> getFileMetadatas() {
-        return fileMetadatas; 
+        return fileMetadatas;
     }
-    
+
     public void setFileMetadatas(Collection<FileMetadata> fileMetadatas) {
-        this.fileMetadatas = fileMetadatas; 
+        this.fileMetadatas = fileMetadatas;
     }
-    
+
     public void addFileMetadata(FileMetadata fileMetadata) {
         if (fileMetadatas == null) {
             fileMetadatas = new ArrayList<>();
         }
         fileMetadatas.add(fileMetadata);
     }
-    
+
 
     @Override
     public int hashCode() {
@@ -106,7 +106,7 @@ public class DataFileCategory implements Serializable {
             return false;
         }
         DataFileCategory other = (DataFileCategory) object;
-        
+
         // Custom code for comparing 2 categories before the 
         // objects have been persisted with the entity manager
         // and assigned database ids: 

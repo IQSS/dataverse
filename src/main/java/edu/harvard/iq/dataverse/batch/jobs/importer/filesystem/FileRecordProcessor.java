@@ -43,10 +43,10 @@ import java.util.logging.Logger;
 @Named
 @Dependent
 public class FileRecordProcessor implements ItemProcessor {
-    
+
     @Inject
     JobContext jobContext;
-    
+
     @EJB
     DatasetServiceBean datasetServiceBean;
 
@@ -54,7 +54,7 @@ public class FileRecordProcessor implements ItemProcessor {
     DataFileServiceBean dataFileServiceBean;
 
     Dataset dataset;
-    
+
     @PostConstruct
     public void init() {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
@@ -71,7 +71,7 @@ public class FileRecordProcessor implements ItemProcessor {
         String path = object.toString();
         String gid = dataset.getAuthority() + "/" + dataset.getIdentifier();
         String relativePath = path.substring(path.indexOf(gid) + gid.length() + 1);
-        
+
         // skip if it already exists
         DataFile datafile = dataFileServiceBean.findByStorageIdandDatasetVersion(relativePath, version);
         if (datafile == null) {
@@ -80,7 +80,7 @@ public class FileRecordProcessor implements ItemProcessor {
             Logger.getLogger("job-" + jobContext.getInstanceId()).log(Level.INFO, "Skipping " + relativePath + ", DataFile already exists.");
             return null;
         }
-        
+
     }
 
 }

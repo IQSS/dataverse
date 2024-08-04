@@ -17,7 +17,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
     public class DdiExportUtilHelper {
 
         @EJB SettingsServiceBean settingsSvc;
-        
+
         @PostConstruct
         public void injectService() {
             DdiExportUtil.injectSettingsService(settingsSvc);

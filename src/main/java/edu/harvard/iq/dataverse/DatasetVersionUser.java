@@ -32,7 +32,7 @@ import jakarta.persistence.Table;
     )
 })
 public class DatasetVersionUser implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -59,7 +59,7 @@ public class DatasetVersionUser implements Serializable {
     public void setAuthenticatedUser(AuthenticatedUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
     }
-    
+
     @ManyToOne
     @JoinColumn(name = "datasetversion_id")
     private DatasetVersion datasetVersion;
@@ -75,7 +75,7 @@ public class DatasetVersionUser implements Serializable {
     public void setLastUpdateDate(Timestamp lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
     }
-    
+
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;
     }
@@ -84,5 +84,5 @@ public class DatasetVersionUser implements Serializable {
         this.datasetVersion = datasetVersion;
     }
 
-   
+
 }

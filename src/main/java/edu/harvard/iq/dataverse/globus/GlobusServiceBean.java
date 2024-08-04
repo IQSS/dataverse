@@ -179,7 +179,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         permissions.setPrincipal(principal);
         permissions.setPath(endpoint.getBasePath() + "/");
         permissions.setPermissions("rw");
-        
+
         JsonObjectBuilder response = Json.createObjectBuilder();
         //Try to create the directory (202 status) if it does not exist (502-already exists)
         int mkDirStatus = makeDirs(endpoint, dataset);
@@ -235,7 +235,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
         return response;
     }
-    
+
     private int makeDir(GlobusEndpoint endpoint, String dir) {
         MakeRequestResponse result = null;
         String body = "{\"DATA_TYPE\":\"mkdir\",\"path\":\"" + dir + "\"}";
@@ -263,7 +263,7 @@ public class GlobusServiceBean implements java.io.Serializable {
         }
         return result.status;
     }
-    
+
     private int requestPermission(GlobusEndpoint endpoint, Dataset dataset, Permissions permissions) {
         Gson gson = new GsonBuilder().create();
         MakeRequestResponse result = null;
@@ -989,10 +989,10 @@ public class GlobusServiceBean implements java.io.Serializable {
                 userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()),
                         UserNotification.Type.GLOBUSDOWNLOADCOMPLETEDWITHERRORS, dataset.getId(), comment, true);
             }
-            
+
             globusLogger.info("Globus task failed during download process: " + comment);
         } else if (authUser != null && authUser instanceof AuthenticatedUser) {
-        
+
             boolean taskSkippedFiles = (task.getSkip_source_errors() == null) ? false : task.getSkip_source_errors();
             if (!taskSkippedFiles) {
                 userNotificationService.sendNotification((AuthenticatedUser) authUser,

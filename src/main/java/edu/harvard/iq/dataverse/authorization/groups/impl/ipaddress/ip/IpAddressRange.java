@@ -13,7 +13,7 @@ import jakarta.persistence.MappedSuperclass;
  */
 @MappedSuperclass
 public abstract class IpAddressRange {
-    
+
     public static IpAddressRange make(IpAddress bottom, IpAddress top) {
         if (bottom instanceof IPv4Address && top instanceof IPv4Address) {
             return new IPv4Range((IPv4Address) bottom, (IPv4Address) top);
@@ -23,11 +23,11 @@ public abstract class IpAddressRange {
             throw new IllegalArgumentException("Both addresses have to be of the same type (either IPv4 or IPv6)");
         }
     }
-    
-    public static IpAddressRange makeSingle(IpAddress ipa) { 
+
+    public static IpAddressRange makeSingle(IpAddress ipa) {
         return make(ipa, ipa);
     }
-    
+
     /**
      * Tests whether an IP address is within {@code this} range. Note that this
      * method returns a tri-state answer:
@@ -40,13 +40,14 @@ public abstract class IpAddressRange {
      * @return {@code Boolean.TRUE},{@code Boolean.FALSE}, or {@code null}.
      */
     public abstract Boolean contains(IpAddress anAddress);
-    
+
     public abstract IpAddress getTop();
+
     public abstract IpAddress getBottom();
-    
+
     @ManyToOne
     private IpGroup owner;
-    
+
     @Override
     public int hashCode() {
         int hash = 7;
@@ -64,14 +65,14 @@ public abstract class IpAddressRange {
             return false;
         }
         final IpAddressRange other = (IpAddressRange) obj;
-        return Objects.equals(getBottom(), other.getBottom()) 
+        return Objects.equals(getBottom(), other.getBottom())
                 && Objects.equals(this.getTop(), other.getTop());
     }
 
     public boolean isSingleAddress() {
         return getTop().equals(getBottom());
     }
-    
+
     @Override
     public String toString() {
         return "[IpAddressRange " + getTop() + "-" + getBottom() + ']';
@@ -84,5 +85,5 @@ public abstract class IpAddressRange {
     public void setOwner(IpGroup owner) {
         this.owner = owner;
     }
-    
+
 }

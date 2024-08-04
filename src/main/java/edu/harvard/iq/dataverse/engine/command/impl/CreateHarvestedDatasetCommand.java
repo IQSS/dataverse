@@ -18,10 +18,10 @@ public class CreateHarvestedDatasetCommand extends AbstractCreateDatasetCommand 
     public CreateHarvestedDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(theDataset, aRequest, true);
     }
-    
+
     @Override
     protected void handlePid(Dataset theDataset, CommandContext ctxt) {
         theDataset.setGlobalIdCreateTime(getTimestamp());
     }
-    
+
 }

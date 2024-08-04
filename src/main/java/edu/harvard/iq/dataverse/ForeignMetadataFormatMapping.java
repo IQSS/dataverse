@@ -36,17 +36,17 @@ public class ForeignMetadataFormatMapping implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @OneToMany(mappedBy = "foreignMetadataFormatMapping", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<ForeignMetadataFieldMapping> foreignMetadataFieldMappings;
-    
+
     @Column(nullable = false)
     private String name;
     @Column(nullable = false)
     private String displayName;
     private String schemaLocation;
-    private String startElement; 
-    
+    private String startElement;
+
     /* getters/setters: */
     
     public Long getId() {
@@ -56,43 +56,47 @@ public class ForeignMetadataFormatMapping implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public List<ForeignMetadataFieldMapping> getDatasetFieldTypes() {
         return foreignMetadataFieldMappings;
     }
-    
+
     public void setDatasetFieldTypes(List<ForeignMetadataFieldMapping> foreignMetadataFieldMappings) {
         this.foreignMetadataFieldMappings = foreignMetadataFieldMappings;
     }
-    
+
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getDisplayName() {
         return displayName;
     }
+
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
-    
+
     public String getSchemaLocation() {
         return schemaLocation;
     }
+
     public void setSchemaLocation(String schemaLocation) {
-        this.schemaLocation = schemaLocation; 
+        this.schemaLocation = schemaLocation;
     }
-    
+
     public String getStartElement() {
         return startElement;
     }
+
     public void setStartElement(String startElement) {
-        this.startElement = startElement; 
+        this.startElement = startElement;
     }
-    
+
     /* overrides: */
     
     @Override
@@ -115,12 +119,11 @@ public class ForeignMetadataFormatMapping implements Serializable {
         return true;
     }
 
-    
-    
+
     @Override
     public String toString() {
         return "edu.harvard.iq.dataverse.ForeignMetadataFormatMapping[ id=" + id + " ]";
     }
-    
+
 }
 

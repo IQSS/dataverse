@@ -460,7 +460,7 @@ public class IngestUtilTest {
         assertEquals(true, file2NameAltered);
     }
 
-    
+
     @Test
     /**
      * Test adding duplicate file name labels to a dataset version with empty
@@ -556,7 +556,7 @@ public class IngestUtilTest {
         assertEquals(true, file1NameAltered);
         assertEquals(false, file2NameAltered);
     }
-    
+
     @Test
     public void testDirectoryLabels() {
 
@@ -580,7 +580,7 @@ public class IngestUtilTest {
         datasetVersion.getFileMetadatas().add(fileMetadata);
         Set<ConstraintViolation> violations3 = datasetVersion.validate();
         assertEquals(0, violations3.size());
-        
+
         // reset
         datasetVersion.setFileMetadatas(new ArrayList<>());
         Set<ConstraintViolation> violations4 = datasetVersion.validate();

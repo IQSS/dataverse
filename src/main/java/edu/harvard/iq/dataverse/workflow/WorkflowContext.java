@@ -18,11 +18,11 @@ import java.util.UUID;
  * @author michael
  */
 public class WorkflowContext {
-    
+
     public enum TriggerType {
         PrePublishDataset, PostPublishDataset
     }
-    
+
     private final DataverseRequest request;
     private final Dataset dataset;
     private final long    nextVersionNumber;
@@ -32,21 +32,22 @@ public class WorkflowContext {
     private final boolean datasetExternallyReleased;
     private Map<String, Object> settings;
     private Long lockId = null;
-    
+
     private String invocationId = UUID.randomUUID().toString();
 
     public WorkflowContext(DataverseRequest aRequest, Dataset aDataset, TriggerType aTriggerType, boolean datasetExternallyReleased) {
         this(aRequest, aDataset,
-                aDataset.getLatestVersion().getVersionNumber(), 
+                aDataset.getLatestVersion().getVersionNumber(),
                 aDataset.getLatestVersion().getMinorVersionNumber(),
                 aTriggerType, null, null, datasetExternallyReleased);
     }
-    public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber, 
+
+    public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber,
             long nextMinorVersionNumber, TriggerType type, Map<String, Object> settings, ApiToken apiToken, boolean datasetExternallyReleased) {
         this(request, dataset, nextVersionNumber, nextMinorVersionNumber, type, settings, apiToken, datasetExternallyReleased, null, null);
     }
 
-    public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber, 
+    public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber,
                             long nextMinorVersionNumber, TriggerType type, Map<String, Object> settings, ApiToken apiToken, boolean datasetExternallyReleased, String invocationId, Long lockId) {
         this.request = request;
         this.dataset = dataset;
@@ -80,7 +81,7 @@ public class WorkflowContext {
     public DataverseRequest getRequest() {
         return request;
     }
-    
+
     public boolean isMinorRelease() {
         return getNextMinorVersionNumber() != 0;
     }
@@ -108,11 +109,13 @@ public class WorkflowContext {
     public boolean getDatasetExternallyReleased() {
        return datasetExternallyReleased;
     }
+
     public Long getLockId() {
         return lockId;
     }
+
     public void setLockId(Long lockId) {
         this.lockId = lockId;
     }
-    
+
 }

@@ -11,21 +11,21 @@ import java.util.List;
  * @author michael
  */
 public class OAuth2UserRecord implements java.io.Serializable {
-    
+
     private final String serviceId;
-    
+
     /** An immutable value, probably a number. Not a username that may change. */
     private final String idInService;
 
     /** A potentially mutable String that is easier on the eye than a number. */
     private final String username;
-    
+
     private final AuthenticatedUserDisplayInfo displayInfo;
-    
+
     private final List<String> availableEmailAddresses;
-    
+
     private final OAuth2TokenData tokenData;
-    
+
     public OAuth2UserRecord(String aServiceId, String anIdInService, String aUsername,
                             OAuth2TokenData someTokenData, AuthenticatedUserDisplayInfo aDisplayInfo,
                             List<String> someAvailableEmailAddresses) {
@@ -52,7 +52,7 @@ public class OAuth2UserRecord implements java.io.Serializable {
     public List<String> getAvailableEmailAddresses() {
         return availableEmailAddresses;
     }
-    
+
     public AuthenticatedUserDisplayInfo getDisplayInfo() {
         return displayInfo;
     }
@@ -65,7 +65,7 @@ public class OAuth2UserRecord implements java.io.Serializable {
     public String toString() {
         return "OAuth2UserRecord{" + "serviceId=" + serviceId + ", idInService=" + idInService + '}';
     }
-    
+
     public UserRecordIdentifier getUserRecordIdentifier() {
         return new UserRecordIdentifier(serviceId, idInService);
     }

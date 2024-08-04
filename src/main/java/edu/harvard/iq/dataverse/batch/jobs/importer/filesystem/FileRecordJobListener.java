@@ -80,11 +80,11 @@ import jakarta.batch.operations.NoSuchJobExecutionException;
 @Named
 @Dependent
 public class FileRecordJobListener implements ItemReadListener, StepListener, JobListener {
-    
+
     public static final String SEP = File.separator;
-    
+
     private static final UserNotification.Type notifyType = UserNotification.Type.FILESYSTEMIMPORT;
-    
+
     @Inject
     private JobContext jobContext;
 
@@ -99,10 +99,10 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
 
     @EJB
     ActionLogServiceBean actionLogServiceBean;
-    
+
     @EJB
     DatasetServiceBean datasetServiceBean;
-    
+
     @EJB
     DataFileServiceBean dataFileServiceBean;
 
@@ -116,7 +116,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
     @Inject
     @BatchProperty
     String checksumType;
-    
+
     Properties jobParams;
     Dataset dataset;
     String mode;
@@ -142,15 +142,15 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
     public void afterRead(Object item) throws Exception {
         // no-op
     }
-    
+
     @Override
     public void onReadError(Exception ex) throws Exception {
         // no-op
     }
-    
+
     @Override
     public void beforeJob() throws Exception {
-        Logger jobLogger; 
+        Logger jobLogger;
 
         // initialize logger
         // (the beforeJob() method gets executed before anything else; so we 
@@ -162,29 +162,29 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         // update job properties to be used elsewhere to determine dataset, user and mode
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         jobParams = jobOperator.getParameters(jobContext.getInstanceId());
-        
+
         // log job info
         jobLogger.log(Level.INFO, "Job ID = {0}", jobContext.getExecutionId());
         jobLogger.log(Level.INFO, "Job Name = {0}", jobContext.getJobName());
         jobLogger.log(Level.INFO, "Job Status = {0}", jobContext.getBatchStatus());
-        
+
         jobParams.setProperty("datasetGlobalId", getDatasetGlobalId());
-        
+
         if (dataset == null) {
             getJobLogger().log(Level.SEVERE, "Can't find dataset.");
             jobContext.setExitStatus("FAILED");
             throw new IOException("Can't find dataset.");
         }
-        
+
         if (!dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
             getJobLogger().log(Level.SEVERE, "Dataset {0} is not locked for DCM upload. Exiting", dataset.getGlobalId());
             jobContext.setExitStatus("FAILED");
             throw new IOException("Dataset " + dataset.getGlobalId() + " is not locked for DCM upload");
         }
-        
+
         jobParams.setProperty("userId", getUserId());
         jobParams.setProperty("mode", getMode());
-        
+
         uploadFolder = jobParams.getProperty("uploadFolder");
 
         // check constraints for running the job
@@ -221,7 +221,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             closeJobLoggerHandlers();
             return;
         }
-        
+
         // run reporting and notifications
         doReport();
 
@@ -237,11 +237,11 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         getJobLogger().log(Level.INFO, "Job start = " + step.getStartTime());
         getJobLogger().log(Level.INFO, "Job end   = " + step.getEndTime());
         getJobLogger().log(Level.INFO, "Job exit status = " + step.getExitStatus());
-        
+
         closeJobLoggerHandlers();
 
     }
-    
+
     private void closeJobLoggerHandlers() {
         // close the job logger handlers
         for (Handler h :getJobLogger().getHandlers()) {
@@ -286,7 +286,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
      * Generate all the job reports and user notifications.
      */
     private void doReport() {
-        
+
         try {
 
             String jobJson;
@@ -317,7 +317,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 jobJson = new ObjectMapper().writeValueAsString(jobExecutionEntity);
 
                 String logDir = System.getProperty("com.sun.aas.instanceRoot") + SEP + "logs" + SEP + "batch-jobs" + SEP;
-                
+
                 // [1] save json log to file
                 LoggingUtil.saveJsonLog(jobJson, logDir, jobId);
                 // [2] send user notifications - to all authors
@@ -330,7 +330,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 List<AuthenticatedUser> superUsers = authenticationServiceBean.findSuperUsers();
                 if (superUsers != null && !superUsers.isEmpty()) {
                     superUsers.forEach((au) -> {
-                        notificationServiceBean.sendNotification(au, timestamp, notifyType, datasetVersionId);                   
+                        notificationServiceBean.sendNotification(au, timestamp, notifyType, datasetVersionId);
                     });
                 }
                 // [4] action log: store location of the full log to avoid truncation issues
@@ -352,9 +352,9 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
      */
     private String getDatasetGlobalId() {
         if (jobParams.containsKey("datasetId")) {
-            
+
             String datasetId = jobParams.getProperty("datasetId");
-            
+
             dataset = datasetServiceBean.find(new Long(datasetId));
 
             if (dataset != null) {
@@ -366,13 +366,13 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             long datasetPrimaryKey = Long.parseLong(jobParams.getProperty("datasetPrimaryKey"));
             dataset = datasetServiceBean.find(datasetPrimaryKey);
             if (dataset != null) {
-                getJobLogger().log(Level.INFO, "Dataset Identifier (datasetPrimaryKey=" + datasetPrimaryKey + "): " 
+                getJobLogger().log(Level.INFO, "Dataset Identifier (datasetPrimaryKey=" + datasetPrimaryKey + "): "
                     + dataset.getIdentifier());
-                
+
                 return dataset.getGlobalId().asString();
             }
         }
-        
+
         dataset = null;
         return null;
     }
@@ -418,24 +418,24 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
      * step context's transientUserData
      */
     private void loadChecksumManifest() {
-                
+
         // log job checksum type and how it was configured
         if (System.getProperty("checksumType") != null) {
             getJobLogger().log(Level.INFO, "Checksum type = " + System.getProperty("checksumType") + " ('checksumType' System property)");
         } else {
             getJobLogger().log(Level.INFO, "Checksum type = " + checksumType + " (FileSystemImportJob.xml property)");
         }
-        
+
         // check system property first, otherwise use default property in FileSystemImportJob.xml
         String manifest;
         if (System.getProperty("checksumManifest") != null) {
             manifest = System.getProperty("checksumManifest");
-            getJobLogger().log(Level.INFO, "Checksum manifest = " + manifest + " ('checksumManifest' System property)");            
+            getJobLogger().log(Level.INFO, "Checksum manifest = " + manifest + " ('checksumManifest' System property)");
         } else {
             manifest = checksumManifest;
             getJobLogger().log(Level.INFO, "Checksum manifest = " + manifest + " (FileSystemImportJob.xml property)");
         }
-        
+
         // Construct full path - retrieve base dir via MPCONFIG.
         // (Has sane default /tmp/dataverse from META-INF/microprofile-config.properties)
         String manifestAbsolutePath = JvmSettings.FILES_DIRECTORY.lookup()
@@ -474,9 +474,9 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         }
 
     }
-    
+
     private Logger getJobLogger() {
         return Logger.getLogger("job-" + jobContext.getInstanceId());
     }
-    
+
 }

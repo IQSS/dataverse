@@ -19,7 +19,7 @@ import java.util.List;
  */
 @Deprecated
 public class EchoAuthenticationProvider implements CredentialsAuthenticationProvider {
-    
+
     private final String id;
     private final String prefix;
     private final String postfix;
@@ -27,7 +27,7 @@ public class EchoAuthenticationProvider implements CredentialsAuthenticationProv
     private final String KEY_NAME = "login.echo.credential.name";
     private final String KEY_EMAIL = "login.echo.credential.email";
     private final String KEY_AFFILIATION = "login.echo.credential.affiliation";
-    
+
 
     public EchoAuthenticationProvider(String id, String prefix, String postfix, AuthenticationProviderDisplayInfo someInfo) {
         this.id = id;
@@ -35,14 +35,14 @@ public class EchoAuthenticationProvider implements CredentialsAuthenticationProv
         this.postfix = postfix;
         info = someInfo;
     }
-    
+
     public EchoAuthenticationProvider(String id) {
-        this(id, "", "", 
+        this(id, "", "",
                 new AuthenticationProviderDisplayInfo(id, "Echo",
                 "Authenticate everyone using their credentials")
             );
     }
-    
+
     @Override
     public List<Credential> getRequiredCredentials() {
         return Arrays.asList(new Credential(KEY_NAME),
@@ -66,9 +66,9 @@ public class EchoAuthenticationProvider implements CredentialsAuthenticationProv
                 prefix + " " + request.getCredential(KEY_NAME) + " " + postfix,
                 prefix + " " + request.getCredential(KEY_NAME) + " " + postfix,
                 request.getCredential(KEY_EMAIL),
-                request.getCredential(KEY_AFFILIATION), 
+                request.getCredential(KEY_AFFILIATION),
                 null);
         return AuthenticationResponse.makeSuccess(disinf.getEmailAddress(), disinf);
     }
-    
+
 }

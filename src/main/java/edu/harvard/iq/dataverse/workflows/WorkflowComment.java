@@ -25,8 +25,8 @@ public class WorkflowComment implements Serializable {
         RETURN_TO_AUTHOR, //, SUBMIT_FOR_REVIEW not available in this release but may be added in the future
         WORKFLOW_SUCCESS,
         WORKFLOW_FAILURE
-    };
-    
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -64,7 +64,7 @@ public class WorkflowComment implements Serializable {
     private Timestamp created;
 
     private boolean toBeShown;
-    
+
     // TODO: Consider support editing in the GUI some day, like GitHub issue comments (show "Edited" in the UI). We won't send a second email, however. You only get one shot to prevent spam.
 //    @Transient
 //    private Timestamp modified;
@@ -114,7 +114,7 @@ public class WorkflowComment implements Serializable {
     public AuthenticatedUser getAuthenticatedUser() {
         return authenticatedUser;
     }
-    
+
     public void setAuthenticatedUser(AuthenticatedUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
     }

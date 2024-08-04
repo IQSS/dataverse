@@ -23,13 +23,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
 public class BrandingUtilTest {
-    
+
     static DataverseServiceBean dataverseSvc;
     static SettingsServiceBean settingsSvc;
     static final String DEFAULT_NAME = "LibraScholar";
-    
+
     final Logger log = Logger.getLogger(this.getClass().getCanonicalName());
-    
+
     /**
      * Create default mocks, reusable for other tests.
      * Each call will create new, fresh mocks. (So this should ensure atomic tests to some degree...)
@@ -39,12 +39,12 @@ public class BrandingUtilTest {
         dataverseSvc = Mockito.mock(DataverseServiceBean.class);
         settingsSvc = Mockito.mock(SettingsServiceBean.class);
         BrandingUtil.injectServices(dataverseSvc, settingsSvc);
-        
+
         // initial values (needed here for other tests where this method is reused!)
         Mockito.lenient().when(settingsSvc.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn(DEFAULT_NAME);
         Mockito.lenient().when(dataverseSvc.getRootDataverseName()).thenReturn(DEFAULT_NAME);
     }
-    
+
     /**
      * Override default mocked value
      * @param installationName
@@ -52,7 +52,7 @@ public class BrandingUtilTest {
     public static void setInstallationName(String installationName) {
         Mockito.lenient().when(settingsSvc.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn(installationName);
     }
-    
+
     /**
      * Override default mocked name
      * @param rootDataverseName
@@ -60,7 +60,7 @@ public class BrandingUtilTest {
     public static void setRootDataverseName(String rootDataverseName) {
         Mockito.lenient().when(dataverseSvc.getRootDataverseName()).thenReturn(rootDataverseName);
     }
-    
+
     /**
      * After using, please free the mocks. Tests need atomicity.
      */
@@ -68,7 +68,7 @@ public class BrandingUtilTest {
     public static void tearDownMocks() {
         BrandingUtil.injectServices(null, null);
     }
-    
+
     /**
      * Reset to default values before each test, trying to provide atomicity.
      */
@@ -77,7 +77,7 @@ public class BrandingUtilTest {
         Mockito.when(settingsSvc.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn(DEFAULT_NAME);
         Mockito.when(dataverseSvc.getRootDataverseName()).thenReturn(DEFAULT_NAME);
     }
-    
+
     @ParameterizedTest
     @CsvSource(value = {
         "NULL, " + DEFAULT_NAME, // (Defaults to root collection name)
@@ -89,7 +89,7 @@ public class BrandingUtilTest {
         // when & then
         assertEquals(expected, BrandingUtil.getInstallationBrandName());
     }
-    
+
     static Stream<Arguments> supportTeamName() throws UnsupportedEncodingException, AddressException {
         // expected string, InternetAddress
         return Stream.of(
@@ -102,7 +102,7 @@ public class BrandingUtilTest {
             Arguments.of(DEFAULT_NAME, "", new InternetAddress("support@librascholar.edu", ""))
         );
     }
-    
+
     @ParameterizedTest
     @MethodSource("supportTeamName")
     public void testGetSupportTeamName(String mockedRootName, String expected, InternetAddress email) throws AddressException, UnsupportedEncodingException {
@@ -126,7 +126,7 @@ public class BrandingUtilTest {
             Arguments.of("", new InternetAddress("", "LibraScholar Support Team"))
         );
     }
-    
+
     @ParameterizedTest
     @MethodSource("supportEmailAddress")
     public void testGetSupportEmailAddress(String expected, InternetAddress email) {

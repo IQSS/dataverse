@@ -17,5 +17,5 @@ public class OaiHandlerException extends Exception {
     public OaiHandlerException(String message, Throwable cause) {
         super(message, cause);
     }
-    
+
 }

@@ -34,26 +34,26 @@ import java.util.zip.ZipOutputStream;
  * 
  * @author Leonid Andreev
  */
-public class ZipDownloadService { 
-    
+public class ZipDownloadService {
+
     private static String jobKey = null;
     private List<String[]> jobFiles = null;
-    private boolean zipOnly = false; 
-    
-    private DirectAccessUtil directAccessUtil = null; 
+    private boolean zipOnly = false;
+
+    private DirectAccessUtil directAccessUtil = null;
     private ZipOutputStream zipOutputStream = null;
 
     public static void main(String args[]) throws Exception {
-        
+
         ZipDownloadService zipperService = new ZipDownloadService();
-        
+
         if (!zipperService.parseArgs(args)) {
             zipperService.usage();
-            return; 
+            return;
         }
-        
+
         zipperService.parseCgiQueryParameters();
-               
+
         zipperService.execute(jobKey);
     }
 
@@ -72,26 +72,26 @@ public class ZipDownloadService {
     public boolean parseArgs(String[] args) {
 
         if (args == null || args.length == 0) {
-            return true; 
+            return true;
         } else if (args.length == 1) {
             if (args[0].equals("-ziponly")) {
                 this.zipOnly = true;
                 return true;
             }
         }
-        
-        return false; 
+
+        return false;
     }
-    
+
     // Does not support any parameters, except the job-identifying token key, 
     // supplied as the entire query string. 
     public void parseCgiQueryParameters() {
         String queryString = System.getenv().get("QUERY_STRING");
         if (queryString != null) {
-            jobKey = queryString; 
+            jobKey = queryString;
         }
     }
-    
+
     public void print404() {
         System.out.println("Status: 404 Not Found\r");
         System.out.println("Content-Type: text/html\r");
@@ -99,7 +99,7 @@ public class ZipDownloadService {
 
         System.out.println("<h1>404 No such download job!</h1>");
     }
-    
+
     public void printZipHeader() {
         System.out.println("Content-disposition: attachment; filename=\"dataverse_files.zip\"\r");
         System.out.println("Content-Type: application/zip; name=\"dataverse_files.zip\"\r");
@@ -107,44 +107,44 @@ public class ZipDownloadService {
         System.out.println("\r");
         System.out.flush();
     }
-    
+
     public void execute(String key) {
-        
-        jobFiles = lookupZipJob(key); 
-        
+
+        jobFiles = lookupZipJob(key);
+
         if (jobFiles == null || jobFiles.size() == 0) {
             this.print404();
             System.exit(0);
         }
-        
+
         this.processFiles();
     }
-    
+
     public void processFiles() {
-        
+
         if (!this.zipOnly) {
             this.printZipHeader();
         }
-        
+
         Set<String> zippedFolders = new HashSet<>();
         Set<String> fileNamesList = new HashSet<>();
-       
+
         for (String [] fileEntry : jobFiles) {
             String storageLocation = fileEntry[0];
             String fileName = fileEntry[1];
-            
+
             //System.out.println(storageLocation + ":" + fileName);
             
             if (this.zipOutputStream == null) {
                 openZipStream();
             }
-            
+
             if (this.directAccessUtil == null) {
                 this.directAccessUtil = new DirectAccessUtil();
             }
-            
+
             InputStream inputStream = this.directAccessUtil.openDirectAccess(storageLocation);
-                
+
             String zipEntryName = checkZipEntryName(fileName, fileNamesList);
             // this may not be needed anymore - some extra sanitizing of the file 
             // name we used to have to do - since all the values in a current Dataverse 
@@ -152,7 +152,7 @@ public class ZipDownloadService {
             // (Edit: Yes, we still need this - there are still datasets with multiple
             // files with duplicate names; this method takes care of that)
             if (inputStream != null && this.zipOutputStream != null) {
-                
+
                 ZipEntry entry = new ZipEntry(zipEntryName);
 
                 byte[] bytes = new byte[2 * 8192];
@@ -190,7 +190,7 @@ public class ZipDownloadService {
             } else {
                 System.err.println("Failed to access " + storageLocation);
             }
-                
+
         }
         try {
             this.zipOutputStream.flush();
@@ -201,7 +201,7 @@ public class ZipDownloadService {
         } catch (Exception e) {
         }
     }
-    
+
     public void openZipStream() {
         if (this.zipOutputStream == null) {
             if (this.zipOnly) {
@@ -211,14 +211,14 @@ public class ZipDownloadService {
             }
         }
     }
-    
+
     private boolean hasFolder(String fileName) {
         if (fileName == null) {
             return false;
         }
         return fileName.indexOf('/') >= 0;
     }
-    
+
     private String getFolderName(String fileName) {
         if (fileName == null) {
             return "";
@@ -232,7 +232,7 @@ public class ZipDownloadService {
         }
         return folderName;
     }
-    
+
     private void addFolderToZipStream(String folderName, Set<String> zippedFolders) throws IOException {
         // We don't want to create folders in the output Zip file that have 
         // already been added:
@@ -245,7 +245,7 @@ public class ZipDownloadService {
             }
         }
     }
-    
+
     // check for and process duplicates:
     private String checkZipEntryName(String originalName, Set<String> fileNames) {
         String name = originalName;

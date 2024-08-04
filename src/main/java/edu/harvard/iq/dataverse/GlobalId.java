@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
  * @author skraffmiller
  */
 public class GlobalId implements java.io.Serializable {
-    
+
     private static final Logger logger = Logger.getLogger(GlobalId.class.getName());
 
     public GlobalId(String protocol, String authority, String identifier, String separator, String urlPrefix, String providerName) {
@@ -35,7 +35,7 @@ public class GlobalId implements java.io.Serializable {
         this.urlPrefix = urlPrefix;
         this.managingProviderId = providerName;
     }
-    
+
     // protocol the identifier system, e.g. "doi"
     // authority the namespace that the authority manages in the identifier system
     // identifier the local identifier part
@@ -54,7 +54,7 @@ public class GlobalId implements java.io.Serializable {
     public boolean isComplete() {
         return !(isEmpty(protocol) || isEmpty(authority) || isEmpty(identifier));
     }
-    
+
     public String getProtocol() {
         return protocol;
     }
@@ -66,7 +66,7 @@ public class GlobalId implements java.io.Serializable {
     public String getIdentifier() {
         return identifier;
     }
-    
+
     public String getProviderId() {
         return managingProviderId;
     }
@@ -74,7 +74,7 @@ public class GlobalId implements java.io.Serializable {
     public String toString() {
         return asString();
     }
-    
+
     /**
      * Concatenate the parts that make up a Global Identifier.
      * 
@@ -86,7 +86,7 @@ public class GlobalId implements java.io.Serializable {
         }
         return protocol + ":" + authority + separator + identifier;
     }
-    
+
     public String asURL() {
         URL url = null;
         if (identifier == null) {
@@ -100,7 +100,6 @@ public class GlobalId implements java.io.Serializable {
         }
         return null;
     }
-
 
 
     /**

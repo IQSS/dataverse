@@ -40,17 +40,17 @@ public class Metric implements Serializable {
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String valueJson;
-        
+
     @Column(columnDefinition = "TEXT", nullable = true)
     private String dataLocation;
-    
+
     @Column(columnDefinition = "TEXT", nullable = true)
     private String dayString;
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "dataverse_id", nullable = true)
     private Dataverse dataverse;
-    
+
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date lastCalledDate;
@@ -98,7 +98,7 @@ public class Metric implements Serializable {
     public String getDataLocation() {
         return dataLocation;
     }
-    
+
     public String getName() {
         return name;
     }

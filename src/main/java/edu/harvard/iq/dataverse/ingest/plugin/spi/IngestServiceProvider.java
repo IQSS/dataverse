@@ -37,7 +37,7 @@ public abstract class IngestServiceProvider {
      * The constructor assigns a non-<code>null</code> value to this field.
      */
     protected String vendorName;
-    
+
     /**
      * A string that describes the version number of this service provider
      * and its implementation.
@@ -45,7 +45,7 @@ public abstract class IngestServiceProvider {
      */
     protected String version;
 
-    
+
     public IngestServiceProvider(String vendorName, String version) {
         if (vendorName == null) {
             throw new IllegalArgumentException("vendorName is null!");
@@ -58,7 +58,7 @@ public abstract class IngestServiceProvider {
         //out.println("SDIOServiceProvder is called");
     }
 
-    
+
     public IngestServiceProvider() {
     }
 
@@ -93,5 +93,5 @@ public abstract class IngestServiceProvider {
      * service provider.
      */
     public abstract String getDescription(Locale locale);
-    
+
 }

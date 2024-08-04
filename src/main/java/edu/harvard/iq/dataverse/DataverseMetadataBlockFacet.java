@@ -77,6 +77,6 @@ public class DataverseMetadataBlockFacet implements Serializable {
     public String toString() {
         return String.format("edu.harvard.iq.dataverse.DataverseMetadataBlockFacet[ id=%s ]", id);
     }
-    
+
 }
 

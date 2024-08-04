@@ -39,14 +39,14 @@ public class DdiExportUtilTest {
 
     @Mock
     SettingsServiceBean settingsSvc;
-    
+
     @BeforeEach
     void setup() {
         Mockito.lenient().when(settingsSvc.isTrueForKey(SettingsServiceBean.Key.ExportInstallationAsDistributorOnlyWhenNotSet, false)).thenReturn(false);
         DdiExportUtil.injectSettingsService(settingsSvc);
     }
-    
-    
+
+
     @Test
     public void testJson2DdiNoFiles() throws Exception {
         // given
@@ -55,11 +55,11 @@ public class DdiExportUtilTest {
         Path ddiFile = Path.of("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(Files.readString(ddiFile, StandardCharsets.UTF_8));
         logger.fine(datasetAsDdi);
-        
+
         // when
         String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
         logger.fine(result);
-        
+
         // then
         XmlAssert.assertThat(result).and(datasetAsDdi).ignoreWhitespace().areSimilar();
     }
@@ -72,11 +72,11 @@ public class DdiExportUtilTest {
         Path ddiFile = Path.of("src/test/java/edu/harvard/iq/dataverse/export/ddi/exportfull.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(Files.readString(ddiFile, StandardCharsets.UTF_8));
         logger.fine(datasetAsDdi);
-        
+
         // when
         String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
         logger.fine(XmlPrinter.prettyPrintXml(result));
-        
+
         // then
         XmlAssert.assertThat(result).and(datasetAsDdi).ignoreWhitespace().areSimilar();
     }
@@ -119,21 +119,21 @@ public class DdiExportUtilTest {
         // when
         DdiExportUtil.datasetHtmlDDI(new FileInputStream(fileXML), byteArrayOutputStream);
         String generatedDdiHTML = byteArrayOutputStream.toString(StandardCharsets.UTF_8);
-        
+
         // then
         assertNotNull(generatedDdiHTML);
         assertFalse(generatedDdiHTML.isEmpty());
         assertFalse(generatedDdiHTML.isBlank());
-    
+
         // pipe through pretty printer before parsing as DOM
         generatedDdiHTML = HtmlPrinter.prettyPrint(generatedDdiHTML);
         Document generatedDdiHtmlDom = W3CDom.convert(Jsoup.parse(generatedDdiHTML));
-        
+
         // read comparison file to build diff
         Path htmlFile = Path.of("src/test/resources/html/dct_codebook.html");
         String subjectHtml = HtmlPrinter.prettyPrint(new String(Files.readAllBytes(htmlFile)));
         Document subjectHtmlDom = W3CDom.convert(Jsoup.parse(subjectHtml));
-    
+
         // compare generated and sample
         Diff diff = DiffBuilder.compare(subjectHtmlDom)
                         .withTest(generatedDdiHtmlDom)
@@ -141,7 +141,7 @@ public class DdiExportUtilTest {
                         .ignoreWhitespace()
                         .checkForSimilar()
                         .build();
-    
+
         // assert matching and print differences if any.
         diff.getDifferences().forEach(d -> logger.info(d.toString()));
         assertFalse(diff.hasDifferences());

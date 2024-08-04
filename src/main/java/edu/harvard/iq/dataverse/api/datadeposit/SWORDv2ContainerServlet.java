@@ -23,8 +23,8 @@ public class SWORDv2ContainerServlet extends SwordServlet {
     // this field can be replaced by local variable
 //    private StatementManager sm;
     private final ReentrantLock lock = new ReentrantLock();
-    
-    
+
+
     @Override
     public void init() throws ServletException {
         super.init();
@@ -100,7 +100,7 @@ public class SWORDv2ContainerServlet extends SwordServlet {
             lock.unlock();
         }
     }
-    
+
     private void setRequest(HttpServletRequest r) {
         containerManagerImpl.setHttpRequest(r);
         statementManagerImpl.setHttpRequest(r);

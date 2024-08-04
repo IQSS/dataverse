@@ -24,7 +24,7 @@ import jakarta.ws.rs.core.Response.Status;
 public class FeedbackApi extends AbstractApiBean {
 
     @EJB MailServiceBean mailService;
-    
+
     /**
      * This method mimics the contact form and sends an email to the contacts of the
      * specified Collection/Dataset/DataFile, optionally ccing the support email

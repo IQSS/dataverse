@@ -32,7 +32,7 @@ import java.util.*;
 
 import org.apache.commons.codec.binary.Hex;
 
- 
+
 /**
  * Service Provider registration class for the SPSS/POR ingest plugin.
  * Based on the code originally developed by Akio Sone, HMDC/ODUM 
@@ -43,20 +43,20 @@ import org.apache.commons.codec.binary.Hex;
  * @author Akio Sone
  */
 public class PORFileReaderSpi extends TabularDataFileReaderSpi {
-    
+
     private static Logger dbgLog = Logger.getLogger(
             PORFileReaderSpi.class.getPackage().getName());
-    
+
     private static int POR_HEADER_SIZE = 500;
     public static int POR_MARK_POSITION_DEFAULT = 461;
     public static String POR_MARK = "SPSSPORT";
-    
+
     private boolean windowsNewLine = true;
 
     private static String[] formatNames = {"por", "POR"};
     private static String[] extensions = {"por"};
     private static String[] mimeType = {"application/x-spss-por"};
-    
+
     public PORFileReaderSpi() {
         super("HU-IQSS-DataVerse-project",
             "4.0",
@@ -66,7 +66,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             "edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReaderSpi");
          dbgLog.fine("PORFileReaderSpi is called");
     }
-   
+
     @Override
     public boolean canDecodeInput(Object source) throws IOException {
         if (!(source instanceof BufferedInputStream)) {
@@ -207,23 +207,22 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
     }
 
 
-
     @Override
     public boolean canDecodeInput(BufferedInputStream stream) throws IOException {
         if (stream == null) {
             throw new IllegalArgumentException("file == null!");
         }
-        
+
         dbgLog.fine("applying the por test\n");
-        
+
         byte[] b = new byte[POR_HEADER_SIZE];
-        
+
         if (stream.markSupported()) {
             stream.mark(0);
         }
-        
+
         int nbytes = stream.read(b, 0, POR_HEADER_SIZE);
-        
+
         //printHexDump(b, "hex dump of the byte-array");
 
         if (nbytes == 0) {
@@ -233,13 +232,13 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
            dbgLog.fine("this file is NOT spss-por type");
             return false;
         }
-        
+
         if (stream.markSupported()) {
             stream.reset();
         }
 
         boolean DEBUG = false;
-        
+
         //windows [0D0A]=>   [1310] = [CR/LF]
         //unix    [0A]  =>   [10]
         //mac     [0D]  =>   [13]
@@ -281,7 +280,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             pos2 = baseBias + 2 * i;
             buff.position(pos2);
             dbgLog.finer("\tposition(2)=" + buff.position());
-            
+
             nlch[j + 1] = buff.get();
             nlch[j + 2] = buff.get();
 
@@ -289,14 +288,14 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             pos3 = baseBias + 3 * i;
             buff.position(pos3);
             dbgLog.finer("\tposition(3)=" + buff.position());
-            
+
             nlch[j + 3] = buff.get();
             nlch[j + 4] = buff.get();
             nlch[j + 5] = buff.get();
 
             dbgLog.finer(i + "-th iteration position =" + nlch[j] + "\t" + nlch[j + 1] + "\t" + nlch[j + 2]);
             dbgLog.finer(i + "-th iteration position =" + nlch[j + 3] + "\t" + nlch[j + 4] + "\t" + nlch[j + 5]);
-            
+
             if ((nlch[j + 3] == 13) && (nlch[j + 4] == 13) && (nlch[j + 5] == 10)) {
                 three++;
             } else if ((nlch[j + 1] == 13) && (nlch[j + 2] == 10)) {
@@ -366,7 +365,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
         buff.rewind();
 
         boolean DEBUG = false;
-        
+
 
         dbgLog.fine("applying the spss-por test\n");
 
@@ -415,7 +414,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             pos2 = baseBias + 2 * i;
             buff.position(pos2);
             dbgLog.finer("\tposition(2)=" + buff.position());
-            
+
             nlch[j + 1] = buff.get();
             nlch[j + 2] = buff.get();
 
@@ -423,14 +422,14 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             pos3 = baseBias + 3 * i;
             buff.position(pos3);
             dbgLog.finer("\tposition(3)=" + buff.position());
-            
+
             nlch[j + 3] = buff.get();
             nlch[j + 4] = buff.get();
             nlch[j + 5] = buff.get();
 
             dbgLog.finer(i + "-th iteration position =" + nlch[j] + "\t" + nlch[j + 1] + "\t" + nlch[j + 2]);
             dbgLog.finer(i + "-th iteration position =" + nlch[j + 3] + "\t" + nlch[j + 4] + "\t" + nlch[j + 5]);
-            
+
             if ((nlch[j + 3] == 13) && (nlch[j + 4] == 13) && (nlch[j + 5] == 10)) {
                 three++;
             } else if ((nlch[j + 1] == 13) && (nlch[j + 2] == 10)) {
@@ -467,7 +466,7 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
         String pormarks = new String(pormark);
 
         dbgLog.fine("pormark =>" + pormarks + "<-");
-        
+
 
         if (pormarks.equals(POR_MARK)) {
             dbgLog.fine("this file is spss-por type");
@@ -476,12 +475,12 @@ public class PORFileReaderSpi extends TabularDataFileReaderSpi {
             dbgLog.fine("this file is NOT spss-por type");
         }
         return false;
-    }   
-    
+    }
+
     public String getDescription(Locale locale) {
         return "HU-IQSS-DataVerse-project SPSS/POR (\"portable\") File Ingest plugin";
     }
-    
+
     @Override
     public TabularDataFileReader createReaderInstance(Object ext) throws IIOException {
         return new PORFileReader(this);

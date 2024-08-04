@@ -66,7 +66,7 @@ public class DataCitation {
     private List<String> spatialCoverages;
 
     private List<DatasetField> optionalValues = new ArrayList<>();
-    private int optionalURLcount = 0; 
+    private int optionalURLcount = 0;
 
     public DataCitation(DatasetVersion dsv) {
         this(dsv, false);
@@ -90,14 +90,14 @@ public class DataCitation {
             DatasetField dsf = dsv.getDatasetField(dsfType);
             if (dsf != null) {
                 optionalValues.add(dsf);
-                
+
                 if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
                     optionalURLcount++;
                 }
             }
         }
     }
-    
+
     public DataCitation(FileMetadata fm) {
         this(fm, false);
     }
@@ -159,7 +159,7 @@ public class DataCitation {
         return direct;
     }
 
-    
+
     public String getYear() {
         return year;
     }
@@ -188,6 +188,7 @@ public class DataCitation {
     public String toString(boolean html) {
         return toString(html, false);
     }
+
     public String toString(boolean html, boolean anonymized) {
         // first add comma separated parts
         String separator = ", ";
@@ -207,7 +208,7 @@ public class DataCitation {
 
         if (persistentId != null) {
         	// always show url format
-            citationList.add(formatURL(persistentId.asURL(), persistentId.asURL(), html)); 
+            citationList.add(formatURL(persistentId.asURL(), persistentId.asURL(), html));
         }
         citationList.add(formatString(publisher, html));
         citationList.add(version);
@@ -226,7 +227,7 @@ public class DataCitation {
         for (DatasetField dsf : optionalValues) {
             String displayName = dsf.getDatasetFieldType().getDisplayName();
             String displayValue;
-            
+
             if (dsf.getDatasetFieldType().getFieldType().equals(DatasetFieldType.FieldType.URL)) {
                 displayValue = formatURL(dsf.getDisplayValue(), dsf.getDisplayValue(), html);
                 if (optionalURLcount == 1) {
@@ -250,7 +251,7 @@ public class DataCitation {
         //Use UTF-8?
         return buffer.toString();
     }
-    
+
     public void writeAsBibtexCitation(OutputStream os) throws IOException {
         // Use UTF-8
         Writer out = new BufferedWriter(new OutputStreamWriter(os, "utf-8"));
@@ -342,7 +343,7 @@ public class DataCitation {
         for (String author : authors) {
             out.write("AU  - " + author + "\r\n");
         }
-        
+
         if (!producers.isEmpty()) {
             for (String author : producers) {
                 out.write("A2  - " + author + "\r\n");
@@ -357,7 +358,7 @@ public class DataCitation {
             for (String kod : kindsOfData) {
                 out.write("C3  - " + kod + "\r\n");
             }
-        }    
+        }
         if (!datesOfCollection.isEmpty()) {
             for (String dateRange : datesOfCollection) {
                 out.write("DA  - " + dateRange + "\r\n");
@@ -380,13 +381,13 @@ public class DataCitation {
         }
 
         out.write("PY  - " + year + "\r\n");
-        
+
         if (!spatialCoverages.isEmpty()) {
             for (String coverage : spatialCoverages) {
                 out.write("RI  - " + coverage + "\r\n");
             }
         }
-        
+
         out.write("SE  - " + date + "\r\n");
 
         out.write("UR  - " + persistentId.asURL() + "\r\n");
@@ -412,9 +413,9 @@ public class DataCitation {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         writeAsEndNoteCitation(outStream);
         String xml = outStream.toString();
-        return xml; 
-    } 
-    
+        return xml;
+    }
+
     public void writeAsEndNoteCitation(OutputStream os) {
 
         xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
@@ -436,7 +437,7 @@ public class DataCitation {
             }
         }
     }
-    
+
     private void createEndNoteXML(XMLStreamWriter xmlw) throws XMLStreamException {
 
         xmlw.writeStartElement("xml");
@@ -522,7 +523,7 @@ public class DataCitation {
             }
             xmlw.writeEndElement(); // tertiary-title
         }
-        
+
         xmlw.writeEndElement(); // titles
 
         xmlw.writeStartElement("section");
@@ -651,7 +652,7 @@ public class DataCitation {
         return metadata;
 	}
 
-	
+
     // helper methods   
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");
@@ -699,7 +700,7 @@ public class DataCitation {
         html = html.replaceAll("<\\/[hH]\\d>", "\r\n");
         html = html.replaceAll("<[\\/]?[bB]>", "");
         html = html.replaceAll("<[\\/]?[iI]>", "\r\n");
-        
+
         html = html.replaceAll("<[bB][rR][\\/]?>", "\r\n");
         html = html.replaceAll("<[uU][lL]>", "\r\n");
         html = html.replaceAll("<\\/[uU][lL]>", "\r\n");
@@ -720,7 +721,7 @@ public class DataCitation {
         }
         //Note, this does not affect single '\n' chars originally in the text
         html = html.replaceAll("(\\r\\n?)+", "\r\n");
-        
+
         return html;
     }
 

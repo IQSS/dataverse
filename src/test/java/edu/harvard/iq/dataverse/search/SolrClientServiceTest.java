@@ -18,31 +18,31 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @LocalJvmSettings
 @ExtendWith(MockitoExtension.class)
 class SolrClientServiceTest {
-    
+
     @Mock
     SettingsServiceBean settingsServiceBean;
     @InjectMocks
     SystemConfig systemConfig;
     SolrClientService clientService = new SolrClientService();
-    
+
     @BeforeEach
     void setUp() {
         clientService.systemConfig = systemConfig;
     }
-    
+
     @Test
     void testInitWithDefaults() {
         // given
         String url = "http://localhost:8983/solr/collection1";
-        
+
         // when
         clientService.init();
-        
+
         // then
         HttpSolrClient client = (HttpSolrClient) clientService.getSolrClient();
         assertEquals(url, client.getBaseURL());
     }
-    
+
     @Test
     @JvmSetting(key = JvmSettings.SOLR_HOST, value = "foobar")
     @JvmSetting(key = JvmSettings.SOLR_PORT, value = "1234")
@@ -50,10 +50,10 @@ class SolrClientServiceTest {
     void testInitWithConfig() {
         // given
         String url = "http://foobar:1234/solr/test";
-        
+
         // when
         clientService.init();
-        
+
         // then
         HttpSolrClient client = (HttpSolrClient) clientService.getSolrClient();
         assertEquals(url, client.getBaseURL());

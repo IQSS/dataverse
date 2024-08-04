@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 public class ProvIT {
 
     private static boolean provEnabled = false;
-    
+
     @BeforeAll
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
@@ -33,7 +33,7 @@ public class ProvIT {
         }
     }
 
-    
+
     @Test
     public void testFreeformDraftActions() {
 
@@ -50,8 +50,8 @@ public class ProvIT {
                 .statusCode(CREATED.getStatusCode());
 
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        
-                
+
+
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiTokenForDepositor);
         publishDataverse.prettyPrint();
         assertEquals(200, publishDataverse.getStatusCode());
@@ -70,30 +70,30 @@ public class ProvIT {
                 .body("status", equalTo("OK"))
                 .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
-        
+
         Long dataFileId = JsonPath.from(authorAddsFile.getBody().asString()).getLong("data.files[0].dataFile.id");
-        
+
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiTokenForDepositor);
         publishDataset.prettyPrint();
         assertEquals(200, publishDataset.getStatusCode());
-        
+
         //Provenance FreeForm
         JsonObject provFreeFormGood = Json.createObjectBuilder()
                 .add("text", "I inherited this file from my grandfather.")
                 .build();
-        
+
         Response uploadProvFreeForm = UtilIT.uploadProvFreeForm(dataFileId.toString(), provFreeFormGood, apiTokenForDepositor);
         uploadProvFreeForm.prettyPrint();
         uploadProvFreeForm.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         Response datasetVersions = UtilIT.getDatasetVersions(datasetId.toString(), apiTokenForDepositor);
         datasetVersions.prettyPrint();
         datasetVersions.then().assertThat()
                 .body("data[0].versionState", equalTo("DRAFT"));
-     
+
     }
-    
+
     @Test
     public void testAddProvFile() {
 
@@ -110,8 +110,8 @@ public class ProvIT {
                 .statusCode(CREATED.getStatusCode());
 
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        
-                
+
+
         Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiTokenForDepositor);
         publishDataverse.prettyPrint();
         assertEquals(200, publishDataverse.getStatusCode());
@@ -139,23 +139,23 @@ public class ProvIT {
                 .add("entity", Json.createObjectBuilder()
                     .add("d1", Json.createObjectBuilder()
                         .add("name", "first.txt")
-                        .add("value", "#ddg.function")    
+                        .add("value", "#ddg.function")
                         .add("scope", "fn"))
                     .add("d2", Json.createObjectBuilder()
                         .add("rdt:name", "second.txt")
-                        .add("rdt:value", "#ddg.function")    
-                        .add("rdt:scope", "something"))        
+                        .add("rdt:value", "#ddg.function")
+                        .add("rdt:scope", "something"))
                     )
                     .build();
-        
-        
+
+
         //entity name not found in prov json
         String entityNameBad = "broken name";
         Response uploadProvJsonBadEntity = UtilIT.uploadProvJson(dataFileId.toString(), provJsonGood, apiTokenForDepositor, entityNameBad);
         uploadProvJsonBadEntity.prettyPrint();
         uploadProvJsonBadEntity.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
-        
+
         //valid entity name
         String entityName = "d1";
         Response uploadProvJson = UtilIT.uploadProvJson(dataFileId.toString(), provJsonGood, apiTokenForDepositor, entityName);
@@ -171,11 +171,11 @@ public class ProvIT {
         uploadProvFreeForm.prettyPrint();
         uploadProvFreeForm.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiTokenForDepositor);
         publishDataset.prettyPrint();
         assertEquals(200, publishDataset.getStatusCode());
-        
+
         //We want to publish a 2nd version to confirm metadata is being passed over between version
         //Note: this UI file is just being used as an arbitrary file for upload testing
         String pathToFile2 = "src/main/webapp/resources/images/dataverseproject_logo.png";
@@ -185,11 +185,11 @@ public class ProvIT {
                 .body("status", equalTo("OK"))
                 .body("data.files[0].label", equalTo("dataverseproject_logo.png"))
                 .statusCode(OK.getStatusCode());
-        
+
         Response publishDataset2 = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiTokenForDepositor);
         publishDataset2.prettyPrint();
         assertEquals(200, publishDataset2.getStatusCode());
-        
+
         //Confirm prov freeform metadata was passed to 2nd version
         Response getProvFreeForm = UtilIT.getProvFreeForm(dataFileId.toString(), apiTokenForDepositor);
         getProvFreeForm.prettyPrint();
@@ -205,8 +205,8 @@ public class ProvIT {
                 .body("data", notNullValue(String.class))
                 .body("data.json", notNullValue(String.class));
         assertEquals(200, getProvJson.getStatusCode());
-        
-        
+
+
         // TODO: Test that if provenance already exists in CPL (e.g. cplId in fileMetadata is not 0) upload returns error.
         //       There are currently no api endpoints to set up up this test.
         

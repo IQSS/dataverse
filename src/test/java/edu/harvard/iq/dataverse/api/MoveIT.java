@@ -57,7 +57,7 @@ public class MoveIT {
         Response noPermToCreateDataset = UtilIT.createRandomDatasetViaNativeApi(curatorDataverseAlias1, authorApiToken);
         noPermToCreateDataset.prettyPrint();
         noPermToCreateDataset.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
-        
+
         Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(curatorDataverseAlias1, DataverseRole.DS_CONTRIBUTOR.toString(), "@" + authorUsername, curatorApiToken);
         grantAuthorAddDataset.prettyPrint();
         grantAuthorAddDataset.then().assertThat()
@@ -311,7 +311,7 @@ public class MoveIT {
         assertEquals(0, linksAfterData.getJsonObject("data").getJsonArray("dataverses that link to dataset id " + datasetId).size());
 
     }
-    
+
     @Test
     public void testMoveDatasetsPerms() {
 

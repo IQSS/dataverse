@@ -40,6 +40,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @Named("LoginPage")
 public class LoginPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(LoginPage.class.getName());
+
     public static class FilledCredential {
         CredentialsAuthenticationProvider.Credential credential;
         String value;
@@ -51,7 +52,7 @@ public class LoginPage implements java.io.Serializable {
             this.credential = credential;
             this.value = value;
         }
-        
+
         public CredentialsAuthenticationProvider.Credential getCredential() {
             return credential;
         }
@@ -67,22 +68,22 @@ public class LoginPage implements java.io.Serializable {
         public void setValue(String value) {
             this.value = value;
         }
-        
+
     }
-    
-    public enum EditMode {LOGIN, SUCCESS, FAILED};
-    
-    @Inject DataverseSession session;    
-    
+
+    public enum EditMode {LOGIN, SUCCESS, FAILED}
+
+    @Inject DataverseSession session;
+
     @EJB
     DataverseServiceBean dataverseService;
-    
+
     @EJB
     BuiltinUserServiceBean dataverseUserService;
-    
+
     @EJB
     UserServiceBean userService;
-    
+
     @EJB
     AuthenticationServiceBean authSvc;
 
@@ -91,14 +92,14 @@ public class LoginPage implements java.io.Serializable {
 
     @EJB
     SystemConfig systemConfig;
-    
+
     @Inject
     DataverseRequestServiceBean dvRequestService;
-    
+
     private String credentialsAuthProviderId;
-    
+
     private List<FilledCredential> filledCredentials;
-    
+
     private String redirectPage = "dataverse.xhtml";
     private AuthenticationProvider authProvider;
     private int numFailedLoginAttempts;
@@ -125,7 +126,7 @@ public class LoginPage implements java.io.Serializable {
         }
         return infos;
     }
-    
+
     /**
      * Retrieve information about all enabled identity providers in a sorted order to be displayed to the user.
      * @return list of display information for each provider
@@ -133,10 +134,10 @@ public class LoginPage implements java.io.Serializable {
     public List<AuthenticationProviderDisplayInfo> listAuthenticationProviders() {
         List<AuthenticationProviderDisplayInfo> infos = new LinkedList<>();
         List<AuthenticationProvider> idps = new ArrayList<>(authSvc.getAuthenticationProviders());
-        
+
         // sort by order first. in case of same order values, be deterministic in UI and sort by id, too.
         Collections.sort(idps, Comparator.comparing(AuthenticationProvider::getOrder).thenComparing(AuthenticationProvider::getId));
-        
+
         for (AuthenticationProvider idp : idps) {
             if (idp != null) {
                 infos.add(idp.getInfo());
@@ -144,24 +145,24 @@ public class LoginPage implements java.io.Serializable {
         }
         return infos;
     }
-   
+
     public CredentialsAuthenticationProvider selectedCredentialsProvider() {
         return (CredentialsAuthenticationProvider) authSvc.getAuthenticationProvider(getCredentialsAuthProviderId());
     }
-    
+
     public boolean validatePassword(String username, String password) {
         return false;
     }
 
     public String login() {
-        
+
         AuthenticationRequest authReq = new AuthenticationRequest();
         List<FilledCredential> filledCredentialsList = getFilledCredentials();
         if (filledCredentialsList == null) {
             logger.info("Credential list is null!");
             return null;
         }
-        for (FilledCredential fc : filledCredentialsList) {       
+        for (FilledCredential fc : filledCredentialsList) {
             authReq.putCredential(fc.getCredential().getKey(), fc.getValue());
         }
 
@@ -173,8 +174,8 @@ public class LoginPage implements java.io.Serializable {
             if ("dataverse.xhtml".equals(redirectPage)) {
                 redirectPage = redirectToRoot();
             }
-            
-            try {            
+
+            try {
                 redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
@@ -184,7 +185,7 @@ public class LoginPage implements java.io.Serializable {
             logger.log(Level.FINE, "Sending user to = {0}", redirectPage);
             return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
 
-            
+
         } catch (AuthenticationFailedException ex) {
             numFailedLoginAttempts++;
             op1 = new Long(random.nextInt(10));
@@ -211,9 +212,9 @@ public class LoginPage implements java.io.Serializable {
                     return null;
             }
         }
-        
+
     }
-    
+
     private String redirectToRoot() {
         return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
     }
@@ -221,16 +222,16 @@ public class LoginPage implements java.io.Serializable {
     public String getCredentialsAuthProviderId() {
         return credentialsAuthProviderId;
     }
-    
+
     public void resetFilledCredentials(AjaxBehaviorEvent event) {
         if (selectedCredentialsProvider() == null) return;
-        
+
         filledCredentials = new LinkedList<>();
         for (CredentialsAuthenticationProvider.Credential c : selectedCredentialsProvider().getRequiredCredentials()) {
             filledCredentials.add(new FilledCredential(c, ""));
         }
     }
-    
+
     public void setCredentialsAuthProviderId(String authProviderId) {
         this.credentialsAuthProviderId = authProviderId;
     }

@@ -35,13 +35,13 @@ import org.apache.commons.io.IOUtils;
  */
 public class StoredOriginalFile {
     private static Logger logger = Logger.getLogger(StoredOriginalFile.class.getPackage().getName());
-    
+
     public StoredOriginalFile() {
-        
+
     }
-    
+
     public static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
-    
+
     public static StorageIO<DataFile> retreive(StorageIO<DataFile> storageIO) {
         String originalMimeType;
 
@@ -57,14 +57,14 @@ public class StoredOriginalFile {
             return null;
         }
 
-        long storedOriginalSize; 
+        long storedOriginalSize;
         InputStreamIO inputStreamIO;
         Channel storedOriginalChannel = null;
         try {
             storageIO.open();
             storedOriginalChannel = storageIO.openAuxChannel(SAVED_ORIGINAL_FILENAME_EXTENSION);
-            storedOriginalSize = dataFile.getDataTable().getOriginalFileSize() != null ? 
-                    dataFile.getDataTable().getOriginalFileSize() : 
+            storedOriginalSize = dataFile.getDataTable().getOriginalFileSize() != null ?
+                    dataFile.getDataTable().getOriginalFileSize() :
                     storageIO.getAuxObjectSize(SAVED_ORIGINAL_FILENAME_EXTENSION);
             inputStreamIO = new InputStreamIO(Channels.newInputStream((ReadableByteChannel) storedOriginalChannel), storedOriginalSize);
             logger.fine("Opened stored original file as Aux " + SAVED_ORIGINAL_FILENAME_EXTENSION);

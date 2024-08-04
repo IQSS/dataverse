@@ -12,7 +12,7 @@ public class JsonLDNamespace {
 
 	String prefix;
 
-	
+
 	String url;
 
 	public static JsonLDNamespace dvcore = new JsonLDNamespace("dvcore", "https://dataverse.org/schema/core#");
@@ -21,9 +21,9 @@ public class JsonLDNamespace {
 	public static JsonLDNamespace schema = new JsonLDNamespace("schema", "http://schema.org/");
 
 	private static List<JsonLDNamespace> namespaces = new ArrayList<JsonLDNamespace>(Arrays.asList(dvcore, dcterms, ore, schema));
-	
+
 	public static JsonLDNamespace defineNamespace(String prefix, String url) {
-	    
+
 	    JsonLDNamespace ns = new JsonLDNamespace(prefix, url);
 	    int i = namespaces.indexOf(ns);
 	    if (i >= 0) {
@@ -33,11 +33,11 @@ public class JsonLDNamespace {
 	      return ns;
 	    }
 	}
-	
+
 	public static void deleteNamespace(JsonLDNamespace ns) {
         namespaces.remove(ns);
     }
-    
+
 	public static boolean isInNamespace(String url) {
 	  for (JsonLDNamespace ns : namespaces) {
 	      if (url.startsWith(ns.getUrl())) {
@@ -46,13 +46,13 @@ public class JsonLDNamespace {
 	  }
 	  return false;
 	}
-	
+
 	public static void addNamespacesToContext(Map<String, String> context) {
 	    for (JsonLDNamespace ns : namespaces) {
 	        context.putIfAbsent(ns.getPrefix(), ns.getUrl());
 	    };
 	}
-	
+
 	private JsonLDNamespace(String prefix, String url) {
 		this.prefix = prefix;
 		this.url = url;
@@ -65,7 +65,7 @@ public class JsonLDNamespace {
 	public String getUrl() {
 		return url;
 	}
-	
+
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof JsonLDNamespace)) {

@@ -18,9 +18,11 @@ public class MakeDataCountProcessState implements Serializable {
     public enum MDCProcessState {
         NEW("new"), DONE("done"), SKIP("skip"), PROCESSING("processing"), FAILED("failed");
         private final String text;
+
         private MDCProcessState(final String text) {
             this.text = text;
         }
+
         public static MDCProcessState fromString(String text) {
             if (text != null) {
                 for (MDCProcessState state : MDCProcessState.values()) {
@@ -31,6 +33,7 @@ public class MakeDataCountProcessState implements Serializable {
             }
             throw new IllegalArgumentException("State must be one of these values: " + Arrays.asList(MDCProcessState.values()) + ".");
         }
+
         @Override
         public String toString() {
             return text;
@@ -44,6 +47,7 @@ public class MakeDataCountProcessState implements Serializable {
     private Timestamp stateChangeTimestamp;
 
     public MakeDataCountProcessState() { }
+
     public MakeDataCountProcessState(String yearMonth, String state) {
         this.setYearMonth(yearMonth);
         this.setState(state);
@@ -56,19 +60,24 @@ public class MakeDataCountProcessState implements Serializable {
         }
         this.yearMonth = yearMonth;
     }
+
     public String getYearMonth() {
         return this.yearMonth;
     }
+
     public void setState(MDCProcessState state) {
         this.state = state;
         this.stateChangeTimestamp = Timestamp.from(Instant.now());
     }
+
     public void setState(String state) throws IllegalArgumentException {
         setState(MDCProcessState.fromString(state));
     }
+
     public MDCProcessState getState() {
         return this.state;
     }
+
     public Timestamp getStateChangeTime() {
         return stateChangeTimestamp;
     }

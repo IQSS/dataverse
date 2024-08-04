@@ -176,7 +176,7 @@ public class SignpostingResources {
                 }
                 authorURLs.add(authorURL);
                 visibleAuthorCounter++;
-                
+
 
             }
         }
@@ -268,7 +268,7 @@ public class SignpostingResources {
 
         return items;
     }
-    
+
     private String getPublicDownloadUrl(DataFile dataFile) {
         GlobalId gid = dataFile.getGlobalId();
         return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(),

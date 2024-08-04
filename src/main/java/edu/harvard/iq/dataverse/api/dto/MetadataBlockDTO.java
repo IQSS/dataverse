@@ -22,7 +22,7 @@ public  class MetadataBlockDTO {
         }
 
         public FieldDTO getField(String typeName) {
-            
+
             for (FieldDTO field : fields) {
                 if (field.getTypeName().equals(typeName)) {
                     return field;
@@ -30,7 +30,7 @@ public  class MetadataBlockDTO {
             }
             return null;
         }
-        
+
        public void addField(FieldDTO newField) {
         FieldDTO current = getField(newField.typeName);
         // If there is no Field in this Metadatablock with the typeName,
@@ -60,7 +60,7 @@ public  class MetadataBlockDTO {
             }
         }
     }
-        
+
         public List<FieldDTO> getFields() {
             return fields;
         }

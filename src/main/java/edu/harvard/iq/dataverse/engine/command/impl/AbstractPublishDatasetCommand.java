@@ -11,14 +11,14 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext;
  * @author michael
  */
 public abstract class AbstractPublishDatasetCommand<T> extends AbstractDatasetCommand<T> {
-    
+
 
     public AbstractPublishDatasetCommand(Dataset datasetIn, DataverseRequest aRequest) {
         super(aRequest, datasetIn);
     }
-    
+
     protected WorkflowContext buildContext(Dataset theDataset, WorkflowContext.TriggerType triggerType, boolean datasetExternallyReleased) {
         return new WorkflowContext(getRequest(), theDataset, triggerType, datasetExternallyReleased);
     }
-    
+
 }

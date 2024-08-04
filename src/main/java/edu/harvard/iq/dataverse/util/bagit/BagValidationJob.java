@@ -1,4 +1,5 @@
 package edu.harvard.iq.dataverse.util.bagit;
+
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,15 +77,15 @@ public class BagValidationJob implements Runnable {
     private String generateFileHash(String name, ZipFile zf) {
 
         String realHash = null;
-        
+
         ZipArchiveEntry archiveEntry1 = zf.getEntry(name);
-        
+
         if (archiveEntry1 != null) {
         // Error check - add file sizes to compare against supplied stats
         log.fine("Getting stream for " + name);
         long start = System.currentTimeMillis();
         InputStream inputStream = null;
-        
+
         try {
             inputStream = zf.getInputStream(archiveEntry1);
             if (hashtype.equals(DataFile.ChecksumType.SHA1)) {

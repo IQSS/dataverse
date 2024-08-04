@@ -38,89 +38,89 @@ public class HtmlFormatUtil  implements java.io.Serializable {
     public static final String HTML_LINK = "a";
     public static final String HTML_HREF = "href";
     public static final String HTML_H1 = "h1";
-    
+
     public static final String HTML_ALIGN_TOP = "valign=\"top\"";
-    public static final String HTML_ALIGN_RIGHT = "align=\"right\""; 
-    
+    public static final String HTML_ALIGN_RIGHT = "align=\"right\"";
+
     public static String formatTable(String tableBody) {
         return formatTag(tableBody, HTML_TABLE);
     }
-    
+
     public static String formatTableRow(String entry) {
         return formatTag(entry, HTML_TABLE_ROW);
     }
-    
+
     public static String formatTableCell(String entry) {
         return formatTag(entry, HTML_TABLE_CELL, null);
     }
-    
+
     public static String formatTableCell(String entry, String attr) {
         return formatTag(entry, HTML_TABLE_CELL, attr);
     }
-    
+
     public static String formatTableCellValignTop(String entry) {
-        return formatTableCell(entry, HTML_ALIGN_TOP); 
+        return formatTableCell(entry, HTML_ALIGN_TOP);
     }
-    
+
     public static String formatTableCellAlignRight(String entry) {
         return formatTableCell(entry, HTML_ALIGN_RIGHT);
     }
-    
+
     public static String formatLink(String name, String url) {
-        String href = HTML_HREF + "=\"" + url + "\""; 
-        
+        String href = HTML_HREF + "=\"" + url + "\"";
+
         return formatTag(name, HTML_LINK, href);
     }
-    
+
     public static String formatTitle(String title) {
         return formatTag(title, HTML_TITLE);
     }
-    
+
     public static String formatTag(String entry, String tag) {
         return formatTag(entry, tag, null);
     }
-    
+
     public static String formatTag(String entry, String tag, String attributes) {
-        StringBuilder sb = new StringBuilder(); 
+        StringBuilder sb = new StringBuilder();
         sb.append('<');
         sb.append(tag);
-        
+
         if (attributes != null) {
             sb.append(" " + attributes);
         }
-        
+
         sb.append('>');
         sb.append(entry);
         sb.append("</");
         sb.append(tag);
         sb.append('>');
-        
+
         return sb.toString();
     }
-    
+
     public static String formatTagOpen(String tag) {
-        StringBuilder sb = new StringBuilder(); 
+        StringBuilder sb = new StringBuilder();
         sb.append('<');
         sb.append(tag);
         sb.append('>');
         return sb.toString();
     }
-    
+
     public static String formatTagClose(String tag) {
-        StringBuilder sb = new StringBuilder(); 
+        StringBuilder sb = new StringBuilder();
         sb.append("</");
         sb.append(tag);
         sb.append('>');
         return sb.toString();
     }
-    
+
     public static String formatDoc(String header, String body) {
         StringBuilder sb = new StringBuilder();
-        
+
         sb.append(HTML_DOCTYPE_HEADER);
         sb.append("\n");
         sb.append(formatTagOpen(HTML_TAG));
-        
+
         sb.append(formatTag(header, HTML_HEAD));
         sb.append("\n");
         sb.append(formatTag(body, HTML_BODY));
@@ -129,5 +129,5 @@ public class HtmlFormatUtil  implements java.io.Serializable {
         sb.append("\n");
         return sb.toString();
     }
-    
+
 }

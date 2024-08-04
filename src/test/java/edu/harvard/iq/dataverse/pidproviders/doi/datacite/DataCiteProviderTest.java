@@ -146,7 +146,7 @@ public class DataCiteProviderTest {
         mdMap = provider.getIdentifierMetadata(d);
         // And verify the record is gone (no title, should be no entries at all)
         assertEquals(null, mdMap.get("datacite.title"));
-        
+
         //Now recreate and publicize in one step
         assertTrue(provider.publicizeIdentifier(d));
         d.getLatestVersion().setVersionState(VersionState.RELEASED);
@@ -156,7 +156,7 @@ public class DataCiteProviderTest {
         assertEquals("Second Title", mdMap.get("datacite.title"));
       //Check our local status
         assertEquals(DataCiteDOIProvider.FINDABLE, provider.getPidStatus(d));
-        
+
         //Verify that modify does update a published/findable record
         testDatasetField.setSingleValue("Third Title");
 
@@ -169,15 +169,15 @@ public class DataCiteProviderTest {
 
         mdMap = provider.getIdentifierMetadata(d);
         assertEquals("Third Title", mdMap.get("datacite.title"));
-        
+
         //Now delete the identifier . Once it's been findable, this should just flip the record to registered
         //Not sure that can be easily verified in the test, but it will be visible in Fabrica
         provider.deleteIdentifier(d);
         d.getLatestVersion().setVersionState(VersionState.DEACCESSIONED);
-        
+
         mdMap = provider.getIdentifierMetadata(d);
         assertEquals("This item has been removed from publication", mdMap.get("datacite.title"));
-        
+
         //Check our local status - just uses the version state
         assertEquals(DataCiteDOIProvider.REGISTERED, provider.getPidStatus(d));
 

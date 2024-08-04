@@ -25,8 +25,8 @@ public class DeleteTemplateCommand extends AbstractCommand<Dataverse> {
     private final Template doomed;
     private final Dataverse editedDv;
     private final List<Dataverse> dvWDefaultTemplate;
-    
-    public DeleteTemplateCommand(DataverseRequest aRequest, Dataverse editedDv, Template doomed, List<Dataverse> dvWDefaultTemplate) {  
+
+    public DeleteTemplateCommand(DataverseRequest aRequest, Dataverse editedDv, Template doomed, List<Dataverse> dvWDefaultTemplate) {
         super(aRequest, editedDv);
         this.editedDv = editedDv;
         this.doomed = doomed;
@@ -50,5 +50,5 @@ public class DeleteTemplateCommand extends AbstractCommand<Dataverse> {
         ctxt.em().remove(doomedAndMerged);
         return merged;
     }
-    
+
 }

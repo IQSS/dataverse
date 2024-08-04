@@ -31,7 +31,6 @@ public class GetSpecificPublishedDatasetVersionCommand extends AbstractCommand<D
         this(aRequest, anAffectedDataset, majorVersionNum, minorVersionNum, false, false);
     }
 
-   
 
     public GetSpecificPublishedDatasetVersionCommand(DataverseRequest aRequest, Dataset anAffectedDataset, long majorVersionNum, long minorVersionNum, boolean includeDeaccessioned, boolean checkPerms) {
         super(aRequest, anAffectedDataset);
@@ -45,10 +44,10 @@ public class GetSpecificPublishedDatasetVersionCommand extends AbstractCommand<D
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        
+
         for (DatasetVersion dsv : ds.getVersions()) {
             if (dsv.isReleased() || (includeDeaccessioned && dsv.isDeaccessioned())) {
-                
+
                 if (dsv.isDeaccessioned() && checkPerms) {
                     if (!ctxt.permissions().requestOn(getRequest(), ds).has(Permission.EditDataset)) {
                         return null;

@@ -119,7 +119,7 @@ public class SearchUtil {
     public static String constructQuery(String solrField, String userSuppliedQuery) {
        return constructQuery(solrField, userSuppliedQuery, false);
     }
-    
+
     public static String constructQuery(String solrField, String userSuppliedQuery, boolean addQuotes) {
 
         StringBuilder queryBuilder = new StringBuilder();
@@ -165,7 +165,7 @@ public class SearchUtil {
 
         return queryBuilder.toString().trim();
     }
-    
+
     public static String constructQuery(List<String> queryStrings, boolean isAnd) {
         return constructQuery(queryStrings, isAnd, true);
     }

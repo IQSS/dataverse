@@ -21,7 +21,7 @@ import java.util.List;
  * Dataverse OAIRecord entity.
  */
 public final class DataverseXoaiItem implements Item {
-    
+
     public DataverseXoaiItem(OAIRecord oaiRecord) {
         super();
         this.oaiRecord = oaiRecord;
@@ -30,35 +30,35 @@ public final class DataverseXoaiItem implements Item {
             oaisets.add(new Set(oaiRecord.getSetName()));
         }
     }
-   
+
     private OAIRecord oaiRecord;
-    
+
     public OAIRecord getOaiRecord() {
         return oaiRecord;
     }
-    
+
     public void setOaiRecord(OAIRecord oaiRecord) {
         this.oaiRecord = oaiRecord;
     }
 
-    private Dataset dataset; 
-    
+    private Dataset dataset;
+
     public Dataset getDataset() {
         return dataset;
     }
-    
+
     public DataverseXoaiItem withDataset(Dataset dataset) {
-        this.dataset = dataset; 
-        return this; 
+        this.dataset = dataset;
+        return this;
     }
-    
+
     private Metadata metadata;
-    
+
     @Override
     public Metadata getMetadata() {
         return metadata;
     }
-    
+
     public DataverseXoaiItem withMetadata(Metadata metadata) {
         this.metadata = metadata;
         return this;
@@ -73,12 +73,12 @@ public final class DataverseXoaiItem implements Item {
     public Instant getDatestamp() {
         return oaiRecord.getLastUpdateTime().toInstant();
     }
-    
+
     private  List<Set> oaisets;
 
     @Override
     public List<Set> getSets() {
-        
+
         return oaisets;
     }
 

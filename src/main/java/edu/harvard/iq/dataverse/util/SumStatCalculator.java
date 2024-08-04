@@ -19,6 +19,7 @@
 */
 
 package edu.harvard.iq.dataverse.util;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,12 +34,12 @@ import org.apache.commons.math.stat.StatUtils;
  * @author Leonid Andreev
  */
 public class SumStatCalculator {
-    
+
     private static Logger logger = Logger.getLogger(SumStatCalculator.class.getPackage().getName());
 
     public static double[] calculateSummaryStatistics(Number[] x) {
         logger.fine("entering calculate summary statistics (" + x.length + " Number values);");
-        
+
         double[] nx = new double[8];
         //("mean", "medn", "mode", "vald", "invd", "min", "max", "stdev");
 
@@ -47,18 +48,18 @@ public class SumStatCalculator {
         if (Double.isNaN(testNumberValue.doubleValue())) {
             logger.fine("Float test NaN value is still recognized as a Double NaN.");
         }
-        
+
         int invalid = countInvalidValues(x);
         nx[4] = invalid;
         logger.fine("counted invalid values: " + nx[4]);
         nx[3] = x.length - invalid;
         logger.fine("counted valid values: " + nx[3]);
-        
-        
+
+
         //double[] newx = prepareForSummaryStats(x);
         double[] newx = prepareForSummaryStatsAlternative(x, x.length - invalid);
-        logger.fine("prepared double vector for summary stats calculation (" + newx.length + " double values);");        
-        
+        logger.fine("prepared double vector for summary stats calculation (" + newx.length + " double values);");
+
         ////nx[0] = StatUtils.mean(newx);
         nx[0] = calculateMean(newx);
         logger.fine("calculated mean: " + nx[0]);
@@ -74,7 +75,7 @@ public class SumStatCalculator {
         nx[7] = Math.sqrt(StatUtils.variance(newx));
         logger.fine("calculated stdev: " + nx[7]);
         return nx;
-    }  
+    }
 
     private static double[] prepareForSummaryStats(Number[] x) {
         Double[] z = numberToDouble(x);
@@ -89,16 +90,16 @@ public class SumStatCalculator {
             if (x[i] != null) {
                 double xvalue = x[i].doubleValue();
                 if (!Double.isNaN(xvalue)) {
-                    retvector[c++] = xvalue; 
+                    retvector[c++] = xvalue;
                 }
             }
         }
-        
+
         // Throw exception if c != length in the end?
         
         return retvector;
     }
-    
+
     /**
      * Converts an array of primitive Number types to doubles
      *
@@ -110,7 +111,7 @@ public class SumStatCalculator {
         }
         return z;
     }
-    
+
     /**
      * Returns a new double array of nulls and non-Double.NaN values only
      *
@@ -128,7 +129,7 @@ public class SumStatCalculator {
         return ArrayUtils.toPrimitive(
             dl.toArray(new Double[dl.size()]));
     }
-    
+
     /**
      * Returns the number of Double.NaNs (or nulls) in a double-type array
      *
@@ -143,7 +144,7 @@ public class SumStatCalculator {
         }
         return counter;
     }
-    
+
     /**
      * Returns the number of Double.NaNs in a double-type array
      *
@@ -160,14 +161,14 @@ public class SumStatCalculator {
         }
         return NaNcounter;
     }
-    
+
     private static double calculateMedian(double[] values) {
         double[] sorted = new double[values.length];
         System.arraycopy(values, 0, sorted, 0, values.length);
         logger.fine("made an extra copy of the vector;");
         Arrays.sort(sorted);
         logger.fine("sorted double vector for median calculations;");
-        
+
         if (sorted.length == 0) {
             return Double.NaN;
         }
@@ -179,17 +180,17 @@ public class SumStatCalculator {
         double fpos = Math.floor(pos);
         int intPos = (int) fpos;
         double dif = pos - fpos;
-        
+
         double lower = sorted[intPos - 1];
         double upper = sorted[intPos];
-        
+
         return lower + dif * (upper - lower);
     }
-    
+
     private static double calculateMean(double[] values) {
         return calculateMean(values, 0, values.length);
     }
-    
+
     private static double calculateMean(double[] values, final int begin, final int length) {
 
         if (values == null || length == 0) {
@@ -209,11 +210,11 @@ public class SumStatCalculator {
         return xbar + (correction / sampleSize);
     }
 
-    
+
     private static double calculateSum(double[] values) {
         return calculateSum(values, 0, values.length);
     }
-    
+
     private static double calculateSum(double[] values, final int begin, final int length) {
         if (values == null || length == 0) {
             return Double.NaN;
@@ -224,8 +225,8 @@ public class SumStatCalculator {
         }
         return sum;
     }
-    
-    
+
+
     /**
      * Returns the mode statistic of a double variable
      *

@@ -41,8 +41,8 @@ public class RJobRequest {
     private static final Logger dbgLog = Logger.getLogger(RJobRequest.class.getCanonicalName());
 
 
-    private Map<String, String> variableFormats = new HashMap<>(); 
-    
+    private Map<String, String> variableFormats = new HashMap<>();
+
     /**
      * 4 parameter Constructor:
      * @param dv
@@ -50,94 +50,93 @@ public class RJobRequest {
      * @param categoryOrders
      */
     public RJobRequest(
-            List<DataVariable> dv, 
+            List<DataVariable> dv,
             Map<String, Map<String, String>> vts,
             Map<String, List<String>> categoryOrders
             ) {
         dataVariablesForRequest = dv;
-                
+
         valueTables = vts;
         categoryValueOrders = categoryOrders;
         dbgLog.fine("***** DvnRJobRequest: within the default constructor : initial *****");
         dbgLog.fine("DvnRJobRequest: variables=" + dataVariablesForRequest);
         dbgLog.fine("DvnRJobRequest: value table=" + valueTables);
         dbgLog.fine("DvnRJobRequest: category value orders=" + categoryValueOrders);
-        
-        
+
+
         checkVariableNames();
-        
+
         dbgLog.fine("***** DvnRJobRequest: within the default constructor ends here *****");
     }
 
-    
+
     public RJobRequest(
-            List<DataVariable> dv, 
+            List<DataVariable> dv,
             Map<String, Map<String, String>> vts
             ) {
       this(dv, vts, null);
     }
 
-    
 
     private List<DataVariable> dataVariablesForRequest;
 
-    private String tabularDataFileName; 
-    
+    private String tabularDataFileName;
+
     private String requestType;
     // Note: the only "request type" supported in 4.0 (as of currently
     // planned is "convert" - for converting tab files to data frames)
     
-    private String formatRequested; 
+    private String formatRequested;
     // Again, the plan is have "RData" as the only format supported; 
     // but we'll keep the mechanism in place for supporting multiple formats. 
     
     // R work space, saved and cached on the Application side
     private String savedRworkSpace;
-    
+
     private Map<String, Map<String, String>> valueTables;
-    
+
     /** list-type (one-to-many) parameter */
     private Map<String, List<String>> categoryValueOrders;
-    
+
     public String[] safeVarNames = null;
     public String[] renamedVariableArray = null;
     public String[] renamedResultArray = null;
     public Map<String, String> raw2safeTable = null;
-    
+
     public Map<String, String> safe2rawTable = null;
 
     public boolean hasUnsafeVariableNames = false;
-    
+
     public void setRequestType(String requestType) {
-        this.requestType = requestType; 
+        this.requestType = requestType;
     }
-    
+
     public String getRequestType() {
         return this.requestType;
     }
 
     public void setFormatRequested(String formatRequested) {
-        this.formatRequested = formatRequested; 
+        this.formatRequested = formatRequested;
     }
-    
+
     public String getFormatRequested() {
         return this.formatRequested;
     }
-    
+
     public void setTabularDataFileName(String tabularDataFileName) {
         this.tabularDataFileName = tabularDataFileName;
     }
-    
+
     public String getTabularDataFileName() {
         return this.tabularDataFileName;
     }
-    
+
     public List<DataVariable> getDataVariablesForRequest() {
         return this.dataVariablesForRequest;
     }
-    
+
     public String getCachedRworkSpace() {
-	return this.savedRworkSpace; 
+	return this.savedRworkSpace;
     }
 
 
@@ -155,11 +154,11 @@ public class RJobRequest {
                     rw.add(0);
                     continue;
                 } else if (dv.getFormatCategory().equals("Boolean")) {
-                    rw.add(3); 
+                    rw.add(3);
                     continue;
                 }
             }
-            
+
             if (dv.isTypeNumeric()) {
                 if (dv.getInterval() == null || dv.isIntervalContinuous()) {
                     rw.add(2);
@@ -190,10 +189,10 @@ public class RJobRequest {
 
             //dbgLog.fine(String.format("DvnRJobRequest: column[%d] schema = %s", i, dv.getFormatSchema()));
             dbgLog.fine(String.format("DvnRJobRequest: column[%d] category = %s", i, dv.getFormatCategory()));
-            
+
             //experiment dbgLog.fine(i+"-th \tformatschema="+dv.getFormatSchema());
             dbgLog.fine(i + "-th \tformatcategory=" + dv.getFormatCategory());
-            
+
             // TODO: 
             // clean this up! -- L.A. 4.0 beta15
             
@@ -212,7 +211,7 @@ public class RJobRequest {
                         if (dv.getFormatCategory().toLowerCase().startsWith("dtime")) {
                             // value JT
                             variableFormats.put(getSafeVariableName(dv.getName()), "JT");
-                            
+
                         } else if (dv.getFormatCategory().toLowerCase().startsWith("datetime")) {
                             // value DT
                             variableFormats.put(getSafeVariableName(dv.getName()), "DT");
@@ -270,7 +269,7 @@ public class RJobRequest {
         dbgLog.fine("format=" + variableFormats);
         return variableFormats;
     }
-        
+
     private String getSafeVariableName(String raw) {
         String safe = null;
         if ((raw2safeTable == null) || (raw2safeTable.isEmpty())) {
@@ -291,19 +290,19 @@ public class RJobRequest {
         }
         return safe;
     }
-    
+
     public String[] getVariableNames() {
         String[] variableNames = null;
-        
+
         List<String> rw = new ArrayList<>();
         for (DataVariable dv : dataVariablesForRequest) {
             rw.add(dv.getName());
         }
-        
+
         variableNames = rw.toArray(new String[rw.size()]);
         return variableNames;
     }
-    
+
     /**
      * Getter for property raw-to-safe-variable-name list
      * @return    A Map that maps an unsafe variable name to 
@@ -314,19 +313,19 @@ public class RJobRequest {
     }
 
     public void checkVariableNames() {
-        
+
         VariableNameCheckerForR nf = new VariableNameCheckerForR(getVariableNames());
         if (nf.hasRenamedVariables()) {
              safeVarNames = nf.getFilteredVarNames();
              hasUnsafeVariableNames = true;
         }
-        
+
         raw2safeTable = nf.getRaw2safeTable();
         safe2rawTable = nf.getSafe2rawTable();
         renamedVariableArray = nf.getRenamedVariableArray();
         renamedResultArray = nf.getRenamedResultArray();
     }
-    
+
     public List<String> getFilteredVarNameSet(List<String> varIdSet) {
         List<String> varNameSet = new ArrayList<>();
         for (String vid : varIdSet) {
@@ -348,21 +347,21 @@ public class RJobRequest {
         dbgLog.fine("varNameSet=" + varNameSet);
         return varNameSet;
     }
-    
+
     public String[] getVariableIds() {
         String[] variableIds = null;
         List<String> rw = new ArrayList<>();
         for (DataVariable dv : dataVariablesForRequest) {
             rw.add("v" + dv.getId().toString());
         }
-        
+
         variableIds = rw.toArray(new String[rw.size()]);
         return variableIds;
     }
 
     public Map<String, String> getVarIdToRawVarNameTable() {
         Map<String, String> vi2rwn = new HashMap<>();
-        
+
         for (DataVariable dv :dataVariablesForRequest) {
             vi2rwn.put("v" + dv.getId(), dv.getName());
         }
@@ -371,7 +370,7 @@ public class RJobRequest {
 
     public Map<String, String> getRawVarNameToVarIdTable() {
         Map<String, String> rwn2Id = new HashMap<>();
-        
+
         for (DataVariable dv :dataVariablesForRequest) {
             rwn2Id.put(dv.getName(), "v" + dv.getId());
         }
@@ -383,8 +382,8 @@ public class RJobRequest {
         if (!hasUnsafeVariableNames) {
             // neither renemaed nor recoded vars
             return  getVariableNames();
-        } 
-            
+        }
+
         return safeVarNames;
     }
 
@@ -399,7 +398,7 @@ public class RJobRequest {
         for (DataVariable dv : dataVariablesForRequest) {
                 rw.add(dv.getLabel());
         }
-        
+
         variableLabels = rw.toArray(new String[rw.size()]);
         return variableLabels;
     }
@@ -407,10 +406,11 @@ public class RJobRequest {
     public Map<String, Map<String, String>> getValueTable() {
         return valueTables;
     }
-    
+
     public Map<String, List<String>> getCategoryValueOrders() {
       return this.categoryValueOrders;
     }
+
     /*
     public String[] getBaseVarIdSet(){
         List<String> bvid = listParametersForRequest.get("baseVarIdSet");
@@ -435,5 +435,5 @@ public class RJobRequest {
         return tmp;
     }
 
-    
+
 }

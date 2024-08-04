@@ -62,11 +62,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     @EJB
     AuthenticationServiceBean authenticationService;
     @EJB
-    ExplicitGroupServiceBean explicitGroupService;    
-    @EJB 
-    GroupServiceBean groupService;  
+    ExplicitGroupServiceBean explicitGroupService;
     @EJB
-    UserNotificationServiceBean userNotificationService;    
+    GroupServiceBean groupService;
+    @EJB
+    UserNotificationServiceBean userNotificationService;
     @EJB
     EjbDataverseEngine commandEngine;
     @Inject
@@ -75,21 +75,21 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     PermissionsWrapper permissionsWrapper;
     @EJB
     FileAccessRequestServiceBean fileAccessRequestService;
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
 
     @Inject
     DataverseSession session;
 
-    Dataset dataset = new Dataset(); 
+    Dataset dataset = new Dataset();
     private final TreeMap<RoleAssignee, List<RoleAssignmentRow>> roleAssigneeMap = new TreeMap<>();
     private final TreeMap<DataFile, List<RoleAssignmentRow>> fileMap = new TreeMap<>();
 
     public TreeMap<AuthenticatedUser, List<FileAccessRequest>> getFileAccessRequestMap() {
         return fileAccessRequestMap;
     }
-    
+
     public List<DataFile> getDataFilesForRequestor() {
         List<FileAccessRequest> fars = fileAccessRequestMap.get(getFileRequester());
         if (fars == null) {
@@ -117,7 +117,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     public void setDataset(Dataset dataset) {
         this.dataset = dataset;
     }
-    
+
     public TreeMap<RoleAssignee, List<RoleAssignmentRow>> getRoleAssigneeMap() {
         return roleAssigneeMap;
     }
@@ -248,7 +248,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             assignments = new ArrayList<>();
             roleAssigneeMap.put(ra, assignments);
         }
-        
+
         assignments.add(new RoleAssignmentRow(assignment, ra.getDisplayInfo(), fileDeleted));
     }
 
@@ -260,10 +260,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         for (RoleAssignmentRow raRow : raRows) {
             revokeRole(raRow.getId());
         }
-        
+
         initMaps();
         showUserGroupMessages();
-    }    
+    }
 
 
     /*
@@ -289,7 +289,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     public void setSelectedRoleAssignee(RoleAssignee selectedRoleAssignee) {
         this.selectedRoleAssignee = selectedRoleAssignee;
     }
-    
+
     public List<RoleAssignmentRow> getRoleAssignments() {
         return roleAssignments;
     }
@@ -305,7 +305,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     public void setSelectedRoleAssignmentRows(List<RoleAssignmentRow> selectedRoleAssignmentRows) {
         this.selectedRoleAssignmentRows = selectedRoleAssignmentRows;
     }
-    
+
     public void initViewRemoveDialogByFile(DataFile file, List<RoleAssignmentRow> raRows) {
         setSelectedRoleAssignmentRows(new ArrayList<>());
         this.selectedFile = file;
@@ -313,23 +313,23 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         this.roleAssignments = raRows;
         showFileMessages();
     }
-    
+
     public void initViewRemoveDialogByRoleAssignee(RoleAssignee ra, List<RoleAssignmentRow> raRows) {
         setSelectedRoleAssignmentRows(new ArrayList<>());
         this.selectedFile = null;
         this.selectedRoleAssignee = ra;
         this.roleAssignments = raRows;
         showUserGroupMessages();
-    }    
-    
+    }
+
     public void removeRoleAssignments() {
         for (RoleAssignmentRow raRow : selectedRoleAssignmentRows) {
             revokeRole(raRow.getId());
         }
-        
-        initMaps();        
+
+        initMaps();
     }
-    
+
     // internal method used by removeRoleAssignments
     private void revokeRole(Long roleAssignmentId) {
         try {
@@ -342,16 +342,16 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"));
             logger.log(Level.SEVERE, "Error removing role assignment: " + ex.getMessage(), ex);
         }
-    }    
-  
- 
+    }
+
+
     /*
      grant access dialog
      */
     private List<RoleAssignee> selectedRoleAssignees;
     private List<DataFile> selectedFiles = new ArrayList<>();
     private AuthenticatedUser fileRequester;
-    
+
     public List<RoleAssignee> getSelectedRoleAssignees() {
         return selectedRoleAssignees;
     }
@@ -367,7 +367,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     public void setSelectedFiles(List<DataFile> selectedFiles) {
         this.selectedFiles = selectedFiles;
     }
-    
+
     public AuthenticatedUser getFileRequester() {
         return fileRequester;
     }
@@ -383,7 +383,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         selectedFiles.clear();
         showUserGroupMessages();
     }
-    
+
     public void initAssignDialogByFile(DataFile file) {
         showDeleted = false;
         initMaps();
@@ -393,6 +393,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         selectedFiles.add(file);
         showFileMessages();
     }
+
     public void initAssignDialogForFileRequester(AuthenticatedUser au) {
         fileRequester = au;
         selectedRoleAssignees = null;
@@ -402,13 +403,13 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             selectedFiles.add(fileAccessRequest.getDataFile());
         }
         showUserGroupMessages();
-    }     
-    
+    }
+
 
     public List<RoleAssignee> completeRoleAssignee(String query) {
-        return roleAssigneeService.filterRoleAssignees(query, dataset, selectedRoleAssignees); 
+        return roleAssigneeService.filterRoleAssignees(query, dataset, selectedRoleAssignees);
     }
-    
+
     public void grantAccess(ActionEvent evt) {
         // Find the built in file downloader role (currently by alias)
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
@@ -434,18 +435,18 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
             if (sendNotification) {
                 for (AuthenticatedUser au : roleAssigneeService.getExplicitUsers(roleAssignee)) {
-                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataset.getId());                
+                    userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.GRANTFILEACCESS, dataset.getId());
                 }
              }
         }
 
         initMaps();
     }
-    
+
     public void grantAccessToRequests(AuthenticatedUser au) {
         grantAccessToRequests(au, selectedFiles);
     }
-    
+
     public void grantAccessToAllRequests(AuthenticatedUser au) {
         List<DataFile> files = new ArrayList<>();
 
@@ -478,11 +479,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         }
 
     }
-    
+
     public void rejectAccessToRequests(AuthenticatedUser au) {
         rejectAccessToRequests(au, selectedFiles);
     }
-    
+
     public void rejectAccessToAllRequests(AuthenticatedUser au) {
         List<DataFile> files = new ArrayList<>();
 
@@ -533,14 +534,14 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             logger.log(Level.SEVERE, "Error assiging role: " + ex.getMessage(), ex);
             return false;
         }
-        
+
         return true;
     }
 
 
     boolean renderUserGroupMessages = false;
     boolean renderFileMessages = false;
-       
+
     public void showUserGroupMessages() {
         renderUserGroupMessages = true;
         renderFileMessages = false;
@@ -549,8 +550,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     private void showFileMessages() {
         renderUserGroupMessages = false;
         renderFileMessages = true;
-    }    
-    
+    }
+
     public boolean isRenderUserGroupMessages() {
         return renderUserGroupMessages;
     }
@@ -566,8 +567,6 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     public void setRenderFileMessages(boolean renderFileMessages) {
         this.renderFileMessages = renderFileMessages;
     }
-
-
 
 
     // inner class used fordisplay of role assignments
@@ -595,8 +594,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             this.assigneeDisplayInfo = disInf;
             this.deleted = deleted;
 
-        } 
-        
+        }
+
 
         public RoleAssigneeDisplayInfo getAssigneeDisplayInfo() {
             return assigneeDisplayInfo;
@@ -606,11 +605,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             return ra.getDefinitionPoint();
         }
 
-        
+
         public Long getId() {
             return ra.getId();
         }
-        
-    
-    }   
+
+
+    }
 }

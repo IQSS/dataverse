@@ -59,6 +59,7 @@ public class DashboardUsersPage implements java.io.Serializable {
     private String sortField;
 
     private static Map<String, String> sortingMap = new LinkedHashMap<>();
+
     static {
         sortingMap.put("id", "dashboard.list_users.tbl_header.userIdAZ");
         sortingMap.put("id desc", "dashboard.list_users.tbl_header.userIdZA");

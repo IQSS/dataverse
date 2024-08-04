@@ -142,10 +142,10 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected DvObjectServiceBean dvObjectSvc;
-    
+
     @EJB
     protected DatasetServiceBean datasetSvc;
-    
+
     @EJB
     protected DataFileServiceBean fileService;
 
@@ -202,10 +202,10 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected DataCaptureModuleServiceBean dataCaptureModuleSvc;
-    
+
     @EJB
     protected DatasetLinkingServiceBean dsLinkingService;
-    
+
     @EJB
     protected DataverseLinkingServiceBean dvLinkingService;
 
@@ -223,11 +223,11 @@ public abstract class AbstractApiBean {
 
     @EJB
     MetricsServiceBean metricsSvc;
-    
-    @EJB 
+
+    @EJB
     DvObjectServiceBean dvObjSvc;
-    
-    @EJB 
+
+    @EJB
     GuestbookResponseServiceBean gbRespSvc;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -293,7 +293,7 @@ public abstract class AbstractApiBean {
     protected String getRequestApiKey() {
         String headerParamApiKey = httpRequest.getHeader(DATAVERSE_KEY_HEADER_NAME);
         String queryParamApiKey = httpRequest.getParameter("key");
-                
+
         return headerParamApiKey != null ? headerParamApiKey : queryParamApiKey;
     }
 
@@ -354,7 +354,7 @@ public abstract class AbstractApiBean {
         }
         return dv;
     }
-    
+
     protected DataverseLinkingDataverse findDataverseLinkingDataverseOrDie(String dataverseId, String linkedDataverseId) throws WrappedResponse {
         DataverseLinkingDataverse dvld;
         Dataverse dataverse = findDataverseOrDie(dataverseId);
@@ -470,7 +470,7 @@ public abstract class AbstractApiBean {
             }
         }
     }
-       
+
     protected DataverseRole findRoleOrDie(String id) throws WrappedResponse {
         DataverseRole role;
         if (id.equals(ALIAS_KEY)) {
@@ -501,7 +501,7 @@ public abstract class AbstractApiBean {
             }
         }
     }
-    
+
     protected DatasetLinkingDataverse findDatasetLinkingDataverseOrDie(String datasetId, String linkingDataverseId) throws WrappedResponse {
         DatasetLinkingDataverse dsld;
         Dataverse linkingDataverse = findDataverseOrDie(linkingDataverseId);
@@ -512,13 +512,13 @@ public abstract class AbstractApiBean {
                 throw new WrappedResponse(
                         badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
             }
-            
+
             Dataset dataset = datasetSvc.findByGlobalId(persistentId);
             if (dataset == null) {
                 throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
             }
             datasetId = dataset.getId().toString();
-        } 
+        }
         try {
             dsld = dsLinkingService.findDatasetLinkingDataverse(Long.parseLong(datasetId), linkingDataverse.getId());
             if (dsld == null) {
@@ -576,6 +576,7 @@ public abstract class AbstractApiBean {
     protected MetadataBlock findMetadataBlock(Long id) {
         return metadataBlockSvc.findById(id);
     }
+
     protected MetadataBlock findMetadataBlock(String idtf) throws NumberFormatException {
         return metadataBlockSvc.findByName(idtf);
     }
@@ -716,13 +717,13 @@ public abstract class AbstractApiBean {
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
-    
+
     protected Response ok(JsonObject jo) {
         return Response.ok(Json.createObjectBuilder()
                 .add("status", ApiConstants.STATUS_OK)
                 .add("data", jo).build())
                 .type(MediaType.APPLICATION_JSON)
-                .build();    
+                .build();
     }
 
     protected Response ok(String msg) {
@@ -732,12 +733,12 @@ public abstract class AbstractApiBean {
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
-    
+
     protected Response ok(String msg, JsonObjectBuilder bld) {
         return Response.ok().entity(Json.createObjectBuilder()
             .add("status", ApiConstants.STATUS_OK)
-            .add("message", Json.createObjectBuilder().add("message", msg))     
-            .add("data", bld).build())      
+            .add("message", Json.createObjectBuilder().add("message", msg))
+            .add("data", bld).build())
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
@@ -781,7 +782,7 @@ public abstract class AbstractApiBean {
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }
-    
+
     protected Response accepted(JsonObjectBuilder bld) {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
@@ -789,7 +790,7 @@ public abstract class AbstractApiBean {
                         .add("data", bld).build()
                 ).build();
     }
-    
+
     protected Response accepted() {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
@@ -828,7 +829,7 @@ public abstract class AbstractApiBean {
     protected Response permissionError(String message) {
         return unauthorized(message);
     }
-    
+
     protected Response unauthorized(String message) {
         return error(Status.UNAUTHORIZED, message);
     }

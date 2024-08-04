@@ -89,7 +89,7 @@ public class SwordConfigurationImpl implements SwordConfiguration {
     public String getTempDirectory() {
         // will throw a runtime exception when not found
         String tmpFileDir = JvmSettings.FILES_DIRECTORY.lookup();
-        
+
         String swordDirString = tmpFileDir + File.separator + "sword";
         File swordDirFile = new File(swordDirString);
         /**
@@ -118,7 +118,7 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
     @Override
     public int getMaxUploadSize() {
-        
+
         int unlimited = -1;
         /* It doesn't look like we can determine which store will be used here, so we'll go with the default
          * (It looks like the collection or study involved is available where this method is called, but the SwordConfiguration.getMaxUploadSize()
@@ -128,13 +128,13 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
         if (maxUploadInBytes == null) {
             // (a) No setting, return unlimited           
-            return unlimited;      
-        
+            return unlimited;
+
         } else if (maxUploadInBytes > Integer.MAX_VALUE) {
             // (b) setting returns the limit of int, return max int value  (BUG)
             return Integer.MAX_VALUE;
-            
-        } else {            
+
+        } else {
             // (c) Return the setting as an int
             return maxUploadInBytes.intValue();
 

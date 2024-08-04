@@ -41,11 +41,11 @@ public class DataverseFieldTypeInputLevelServiceBean {
 
         return res;
     }
-    
+
     private void msg(String s) {
         //logger.fine(s);
     }
-    
+
     /**
      * Find a list of DataverseFieldTypeInputLevel objects
      *  Search criteria: 
@@ -61,10 +61,10 @@ public class DataverseFieldTypeInputLevelServiceBean {
         if (datasetFieldIdList == null || datasetFieldIdList.isEmpty()) {
             return null;
         }
-        if (dataverseId == null) {                    
+        if (dataverseId == null) {
             return null;
         }
-       
+
         try {
             return em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdAndDatasetFieldTypeIdList", DataverseFieldTypeInputLevel.class)
                     .setParameter("datasetFieldIdList", datasetFieldIdList)
@@ -73,9 +73,9 @@ public class DataverseFieldTypeInputLevelServiceBean {
             /*List res = query.getResultList();
             msg("Number of results: " + res.size());
             return res;*/
-        } catch (NoResultException nre) {  
+        } catch (NoResultException nre) {
             return null;
-        }    
+        }
     }
 
     public DataverseFieldTypeInputLevel findByDataverseIdDatasetFieldTypeId(Long dataverseId, Long datasetFieldTypeId) {
@@ -86,9 +86,9 @@ public class DataverseFieldTypeInputLevelServiceBean {
             return (DataverseFieldTypeInputLevel) query.getSingleResult();
         } catch (NoResultException nre) {
             return null;
-        }         
+        }
     }
-    
+
     public List<DataverseFieldTypeInputLevel> findRequiredByDataverseId(Long dataverseId) {
         Query query = em.createNamedQuery("DataverseFieldTypeInputLevel.findRequiredByDataverseId", DataverseFieldTypeInputLevel.class);
         query.setParameter("dataverseId", dataverseId);
@@ -96,7 +96,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
             return query.getResultList();
         } catch (NoResultException nre) {
             return null;
-        }         
+        }
     }
 
     public void delete(DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel) {

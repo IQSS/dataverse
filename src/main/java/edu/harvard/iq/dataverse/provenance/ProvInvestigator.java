@@ -20,14 +20,14 @@ import org.json.JSONTokener;
 //This has been made a singleton because the schema validator only needs to exist once
 //and loads very slowly
 public class ProvInvestigator {
-   
+
     private static final Logger logger = Logger.getLogger(ProvInvestigator.class.getCanonicalName());
     private static ProvInvestigator pvSingleton;
-    
+
     private ProvInvestigator() {
-        
+
     }
-    
+
     public HashMap<String, ProvEntityFileData> startRecurseNames(String jsonString) {
         JsonParser parser = new JsonParser();
         HashMap<String, ProvEntityFileData> provJsonParsedEntities = new HashMap<>();
@@ -35,15 +35,15 @@ public class ProvInvestigator {
         recurseNames(jsonObject, null, provJsonParsedEntities, false);
         return provJsonParsedEntities;
     }
-    
+
     static {
         pvSingleton = new ProvInvestigator();
     }
-    
+
     public static ProvInvestigator getInstance() {
         return pvSingleton;
     }
-    
+
     /** Parsing recurser for prov json. Pulls out all names/types inside entity, including the name of each entry inside entity
      * Note that if a later entity is found with the same entity name (not name tag) its parsed contents will replace values that are stored
      * Current parsing code does not parse json arrays. My understanding of the schema is that these do not take place
@@ -58,7 +58,7 @@ public class ProvInvestigator {
             entrySet.forEach((s) -> {
                 if (atEntity) {
                     String key = s.getKey();
-                    
+
                     if ("name".equals(key) || key.endsWith(":name")) {
                         ProvEntityFileData e = provJsonParsedEntities.get(outerKey);
                         e.fileName = s.getValue().getAsString();
@@ -72,14 +72,14 @@ public class ProvInvestigator {
                                     String value = tEntry.getValue().toString();
                                     e.fileType = value;
                                 }
-                            }                            
+                            }
                         } else if (s.getValue().isJsonPrimitive()) {
                             ProvEntityFileData e = provJsonParsedEntities.get(outerKey);
                             String value = s.getValue().getAsString();
                             e.fileType = value;
                         }
                     }
-                } 
+                }
                 if (null != outerKey && (outerKey.equals("entity") || outerKey.endsWith(":entity"))) {
                     //we are storing the entity name both as the key and in the object, the former for access and the later for ease of use when converted to a list
                     //Also, when we initialize the entity the freeform is set to null, after this recursion
@@ -88,10 +88,10 @@ public class ProvInvestigator {
                 } else {
                     recurseNames(s.getValue(), s.getKey(), provJsonParsedEntities, false);
                 }
-                
+
             });
-          
-        } 
+
+        }
 //// My understanding of the prov standard is there should be no entities in arrays
 //// But if that changes the below code should be flushed out --MAD 4.8.6
 //        else if(element.isJsonArray()) {
@@ -106,7 +106,7 @@ public class ProvInvestigator {
         
         return null;
     }
-    
+
     public String getPrettyJsonString(JsonObject jsonObject) {
         JsonParser jp = new JsonParser();
         JsonElement je = jp.parse(jsonObject.toString());
@@ -115,7 +115,7 @@ public class ProvInvestigator {
     }
 
     public boolean isProvValid(String jsonInput) {
-        try { 
+        try {
             schema.validate(new JSONObject(jsonInput)); // throws a ValidationException if this object is invalid
         } catch (ValidationException vx) {
             logger.info("Prov schema error : " + vx); //without classLoader is blows up in actual deployment
@@ -123,11 +123,11 @@ public class ProvInvestigator {
         } catch (Exception ex) {
             logger.info("Prov file error : " + ex);
             return false;
-        } 
+        }
 
         return true;
     }
-    
+
     //Pulled from https://www.w3.org/Submission/2013/SUBM-prov-json-20130424/schema
     //Not the prettiest way of accessing the schema, but loading the .json file as an external resource
     //turned out to be very painful, especially when also trying to exercise it via unit tests
@@ -138,7 +138,7 @@ public class ProvInvestigator {
     //to be done manually again or we'll need to pull both files and store them on disk.
     //The later option was not done previously because we couldn't get the same files to be
     //referenced by the code and our junit tests.
-    private static final String provSchema = 
+    private static final String provSchema =
         "{\n" +
         "    \"id\": \"\",\n" +
         "    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n" +
@@ -624,8 +624,8 @@ public class ProvInvestigator {
         "            }\n" +
         "        }\n" +
         "    }\n" +
-        "}"; 
-    
+        "}";
+
     private static final JSONObject rawSchema = new JSONObject(new JSONTokener(provSchema));
     private static final Schema schema = SchemaLoader.load(rawSchema);
 

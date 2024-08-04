@@ -19,8 +19,9 @@ import java.util.Collections;
  */
 // no annotations here, since permissions are dynamically decided
 public class ListRoleAssignments extends AbstractCommand<List<RoleAssignment>> {
-	
+
 	private final DvObject definitionPoint;
+
 	public ListRoleAssignments(DataverseRequest aRequest, DvObject aDefinitionPoint) {
 		super(aRequest, aDefinitionPoint);
 		definitionPoint = aDefinitionPoint;
@@ -43,5 +44,5 @@ public class ListRoleAssignments extends AbstractCommand<List<RoleAssignment>> {
 				definitionPoint.isInstanceofDataset() ? Collections.singleton(Permission.ManageDatasetPermissions)
 						: Collections.singleton(Permission.ManageDataversePermissions));
 	}
-	
+
 }

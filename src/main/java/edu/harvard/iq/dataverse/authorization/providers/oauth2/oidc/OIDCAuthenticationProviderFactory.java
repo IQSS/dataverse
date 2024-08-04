@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.settings.JvmSettings;
 import java.util.Map;
 
 public class OIDCAuthenticationProviderFactory implements AuthenticationProviderFactory {
-    
+
     /**
      * The alias of a factory. Has to be unique in the system.
      * @return The alias of the factory.
@@ -19,7 +19,7 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
     public String getAlias() {
         return "oidc";
     }
-    
+
     /**
      * @return A human readable display string describing this factory.
      */
@@ -27,7 +27,7 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
     public String getInfo() {
         return "Factory for Open ID Connect providers";
     }
-    
+
     /**
      * Instantiates an {@link AuthenticationProvider} based on the row passed.
      * @param aRow The row on which the created provider is based.
@@ -37,7 +37,7 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
     @Override
     public AuthenticationProvider buildProvider(AuthenticationProviderRow aRow) throws AuthorizationSetupException {
         Map<String, String> factoryData = OAuth2AuthenticationProviderFactory.parseFactoryData(aRow.getFactoryData());
-        
+
         OIDCAuthProvider oidc = new OIDCAuthProvider(
             factoryData.get("clientId"),
             factoryData.get("clientSecret"),
@@ -45,14 +45,14 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
             Boolean.parseBoolean(factoryData.getOrDefault("pkceEnabled", "false")),
             factoryData.getOrDefault("pkceMethod", "S256")
         );
-        
+
         oidc.setId(aRow.getId());
         oidc.setTitle(aRow.getTitle());
         oidc.setSubTitle(aRow.getSubtitle());
-        
+
         return oidc;
     }
-    
+
     /**
      * Build an OIDC provider from MicroProfile Config provisioned details
      * @return The configured auth provider
@@ -66,11 +66,11 @@ public class OIDCAuthenticationProviderFactory implements AuthenticationProvider
             JvmSettings.OIDC_PKCE_ENABLED.lookupOptional(Boolean.class).orElse(false),
             JvmSettings.OIDC_PKCE_METHOD.lookupOptional().orElse("S256")
         );
-        
+
         oidc.setId("oidc-mpconfig");
         oidc.setTitle(JvmSettings.OIDC_TITLE.lookupOptional().orElse("OpenID Connect"));
         oidc.setSubTitle(JvmSettings.OIDC_SUBTITLE.lookupOptional().orElse("OpenID Connect"));
-        
+
         return oidc;
     }
 }

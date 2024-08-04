@@ -18,22 +18,22 @@ import java.lang.annotation.Target;
 @ExtendWith(JvmSettingExtension.class)
 @Inherited
 public @interface LocalJvmSettings {
-    
+
     JvmSettingBroker localBroker = new JvmSettingBroker() {
         @Override
         public String getJvmSetting(String key) {
             return System.getProperty(key);
         }
-        
+
         @Override
         public void setJvmSetting(String key, String value) {
             System.setProperty(key, value);
         }
-        
+
         @Override
         public String deleteJvmSetting(String key) {
             return System.clearProperty(key);
         }
     };
-    
+
 }

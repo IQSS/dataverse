@@ -29,9 +29,9 @@ import java.io.Serializable;
  * starts other timers.
  */
 public class MotherTimerInfo implements Serializable {
-    
-    String serverId; 
-    
+
+    String serverId;
+
     public String getServerId() {
         return serverId;
     }
@@ -39,13 +39,13 @@ public class MotherTimerInfo implements Serializable {
     public void setServerId(String serverId) {
         this.serverId = serverId;
     }
-    
+
     public MotherTimerInfo() {
-        
+
     }
-    
+
     public MotherTimerInfo(String serverId) {
         this.serverId = serverId;
     }
-    
+
 }

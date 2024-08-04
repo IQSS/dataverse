@@ -42,7 +42,7 @@ class SiteMapUtilTest {
     @TempDir
     Path tempDir;
     Path tempDocroot;
-    
+
     @BeforeEach
     void setup() throws IOException {
         // NOTE: This might be unsafe for parallel tests, but our @SystemProperty helper does not yet support
@@ -51,12 +51,12 @@ class SiteMapUtilTest {
         this.tempDocroot = tempDir.resolve("docroot");
         Files.createDirectory(tempDocroot);
     }
-    
+
     @AfterEach
     void teardown() {
         System.clearProperty("test.filesDir");
     }
-    
+
     @Test
     void testUpdateSiteMap() throws IOException, ParseException, SAXException {
         // given
@@ -105,10 +105,10 @@ class SiteMapUtilTest {
         datasetVersions.add(datasetVersion);
         deaccessioned.setVersions(datasetVersions);
         datasets.add(deaccessioned);
-        
+
         // when
         SiteMapUtil.updateSiteMap(dataverses, datasets);
-        
+
         // then
         String pathToSiteMap = tempDocroot.resolve("sitemap").resolve("sitemap.xml").toString();
         assertDoesNotThrow(() -> XmlValidator.validateXmlWellFormed(pathToSiteMap));

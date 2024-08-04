@@ -63,20 +63,19 @@ import org.apache.commons.lang3.NotImplementedException;
 public class HandlePidProvider extends AbstractPidProvider {
 
     private static final Logger logger = Logger.getLogger(HandlePidProvider.class.getCanonicalName());
-    
+
     public static final String HDL_PROTOCOL = "hdl";
     public static final String TYPE = "hdl";
     public static final String HTTP_HDL_RESOLVER_URL = "http://hdl.handle.net/";
     public static final String HDL_RESOLVER_URL = "https://hdl.handle.net/";
 
-    
-    
+
     int handlenetIndex;
     private boolean isIndependentHandleService;
     private String authHandle;
     private String keyPath;
     private String keyPassphrase;
-    
+
     public HandlePidProvider(String id, String label, String authority, String shoulder, String identifierGenerationStyle,
             String datafilePidFormat, String managedList, String excludedList, int index, boolean isIndependentService, String authHandle, String path, String passphrase) {
         super(id, label, HDL_PROTOCOL, authority, shoulder, identifierGenerationStyle, datafilePidFormat, managedList, excludedList);
@@ -98,26 +97,26 @@ public class HandlePidProvider extends AbstractPidProvider {
         if (!HDL_PROTOCOL.equals(dvObject.getProtocol())) {
             logger.log(Level.WARNING, "reRegisterHandle called on a dvObject with the non-handle global id: {0}", dvObject.getId());
         }
-        
+
         String handle = getDvObjectHandle(dvObject);
 
         boolean handleRegistered = isHandleRegistered(handle);
-        
+
         if (handleRegistered) {
             // Rebuild/Modify an existing handle
             
             logger.log(Level.INFO, "Re-registering an existing handle id {0}", handle);
-            
+
             String authHandle = getAuthenticationHandle(dvObject);
 
             HandleResolver resolver = new HandleResolver();
 
             String datasetUrl = getRegistrationUrl(dvObject);
-            
+
             logger.log(Level.INFO, "New registration URL: {0}", datasetUrl);
 
             PublicKeyAuthenticationInfo auth = getAuthInfo(dvObject.getAuthority());
-            
+
             try {
 
                 AdminRecord admin = new AdminRecord(authHandle.getBytes("UTF8"), handlenetIndex,
@@ -152,7 +151,7 @@ public class HandlePidProvider extends AbstractPidProvider {
             registerNewHandle(dvObject);
         }
     }
-    
+
     public Throwable registerNewHandle(DvObject dvObject) {
         logger.log(Level.FINE, "registerNewHandle");
         String handlePrefix = dvObject.getAuthority();
@@ -199,7 +198,7 @@ public class HandlePidProvider extends AbstractPidProvider {
             return t;
         }
     }
-    
+
     public boolean isHandleRegistered(String handle) {
         logger.log(Level.FINE, "isHandleRegistered");
         boolean handleRegistered = false;
@@ -214,16 +213,16 @@ public class HandlePidProvider extends AbstractPidProvider {
         if ((response != null && response.responseCode == AbstractMessage.RC_SUCCESS)) {
             logger.log(Level.INFO, "Handle {0} registered.", handle);
             handleRegistered = true;
-        } 
+        }
         return handleRegistered;
     }
-    
+
     private ResolutionRequest buildResolutionRequest(final String handle) {
         logger.log(Level.FINE, "buildResolutionRequest");
         String handlePrefix = handle.substring(0, handle.indexOf("/"));
-        
+
         PublicKeyAuthenticationInfo auth = getAuthInfo(handlePrefix);
-        
+
         byte[][] types = null;
         int[] indexes = null;
         ResolutionRequest req =
@@ -236,12 +235,12 @@ public class HandlePidProvider extends AbstractPidProvider {
         req.ignoreRestrictedValues = true;
         return req;
     }
-    
+
     private PublicKeyAuthenticationInfo getAuthInfo(String handlePrefix) {
         logger.log(Level.FINE, "getAuthInfo");
         byte[] key = null;
         String adminCredFile = getKeyPath();
-       
+
         key = readKey(adminCredFile);
         PrivateKey privkey = null;
         privkey = readPrivKey(key, adminCredFile);
@@ -250,18 +249,19 @@ public class HandlePidProvider extends AbstractPidProvider {
                 new PublicKeyAuthenticationInfo(Util.encodeString(authHandle), handlenetIndex, privkey);
         return auth;
     }
+
     private String getRegistrationUrl(DvObject dvObject) {
         logger.log(Level.FINE, "getRegistrationUrl");
         String siteUrl = SystemConfig.getDataverseSiteUrlStatic();
         String targetUrl = siteUrl + dvObject.getTargetUrl() + "hdl:" + dvObject.getAuthority()
-                + "/" + dvObject.getIdentifier();         
+                + "/" + dvObject.getIdentifier();
         return targetUrl;
     }
- 
+
     public String getSiteUrl() {
         return SystemConfig.getDataverseSiteUrlStatic();
     }
-    
+
     private byte[] readKey(final String file) {
         logger.log(Level.FINE, "readKey");
         byte[] key = null;
@@ -278,11 +278,11 @@ public class HandlePidProvider extends AbstractPidProvider {
         }
         return key;
     }
-    
+
     private PrivateKey readPrivKey(byte[] key, final String file) {
         logger.log(Level.FINE, "readPrivKey");
         PrivateKey privkey = null;
-        
+
         try {
             byte[] secKey = null;
             if (Util.requiresSecretKey(key)) {
@@ -295,7 +295,7 @@ public class HandlePidProvider extends AbstractPidProvider {
         }
         return privkey;
     }
-    
+
     private String getDvObjectHandle(DvObject dvObject) {
         /* 
          * This is different from dataset.getGlobalId() in that we don't 
@@ -304,11 +304,11 @@ public class HandlePidProvider extends AbstractPidProvider {
         String handle = dvObject.getAuthority() + "/" + dvObject.getIdentifier();
         return handle;
     }
-    
+
     private String getAuthenticationHandle(DvObject dvObject) {
         return getAuthenticationHandle(dvObject.getAuthority());
     }
-    
+
     private String getAuthenticationHandle(String handlePrefix) {
         logger.log(Level.FINE, "getAuthenticationHandle");
         if (getHandleAuthHandle() != null) {
@@ -325,13 +325,13 @@ public class HandlePidProvider extends AbstractPidProvider {
         String handle = getDvObjectHandle(dvObject);
         return isHandleRegistered(handle);
     }
-    
+
     @Override
     public boolean alreadyRegistered(GlobalId pid, boolean noProviderDefault) throws Exception {
         String handle = pid.getAuthority() + "/" + pid.getIdentifier();
         return isHandleRegistered(handle);
     }
-    
+
     @Override
     public Map<String, String> getIdentifierMetadata(DvObject dvObject) {
         throw new NotImplementedException();
@@ -345,7 +345,7 @@ public class HandlePidProvider extends AbstractPidProvider {
             Dataset dataset = (Dataset) dvObject;
             dataset.getFiles().forEach((df) -> {
                 reRegisterHandle(df);
-            });            
+            });
         }
         return getIdentifier(dvObject);
     }
@@ -354,9 +354,9 @@ public class HandlePidProvider extends AbstractPidProvider {
     public void deleteIdentifier(DvObject dvObject) throws Exception {
         String handle = getDvObjectHandle(dvObject);
         String authHandle = getAuthenticationHandle(dvObject);
-    
+
         String adminCredFile = getKeyPath();
-        
+
         byte[] key = readKey(adminCredFile);
         PrivateKey privkey = readPrivKey(key, adminCredFile);
 
@@ -386,7 +386,7 @@ public class HandlePidProvider extends AbstractPidProvider {
         reRegisterHandle(dvObject); // No Need to register new - this is only called when a handle exists
         return true;
     }
-    
+
     @Override
     public List<String> getProviderInformation() {
         return List.of(getId(), HDL_RESOLVER_URL);
@@ -431,7 +431,7 @@ public class HandlePidProvider extends AbstractPidProvider {
         GlobalId globalId = super.parsePersistentId(protocol, identifierString);
         return globalId;
     }
-    
+
     @Override
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
         if (!HDL_PROTOCOL.equals(protocol)) {
@@ -466,7 +466,7 @@ public class HandlePidProvider extends AbstractPidProvider {
     public boolean isIndependentHandleService() {
         return isIndependentHandleService;
     }
-    
+
     public String getHandleAuthHandle() {
         return authHandle;
     }

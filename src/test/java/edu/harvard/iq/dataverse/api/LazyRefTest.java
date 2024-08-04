@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
  * @author michael
  */
 public class LazyRefTest {
-    
+
     public LazyRefTest() {
     }
 
@@ -20,5 +20,5 @@ public class LazyRefTest {
     @Test
     public void testGet() {
     }
-    
+
 }

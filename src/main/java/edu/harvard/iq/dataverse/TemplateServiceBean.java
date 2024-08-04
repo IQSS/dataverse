@@ -32,15 +32,15 @@ public class TemplateServiceBean {
     public Template save(Template template) {
         return em.merge(template);
     }
-    
-    public List<Template> findByOwnerId(Long ownerId) {              
+
+    public List<Template> findByOwnerId(Long ownerId) {
         return em.createNamedQuery("Template.findByOwnerId", Template.class).setParameter("ownerId", ownerId).getResultList();
     }
-    
+
     public List<Template> findAll() {
         return em.createNamedQuery("Template.findAll", Template.class).getResultList();
     }
-    
+
     public List<Dataverse> findDataversesByDefaultTemplateId(Long defaultTemplateId) {
         TypedQuery<Dataverse> query = em.createQuery("select object(o) from Dataverse as o where o.defaultTemplate.id =:defaultTemplateId order by o.name", Dataverse.class);
         query.setParameter("defaultTemplateId", defaultTemplateId);

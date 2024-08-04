@@ -52,6 +52,6 @@ public class DataTableDTO {
     public void setDataVariables(List<DataVariableDTO> dataVariables) {
         this.dataVariables = dataVariables;
     }
-    
-    
+
+
 }

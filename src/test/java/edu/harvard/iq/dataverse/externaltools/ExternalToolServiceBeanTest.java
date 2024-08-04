@@ -510,7 +510,7 @@ public class ExternalToolServiceBeanTest {
 
     @Test
     public void testParseAddDatasetToolAllowedApiCalls() {
- 
+
         ExternalTool externalTool = null;
         try {
             externalTool = getAllowedApiCallsTool();

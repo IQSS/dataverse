@@ -14,15 +14,15 @@ import jakarta.persistence.PersistenceContext;
  */
 @Stateless
 public class OAuth2TokenDataServiceBean {
-    
+
     @PersistenceContext
     private EntityManager em;
-    
+
     public void store(OAuth2TokenData tokenData) {
         if (tokenData.getId() != null) {
             // token exists, this is an update
             em.merge(tokenData);
-            
+
         } else {
             // ensure there's only one token for each user/service pair.
             em.createNamedQuery("OAuth2TokenData.deleteByUserIdAndProviderId")
@@ -32,7 +32,7 @@ public class OAuth2TokenDataServiceBean {
             em.persist(tokenData);
         }
     }
-    
+
     public Optional<OAuth2TokenData> get(long authenticatedUserId, String serviceId) {
         final List<OAuth2TokenData> tokens = em.createNamedQuery("OAuth2TokenData.findByUserIdAndProviderId", OAuth2TokenData.class)
                 .setParameter("userId", authenticatedUserId)
@@ -40,5 +40,5 @@ public class OAuth2TokenDataServiceBean {
                 .getResultList();
         return Optional.ofNullable(tokens.isEmpty() ? null : tokens.get(0));
     }
-    
+
 }

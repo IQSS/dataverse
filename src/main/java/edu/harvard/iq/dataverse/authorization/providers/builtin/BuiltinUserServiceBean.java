@@ -33,17 +33,17 @@ public class BuiltinUserServiceBean {
 
     @EJB
     IndexServiceBean indexService;
-    
+
     @EJB
     PasswordResetServiceBean passwordResetService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     public String encryptPassword(String plainText) {
         return PasswordEncryption.get().encrypt(plainText);
     }
-       
+
     public BuiltinUser save(BuiltinUser aUser) {
         /**
          * We throw a proper IllegalArgumentException here because otherwise
@@ -71,18 +71,18 @@ public class BuiltinUserServiceBean {
             return em.merge(aUser);
         }
     }
-    
+
     public BuiltinUser find(Long pk) {
         return em.find(BuiltinUser.class, pk);
-    }    
-    
+    }
+
     public void removeUser(String userName) {
         final BuiltinUser user = findByUserName(userName);
         if (user != null) {
             em.remove(user);
         }
     }
-    
+
     public BuiltinUser findByUserName(String userName) {
         try {
             return em.createNamedQuery("BuiltinUser.findByUserName", BuiltinUser.class)
@@ -95,22 +95,22 @@ public class BuiltinUserServiceBean {
             return null;
         }
     }
-	
+
     public List<BuiltinUser> listByUsernamePart(String part) {
             return em.createNamedQuery("BuiltinUser.listByUserNameLike", BuiltinUser.class)
                             .setParameter("userNameLike", "%" + part + "%")
                             .getResultList();
     }
-    
+
     public List<BuiltinUser> findAll() {
 		return em.createNamedQuery("BuiltinUser.findAll", BuiltinUser.class).getResultList();
 	}
-    
+
     public String requestPasswordUpgradeLink(BuiltinUser aUser) throws PasswordResetException {
         PasswordResetInitResponse prir = passwordResetService.requestPasswordReset(aUser, false, PasswordResetData.Reason.UPGRADE_REQUIRED);
         return "passwordreset.xhtml?token=" + prir.getPasswordResetData().getToken() + "&faces-redirect=true";
     }
-    
+
     public String requestPasswordComplianceLink(BuiltinUser aUser) throws PasswordResetException {
         PasswordResetInitResponse prir = passwordResetService.requestPasswordReset(aUser, false, PasswordResetData.Reason.NON_COMPLIANT_PASSWORD);
         return "passwordreset.xhtml?token=" + prir.getPasswordResetData().getToken() + "&faces-redirect=true";

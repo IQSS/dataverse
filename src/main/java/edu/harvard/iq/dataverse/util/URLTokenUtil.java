@@ -31,8 +31,8 @@ public class URLTokenUtil {
     protected final FileMetadata fileMetadata;
     protected ApiToken apiToken;
     protected String localeCode;
-    
-    
+
+
     public static final String HTTP_METHOD = "httpMethod";
     public static final String TIMEOUT = "timeOut";
     public static final String SIGNED_URL = "signedUrl";
@@ -114,7 +114,7 @@ public class URLTokenUtil {
     public String getLocaleCode() {
         return localeCode;
     }
-    
+
     public JsonValue getParam(String value) {
         String tokenValue = null;
         tokenValue = getTokenValue(value);
@@ -207,7 +207,7 @@ public class URLTokenUtil {
         }
         throw new IllegalArgumentException("Cannot replace reserved word: " + value);
     }
-    
+
     public JsonObjectBuilder createPostBody(JsonObject params, JsonArray allowedApiCalls) {
         JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
         bodyBuilder.add("queryParameters", params);
@@ -243,7 +243,7 @@ public class URLTokenUtil {
     public JsonObject getParams(JsonObject toolParameters) {
         //ToDo - why an array of object each with a single key/value pair instead of one object?
         JsonArray queryParams = toolParameters.getJsonArray("queryParameters");
-    
+
         // ToDo return json and print later
         JsonObjectBuilder paramsBuilder = Json.createObjectBuilder();
         if (!(queryParams == null) && !queryParams.isEmpty()) {

@@ -44,9 +44,9 @@ public class MetricsIT {
         String postcache = response.prettyPrint();
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsDataversesToMonth(yyyymm, "dataLocation=local");
         response.then().assertThat()
@@ -70,7 +70,7 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test ok when passing extra query params
         response = UtilIT.metricsDatasetsToMonth(yyyymm, "dataLocation=local");
         response.then().assertThat()
@@ -93,7 +93,7 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsFilesToMonth(yyyymm, "dataLocation=local");
         response.then().assertThat()
@@ -116,7 +116,7 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsDownloadsToMonth(yyyymm, "dataLocation=local");
         response.then().assertThat()
@@ -139,7 +139,7 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsAccountsToMonth(thismonth, "dataLocation=local");
         response.then().assertThat()
@@ -164,14 +164,14 @@ public class MetricsIT {
         response = UtilIT.metricsAccountsTimeSeries(FileUtil.MIME_TYPE_CSV, null);
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsAccountsTimeSeries(MediaType.APPLICATION_JSON, "dataLocation=local");
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
-    
-        
+
+
     @Test
     public void testGetDataversesPastDays() {
         String days = "30";
@@ -188,13 +188,13 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsDataversesPastDays(days, "dataLocation=local");
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
-    
+
     @Test
     public void testGetDatasetsPastDays() {
         String days = "30";
@@ -211,14 +211,14 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test ok when passing extra query params
         response = UtilIT.metricsDatasetsPastDays(days, "dataLocation=local");
         response.then().assertThat()
                 .statusCode(OK.getStatusCode());
     }
-    
-    
+
+
     @Test
     public void testGetFilesPastDays() {
         String days = "30";
@@ -235,13 +235,13 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsFilesPastDays(days, "dataLocation=local");
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
-    
+
     @Test
     public void testGetDownloadsPastDays() {
         String days = "30";
@@ -258,12 +258,12 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsDownloadsPastDays(days, "dataLocation=local");
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
-    }    
+    }
 
     @Test
     public void testGetAccountsPastDays() {
@@ -287,7 +287,7 @@ public class MetricsIT {
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
-    
+
 
     @Test
     public void testGetDataverseByCategory() {
@@ -303,13 +303,13 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsDataversesByCategory("dataLocation=local");
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
-    
+
     @Test
     public void testGetDataverseBySubject() {
         Response response = UtilIT.metricsDataversesBySubject(null);
@@ -324,12 +324,12 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test error when passing extra query params
         response = UtilIT.metricsDataversesBySubject("dataLocation=local");
         response.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
-        
+
         // Test cache delete for single metric - just tests that the call succeeds since
         // the client can't really tell whether it gets a new/cached value
 
@@ -351,7 +351,7 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test ok when passing extra query params
         response = UtilIT.metricsDatasetsBySubject("dataLocation=local");
         response.then().assertThat()
@@ -375,7 +375,7 @@ public class MetricsIT {
                 .statusCode(OK.getStatusCode());
 
         assertEquals(precache, postcache);
-        
+
         //Test ok passing extra query params
         response = UtilIT.metricsDatasetsBySubjectToMonth(thismonth, "dataLocation=local");
         response.then().assertThat()

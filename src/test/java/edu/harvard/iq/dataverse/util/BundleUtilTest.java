@@ -74,7 +74,7 @@ public class BundleUtilTest {
         assertEquals(null, BundleUtil.getStringFromBundle(null, null, null));
         assertEquals("Search", BundleUtil.getStringFromBundle("search", null, BundleUtil.getResourceBundle("Bundle")));
     }
-    
+
     @Test
     public void testStringFromPropertyFile() {
         assertEquals("Archive", BundleUtil.getStringFromPropertyFile("application/zip", "MimeTypeFacets"));
@@ -85,7 +85,7 @@ public class BundleUtilTest {
     void testStringFromPropertyFileException() {
         assertThrows(MissingResourceException.class, () -> BundleUtil.getStringFromPropertyFile("FAKE", "MimeTypeFacets"));
     }
-    
+
     //To assure MissingResourceException is caught when calling normal bundle calls
     @Test
     void testNoErrorNonExistentStringBundle() {

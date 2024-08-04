@@ -26,45 +26,45 @@ import java.util.logging.Logger;
 public class GetDataverseStorageSizeCommand extends AbstractCommand<Long> {
 
     private static final Logger logger = Logger.getLogger(GetDataverseStorageSizeCommand.class.getCanonicalName());
-    
+
     private final Dataverse dataverse;
-    private final Boolean countCachedFiles; 
-    
+    private final Boolean countCachedFiles;
+
     public GetDataverseStorageSizeCommand(DataverseRequest aRequest, Dataverse target) {
         super(aRequest, target);
         dataverse = target;
-        countCachedFiles = false; 
-    } 
-    
+        countCachedFiles = false;
+    }
+
     public GetDataverseStorageSizeCommand(DataverseRequest aRequest, Dataverse target, boolean countCachedFiles) {
         super(aRequest, target);
         dataverse = target;
-        this.countCachedFiles = countCachedFiles; 
+        this.countCachedFiles = countCachedFiles;
     }
-    
+
     @Override
     public Long execute(CommandContext ctxt) throws CommandException {
         logger.fine("getDataverseStorageSize called on " + dataverse.getAlias());
-       
-        
-        long total = 0L; 
+
+
+        long total = 0L;
         List<Long> childDatasets = ctxt.dataverses().findAllDataverseDatasetChildren(dataverse.getId());
-        
+
         for (Long childId : childDatasets) {
             Dataset dataset = ctxt.datasets().find(childId);
-            
+
             if (dataset == null) {
                 // should never happen - must indicate some data corruption in the database
-                throw new CommandException(BundleUtil.getStringFromBundle("dataverse.listing.error"), this); 
+                throw new CommandException(BundleUtil.getStringFromBundle("dataverse.listing.error"), this);
             }
-            
+
             try {
                 total += ctxt.datasets().findStorageSize(dataset, countCachedFiles, GetDatasetStorageSizeCommand.Mode.STORAGE, null);
             } catch (IOException ex) {
                 throw new CommandException(BundleUtil.getStringFromBundle("dataverse.datasize.ioerror"), this);
             }
         }
-        
+
         return total;
-    }    
+    }
 }

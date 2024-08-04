@@ -21,7 +21,7 @@ public class SWORDv2MediaResourceServlet extends SwordServlet {
     SwordConfigurationImpl swordConfigurationImpl;
 
     protected MediaResourceAPI api;
-    
+
     private final ReentrantLock lock = new ReentrantLock();
 
     @Override

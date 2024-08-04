@@ -75,7 +75,7 @@ public class DataversePage implements java.io.Serializable {
     public enum EditMode {
         CREATE, INFO, FEATURED
     }
-    
+
     public enum LinkMode {
         SAVEDSEARCH,  LINKDATAVERSE
     }
@@ -114,11 +114,11 @@ public class DataversePage implements java.io.Serializable {
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
-    SettingsWrapper settingsWrapper; 
+    SettingsWrapper settingsWrapper;
     @EJB
     DataverseLinkingServiceBean linkingService;
     @Inject PermissionsWrapper permissionsWrapper;
-    @Inject 
+    @Inject
     NavigationWrapper navigationWrapper;
     @Inject DataverseHeaderFragment dataverseHeaderFragment;
     @EJB
@@ -126,14 +126,14 @@ public class DataversePage implements java.io.Serializable {
     @EJB
     CacheFactoryBean cacheFactory;
 
-    private Dataverse dataverse = new Dataverse();  
+    private Dataverse dataverse = new Dataverse();
 
     /**
      * View parameters
      */
     private Long id = null;
     private String alias = null;
-    private Long ownerId = null;    
+    private Long ownerId = null;
     private EditMode editMode;
     private LinkMode linkMode;
 
@@ -200,7 +200,7 @@ public class DataversePage implements java.io.Serializable {
         DatasetFieldType subjectDatasetField = datasetFieldService.findByName(DatasetFieldConstant.subject);
         setDataverseSubjectControlledVocabularyValues(controlledVocabularyValueServiceBean.findByDatasetFieldTypeId(subjectDatasetField.getId()));
     }
-    
+
     public LinkMode getLinkMode() {
         return linkMode;
     }
@@ -208,7 +208,7 @@ public class DataversePage implements java.io.Serializable {
     public void setLinkMode(LinkMode linkMode) {
         this.linkMode = linkMode;
     }
-    
+
     public boolean showLinkingPopup() {
         String testquery = "";
         if (session.getUser() == null) {
@@ -223,12 +223,12 @@ public class DataversePage implements java.io.Serializable {
 
         return (session.getUser().isSuperuser() && (dataverse.getOwner() != null || !testquery.isEmpty()));
     }
-    
+
     public void setupLinkingPopup(String popupSetting) {
         if (popupSetting.equals("link")) {
-            setLinkMode(LinkMode.LINKDATAVERSE);           
+            setLinkMode(LinkMode.LINKDATAVERSE);
         } else {
-            setLinkMode(LinkMode.SAVEDSEARCH); 
+            setLinkMode(LinkMode.SAVEDSEARCH);
         }
         updateLinkableDataverses();
     }
@@ -236,7 +236,7 @@ public class DataversePage implements java.io.Serializable {
     public void updateLinkableDataverses() {
         dataversesForLinking = new ArrayList<>();
         linkingDVSelectItems = new ArrayList<>();
-        
+
         //Since only a super user function add all dvs
         dataversesForLinking = dataverseService.findAll();// permissionService.getDataversesUserHasPermissionOn(session.getUser(), Permission.PublishDataverse);
         
@@ -250,15 +250,15 @@ public class DataversePage implements java.io.Serializable {
         
         //for linking - make sure the link hasn't occurred and its not int the tree
         if (this.linkMode.equals(LinkMode.LINKDATAVERSE)) {
-        
+
             // remove this and it's parent tree
             dataversesForLinking.remove(dataverse);
             Dataverse testDV = dataverse;
             while (testDV.getOwner() != null) {
                 dataversesForLinking.remove(testDV.getOwner());
                 testDV = testDV.getOwner();
-            }                
-            
+            }
+
             for (Dataverse removeLinked : linkingService.findLinkingDataverses(dataverse.getId())) {
                 dataversesForLinking.remove(removeLinked);
             }
@@ -288,12 +288,14 @@ public class DataversePage implements java.io.Serializable {
     public void setDataverse(Dataverse dataverse) {
         this.dataverse = dataverse;
     }
-    
+
     public Long getId() { return this.id; }
+
     public void setId(Long id) { this.id = id; }
 
     public String getAlias() { return this.alias; }
-    public void setAlias(String alias) { this.alias = alias; }    
+
+    public void setAlias(String alias) { this.alias = alias; }
 
     public EditMode getEditMode() {
         return editMode;
@@ -322,7 +324,7 @@ public class DataversePage implements java.io.Serializable {
             dataverseHeaderFragment.initBreadcrumbs(dataverse);
         }
     }
-    
+
     public String init() {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
         // Check for rate limit exceeded. Must be done before anything else to prevent unnecessary processing.
@@ -360,7 +362,7 @@ public class DataversePage implements java.io.Serializable {
                 return  permissionsWrapper.notFound();
             } else if (!permissionService.on(dataverse.getOwner()).has(Permission.AddDataverse)) {
                 // the permission lookup above should probably be moved into the permissionsWrapper -- L.A. 5.7
-                return permissionsWrapper.notAuthorized();            
+                return permissionsWrapper.notAuthorized();
             }
 
             // set defaults - contact e-mail and affiliation from user
@@ -447,7 +449,7 @@ public class DataversePage implements java.io.Serializable {
     }
 
     private List<Dataverse> carouselFeaturedDataverses = null;
-    
+
     public List<Dataverse> getCarouselFeaturedDataverses() {
         if (carouselFeaturedDataverses != null) {
             return carouselFeaturedDataverses;
@@ -574,7 +576,7 @@ public class DataversePage implements java.io.Serializable {
                 if (typeIn.isRequired() && typeIn.isHasParent() && !typeIn.getParentDatasetFieldType().isRequired()) {
                     optional.setLabel(BundleUtil.getStringFromBundle("dataverse.item.required.conditional"));
                 } else {
-                    optional.setLabel(BundleUtil.getStringFromBundle("dataverse.item.optional"));                    
+                    optional.setLabel(BundleUtil.getStringFromBundle("dataverse.item.optional"));
                 }
                 optional.setValue(false);
                 retList.add(optional);
@@ -632,17 +634,17 @@ public class DataversePage implements java.io.Serializable {
                         if (!dsft.isHasChildren() && dsft.isRequiredDV()) {
                             boolean addRequiredInputLevels = false;
                             boolean parentAlreadyAdded = false;
-                            
+
                             if (!dsft.isHasParent() && dsft.isInclude()) {
                                 addRequiredInputLevels = !dsft.isRequired();
                             }
                             if (dsft.isHasParent() && dsft.getParentDatasetFieldType().isInclude()) {
                                 addRequiredInputLevels = !dsft.isRequired() || !dsft.getParentDatasetFieldType().isRequired();
                             }
-                            
+
                             if (addRequiredInputLevels) {
                                 listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse, true, true));
-                            
+
                                 //also add the parent as required (if it hasn't been added already)
                                 // todo: review needed .equals() methods, then change this to use a Set, in order to simplify code
                                 if (dsft.isHasParent()) {
@@ -658,12 +660,12 @@ public class DataversePage implements java.io.Serializable {
                                         // constraint on the dataversefieldtypeinputlevel table we need to avoid.
                                         listDFTIL.add(parentToAdd);
                                     }
-                                }      
+                                }
                             }
                         }
                         if ((!dsft.isHasParent() && !dsft.isInclude())
                                 || (dsft.isHasParent() && !dsft.getParentDatasetFieldType().isInclude())) {
-                            listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse, false, false));                        
+                            listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse, false, false));
                         }
                     }
                 }
@@ -698,7 +700,7 @@ public class DataversePage implements java.io.Serializable {
             if (editMode != null && editMode.equals(EditMode.FEATURED)) {
                 cmd = new UpdateDataverseCommand(dataverse, null, featuredDataverses.getTarget(), dvRequestService.getDataverseRequest(), null);
             } else {
-                cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), null, dvRequestService.getDataverseRequest(), listDFTIL);                
+                cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), null, dvRequestService.getDataverseRequest(), listDFTIL);
             }
         }
 
@@ -709,7 +711,7 @@ public class DataversePage implements java.io.Serializable {
                     userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
                 }
             }
-        
+
             String message;
             if (editMode != null && editMode.equals(EditMode.FEATURED)) {
                 message = BundleUtil.getStringFromBundle("dataverse.feature.update");
@@ -717,10 +719,10 @@ public class DataversePage implements java.io.Serializable {
                 message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion())) : BundleUtil.getStringFromBundle("dataverse.update.success");
             }
             JsfHelper.addSuccessMessage(message);
-            
+
             editMode = null;
-            return returnRedirect();            
-            
+            return returnRedirect();
+
 
         } /*catch (CommandException ex) {
             logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", ex);
@@ -730,16 +732,16 @@ public class DataversePage implements java.io.Serializable {
         }*/ catch (Exception e) {
             logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", e);
             String errMsg = create ? BundleUtil.getStringFromBundle("dataverse.create.failure") : BundleUtil.getStringFromBundle("dataverse.update.failure");
-            
-            String failureMessage = e.getMessage() == null 
+
+            String failureMessage = e.getMessage() == null
                         ? errMsg
                         : e.getMessage();
             JsfHelper.addErrorMessage(failureMessage);
-            
+
             return null;
         }
     }
-    
+
     public String cancel() {
         // reset values
         dataverse = dataverseService.find(dataverse.getId());
@@ -748,7 +750,7 @@ public class DataversePage implements java.io.Serializable {
         return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
 
-    public boolean isRootDataverse() {        
+    public boolean isRootDataverse() {
         return dataverse.getOwner() == null;
     }
 
@@ -777,7 +779,7 @@ public class DataversePage implements java.io.Serializable {
             refreshAllMetadataBlocks();
         }
     }
-    
+
     public String resetToInherit() {
 
         setInheritMetadataBlockFromParent(true);
@@ -832,11 +834,11 @@ public class DataversePage implements java.io.Serializable {
             JsfHelper.addErrorMessage(msg);
             return returnRedirect();
         }
-        
+
         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success.wait", getSuccessMessageArguments()));
-        return returnRedirect();        
+        return returnRedirect();
     }
-    
+
     private List<String> getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();
         arguments.add(StringEscapeUtils.escapeHtml4(dataverse.getDisplayName()));
@@ -900,7 +902,7 @@ public class DataversePage implements java.io.Serializable {
         try {
             commandEngine.submit(cmd);
 
-            List<String> arguments = new ArrayList<>();           
+            List<String> arguments = new ArrayList<>();
             String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml4(linkingDataverse.getDisplayName()) + "</a>";
             arguments.add(linkString);
             String successMessageString = BundleUtil.getStringFromBundle("dataverse.saved.search.success", arguments);
@@ -932,7 +934,7 @@ public class DataversePage implements java.io.Serializable {
 
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
-                String failureMessage = ex.getMessage() == null 
+                String failureMessage = ex.getMessage() == null
                         ? BundleUtil.getStringFromBundle("dataverse.publish.failure")
                         : ex.getMessage();
                 JsfHelper.addErrorMessage(failureMessage);
@@ -1055,7 +1057,7 @@ public class DataversePage implements java.io.Serializable {
                         }
                     }
                 }
-            }            
+            }
             retList.add(mdb);
         }
         setAllMetadataBlocks(retList);
@@ -1083,13 +1085,13 @@ public class DataversePage implements java.io.Serializable {
             }
         }
     }
-    
+
     private String returnRedirect() {
-        return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";  
+        return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
-    
+
     private Map<String, Integer> numberOfFacets = new HashMap<>();
-    
+
     public int getNumberOfFacets(String name, int defaultValue) {
         Integer numFacets = numberOfFacets.get(name);
         if (numFacets == null) {
@@ -1098,7 +1100,7 @@ public class DataversePage implements java.io.Serializable {
         }
         return numFacets;
     }
-    
+
     public void incrementFacets(String name, int incrementNum) {
         Integer numFacets = numberOfFacets.get(name);
         if (numFacets == null) {
@@ -1106,7 +1108,7 @@ public class DataversePage implements java.io.Serializable {
         }
         numberOfFacets.put(name, numFacets + incrementNum);
     }
-    
+
     private String query;
     private List<String> filterQueries = new ArrayList<>();
     private List<FacetCategory> facetCategoryList = new ArrayList<>();
@@ -1115,7 +1117,7 @@ public class DataversePage implements java.io.Serializable {
     private SearchIncludeFragment.SortOrder sortOrder;
     private String searchFieldType = SearchFields.TYPE;
     private String searchFieldSubtree = SearchFields.SUBTREE;
-    
+
     public String getQuery() {
         return query;
     }
@@ -1139,9 +1141,9 @@ public class DataversePage implements java.io.Serializable {
     public void setFacetCategoryList(List<FacetCategory> facetCategoryList) {
         this.facetCategoryList = facetCategoryList;
     }
-    
+
     private int searchResultsCount = 0;
-    
+
     public int getSearchResultsCount() {
         return searchResultsCount;
     }
@@ -1157,7 +1159,7 @@ public class DataversePage implements java.io.Serializable {
     public void setSelectedTypesString(String selectedTypesString) {
         this.selectedTypesString = selectedTypesString;
     }
-    
+
     public String getSortField() {
         return sortField;
     }
@@ -1191,7 +1193,7 @@ public class DataversePage implements java.io.Serializable {
             }
         }
     }
-    
+
     public String getSearchFieldType() {
         return searchFieldType;
     }
@@ -1207,7 +1209,7 @@ public class DataversePage implements java.io.Serializable {
     public void setSearchFieldSubtree(String searchFieldSubtree) {
         this.searchFieldSubtree = searchFieldSubtree;
     }
-    
+
     public List<Dataverse> completeHostDataverseMenuList(String query) {
         if (session.getUser().isAuthenticated()) {
             return dataverseService.filterDataversesForHosting(query, dvRequestService.getDataverseRequest());
@@ -1215,7 +1217,7 @@ public class DataversePage implements java.io.Serializable {
             return null;
         }
     }
-    
+
     public Set<Entry<String, String>> getStorageDriverOptions() {
     	HashMap<String, String> drivers = new HashMap<String, String>();
     	drivers.putAll(DataAccess.getStorageDriverLabels());
@@ -1223,7 +1225,7 @@ public class DataversePage implements java.io.Serializable {
     	drivers.put(getDefaultStorageDriverLabel(), DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER);
     	return drivers.entrySet();
     }
-    
+
     public String getDefaultStorageDriverLabel() {
     	String storageDriverId = DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER;
     	Dataverse parent = dataverse.getOwner();
@@ -1247,13 +1249,13 @@ public class DataversePage implements java.io.Serializable {
    		}
    		return label;
     }
-    
+
     public Set<Entry<String, String>> getMetadataLanguages() {
         return settingsWrapper.getMetadataLanguages(this.dataverse).entrySet();
     }
-    
-    private Set<Entry<String, String>> curationLabelSetOptions = null; 
-    
+
+    private Set<Entry<String, String>> curationLabelSetOptions = null;
+
     public Set<Entry<String, String>> getCurationLabelSetOptions() {
         if (curationLabelSetOptions == null) {
             HashMap<String, String> setNames = new HashMap<String, String>();

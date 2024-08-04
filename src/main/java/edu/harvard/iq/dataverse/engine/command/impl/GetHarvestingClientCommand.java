@@ -49,5 +49,5 @@ public class GetHarvestingClientCommand extends AbstractCommand<HarvestingClient
         return Collections.singletonMap("",
                 ownerDataverse.isReleased() ? Collections.<Permission>emptySet()
                 : Collections.singleton(Permission.ViewUnpublishedDataverse));
-    }    
+    }
 }

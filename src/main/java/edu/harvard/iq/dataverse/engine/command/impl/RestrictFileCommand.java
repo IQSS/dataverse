@@ -20,7 +20,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.logging.Logger;
 
 
-
 /**
  *
  * Restrict or unrestricts an existing datafile
@@ -34,19 +33,19 @@ public class RestrictFileCommand extends AbstractVoidCommand {
 
     private final DataFile file;
     private final boolean restrict;
-    
+
     public RestrictFileCommand(DataFile file, DataverseRequest aRequest, boolean restrict) {
         super(aRequest, file.getOwner());
         this.file = file;
         this.restrict = restrict;
-    }    
-       
+    }
+
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         // check if public install & don't allow
         boolean defaultValue = false;
         boolean publicInstall = ctxt.settings().isTrueForKey(SettingsServiceBean.Key.PublicInstall, defaultValue);
-        
+
         if (publicInstall) {
             throw new CommandExecutionException("Restricting files is not permitted on a public installation.", this);
         }

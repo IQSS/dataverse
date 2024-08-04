@@ -39,10 +39,10 @@ public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
     @Override
     public DataFile execute(CommandContext ctxt) throws CommandException {
         DataFile filetoReturn = null;
-        File tempFile = null; 
+        File tempFile = null;
         File localFile;
 
-        
+
         try {
             StorageIO<DataFile> storageIO;
 
@@ -73,8 +73,8 @@ public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
                 tempFile.delete();
             }
         }
-        
-        
+
+
         filetoReturn = fileToRedetect;
         if (!dryRun) {
             try {

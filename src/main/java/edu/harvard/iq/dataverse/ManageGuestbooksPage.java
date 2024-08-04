@@ -85,9 +85,9 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         Long totalResponses = guestbookResponseService.findCountAll(dataverseId);
         if (totalResponses.intValue() > 0) {
             displayDownloadAll = true;
-            FacesContext.getCurrentInstance().addMessage(null, 
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, 
-                            BundleUtil.getStringFromBundle("dataset.manageGuestbooks.tip.title"), 
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            BundleUtil.getStringFromBundle("dataset.manageGuestbooks.tip.title"),
                             BundleUtil.getStringFromBundle("dataset.manageGuestbooks.tip.downloadascsv")));
 
         }
@@ -224,7 +224,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
        // Also removing some chars that have been reported to cause issues with certain browsers
        return  FileUtil.sanitizeFileName(dataverse.getName() + "_GuestbookResponses.csv");
     }
-    
+
     public void deleteGuestbook() {
         if (selectedGuestbook != null) {
             guestbooks.remove(selectedGuestbook);
@@ -281,7 +281,6 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     public void setGuestbooks(List<Guestbook> guestbooks) {
         this.guestbooks = guestbooks;
     }
-
 
 
     public Dataverse getDataverse() {

@@ -24,6 +24,7 @@ public class UrlSignerUtil {
     public static final String SIGNED_URL_METHOD = "method";
     public static final String SIGNED_URL_USER = "user";
     public static final String SIGNED_URL_UNTIL = "until";
+
     /**
      * 
      * @param baseUrl - the URL to sign - cannot contain query params

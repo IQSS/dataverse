@@ -39,41 +39,40 @@ public class SolrQueryResponse {
     }
 
 
-    
     public List<SolrSearchResult> getSolrSearchResults() {
         return solrSearchResults;
     }
 
-    public void setPublicationStatusCounts(FacetField facetField) {        
+    public void setPublicationStatusCounts(FacetField facetField) {
         setFacetFieldCounts(facetField, this.publicationStatusCounts);
     }
-    
+
     public Map<String, Long> getPublicationStatusCounts() {
         return this.publicationStatusCounts;
     }
-    
+
     public void setDvObjectCounts(FacetField facetField) {
         setFacetFieldCounts(facetField, this.dvObjectCounts);
-      
+
     }
-    
+
     public Map<String, Long> getDvObjectCounts() {
         return this.dvObjectCounts;
     }
-    
-        
+
+
     private void setFacetFieldCounts(FacetField facetField, Map<String, Long> countMap) {
         if ((facetField == null) || (countMap == null)) {
             return;
         }
-        
+
         for (FacetField.Count fcnt :  facetField.getValues()) {
             countMap.put(fcnt.getName().toLowerCase().replace(" ", "_") + "_count", fcnt.getCount());
         }
     }
- 
+
     public JsonObjectBuilder getPublicationStatusCountsAsJSON() {
-        
+
         if (this.publicationStatusCounts == null) {
             return null;
         }
@@ -92,45 +91,45 @@ public class SolrQueryResponse {
         }
         return this.getMapCountsAsJSON(publicationStatusCounts);
     }
-    
+
     public boolean isSolrTemporarilyUnavailable() {
         return solrTemporarilyUnavailable;
     }
-    
+
     public void setSolrTemporarilyUnavailable(boolean solrTemporarilyUnavailable) {
         this.solrTemporarilyUnavailable = solrTemporarilyUnavailable;
     }
-    
+
     public JsonObjectBuilder getDvObjectCountsAsJSON() {
-        
+
         if (this.dvObjectCounts == null) {
             return null;
         }
-        
+
         //String[] requiredVars = { "dataverses_count", "datasets_count", "files_count"};
         for (String var : SolrQueryResponse.DVOBJECT_COUNT_KEYS) {
             if (!dvObjectCounts.containsKey(var)) {
                 dvObjectCounts.put(var, new Long(0));
             }
         }
-        
+
         return this.getMapCountsAsJSON(dvObjectCounts);
     }
-    
+
     public JsonObjectBuilder getMapCountsAsJSON(Map<String, Long> countMap) {
-        
+
         if (countMap == null) {
             return null;
         }
         JsonObjectBuilder jsonData = Json.createObjectBuilder();
-        
+
         for (Map.Entry<String, Long>  entry : countMap.entrySet()) {
             jsonData.add(entry.getKey(), entry.getValue());
         }
         return jsonData;
     }
-    
-    
+
+
     public void setSolrSearchResults(List<SolrSearchResult> solrSearchResults) {
         this.solrSearchResults = solrSearchResults;
     }
@@ -206,8 +205,8 @@ public class SolrQueryResponse {
     public boolean hasError() {
         return error != null;
     }
-    
-    
+
+
     public String getError() {
         return error;
     }

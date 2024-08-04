@@ -23,20 +23,20 @@ import jakarta.ws.rs.core.Response;
  * @author michael
  */
 public class MockResponse extends Response {
-    
+
     private final int status;
     private final Object entity;
     private final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
-    
+
     public MockResponse(int aStatus, Object anEntity) {
         status = aStatus;
         entity = anEntity;
     }
-    
+
     public MockResponse(int aStatus) {
         this(aStatus, null);
     }
-    
+
     @Override
     public int getStatus() {
         return status;
@@ -169,5 +169,5 @@ public class MockResponse extends Response {
     public String getHeaderString(String name) {
         return headers.getFirst(name).toString();
     }
-    
+
 }

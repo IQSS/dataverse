@@ -22,7 +22,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
 	private static final String ACTIVITIES_FILE = "src/test/resources/xml/oauth2/orcid/v20_activities.xml";
 	private static final String PERSON;
 	private static final String ACTIVITIES;
-    
+
     public OrcidOAuth2APTest() {
         super("", "", "");
     }
@@ -31,6 +31,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
 	    PERSON = loadResponseXML(PERSON_FILE);
         ACTIVITIES = loadResponseXML(ACTIVITIES_FILE);
     }
+
     /**
      * load XML responses from filesystem (resources).
      * Why? To allow validating against the XSD prior to 1.2 -> 2.0 upgrade
@@ -45,7 +46,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
 	    }
 	    return txt;
     }
-    
+
     @ParameterizedTest
     @CsvSource({"https://pub.orcid.org/v2.1/{ORCID}/person,/authenticate", "https://api.orcid.org/v2.0/{ORCID}/person,/read-limited"})
     public void testPublicApiScope(String endpoint, String scope) {
@@ -84,7 +85,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals("", actual.displayInfo.getPosition());
         assertEquals(Arrays.asList("").toString(), actual.emails.toString());
     }
-    
+
     @Test
     public void testExtractOrcid() throws OAuth2Exception {
         // sample response from https://members.orcid.org/api/tutorial/read-orcid-records
@@ -94,7 +95,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
         assertEquals("0000-0001-2345-6789", sut.extractOrcidNumber(response));
     }
-    
+
     @Test
     public void testExtractOrcidBad() throws OAuth2Exception {
         // sample response from https://members.orcid.org/api/tutorial/read-orcid-records
@@ -104,7 +105,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
         assertThrows(OAuth2Exception.class, () -> sut.extractOrcidNumber(response));
     }
-    
+
     @Test
     public void testParseActivitiesResponse() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
@@ -114,27 +115,27 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
         assertEquals("My Organization Name", actual.getAffiliation());
         assertEquals("role, department", actual.getPosition());
     }
-    
+
     @Test
     public void testParseActivitiesResponseNoOrgName() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
         assertNotNull(ACTIVITIES);
-        
+
         String responseWithNoOrg = ACTIVITIES.replaceAll("\n", "").replaceAll("<employment:organization>.*</employment:organization>", "");
-        
+
         final AuthenticatedUserDisplayInfo actual = sut.parseActivitiesResponse(responseWithNoOrg);
 
         assertEquals(null, actual.getAffiliation());
         assertEquals("role, department", actual.getPosition());
     }
-    
+
     @Test
     public void testParseActivitiesResponseNoRole() {
         OrcidOAuth2AP sut = new OrcidOAuth2AP("clientId", "clientSecret", "userEndpoint");
         assertNotNull(ACTIVITIES);
-        
+
         String responseWithNoOrg = ACTIVITIES.replaceAll("\n", "").replaceAll("<employment:role-title>.*</employment:role-title>", "");
-        
+
         final AuthenticatedUserDisplayInfo actual = sut.parseActivitiesResponse(responseWithNoOrg);
 
         assertEquals("My Organization Name", actual.getAffiliation());

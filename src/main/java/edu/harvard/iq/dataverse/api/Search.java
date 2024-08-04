@@ -106,7 +106,7 @@ public class Search extends AbstractApiBean {
                 }
                 sortBy = SearchUtil.getSortBy(sortField, sortOrder);
                 numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
-                
+
                  // we have to add "" (root) otherwise there is no permissions check
                 if (subtrees.isEmpty()) {
                     dataverseSubtrees.add(getSubtree(""));
@@ -117,11 +117,11 @@ public class Search extends AbstractApiBean {
                     }
                 }
                 filterQueries.add(getFilterQueryFromSubtrees(dataverseSubtrees));
-                
+
                 if (filterQueries.isEmpty()) { //Extra sanity check just in case someone else touches this
                     throw new IOException("Filter is empty, which should never happen, as this allows unfettered searching of our index");
                 }
-                
+
                 geoPoint = getGeoPoint(geoPointRequested);
                 geoRadius = getGeoRadius(geoRadiusRequested);
 
@@ -273,7 +273,7 @@ public class Search extends AbstractApiBean {
         /**
          * @todo should maxLimit be configurable?
          */
-        int maxLimit = 1000; 
+        int maxLimit = 1000;
         if (numResultsPerPage == 0) {
             /**
              * @todo should defaultLimit be configurable?
@@ -323,7 +323,7 @@ public class Search extends AbstractApiBean {
         filterQuery = SearchFields.TYPE + ":(" + StringUtils.join(typeRequested, " OR ") + ")";
         return filterQuery;
     }
-    
+
     //Only called when there is content
     /**
     * @todo (old) Should filterDownToSubtree logic be centralized in
@@ -331,7 +331,7 @@ public class Search extends AbstractApiBean {
     */
     private String getFilterQueryFromSubtrees(List<Dataverse> subtrees) throws Exception {
         String subtreesFilter = "";
-        
+
         for (Dataverse dv : subtrees) {
             if (!dv.equals(dataverseService.findRootDataverse())) {
                 String dataversePath = dataverseService.determineDataversePath(dv);
@@ -347,11 +347,11 @@ public class Search extends AbstractApiBean {
             //and there are no ORs in the string
             subtreesFilter = "";
         }
-        
+
         if (!subtreesFilter.equals("")) {
             subtreesFilter = SearchFields.SUBTREE + ":(" + subtreesFilter + ")";
         }
-        
+
         return subtreesFilter;
     }
 

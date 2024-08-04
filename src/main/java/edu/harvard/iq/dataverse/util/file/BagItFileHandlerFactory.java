@@ -29,7 +29,7 @@ public class BagItFileHandlerFactory implements Serializable {
 
     @EJB
     private SettingsServiceBean settingsService;
-    
+
     private BagItFileHandler bagItFileHandler;
 
     @PostConstruct

@@ -40,7 +40,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
         setDatasetFileAsThumbnail,
         setNonDatasetFileAsThumbnail,
         removeThumbnail
-    };
+    }
 
     public UpdateDatasetThumbnailCommand(DataverseRequest aRequest, Dataset theDataset, UserIntent theUserIntent, Long theDataFileIdSupplied, InputStream theInputStream) {
         super(aRequest, theDataset);

@@ -22,13 +22,13 @@ import java.util.logging.Logger;
  */
 @RequiredPermissions(Permission.AddDataset)
 public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetVersion> {
-    
+
     private static final Logger logger = Logger.getLogger(CreateDatasetVersionCommand.class.getName());
-    
+
     final DatasetVersion newVersion;
     final Dataset dataset;
     final boolean validate;
-    
+
     public CreateDatasetVersionCommand(DataverseRequest aRequest, Dataset theDataset, DatasetVersion aVersion) {
         this(aRequest, theDataset, aVersion, true);
     }
@@ -39,7 +39,7 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         newVersion = aVersion;
         this.validate = validate;
     }
-    
+
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         /*
@@ -55,7 +55,7 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
                 throw new IllegalCommandException("Latest version is already a draft. Cannot add another draft", this);
             }
         }
-        
+
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
         checkSystemMetadataKeyIfNeeded(newVersion, latest);
 
@@ -68,20 +68,20 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
             newVersionMetadatum.add(fmdCopy);
         }
         newVersion.setFileMetadatas(newVersionMetadatum);
-        
+
         //moving prepare Dataset here
         //because it includes validation and we need the validation
         //to happen after file metdata is added to return a 
         //good wrapped response if the TOA/Request Access not in compliance
         prepareDatasetAndVersion();
-        
+
         DatasetVersion version = ctxt.datasets().storeVersion(newVersion);
         if (ctxt.index() != null) {
             ctxt.index().asyncIndexDataset(dataset, true);
         }
         return version;
     }
-    
+
     /**
      * Updates the states of the dataset and the new dataset version, such that
      * the new version becomes the latest version of the dataset. Also initializes
@@ -102,7 +102,7 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
             validateOrDie(newVersion, false);
         }
         DatasetFieldUtil.tidyUpFields(newVersion.getDatasetFields(), true);
-        
+
         final List<DatasetVersion> currentVersions = dataset.getVersions();
         ArrayList<DatasetVersion> dsvs = new ArrayList<>(currentVersions.size());
         dsvs.addAll(currentVersions);
@@ -110,5 +110,5 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         dataset.setVersions(dsvs);
         dataset.setModificationTime(getTimestamp());
     }
-    
+
 }

@@ -38,7 +38,7 @@ public class AbstractApiBeanTest {
         assertFalse(sut.parseBooleanOrDie("0"));
         assertFalse(sut.parseBooleanOrDie("no"));
     }
-    
+
     @Test
     void testParseBooleanOrDie_invalid() {
         assertThrows(Exception.class, () -> sut.parseBooleanOrDie("I'm not a boolean value!"));

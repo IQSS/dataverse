@@ -47,12 +47,12 @@ public class DataverseUtil {
                 sourceAddressLabel = sourceAddress.toString();
             }
             AuthenticatedUser user = request.getAuthenticatedUser();
-            
+
             if (user != null) {
                 userIdentifier = user.getUserIdentifier();
             }
         }
-        
+
         // We are sending the collection metadata encoded in our standard json 
         // format, with a couple of extra elements added, such as the id of 
         // the user sending the request and the alias of the parent collection, 

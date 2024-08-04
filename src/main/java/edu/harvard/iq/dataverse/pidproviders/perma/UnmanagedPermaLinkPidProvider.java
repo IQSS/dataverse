@@ -19,7 +19,7 @@ public class UnmanagedPermaLinkPidProvider extends AbstractPidProvider {
 
     private static final Logger logger = Logger.getLogger(UnmanagedPermaLinkPidProvider.class.getCanonicalName());
     public static final String ID = "UnmanagedPermaLinkProvider";
-    
+
     public UnmanagedPermaLinkPidProvider() {
         // Also using ID as label
         super(ID, ID, PermaLinkPidProvider.PERMA_PROTOCOL);
@@ -106,7 +106,7 @@ public class UnmanagedPermaLinkPidProvider extends AbstractPidProvider {
     public String getProviderType() {
         return PermaLinkPidProvider.TYPE;
     }
-    
+
     @Override
     public String getSeparator() {
         return PermaLinkPidProvider.SEPARATOR;

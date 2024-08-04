@@ -36,7 +36,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     private static final Logger logger = Logger.getLogger(AbstractSubmitToArchiveCommand.class.getName());
     private static final int MAX_ZIP_WAIT = 20000;
     private static final int DEFAULT_THREADS = 2;
-    
+
     public AbstractSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
         super(aRequest, version.getDataset());
         this.version = version;
@@ -55,7 +55,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
                 requestedSettings.put(setting, ctxt.settings().get(setting));
             }
         }
-        
+
         AuthenticatedUser user = getRequest().getAuthenticatedUser();
         ApiToken token = ctxt.authentication().findApiTokenByUser(user);
         if (token == null) {
@@ -96,7 +96,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
         return super.describe() + "DatasetVersion: [" + version.getId() + " (v"
                 + version.getFriendlyVersionNumber() + ")]";
     }
-    
+
     String getDataCiteXml(DatasetVersion dv) {
         DataCitation dc = new DataCitation(dv);
         Map<String, String> metadata = dc.getDataCiteMetadata();
@@ -173,12 +173,12 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
     public static boolean isArchivable(Dataset dataset, SettingsWrapper settingsWrapper) {
         return true;
    }
-   
+
    //Check if the chosen archiver imposes single-version-only archiving - in a View context
    public static boolean isSingleVersion(SettingsWrapper settingsWrapper) {
        return false;
   }
- 
+
    //Check if the chosen archiver imposes single-version-only archiving - in the API
    public static boolean isSingleVersion(SettingsServiceBean settingsService) {
        return false;

@@ -28,49 +28,49 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author rmp553
  */
 public class IngestableDataCheckerTest {
-   
+
     public IngestableDataCheckerTest() {
     }
-    
+
     @BeforeAll
     public static void setUpClass() {
     }
-    
+
     @AfterAll
     public static void tearDownClass() {
 
     }
-    
+
     @BeforeEach
-    public void setUp() {     
-    }
-    
-    @AfterEach
-    public void tearDown() {
-        
-     
+    public void setUp() {
     }
 
-    
+    @AfterEach
+    public void tearDown() {
+
+
+    }
+
+
     private File createTempFile(String filename, String fileContents) throws IOException {
 
         if (filename == null) {
             return null;
         }
-        
+
         Path tmpFile = Files.createTempFile("ingestdatachecker", "");
-        
+
         if (fileContents != null) {
             Files.writeString(tmpFile, fileContents, StandardCharsets.UTF_8);
         }
-        
+
         return tmpFile.toFile();
     }
-    
+
     private MappedByteBuffer createTempFileAndGetBuffer(String filename, String fileContents) throws IOException {
-        
+
         File fh = this.createTempFile(filename, fileContents);
-        
+
         FileChannel srcChannel = new FileInputStream(fh).getChannel();
 
         // create a read-only MappedByteBuffer
@@ -105,7 +105,7 @@ public class IngestableDataCheckerTest {
         msg(m);
         msg("---------------------------");
     }
-    
+
     /**
      * Test of testDTAformat method, of class IngestableDataChecker.
      * @throws java.io.IOException
@@ -113,7 +113,7 @@ public class IngestableDataCheckerTest {
     @Test
     public void testTestDTAformat() throws IOException {
         msgt("(1) testDTAformat");
-        
+
         msgt("(1a) Mock a Legit Stata File (application/x-stata)");
         MappedByteBuffer buff = createTempFileAndGetBuffer("testDTA.txt", "l   ");
 
@@ -121,16 +121,16 @@ public class IngestableDataCheckerTest {
         String result = instance.testDTAformat(buff);
         msg("result 1a: " + result);
         assertEquals(result, "application/x-stata");
-   
-        
+
+
         msgt("(1b) File is empty string (non-DTA)");
         buff = createTempFileAndGetBuffer("notDTA.txt", "");
         instance = new IngestableDataChecker();
         result = instance.testDTAformat(buff);
         msg("result 1b: " + result);
         assertEquals(result, null);
-        
-        
+
+
         msgt("(1c) File is some random text (non-DTA)");
         buff = createTempFileAndGetBuffer("notDTA2.txt", "hello-non-stata-file-how-are-you");
         instance = new IngestableDataChecker();
@@ -138,17 +138,17 @@ public class IngestableDataCheckerTest {
         msg("result 1c: " + result);
         assertEquals(result, null);
 
-        
+
         msgt("(1d) Mock a Legit Stata File with STATA_13_HEADER");
         buff = createTempFileAndGetBuffer("testDTA2.txt", IngestableDataChecker.STATA_13_HEADER);
         result = instance.testDTAformat(buff);
         msg("result 1d: " + result);
         assertEquals(result, "application/x-stata-13");
-        
-   
+
+
     }
 
-    
+
     /**
      * Test of testSAVformat method, of class IngestableDataChecker.
      */

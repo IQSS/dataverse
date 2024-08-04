@@ -23,7 +23,7 @@ import jakarta.ws.rs.core.UriInfo;
  * @author Leonid Andreev
  */
 public class DownloadInstance {
-    
+
     private static final Logger logger = Logger.getLogger(DownloadInstance.class.getCanonicalName());
      /*
      private ByteArrayOutputStream outStream = null;
@@ -36,41 +36,41 @@ public class DownloadInstance {
      this.outStream = outStream;
      }*/
     
-    private List<Object> extraArguments = null; 
-    
+    private List<Object> extraArguments = null;
+
     public List<Object> getExtraArguments() {
-        return extraArguments; 
+        return extraArguments;
     }
-    
+
     public void setExtraArguments(List<Object> extraArguments) {
-        this.extraArguments = extraArguments; 
+        this.extraArguments = extraArguments;
     }
-     
+
 
     private DownloadInfo downloadInfo = null;
     private String conversionParam = null;
     private String conversionParamValue = null;
-    
+
     // This download instance is for an auxiliary file associated with 
     // the DataFile. Unlike "conversions" (above) this is used for files
     // that Dataverse has no way of producing/deriving from the parent Datafile
     // itself, that have to be deposited externally.  
-    private AuxiliaryFile auxiliaryFile = null; 
-    
+    private AuxiliaryFile auxiliaryFile = null;
+
     private EjbDataverseEngine command;
 
     private DataverseRequestServiceBean dataverseRequestService;
 
     private GuestbookResponse gbr;
-    
+
     private UriInfo requestUriInfo;
-    
-    private HttpHeaders requestHttpHeaders;      
+
+    private HttpHeaders requestHttpHeaders;
 
     public DownloadInstance() {
-        
+
     }
-    
+
     public DownloadInstance(DownloadInfo info) {
         this.downloadInfo = info;
     }
@@ -102,11 +102,11 @@ public class DownloadInstance {
     public void setRequestUriInfo(UriInfo uri) {
         this.requestUriInfo = uri;
     }
-    
+
     public UriInfo getRequestUriInfo() {
         return requestUriInfo;
     }
-    
+
     public HttpHeaders getRequestHttpHeaders() {
         return requestHttpHeaders;
     }
@@ -114,7 +114,7 @@ public class DownloadInstance {
     public void setRequestHttpHeaders(HttpHeaders requestHttpHeaders) {
         this.requestHttpHeaders = requestHttpHeaders;
     }
-    
+
     // Move this method into the DownloadInfo instead -- ?
     public Boolean checkIfServiceSupportedAndSetConverter(String serviceArg, String serviceArgValue) {
         if (downloadInfo == null || serviceArg == null) {
@@ -130,8 +130,8 @@ public class DownloadInstance {
                     // Special case for the subsetting parameter (variables=<LIST>):
                     if ("subset".equals(dataService.getServiceName())) {
                         conversionParam = "subset";
-                        conversionParamValue = serviceArgValue; 
-                        return true; 
+                        conversionParamValue = serviceArgValue;
+                        return true;
                     }
                 } else if (serviceArg.equals("noVarHeader")) {
                     // Another special case available for tabular ("subsettable") data files - 
@@ -195,8 +195,8 @@ public class DownloadInstance {
         }
         return null;
     }
-    
-    
+
+
     public EjbDataverseEngine getCommand() {
         return command;
     }
@@ -212,8 +212,8 @@ public class DownloadInstance {
     public void setGbr(GuestbookResponse gbr) {
         this.gbr = gbr;
     }
-    
-    
+
+
     public DataverseRequestServiceBean getDataverseRequestService() {
         return dataverseRequestService;
     }
@@ -221,13 +221,13 @@ public class DownloadInstance {
     public void setDataverseRequestService(DataverseRequestServiceBean dataverseRequestService) {
         this.dataverseRequestService = dataverseRequestService;
     }
-    
+
     public AuxiliaryFile getAuxiliaryFile() {
         return auxiliaryFile;
     }
-    
+
     public void setAuxiliaryFile(AuxiliaryFile auxiliaryFile) {
         this.auxiliaryFile = auxiliaryFile;
     }
-    
+
 }

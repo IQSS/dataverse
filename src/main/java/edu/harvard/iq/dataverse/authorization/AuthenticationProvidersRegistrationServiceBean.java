@@ -49,19 +49,19 @@ import jakarta.persistence.PersistenceContext;
 public class AuthenticationProvidersRegistrationServiceBean {
 
     private static final Logger logger = Logger.getLogger(AuthenticationProvidersRegistrationServiceBean.class.getName());
-    
+
     @EJB
     BuiltinUserServiceBean builtinUserServiceBean;
 
     @EJB
     PasswordValidatorServiceBean passwordValidatorService;
-    
+
     @EJB
     protected ActionLogServiceBean actionLogSvc;
-    
+
     @EJB
     AuthenticationServiceBean authenticationService;
-    
+
     /**
      * The maps below (the objects themselves) are "final", but the
      * values will be populated in @PostConstruct (see below) during 
@@ -79,21 +79,21 @@ public class AuthenticationProvidersRegistrationServiceBean {
      * Where all registered authentication providers live.
      */
     final Map<String, AuthenticationProvider> authenticationProviders = new HashMap<>();
-    
+
     /**
      * Index of all OAuth2 providers mapped to {@link #authenticationProviders}.
      */
     final Map<String, AbstractOAuth2AuthenticationProvider> oAuth2authenticationProviders = new HashMap<>();
-        
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     // does this method also need an explicit @Lock(WRITE)? 
     // - I'm assuming not; since it's guaranteed to only be called once,
     // via @PostConstruct in this @Singleton. -- L.A.
     @PostConstruct
     public void startup() {
-        
+
         // First, set up the factories
         try {
             // @todo: Instead of hard-coding the factories here, consider 
@@ -104,25 +104,25 @@ public class AuthenticationProvidersRegistrationServiceBean {
             registerProviderFactory(new ShibAuthenticationProviderFactory());
             registerProviderFactory(new OAuth2AuthenticationProviderFactory());
             registerProviderFactory(new OIDCAuthenticationProviderFactory());
-        
-        } catch (AuthorizationSetupException ex) { 
+
+        } catch (AuthorizationSetupException ex) {
             logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);
         }
-        
+
         // Now, load the providers.
         em.createNamedQuery("AuthenticationProviderRow.findAllEnabled", AuthenticationProviderRow.class)
                 .getResultList().forEach((row) -> {
                     try {
                         registerProvider(loadProvider(row));
-                        
+
                     } catch (AuthenticationProviderFactoryNotFoundException e) {
                         logger.log(Level.SEVERE, "Cannot find authentication provider factory with alias '" + e.getFactoryAlias() + "'", e);
-                        
+
                     } catch (AuthorizationSetupException ex) {
                         logger.log(Level.SEVERE, "Exception setting up the authentication provider '" + row.getId() + "': " + ex.getMessage(), ex);
                     }
         });
-        
+
         // Add providers registered via MPCONFIG
         if (JvmSettings.OIDC_ENABLED.lookupOptional(Boolean.class).orElse(false)) {
             try {
@@ -133,18 +133,18 @@ public class AuthenticationProvidersRegistrationServiceBean {
         }
     }
 
-    private void registerProviderFactory(AuthenticationProviderFactory aFactory) 
-            throws AuthorizationSetupException 
+    private void registerProviderFactory(AuthenticationProviderFactory aFactory)
+            throws AuthorizationSetupException
     {
         if (providerFactories.containsKey(aFactory.getAlias())) {
             throw new AuthorizationSetupException(
                     "Duplicate alias " + aFactory.getAlias() + " for authentication provider factory.");
         }
         providerFactories.put(aFactory.getAlias(), aFactory);
-        logger.log(Level.FINE, "Registered Authentication Provider Factory {0} as {1}", 
+        logger.log(Level.FINE, "Registered Authentication Provider Factory {0} as {1}",
                 new Object[]{aFactory.getInfo(), aFactory.getAlias()});
     }
-    
+
     /**
      * Tries to load and {@link AuthenticationProvider} using the passed {@link AuthenticationProviderRow}.
      * @param aRow The row to load the provider from.
@@ -156,12 +156,12 @@ public class AuthenticationProvidersRegistrationServiceBean {
     public AuthenticationProvider loadProvider(AuthenticationProviderRow aRow)
                 throws AuthenticationProviderFactoryNotFoundException, AuthorizationSetupException {
         AuthenticationProviderFactory fact = providerFactories.get((aRow.getFactoryAlias()));
-        
+
         if (fact == null) throw new AuthenticationProviderFactoryNotFoundException(aRow.getFactoryAlias());
-        
+
         return fact.buildProvider(aRow);
     }
-    
+
     @Lock(WRITE)
     public void registerProvider(AuthenticationProvider aProvider) throws AuthorizationSetupException {
         if (authenticationProviders.containsKey(aProvider.getId())) {
@@ -175,12 +175,12 @@ public class AuthenticationProvidersRegistrationServiceBean {
             oAuth2authenticationProviders.put(aProvider.getId(), (AbstractOAuth2AuthenticationProvider) aProvider);
         }
     }
-    
+
     @Lock(READ)
     public Map<String, AbstractOAuth2AuthenticationProvider> getOAuth2AuthProvidersMap() {
         return oAuth2authenticationProviders;
     }
-    
+
     /*
         the commented-out methods below were moved into this service in 
         the quick patch produced for 4.20; but have been modified and moved 
@@ -200,7 +200,7 @@ public class AuthenticationProvidersRegistrationServiceBean {
     public Map<String, AuthenticationProvider> getAuthenticationProvidersMap() {
         return authenticationProviders;
     }
-    
+
     @Lock(WRITE)
     public void deregisterProvider(String id) {
         oAuth2authenticationProviders.remove(id);
@@ -211,7 +211,7 @@ public class AuthenticationProvidersRegistrationServiceBean {
             logger.log(Level.INFO, "Providers left {0}", new Object[]{authenticationProviders.values()});
         }
     }
-    
+
     /*
     @Lock(READ)
     public Set<String> getAuthenticationProviderIds() {
@@ -245,9 +245,9 @@ public class AuthenticationProvidersRegistrationServiceBean {
     
     @Lock(READ)
     public Map<String, AuthenticationProviderFactory> getProviderFactoriesMap() {
-        return providerFactories; 
+        return providerFactories;
     }
-    
+
     /*
     @Lock(READ)
     public AuthenticationProviderFactory getProviderFactory( String alias ) {

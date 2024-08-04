@@ -1,4 +1,5 @@
 package edu.harvard.iq.dataverse;
+
 import java.io.Serializable;
 
 /**
@@ -8,7 +9,7 @@ import java.io.Serializable;
 
 public class DatasetVersionDatasetUserId implements Serializable {
 
-    private String userIdentifier;    
+    private String userIdentifier;
     private long datasetversionid;
 
     @Override
@@ -22,7 +23,7 @@ public class DatasetVersionDatasetUserId implements Serializable {
             return false;
         }
         DatasetVersionDatasetUserId other = (DatasetVersionDatasetUserId) object;
-        return (this.userIdentifier.equals(other.userIdentifier) && this.datasetversionid == other.datasetversionid); 
+        return (this.userIdentifier.equals(other.userIdentifier) && this.datasetversionid == other.datasetversionid);
     }
 
     @Override
@@ -45,5 +46,5 @@ public class DatasetVersionDatasetUserId implements Serializable {
     public void setDatasetversionid(long datasetversionid) {
         this.datasetversionid = datasetversionid;
     }
-    
+
 }

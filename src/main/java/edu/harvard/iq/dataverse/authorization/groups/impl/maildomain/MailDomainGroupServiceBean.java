@@ -27,27 +27,27 @@ import jakarta.ws.rs.NotFoundException;
 @Startup
 @DependsOn("StartupFlywayMigrator")
 public class MailDomainGroupServiceBean {
-    
+
     private static final Logger logger = Logger.getLogger(edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean.class.getName());
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
-    
+
     @Inject
     ConfirmEmailServiceBean confirmEmailSvc;
     @Inject
     ActionLogServiceBean actionLogSvc;
-    
+
     MailDomainGroupProvider provider;
     List<MailDomainGroup> simpleGroups = Collections.EMPTY_LIST;
     Map<MailDomainGroup, Pattern> regexGroups = new HashMap<>();
-    
+
     @PostConstruct
     void setup() {
         provider = new MailDomainGroupProvider(this);
         this.updateGroups();
     }
-    
+
     /**
      * Update the groups from the database.
      * This is done because regex compilation is an expensive operation and should be cached.
@@ -63,12 +63,12 @@ public class MailDomainGroupServiceBean {
                 mg -> Pattern.compile(mg.getEmailDomains().replace(";", "|"))
             ));
     }
-    
+
     @Lock(LockType.READ)
     public MailDomainGroupProvider getProvider() {
         return provider;
     }
-    
+
     /**
      * Find groups for users mail address. Only done when email has been verified.
      * @param user
@@ -76,19 +76,19 @@ public class MailDomainGroupServiceBean {
      */
     @Lock(LockType.READ)
     public Set<MailDomainGroup> findAllWithDomain(AuthenticatedUser user) {
-        
+
         // if the mail address is not verified, escape...
         if (!confirmEmailSvc.hasVerifiedEmail(user)) {
             return Collections.emptySet();
         }
-        
+
         // otherwise start to bisect the mail and lookup groups.
         // NOTE: the email from the user has been validated via {@link EMailValidator} when persisted.
         Optional<String> oDomain = getDomainFromMail(user.getEmail());
         if (oDomain.isPresent()) {
             // transform to lowercase, in case someone uses uppercase letters. (we store the comparison values in lowercase)
             String domain = oDomain.get().toLowerCase();
-            
+
             // scan simple groups (containing an exact match of the domain)
             Set<MailDomainGroup> result = this.simpleGroups.stream()
                                                            .filter(mg -> mg.getEmailDomainsAsList().contains(domain))
@@ -99,11 +99,11 @@ public class MailDomainGroupServiceBean {
                                                    .filter(mg -> regexGroups.get(mg).matcher(domain).matches())
                                                    .collect(Collectors.toSet()));
             return result;
-            
+
         }
         return Collections.emptySet();
     }
-    
+
     /**
      * Get all mail domain groups from the database.
      * @return A result list from the database. May be null if no results found.
@@ -112,7 +112,7 @@ public class MailDomainGroupServiceBean {
     public List<MailDomainGroup> findAll() {
         return em.createNamedQuery("MailDomainGroup.findAll", MailDomainGroup.class).getResultList();
     }
-    
+
     /**
      * Find a specific mail domain group by it's alias.
      * @param groupAlias
@@ -129,7 +129,7 @@ public class MailDomainGroupServiceBean {
             return Optional.empty();
         }
     }
-    
+
     /**
      * Update an existing instance (if found) or create a new (if groupName = null or groupName matches alias of grp).
      * This method is idempotent.
@@ -143,22 +143,22 @@ public class MailDomainGroupServiceBean {
     public MailDomainGroup saveOrUpdate(Optional<String> groupAlias, MailDomainGroup grp) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "mailDomainCreate");
         alr.setInfo(grp.getIdentifier());
-        
+
         // groupAlias present means PUT means idempotence.
         if (groupAlias.isPresent()) {
             Optional<MailDomainGroup> old = findByAlias(groupAlias.get());
-    
+
             // if an old instance is found, update:
             // (triggering persistence once we leave the function)
             if (old.isPresent()) {
                 old.get().update(grp);
-                
+
                 alr.setActionSubType("mailDomainUpdate");
                 actionLogSvc.log(alr);
-                
+
                 return grp;
             }
-    
+
             // otherwise check if path param and supplied group match. (so people use it according to RFC-2616)
             // if not -> throw exception!
             if (!groupAlias.get().equals(grp.getPersistedGroupAlias())) {
@@ -168,10 +168,10 @@ public class MailDomainGroupServiceBean {
         // or add new ...
         em.persist(grp);
         actionLogSvc.log(alr);
-        
+
         return grp;
     }
-    
+
     /**
      * Delete a mail domain group if exists.
      * @param groupAlias
@@ -181,12 +181,12 @@ public class MailDomainGroupServiceBean {
     public void delete(String groupAlias) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "mailDomainDelete");
         alr.setInfo(groupAlias);
-    
+
         Optional<MailDomainGroup> tbd = findByAlias(groupAlias);
         em.remove(tbd.orElseThrow(() -> new NotFoundException("Cannot find a group with alias " + groupAlias)));
         actionLogSvc.log(alr);
     }
-    
+
     /**
      * Retrieve the domain part only from a given email.
      * @param email
@@ -199,5 +199,5 @@ public class MailDomainGroupServiceBean {
         }
         return Optional.of(parts[parts.length - 1]);
     }
-    
+
 }

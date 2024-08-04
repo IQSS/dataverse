@@ -37,7 +37,7 @@ public class UserListMaker {
 
     public Long getTotalUserCount(boolean superusers_only) {
         if (superusers_only) {
-            return userService.getSuperUserCount();            
+            return userService.getSuperUserCount();
         } else {
             return userService.getUserCount(null);  // send null for the optional search term
         }

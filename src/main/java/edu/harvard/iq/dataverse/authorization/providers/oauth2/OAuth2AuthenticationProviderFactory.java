@@ -45,12 +45,12 @@ public class OAuth2AuthenticationProviderFactory implements AuthenticationProvid
         Map<String, String> factoryData = parseFactoryData(aRow.getFactoryData());
         final String type = factoryData.get("type");
         if (type == null) {
-            throw new AuthorizationSetupException("Authentication provider row with id " + aRow.getId() 
+            throw new AuthorizationSetupException("Authentication provider row with id " + aRow.getId()
                     + " describes an OAuth2 provider but does not provide a type. Available types are " + builders.keySet() );
         }
         ProviderBuilder pb = builders.get(type);
         if (pb == null) {
-            throw new AuthorizationSetupException("Authentication provider row with id " + aRow.getId() 
+            throw new AuthorizationSetupException("Authentication provider row with id " + aRow.getId()
                     + " describes an OAuth2 provider of type " + type + ". This type is not supported."
                     + " Available types are " + builders.keySet() );
         }

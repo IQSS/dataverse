@@ -76,11 +76,13 @@ public class RateLimitUtilTest {
         doReturn(settingJsonBad).when(mockedSystemConfigBad).getRateLimitsJson();
         doReturn("100,200").when(mockedSystemConfigBad).getRateLimitingDefaultCapacityTiers();
     }
+
     @BeforeEach
     public void resetRateLimitUtilSettings() {
         RateLimitUtil.rateLimitMap.clear();
         RateLimitUtil.rateLimits.clear();
     }
+
     @ParameterizedTest
     @CsvSource(value = {
             "100,0,",
@@ -98,6 +100,7 @@ public class RateLimitUtilTest {
             assertEquals(exp, RateLimitUtil.getCapacityByTierAndAction(mockedSystemConfig, tier, action));
         }
     }
+
     @ParameterizedTest
     @CsvSource(value = {
             "100,0,",
@@ -119,6 +122,7 @@ public class RateLimitUtilTest {
         User user = GuestUser.get();
         assertEquals(RateLimitUtil.generateCacheKey(user, "action1"), ":guest:action1");
     }
+
     @Test
     public void testGetCapacity() {
         SystemConfig config = mock(SystemConfig.class);
@@ -143,6 +147,7 @@ public class RateLimitUtilTest {
         authUser.setRateLimitTier(99);
         assertEquals(RateLimitUtil.NO_LIMIT, RateLimitUtil.getCapacity(config, authUser, "def"));
     }
+
     private void resetRateLimitUtil(SystemConfig config, boolean enable) {
         doReturn(enable ? getJsonSetting() : "").when(config).getRateLimitsJson();
         doReturn(enable ? "100,200" : "").when(config).getRateLimitingDefaultCapacityTiers();

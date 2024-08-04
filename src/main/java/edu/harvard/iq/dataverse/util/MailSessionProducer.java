@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class MailSessionProducer {
-    
+
     // NOTE: We do not allow "from" here, as we want the transport to get it from the message being sent, enabling
     //       matching addresses. If "from" in transport and "from" in the message differ, some MTAs may reject or
     //       classify as spam.
@@ -39,18 +39,18 @@ public class MailSessionProducer {
         "quitwait", "quitonsessionreject", "ssl.enable", "ssl.checkserveridentity", "starttls.enable",
         "starttls.required", "userset", "noop.strict"
     );
-    
+
     private static final String PREFIX = "mail.smtp.";
     private static final Logger logger = Logger.getLogger(MailSessionProducer.class.getCanonicalName());
-    
+
     static {
         if (Boolean.TRUE.equals(JvmSettings.MAIL_DEBUG.lookup(Boolean.class))) {
             logger.setLevel(Level.FINE);
         }
     }
-    
+
     Session systemMailSession;
-    
+
     /**
      * Cache the application server provided (user defined) javamail resource to enable backwards compatibility.
      * No direct JNDI lookup on the field to avoid deployment failures when not present.
@@ -58,7 +58,7 @@ public class MailSessionProducer {
      */
     @Deprecated(forRemoval = true, since = "6.2")
     Session appserverProvidedSession;
-    
+
     public MailSessionProducer() {
         try {
             // Do JNDI lookup of legacy mail session programmatically to avoid deployment errors when not found.
@@ -70,7 +70,7 @@ public class MailSessionProducer {
             logger.log(Level.FINER, "Error during legacy appserver-level mail resource lookup", e);
         }
     }
-    
+
     @Produces
     @Named("mail/systemSession")
     public Session getSession() {
@@ -80,13 +80,13 @@ public class MailSessionProducer {
                 " deprecated. Please migrate to using JVM options, see Dataverse guides for details");
             return appserverProvidedSession;
         }
-        
+
         if (systemMailSession == null) {
             logger.fine("Setting up new mail session");
-            
+
             // Initialize with null (= no authenticator) is a valid argument for the session factory method.
             Authenticator authenticator = null;
-            
+
             // In case we want auth, create an authenticator (default = false from microprofile-config.properties)
             if (Boolean.TRUE.equals(JvmSettings.MAIL_MTA_AUTH.lookup(Boolean.class))) {
                 logger.fine("Mail Authentication is enabled, building authenticator");
@@ -101,15 +101,15 @@ public class MailSessionProducer {
                     }
                 };
             }
-            
+
             this.systemMailSession = Session.getInstance(getMailProperties(), authenticator);
         }
         return systemMailSession;
     }
-    
+
     Properties getMailProperties() {
         Properties configuration = new Properties();
-        
+
         // See https://jakarta.ee/specifications/mail/2.1/apidocs/jakarta.mail/jakarta/mail/package-summary
         configuration.put("mail.transport.protocol", "smtp");
         configuration.put("mail.debug", JvmSettings.MAIL_DEBUG.lookupOptional(Boolean.class).orElse(false).toString());
@@ -118,7 +118,7 @@ public class MailSessionProducer {
         // Now, make it proper, but make it possible to disable it - see also EMailValidator.
         // Default = true from microprofile-config.properties as most MTAs these days support SMTPUTF8 extension
         configuration.put("mail.mime.allowutf8", JvmSettings.MAIL_MTA_SUPPORT_UTF8.lookup(Boolean.class).toString());
-        
+
         // Map properties 1:1 to mail.smtp properties for the mail session.
         smtpStringProps.forEach(
             prop -> JvmSettings.MAIL_MTA_SETTING.lookupOptional(prop).ifPresent(
@@ -129,14 +129,14 @@ public class MailSessionProducer {
         smtpIntProps.forEach(
             prop -> JvmSettings.MAIL_MTA_SETTING.lookupOptional(Integer.class, prop).ifPresent(
                 number -> configuration.put(PREFIX + prop, number.toString())));
-        
+
         logger.fine(() -> "Compiled properties:" + configuration.entrySet().stream()
             .map(entry -> "\"" + entry.getKey() + "\": \"" + entry.getValue() + "\"")
             .collect(Collectors.joining(",\n")));
-        
+
         return configuration;
     }
-    
+
     /**
      * Determine if the session returned by {@link #getSession()} has been provided by the application server
      * @return True if injected as resource from app server, false otherwise
@@ -146,5 +146,5 @@ public class MailSessionProducer {
     public boolean hasSessionFromAppServer() {
         return this.appserverProvidedSession != null;
     }
-    
+
 }

@@ -32,7 +32,7 @@ public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Data
     private final DataverseLinkingDataverse doomed;
     private final Dataverse editedDv;
     private final boolean index;
-    
+
     public DeleteDataverseLinkingDataverseCommand(DataverseRequest aRequest, Dataverse editedDv, DataverseLinkingDataverse doomed, boolean index) {
         super(aRequest, editedDv);
         this.editedDv = editedDv;
@@ -49,7 +49,7 @@ public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Data
         Dataverse merged = ctxt.em().merge(editedDv);
         DataverseLinkingDataverse doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
-        
+
         if (index) {
             //can only index merged in the onSuccess method so must index doomed linking dataverse here
             try {
@@ -58,10 +58,10 @@ public class DeleteDataverseLinkingDataverseCommand extends AbstractCommand<Data
                 String failureLogText = "Indexing failed for Linked Dataverse. You can kickoff a re-index of this datavese with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + doomed.getLinkingDataverse().getId().toString();
                 failureLogText += "\r\n" + e.getLocalizedMessage();
                 LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, doomed.getLinkingDataverse());
-            } 
+            }
         }
         return merged;
-    } 
+    }
 
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {

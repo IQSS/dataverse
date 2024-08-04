@@ -133,9 +133,9 @@ public class PidUtilTest {
         pidProviderFactoryMap.put(HandlePidProvider.TYPE, new HandleProviderFactory());
         pidProviderFactoryMap.put(FakeDOIProvider.TYPE, new FakeProviderFactory());
         pidProviderFactoryMap.put(EZIdDOIProvider.TYPE, new EZIdProviderFactory());
-        
+
         PidUtil.clearPidProviders();
-        
+
         //Read list of providers to add
         List<String> providers = Arrays.asList(JvmSettings.PID_PROVIDERS.lookup().split(",\\s"));
         //Iterate through the list of providers and add them using the PidProviderFactory of the appropriate type
@@ -148,19 +148,19 @@ public class PidUtilTest {
         PidUtil.addAllToUnmanagedProviderList(Arrays.asList(new UnmanagedDOIProvider(),
                 new UnmanagedHandlePidProvider(), new UnmanagedPermaLinkPidProvider()));
     }
-    
+
     @AfterAll
     public static void tearDownClass() throws Exception {
         PidUtil.clearPidProviders();
     }
-    
+
     @BeforeEach
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
 //        Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Protocol)).thenReturn("perma");
 //        Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority)).thenReturn("DANSLINK");
     }
-    
+
     /**
      * Useful for testing but requires DataCite credentials, etc.
      */
@@ -180,7 +180,7 @@ public class PidUtilTest {
         }
     }
 
-    
+
     @Test
     public void testFactories() throws IOException {
         PidProvider p = PidUtil.getPidProvider("perma1");
@@ -194,9 +194,9 @@ public class PidUtilTest {
         assertTrue(p.getUrlPrefix().startsWith("https://example.org/123"));
         p = PidUtil.getPidProvider("dc2");
         assertEquals("FK3", p.getShoulder());
-        
+
     }
-    
+
     @Test
     public void testPermaLinkParsing() throws IOException {
         //Verify that we can parse a valid perma link associated with perma1
@@ -208,7 +208,7 @@ public class PidUtilTest {
         assertEquals(SystemConfig.getDataverseSiteUrlStatic() + "/citation?persistentId=" + pid1String, pid2.asURL());
         assertEquals("DANSLINK", pid2.getAuthority());
         assertEquals(PermaLinkPidProvider.PERMA_PROTOCOL, pid2.getProtocol());
-        
+
         //Verify that parsing the URL form works
         GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
         assertEquals(pid1String, pid3.asString());
@@ -222,10 +222,10 @@ public class PidUtilTest {
         assertEquals("https://example.org/123/citation?persistentId=" + pid4String, pid5.asURL());
 
     }
-    
+
     @Test
     public void testDOIParsing() throws IOException {
-        
+
         String pid1String = "doi:10.5073/FK2ABCDEF";
         GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
         assertEquals(pid1String, pid2.asString());
@@ -236,7 +236,7 @@ public class PidUtilTest {
         GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
         assertEquals(pid1String, pid3.asString());
         assertEquals("dc1", pid3.getProviderId());
-        
+
         String pid4String = "doi:10.5072/FK3ABCDEF";
         GlobalId pid4 = PidUtil.parseAsGlobalID(pid4String);
         assertEquals(pid4String, pid4.asString());
@@ -246,7 +246,7 @@ public class PidUtilTest {
         GlobalId pid5 = PidUtil.parseAsGlobalID(pid5String);
         assertEquals(pid5String, pid5.asString());
         assertEquals("ez1", pid5.getProviderId());
-        
+
         String pid6String = "doi:10.5074/FKABCDEF";
         GlobalId pid6 = PidUtil.parseAsGlobalID(pid6String);
         assertEquals(pid6String, pid6.asString());
@@ -254,10 +254,10 @@ public class PidUtilTest {
 
 
     }
-    
+
     @Test
     public void testHandleParsing() throws IOException {
-        
+
         String pid1String = "hdl:20.500.1234/10052";
         GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
         assertEquals(pid1String, pid2.asString());
@@ -284,7 +284,7 @@ public class PidUtilTest {
         GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
         assertEquals(pid1String, pid3.asString());
         assertEquals(UnmanagedHandlePidProvider.ID, pid3.getProviderId());
-        
+
         //Same for DOIs
         String pid5String = "doi:10.6083/FK2ABCDEF";
         GlobalId pid5 = PidUtil.parseAsGlobalID(pid5String);
@@ -298,10 +298,10 @@ public class PidUtilTest {
         assertEquals(UnmanagedPermaLinkPidProvider.ID, pid6.getProviderId());
 
     }
-    
+
     @Test
     public void testExcludedSetParsing() throws IOException {
-        
+
         String pid1String = "doi:10.5073/FK2123456";
         GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
         assertEquals(pid1String, pid2.asString());
@@ -312,7 +312,7 @@ public class PidUtilTest {
         GlobalId pid3 = PidUtil.parseAsGlobalID(pid2.asURL());
         assertEquals(pid1String, pid3.asString());
         assertEquals(UnmanagedDOIProvider.ID, pid3.getProviderId());
-        
+
         String pid4String = "perma:bad";
         GlobalId pid4 = PidUtil.parseAsGlobalID(pid4String);
         assertEquals(pid4String, pid4.asString());
@@ -322,7 +322,7 @@ public class PidUtilTest {
         GlobalId pid5 = PidUtil.parseAsGlobalID(pid5String);
         assertEquals(pid5String, pid5.asString());
         assertEquals(UnmanagedPermaLinkPidProvider.ID, pid5.getProviderId());
-        
+
         String pid6String = "perma:LINKIT123456";
         GlobalId pid6 = PidUtil.parseAsGlobalID(pid6String);
         assertEquals(pid6String, pid6.asString());
@@ -330,10 +330,10 @@ public class PidUtilTest {
 
 
     }
-    
+
     @Test
     public void testManagedSetParsing() throws IOException {
-        
+
         String pid1String = "doi:10.5073/FK3ABCDEF";
         GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
         assertEquals(pid1String, pid2.asString());
@@ -345,7 +345,7 @@ public class PidUtilTest {
         assertEquals(pid1String, pid3.asString());
         assertEquals("fake1", pid3.getProviderId());
         assertFalse(PidUtil.getPidProvider(pid3.getProviderId()).canCreatePidsLike(pid3));
-        
+
         String pid4String = "hdl:20.20.20/FK2ABCDEF";
         GlobalId pid4 = PidUtil.parseAsGlobalID(pid4String);
         assertEquals(pid4String, pid4.asString());
@@ -358,10 +358,10 @@ public class PidUtilTest {
         assertEquals("perma2", pid5.getProviderId());
         assertFalse(PidUtil.getPidProvider(pid5.getProviderId()).canCreatePidsLike(pid5));
     }
-    
+
     @Test
     public void testFindingPidGenerators() throws IOException {
-        
+
         Dataset dataset1 = new Dataset();
         Dataverse dataverse1 = new Dataverse();
         dataset1.setOwner(dataverse1);
@@ -381,13 +381,13 @@ public class PidUtilTest {
         assertEquals("dc1", dataset1.getGlobalId().getProviderId());
         assertEquals("dc1", dataset1.getEffectivePidGenerator().getId());
         assertTrue(PidUtil.getPidProvider(dataset1.getEffectivePidGenerator().getId()).canCreatePidsLike(dataset1.getGlobalId()));
-        
+
         dataset1.setPidGenerator(null);
         //Now set identifier so that the provider has this one in it's managed list (and therefore we can't mint new PIDs in the same auth/shoulder) and therefore we get the effective pid generator
         dataset1.setIdentifier("FK3ABCDEF");
         assertEquals("fake1", dataset1.getGlobalId().getProviderId());
         assertEquals("ez1", dataset1.getEffectivePidGenerator().getId());
-        
+
         //Now test failure case
         dataverse1.setPidGenerator(null);
         dataset1.setPidGenerator(null);
@@ -399,7 +399,7 @@ public class PidUtilTest {
         assertNull(dataverse1.getEffectivePidGenerator());
         assertNull(dataset1.getEffectivePidGenerator());
     }
-    
+
     @Test
     @JvmSetting(key = JvmSettings.LEGACY_DATACITE_MDS_API_URL, value = "https://mds.test.datacite.org/")
     @JvmSetting(key = JvmSettings.LEGACY_DATACITE_REST_API_URL, value = "https://api.test.datacite.org")
@@ -414,7 +414,6 @@ public class PidUtilTest {
       Mockito.when(settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority)).thenReturn("10.5075");
 
 
-      
       String protocol = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Protocol);
       String authority = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Authority);
       String shoulder = settingsServiceBean.getValueForKey(SettingsServiceBean.Key.Shoulder);
@@ -468,9 +467,9 @@ public class PidUtilTest {
           }
 
       }
-      
+
         String pid1String = "doi:10.5075/FK2ABCDEF";
-        GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);    
+        GlobalId pid2 = PidUtil.parseAsGlobalID(pid1String);
         assertEquals(pid1String, pid2.asString());
         assertEquals("legacy", pid2.getProviderId());
     }

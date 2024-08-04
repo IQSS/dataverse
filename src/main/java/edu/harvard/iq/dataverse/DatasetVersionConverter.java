@@ -18,16 +18,16 @@ import jakarta.faces.convert.FacesConverter;
  */
 @FacesConverter("datasetVersionConverter")
 public class DatasetVersionConverter implements Converter {
-    
+
     //@EJB
     DatasetVersionServiceBean datasetVersionService = CDI.current().select(DatasetVersionServiceBean.class).get();
-    
-    
+
+
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
                 if (value == null || value.equals("")) {
             return "";
-        } else {                  
+        } else {
             return datasetVersionService.find(new Long(value));
         }
     }
@@ -41,5 +41,5 @@ public class DatasetVersionConverter implements Converter {
             return stringToReturn;
         }
     }
-    
+
 }

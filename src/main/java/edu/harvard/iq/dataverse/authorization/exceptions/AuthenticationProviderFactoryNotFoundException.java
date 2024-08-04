@@ -11,13 +11,14 @@ import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRo
  * @author michael
  */
 public class AuthenticationProviderFactoryNotFoundException extends AuthorizationSetupException {
-    
+
     private final String factoryAlias;
-    
+
     public AuthenticationProviderFactoryNotFoundException(String message, String anAlias) {
         super(message);
         factoryAlias = anAlias;
     }
+
     public AuthenticationProviderFactoryNotFoundException(String anAlias) {
         this("Can't find AuthenticationProviderFactory with an alias '" + anAlias + "'", anAlias);
     }
@@ -25,5 +26,5 @@ public class AuthenticationProviderFactoryNotFoundException extends Authorizatio
     public String getFactoryAlias() {
         return factoryAlias;
     }
-    
+
 }

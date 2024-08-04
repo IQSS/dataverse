@@ -248,10 +248,6 @@ public class MyDataFinder {
     }
 
 
-
-
-
-
     public String getSolrDvObjectFilterQuery() {
 
         if (this.hasError()) {
@@ -349,7 +345,6 @@ public class MyDataFinder {
     }
 
 
-
     public String getTestString() {
 
         if (this.hasError()) {
@@ -413,7 +408,6 @@ public class MyDataFinder {
     }
 
 
-
     /**
      * "publication_statuses" : [ name 1, name 2, etc.]
      *
@@ -459,7 +453,6 @@ public class MyDataFinder {
         for (Object[] ra : results) {
             Long dvId = (Long) ra[0];
             Long roleId = (Long) ra[1];
-
 
 
             //----------------------------------
@@ -608,11 +601,13 @@ public class MyDataFinder {
     public boolean hasError() {
         return this.errorFound;
     }
+
     public String getErrorMessage() {
         return this.errorMessage;
     }
+
     private void addErrorMessage(String s) {
         this.errorFound = true;
         this.errorMessage = s;
     }
-}   // end: MyDataFinder
+}// end: MyDataFinder

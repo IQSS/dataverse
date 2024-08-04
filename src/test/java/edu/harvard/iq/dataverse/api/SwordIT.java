@@ -51,7 +51,7 @@ public class SwordIT {
     private static String superuser;
     private static final String rootDataverseAlias = "root";
     private static String apiTokenSuperuser;
-    
+
     private static final String rootDvNotPublished = "Many of these SWORD tests require that the root dataverse collection has been published. Publish the root dataverse and then re-run these tests.";
     private static final String rootDvLackPermissions = "Many of these SWORD tests require you set permissions for the root dataverse collection: \"Anyone with a Dataverse account can add sub dataverses and datasets\" + curator role for new datasets. Please set and re-run these tests.";
 
@@ -68,13 +68,13 @@ public class SwordIT {
         apiTokenSuperuser = UtilIT.getApiTokenFromResponse(createUser);
         String apitoken = UtilIT.getApiTokenFromResponse(createUser);
         UtilIT.makeSuperUser(superuser).then().assertThat().statusCode(OK.getStatusCode());
-        
+
         // check that root dataverse has been released
         Response checkRootDataverse = UtilIT.listDatasetsViaSword(rootDataverseAlias, apitoken);
         //checkRootDataverse.prettyPrint();
         checkRootDataverse.then().assertThat().statusCode(OK.getStatusCode());
         assumeTrue(checkRootDataverse.getBody().xmlPath().getBoolean("feed.dataverseHasBeenReleased"), rootDvNotPublished);
-        
+
         // check that root dataverse has permissions for any user set to dataverse + dataset creator (not admin, not curator!)
         checkRootDataverse = UtilIT.getRoleAssignmentsOnDataverse(rootDataverseAlias, apiTokenSuperuser);
         //checkRootDataverse.prettyPrint();
@@ -131,15 +131,15 @@ public class SwordIT {
         UtilIT.deleteUser(username);
 
     }
-    
+
     @Test
     public void testSwordAuthUserLastApiUse() {
         Response createUser = UtilIT.createRandomUser();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apitoken = UtilIT.getApiTokenFromResponse(createUser);
-        
+
         Response serviceDocumentResponse = UtilIT.getServiceDocument(apitoken);
-        
+
         Response getUserAsJsonAgain = UtilIT.getAuthenticatedUser(username, apitoken);
         getUserAsJsonAgain.prettyPrint();
         getUserAsJsonAgain.then().assertThat()
@@ -489,7 +489,6 @@ public class SwordIT {
         assertTrue(listDatasetsAtRootAsSuperuser.body().asString().contains(identifier));
 
 
-
         Response publishShouldFailForContributorViaSword = UtilIT.publishDatasetViaSword(persistentId, apiTokenContributor);
         publishShouldFailForContributorViaSword.prettyPrint();
         publishShouldFailForContributorViaSword.then().assertThat()
@@ -570,7 +569,7 @@ public class SwordIT {
                  */
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("error.summary", equalTo("User " + usernameNoPrivs + " " + usernameNoPrivs + " is not authorized to modify dataverse " + dataverseAlias));
-        
+
         Response thisDataverseContents = UtilIT.showDataverseContents(dataverseAlias, apiTokenNoPrivs);
         thisDataverseContents.prettyPrint();
         thisDataverseContents.then().assertThat()
@@ -578,7 +577,7 @@ public class SwordIT {
         logger.info("Without priviledges we do not expect to find \"" + persistentId + "\" from the persistent ID to be present for random user");
         assertFalse(thisDataverseContents.body().asString().contains(persistentId.toString()));
 
-        
+
         Response publishDataset = UtilIT.publishDatasetViaSword(persistentId, apiToken);
         publishDataset.prettyPrint();
         publishDataset.then().assertThat()
@@ -619,8 +618,8 @@ public class SwordIT {
                 .statusCode(OK.getStatusCode());
         logger.info("We expect to find the numeric id of the dataset (\"" + datasetId + "\") in the response.");
         assertTrue(thisDataverseContents.body().asString().contains(datasetId.toString()));
-        
-        
+
+
         /**
          * @todo The "destroy" endpoint should accept a persistentId:
          * https://github.com/IQSS/dataverse/issues/1837

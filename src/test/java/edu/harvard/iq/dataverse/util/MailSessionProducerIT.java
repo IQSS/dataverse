@@ -49,13 +49,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @LocalJvmSettings
 @JvmSetting(key = JvmSettings.SYSTEM_EMAIL, value = "test@test.com")
 class MailSessionProducerIT {
-    
+
     private static final Integer PORT_SMTP = 1025;
     private static final Integer PORT_HTTP = 1080;
-    
-    static SettingsServiceBean settingsServiceBean = Mockito.mock(SettingsServiceBean.class);;
-    static DataverseServiceBean dataverseServiceBean = Mockito.mock(DataverseServiceBean.class);;
-    
+
+    static SettingsServiceBean settingsServiceBean = Mockito.mock(SettingsServiceBean.class);
+    static DataverseServiceBean dataverseServiceBean = Mockito.mock(DataverseServiceBean.class);
+
     /**
      * We need to reset the BrandingUtil mocks for every test, as we rely on them being set to default.
      */
@@ -64,11 +64,12 @@ class MailSessionProducerIT {
         // Setup mocks behavior, inject as deps
         BrandingUtil.injectServices(dataverseServiceBean, settingsServiceBean);
     }
+
     @AfterAll
     static void tearDown() {
         BrandingUtilTest.tearDownMocks();
     }
-    
+
     @Nested
     @LocalJvmSettings
     @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpHost", varArgs = "host")
@@ -78,35 +79,35 @@ class MailSessionProducerIT {
         static GenericContainer<?> maildev = new GenericContainer<>("maildev/maildev:2.1.0")
             .withExposedPorts(PORT_HTTP, PORT_SMTP)
             .waitingFor(Wait.forHttp("/"));
-        
+
         static String tcSmtpHost() {
             return maildev.getHost();
         }
-        
+
         static String tcSmtpPort() {
             return maildev.getMappedPort(PORT_SMTP).toString();
         }
-        
+
         @BeforeAll
         static void setup() {
             RestAssured.baseURI = "http://" + tcSmtpHost();
             RestAssured.port = maildev.getMappedPort(PORT_HTTP);
         }
-        
+
         @Test
         void createSession() {
             given().when().get("/email")
                 .then()
                 .statusCode(200)
                 .body("size()", is(0));
-            
+
             // given
             Session session = new MailSessionProducer().getSession();
             MailServiceBean mailer = new MailServiceBean(session, settingsServiceBean);
-            
+
             // when
             boolean sent = mailer.sendSystemEmail("test@example.org", "Test", "Test", false);
-            
+
             // then
             assertTrue(sent);
             //RestAssured.get("/email").body().prettyPrint();
@@ -116,9 +117,9 @@ class MailSessionProducerIT {
                 .body("size()", is(1))
                 .body("[0].subject", equalTo("Test"));
         }
-        
+
     }
-    
+
     @Nested
     @LocalJvmSettings
     @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpHost", varArgs = "host")
@@ -137,35 +138,35 @@ class MailSessionProducerIT {
                 "MAILDEV_INCOMING_KEY", "/key.pem"
             ))
             .waitingFor(Wait.forHttp("/"));
-        
+
         static String tcSmtpHost() {
             return maildev.getHost();
         }
-        
+
         static String tcSmtpPort() {
             return maildev.getMappedPort(PORT_SMTP).toString();
         }
-        
+
         @BeforeAll
         static void setup() {
             RestAssured.baseURI = "http://" + tcSmtpHost();
             RestAssured.port = maildev.getMappedPort(PORT_HTTP);
         }
-        
+
         @Test
         void createSession() {
             given().when().get("/email")
                 .then()
                 .statusCode(200)
                 .body("size()", is(0));
-            
+
             // given
             Session session = new MailSessionProducer().getSession();
             MailServiceBean mailer = new MailServiceBean(session, settingsServiceBean);
-            
+
             // when
             boolean sent = mailer.sendSystemEmail("test@example.org", "Test", "Test", false);
-            
+
             // then
             assertTrue(sent);
             //RestAssured.get("/email").body().prettyPrint();
@@ -175,12 +176,12 @@ class MailSessionProducerIT {
                 .body("size()", is(1))
                 .body("[0].subject", equalTo("Test"));
         }
-        
+
     }
-    
+
     static final String username = "testuser";
     static final String password = "supersecret";
-    
+
     @Nested
     @LocalJvmSettings
     @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, method = "tcSmtpHost", varArgs = "host")
@@ -197,35 +198,35 @@ class MailSessionProducerIT {
                 "MAILDEV_INCOMING_PASS", password
             ))
             .waitingFor(Wait.forHttp("/"));
-        
+
         static String tcSmtpHost() {
             return maildev.getHost();
         }
-        
+
         static String tcSmtpPort() {
             return maildev.getMappedPort(PORT_SMTP).toString();
         }
-        
+
         @BeforeAll
         static void setup() {
             RestAssured.baseURI = "http://" + tcSmtpHost();
             RestAssured.port = maildev.getMappedPort(PORT_HTTP);
         }
-        
+
         @Test
         void createSession() {
             given().when().get("/email")
                 .then()
                 .statusCode(200)
                 .body("size()", is(0));
-            
+
             // given
             Session session = new MailSessionProducer().getSession();
             MailServiceBean mailer = new MailServiceBean(session, settingsServiceBean);
-            
+
             // when
             boolean sent = mailer.sendSystemEmail("test@example.org", "Test", "Test", false);
-            
+
             // then
             assertTrue(sent);
             //RestAssured.get("/email").body().prettyPrint();
@@ -235,9 +236,9 @@ class MailSessionProducerIT {
                 .body("size()", is(1))
                 .body("[0].subject", equalTo("Test"));
         }
-        
+
     }
-    
+
     @Nested
     @LocalJvmSettings
     class InvalidConfiguration {
@@ -245,22 +246,22 @@ class MailSessionProducerIT {
         @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, value = "1234", varArgs = "invalid")
         void invalidConfigItemsAreIgnoredOnSessionBuild() {
             assertDoesNotThrow(() -> new MailSessionProducer().getSession());
-            
+
             Session mailSession = new MailSessionProducer().getSession();
             MailServiceBean mailer = new MailServiceBean(mailSession, settingsServiceBean);
             assertFalse(mailer.sendSystemEmail("test@example.org", "Test", "Test", false));
         }
-        
+
         @Test
         @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, value = "foobar", varArgs = "host")
         void invalidHostnameIsFailingWhenSending() {
             assertDoesNotThrow(() -> new MailSessionProducer().getSession());
-            
+
             Session mailSession = new MailSessionProducer().getSession();
             MailServiceBean mailer = new MailServiceBean(mailSession, settingsServiceBean);
             assertFalse(mailer.sendSystemEmail("test@example.org", "Test", "Test", false));
         }
-        
+
         @Test
         @JvmSetting(key = JvmSettings.MAIL_MTA_SETTING, varArgs = "port" , value = "foobar")
         void invalidPortWithLetters() {

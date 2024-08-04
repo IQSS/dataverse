@@ -38,7 +38,7 @@ public class UningestFileCommand extends AbstractVoidCommand {
 
     private static final Logger logger = Logger.getLogger(UningestFileCommand.class.getCanonicalName());
     final DataFile uningest;
-    
+
     public UningestFileCommand(DataverseRequest aRequest, DataFile uningest) {
         super(aRequest, uningest);
         this.uningest = uningest;
@@ -46,13 +46,13 @@ public class UningestFileCommand extends AbstractVoidCommand {
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
-        
+
         // first check if user is a superuser
         if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException("Uningest File can only be called by Superusers.", this,
                     Collections.singleton(Permission.EditDataset), uningest);
         }
-        
+
         // is this actually a tabular data file?
         if (!uningest.isTabularData()) {
             throw new IllegalCommandException("UningestFileCommand called on a non-tabular data file (id=" + uningest.getId() + ")", this);
@@ -79,9 +79,9 @@ public class UningestFileCommand extends AbstractVoidCommand {
             }
             logger.warning(errorMessage);
             throw new CommandException(errorMessage, this);
-            
-        } 
-          
+
+        }
+
         // Try to revert the backup-as-Aux:
         // (i.e., try to overwrite the current, tabular file, with the stored 
         // original file:
@@ -99,20 +99,20 @@ public class UningestFileCommand extends AbstractVoidCommand {
             }
             logger.warning(errorMessage);
             throw new CommandException(errorMessage, this);
-        } 
-        
+        }
+
         // OK, we have successfully reverted the backup - now let's change 
         // all the attribute of the file that are stored in the database: 
         
         // the file size: 
         long archivalFileSize = uningest.getFilesize();
         uningest.setFilesize(storedOriginalFileSize);
-        
+
         // original file format:
         String originalFileFormat = uningest.getDataTable().getOriginalFileFormat();
         uningest.setContentType(originalFileFormat);
-        
-        
+
+
         // Delete the DataTable database object hierarchy that stores
         // all the tabular metadata - (DataTable, DataVariable, SummaryStatistics
         // *and more* sub-objects:
@@ -126,26 +126,26 @@ public class UningestFileCommand extends AbstractVoidCommand {
         // (this is a single table entry; ok to just issue an explicit 
         // DELETE query for it - as there's no complex cascade to resolve)
         resetIngestStats(uningest, ctxt);
-        
+
         //probably unnecessary - why would you add tags to a file and then say "oops this shouldn't have been ingested"?
         DataFileTag tag;
         for (DataFileTag tagLoop : uningest.getTags()) {
             tag = ctxt.em().find(DataFileTag.class, tagLoop.getId());
             ctxt.em().remove(tag);
         }
-        uningest.setTags(null);        
+        uningest.setTags(null);
         // Do the DB merge:
-        ctxt.em().merge(uningest); 
-        
+        ctxt.em().merge(uningest);
+
         // Modify the file name - which is stored in FileMetadata, and there
         // could be more than one: 
         
        // String originalExtension = FileUtil.generateOriginalExtension(originalFileFormat);
         for (FileMetadata fm : uningest.getFileMetadatas()) {
-            
+
             fm.setLabel(originalFileName);
             ctxt.em().merge(fm);
-            
+
             /* 
             getOriginalFileName method replaces this code
             String filename = fm.getLabel();
@@ -158,7 +158,7 @@ public class UningestFileCommand extends AbstractVoidCommand {
              */
             
             DatasetVersion dv = fm.getDatasetVersion();
-            
+
             // And, while we are here, recalculate the UNF for this DatasetVersion:
             dv.setUNF(null);
             ctxt.em().merge(dv);
@@ -170,30 +170,30 @@ public class UningestFileCommand extends AbstractVoidCommand {
         } catch (IOException e) {
             logger.warning("Io Exception deleting all aux objects : " + uningest.getId());
         }
-        
+
         // Finally, adjust the recorded storage use for the ancestral 
         // DvObjectContainers (the parent dataset + all the parent collections
         // up to the root):
         if (archivalFileSize > 0) {
             ctxt.storageUse().incrementStorageSizeRecursively(uningest.getOwner().getId(), (0L - archivalFileSize));
         }
-        
+
     }
-    
+
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
-        
-        return true; 
+
+        return true;
     }
-    
+
     private void resetIngestStats(DataFile uningest, CommandContext ctxt) {
-        
-        Long fileid = uningest.getId();        
+
+        Long fileid = uningest.getId();
         Query query = ctxt.em().createQuery("DELETE from IngestReport as o where o.dataFile.id  =:fileid");
         query.setParameter("fileid", fileid);
-        query.executeUpdate();       
+        query.executeUpdate();
         uningest.setIngestStatus("A".charAt(0));
-        
-    }  
+
+    }
 
 }

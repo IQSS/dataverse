@@ -9,14 +9,14 @@ package edu.harvard.iq.dataverse.ingest.metadataextraction;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.spi.*;
 import java.io.*;
 import java.util.Map; 
-import java.util.Set; 
+import java.util.Set;
 
 /**
  *
  * @author leonidandreev
  */
 public abstract class FileMetadataExtractor {
-    
+
     public static String INGESTER_VERSION = "4.0";
 
 
@@ -29,21 +29,21 @@ public abstract class FileMetadataExtractor {
     public FileMetadataExtractorSpi getOriginatingProvider() {
         return originatingProvider;
     }
-    
+
     public String getFormatName() throws IOException {
         return originatingProvider.getFormatNames()[0];
     }
-    
+
     public void dispose() {
-    
+
     }
-    
-    
+
+
     //public abstract Map<String, Set<String>> ingest(BufferedInputStream stream)
     public abstract FileMetadataIngest ingest(BufferedInputStream stream)
         throws IOException;
 
-    
+
     // should this be an abstract method as well? 
     
     public boolean isValid(File ddiFile) throws IOException {

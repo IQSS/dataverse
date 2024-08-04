@@ -69,5 +69,5 @@ public class HtmlCodeBookExporter implements Exporter {
     @Override
     public String  getMediaType() {
         return MediaType.TEXT_HTML;
-    };
+    }
 }

@@ -23,22 +23,22 @@ import java.util.logging.Logger;
  */
 @Provider
 public class WebApplicationExceptionHandler implements ExceptionMapper<WebApplicationException> {
-    
+
     static final Logger logger = Logger.getLogger(WebApplicationExceptionHandler.class.getSimpleName());
-    
+
     @Context
     HttpServletRequest request;
 
     @Override
     public Response toResponse(WebApplicationException ex) {
-        
+
         // If this is not a HTTP client or server error, just pass the response.
         if (ex.getResponse().getStatus() < 400)
             return ex.getResponse();
-        
+
         // Otherwise, do stuff.
         JsonResponseBuilder jrb = JsonResponseBuilder.error(ex.getResponse());
-        
+
         // See also https://en.wikipedia.org/wiki/List_of_HTTP_status_codes for a list of status codes.
         switch (ex.getResponse().getStatus()) {
             // BadRequest
@@ -97,10 +97,10 @@ public class WebApplicationExceptionHandler implements ExceptionMapper<WebApplic
                 jrb.message(ex.getMessage());
                 break;
         }
-    
+
         // Logging for debugging. Will not double-log messages.
         jrb.log(logger, Level.FINEST, Optional.of(ex));
         return jrb.build();
     }
-    
+
 }

@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.export;
 
 import com.google.auto.service.AutoService;
@@ -28,7 +27,7 @@ public class JSONExporter implements Exporter {
 
     @Override
     public String getDisplayName(Locale locale) {
-        String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.json", locale); 
+        String displayName = BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.json", locale);
         return Optional.ofNullable(displayName).orElse("JSON");
     }
 
@@ -46,7 +45,7 @@ public class JSONExporter implements Exporter {
     public Boolean isHarvestable() {
         return true;
     }
-    
+
     @Override
     public Boolean isAvailableToUsers() {
         return true;
@@ -56,5 +55,5 @@ public class JSONExporter implements Exporter {
     public String getMediaType() {
         return MediaType.APPLICATION_JSON;
     }
-    
+
 }

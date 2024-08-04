@@ -21,7 +21,7 @@ import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
  * @author michael
  */
 public class BuiltinAuthenticationProvider implements CredentialsAuthenticationProvider {
-    
+
     public static final String PROVIDER_ID = "builtin";
     /**
      * TODO: Think more about if it really makes sense to have the key for a
@@ -32,7 +32,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     public static final String KEY_USERNAME_OR_EMAIL = "login.builtin.credential.usernameOrEmail";
     public static final String KEY_PASSWORD = "login.builtin.credential.password";
     private static List<Credential> CREDENTIALS_LIST;
-      
+
     final BuiltinUserServiceBean bean;
     final AuthenticationServiceBean authBean;
     private PasswordValidatorServiceBean passwordValidatorService;
@@ -68,12 +68,12 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     public boolean isUserDeletionAllowed() {
         return true;
     }
-    
+
     @Override
     public void deleteUser(String userIdInProvider) {
         bean.removeUser(userIdInProvider);
     }
-    
+
     @Override
     public void updatePassword(String userIdInProvider, String newPassword) {
         BuiltinUser biUser = bean.findByUserName(userIdInProvider);
@@ -81,7 +81,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
                                        PasswordEncryption.getLatestVersionNumber());
         bean.save(biUser);
     }
-    
+
     /**
      * Validates that the passed password is indeed the password of the user.
      * @param userIdInProvider
@@ -95,13 +95,13 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
         return PasswordEncryption.getVersion(biUser.getPasswordEncryptionVersion())
                                  .check(password, biUser.getEncryptedPassword());
     }
-    
+
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest authReq) {
         BuiltinUser u = bean.findByUserName(authReq.getCredential(KEY_USERNAME_OR_EMAIL));
         AuthenticatedUser authUser = null;
-        
+
         if (u == null) { //If can't find by username in builtin, get the auth user and then the builtin
             authUser = authBean.getAuthenticatedUserByEmail(authReq.getCredential(KEY_USERNAME_OR_EMAIL));
             if (authUser == null) { //if can't find by email return bad username, etc.
@@ -109,20 +109,20 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
             }
             u = bean.findByUserName(authUser.getUserIdentifier());
         }
-        
+
         if (u == null) return AuthenticationResponse.makeFail("Bad username, email address, or password");
-        
+
         boolean userAuthenticated = PasswordEncryption.getVersion(u.getPasswordEncryptionVersion())
                                             .check(authReq.getCredential(KEY_PASSWORD), u.getEncryptedPassword());
         if (!userAuthenticated) {
             return AuthenticationResponse.makeFail("Bad username or password");
         }
-        
-        
+
+
         if (u.getPasswordEncryptionVersion() < PasswordEncryption.getLatestVersionNumber()) {
             try {
                 String passwordResetUrl = bean.requestPasswordUpgradeLink(u);
-                
+
                 return AuthenticationResponse.makeBreakout(u.getUserName(), passwordResetUrl);
             } catch (PasswordResetException ex) {
                 return AuthenticationResponse.makeError("Error while attempting to upgrade password", ex);
@@ -142,7 +142,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
         if (null == authUser) {
             authUser = authBean.getAuthenticatedUser(u.getUserName());
         }
-        
+
         return AuthenticationResponse.makeSuccess(u.getUserName(), authUser.getDisplayInfo());
    }
 

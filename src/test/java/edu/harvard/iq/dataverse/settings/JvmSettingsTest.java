@@ -15,13 +15,13 @@ class JvmSettingsTest {
         assertEquals("foobar", JvmSettings.VERSION.lookup());
         assertEquals("foobar", JvmSettings.VERSION.lookupOptional().orElse(""));
     }
-    
+
     @Test
     @SystemProperty(key = "dataverse.pid.datacite.datacite.username", value = "test")
     void lookupPidProviderSetting() {
         assertEquals("test", JvmSettings.DATACITE_USERNAME.lookup("datacite"));
     }
-    
+
     @Test
     @SystemProperty(key = "dataverse.ingest.rserve.port", value = "1234")
     void lookupSettingViaAliasWithDefaultInMPCFile() {

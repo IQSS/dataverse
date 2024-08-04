@@ -32,8 +32,7 @@ public class FITSFileMetadataExtractorSpi extends FileMetadataExtractorSpi {
     private static String[] extensions = {"fits"};
     private static String[] mimeType = {"application/fits", "image/fits"};
 
-    
-    
+
     /**
      *
      */
@@ -45,7 +44,7 @@ public class FITSFileMetadataExtractorSpi extends FileMetadataExtractorSpi {
         dbgLog.fine(FITSFileMetadataExtractorSpi.class.getName() + " is called");
     }
 
-    
+
     public String getDescription(Locale locale) {
         return "HU-IQSS-DVN-project FITS File Ingester";
     }
@@ -66,12 +65,12 @@ public class FITSFileMetadataExtractorSpi extends FileMetadataExtractorSpi {
         if (source == null) {
             throw new IllegalArgumentException("source == null!");
         }
-        
+
         BufferedInputStream stream = (BufferedInputStream) source;
 
         //
         
-        return true; 
+        return true;
     }
 
 
@@ -82,7 +81,7 @@ public class FITSFileMetadataExtractorSpi extends FileMetadataExtractorSpi {
         }
 
         byte[] b = new byte[FITS_HEADER_SIZE];
-        
+
         if (stream.markSupported()) {
             stream.mark(0);
         }
@@ -131,5 +130,5 @@ public class FITSFileMetadataExtractorSpi extends FileMetadataExtractorSpi {
     public FileMetadataExtractor createIngesterInstance(Object ext) throws
         IOException {
         return new FITSFileMetadataExtractor(this);
-    }   
+    }
 }

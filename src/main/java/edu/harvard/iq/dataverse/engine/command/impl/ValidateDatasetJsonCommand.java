@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
@@ -20,12 +19,12 @@ import java.util.logging.Logger;
  */
 @RequiredPermissions(Permission.AddDataset)
 public class ValidateDatasetJsonCommand extends AbstractCommand<String> {
-    
+
     private static final Logger logger = Logger.getLogger(ValidateDatasetJsonCommand.class.getCanonicalName());
-    
+
     private final Dataverse dataverse;
     private final String datasetJson;
-    
+
     public ValidateDatasetJsonCommand(DataverseRequest aRequest, Dataverse target, String datasetJsonIn) {
         super(aRequest, target);
         dataverse = target;
@@ -37,5 +36,5 @@ public class ValidateDatasetJsonCommand extends AbstractCommand<String> {
 
             return ctxt.dataverses().isDatasetJsonValid(dataverse.getAlias(), datasetJson);
 
-    }   
+    }
 }

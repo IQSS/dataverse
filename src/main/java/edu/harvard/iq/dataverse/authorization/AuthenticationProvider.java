@@ -23,36 +23,43 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
  * @author michael
  */
 public interface AuthenticationProvider {
-    
+
     String getId();
-        
+
     AuthenticationProviderDisplayInfo getInfo();
-    
+
     default int getOrder() { return 1; }
-    default boolean isPasswordUpdateAllowed() { return false; };
-    default boolean isUserInfoUpdateAllowed() { return false; };
-    default boolean isUserDeletionAllowed() { return false; };
-    default boolean isOAuthProvider() { return false; };
+
+    default boolean isPasswordUpdateAllowed() { return false; }
+
+    default boolean isUserInfoUpdateAllowed() { return false; }
+
+    default boolean isUserDeletionAllowed() { return false; }
+
+    default boolean isOAuthProvider() { return false; }
+
     /** @todo Consider moving some or all of these to AuthenticationProviderDisplayInfo.*/
     /** The identifier is only displayed in the UI if it's meaningful, such as an ORCID iD.*/
-    default boolean isDisplayIdentifier() { return false; };
+    default boolean isDisplayIdentifier() { return false; }
+
     /** ORCID calls their persistent id an "ORCID iD".*/
-    default String getPersistentIdName() { return null; };
+    default String getPersistentIdName() { return null; }
+
     /** ORCID has special language to describe their ID: http://members.orcid.org/logos-web-graphics */
-    default String getPersistentIdDescription() { return null; };
+    default String getPersistentIdDescription() { return null; }
+
     /** An ORCID example would be the "http://orcid.org/" part of http://orcid.org/0000-0002-7874-374X*/
-    default String getPersistentIdUrlPrefix() { return null; };
-    default String getLogo() { return null; };
-    
-    
-    
+    default String getPersistentIdUrlPrefix() { return null; }
+
+    default String getLogo() { return null; }
+
+
     /**
      * Some providers (e.g organizational ones) provide verified email addresses.
      * @return {@code true} if we can treat email addresses coming from this provider as verified, {@code false} otherwise.
      */
-    default boolean isEmailVerified() { return false; };
-    
-    
+    default boolean isEmailVerified() { return false; }
+
 
     /**
      * Updates the password of the user whose id is passed. 
@@ -63,8 +70,8 @@ public interface AuthenticationProvider {
      */
     default void updatePassword(String userIdInProvider, String newPassword) {
         throw new UnsupportedOperationException(this.toString() + " does not implement password updates");
-    };
-    
+    }
+
     /**
      * Verifies that the passed password matches the user's. Note that this method is has tri-state return
      * value ({@link Boolean} rather than a {@code boolean}). A {@code null} returned means that the user
@@ -77,8 +84,8 @@ public interface AuthenticationProvider {
      */
     default Boolean verifyPassword(String userIdInProvider, String password) {
         throw new UnsupportedOperationException(this.toString() + " does not implement password updates");
-    };
-    
+    }
+
     /**
      * Updates the password of the user whose id is passed. 
      * @param userIdInProvider User id in the provider. NOT the {@link AuthenticatedUser#id}, which is internal to the installation.
@@ -88,13 +95,13 @@ public interface AuthenticationProvider {
      */
     default void updateUserInfo(String userIdInProvider, AuthenticatedUserDisplayInfo updatedUserData) {
         throw new UnsupportedOperationException(this.toString() + " does not implement account detail updates");
-    };
-    
+    }
+
     default void deleteUser(String userIdInProvider) {
         throw new UnsupportedOperationException(this.toString() + " does not implement account deletions");
     }
- 
-    
+
+
     /**
      * Given the AuthenticationProvider id, return the friendly name 
      * of the AuthenticationProvider as defined in the bundle
@@ -108,7 +115,7 @@ public interface AuthenticationProvider {
         if (authProviderId == null) {
             return BundleUtil.getStringFromBundle("authenticationProvider.name.null");
         }
-        
+
         String friendlyName = BundleUtil.getStringFromBundle("authenticationProvider.name." + authProviderId);
         if (friendlyName == null) {
             return authProviderId;
@@ -124,6 +131,6 @@ public interface AuthenticationProvider {
         // call static method
         return BundleUtil.getStringFromBundle("authentication.human_readable." + this.getId());
     }
-        
+
 }
 

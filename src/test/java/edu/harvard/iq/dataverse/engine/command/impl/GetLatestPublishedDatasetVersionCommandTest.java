@@ -19,39 +19,39 @@ import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeRequest;
  * @author michael
  */
 public class GetLatestPublishedDatasetVersionCommandTest {
-    
+
     TestDataverseEngine engine = new TestDataverseEngine( new TestCommandContext() );
-    
+
     @Test
     public void testLatestPublishedNoDraft() throws CommandException {
-        
+
         Dataset ds = MocksFactory.makeDataset();
         List<DatasetVersion> versions = make10Versions(ds);
         ds.setVersions(versions);
-        
+
         assertEquals(10L, engine.submit(new GetLatestPublishedDatasetVersionCommand(makeRequest(), ds)).getVersionNumber().longValue());
         assertTrue(engine.getReqiredPermissionsForObjects().get(ds).isEmpty(),
             "Published datasets should require no permissions to view");
     }
-    
+
     @Test
     public void testLatestPublishedWithDraft() throws CommandException {
-        
+
         Dataset ds = MocksFactory.makeDataset();
         List<DatasetVersion> versions = make10Versions(ds);
         versions.add(MocksFactory.makeDatasetVersion(ds.getCategories()));
         ds.setVersions(versions);
-        
+
         assertEquals(10L, engine.submit(new GetLatestPublishedDatasetVersionCommand(makeRequest(), ds)).getVersionNumber().longValue());
         assertTrue(engine.getReqiredPermissionsForObjects().get(ds).isEmpty(),
             "Published datasets should require no permissions to view");
     }
-    
+
     @Test
     public void testLatestNonePublished() throws CommandException {
-        
+
         Dataset ds = MocksFactory.makeDataset();
-        
+
         assertNull(engine.submit(new GetLatestPublishedDatasetVersionCommand(makeRequest(), ds)));
     }
 
@@ -68,6 +68,6 @@ public class GetLatestPublishedDatasetVersionCommandTest {
         }
         return versions;
     }
-    
-    
+
+
 }

@@ -197,7 +197,7 @@ public class IPv6AddressTest {
         assertEquals(IPv6Address.valueOf("fe80:0:0:0:0:0:0:1%1]]"),
                 IPv6Address.valueOf("fe80:0:0:0:0:0:0:1"));
     }
-    
+
     @Test
     public void testEquals() {
         IPv6Address sut = IPv6Address.valueOf("ff:ff:12:23:34::0");
@@ -217,6 +217,6 @@ public class IPv6AddressTest {
     public boolean between(long[] bottom, long[] top, long[] addr) {
         return above(top, addr) && above(addr, bottom);
     }
-    
-    
+
+
 }

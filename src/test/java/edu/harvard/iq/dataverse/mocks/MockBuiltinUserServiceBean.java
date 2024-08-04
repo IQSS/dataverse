@@ -13,7 +13,7 @@ import java.util.Map;
 public class MockBuiltinUserServiceBean extends BuiltinUserServiceBean {
 
     public final Map<String, BuiltinUser> users = new HashMap<>();
-    
+
     @Override
     public BuiltinUser findByUserName(String userName) {
         return users.get(userName);
@@ -37,7 +37,6 @@ public class MockBuiltinUserServiceBean extends BuiltinUserServiceBean {
     public void removeUser(String userName) {
         users.remove(userName);
     }
-    
-    
-    
+
+
 }

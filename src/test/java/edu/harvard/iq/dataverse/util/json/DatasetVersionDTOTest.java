@@ -30,32 +30,32 @@ import org.junit.jupiter.api.Test;
  */
 public class DatasetVersionDTOTest {
     private final DateFormat dateFormat = Util.getDateTimeFormat();
-    
+
     public DatasetVersionDTOTest() {
     }
-    
+
     @BeforeAll
     public static void setUpClass() {
     }
-    
+
     @AfterAll
     public static void tearDownClass() {
     }
-    
+
     @BeforeEach
     public void setUp() {
-       
+
     }
+
     @AfterEach
     public void tearDown() {
     }
-    
-    
+
 
     @Test
     public void testReadDataSet() {
         try {
-          
+
             File file = new File("src/test/java/edu/harvard/iq/dataverse/util/json/JsonDatasetVersion.txt");
             String text = new Scanner(file).useDelimiter("\\Z").next();
             Gson gson = new Gson();
@@ -83,20 +83,18 @@ public class DatasetVersionDTOTest {
             expectedDTO.setMultipleCompound(authorList);
 
             FieldDTO authorDTO = dto.getMetadataBlocks().get("citation").getFields().get(1);
-            
+
             // write both dto's to json to compare them with gson parser
             
             JsonElement expected = gson.toJsonTree(expectedDTO, FieldDTO.class);
             JsonElement result = gson.toJsonTree(authorDTO);
-            
+
             assertEquals(expected, result);
-            
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-  
-                  
 
 }

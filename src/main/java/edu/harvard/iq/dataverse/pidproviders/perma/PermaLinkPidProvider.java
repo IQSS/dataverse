@@ -38,7 +38,7 @@ public class PermaLinkPidProvider extends AbstractPidProvider {
     public static final String PERMA_RESOLVER_URL = JvmSettings.PERMALINK_BASE_URL.lookupOptional("permalink")
             .orElse(SystemConfig.getDataverseSiteUrlStatic());
 
-    
+
     private String separator = SEPARATOR;
 
     private String baseUrl;

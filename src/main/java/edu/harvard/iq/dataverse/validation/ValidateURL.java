@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.validation;
 
 import java.lang.annotation.Documented;
@@ -15,6 +14,7 @@ import jakarta.validation.Payload;
 @Documented
 public @interface ValidateURL {
     String message() default "'${validatedValue}' {url.invalid}";
+
     String[] schemes() default {"http", "https", "ftp"};
 
     Class<?>[] groups() default {};

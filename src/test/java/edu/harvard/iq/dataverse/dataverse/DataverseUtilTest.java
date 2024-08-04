@@ -44,7 +44,7 @@ public class DataverseUtilTest {
         definedFrenchD.setMetadataLanguage("fr");
         Dataset definedSpanishD = new Dataset();
         definedSpanishD.setMetadataLanguage("es");
-        
+
         // Not set tests:
         //Good - no mLang sent, parent doesn't have one
         assertDoesNotThrow(() -> DataverseUtil.checkMetadataLangauge(undefinedD, undefinedParent, emptyMLangSettingMap));
@@ -54,7 +54,7 @@ public class DataverseUtilTest {
         assertDoesNotThrow(() -> DataverseUtil.checkMetadataLangauge(definedEnglishD, definedParent, emptyMLangSettingMap));
         //Bad - one sent, doesn't match parent
         assertThrows(BadRequestException.class, () -> DataverseUtil.checkMetadataLangauge(definedFrenchD, definedParent, emptyMLangSettingMap));
-        
+
         //With setting tests
         //Bad - one sent, parent doesn't have one
         assertThrows(BadRequestException.class, () -> DataverseUtil.checkMetadataLangauge(undefinedD, undefinedParent, mLangSettingMap));

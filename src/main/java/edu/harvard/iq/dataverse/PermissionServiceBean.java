@@ -78,11 +78,11 @@ public class PermissionServiceBean {
 
     @EJB
     DataverseServiceBean dataverseService;
-    
+
     @EJB
     DvObjectServiceBean dvObjectServiceBean;
-    
-    @EJB 
+
+    @EJB
     WorkflowServiceBean workflowService;
 
     @PersistenceContext
@@ -116,7 +116,7 @@ public class PermissionServiceBean {
         public Set<Permission> get() {
             return permissionsFor(request, subject);
         }
-        
+
         public boolean has(Permission p) {
             return hasPermissionsFor(request, subject, EnumSet.of(p));
         }
@@ -253,7 +253,7 @@ public class PermissionServiceBean {
     public List<DvObject> whichChildrenHasPermissionsFor(DataverseRequest req, DvObjectContainer dvo, Set<Permission> required, boolean includeReleased) {
         List<DvObject> children = dvObjectServiceBean.findByOwnerId(dvo.getId());
         User user = req.getUser();
-        
+
         // quick cases
         if (user.isSuperuser()) {
             return children; // it's good to be king
@@ -264,13 +264,13 @@ public class PermissionServiceBean {
                 return Collections.emptyList();
             }
         }
-              
+
         // Actually look at permissions
         Set<DvObject> parents = getPermissionAncestors(dvo);
         Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(req));
         ras.add(user);
         List<RoleAssignment> parentsAsignments = roleService.directRoleAssignments(ras, parents);
-        
+
         for (RoleAssignment asmnt : parentsAsignments) {
             required.removeAll(asmnt.getRole().permissions());
         }
@@ -278,13 +278,13 @@ public class PermissionServiceBean {
             // All permissions are met by role assignments on the request
             return children;
         }
-        
+
         // Looking at each child at a time now.
         // 1. Map childs to permissions
-        List<RoleAssignment> childrenAssignments = roleService.directRoleAssignments(ras, 
+        List<RoleAssignment> childrenAssignments = roleService.directRoleAssignments(ras,
                 includeReleased ? children.stream().filter(child ->
                     (!child.isReleased())).collect(toList()) : children);
-        
+
         Map<DvObject, Set<Permission>> roleMap = new HashMap<>();
         childrenAssignments.forEach(assignment -> {
             DvObject definitionPoint = assignment.getDefinitionPoint();
@@ -294,23 +294,23 @@ public class PermissionServiceBean {
                 roleMap.get(definitionPoint).addAll(assignment.getRole().permissions());
             }
         });
-        
+
         // 2. Filter by permission map created at (1).
-        return children.stream().filter(child -> 
-                ((includeReleased && child.isReleased()) 
+        return children.stream().filter(child ->
+                ((includeReleased && child.isReleased())
                         || ((roleMap.containsKey(child)) &&
                             (roleMap.get(child).containsAll(required.stream().filter(perm -> perm.appliesTo(child.getClass())).collect(Collectors.toSet())))))
         ).collect(toList());
-        
+
     }
-    
+
     // Convenience versions of the method above:  
     // Same as above - but defaults to relying on permissions only 
     // (i.e., does not automatically return released dataverses and datasets)
     public List<DvObject> whichChildrenHasPermissionsFor(DataverseRequest req, DvObjectContainer dvo, Set<Permission> required) {
         return whichChildrenHasPermissionsFor(req, dvo, required, false);
     }
-    
+
     // A shortcut for calling the method above, with the assumption that all the
     // released dataverses and datasets should be included: 
     public List<DvObject> whichChildrenHasPermissionsForOrReleased(DataverseRequest req, DvObjectContainer dvo, Set<Permission> required) {
@@ -328,7 +328,7 @@ public class PermissionServiceBean {
                 return false;
             }
         }
-        
+
         Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(req, dvo));
         ras.add(user);
         return hasGroupPermissionsFor(ras, dvo, required);
@@ -351,12 +351,12 @@ public class PermissionServiceBean {
         if (required.isEmpty()) {
             return true;
         }
-        
+
         Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(ra, dvo));
         ras.add(ra);
         return hasGroupPermissionsFor(ras, dvo, required);
     }
-    
+
     private boolean hasGroupPermissionsFor(Set<RoleAssignee> ras, DvObject dvo, Set<Permission> required) {
         for (RoleAssignment asmnt : assignmentsFor(ras, dvo)) {
             required.removeAll(asmnt.getRole().permissions());
@@ -415,7 +415,7 @@ public class PermissionServiceBean {
         }
         return permissions;
     }
-    
+
     private void addGroupPermissionsFor(Set<RoleAssignee> ras, DvObject dvo, Set<Permission> permissions) {
         for (RoleAssignment asmnt : assignmentsFor(ras, dvo)) {
             permissions.addAll(asmnt.getRole().permissions());
@@ -755,7 +755,7 @@ public class PermissionServiceBean {
             checkEditDatasetLock(dataset, dataverseRequest, command);
         }
     }
-    
+
     public void checkPublishDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {
             if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
@@ -822,7 +822,7 @@ public class PermissionServiceBean {
             }
         }
     }
-    
+
     public boolean isMatchingWorkflowLock(Dataset d, String userId, String invocationId) {
         if (invocationId != null) {
             PendingWorkflowInvocation pwfi = workflowService.getPendingWorkflow(invocationId);

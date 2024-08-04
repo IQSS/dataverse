@@ -34,13 +34,13 @@ import jakarta.persistence.Table;
 })
 @Entity
 public class PasswordResetData implements Serializable {
-     
+
     public enum Reason {
         FORGOT_PASSWORD,
         NON_COMPLIANT_PASSWORD,
         UPGRADE_REQUIRED
     }
-    
+
     // TODO cleaup: can remove the (unused) id field, and use the token field as an id instead.
     // This will prevent duplicate tokens (ok, not a likely poroblem) and would
     // make the token lookup much faster.
@@ -65,7 +65,7 @@ public class PasswordResetData implements Serializable {
 
     @Column(nullable = false)
     private Timestamp expires;
-    
+
     @Enumerated(EnumType.STRING)
     private Reason reason;
 

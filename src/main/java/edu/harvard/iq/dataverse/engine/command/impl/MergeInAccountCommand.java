@@ -44,7 +44,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
     final AuthenticatedUser ongoingAU;
 
     private static final Logger logger = Logger.getLogger(MergeInAccountCommand.class.getCanonicalName());
-    
+
     public MergeInAccountCommand(DataverseRequest createDataverseRequest, AuthenticatedUser consumedAuthenticatedUser, AuthenticatedUser ongoingAU) {
         super(
             createDataverseRequest,
@@ -53,7 +53,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         consumedAU = consumedAuthenticatedUser;
         this.ongoingAU = ongoingAU;
     }
-    
+
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
@@ -67,15 +67,15 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
 
         List<RoleAssignment> baseRAList = ctxt.roleAssignees().getAssignmentsFor(ongoingAU.getIdentifier());
         List<RoleAssignment> consumedRAList = ctxt.roleAssignees().getAssignmentsFor(consumedAU.getIdentifier());
-        
+
         for (RoleAssignment cra : consumedRAList) {
             if (cra.getAssigneeIdentifier().charAt(0) == '@') {
-                
+
                 boolean willDelete = false;
                 for (RoleAssignment bra : baseRAList) {
                     //Matching on the id not the whole DVObject as I'm suspicious of dvobject equality
                     if (bra.getDefinitionPoint().getId().equals(cra.getDefinitionPoint().getId())
-                        && bra.getRole().equals(cra.getRole())) { 
+                        && bra.getRole().equals(cra.getRole())) {
                         willDelete = true; //more or less a skip, as we run a delete query afterwards
                     }
                 }
@@ -90,24 +90,24 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
                         failureLogText += "\r\n" + e.getLocalizedMessage();
                         LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, cra.getDefinitionPoint());
 
-                    }                   
+                    }
                 } // no else here because the any willDelete == true will happen in the named query below.
             } else {
                 throw new IllegalCommandException("Original userIdentifier provided does not seem to be an AuthenticatedUser", this);
             }
         }
-        
+
         //Delete role assignments for consumedIdentifier not merged, e.g. duplicates
         int resultCount = ctxt.em().createNamedQuery("RoleAssignment.deleteAllByAssigneeIdentifier", RoleAssignment.class).
                         setParameter("assigneeIdentifier", consumedAU.getIdentifier())
                         .executeUpdate();
-        
+
         // DatasetVersionUser
         for (DatasetVersionUser user : ctxt.datasetVersion().getDatasetVersionUsersByAuthenticatedUser(consumedAU)) {
             user.setAuthenticatedUser(ongoingAU);
             ctxt.em().merge(user);
         }
-        
+
         //DatasetLocks
         for (DatasetLock lock : ctxt.datasets().getDatasetLocksByUser(consumedAU)) {
             lock.setUser(ongoingAU);
@@ -124,25 +124,25 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
             }
             ctxt.em().merge(dvo);
         }
-        
+
         //GuestbookResponse
         for (GuestbookResponse gbr : ctxt.responses().findByAuthenticatedUserId(consumedAU)) {
             gbr.setAuthenticatedUser(ongoingAU);
             ctxt.em().merge(gbr);
         }
-        
+
         //UserNotification
         for (UserNotification note : ctxt.notifications().findByUser(consumedAU.getId())) {
             note.setUser(ongoingAU);
             ctxt.em().merge(note);
         }
-        
+
         //UserNotification
         for (UserNotification note : ctxt.notifications().findByRequestor(consumedAU.getId())) {
             note.setRequestor(ongoingAU);
             ctxt.em().merge(note);
         }
-        
+
         // Set<ExplicitGroup>
         //for () 
         
@@ -151,35 +151,34 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
             search.setCreator(ongoingAU);
             ctxt.em().merge(search);
         }
-        
+
         //Workflow Comments
         for (WorkflowComment wc : ctxt.authentication().getWorkflowCommentsByAuthenticatedUser(consumedAU)) {
             wc.setAuthenticatedUser(ongoingAU);
             ctxt.em().merge(wc);
         }
-        
 
-        
+
         //ConfirmEmailData  
         
         // todo: the deletion should be handed down to the service!
-        ConfirmEmailData confirmEmailData = ctxt.confirmEmail().findSingleConfirmEmailDataByUser(consumedAU); 
+        ConfirmEmailData confirmEmailData = ctxt.confirmEmail().findSingleConfirmEmailDataByUser(consumedAU);
         if (confirmEmailData != null) {
             ctxt.em().remove(confirmEmailData);
         }
 
-        
+
         //Access Request is not an entity. have to update with native query
         
         ctxt.em().createNativeQuery("UPDATE fileaccessrequests SET authenticated_user_id=" + ongoingAU.getId() + " WHERE authenticated_user_id=" + consumedAU.getId()).executeUpdate();
-        
+
         ctxt.em().createNativeQuery("Delete from OAuth2TokenData where user_id =" + consumedAU.getId()).executeUpdate();
-        
+
         ctxt.em().createNativeQuery("DELETE FROM explicitgroup_authenticateduser consumed USING explicitgroup_authenticateduser ongoing WHERE consumed.containedauthenticatedusers_id=" + ongoingAU.getId() + " AND ongoing.containedauthenticatedusers_id=" + consumedAU.getId()).executeUpdate();
         ctxt.em().createNativeQuery("UPDATE explicitgroup_authenticateduser SET containedauthenticatedusers_id=" + ongoingAU.getId() + " WHERE containedauthenticatedusers_id=" + consumedAU.getId()).executeUpdate();
-        
+
         ctxt.actionLog().changeUserIdentifierInHistory(consumedAU.getIdentifier(), ongoingAU.getIdentifier());
-        
+
         //delete:
         //  builtin user - if applicable
         //  authenticated user
@@ -196,15 +195,15 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         if (consumedBuiltinUser != null) {
             ctxt.builtinUsers().removeUser(consumedBuiltinUser.getUserName());
         }
-        
-        
+
+
     }
-    
+
     @Override
     public String describe() {
         return "User " + consumedAU.getUserIdentifier() + " (type: " + consumedAU.getAuthenticatedUserLookup().getAuthenticationProviderId() + " | persistentUserId: "
                 + consumedAU.getAuthenticatedUserLookup().getPersistentUserId() +
                 "; Name: " + consumedAU.getFirstName() + " " + consumedAU.getLastName() + "; Institution: " + consumedAU.getAffiliation() + "; Email: " + consumedAU.getEmail() + ") merged into " + ongoingAU.getUserIdentifier();
     }
-    
+
 }

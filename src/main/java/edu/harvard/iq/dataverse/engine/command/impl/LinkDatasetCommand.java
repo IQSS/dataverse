@@ -28,10 +28,10 @@ import org.apache.solr.client.solrj.SolrServerException;
  */
 @RequiredPermissions(Permission.PublishDataset)
 public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse> {
-    
+
     private final Dataset linkedDataset;
     private final Dataverse linkingDataverse;
-    
+
     public LinkDatasetCommand(DataverseRequest aRequest, Dataverse dataverse, Dataset linkedDataset) {
         super(aRequest, dataverse);
         this.linkedDataset = linkedDataset;
@@ -40,11 +40,11 @@ public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse>
 
     @Override
     public DatasetLinkingDataverse execute(CommandContext ctxt) throws CommandException {
-        
+
         if (!linkedDataset.isReleased() && !linkedDataset.isHarvested()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.available"), this);
-        }       
-        if (linkedDataset.getOwner().equals(linkingDataverse)) {           
+        }
+        if (linkedDataset.getOwner().equals(linkingDataverse)) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.to.owner"), this);
         }
         if (linkedDataset.getOwner().getOwners().contains(linkingDataverse)) {
@@ -53,7 +53,7 @@ public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse>
         if (ctxt.dsLinking().alreadyLinked(linkingDataverse, linkedDataset)) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.already.linked"), this);
         }
-       
+
         DatasetLinkingDataverse datasetLinkingDataverse = new DatasetLinkingDataverse();
         datasetLinkingDataverse.setDataset(linkedDataset);
         datasetLinkingDataverse.setLinkingDataverse(linkingDataverse);
@@ -62,8 +62,8 @@ public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse>
         ctxt.em().flush();
 
         return datasetLinkingDataverse;
-    } 
-    
+    }
+
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         boolean retVal = true;

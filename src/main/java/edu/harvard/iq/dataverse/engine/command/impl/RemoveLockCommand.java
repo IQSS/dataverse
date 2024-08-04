@@ -18,7 +18,7 @@ public class RemoveLockCommand extends AbstractVoidCommand {
 
     private final Dataset dataset;
     private final DatasetLock.Reason reason;
-    
+
     public RemoveLockCommand(DataverseRequest aRequest, Dataset aDataset, DatasetLock.Reason aReason) {
         super(aRequest, aDataset);
         dataset = aDataset;
@@ -29,6 +29,6 @@ public class RemoveLockCommand extends AbstractVoidCommand {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         ctxt.datasets().removeDatasetLocks(dataset, reason);
     }
-    
+
 }
 

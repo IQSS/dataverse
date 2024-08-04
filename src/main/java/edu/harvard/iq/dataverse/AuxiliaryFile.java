@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -39,11 +38,11 @@ import jakarta.persistence.NamedQuery;
 })
 @Entity
 public class AuxiliaryFile implements Serializable {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
      /**
      * The data file that this AuxiliaryFile belongs to
      * a data file may have many auxiliaryFiles
@@ -51,22 +50,22 @@ public class AuxiliaryFile implements Serializable {
     @ManyToOne
     @JoinColumn(nullable = false)
     private DataFile dataFile;
-  
+
     private String formatTag;
-    
+
     private String formatVersion;
 
     /**
      * The application/entity that created the auxiliary file.
      */
     private String origin;
-    
+
     private boolean isPublic;
-    
-    private String contentType; 
-    
-    private Long fileSize; 
-    
+
+    private String contentType;
+
+    private Long fileSize;
+
     private String checksum;
 
     /**
@@ -122,7 +121,7 @@ public class AuxiliaryFile implements Serializable {
     public void setIsPublic(boolean isPublic) {
         this.isPublic = isPublic;
     }
-    
+
     public String getContentType() {
         return this.contentType;
     }
@@ -130,11 +129,11 @@ public class AuxiliaryFile implements Serializable {
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
-    
+
     public Long getFileSize() {
-            return fileSize; 
+            return fileSize;
     }
-    
+
     public void setFileSize(long fileSize) {
         this.fileSize = fileSize;
     }

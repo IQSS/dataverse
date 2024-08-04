@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class HomepageServlet extends HttpServlet {
     @EJB
     SettingsServiceBean settingsService;
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -45,7 +46,7 @@ public class HomepageServlet extends HttpServlet {
         dispatcher.forward(request, response);
 
     }
-    
+
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.

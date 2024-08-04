@@ -16,7 +16,7 @@ import jakarta.inject.Named;
 @Named("dfc")
 @Dependent
 public class DatasetFieldConstant implements java.io.Serializable {
-    
+
     public final static String publication = "publication";
     public final static String otherId = "otherId";
     public final static String author = "author";
@@ -32,21 +32,21 @@ public class DatasetFieldConstant implements java.io.Serializable {
     public final static String datasetContactAffiliation = "datasetContactAffiliation";
     public final static String series = "series";
     public final static String datasetVersion = "datasetVersion";
-    
+
     public final static String description = "dsDescription";
     public final static String keyword = "keyword";
     public final static String topicClassification = "topicClassification";
     public final static String geographicBoundingBox = "geographicBoundingBox";
-    
+
     public final static String note = "note";
-    
+
     public final static String publicationCitation = "publicationCitation";
     public final static String publicationIDType = "publicationIDType";
     public final static String publicationIDNumber = "publicationIDNumber";
     public final static String publicationURL = "publicationURL";
     public final static String publicationReplicationData = "publicationReplicationData";
-    
-    
+
+
     public final static String title = "title";
     public final static String subTitle = "subtitle"; //SEK 6-7-2016 to match what is in DB
     public final static String alternativeTitle = "alternativeTitle"; //missing from class
@@ -57,7 +57,7 @@ public class DatasetFieldConstant implements java.io.Serializable {
     public final static String authorIdValue = "authorIdentifier";
     public final static String otherIdValue = "otherIdValue";
     public final static String otherIdAgency = "otherIdAgency";
-    
+
     public final static String producerName = "producerName";
     public final static String producerURL = "producerURL";
     public final static String producerLogo = "producerLogoURL";
@@ -141,7 +141,7 @@ public class DatasetFieldConstant implements java.io.Serializable {
     public final static String datasetLevelErrorNotes = "datasetLevelErrorNotes";
     public final static String responseRate = "responseRate";
     public final static String samplingErrorEstimates = "samplingErrorEstimates";
-    
+
     public final static String socialScienceNotes = "socialScienceNotes";
     public final static String socialScienceNotesType = "socialScienceNotesType";
     public final static String socialScienceNotesSubject = "socialScienceNotesSubject";
@@ -172,6 +172,7 @@ public class DatasetFieldConstant implements java.io.Serializable {
     public final static String noteInformationType = "noteInformationType";
     public final static String notesInformationSubject = "notesInformationSubject";
     public final static String subject = "subject";
+
     /*
      * The following getters are needed so we can use them as properties in JSP 
      */
@@ -179,26 +180,27 @@ public class DatasetFieldConstant implements java.io.Serializable {
     public String getTitle() {
         return title;
     }
-    
+
     public String getDatasetId() {
         return datasetId;
     }
-    
+
     public String getAuthorName() {
         return authorName;
     }
-    
+
     public String getAuthorLastName() {
         return authorLastName;
     }
-    
+
     public String getAuthorFirstName() {
         return authorFirstName;
-    }    
+    }
+
     public String getAuthorAffiliation() {
         return authorAffiliation;
     }
-        
+
     public static String getAuthorIdType() {
         return authorIdType;
     }
@@ -206,311 +208,311 @@ public class DatasetFieldConstant implements java.io.Serializable {
     public static String getAuthorIdValue() {
         return authorIdValue;
     }
-    
+
     public String getOtherId() {
         return otherId;
     }
-    
+
     public String getOtherIdAgency() {
         return otherIdAgency;
     }
-    
+
     public String getProducerName() {
         return producerName;
     }
-    
+
     public String getProducerURL() {
         return producerURL;
     }
-    
+
     public String getProducerLogo() {
         return producerLogo;
     }
-    
+
     public String getProducerAbbreviation() {
         return producerAbbreviation;
     }
-    
+
     public String getProductionDate() {
         return productionDate;
     }
-    
+
     public String getSoftwareName() {
         return softwareName;
     }
-    
+
     public String getSoftwareVersion() {
         return softwareVersion;
     }
-    
+
     public String getFundingAgency() {
         return fundingAgency;
     }
-    
+
     public String getGrantNumber() {
         return grantNumber;
     }
-    
+
     public String getGrantNumberAgency() {
         return grantNumberAgency;
     }
-    
+
     public String getDistributorName() {
         return distributorName;
     }
-    
+
     public String getDistributorURL() {
         return distributorURL;
     }
-    
+
     public String getDistributorLogo() {
         return distributorLogo;
     }
-    
+
     public String getDistributionDate() {
         return distributionDate;
     }
-    
+
     public String getDistributorContactName() {
         return distributorContactName;
     }
-    
+
     public String getDistributorContactAffiliation() {
         return distributorContactAffiliation;
     }
-    
+
     public String getDistributorContactEmail() {
         return distributorContactEmail;
     }
-    
+
     public String getDepositor() {
         return depositor;
     }
-    
+
     public String getDateOfDeposit() {
         return dateOfDeposit;
     }
-    
+
     public String getSeriesName() {
         return seriesName;
     }
-    
+
     public String getSeriesInformation() {
         return seriesInformation;
     }
-    
+
     public String getDatasetVersion() {
         return datasetVersion;
     }
-    
+
     public String getKeywordValue() {
         return keywordValue;
     }
-    
+
     public String getKeywordVocab() {
         return keywordVocab;
     }
-    
+
     public String getKeywordVocabURI() {
         return keywordVocabURI;
     }
-    
+
     public String getTopicClassValue() {
         return topicClassValue;
     }
-    
+
     public String getTopicClassVocab() {
         return topicClassVocab;
     }
-    
+
     public String getTopicClassVocabURI() {
         return topicClassVocabURI;
     }
-    
+
     public String getDescriptionText() {
         return descriptionText;
     }
-    
+
     public String getDescriptionDate() {
         return descriptionDate;
     }
-    
+
     public String getTimePeriodCoveredStart() {
         return timePeriodCoveredStart;
     }
-    
+
     public String getTimePeriodCoveredEnd() {
         return timePeriodCoveredEnd;
     }
-    
+
     public String getDateOfCollectionStart() {
         return dateOfCollectionStart;
     }
-    
+
     public String getDateOfCollectionEnd() {
         return dateOfCollectionEnd;
     }
-    
+
     public String getCountry() {
         return country;
     }
-    
+
     public String getGeographicCoverage() {
         return geographicCoverage;
     }
-    
+
     public String getGeographicUnit() {
         return geographicUnit;
     }
-    
+
     public String getUnitOfAnalysis() {
         return unitOfAnalysis;
     }
-    
+
     public String getUniverse() {
         return universe;
     }
-    
+
     public String getKindOfData() {
         return kindOfData;
     }
-    
+
     public String getTimeMethod() {
         return timeMethod;
     }
-    
+
     public String getDataCollector() {
         return dataCollector;
     }
-    
+
     public String getFrequencyOfDataCollection() {
         return frequencyOfDataCollection;
     }
-    
+
     public String getSamplingProcedure() {
         return samplingProcedure;
     }
-    
+
     public String getDeviationsFromSampleDesign() {
         return deviationsFromSampleDesign;
     }
-    
+
     public String getCollectionMode() {
         return collectionMode;
     }
-    
+
     public String getResearchInstrument() {
         return researchInstrument;
     }
-    
+
     public String getDataSources() {
         return dataSources;
     }
-    
+
     public String getOriginOfSources() {
         return originOfSources;
     }
-    
+
     public String getCharacteristicOfSources() {
         return characteristicOfSources;
     }
-    
+
     public String getAccessToSources() {
         return accessToSources;
     }
-    
+
     public String getDataCollectionSituation() {
         return dataCollectionSituation;
     }
-    
+
     public String getActionsToMinimizeLoss() {
         return actionsToMinimizeLoss;
     }
-    
+
     public String getControlOperations() {
         return controlOperations;
     }
-    
+
     public String getWeighting() {
         return weighting;
     }
-    
+
     public String getCleaningOperations() {
         return cleaningOperations;
     }
-    
+
     public String getDatasetLevelErrorNotes() {
         return datasetLevelErrorNotes;
     }
-    
+
     public String getResponseRate() {
         return responseRate;
     }
-    
+
     public String getSamplingErrorEstimates() {
         return samplingErrorEstimates;
     }
-    
+
     public String getOtherDataAppraisal() {
         return otherDataAppraisal;
     }
-    
+
     public String getPlaceOfAccess() {
         return placeOfAccess;
     }
-    
+
     public String getOriginalArchive() {
         return originalArchive;
     }
-    
+
     public String getAvailabilityStatus() {
         return availabilityStatus;
     }
-    
+
     public String getCollectionSize() {
         return collectionSize;
     }
-    
+
     public String getDatasetCompletion() {
         return datasetCompletion;
     }
-    
+
     public String getConfidentialityDeclaration() {
         return confidentialityDeclaration;
     }
-    
+
     public String getSpecialPermissions() {
         return specialPermissions;
     }
-    
+
     public String getRestrictions() {
         return restrictions;
     }
-    
+
     public String getContact() {
         return contact;
     }
-    
+
     public String getCitationRequirements() {
         return citationRequirements;
     }
-    
+
     public String getDepositorRequirements() {
         return depositorRequirements;
     }
-    
+
     public String getConditions() {
         return conditions;
     }
-    
+
     public String getDisclaimer() {
         return disclaimer;
     }
-    
+
     public String getRelatedMaterial() {
         return relatedMaterial;
     }
-    
+
     /*
     public String getRelatedPublications() {
         return relatedPublications;
@@ -519,31 +521,31 @@ public class DatasetFieldConstant implements java.io.Serializable {
     public String getRelatedDatasets() {
         return relatedDatasets;
     }
-    
+
     public String getOtherReferences() {
         return otherReferences;
     }
-    
+
     public String getNotesText() {
         return notesText;
     }
-    
+
     public String getNotesInformationType() {
         return noteInformationType;
     }
-    
+
     public String getNotesInformationSubject() {
         return notesInformationSubject;
     }
-    
+
     public String getProducerAffiliation() {
         return producerAffiliation;
     }
-    
+
     public String getProductionPlace() {
         return productionPlace;
     }
-    
+
     public String getDistributorAbbreviation() {
         return distributorAbbreviation;
     }
@@ -664,9 +666,9 @@ public class DatasetFieldConstant implements java.io.Serializable {
     public String getDatasetVersionValue() {
         return datasetVersionValue;
     }
-    
+
     public String getSubject() {
         return subject;
     }
-    
+
 }

@@ -13,7 +13,7 @@ public interface PidProvider {
     static final Logger logger = Logger.getLogger(PidProvider.class.getCanonicalName());
 
     boolean alreadyRegistered(DvObject dvo) throws Exception;
-    
+
     /**
      * This call reports whether a PID is registered with the external Provider
      * service. For providers like DOIs/Handles with an external service, this call
@@ -30,10 +30,11 @@ public interface PidProvider {
      * @throws Exception
      */
     boolean alreadyRegistered(GlobalId globalId, boolean noProviderDefault) throws Exception;
-    
+
     boolean registerWhenPublished();
+
     boolean canManagePID();
-    
+
     List<String> getProviderInformation();
 
     String createIdentifier(DvObject dvo) throws Throwable;
@@ -43,32 +44,39 @@ public interface PidProvider {
     String modifyIdentifierTargetURL(DvObject dvo) throws Exception;
 
     void deleteIdentifier(DvObject dvo) throws Exception;
-    
+
     Map<String, String> getMetadataForCreateIndicator(DvObject dvObject);
-    
+
     Map<String, String> getMetadataForTargetURL(DvObject dvObject);
-    
+
     DvObject generatePid(DvObject dvObject);
-    
+
     String getIdentifier(DvObject dvObject);
-    
+
     boolean publicizeIdentifier(DvObject studyIn);
-    
+
     boolean updateIdentifier(DvObject dvObject);
-    
+
     boolean isGlobalIdUnique(GlobalId globalId);
-    
+
     String getUrlPrefix();
+
     String getSeparator();
-    
+
     String getProtocol();
+
     String getProviderType();
+
     String getId();
+
     String getLabel();
+
     String getAuthority();
+
     String getShoulder();
+
     String getIdentifierGenerationStyle();
-    
+
     public static Optional<GlobalId> parse(String identifierString) {
         try {
             return Optional.of(PidUtil.parseAsGlobalID(identifierString));
@@ -76,7 +84,7 @@ public interface PidProvider {
             return Optional.empty();
         }
     }
-    
+
     /** 
      *   Parse a Persistent Id and set the protocol, authority, and identifier
      * 
@@ -97,11 +105,10 @@ public interface PidProvider {
      *         {@code null} if parsing failed.
      */
     public GlobalId parsePersistentId(String identifierString);
-    
+
     public GlobalId parsePersistentId(String protocol, String authority, String identifier);
 
-    
-    
+
     public static boolean isValidGlobalId(String protocol, String authority, String identifier) {
         if (protocol == null || authority == null || identifier == null) {
             return false;
@@ -120,15 +127,15 @@ public interface PidProvider {
         }
         return true;
     }
-    
+
     static String formatIdentifierString(String str) {
-        
+
         if (str == null) {
             return null;
         }
         // remove whitespace, single quotes, and semicolons
-        return str.replaceAll("\\s+|'|;", "");  
-        
+        return str.replaceAll("\\s+|'|;", "");
+
         /*
         <   (%3C)
 >   (%3E)
@@ -144,24 +151,24 @@ public interface PidProvider {
         */
         // http://www.doi.org/doi_handbook/2_Numbering.html
     }
-    
+
     static boolean testforNullTerminator(String str) {
         if (str == null) {
             return false;
         }
         return str.indexOf('\u0000') > 0;
     }
-    
+
     static boolean checkDOIAuthority(String doiAuthority) {
-        
+
         if (doiAuthority == null) {
             return false;
         }
-        
+
         if (!(doiAuthority.startsWith("10."))) {
             return false;
         }
-        
+
         return true;
     }
 

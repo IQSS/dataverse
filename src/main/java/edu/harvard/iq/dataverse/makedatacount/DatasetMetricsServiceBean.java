@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.makedatacount;
 
 import edu.harvard.iq.dataverse.Dataset;
@@ -31,13 +30,13 @@ import jakarta.persistence.Query;
 public class DatasetMetricsServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetMetricsServiceBean.class.getCanonicalName());
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
-    
+
     @EJB
     DatasetServiceBean datasetService;
-    
+
     public DatasetMetrics getDatasetMetricsByDatasetMonthCountry(Dataset dataset, String monthYear, String country) {
         DatasetMetrics dsm = null;
         String queryStr = "SELECT d FROM DatasetMetrics d WHERE d.dataset.id = " + dataset.getId() + " and d.monthYear = '" + monthYear + "' " + " and d.countryCode = '" + country + "' ";
@@ -56,7 +55,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         }
         return null;
     }
-    
+
     public DatasetMetrics getMetrics(Dataset dataset) {
         String nullMonthYear = null;
         String nullCountry = null;
@@ -106,12 +105,12 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         return dm;
 
     }
-        
+
     public List<DatasetMetrics> parseSushiReport(JsonObject report) {
         return parseSushiReport(report, null);
     }
-    
-    
+
+
     public List<DatasetMetrics> parseSushiReport(JsonObject report, Dataset dataset) {
         List<DatasetMetrics> datasetMetricsAll = new ArrayList<>();
         //Current counter-processor v 0.1.04+ format
@@ -188,7 +187,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         }
         return datasetMetricsAll;
     }
-    
+
     private List<String[]> getCountryCountArray(JsonObject countryCountObj) {
         List<String[]> retList = new ArrayList<>();
         Set<String> keyValuePair = countryCountObj.keySet();
@@ -200,7 +199,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         }
         return retList;
     }
-    
+
     private DatasetMetrics loadMetrics(DatasetMetrics dmIn, Long count, String accessMethod, String metricType) {
 
         if (accessMethod.equals("regular")) {
@@ -236,23 +235,23 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         }
         return dmIn;
     }
-    
+
     private DatasetMetrics addNoCountryMetric(Dataset ds, String accessMethod, String metricType, Long remaining, String monthYear) {
         DatasetMetrics dm = new DatasetMetrics();
         dm.initCounts();
         dm.setDataset(ds);
         dm.setCountryCode("");
         dm.setMonth(monthYear);
-        dm = loadMetrics(dm, remaining, accessMethod, metricType); 
+        dm = loadMetrics(dm, remaining, accessMethod, metricType);
         return dm;
     }
-    
+
     private List<DatasetMetrics> addUpdateMetrics(List<DatasetMetrics> currentList, List<DatasetMetrics> compareList, String countField, String accessMethod) {
-        
+
         List<DatasetMetrics> toAdd = new ArrayList();
-        
+
         for (DatasetMetrics testMetric : compareList) {
-            
+
             boolean add = true;
             ListIterator<DatasetMetrics> iterator = currentList.listIterator();
             while (iterator.hasNext()) {
@@ -264,7 +263,7 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                             next.setViewsTotalRegular(testMetric.getViewsTotalRegular());
                         } else {
                             next.setViewsTotalMachine(testMetric.getViewsTotalMachine());
-                        }                      
+                        }
                     }
                     if (countField.equals("unique-dataset-investigations")) {
                         if (accessMethod.equals("regular")) {
@@ -272,14 +271,14 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                         } else {
                             next.setViewsUniqueMachine(testMetric.getViewsUniqueMachine());
                         }
-                    }                    
+                    }
                     if (countField.equals("total-dataset-requests")) {
                         if (accessMethod.equals("regular")) {
                             next.setDownloadsTotalRegular(testMetric.getDownloadsTotalRegular());
                         } else {
                             next.setDownloadsTotalMachine(testMetric.getDownloadsTotalMachine());
                         }
-                    }                    
+                    }
                     if (countField.equals("unique-dataset-requests")) {
                         if (accessMethod.equals("regular")) {
                             next.setDownloadsUniqueRegular(testMetric.getDownloadsUniqueRegular());
@@ -296,15 +295,15 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
                toAdd.add(testMetric);
             }
         }
-        
+
         if (!toAdd.isEmpty()) {
             currentList.addAll(toAdd);
         }
-        
+
         return currentList;
     }
-    
-    public DatasetMetrics save(DatasetMetrics datasetMetrics) {  
+
+    public DatasetMetrics save(DatasetMetrics datasetMetrics) {
         //Replace existing if necessary
         if (datasetMetrics.getDataset() == null) {
             return null;
@@ -319,5 +318,5 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         DatasetMetrics savedDatasetMetrics = em.merge(datasetMetrics);
         return savedDatasetMetrics;
     }
-    
+
 }

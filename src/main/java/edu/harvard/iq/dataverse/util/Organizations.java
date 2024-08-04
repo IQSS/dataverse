@@ -125,7 +125,7 @@ class Organizations {
         int pos = 0;
         for (TokenizerME tokenizer : tokenizers) {
             String language = getLanguage(TOCKENIZER_MODELS[pos]);
-            
+
             if (isOrganization(organization, tokenizer, language)) {
                 return true;
             }

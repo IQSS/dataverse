@@ -281,7 +281,7 @@ public class DataReader {
         }
         return ret;
     }
-    
+
     /* 
      * Same, but expecting potential Unicode characters.
      */

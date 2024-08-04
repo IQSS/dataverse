@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  * @author michael
  */
 public interface DataverseEngine {
-	
+
 	/**
 	 * Submits a command for immediate execution.
 	 * @param <R> The command result's type.

@@ -63,7 +63,7 @@ import jakarta.persistence.PersistenceContext;
 public class HarvesterServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
@@ -80,10 +80,10 @@ public class HarvesterServiceBean {
     EjbDataverseEngine engineService;
     @EJB
     IndexServiceBean indexService;
-    
+
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean");
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-    
+
     public static final String HARVEST_RESULT_SUCCESS = "success";
     public static final String HARVEST_RESULT_FAILED = "failed";
     public static final String DATAVERSE_PROPRIETARY_METADATA_FORMAT = "dataverse_json";
@@ -92,13 +92,13 @@ public class HarvesterServiceBean {
     public HarvesterServiceBean() {
 
     }
-    
+
     /**
      * Called to run an "On Demand" harvest.  
      */
     @Asynchronous
     public void doAsyncHarvest(DataverseRequest dataverseRequest, HarvestingClient harvestingClient) {
-        
+
         try {
             doHarvest(dataverseRequest, harvestingClient.getId());
         } catch (Exception e) {
@@ -118,17 +118,17 @@ public class HarvesterServiceBean {
             }
         }
     }
-  
+
     public List<HarvestTimerInfo> getHarvestTimers() {
         ArrayList<HarvestTimerInfo>timers = new ArrayList<>();
-        
+
         for (Iterator it = timerService.getTimers().iterator(); it.hasNext(); ) {
             Timer timer = (Timer) it.next();
             if (timer.getInfo() instanceof HarvestTimerInfo) {
                 HarvestTimerInfo info = (HarvestTimerInfo) timer.getInfo();
                 timers.add(info);
             }
-        }    
+        }
         return timers;
     }
 
@@ -140,27 +140,27 @@ public class HarvesterServiceBean {
      */
     public void doHarvest(DataverseRequest dataverseRequest, Long harvestingClientId) throws IOException {
         HarvestingClient harvestingClientConfig = harvestingClientService.find(harvestingClientId);
-        
+
         if (harvestingClientConfig == null) {
             throw new IOException("No such harvesting client: id=" + harvestingClientId);
         }
-                
+
         String logTimestamp = logFormatter.format(new Date());
         Logger hdLogger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean." + harvestingClientConfig.getName() + logTimestamp);
         String logFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "harvest_" + harvestingClientConfig.getName() + "_" + logTimestamp + ".log";
         FileHandler fileHandler = new FileHandler(logFileName);
         hdLogger.setUseParentHandlers(false);
         hdLogger.addHandler(fileHandler);
-        
+
         PrintWriter importCleanupLog = new PrintWriter(new FileWriter(System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs/harvest_cleanup_" + harvestingClientConfig.getName() + "_" + logTimestamp + ".txt"));
-        
-        
+
+
         List<Long> harvestedDatasetIds = new ArrayList<>();
         List<String> failedIdentifiers = new ArrayList<>();
         List<String> deletedIdentifiers = new ArrayList<>();
-        
+
         Date harvestStartTime = new Date();
-        
+
         try {
             if (harvestingClientConfig.isHarvestingNow()) {
                 hdLogger.log(Level.SEVERE, "Cannot start harvest, client " + harvestingClientConfig.getName() + " is already harvesting.");
@@ -169,7 +169,7 @@ public class HarvesterServiceBean {
                 harvestingClientService.resetHarvestInProgress(harvestingClientId);
                 harvestingClientService.setHarvestInProgress(harvestingClientId, harvestStartTime);
 
-               
+
                 if (harvestingClientConfig.isOai()) {
                     harvestOAI(dataverseRequest, harvestingClientConfig, hdLogger, importCleanupLog, failedIdentifiers, deletedIdentifiers, harvestedDatasetIds);
 
@@ -212,9 +212,9 @@ public class HarvesterServiceBean {
             throws IOException, ParserConfigurationException, SAXException, TransformerException, StopHarvestException {
 
         logBeginOaiHarvest(hdLogger, harvestingClient);
-        
+
         OaiHandler oaiHandler;
-        HttpClient httpClient = null; 
+        HttpClient httpClient = null;
 
         try {
             oaiHandler = new OaiHandler(harvestingClient);
@@ -230,7 +230,7 @@ public class HarvesterServiceBean {
         // We will use this jdk http client to make direct calls to the remote 
         // OAI (or remote Dataverse API) to obtain the metadata records 
         httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
-        
+
         try {
             for (Iterator<Header> idIter = oaiHandler.runListIdentifiers(); idIter.hasNext(); ) {
                 // Before each iteration, check if this harvesting job needs to be aborted:
@@ -241,9 +241,9 @@ public class HarvesterServiceBean {
                 Header h = idIter.next();
                 String identifier = h.getIdentifier();
                 Date dateStamp = Date.from(h.getDatestamp());
-                
+
                 hdLogger.info("processing identifier: " + identifier + ", date: " + dateStamp);
-                
+
                 if (h.isDeleted()) {
                     hdLogger.info("Deleting harvesting dataset for " + identifier + ", per ListIdentifiers.");
 
@@ -256,11 +256,11 @@ public class HarvesterServiceBean {
                 // Retrieve and process this record with a separate GetRecord call:
                 
                 Long datasetId = processRecord(dataverseRequest, hdLogger, importCleanupLog, oaiHandler, identifier, getRecordErrorOccurred, deletedIdentifiers, dateStamp, httpClient);
-                
+
                 if (datasetId != null) {
                     harvestedDatasetIds.add(datasetId);
                 }
-                
+
                 if (getRecordErrorOccurred.booleanValue() == true) {
                     failedIdentifiers.add(identifier);
                     //can be uncommented out for testing failure handling:
@@ -273,24 +273,24 @@ public class HarvesterServiceBean {
 
         logCompletedOaiHarvest(hdLogger, harvestingClient);
 
-    }    
-    
+    }
+
     private Long processRecord(DataverseRequest dataverseRequest, Logger hdLogger, PrintWriter importCleanupLog, OaiHandler oaiHandler, String identifier, MutableBoolean recordErrorOccurred, List<String> deletedIdentifiers, Date dateStamp, HttpClient httpClient) {
         String errMessage = null;
         Dataset harvestedDataset = null;
         logGetRecord(hdLogger, oaiHandler, identifier);
         File tempFile = null;
-        
+
         try {
             boolean deleted = false;
-            
+
             if (DATAVERSE_PROPRIETARY_METADATA_FORMAT.equals(oaiHandler.getMetadataPrefix())) {
                 // Make direct call to obtain the proprietary Dataverse metadata
                 // in JSON from the remote Dataverse server:
                 String metadataApiUrl = oaiHandler.getProprietaryDataverseMetadataURL(identifier);
                 logger.fine("calling " + metadataApiUrl);
                 tempFile = retrieveProprietaryDataverseMetadata(httpClient, metadataApiUrl);
-                
+
             } else {
                 FastGetRecord record = oaiHandler.runGetRecord(identifier, httpClient);
                 errMessage = record.getErrorMessage();
@@ -300,30 +300,30 @@ public class HarvesterServiceBean {
 
             if (errMessage != null) {
                 hdLogger.log(Level.SEVERE, "Error calling GetRecord - " + errMessage);
-                
+
             } else if (deleted) {
                 hdLogger.info("Deleting harvesting dataset for " + identifier + ", per GetRecord.");
-                
-                deleteHarvestedDatasetIfExists(identifier, oaiHandler.getHarvestingClient().getDataverse(), dataverseRequest, deletedIdentifiers, hdLogger); 
+
+                deleteHarvestedDatasetIfExists(identifier, oaiHandler.getHarvestingClient().getDataverse(), dataverseRequest, deletedIdentifiers, hdLogger);
             } else {
                 hdLogger.info("Successfully retrieved GetRecord response.");
 
                 PrintWriter cleanupLog;
-                harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest, 
+                harvestedDataset = importService.doImportHarvestedDataset(dataverseRequest,
                         oaiHandler.getHarvestingClient(),
                         identifier,
-                        oaiHandler.getMetadataPrefix(), 
+                        oaiHandler.getMetadataPrefix(),
                         tempFile,
                         dateStamp,
                         importCleanupLog);
-                
+
                 hdLogger.fine("Harvest Successful for identifier " + identifier);
                 hdLogger.fine("Size of this record: " + tempFile.length());
             }
         } catch (Throwable e) {
             logGetRecordException(hdLogger, oaiHandler, identifier, e);
             errMessage = "Caught exception while executing GetRecord on " + identifier;
-                
+
         } finally {
             if (tempFile != null) {
                 // temporary - let's not delete the temp metadata file if anything went wrong, for now:
@@ -347,30 +347,30 @@ public class HarvesterServiceBean {
 
         return harvestedDataset != null ? harvestedDataset.getId() : null;
     }
-    
+
     File retrieveProprietaryDataverseMetadata(HttpClient client, String remoteApiUrl) throws IOException {
-        
+
         if (client == null) {
             throw new IOException("Null Http Client, cannot make a call to obtain native metadata.");
         }
-        
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(remoteApiUrl))
                 .GET()
                 .header("User-Agent", "XOAI Service Provider v5 (Dataverse)")
                 .build();
-        
+
         HttpResponse<InputStream> response;
 
-        try {            
+        try {
              response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new IOException("Failed to connect to the remote dataverse server to obtain native metadata");
         }
-            
+
         int responseCode = response.statusCode();
-            
+
         if (responseCode == HTTP_OK) {
             File tempMetadataFile = File.createTempFile("meta", ".tmp");
 
@@ -380,10 +380,10 @@ public class HarvesterServiceBean {
                 return tempMetadataFile;
             }
         }
-            
+
         throw new IOException("Failed to download native metadata from the remote dataverse server.");
     }
-    
+
     private void deleteHarvestedDatasetIfExists(String persistentIdentifier, Dataverse harvestingDataverse, DataverseRequest dataverseRequest, List<String> deletedIdentifiers, Logger hdLogger) {
         Dataset dataset = datasetService.getDatasetByHarvestInfo(harvestingDataverse, persistentIdentifier);
         if (dataset != null) {
@@ -395,12 +395,12 @@ public class HarvesterServiceBean {
         }
         hdLogger.info("No dataset found for " + persistentIdentifier + ", skipping delete. ");
     }
-    
+
     private boolean checkIfStoppingJob(HarvestingClient harvestingClient) {
         Long pid = ProcessHandle.current().pid();
-        String stopFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "stopharvest_" + harvestingClient.getName() + "." + pid; 
+        String stopFileName = System.getProperty("com.sun.aas.instanceRoot") + File.separator + "logs" + File.separator + "stopharvest_" + harvestingClient.getName() + "." + pid;
         Path stopFilePath = Paths.get(stopFileName);
-        
+
         if (Files.exists(stopFilePath)) {
             // Now that we know that the file is there, let's (try to) delete it,
             // so that the harvest can be re-run. 
@@ -412,56 +412,56 @@ public class HarvesterServiceBean {
             }
             return true;
         }
-        
-        return false;                 
+
+        return false;
     }
-           
+
     private void logBeginOaiHarvest(Logger hdLogger, HarvestingClient harvestingClient) {
-        hdLogger.log(Level.INFO, "BEGIN HARVEST, oaiUrl=" 
-                + harvestingClient.getHarvestingUrl() 
-                + ",set=" 
-                + harvestingClient.getHarvestingSet() 
-                + ", metadataPrefix=" 
+        hdLogger.log(Level.INFO, "BEGIN HARVEST, oaiUrl="
+                + harvestingClient.getHarvestingUrl()
+                + ",set="
+                + harvestingClient.getHarvestingSet()
+                + ", metadataPrefix="
                 + harvestingClient.getMetadataPrefix()
                 + harvestingClient.getLastNonEmptyHarvestTime() == null ? "" : "from=" + harvestingClient.getLastNonEmptyHarvestTime());
     }
-    
+
     private void logCompletedOaiHarvest(Logger hdLogger, HarvestingClient harvestingClient) {
-        hdLogger.log(Level.INFO, "COMPLETED HARVEST, oaiUrl=" 
-                + harvestingClient.getHarvestingUrl() 
-                + ",set=" 
-                + harvestingClient.getHarvestingSet() 
-                + ", metadataPrefix=" 
+        hdLogger.log(Level.INFO, "COMPLETED HARVEST, oaiUrl="
+                + harvestingClient.getHarvestingUrl()
+                + ",set="
+                + harvestingClient.getHarvestingSet()
+                + ", metadataPrefix="
                 + harvestingClient.getMetadataPrefix()
                 + harvestingClient.getLastNonEmptyHarvestTime() == null ? "" : "from=" + harvestingClient.getLastNonEmptyHarvestTime());
     }
-    
+
     public void logGetRecord(Logger hdLogger, OaiHandler oaiHandler, String identifier) {
-        hdLogger.log(Level.FINE, "Calling GetRecord: oaiUrl =" 
+        hdLogger.log(Level.FINE, "Calling GetRecord: oaiUrl ="
                 + oaiHandler.getBaseOaiUrl()
-                + "?verb=GetRecord&identifier=" 
-                + identifier 
+                + "?verb=GetRecord&identifier="
+                + identifier
                 + "&metadataPrefix=" + oaiHandler.getMetadataPrefix());
     }
-    
+
     public void logGetRecordException(Logger hdLogger, OaiHandler oaiHandler, String identifier, Throwable e) {
-        String errMessage = "Exception processing getRecord(), oaiUrl=" 
-                + oaiHandler.getBaseOaiUrl() 
+        String errMessage = "Exception processing getRecord(), oaiUrl="
+                + oaiHandler.getBaseOaiUrl()
                 + ", identifier="
-                + identifier 
+                + identifier
                 + ", "
-                + e.getClass().getName() 
+                + e.getClass().getName()
                 //+" (exception message suppressed)";
                 + ", "
                 + e.getMessage();
-        
+
             hdLogger.log(Level.SEVERE, errMessage);
-            
+
             // temporary:
             e.printStackTrace();
     }
-    
-    
+
+
     // TODO: I doubt we need a full stacktrace in the harvest log - ??
     // -- L.A. 4.5 May 2016
     private void logException(Throwable e, Logger logger) {
@@ -483,5 +483,5 @@ public class HarvesterServiceBean {
         } while ((e = e.getCause()) != null);
         logger.severe(fullMessage);
     }
-        
+
 }

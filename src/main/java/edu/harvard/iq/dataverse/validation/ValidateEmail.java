@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package edu.harvard.iq.dataverse.validation;
+
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
 
@@ -13,6 +14,7 @@ import java.lang.annotation.Target;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
+
 /**
  *
  * @author skraffmi
@@ -27,5 +29,5 @@ public @interface ValidateEmail {
   Class<?>[] groups() default {};
 
   Class<? extends Payload>[] payload() default {};
-    
+
 }

@@ -162,7 +162,7 @@ public class SwordServiceBean {
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
         datasetVersionToMutate.setTermsOfUseAndAccess(terms);
         terms.setDatasetVersion(datasetVersionToMutate);
-        
+
         if (listOfLicensesProvided == null) {
             License existingLicense = DatasetUtil.getLicense(datasetVersionToMutate);
             if (existingLicense != null) {

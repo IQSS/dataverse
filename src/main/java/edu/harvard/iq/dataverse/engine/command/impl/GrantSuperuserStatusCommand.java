@@ -26,7 +26,7 @@ import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 public class GrantSuperuserStatusCommand extends AbstractVoidCommand {
 
     private final AuthenticatedUser targetUser;
-    
+
     public GrantSuperuserStatusCommand(AuthenticatedUser targetUser, DataverseRequest aRequest) {
         super(aRequest, (Dataset) null);
         this.targetUser = targetUser;

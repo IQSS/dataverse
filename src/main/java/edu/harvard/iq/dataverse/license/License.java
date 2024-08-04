@@ -78,7 +78,7 @@ public class License {
 
     @Column(nullable = false, columnDefinition = "BIGINT NOT NULL DEFAULT 0")
     private Long sortOrder;
-    
+
     @OneToMany(mappedBy = "license")
     private List<TermsOfUseAndAccess> termsOfUseAndAccess;
 
@@ -213,5 +213,5 @@ public class License {
                 ", sortOrder=" + sortOrder +
                 '}';
     }
-    
+
 }

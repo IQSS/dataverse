@@ -33,10 +33,10 @@ import java.util.zip.ZipOutputStream;
  */
 @Provider
 public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDownloadInstance> {
-    
+
     private static final Logger logger = Logger.getLogger(BundleDownloadInstanceWriter.class.getCanonicalName());
 
-    
+
     @Override
     public boolean isWriteable(Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
         return clazz == BundleDownloadInstance.class;
@@ -47,8 +47,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
         return -1;
     }
 
-    
-    
+
     @Override
     public void writeTo(BundleDownloadInstance di, Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream outstream) throws IOException, WebApplicationException {
 
@@ -89,10 +88,10 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                     }
                     instream.close();
                     zout.closeEntry();
-                    instream = null; 
-                    
+                    instream = null;
+
                     // Now, the original format: 
-                    String origFormat = null; 
+                    String origFormat = null;
                     try {
                         StorageIO<DataFile> accessObjectOrig = StoredOriginalFile.retreive(accessObject); //.retrieve(sf, (FileAccessIO) accessObject);
                         if (accessObjectOrig != null) {
@@ -120,9 +119,9 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                             try {zout.closeEntry();} catch (IOException ioex) {}
                         }
                     }
-                   
-                    instream = null; 
-                    
+
+                    instream = null;
+
                     // And, if the original format was NOT RData, 
                     // add an RData version: 
                     if (!"application/x-rlang-transport".equals(origFormat)) {
@@ -155,7 +154,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                             }
                         }
                     }
-                        
+
                     // And the variable metadata (DDI/XML), if available: 
                     if (di.getFileDDIXML() != null) {
                         e = new ZipEntry(fileName.replaceAll("\\.tab$", "-ddi.xml"));

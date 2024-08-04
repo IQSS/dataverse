@@ -191,7 +191,7 @@ public class ImageThumbConverter {
                     storageIO.getDataFile().setPreviewImageAvailable(false);
                     DataFileServiceBean datafileService = CDI.current().select(DataFileServiceBean.class).get();
                     datafileService.save(storageIO.getDataFile());
-                    
+
                     // Now that we have marked this File as a thumbnail failure, 
                     // no reason not to try and delete this 0-size cache here: 
                     storageIO.deleteAuxObject(THUMBNAIL_SUFFIX + size);
@@ -319,7 +319,7 @@ public class ImageThumbConverter {
             logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier() + ioex);
             return false;
         }
-        
+
     }
 
     /*
@@ -405,7 +405,7 @@ public class ImageThumbConverter {
                 try {
                     storageIO.deleteAuxObject(THUMBNAIL_SUFFIX + size);
                 } catch (IOException ioex) {
-                    logger.fine("Failed attempt to delete the result of a failed thumbnail rescaling; this is most likely ok - for ex., because it was never created in the first place."); 
+                    logger.fine("Failed attempt to delete the result of a failed thumbnail rescaling; this is most likely ok - for ex., because it was never created in the first place.");
                 }
             }
         }
@@ -753,7 +753,7 @@ public class ImageThumbConverter {
         }
 
         try (ImageOutputStream ios = ImageIO.createImageOutputStream(outputStream);) {
-            
+
             writer.setOutput(ios);
 
             // finally, save thumbnail image:

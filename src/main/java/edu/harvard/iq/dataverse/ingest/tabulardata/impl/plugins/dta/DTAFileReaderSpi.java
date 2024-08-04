@@ -60,13 +60,13 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi {
     private static String[] formatNames = {"dta", "DTA"};
     private static String[] extensions = {"dta"};
     private static String[] mimeType = {"application/x-stata"};
-    
-    
+
+
     private static Logger dbgLog = Logger.getLogger(
             DTAFileReaderSpi.class.getPackage().getName());
 
     private static int DTA_HEADER_SIZE = 4;
-    
+
     public DTAFileReaderSpi() {
         super("HU-IQSS-DataVerse-project",
             "4.0",
@@ -139,7 +139,7 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi {
         dbgLog.fine("applying the dta test\n");
 
         byte[] b = new byte[DTA_HEADER_SIZE];
-        
+
         if (stream.markSupported()) {
             stream.mark(0);
         }
@@ -152,7 +152,7 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi {
         if (stream.markSupported()) {
             stream.reset();
         }
-        
+
        dbgLog.info("hex dump: 1st 4bytes =>" +
                 new String(Hex.encodeHex(b)) + "<-");
 
@@ -221,7 +221,7 @@ public class DTAFileReaderSpi extends TabularDataFileReaderSpi {
             return true;
         }
     }
-    
+
     @Override
     public TabularDataFileReader createReaderInstance(Object ext) throws IIOException {
         return new DTAFileReader(this);

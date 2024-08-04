@@ -8,7 +8,7 @@ import java.util.Objects;
  */
 
 public class RoleAssigneeDisplayInfo implements java.io.Serializable {
-    
+
     private String title;
     private String emailAddress;
     private String affiliation;
@@ -16,7 +16,7 @@ public class RoleAssigneeDisplayInfo implements java.io.Serializable {
     public RoleAssigneeDisplayInfo(String title, String emailAddress) {
         this(title, emailAddress, null);
     }
-    
+
     public RoleAssigneeDisplayInfo(String title, String emailAddress, String anAffiliation) {
         this.title = title;
         this.emailAddress = emailAddress;
@@ -79,5 +79,5 @@ public class RoleAssigneeDisplayInfo implements java.io.Serializable {
         }
         return Objects.equals(this.affiliation, other.affiliation);
     }
-    
+
 }

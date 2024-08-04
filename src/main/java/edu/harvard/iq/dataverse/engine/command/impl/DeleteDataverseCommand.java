@@ -41,7 +41,7 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
         if (doomed.getOwner() == null) {
             throw new IllegalCommandException("Cannot delete the root dataverse", this);
         }
-        
+
         // make sure the dataverse is emptyw
         if (ctxt.dvObjects().hasData(doomed)) {
             throw new IllegalCommandException("Cannot delete non-empty dataverses", this);
@@ -63,7 +63,7 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
         for (DataverseRole ra : ctxt.roles().findByOwnerId(doomed.getId())) {
             ctxt.em().remove(ra);
         }
-        
+
         // EXPLICIT GROUPS
         for (ExplicitGroup eg : ctxt.em().createNamedQuery("ExplicitGroup.findByOwnerId", ExplicitGroup.class)
                                           .setParameter("ownerId", doomed.getId())
@@ -83,7 +83,7 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
         ctxt.em().remove(doomedAndMerged);
     }
 
-    @Override 
+    @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
 
         // Remove from index        

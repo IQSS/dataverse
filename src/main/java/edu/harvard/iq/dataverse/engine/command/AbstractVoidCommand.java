@@ -11,7 +11,7 @@ import java.util.Map;
  * @author michael
  */
 public abstract class AbstractVoidCommand extends AbstractCommand<Void> {
-    
+
 	public AbstractVoidCommand(DataverseRequest aRequest, DvObject dvObject) {
 		super(aRequest, dvObject);
 	}
@@ -29,7 +29,7 @@ public abstract class AbstractVoidCommand extends AbstractCommand<Void> {
 		executeImpl(ctxt);
 		return null;
 	}
-	
+
 	protected abstract void executeImpl(CommandContext ctxt) throws CommandException;
-	
+
 }

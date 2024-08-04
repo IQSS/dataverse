@@ -60,6 +60,7 @@ public class DataverseTheme implements Serializable {
     private String linkColor;
     private String textColor;
     private String backgroundColor;
+
    public enum ImageFormat {
 
         SQUARE, RECTANGLE

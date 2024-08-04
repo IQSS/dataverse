@@ -18,7 +18,7 @@ public abstract class AbstractCommand<R> implements Command<R> {
 
     private final Map<String, DvObject> affectedDvObjects;
     private final DataverseRequest request;
-    
+
     static protected class DvNamePair {
 
         final String name;
@@ -44,7 +44,7 @@ public abstract class AbstractCommand<R> implements Command<R> {
     public AbstractCommand(DataverseRequest aRequest, DvObject anAffectedDvObject) {
         this(aRequest, dv("", anAffectedDvObject));
     }
-    
+
     public AbstractCommand(DataverseRequest aRequest, DvNamePair dvp, DvNamePair... more) {
         request = aRequest;
         affectedDvObjects = new HashMap<>();
@@ -53,12 +53,12 @@ public abstract class AbstractCommand<R> implements Command<R> {
             affectedDvObjects.put(p.name, p.dvObject);
         }
     }
-    
+
     public AbstractCommand(DataverseRequest aRequest, Map<String, DvObject> someAffectedDvObjects) {
         request = aRequest;
         affectedDvObjects = someAffectedDvObjects;
     }
-    
+
     @Override
     public Map<String, DvObject> getAffectedDvObjects() {
         return affectedDvObjects;
@@ -93,8 +93,8 @@ public abstract class AbstractCommand<R> implements Command<R> {
         }
         return sb.toString();
     }
-    
-    @Override 
+
+    @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         return true;
     }

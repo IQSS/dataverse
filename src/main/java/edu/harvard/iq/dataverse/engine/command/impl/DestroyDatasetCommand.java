@@ -46,9 +46,9 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
     private static final Logger logger = Logger.getLogger(DestroyDatasetCommand.class.getCanonicalName());
 
     private final Dataset doomed;
-    
-    private List<String> datasetAndFileSolrIdsToDelete; 
-    
+
+    private List<String> datasetAndFileSolrIdsToDelete;
+
     private Dataverse toReIndex;
 
     public DestroyDatasetCommand(Dataset doomed, DataverseRequest aRequest) {
@@ -61,12 +61,12 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
         // first check if dataset is released, and if so, if user is a superuser
-        if (doomed.isReleased() && (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {      
+        if (doomed.isReleased() && (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
             throw new PermissionException("Destroy can only be called by superusers.",
-                this, Collections.singleton(Permission.DeleteDatasetDraft), doomed);                
+                this, Collections.singleton(Permission.DeleteDatasetDraft), doomed);
         }
         Dataset managedDoomed = ctxt.em().merge(doomed);
-        
+
         // If there is a dedicated thumbnail DataFile, it needs to be reset
         // explicitly, or we'll get a constraint violation when deleting:
         managedDoomed.setThumbnailFile(null);
@@ -87,8 +87,8 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             dfIt.remove();
         }
         dv.setFileMetadatas(null);
-        
-        
+
+
         // ASSIGNMENTS
         for (RoleAssignment ra : ctxt.roles().directRoleAssignments(managedDoomed)) {
             ctxt.em().remove(ra);
@@ -96,8 +96,8 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         // ROLES
         for (DataverseRole ra : ctxt.roles().findByOwnerId(managedDoomed.getId())) {
             ctxt.em().remove(ra);
-        }   
-        
+        }
+
         if (!managedDoomed.isHarvested()) {
             //also, lets delete the uploaded thumbnails!
             deleteDatasetLogo(managedDoomed);
@@ -115,7 +115,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
                 }
             }
         }
-        
+
         toReIndex = managedDoomed.getOwner();
 
         // add potential Solr IDs of datasets to list for deletion
@@ -127,18 +127,18 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         datasetAndFileSolrIdsToDelete.add(solrIdOfDraftDatasetVersionPermission);
         String solrIdOfDeaccessionedDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + managedDoomed.getId() + IndexServiceBean.deaccessionedSuffix;
         datasetAndFileSolrIdsToDelete.add(solrIdOfDeaccessionedDatasetVersion);
-        
+
         // dataset
         ctxt.em().remove(managedDoomed);
 
 
     }
 
-    @Override 
+    @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
 
         boolean retVal = true;
-        
+
        // all the real Solr work is done here
        // delete orphaned Solr ids
         IndexResponse resultOfSolrDeletionAttempt = ctxt.solrIndex().deleteMultipleSolrIds(datasetAndFileSolrIdsToDelete);
@@ -146,14 +146,14 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
 
         // reindex
         try {
-            ctxt.index().indexDataverse(toReIndex);                   
-        } catch (IOException | SolrServerException e) {    
+            ctxt.index().indexDataverse(toReIndex);
+        } catch (IOException | SolrServerException e) {
             String failureLogText = "Post-destroy dataset indexing of the owning dataverse failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + toReIndex.getId().toString();
             failureLogText += "\r\n" + e.getLocalizedMessage();
             LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, toReIndex);
             retVal = false;
         }
-        
+
         return retVal;
     }
 

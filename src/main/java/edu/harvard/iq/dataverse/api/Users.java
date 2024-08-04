@@ -45,9 +45,9 @@ import jakarta.ws.rs.core.Variant;
 @Stateless
 @Path("users")
 public class Users extends AbstractApiBean {
-    
+
     private static final Logger logger = Logger.getLogger(Users.class.getName());
-    
+
     @POST
     @AuthRequired
     @Path("{consumedIdentifier}/mergeIntoUser/{baseIdentifier}")
@@ -61,7 +61,7 @@ public class Users extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-        
+
         if (null == baseIdentifier || baseIdentifier.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "Base identifier provided to change is empty.");
         } else if (null == consumedIdentifier || consumedIdentifier.isEmpty()) {
@@ -100,7 +100,7 @@ public class Users extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-        
+
         if (null == oldIdentifier || oldIdentifier.isEmpty()) {
             return error(Response.Status.BAD_REQUEST, "Old identifier provided to change is empty.");
         } else if (null == newIdentifier || newIdentifier.isEmpty()) {
@@ -120,54 +120,54 @@ public class Users extends AbstractApiBean {
 
         return ok("UserIdentifier changed from " + oldIdentifier + " to " + newIdentifier);
     }
-    
+
     @Path("token")
     @AuthRequired
     @DELETE
     public Response deleteToken(@Context ContainerRequestContext crc) {
         User u = getRequestUser(crc);
         AuthenticatedUser au;
-       
+
         try {
-             au = (AuthenticatedUser) u; 
-        } catch (ClassCastException e) { 
+             au = (AuthenticatedUser) u;
+        } catch (ClassCastException e) {
             //if we have a non-authenticated user we stop here.
             return notFound("Token for " + u.getIdentifier() + " not eligible for deletion.");
-        }       
-       
+        }
+
         authSvc.removeApiToken(au);
         return ok("Token for " + au.getUserIdentifier() + " deleted.");
-        
+
     }
-    
+
     @Path("token")
     @AuthRequired
     @GET
     public Response getTokenExpirationDate() {
         ApiToken token = authSvc.findApiToken(getRequestApiKey());
-        
+
         if (token == null) {
             return notFound("Token " + getRequestApiKey() + " not found.");
         }
-        
+
         return ok("Token " + getRequestApiKey() + " expires on " + token.getExpireTime());
-        
+
     }
-    
+
     @Path("token/recreate")
     @AuthRequired
     @POST
     public Response recreateToken(@Context ContainerRequestContext crc) {
         User u = getRequestUser(crc);
 
-        AuthenticatedUser au;        
+        AuthenticatedUser au;
         try {
-             au = (AuthenticatedUser) u; 
-        } catch (ClassCastException e) { 
+             au = (AuthenticatedUser) u;
+        } catch (ClassCastException e) {
             //if we have a non-authenticated user we stop here.
             return notFound("Token for " + u.getIdentifier() + " is not eligible for recreation.");
-        } 
-        
+        }
+
 
         authSvc.removeApiToken(au);
 
@@ -177,7 +177,7 @@ public class Users extends AbstractApiBean {
         return ok("New token for " + au.getUserIdentifier() + " is " + newToken.getTokenString());
 
     }
-    
+
     @GET
     @AuthRequired
     @Path(":me")
@@ -229,7 +229,7 @@ public class Users extends AbstractApiBean {
     }
 
     private List<String> elements = Arrays.asList("roleAssignments", "dataverseCreator", "dataversePublisher", "datasetCreator", "datasetPublisher", "dataFileCreator", "dataFilePublisher", "datasetVersionUsers", "explicitGroups", "guestbookEntries", "savedSearches");
-    
+
     @GET
     @AuthRequired
     @Path("{identifier}/traces/{element}")
@@ -241,7 +241,7 @@ public class Users extends AbstractApiBean {
                 throw new BadRequestException("Not a valid element");
             }
             JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(getRequestUser(crc)), userToQuery, element));
-            
+
             List<Variant> vars = Variant
                     .mediaTypes(MediaType.valueOf(FileUtil.MIME_TYPE_CSV), MediaType.APPLICATION_JSON_TYPE)
                     .add()
@@ -249,7 +249,7 @@ public class Users extends AbstractApiBean {
             MediaType requestedType = req.selectVariant(vars).getMediaType();
             if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
                 return ok(jsonObj);
-            
+
             }
             JsonArray items = null;
             try {

@@ -13,5 +13,5 @@ public class StopHarvestException extends Exception {
     public StopHarvestException(String message, Throwable cause) {
         super(message, cause);
     }
-    
+
 }

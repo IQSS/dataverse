@@ -41,65 +41,65 @@ public class IngestRequest implements Serializable {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "datafile_id")
     private DataFile dataFile;
-    
-    private String textEncoding; 
-    
+
+    private String textEncoding;
+
     private String controlCard;
-    
-    private String labelsFile; 
-    
+
+    private String labelsFile;
+
     private Boolean forceTypeCheck;
-    
+
     public IngestRequest() {
     }
-    
+
     public IngestRequest(DataFile dataFile) {
         this.dataFile = dataFile;
     }
-    
+
     public DataFile getDataFile() {
         return dataFile;
     }
-    
+
     public void setDataFile(DataFile dataFile) {
-        this.dataFile = dataFile; 
+        this.dataFile = dataFile;
     }
-    
+
     public String getTextEncoding() {
         return textEncoding;
     }
-    
+
     public void setTextEncoding(String textEncoding) {
-        this.textEncoding = textEncoding; 
+        this.textEncoding = textEncoding;
     }
 
     public String getControlCard() {
         return controlCard;
     }
-    
+
     public void setControlCard(String controlCard) {
-        this.controlCard = controlCard; 
+        this.controlCard = controlCard;
     }
-    
+
     public String getLabelsFile() {
         return labelsFile;
     }
-    
+
     public void setLabelsFile(String labelsFile) {
-        this.labelsFile = labelsFile; 
+        this.labelsFile = labelsFile;
     }
-    
+
     public void setForceTypeCheck(boolean forceTypeCheck) {
         this.forceTypeCheck = forceTypeCheck;
     }
-    
+
     public boolean isForceTypeCheck() {
         if (forceTypeCheck != null) {
             return forceTypeCheck;
         }
         return false;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -124,5 +124,5 @@ public class IngestRequest implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.ingest.IngestRequest[ id=" + id + " ]";
     }
-    
+
 }

@@ -8,7 +8,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 @ApplicationPath("api/v1")
 public class ApiConfiguration extends ResourceConfig {
-   
+
    public ApiConfiguration() {
        packages("edu.harvard.iq.dataverse.api");
        packages("edu.harvard.iq.dataverse.mydata");

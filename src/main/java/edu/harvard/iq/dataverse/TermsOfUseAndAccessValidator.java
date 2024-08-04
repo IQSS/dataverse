@@ -22,18 +22,18 @@ public class TermsOfUseAndAccessValidator implements ConstraintValidator<Validat
 
     @Override
     public boolean isValid(TermsOfUseAndAccess value, ConstraintValidatorContext context) {
-        
+
         return isTOUAValid(value, context);
 
     }
-    
+
     public static boolean isTOUAValid(TermsOfUseAndAccess value, ConstraintValidatorContext context) {
-        
+
         //if part of a template it is valid
         if (value.getTemplate() != null) {
             return true;
         }
-        
+
          //If there are no restricted files then terms are valid 
         if (!value.getDatasetVersion().isHasRestrictedFile()) {
             return true;

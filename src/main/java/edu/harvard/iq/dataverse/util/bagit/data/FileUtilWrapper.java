@@ -47,8 +47,8 @@ public class FileUtilWrapper {
         try {
             return FileUtil.saveInputStreamInTempFile(inputStream, fileSizeLimit);
         } catch (FileExceedsStorageQuotaException fesqx) {
-            return null; 
-        } 
+            return null;
+        }
     }
 
     public String determineFileType(File file, String fileName) throws IOException {

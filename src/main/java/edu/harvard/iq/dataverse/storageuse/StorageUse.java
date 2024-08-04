@@ -43,35 +43,35 @@ public class StorageUse implements Serializable {
 
     @OneToOne
     @JoinColumn(nullable = false)
-    private DvObject dvObjectContainer; 
-    
+    private DvObject dvObjectContainer;
+
     @Column
-    private Long sizeInBytes = null; 
-    
+    private Long sizeInBytes = null;
+
     public StorageUse() {}
-    
+
     public StorageUse(DvObjectContainer dvObjectContainer) {
         this(dvObjectContainer, 0L);
     }
-    
+
     public StorageUse(DvObjectContainer dvObjectContainer, Long sizeInBytes) {
         this.dvObjectContainer = dvObjectContainer;
         this.sizeInBytes = sizeInBytes;
     }
-    
+
     public Long getSizeInBytes() {
-        return sizeInBytes; 
+        return sizeInBytes;
     }
-    
+
     public void setSizeInBytes(Long sizeInBytes) {
         this.sizeInBytes = sizeInBytes;
     }
-    
+
     public void incrementSizeInBytes(Long sizeInBytes) {
-        this.sizeInBytes += sizeInBytes; 
+        this.sizeInBytes += sizeInBytes;
     }
-    
-    
+
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -96,5 +96,5 @@ public class StorageUse implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.storageuse.StorageUse[ id=" + id + " ]";
     }
-    
+
 }

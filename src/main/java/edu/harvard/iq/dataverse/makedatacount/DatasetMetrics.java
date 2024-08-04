@@ -74,10 +74,10 @@ public class DatasetMetrics implements Serializable {
      */
     @Column(nullable = true)
     private Long viewsUniqueRegular;
-    
+
     @Column(nullable = true)
     private Long viewsTotalMachine;
-    
+
     @Column(nullable = true)
     private Long viewsUniqueMachine;
 
@@ -99,7 +99,7 @@ public class DatasetMetrics implements Serializable {
     @Column(nullable = true)
     private Long downloadsUniqueRegular;
 
-    
+
     @Column(nullable = true)
     private Long downloadsTotalMachine;
 
@@ -124,7 +124,7 @@ public class DatasetMetrics implements Serializable {
      */
     @Column(nullable = true)
     private String countryCode;
-    
+
     public Long getId() {
         return id;
     }
@@ -180,7 +180,7 @@ public class DatasetMetrics implements Serializable {
     public void setDownloadsUniqueRegular(Long downloadsUniqueRegular) {
         this.downloadsUniqueRegular = downloadsUniqueRegular;
     }
-    
+
     public Long getViewsTotalMachine() {
         return viewsTotalMachine;
     }
@@ -220,7 +220,7 @@ public class DatasetMetrics implements Serializable {
     public void setCountryCode(String countryCode) {
         this.countryCode = ((countryCode == null) ? null : countryCode.toLowerCase());
     }
-    
+
     @Transient private Long viewsUnique;
     @Transient private Long viewsTotal;
     @Transient private Long downloadsUnique;
@@ -257,7 +257,7 @@ public class DatasetMetrics implements Serializable {
     public void setDownloadsTotal(Long downloadsTotal) {
         this.downloadsTotal = downloadsTotal;
     }
-    
+
     public void initCounts() {
         this.setDownloadsTotalMachine(new Long(0));
         this.setDownloadsTotalRegular(new Long(0));

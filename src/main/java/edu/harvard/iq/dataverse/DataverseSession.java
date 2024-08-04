@@ -33,7 +33,7 @@ import jakarta.servlet.http.HttpSession;
 @Named
 @SessionScoped
 public class DataverseSession implements Serializable {
-    
+
     /* Note that on logout, variables must be cleared manually in DataverseHeaderFragment*/
     private User user;
 
@@ -42,19 +42,19 @@ public class DataverseSession implements Serializable {
 
     @EJB
     BuiltinUserServiceBean usersSvc;
-	
-    @EJB 
+
+    @EJB
     ActionLogServiceBean logSvc;
-    
+
     @Inject
     SettingsWrapper settingsWrapper;
-    
+
     @Inject
     DataverseHeaderFragment headerFragment;
-    
+
     @EJB
     SystemConfig systemConfig;
-    
+
     @EJB
     BannerMessageServiceBean bannerMessageService;
 
@@ -62,9 +62,9 @@ public class DataverseSession implements Serializable {
     AuthenticationServiceBean authenticationService;
 
     private static final Logger logger = Logger.getLogger(DataverseSession.class.getCanonicalName());
-    
+
     private boolean statusDismissed = false;
-    
+
     private List<BannerMessage> dismissedMessages = new ArrayList<>();
 
     public List<BannerMessage> getDismissedMessages() {
@@ -88,7 +88,7 @@ public class DataverseSession implements Serializable {
      * leave the state alone (see setDebug()).
      */
     private Boolean debug;
-    
+
     public User getUser() {
         return getUser(false);
     }
@@ -142,7 +142,7 @@ public class DataverseSession implements Serializable {
 		// which sets the user in the session to pass it through to the underlying command)
         // TODO: reformat to remove tabs etc.
 		if (context != null) {
-          logSvc.log( 
+          logSvc.log(
                       new ActionLogRecord(ActionLogRecord.ActionType.SessionManagement, (aUser == null) ? "logout" : "login")
                           .setUserIdentifier((aUser != null) ? aUser.getIdentifier() : (user != null ? user.getIdentifier() : "")));
 
@@ -161,7 +161,7 @@ public class DataverseSession implements Serializable {
     public boolean isStatusDismissed() {
         return statusDismissed;
     }
-    
+
     public void setStatusDismissed(boolean status) {
         statusDismissed = status; //MAD: Set to true to enable code!
     }
@@ -184,11 +184,11 @@ public class DataverseSession implements Serializable {
     public StaticPermissionQuery on(Dataverse d) {
             return permissionsService.userOn(user, d);
     }
-    
+
     // Language Locale methods: 
     
     private String localeCode;
-    
+
     public String getLocaleCode() {
         if (localeCode == null) {
             initLocale();
@@ -206,9 +206,9 @@ public class DataverseSession implements Serializable {
         }
         return settingsWrapper.getConfiguredLocales().get(localeCode);
     }
-    
+
     public void initLocale() {
-        
+
         if (FacesContext.getCurrentInstance() == null) {
             localeCode = "en";
         }
@@ -221,7 +221,7 @@ public class DataverseSession implements Serializable {
         else {
             localeCode = FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage();
         }
-        
+
         logger.fine("init: locale set to " + localeCode);
     }
 
@@ -238,16 +238,16 @@ public class DataverseSession implements Serializable {
     }
 
     public void updateLocaleInViewRoot() {
-        if (localeCode != null 
-                && FacesContext.getCurrentInstance() != null 
-                && FacesContext.getCurrentInstance().getViewRoot() != null 
+        if (localeCode != null
+                && FacesContext.getCurrentInstance() != null
+                && FacesContext.getCurrentInstance().getViewRoot() != null
                 && !localeCode.equals(FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage())) {
             FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale(localeCode));
-        } 
+        }
     }
-    
+
     public void dismissMessage(BannerMessage message) {
-               
+
         if (message.isDismissibleByUser()) {
             if (user.isAuthenticated()) {
                 bannerMessageService.dismissMessageByUser(message, (AuthenticatedUser) user);
@@ -256,7 +256,7 @@ public class DataverseSession implements Serializable {
         } else {
             dismissedMessages.add(message);
         }
-        
+
     }
 
 }

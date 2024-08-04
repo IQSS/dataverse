@@ -36,31 +36,31 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
     private boolean validateLenient = false;
     private final DatasetVersion clone;
     final FileMetadata fmVarMet;
-    
+
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest) {
         super(aRequest, theDataset);
         this.filesToDelete = new ArrayList<>();
         this.clone = null;
         this.fmVarMet = null;
-    }    
-    
+    }
+
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete) {
         super(aRequest, theDataset);
         this.filesToDelete = filesToDelete;
         this.clone = null;
         this.fmVarMet = null;
     }
-    
+
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, List<FileMetadata> filesToDelete, DatasetVersion clone) {
         super(aRequest, theDataset);
         this.filesToDelete = filesToDelete;
         this.clone = clone;
         this.fmVarMet = null;
     }
-    
+
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, DataFile fileToDelete) {
         super(aRequest, theDataset);
-        
+
         // get the latest file metadata for the file; ensuring that it is a draft version
         this.filesToDelete = new ArrayList<>();
         this.clone = null;
@@ -71,8 +71,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 break;
             }
         }
-    } 
-    
+    }
+
     public UpdateDatasetVersionCommand(Dataset theDataset, DataverseRequest aRequest, DatasetVersion clone) {
         super(aRequest, theDataset);
         this.filesToDelete = new ArrayList<>();
@@ -100,11 +100,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         if (!(getUser() instanceof AuthenticatedUser)) {
             throw new IllegalCommandException("Only authenticated users can update datasets", this);
         }
-        
-        Dataset theDataset = getDataset();        
+
+        Dataset theDataset = getDataset();
         ctxt.permissions().checkUpdateDatasetVersionLock(theDataset, getRequest(), this);
         Dataset savedDataset = null;
-        
+
         DatasetVersion persistedVersion = clone;
         /*
          * Unless a pre-change clone has been provided, we need to get it from the db.
@@ -117,7 +117,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             Long id = getDataset().getLatestVersion().getId();
             persistedVersion = ctxt.datasetVersion().find(id != null ? id : getDataset().getLatestVersionForCopy().getId());
         }
-        
+
         //Will throw an IllegalCommandException if a system metadatablock is changed and the appropriate key is not supplied.
         checkSystemMetadataKeyIfNeeded(getDataset().getOrCreateEditVersion(fmVarMet), persistedVersion);
 
@@ -134,7 +134,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             } else {
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", getDataset().getId());
             }
-            
+
             getDataset().getOrCreateEditVersion(fmVarMet).setDatasetFields(getDataset().getOrCreateEditVersion(fmVarMet).initDatasetFields());
             validateOrDie(getDataset().getOrCreateEditVersion(fmVarMet), isValidateLenient());
 
@@ -230,7 +230,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     if (!theDataset.getOrCreateEditVersion().equals(fmd.getDatasetVersion())) {
                         fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, theDataset.getOrCreateEditVersion());
                     }
-                } 
+                }
                 fmd = ctxt.em().merge(fmd);
 
                 // There are two datafile cases as well - the file has been released, so we're
@@ -257,9 +257,9 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 }
             }
             for (FileMetadata fmd : theDataset.getOrCreateEditVersion().getFileMetadatas()) {
-                logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId() + "is in final draft version");    
+                logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId() + "is in final draft version");
             }
-            
+
             if (recalculateUNF) {
                 ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getOrCreateEditVersion());
             }
@@ -285,9 +285,9 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
         }
 
-        return savedDataset; 
+        return savedDataset;
     }
-    
+
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         // Async indexing significantly improves performance when updating datasets with thousands of files

@@ -51,16 +51,16 @@ import jakarta.servlet.http.HttpServletRequest;
 @Singleton
 @Startup
 public class DataverseTimerServiceBean implements Serializable {
-    
+
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean");
-    
+
     @Resource
     jakarta.ejb.TimerService timerService;
     @EJB
     HarvesterServiceBean harvesterService;
     @EJB
     HarvestingClientServiceBean harvestingClientService;
-    @EJB 
+    @EJB
     AuthenticationServiceBean authSvc;
     @EJB
     DatasetServiceBean datasetService;
@@ -68,30 +68,30 @@ public class DataverseTimerServiceBean implements Serializable {
     OAISetServiceBean oaiSetService;
     @EJB
     SystemConfig systemConfig;
-    
-    
+
+
     // The init method that wipes and recreates all the timers on startup
     //@PostConstruct
 
     @PostConstruct
     public void init() {
         logger.info("PostConstruct timer check.");
-        
-        
+
+
         if (systemConfig.isTimerServer()) {
             logger.info("I am the dedicated timer server. Initializing mother timer.");
-            
+
             removeAllTimers();
             // create mother timer:
             createMotherTimer();
             // And the export timer (there is only one)
             createExportTimer();
-            
+
         } else {
             logger.info("Skipping timer server init (I am not the dedicated timer server)");
         }
     }
-    
+
     public void createTimer(Date initialExpiration, long intervalDuration, Serializable info) {
         try {
             logger.log(Level.INFO, "Creating timer on " + InetAddress.getLocalHost().getCanonicalHostName());
@@ -118,13 +118,13 @@ public class DataverseTimerServiceBean implements Serializable {
             //logger.info("I am not the timer server! - bailing out of handleTimeout()");
             Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.WARNING, null, "I am not the timer server! - but handleTimeout() got called. Please investigate!");
         }
-        
+
         try {
             logger.log(Level.INFO, "Handling timeout on " + InetAddress.getLocalHost().getCanonicalHostName());
         } catch (UnknownHostException ex) {
             Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         if (timer.getInfo() instanceof MotherTimerInfo) {
             logger.info("Behold! I am the Master Timer, king of all timers! I'm here to create all the lesser timers!");
             removeHarvestTimers();
@@ -146,7 +146,7 @@ public class DataverseTimerServiceBean implements Serializable {
                 if (adminUser == null) {
                     logger.info("Scheduled harvest: failed to locate the admin user! Exiting.");
                     throw new IOException("Scheduled harvest: failed to locate the admin user");
-                } 
+                }
                 logger.info("found admin user " + adminUser.getName());
                 DataverseRequest dataverseRequest = new DataverseRequest(adminUser, (HttpServletRequest) null);
                 harvesterService.doHarvest(dataverseRequest, info.getHarvestingClientId());
@@ -162,12 +162,12 @@ public class DataverseTimerServiceBean implements Serializable {
                 //dataverseService.setHarvestResult(info.getHarvestingDataverseId(), harvesterService.HARVEST_RESULT_FAILED);
                 //mailService.sendHarvestErrorNotification(dataverseService.find().getSystemEmail(), dataverseService.find().getName());
                 logException(e, logger);
-            } 
+            }
         } else if (timer.getInfo() instanceof ExportTimerInfo) {
             try {
                 ExportTimerInfo info = (ExportTimerInfo) timer.getInfo();
                 logger.info("Timer Service: Running a scheduled export job.");
-               
+
                 // try to export all unexported datasets:
                 datasetService.exportAll();
                  // and update all oai sets:
@@ -195,7 +195,7 @@ public class DataverseTimerServiceBean implements Serializable {
         }
         logger.info("Done!");
     }
-    
+
     public void removeHarvestTimers() {
         // Remove all the harvest timers, if exist: 
         //
@@ -204,19 +204,19 @@ public class DataverseTimerServiceBean implements Serializable {
         // and it may be useful to know what existing timers were encountered).
         
         logger.log(Level.INFO, "Removing existing harvest timers..");
-        
-        int i = 1; 
+
+        int i = 1;
         for (Iterator it = timerService.getTimers().iterator(); it.hasNext(); ) {
-             
+
             Timer timer = (Timer) it.next();
             logger.log(Level.INFO, "HarvesterService: checking timer " + i);
-            
+
             if (timer.getInfo() instanceof HarvestTimerInfo) {
                 logger.log(Level.INFO, "HarvesterService: timer " + i + " is a harvesting one; removing.");
                 timer.cancel();
             }
-            
-            i++; 
+
+            i++;
         }
     }
 
@@ -226,19 +226,19 @@ public class DataverseTimerServiceBean implements Serializable {
         long intervalDuration = 60 * 60 * 1000; // every hour
         initExpiration.set(Calendar.MINUTE, 50);
         initExpiration.set(Calendar.SECOND, 0);
-        
+
         Date initExpirationDate = initExpiration.getTime();
         Date currTime = new Date();
         if (initExpirationDate.before(currTime)) {
             initExpirationDate.setTime(initExpiration.getTimeInMillis() + intervalDuration);
         }
-        
+
         logger.info("Setting the \"Mother Timer\", initial expiration: " + initExpirationDate);
         createTimer(initExpirationDate, intervalDuration, info);
     }
-    
-    public void createHarvestTimer(HarvestingClient harvestingClient) {       
-        
+
+    public void createHarvestTimer(HarvestingClient harvestingClient) {
+
         if (harvestingClient.isScheduled()) {
             long intervalDuration = 0;
             Calendar initExpiration = Calendar.getInstance();
@@ -272,7 +272,7 @@ public class DataverseTimerServiceBean implements Serializable {
         createHarvestTimer(harvestingClient);
     }
 
-    
+
     public void removeHarvestTimer(HarvestingClient harvestingClient) {
          // Clear dataverse timer, if one exists
         try {
@@ -305,7 +305,7 @@ public class DataverseTimerServiceBean implements Serializable {
         if (initExpirationDate.before(currTime)) {
             initExpirationDate.setTime(initExpiration.getTimeInMillis() + intervalDuration);
         }
-        
+
         logger.info("Setting the Export Timer, initial expiration: " + initExpirationDate);
         createTimer(initExpirationDate, intervalDuration, info);
     }
@@ -339,5 +339,5 @@ public class DataverseTimerServiceBean implements Serializable {
         } while ((e = e.getCause()) != null);
         logger.severe(fullMessage);
     }
-    
+
 }

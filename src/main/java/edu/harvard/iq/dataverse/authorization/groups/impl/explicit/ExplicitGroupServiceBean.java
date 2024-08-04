@@ -30,16 +30,16 @@ import jakarta.persistence.PersistenceContext;
 @Named
 @Stateless
 public class ExplicitGroupServiceBean {
-    
+
     private static final Logger logger = Logger.getLogger(ExplicitGroupServiceBean.class.getName());
     @EJB
     private RoleAssigneeServiceBean roleAssigneeSvc;
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
-	
+
     ExplicitGroupProvider provider;
-    
+
     /**
      * A PostgreSQL-specific query that returns a group and all the groups
      * that contain it, and their parents too (-> recourse up teh containment
@@ -64,16 +64,16 @@ public class ExplicitGroupServiceBean {
         "  WHERE parents.parent_group_id = egg.id\n" +
         ") SELECT * from explicitgroup \n" +
         "WHERE id IN (SELECT distinct id FROM parents);";
-    
+
     @PostConstruct
     void setup() {
         provider = new ExplicitGroupProvider(this, roleAssigneeSvc);
     }
-    
+
     public ExplicitGroupProvider getProvider() {
         return provider;
     }
-    
+
     public ExplicitGroup persist(ExplicitGroup g) {
         if (g.getId() == null) {
             em.persist(g);
@@ -91,17 +91,17 @@ public class ExplicitGroupServiceBean {
                     g.getContainedRoleAssignees().removeAll(stale);
                 }
             }
-            
+
             return em.merge(g);
-        }    
+        }
     }
-    
+
     public List<ExplicitGroup> findByOwner(Long dvObjectId) {
         return provider.updateProvider(em.createNamedQuery("ExplicitGroup.findByOwnerId", ExplicitGroup.class)
                  .setParameter("ownerId", dvObjectId)
                  .getResultList());
     }
-    
+
     ExplicitGroup findByAlias(String groupAlias) {
         try {
             return provider.updateProvider(em.createNamedQuery("ExplicitGroup.findByAlias", ExplicitGroup.class)
@@ -114,7 +114,7 @@ public class ExplicitGroupServiceBean {
 
     public ExplicitGroup findInOwner(Long ownerId, String groupAliasInOwner) {
         try {
-            return provider.updateProvider( 
+            return provider.updateProvider(
                     em.createNamedQuery("ExplicitGroup.findByOwnerIdAndAlias", ExplicitGroup.class)
                         .setParameter("alias", groupAliasInOwner)
                         .setParameter("ownerId", ownerId)
@@ -127,7 +127,7 @@ public class ExplicitGroupServiceBean {
     public void removeGroup(ExplicitGroup explicitGroup) {
         em.remove(explicitGroup);
     }
-    
+
     /**
      * Returns all the explicit groups that are available in the context of the passed DvObject.
      * @param d The DvObject where the groups are queried
@@ -141,7 +141,7 @@ public class ExplicitGroupServiceBean {
         }
         return provider.updateProvider(egs);
     }
-    
+
     /**
      * Finds all the explicit groups {@code ra} is <b>directly</b> a member of.
      * To find all these groups and the groups the contain them (recursively upwards),
@@ -175,7 +175,7 @@ public class ExplicitGroupServiceBean {
         }
     }
 
-    
+
     /**
      * Finds all the explicit groups {@code ra} is a member of.
      * @param ra the role assignee whose membership list we seek
@@ -184,7 +184,7 @@ public class ExplicitGroupServiceBean {
     public Set<ExplicitGroup> findGroups(RoleAssignee ra) {
         return findClosure(findDirectlyContainingGroups(ra));
     }
-    
+
     /**
      * Finds all the groups {@code ra} is a member of, in the context of {@code o}.
      * This includes both direct and indirect memberships.
@@ -197,7 +197,7 @@ public class ExplicitGroupServiceBean {
                 .filter(g -> g.owner.isAncestorOf(o))
                 .collect(Collectors.toSet());
     }
-        
+
     /**
      * Finds all the groups {@code ra} directly belongs to in the context of {@code o}. In effect,
      * collects all the groups {@code ra} belongs to and that are defined at {@code o}
@@ -214,7 +214,7 @@ public class ExplicitGroupServiceBean {
             return Collections.emptySet();
         }
         List<ExplicitGroup> groupList = new LinkedList<>();
-        
+
         if (ra instanceof ExplicitGroup) {
             for (DvObject cur = o; cur != null; cur = cur.getOwner()) {
                 groupList.addAll(em.createNamedQuery("ExplicitGroup.findByOwnerAndSubExGroupId", ExplicitGroup.class)
@@ -222,7 +222,7 @@ public class ExplicitGroupServiceBean {
                   .setParameter("subExGroupId", ((ExplicitGroup) ra).getId())
                   .getResultList());
             }
-            
+
         } else if (ra instanceof AuthenticatedUser) {
             for (DvObject cur = o; cur != null; cur = cur.getOwner()) {
                 groupList.addAll(em.createNamedQuery("ExplicitGroup.findByOwnerAndAuthUserId", ExplicitGroup.class)
@@ -230,7 +230,7 @@ public class ExplicitGroupServiceBean {
                   .setParameter("authUserId", ((AuthenticatedUser) ra).getId())
                   .getResultList());
             }
-            
+
         } else {
             for (DvObject cur = o; cur != null; cur = cur.getOwner()) {
                 groupList.addAll(em.createNamedQuery("ExplicitGroup.findByOwnerAndRAIdtf", ExplicitGroup.class)
@@ -239,10 +239,10 @@ public class ExplicitGroupServiceBean {
                   .getResultList());
             }
         }
-        
+
         return provider.updateProvider(new HashSet<>(groupList));
     }
-    
+
     /**
      * 
      * Finds all the groups that contain the groups in {@code seed} (including {@code seed}), and the
@@ -252,11 +252,11 @@ public class ExplicitGroupServiceBean {
      * @return Transitive closure (based on group  containment) of the groups in {@code seed}.
      */
     public Set<ExplicitGroup> findClosure(Set<ExplicitGroup> seed) {
-        
+
         if (seed.isEmpty()) return Collections.emptySet();
-        
+
         String ids = seed.stream().map(eg -> Long.toString(eg.getId())).collect(joining(","));
-        
+
         // PSQL driver has issues with arrays and collections as parameters, so we're using 
         // string manipulation to create the query here. Not ideal, but seems to be
         // the only solution at the Java Persistence level (i.e. without downcasting to org.postgresql.*)
@@ -264,7 +264,7 @@ public class ExplicitGroupServiceBean {
         return new HashSet<>(em.createNativeQuery(sqlCode, ExplicitGroup.class)
             .getResultList());
     }
-    
+
     /**
      * 
      * Fully strips the assignee of membership in all the explicit groups.
@@ -278,6 +278,6 @@ public class ExplicitGroupServiceBean {
             em.createNativeQuery("DELETE FROM explicitgroup_explicitgroup WHERE containedexplicitgroups_id=" + ((ExplicitGroup) assignee).getId()).executeUpdate();
         }
     }
-    
-    
+
+
 }

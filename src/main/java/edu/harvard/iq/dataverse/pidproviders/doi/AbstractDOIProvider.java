@@ -60,7 +60,7 @@ public abstract class AbstractDOIProvider extends AbstractPidProvider {
         }
         return globalId;
     }
-    
+
     @Override
     public GlobalId parsePersistentId(String protocol, String authority, String identifier) {
 
@@ -77,11 +77,11 @@ public abstract class AbstractDOIProvider extends AbstractPidProvider {
     protected String getProviderKeyName() {
         return null;
     }
-    
+
     public String getProtocol() {
         return DOI_PROTOCOL;
     }
-    
+
     public String getMetadataFromDvObject(String identifier, Map<String, String> metadata, DvObject dvObject) {
 
         Dataset dataset = null;

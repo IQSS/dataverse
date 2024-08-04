@@ -33,7 +33,7 @@ public class OpenAireExporterTest {
     public OpenAireExporterTest() {
         openAireExporter = new OpenAireExporter();
     }
-    
+
 
     /**
      * Test of getProviderName method, of class OpenAireExporter.
@@ -69,10 +69,10 @@ public class OpenAireExporterTest {
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject jsonObject = jsonReader.readObject();
-        
+
         ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
         Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(jsonObject);
-        
+
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         openAireExporter.exportDataset(exportDataProviderStub, byteArrayOutputStream);
         String xmlOnOneLine = new String(byteArrayOutputStream.toByteArray());
@@ -94,10 +94,10 @@ public class OpenAireExporterTest {
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject jsonObject = jsonReader.readObject();
-        
+
         ExportDataProvider exportDataProviderStub = Mockito.mock(ExportDataProvider.class);
         Mockito.when(exportDataProviderStub.getDatasetJson()).thenReturn(jsonObject);
-        
+
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         openAireExporter.exportDataset(exportDataProviderStub, byteArrayOutputStream);
 
