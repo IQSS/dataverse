@@ -58,7 +58,7 @@ public class DatasetTypesIT {
         } else {
             createSoftware.then().assertThat()
                     .statusCode(BAD_REQUEST.getStatusCode())
-                    .body("message", equalTo("The dataset type feature is not enabled but a type was sent: software"));
+                    .body("message", equalTo("Error parsing Json: The dataset type feature is not enabled but a type was sent: software"));
             return;
         }
 
@@ -72,14 +72,16 @@ public class DatasetTypesIT {
         System.out.println("datasetType: " + datasetType);
         assertEquals("software", datasetType);
 
-        Response searchDraft = UtilIT.searchAndShowFacets("id:dataset_" + datasetId + "_draft", apiToken);
-        searchDraft.prettyPrint();
-        searchDraft.then().assertThat()
-                .body("data.total_count", CoreMatchers.is(1))
-                .body("data.count_in_response", CoreMatchers.is(1))
-                .body("data.facets[0].datasetType.friendly", CoreMatchers.is("Dataset Type"))
-                .body("data.facets[0].datasetType.labels[0].Software", CoreMatchers.is(1))
-                .statusCode(OK.getStatusCode());
+        if (datasetTypesEnabled) {
+            Response searchDraft = UtilIT.searchAndShowFacets("id:dataset_" + datasetId + "_draft", apiToken);
+            searchDraft.prettyPrint();
+            searchDraft.then().assertThat()
+                    .body("data.total_count", CoreMatchers.is(1))
+                    .body("data.count_in_response", CoreMatchers.is(1))
+                    .body("data.facets[0].datasetType.friendly", CoreMatchers.is("Dataset Type"))
+                    .body("data.facets[0].datasetType.labels[0].Software", CoreMatchers.is(1))
+                    .statusCode(OK.getStatusCode());
+        }
 
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
         UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
@@ -165,7 +167,7 @@ public class DatasetTypesIT {
         } else {
             importJson.then().assertThat()
                     .statusCode(BAD_REQUEST.getStatusCode())
-                    .body("message", equalTo("The dataset type feature is not enabled but a type was sent: software"));
+                    .body("message", equalTo("Error parsing Json: The dataset type feature is not enabled but a type was sent: software"));
             return;
         }
 
@@ -220,7 +222,11 @@ public class DatasetTypesIT {
 
         Response badJson = UtilIT.addDatasetType("this isn't even JSON", apiToken);
         badJson.prettyPrint();
-        badJson.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        if (datasetTypesEnabled) {
+            badJson.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        } else {
+            badJson.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        }
 
         String randomName = UUID.randomUUID().toString().substring(0, 8);
         String jsonIn = Json.createObjectBuilder().add("name", randomName).build().toString();
