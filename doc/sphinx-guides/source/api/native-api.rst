@@ -2959,10 +2959,14 @@ The default will always be the same provider as for the dataset PID if that prov
 Reconcile the PID ofa a dataset (If multiple PIDProvider are Enabled)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Dataverse can be configured to use multiple PID Providers (see the :ref:`pids-configuration` section for more information).
-It is possible to update the used PIDProvider of a dataset. This API not not modifies the PIDProvider, but
-reconciles the PID with the current configured provider if it has not already been published.
-This means that the identifier of a previous configured PIDProvider is removed and a new one is created using the current PIDProvider.
-Note that this change does not affect the storage repository where the old identifier is still used.
+It is possible to update the PIDProvider used by a dataset and assign the dataset (and any PIDs currently assigned to
+the dataset's files) a new PID that uses the protocol/authority/separator/shoulder of the new PIDProvider. This API 'reconciles'
+a draft dataset's PID by creating a new PID supported by the PidProvider and assigning the original PID as an
+alternativePersistentIdentifier for the dataset. The API is restricted to datasets that have not already been published.
+(It does not make any changes to any PidProvider.) Note that this change does not affect the storage repository where the
+old identifier is still used. n(An administrator could move the files manually and set the storagelocationdesignator to
+false on the entry in the alternativepersistentidentifier table for the old identifier if this is a concern. This is not
+necessary for Dataverse to function correctly.)
 
 The PID Provider id used must be one of the those configured - see :ref:`pids-providers-api`.
 
