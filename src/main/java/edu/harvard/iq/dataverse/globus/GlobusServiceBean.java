@@ -61,6 +61,9 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
@@ -70,6 +73,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.URLTokenUtil;
 import edu.harvard.iq.dataverse.util.UrlSignerUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import jakarta.ws.rs.core.Response;
 
 @Stateless
 @Named("GlobusServiceBean")
@@ -81,6 +85,8 @@ public class GlobusServiceBean implements java.io.Serializable {
     protected SettingsServiceBean settingsSvc;
     @Inject
     DataverseSession session;
+    @Inject
+    DataverseRequestServiceBean dataverseRequestSvc;
     @EJB
     protected AuthenticationServiceBean authSvc;
     @EJB
@@ -92,7 +98,13 @@ public class GlobusServiceBean implements java.io.Serializable {
     @EJB
     FileDownloadServiceBean fileDownloadService;
     @EJB
-    DataFileServiceBean dataFileService;
+    DataFileServiceBean dataFileSvc;
+    @EJB
+    PermissionServiceBean permissionSvc;
+    @EJB 
+    IngestServiceBean ingestSvc;
+    @EJB
+    SystemConfig systemConfig;
 
     private static final Logger logger = Logger.getLogger(GlobusServiceBean.class.getCanonicalName());
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
@@ -764,7 +776,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                     JsonArray newfilesJsonArray = newfilesJsonObject.getJsonArray("files");
                     logger.fine("Size: " + newfilesJsonArray.size());
                     logger.fine("Val: " + JsonUtil.prettyPrint(newfilesJsonArray.getJsonObject(0)));
-                    JsonArrayBuilder jsonDataSecondAPI = Json.createArrayBuilder();
+                    JsonArrayBuilder addFilesJsonData = Json.createArrayBuilder();
 
                     for (JsonObject fileJsonObject : filesJsonArray.getValuesAs(JsonObject.class)) {
 
@@ -790,7 +802,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                             path = Json.createPatchBuilder()
                                     .add("/mimeType", newfileJsonObject.get(0).getString("mime")).build();
                             fileJsonObject = path.apply(fileJsonObject);
-                            jsonDataSecondAPI.add(fileJsonObject);
+                            addFilesJsonData.add(fileJsonObject);
                             countSuccess++;
                             // } else {
                             // globusLogger.info(fileName
@@ -805,20 +817,32 @@ public class GlobusServiceBean implements java.io.Serializable {
                         }
                     }
 
-                    String newjsonData = jsonDataSecondAPI.build().toString();
+                    String newjsonData = addFilesJsonData.build().toString();
 
-                    globusLogger.info("Successfully generated new JsonData for Second API call");
+                    globusLogger.info("Successfully generated new JsonData for addFiles call");
 
-                    String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST "
+                    /*String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST "
                             + httpRequestUrl + "/api/datasets/:persistentId/addFiles?persistentId=doi:"
                             + datasetIdentifier + " -F jsonData='" + newjsonData + "'";
-                    System.out.println("*******====command ==== " + command);
+                    System.out.println("*******====command ==== " + command);*/
 
                     // ToDo - refactor to call AddReplaceFileHelper.addFiles directly instead of
                     // calling API
+                    
+                    // a quick experimental AddReplaceFileHelper implementation: 
+                    AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(
+                            dataverseRequestSvc.getDataverseRequest(),
+                            this.ingestSvc,
+                            this.datasetSvc,
+                            this.dataFileSvc,
+                            this.permissionSvc,
+                            this.commandEngine,
+                            this.systemConfig
+                    );
 
-                    String output = addFilesAsync(command, globusLogger);
-                    if (output.equalsIgnoreCase("ok")) {
+                    Response addFilesResponse = addFileHelper.addFiles(newjsonData, dataset, authUser);
+                    
+                    if (Response.Status.OK.equals(addFilesResponse.getStatusInfo())) {
                         // if(!taskSkippedFiles)
                         if (countError == 0) {
                             userNotificationService.sendNotification((AuthenticatedUser) authUser,
@@ -830,10 +854,10 @@ public class GlobusServiceBean implements java.io.Serializable {
                                     UserNotification.Type.GLOBUSUPLOADCOMPLETEDWITHERRORS, dataset.getId(),
                                     countSuccess + " files added out of " + countAll, true);
                         }
-                        globusLogger.info("Successfully completed api/datasets/:persistentId/addFiles call ");
+                        globusLogger.info("Successfully completed addFiles call ");
                     } else {
                         globusLogger.log(Level.SEVERE,
-                                "******* Error while executing api/datasets/:persistentId/add call ", command);
+                                "******* Error while executing addFiles ", newjsonData);
                     }
 
                 }
@@ -848,6 +872,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                 e.printStackTrace();
                 globusLogger.info("Exception from globusUpload call " + e.getMessage());
                 datasetSvc.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
+                // 
             }
         }
         if (ruleId != null) {
@@ -1261,7 +1286,7 @@ public class GlobusServiceBean implements java.io.Serializable {
                     Long fileId = Long.parseLong(idAsString);
                     // If we need to create a GuestBookResponse record, we have to
                     // look up the DataFile object for this file:
-                    df = dataFileService.findCheapAndEasy(fileId);
+                    df = dataFileSvc.findCheapAndEasy(fileId);
                     selectedFiles.add(df);
                     if (!doNotSaveGuestbookResponse) {
                         guestbookResponse.setDataFile(df);
