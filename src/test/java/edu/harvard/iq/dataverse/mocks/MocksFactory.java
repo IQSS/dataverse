@@ -202,7 +202,11 @@ public class MocksFactory {
         return retVal;
     }
     
-    public static DataverseRole makeRole( String name ) {
+    public static DataverseRole makeRole( String name ) {       
+        return makeRole(name, true);
+    }
+    
+    public static DataverseRole makeRole( String name, Boolean includePublishDataset ) {
         DataverseRole dvr = new DataverseRole();
         
         dvr.setId( nextId() );
@@ -212,7 +216,10 @@ public class MocksFactory {
         
         dvr.addPermission(Permission.ManageDatasetPermissions);
         dvr.addPermission(Permission.EditDataset);
-        dvr.addPermission(Permission.PublishDataset);
+        if  (includePublishDataset){
+           dvr.addPermission(Permission.PublishDataset);
+        }
+
         dvr.addPermission(Permission.ViewUnpublishedDataset);
         
         return dvr;
