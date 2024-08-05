@@ -15,12 +15,9 @@ import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
-import java.io.IOException;
+
 import java.sql.Timestamp;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,7 +48,7 @@ public class ReconcileDatasetPidCommand extends AbstractDatasetCommand<Dataset> 
                     Collections.singleton(Permission.EditDataset), getDataset());
         }
         // Datast must be unreleased! This means there is only one version!
-        if (getDataset().isReleased()) { //@TODO: Clarify whether this is the best check...
+        if (getDataset().isReleased()) {
             throw new IllegalCommandException("Dataset already published, cannot alter PID Provider", this);
         }
         // Dataset must not be harvested!
@@ -61,7 +58,7 @@ public class ReconcileDatasetPidCommand extends AbstractDatasetCommand<Dataset> 
         GlobalId oldId = getDataset().getGlobalId();
 
         if (oldId == null) {
-            throw new IllegalStateException("Dataset without a global identifier, cannot alter!");
+            throw new IllegalStateException("Dataset without a global identifier, cannot be altered!");
         }
         PidProvider currentPidProvider = PidUtil.getPidProvider(oldId.getProviderId());
         // new PID Provider must be different to requested one!
@@ -82,7 +79,7 @@ public class ReconcileDatasetPidCommand extends AbstractDatasetCommand<Dataset> 
             logger.log(Level.WARNING, "Identifier deletion was not successful:", e.getMessage());
         }
 
-        if(ctxt.systemConfig().isFilePIDsEnabledForCollection(getDataset().getOwner())) {
+        if (ctxt.systemConfig().isFilePIDsEnabledForCollection(getDataset().getOwner())) {
             reconcileFilePids(ctxt);
         }
 
@@ -91,7 +88,7 @@ public class ReconcileDatasetPidCommand extends AbstractDatasetCommand<Dataset> 
         if (!newPidProvider.registerWhenPublished()) {
             registerExternalIdentifier(getDataset(), ctxt, true); // this updates GlobalIdCreateTime and IdentifierRegistered
         }
-        // keep old Id als alternative identifier
+
         AlternativePersistentIdentifier api;
         api = new AlternativePersistentIdentifier();
         api.setProtocol(oldId.getProtocol());
@@ -99,18 +96,21 @@ public class ReconcileDatasetPidCommand extends AbstractDatasetCommand<Dataset> 
         api.setIdentifier(oldId.getIdentifier());
         api.setDvObject(getDataset());
         api.setStorageLocationDesignator(true);// cf. Dataset#getIdentifierForFileStorage()
-        if(getDataset().getAlternativePersistentIndentifiers()!=null) {
+        if (getDataset().getAlternativePersistentIndentifiers() != null) {
+            // check iF an alternative ID is already used as storage location designator
+            Optional<AlternativePersistentIdentifier> storageId = getDataset().getAlternativePersistentIndentifiers().stream().filter(s -> s.isStorageLocationDesignator()).findAny();
+            if (storageId.isPresent()) {
+                api.setStorageLocationDesignator(false);// If there is already a storage location designator we do not alter it.
+            }
             getDataset().getAlternativePersistentIndentifiers().add(api);
-        }else{
+        } else {
             getDataset().setAlternativePersistentIndentifiers(Set.of(api));
         }
+
         // We keep the old persistent identifier as AlternativePersistentIdentifier with storageLocationDesignator true.
-        // This keep the link the object store intact, without altering the files.
-        // IMHO: This command should also update the storage. First, maintenance of the storage becomes a mess if there is a counterintuitive layout.
-        // Second, it could occur that another object is minted with the old identifier and consequently we have a conflict in our storage system.
-        // We accept this risk for now since a super user can update the storage manually from old file path to the new one, and remove the AlternativeIdentifer form the database.
+        // This keep the link the object store intact, without altering the files. A superuser can update the storage
+        // manually from old file path to the new one, and remove the AlternativeIdentifer form the database.
         // This removed the old identifier totally from the system and avoids all side effects...
-        // @TODO: Move files on storage once the storage API support a move operation!
         ctxt.em().merge(getDataset());
         ctxt.em().flush();
 
@@ -119,7 +119,7 @@ public class ReconcileDatasetPidCommand extends AbstractDatasetCommand<Dataset> 
         List<RoleAssignment> ras = ctxt.roles().directRoleAssignments(getDataset());
         for (RoleAssignment ra : ras) {
             for (AuthenticatedUser au : ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier()))) {
-                ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.PIDRECONCILED,getDataset().getLatestVersion().getId(),"Persistent identifier changed!");
+                ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.PIDRECONCILED, getDataset().getLatestVersion().getId(), "Persistent identifier changed!");
             }
         }
 
@@ -128,54 +128,54 @@ public class ReconcileDatasetPidCommand extends AbstractDatasetCommand<Dataset> 
 
     private void reconcileFilePids(CommandContext ctxt) {
         // remove datafile PIDs
-            try {
-                for (DataFile df : getDataset().getFiles()) {
-                    GlobalId oldPid=df.getGlobalId();
-                    PidProvider currentPidProvider = PidUtil.getPidProvider(oldPid.getProviderId());
-                    if (currentPidProvider.alreadyRegistered(df)) {
-                        currentPidProvider.deleteIdentifier(df);// delete it external
-                    }
-
-                    df.setGlobalId(null); // and remove it internally from data structure
-                    df.setGlobalIdCreateTime(null);
-                    df.setIdentifierRegistered(false);
-
-                    AlternativePersistentIdentifier api;
-                    api = new AlternativePersistentIdentifier();
-                    api.setProtocol(oldPid.getProtocol());
-                    api.setAuthority(oldPid.getAuthority());
-                    api.setIdentifier(oldPid.getIdentifier());
-                    api.setDvObject(df);
-                    api.setStorageLocationDesignator(true); // cf. Dataset#getIdentifierForFileStorage()
-                    if(df.getAlternativePersistentIndentifiers()!=null) {
-                        df.getAlternativePersistentIndentifiers().add(api);
-                    }else{
-                        df.setAlternativePersistentIndentifiers(Set.of(api));
-                    }
-                    newPidProvider.generatePid(df); // this updates Protocol, Authority, and Identifier and thus a new GlobalID
-                    logger.fine("Reconciling datafile( id =`" + df.getId() + ")` - creating new globalId `" +df.getGlobalId() + '`');
-                    if (!newPidProvider.registerWhenPublished()) {
-                        registerExternalIdentifier(df, ctxt, true); // this updates GlobalIdCreateTime and IdentifierRegistered
-                    }
+        try {
+            for (DataFile df : getDataset().getFiles()) {
+                GlobalId oldPid = df.getGlobalId();
+                if(df.getGlobalId()==null){
+                    // if there is no global ID of a datafile, there is no need to reconcile anything.
+                    continue;
                 }
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "Reconcilation of the datafile persistent identifier was not successful:", e.getMessage());
+                PidProvider currentPidProvider = PidUtil.getPidProvider(oldPid.getProviderId());
+                if (currentPidProvider.alreadyRegistered(df)) {
+                    currentPidProvider.deleteIdentifier(df);// delete it external
+                }
+
+                df.setGlobalId(null); // and remove it internally from data structure
+                df.setGlobalIdCreateTime(null);
+                df.setIdentifierRegistered(false);
+
+                AlternativePersistentIdentifier api;
+                api = new AlternativePersistentIdentifier();
+                api.setProtocol(oldPid.getProtocol());
+                api.setAuthority(oldPid.getAuthority());
+                api.setIdentifier(oldPid.getIdentifier());
+                api.setDvObject(df);
+                api.setStorageLocationDesignator(true); // cf. Dataset#getIdentifierForFileStorage()
+                if (df.getAlternativePersistentIndentifiers() != null) {
+                    // check iF an alternative ID is already used as storage location designator
+                    Optional<AlternativePersistentIdentifier> storageId = df.getAlternativePersistentIndentifiers().stream().filter(s -> s.isStorageLocationDesignator()).findAny();
+                    if (storageId.isPresent()) {
+                        api.setStorageLocationDesignator(false);// If there is already a storage location designator we do not alter it.
+                    }
+                    df.getAlternativePersistentIndentifiers().add(api);
+                } else {
+                    df.setAlternativePersistentIndentifiers(Set.of(api));
+                }
+                newPidProvider.generatePid(df); // this updates Protocol, Authority, and Identifier and thus a new GlobalID
+                logger.fine("Reconciling datafile( id =`" + df.getId() + ")` - creating new globalId `" + df.getGlobalId() + '`');
+                if (!newPidProvider.registerWhenPublished()) {
+                    registerExternalIdentifier(df, ctxt, true); // this updates GlobalIdCreateTime and IdentifierRegistered
+                }
             }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Reconcilation of the datafile persistent identifier was not successful:", e.getMessage());
+        }
     }
 
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         //update search index with the state
         ctxt.index().asyncIndexDataset(getDataset(), true);
-        //invalidate all existing Export caches
-        // currently, Exports are only possible for published datasets...
-        // so there is no need to invalide caches...
-        // yet here is the needed snippet
-//        try {
-//            ExportService.getInstance().clearAllCachedFormats(getDataset());
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
         return true;
     }
 }
