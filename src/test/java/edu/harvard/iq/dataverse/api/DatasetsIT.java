@@ -4011,8 +4011,25 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
 
         Response exportDatasetAsDublinCore = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken);
         exportDatasetAsDublinCore.prettyPrint();
-        String todayDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         exportDatasetAsDublinCore.then().assertThat()
+                .body("oai_dc.type", equalTo("Dataset"))
+                .body("oai_dc.date", equalTo("1999-12-31"))
+                .body("oai_dc.rights", equalTo("CC0 1.0"))
+                .statusCode(OK.getStatusCode());
+
+        Response clearDateField = UtilIT.clearDatasetCitationDateField(datasetPid, apiToken);
+        clearDateField.prettyPrint();
+        clearDateField.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Clearing not enough. You have to reexport because the previous date is cached.
+        Response rexport = UtilIT.reexportDatasetAllFormats(datasetPid);
+        rexport.prettyPrint();
+        rexport.then().assertThat().statusCode(OK.getStatusCode());
+
+        String todayDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        Response exportPostClear = UtilIT.exportDataset(datasetPid, "oai_dc", apiToken);
+        exportPostClear.prettyPrint();
+        exportPostClear.then().assertThat()
                 .body("oai_dc.type", equalTo("Dataset"))
                 .body("oai_dc.date", equalTo(todayDate))
                 .body("oai_dc.rights", equalTo("CC0 1.0"))

@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse.export.dublincore;
 
 import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
@@ -184,8 +186,16 @@ public class DublinCoreExportUtil {
          * The Tromsø Recommendations for Citation of Research Data in
          * Linguistics; https://doi.org/10.15497/rda00040 ." --
          * https://github.com/IQSS/dataverse/issues/8129
+         *
+         * However, if the citation date field has been set, use that.
          */
-        writeFullElement(xmlw, dcFlavor+":"+"date", datasetDto.getPublicationDate());
+        String date = datasetDto.getPublicationDate();
+        DatasetFieldType citationDataType = jakarta.enterprise.inject.spi.CDI.current().select(DatasetServiceBean.class).get().findByGlobalId(globalId.asString()).getCitationDateDatasetFieldType();
+        if (citationDataType != null) {
+            date = dto2Primitive(version, citationDataType.getName());
+        }
+
+        writeFullElement(xmlw, dcFlavor+":"+"date", date);
         
         writeFullElement(xmlw, dcFlavor+":"+"contributor", dto2Primitive(version, DatasetFieldConstant.depositor));  
         
