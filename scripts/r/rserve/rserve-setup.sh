@@ -39,17 +39,14 @@ else
         echo "Rserve password file (/etc/Rserv.pwd) already exists."
 fi
 
-if [ ! -f /etc/init.d/rserve ]
+if [ ! -f /usr/lib/systemd/system/rserve.service ]
 then
-    echo "Installing Rserve startup file."
-    install rserve-startup.sh /etc/init.d/rserve
-    chkconfig rserve on
-    echo "You can start Rserve daemon by executing"
-    echo "  service rserve start"
-    echo 
-    echo "If this is a RedHat/CentOS 7/8 system, you may want to use the systemctl file rserve.service instead (provided in this directory)"
+    echo "Installing Rserve systemd unit file."
+    cp rserve.service /usr/lib/systemd/system
+    systemctl start rserve
+    systemctl enable rserve
 else 
-    echo "Rserve startup file already in place."
+    echo "Rserve systemd unit file already in place."
 fi
 
 if [ ! -d /var/run/rserve ]
