@@ -229,7 +229,6 @@ public abstract class DvObjectContainer extends DvObject {
         }
     }
 
-
     public PidProvider getEffectivePidGenerator() {
         if (pidGenerator == null) {
             String specs = getPidGeneratorSpecs();

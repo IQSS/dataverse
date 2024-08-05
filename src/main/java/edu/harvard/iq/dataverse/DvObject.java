@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.storageuse.StorageQuota;
 
@@ -493,7 +492,6 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
      * @return {@code true} iff {@code other} is {@code this} or below {@code this} in the containment hierarchy.
      */
     public abstract boolean isAncestorOf( DvObject other );
-
 
     @OneToMany(mappedBy = "definitionPoint",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
     List<RoleAssignment> roleAssignments;
