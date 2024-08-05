@@ -74,8 +74,10 @@ In some parts of the documentation, graphs are rendered as images using the Sphi
 
 Building the guides requires the ``dot`` executable from GraphViz.
 
-This requires having `GraphViz <https://graphviz.org>`_ installed and either having ``dot`` on the path or
-`adding options to the make call <https://groups.google.com/forum/#!topic/sphinx-users/yXgNey_0M3I>`_.
+This requires having [GraphViz](https://graphviz.org) installed and either having ``dot`` on the path or
+[adding options to the `make` call](https://groups.google.com/forum/#!topic/sphinx-users/yXgNey_0M3I).
+
+On a Mac we recommend installing GraphViz through [Homebrew](<https://brew.sh>). Once you have Homebrew installed and configured to work with your shell, you can type `brew install graphviz`.
 
 ### Editing and Building the Guides
 
