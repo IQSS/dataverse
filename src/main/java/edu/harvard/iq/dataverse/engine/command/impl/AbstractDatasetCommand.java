@@ -152,24 +152,24 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      * large enough number of values will be legitimately registered by another
      * entity sharing the same authority...)
      *
-     * @param theDataset
+     * @param dvObject
      * @param ctxt
      * @throws CommandException
      */
-    protected void registerExternalIdentifier(DvObject theDataset, CommandContext ctxt, boolean retry) throws CommandException {
-        if (!theDataset.isIdentifierRegistered()) {
-            PidProvider pidProvider = PidUtil.getPidProvider(theDataset.getGlobalId().getProviderId());
+    protected void registerExternalIdentifier(DvObject dvObject, CommandContext ctxt, boolean retry) throws CommandException {
+        if (!dvObject.isIdentifierRegistered()) {
+            PidProvider pidProvider = PidUtil.getPidProvider(dvObject.getGlobalId().getProviderId());
             if ( pidProvider != null ) {
                 try {
-                    if (pidProvider.alreadyRegistered(theDataset)) {
+                    if (pidProvider.alreadyRegistered(dvObject)) {
                         int attempts = 0;
                         if(retry) {
                             do  {
-                                pidProvider.generatePid(theDataset);
+                                pidProvider.generatePid(dvObject);
                                 logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
-                                    new Object[]{theDataset.getId(), theDataset.getIdentifier()});
+                                    new Object[]{dvObject.getId(), dvObject.getIdentifier()});
                                 attempts++;
-                            } while (pidProvider.alreadyRegistered(theDataset) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
+                            } while (pidProvider.alreadyRegistered(dvObject) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
                         }
                         if(!retry) {
                             logger.warning("Reserving PID for: "  + getDataset().getId() + " during publication failed.");
@@ -178,14 +178,14 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                         if(attempts > FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
                             //Didn't work - we existed the loop with too many tries
                             throw new CommandExecutionException("This dataset may not be published because its identifier is already in use by another dataset; "
-                                + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
+                                + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + dvObject.getIdentifier(), this);
                         }
                     }
                     // Invariant: Dataset identifier does not exist in the remote registry
                     try {
-                        pidProvider.createIdentifier(theDataset);
-                        theDataset.setGlobalIdCreateTime(getTimestamp());
-                        theDataset.setIdentifierRegistered(true);
+                        pidProvider.createIdentifier(dvObject);
+                        dvObject.setGlobalIdCreateTime(getTimestamp());
+                        dvObject.setIdentifierRegistered(true);
                     } catch (Throwable ex) {
                         logger.info("Call to globalIdServiceBean.createIdentifier failed: " + ex);
                     }
