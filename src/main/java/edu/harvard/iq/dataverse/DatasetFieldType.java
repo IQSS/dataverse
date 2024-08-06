@@ -17,7 +17,21 @@ import jakarta.faces.model.SelectItem;
 import jakarta.persistence.*;
 
 /**
- * Defines the meaning and constraints of a metadata field and its values.
+ * A DatasetFieldType belongs to a MetadataBlock (c.f. @MetadataBlock) and defines semantic meaning and constraints of a
+ * metadata property.
+ *
+ * Each DatasetFieldType is uniquely identifiable by an identifier and name (beware: globally unique name!) and defines
+ * instance-wide properties of a metadata item, like descriptive information and allowed values. DatasetFieldType allow
+ * the definition of tree like metadata structure via parent-child relationships. The domain model does not contain the
+ * nesting level. Nodes with children are called `compound` and act as a container, while leaves are named `primitive`.
+ * Only for the latter data capture and storage (c.f. @DatasetField) is possible, for the former not.
+ *
+ * The DatasetFieldType obligation (mandatory data capture or not) [c.f. #isRequired] and activation [c.f. #isIncluded]
+ * can be configured on a per dataverse level (c.f. @DataverseFieldTypeInputLevel). If configured this has precedence over
+ * the instance-wide DatasetFieldType definition. Similarly, search facet configuration can be overridden (c.f. DataverseFacet).
+ *
+ *
+ *
  * @author Stephen Kraffmiller
  */
 @NamedQueries({
