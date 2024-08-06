@@ -40,6 +40,7 @@ public class ExternalTool implements Serializable {
     public static final String TOOL_NAME = "toolName";
     public static final String ALLOWED_API_CALLS = "allowedApiCalls";
     public static final String REQUIREMENTS = "requirements";
+    public static final String AUX_FILES_EXIST = "auxFilesExist";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -360,6 +361,11 @@ public class ExternalTool implements Serializable {
 
     public void setRequirements(String requirements) {
         this.requirements = requirements;
+    }
+
+    public boolean accessesAuxFiles() {
+        String reqs = getRequirements(); 
+        return reqs!=null && reqs.contains(AUX_FILES_EXIST);
     }
 
 }

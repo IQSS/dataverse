@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.ThemeWidgetFragment;
 
 import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 
@@ -46,6 +47,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
+import edu.harvard.iq.dataverse.dataaccess.GlobusAccessibleStore;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -128,6 +130,14 @@ import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.MediaType;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
+
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -327,8 +337,8 @@ public class Access extends AbstractApiBean {
             dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
             dInfo.addServiceAvailable(new OptionalAccessService("subset", "text/tab-separated-values", "variables=&lt;LIST&gt;", "Column-wise Subsetting"));
         }
-        
-        if(systemConfig.isGlobusFileDownload() && systemConfig.getGlobusStoresList().contains(DataAccess.getStorageDriverFromIdentifier(df.getStorageIdentifier()))) {
+        String driverId = DataAccess.getStorageDriverFromIdentifier(df.getStorageIdentifier());
+        if(systemConfig.isGlobusFileDownload() && (GlobusAccessibleStore.acceptsGlobusTransfers(driverId) || GlobusAccessibleStore.allowsGlobusReferences(driverId))) {
             dInfo.addServiceAvailable(new OptionalAccessService("GlobusTransfer", df.getContentType(), "format=GlobusTransfer", "Download via Globus"));
         }
         
@@ -464,7 +474,9 @@ public class Access extends AbstractApiBean {
         if (!dataFile.isTabularData()) { 
            throw new BadRequestException("tabular data required");
         }
-        
+        if (FileUtil.isRetentionExpired(dataFile)) {
+            throw new BadRequestException("unable to download file with expired retention");
+        }
         if (dataFile.isRestricted() || FileUtil.isActivelyEmbargoed(dataFile)) {
             boolean hasPermissionToDownloadFile = false;
             DataverseRequest dataverseRequest;
@@ -919,14 +931,15 @@ public class Access extends AbstractApiBean {
                                     }
                                 } else { 
                                     boolean embargoed = FileUtil.isActivelyEmbargoed(file);
-                                    if (file.isRestricted() || embargoed) {
+                                    boolean retentionExpired = FileUtil.isRetentionExpired(file);
+                                    if (file.isRestricted() || embargoed || retentionExpired) {
                                         if (zipper == null) {
                                             fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS "
-                                                    + (embargoed ? "EMBARGOED" : "RESTRICTED")
+                                                    + (embargoed ? "EMBARGOED" : retentionExpired ? "RETENTIONEXPIRED" : "RESTRICTED")
                                                     + " AND CANNOT BE DOWNLOADED\r\n";
                                         } else {
                                             zipper.addToManifest(file.getFileMetadata().getLabel() + " IS "
-                                                    + (embargoed ? "EMBARGOED" : "RESTRICTED")
+                                                    + (embargoed ? "EMBARGOED" : retentionExpired ? "RETENTIONEXPIRED" : "RESTRICTED")
                                                     + " AND CANNOT BE DOWNLOADED\r\n");
                                         }
                                     } else {
@@ -1196,16 +1209,7 @@ public class Access extends AbstractApiBean {
         
         DataverseTheme theme = dataverse.getDataverseTheme(); 
         if (theme != null && theme.getLogo() != null && !theme.getLogo().equals("")) {
-            Properties p = System.getProperties();
-            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
-  
-            if (domainRoot != null && !"".equals(domainRoot)) {
-                return new File (domainRoot + File.separator + 
-                    "docroot" + File.separator + 
-                    "logos" + File.separator + 
-                    dataverse.getLogoOwnerId() + File.separator + 
-                    theme.getLogo());
-            }
+            return ThemeWidgetFragment.getLogoDir(dataverse.getLogoOwnerId()).resolve(theme.getLogo()).toFile();
         }
             
         return null;         
@@ -1252,6 +1256,20 @@ public class Access extends AbstractApiBean {
     @AuthRequired
     @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces("application/json")
+    @Operation(summary = "Save auxiliary file with version", 
+               description = "Saves an auxiliary file")
+    @APIResponses(value = {
+        @APIResponse(responseCode = "200",
+                    description = "File saved response"),
+        @APIResponse(responseCode = "403",
+                    description = "User not authorized to edit the dataset."),
+        @APIResponse(responseCode = "400",
+                    description = "File not found based on id.")
+    })
+    @Tag(name = "saveAuxiliaryFileWithVersion", 
+         description = "Save Auxiliary File With Version")
+    @RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA))
     public Response saveAuxiliaryFileWithVersion(@Context ContainerRequestContext crc,
                                                  @PathParam("fileId") Long fileId,
                                                  @PathParam("formatTag") String formatTag,
@@ -1409,6 +1427,10 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
         }
 
+        if (FileUtil.isRetentionExpired(dataFile)) {
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.retentionExpired"));
+        }
+
         if (!dataFile.getOwner().isFileAccessRequest()) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.requestsNotAccepted"));
         }
@@ -1427,7 +1449,7 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.invalidRequest"));
         }
 
-        if (dataFile.containsFileAccessRequestFromUser(requestor)) {
+        if (dataFile.containsActiveFileAccessRequestFromUser(requestor)) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.requestExists"));
         }
 
@@ -1478,17 +1500,17 @@ public class Access extends AbstractApiBean {
             return error(FORBIDDEN, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
 
-        List<FileAccessRequest> requests = dataFile.getFileAccessRequests();
+        List<FileAccessRequest> requests = dataFile.getFileAccessRequests(FileAccessRequest.RequestState.CREATED);
 
         if (requests == null || requests.isEmpty()) {
             List<String> args = Arrays.asList(dataFile.getDisplayName());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound", args));
+            return error(Response.Status.NOT_FOUND, BundleUtil.getStringFromBundle("access.api.requestList.noRequestsFound", args));
         }
 
         JsonArrayBuilder userArray = Json.createArrayBuilder();
 
         for (FileAccessRequest fileAccessRequest : requests) {
-            userArray.add(json(fileAccessRequest.getAuthenticatedUser()));
+            userArray.add(json(fileAccessRequest.getRequester()));
         }
 
         return ok(userArray);
@@ -1534,7 +1556,9 @@ public class Access extends AbstractApiBean {
 
         try {
             engineSvc.submit(new AssignRoleCommand(ra, fileDownloaderRole, dataFile, dataverseRequest, null));
-            if (dataFile.removeFileAccessRequester(ra)) {
+            FileAccessRequest far = dataFile.getAccessRequestForAssignee(ra);
+            if(far!=null) {
+                far.setStateGranted();
                 dataFileService.save(dataFile);
             }
 
@@ -1659,26 +1683,68 @@ public class Access extends AbstractApiBean {
         if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() || permissionService.requestOn(dataverseRequest, dataFile).has(Permission.ManageFilePermissions))) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.rejectAccess.failure.noPermissions"));
         }
-
-        if (dataFile.removeFileAccessRequester(ra)) {
+        FileAccessRequest far = dataFile.getAccessRequestForAssignee(ra);
+        if (far != null) {
+            far.setStateRejected();
             dataFileService.save(dataFile);
 
             try {
                 AuthenticatedUser au = (AuthenticatedUser) ra;
-                userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REJECTFILEACCESS, dataFile.getOwner().getId());
+                userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()),
+                        UserNotification.Type.REJECTFILEACCESS, dataFile.getOwner().getId());
             } catch (ClassCastException e) {
-                //nothing to do here - can only send a notification to an authenticated user
+                // nothing to do here - can only send a notification to an authenticated user
             }
 
             List<String> args = Arrays.asList(dataFile.getDisplayName());
             return ok(BundleUtil.getStringFromBundle("access.api.rejectAccess.success.for.single.file", args));
-
         } else {
             List<String> args = Arrays.asList(dataFile.getDisplayName(), ra.getDisplayInfo().getTitle());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.rejectFailure.noRequest", args));
         }
     }
-    
+
+    @GET
+    @AuthRequired
+    @Path("/datafile/{id}/userFileAccessRequested")
+    public Response getUserFileAccessRequested(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        DataFile dataFile;
+        AuthenticatedUser requestAuthenticatedUser;
+        try {
+            dataFile = findDataFileOrDie(dataFileId);
+            requestAuthenticatedUser = getRequestAuthenticatedUserOrDie(crc);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        boolean fileAccessRequested = false;
+        List<FileAccessRequest> requests = dataFile.getFileAccessRequests();
+        for (FileAccessRequest fileAccessRequest : requests) {
+            if (fileAccessRequest.getRequester().getId().equals(requestAuthenticatedUser.getId())) {
+                fileAccessRequested = true;
+                break;
+            }
+        }
+        return ok(fileAccessRequested);
+    }
+
+    @GET
+    @AuthRequired
+    @Path("/datafile/{id}/userPermissions")
+    public Response getUserPermissionsOnFile(@Context ContainerRequestContext crc, @PathParam("id") String dataFileId) {
+        DataFile dataFile;
+        try {
+            dataFile = findDataFileOrDie(dataFileId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+        User requestUser = getRequestUser(crc);
+        jsonObjectBuilder.add("canDownloadFile", permissionService.userOn(requestUser, dataFile).has(Permission.DownloadFile));
+        jsonObjectBuilder.add("canManageFilePermissions", permissionService.userOn(requestUser, dataFile).has(Permission.ManageFilePermissions));
+        jsonObjectBuilder.add("canEditOwnerDataset", permissionService.userOn(requestUser, dataFile.getOwner()).has(Permission.EditDataset));
+        return ok(jsonObjectBuilder);
+    }
+
     // checkAuthorization is a convenience method; it calls the boolean method
     // isAccessAuthorized(), the actual workhorse, tand throws a 403 exception if not.
     
@@ -1698,8 +1764,11 @@ public class Access extends AbstractApiBean {
         //True if there's an embargo that hasn't yet expired
         //In this state, we block access as though the file is restricted (even if it is not restricted)
         boolean embargoed = FileUtil.isActivelyEmbargoed(df);
-        
-        
+        // access is also blocked for retention expired files
+        boolean retentionExpired = FileUtil.isRetentionExpired(df);
+        // No access ever if retention is expired
+        if(retentionExpired) return false;
+
         /*
         SEK 7/26/2018 for 3661 relying on the version state of the dataset versions
             to which this file is attached check to see if at least one is  RELEASED
@@ -1764,7 +1833,7 @@ public class Access extends AbstractApiBean {
         
 
         //The one case where we don't need to check permissions
-        if (!restricted && !embargoed && published) {
+        if (!restricted && !embargoed && !retentionExpired && published) {
             // If they are not published, they can still be downloaded, if the user
             // has the permission to view unpublished versions! (this case will 
             // be handled below)
@@ -1945,5 +2014,5 @@ public class Access extends AbstractApiBean {
             throw new BadRequestException(); 
         }
         return redirectUri;
-    }   
+    }
 }

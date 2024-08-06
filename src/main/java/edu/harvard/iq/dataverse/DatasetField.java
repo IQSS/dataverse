@@ -6,6 +6,21 @@
 package edu.harvard.iq.dataverse;
 
 /**
+ * A DatasetField describes a metadata property of a Dataset. More precisely a metadata property of a specific dataset version
+ * as Datasets are versioned. Besides the relationship to a DatasetVersion (either direct or transitive), a DatasetField has a unique identifier,
+ * a type (c.f @DatasetFieldType) and depending on the type none, one or multiple values. Weather a DatasetField is obligatory or not
+ * is decided by type definition or via the Dataverse the Dataset belongs to (transitive chain via DatasetField->DatesetVersion->Dataset->Dataverse).
+ *
+ * Possible values are single or multiple string values (c.f. @DatasetFieldValue) and single or multiple controlled vocabulary (c.f. @ControlledVocabularyValue)
+ * values (like enums). Furthermore, a DatasetField can be a compound (c.f. @DatasetFieldCompoundValue) and acts as a container for child DatasetField.
+ * Compounds do not carry a value themselves, values are encoded within the children (DatasetFields). More Information on the type definition can be found here (c.f @DatasetFieldType)
+ *
+ * DatasetField allow for deeply nested hierarchical metadata properties. The domain model does not enforce a nesting limit.
+ * However, the user interface only renders two nesting levels!
+ *
+ * DatasetFields and corresponding values (DatasetFieldValue, DatasetFieldCompoundValue, ControlledVocabularyValue) build the low level metadata storage API.
+ * Semantic meaning and structure are defined by DatasetFieldType and MetadataBlock.
+ *
  *
  * @author skraffmiller
  */
@@ -54,15 +69,18 @@ public class DatasetField implements Serializable {
                                     o2.getDatasetFieldType().getDisplayOrder() );
     }};
 
-    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, Object dsv) {
+    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, DatasetVersion dsv) {
         
         DatasetField dsfv = createNewEmptyDatasetField(dsfType);
-        //TODO - a better way to handle this?
-        if (dsv.getClass().getName().equals("edu.harvard.iq.dataverse.DatasetVersion")){
-                   dsfv.setDatasetVersion((DatasetVersion)dsv); 
-        } else {
-            dsfv.setTemplate((Template)dsv);
-        }
+        dsfv.setDatasetVersion(dsv);
+
+        return dsfv;
+    }
+
+    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, Template dsv) {
+        
+        DatasetField dsfv = createNewEmptyDatasetField(dsfType);
+        dsfv.setTemplate(dsv);
 
         return dsfv;
     }
@@ -545,8 +563,11 @@ public class DatasetField implements Serializable {
         return "edu.harvard.iq.dataverse.DatasetField[ id=" + id + " ]";
     }
 
-    public DatasetField copy(Object version) {
+    public DatasetField copy(DatasetVersion version) {
         return copy(version, null);
+    }
+    public DatasetField copy(Template template) {
+        return copy(template, null);
     }
     
     // originally this was an overloaded method, but we renamed it to get around an issue with Bean Validation
@@ -555,15 +576,15 @@ public class DatasetField implements Serializable {
         return copy(null, parent);
     }
 
-    private DatasetField copy(Object version, DatasetFieldCompoundValue parent) {
+    private DatasetField copy(Object versionOrTemplate, DatasetFieldCompoundValue parent) {
         DatasetField dsf = new DatasetField();
         dsf.setDatasetFieldType(datasetFieldType);
         
-        if (version != null) {
-            if (version.getClass().getName().equals("edu.harvard.iq.dataverse.DatasetVersion")) {
-                dsf.setDatasetVersion((DatasetVersion) version);               
+        if (versionOrTemplate != null) {
+            if (versionOrTemplate instanceof DatasetVersion) {
+                dsf.setDatasetVersion((DatasetVersion) versionOrTemplate);               
             } else {
-                dsf.setTemplate((Template) version);
+                dsf.setTemplate((Template) versionOrTemplate);
             }
         }
         
@@ -595,7 +616,8 @@ public class DatasetField implements Serializable {
                     return true;
                 }
             } else { // controlled vocab
-                if (this.getControlledVocabularyValues().isEmpty()) {
+                // during harvesting some CVV are put in getDatasetFieldValues. we don't want to remove those
+                if (this.getControlledVocabularyValues().isEmpty() && this.getDatasetFieldValues().isEmpty()) {
                     return true;
                 }                 
             }

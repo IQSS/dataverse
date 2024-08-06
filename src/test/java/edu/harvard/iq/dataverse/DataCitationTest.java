@@ -378,6 +378,36 @@ public class DataCitationTest {
 
     }
 
+    @Test
+    public void testFileCitationToStringHtml() throws ParseException {
+        DatasetVersion dsv = createATestDatasetVersion("Dataset Title", true);
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setLabel("foo.txt");
+        fileMetadata.setDataFile(new DataFile());
+        dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
+        fileMetadata.setDatasetVersion(dsv);
+        dsv.setDataset(dsv.getDataset());
+        DataCitation fileCitation = new DataCitation(fileMetadata, false);
+        assertEquals("First Last, 1955, \"Dataset Title\", <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>, LibraScholar, V1; foo.txt [fileName]", fileCitation.toString(true));
+    }
+
+    @Test
+    public void testFileCitationToStringHtmlFilePid() throws ParseException {
+        DatasetVersion dsv = createATestDatasetVersion("Dataset Title", true);
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setLabel("foo.txt");
+        DataFile dataFile = new DataFile();
+        dataFile.setProtocol("doi");
+        dataFile.setAuthority("10.42");
+        dataFile.setIdentifier("myFilePid");
+        fileMetadata.setDataFile(dataFile);
+        dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
+        fileMetadata.setDatasetVersion(dsv);
+        dsv.setDataset(dsv.getDataset());
+        DataCitation fileCitation = new DataCitation(fileMetadata, true);
+        assertEquals("First Last, 1955, \"foo.txt\", <em>Dataset Title</em>, <a href=\"https://doi.org/10.42/myFilePid\" target=\"_blank\">https://doi.org/10.42/myFilePid</a>, LibraScholar, V1", fileCitation.toString(true));
+    }
+
     private DatasetVersion createATestDatasetVersion(String withTitle, boolean withAuthor) throws ParseException {
         
         Dataverse dataverse = new Dataverse();
@@ -400,6 +430,7 @@ public class DataCitationTest {
             fields.add(createTitleField(withTitle));
         }
         if (withAuthor) {
+            // TODO: "Last, First" would make more sense.
             fields.add(createAuthorField("First Last"));
         }
 

@@ -293,7 +293,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     public boolean isControlledVocabulary() {
-        return controlledVocabularyValues != null && !controlledVocabularyValues.isEmpty();
+        return allowControlledVocabulary;
     }
 
     /**

@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.util.bagit;
 
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
@@ -22,8 +22,11 @@ public class OREMapHelper {
     @EJB
     DatasetFieldServiceBean datasetFieldSvc;
     
+    @EJB
+    SystemConfig systemConfig;
+    
     @PostConstruct
     public void injectService() {
-        OREMap.injectSettingsService(settingsSvc, datasetFieldSvc);
+        OREMap.injectServices(settingsSvc, datasetFieldSvc, systemConfig);
     }
 }

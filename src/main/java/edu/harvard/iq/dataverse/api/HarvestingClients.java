@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import jakarta.json.JsonObjectBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.io.IOException;
@@ -164,8 +165,8 @@ public class HarvestingClients extends AbstractApiBean {
             return wr.getResponse();
         }
  
-        try ( StringReader rdr = new StringReader(jsonBody) ) {
-            JsonObject json = Json.createReader(rdr).readObject();
+        try {
+            JsonObject json = JsonUtil.getJsonObject(jsonBody);
             
             // Check that the client with this name doesn't exist yet: 
             // (we could simply let the command fail, but that does not result 
@@ -261,9 +262,9 @@ public class HarvestingClients extends AbstractApiBean {
         
         String ownerDataverseAlias = harvestingClient.getDataverse().getAlias();
         
-        try ( StringReader rdr = new StringReader(jsonBody) ) {
+        try {
             DataverseRequest req = createDataverseRequest(getRequestUser(crc));
-            JsonObject json = Json.createReader(rdr).readObject();
+            JsonObject json = JsonUtil.getJsonObject(jsonBody);
             
             HarvestingClient newHarvestingClient = new HarvestingClient(); 
             String newDataverseAlias = jsonParser().parseHarvestingClient(json, newHarvestingClient);
