@@ -8,8 +8,8 @@ package edu.harvard.iq.dataverse;
 /**
  * A DatasetField describes a metadata property of a Dataset. More precisely a metadata property of a specific dataset version
  * as Datasets are versioned. Besides the relationship to a DatasetVersion (either direct or transitive), a DatasetField has a unique identifier,
- * a type (c.f @DatasetFieldType) and depending on the type none, one or multiple values. Weather a DatasetField is obligatory or not
- * is decided by type definition or via the Dataverse the Dataset belongs to (transitive chain via DatasetField->DatesetVersion->Dataset->Dataverse).
+ * a type (c.f @DatasetFieldType) and depending on the type none, one or multiple values. Whether a DatasetField is obligatory or not
+ * is decided by type definition and via the Dataverse the Dataset belongs to (transitive chain via DatasetField->DatesetVersion->Dataset->Dataverse).
  *
  * Possible values are single or multiple string values (c.f. @DatasetFieldValue) and single or multiple controlled vocabulary (c.f. @ControlledVocabularyValue)
  * values (like enums). Furthermore, a DatasetField can be a compound (c.f. @DatasetFieldCompoundValue) and acts as a container for child DatasetField.
