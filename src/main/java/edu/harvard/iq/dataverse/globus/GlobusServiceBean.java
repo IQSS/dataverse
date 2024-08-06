@@ -1160,25 +1160,30 @@ public class GlobusServiceBean implements java.io.Serializable {
         // ToDo: what if the file does not exist in s3
         // ToDo: what if checksum calculation failed
 
-        do {
-            try {
-                StorageIO<DvObject> dataFileStorageIO = DataAccess.getDirectStorageIO(fullPath);
-                in = dataFileStorageIO.getInputStream();
-                checksumVal = FileUtil.calculateChecksum(in, DataFile.ChecksumType.MD5);
-                count = 3;
-            } catch (IOException ioex) {
-                count = 3;
-                logger.fine(ioex.getMessage());
-                globusLogger.info(
-                        "DataFile (fullPath " + fullPath + ") does not appear to be accessible within Dataverse: ");
-            } catch (Exception ex) {
-                count = count + 1;
-                ex.printStackTrace();
-                logger.info(ex.getMessage());
-                Thread.sleep(5000);
-            }
+        String storageDriverId = DataAccess.getDriverIdAndStorageLocation(fullPath)[0];
 
-        } while (count < 3);
+        if (StorageIO.isDataverseAccessible(storageDriverId)) {
+            do {
+                try {
+                    StorageIO<DvObject> dataFileStorageIO = DataAccess.getDirectStorageIO(fullPath);
+                        in = dataFileStorageIO.getInputStream();
+                    checksumVal = FileUtil.calculateChecksum(in, DataFile.ChecksumType.MD5);
+                    count = 3;
+                } catch (IOException ioex) {
+                    count = 3;
+                    logger.fine(ioex.getMessage());
+                    globusLogger.info(
+                            "DataFile (fullPath " + fullPath + ") does not appear to be accessible within Dataverse: ");
+                } catch (Exception ex) {
+                    count = count + 1;
+                    ex.printStackTrace();
+                    logger.info(ex.getMessage());
+                    Thread.sleep(5000);
+                }
+                
+
+            } while (count < 3);
+        }
 
         if (checksumVal.length() == 0) {
             checksumVal = "Not available in Dataverse";
