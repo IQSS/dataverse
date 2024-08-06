@@ -341,6 +341,11 @@ The steps below describe options to enable the later in different IDEs.
 
     **IMPORTANT**: This tool uses a Bash shell script and is thus limited to Mac and Linux OS.
 
+Exploring the Database
+----------------------
+
+See :ref:`db-name-creds` in the Developer Guide.
+
 Using a Debugger
 ----------------
 
