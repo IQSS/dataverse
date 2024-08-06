@@ -24,11 +24,11 @@ jobs:
               run: |
                   cd tests/shell
                   shellspec
-    shellspec-rocky8:
-        name: "RockyLinux 8"
+    shellspec-rocky9:
+        name: "RockyLinux 9"
         runs-on: ubuntu-latest
         container:
-            image: rockylinux/rockylinux:8
+            image: rockylinux/rockylinux:9
         steps:
             - uses: actions/checkout@v2
             - name: Install shellspec
