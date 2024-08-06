@@ -1057,14 +1057,14 @@ public class DataversesIT {
         String[] expectedFacetNames = {"authorName", "subject", "keywordValue", "dateOfDeposit"};
 
         // returnDetails is false
-        Response listFacetsResponse = UtilIT.listFacets(dataverseAlias, false, apiToken);
+        Response listFacetsResponse = UtilIT.listDataverseFacets(dataverseAlias, false, apiToken);
         listFacetsResponse.then().assertThat().statusCode(OK.getStatusCode());
         String actualFacetName = listFacetsResponse.then().extract().path("data[0]");
         assertThat(expectedFacetNames, hasItemInArray(actualFacetName));
 
         // returnDetails is true
         String[] expectedDisplayNames = {"Author Name", "Subject", "Keyword Term", "Deposit Date"};
-        listFacetsResponse = UtilIT.listFacets(dataverseAlias, true, apiToken);
+        listFacetsResponse = UtilIT.listDataverseFacets(dataverseAlias, true, apiToken);
         listFacetsResponse.then().assertThat().statusCode(OK.getStatusCode());
         actualFacetName = listFacetsResponse.then().extract().path("data[0].name");
         assertThat(expectedFacetNames, hasItemInArray(actualFacetName));
@@ -1072,5 +1072,30 @@ public class DataversesIT {
         assertThat(expectedDisplayNames, hasItemInArray(actualDisplayName));
         String actualId = listFacetsResponse.then().extract().path("data[0].id");
         assertNotNull(actualId);
+
+        // Dataverse with custom facets
+        String dataverseWithCustomFacetsAlias = UtilIT.getRandomDvAlias() + "customFacets";
+
+        String[] testFacetNames = {"authorName", "authorAffiliation"};
+        String[] testMetadataBlockNames = {"citation", "geospatial"};
+
+        Response createSubDataverseResponse = UtilIT.createSubDataverse(dataverseWithCustomFacetsAlias, null, apiToken, "root", null, testFacetNames, testMetadataBlockNames);
+        createSubDataverseResponse.then().assertThat().statusCode(CREATED.getStatusCode());
+
+        listFacetsResponse = UtilIT.listDataverseFacets(dataverseWithCustomFacetsAlias, true, apiToken);
+        listFacetsResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        String actualFacetName1 = listFacetsResponse.then().extract().path("data[0].name");
+        String actualFacetName2 = listFacetsResponse.then().extract().path("data[1].name");
+        assertNotEquals(actualFacetName1, actualFacetName2);
+        assertThat(testFacetNames, hasItemInArray(actualFacetName1));
+        assertThat(testFacetNames, hasItemInArray(actualFacetName2));
+
+        String[] testFacetExpectedDisplayNames = {"Author Name", "Author Affiliation"};
+        String actualFacetDisplayName1 = listFacetsResponse.then().extract().path("data[0].displayName");
+        String actualFacetDisplayName2 = listFacetsResponse.then().extract().path("data[1].displayName");
+        assertNotEquals(actualFacetDisplayName1, actualFacetDisplayName2);
+        assertThat(testFacetExpectedDisplayNames, hasItemInArray(actualFacetDisplayName1));
+        assertThat(testFacetExpectedDisplayNames, hasItemInArray(actualFacetDisplayName2));
     }
 }
